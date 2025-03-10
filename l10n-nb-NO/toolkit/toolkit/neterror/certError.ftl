@@ -18,6 +18,9 @@ cert-error-trust-signature-algorithm-disabled = Sertifikatet er ikke tiltrodd fo
 cert-error-trust-expired-issuer = Sertifikatet er ikke tiltrodd fordi utstedersertifikatet har gått ut på dato.
 cert-error-trust-self-signed = Sertifikatet er ikke tiltrodd fordi det er selvsignert.
 cert-error-trust-symantec = Sertifikater utstedt av GeoTrust, RapidSSL, Symantec, Thawte og VeriSign anses ikke lenger som trygge fordi disse sertifikatmyndighetene ikke klarte å følge sikkerhetspraksis tidligere.
+# Variables:
+#   $hostname (string) - Hostname of the website with cert error.
+cert-error-trust-certificate-transparency = { -brand-short-name } stoler ikke på { $hostname } fordi den ikke kunne bevise at den oppfyller kravene til offentlig sertifikatåpenhet.
 cert-error-untrusted-default = Sertifikatet kommer ikke fra en tiltrodd kilde.
 # Variables:
 #   $hostname (string) - Hostname of the website with cert error.
@@ -68,6 +71,27 @@ open-in-new-window-for-csp-or-xfo-error = Åpne nettsted i nytt vindu
 # Variables:
 #   $hostname (string) - Hostname of the website blocked by csp or xfo error.
 csp-xfo-blocked-long-desc = For å ta vare på sikkerheten din, vil { $hostname } ikke tillate at { -brand-short-name } viser siden hvis et annet nettsted har bygd den inn. For å se denne siden, må du åpne den i et nytt vindu.
+fp-certerror-view-certificate-link = Vis nettstedets sertifikat
+fp-certerror-return-to-previous-page-recommended-button = Gå tilbake (anbefalt)
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-self-signed-what-can-you-do-body = Ikke mye. Det er sannsynlig at det er et problem med selve nettstedet.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate expiration date.
+fp-certerror-expired-why-dangerous-body = Nettsteder bruker sertifikater utstedt av en sertifikatutsteder for å bevise at de virkelig er den de sier de er. { -brand-short-name } stoler ikke på dette nettstedet fordi det ser ut til at sertifikatet utløp { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+# Variables:
+#   $date (Date) - Clock date.
+fp-certerror-expired-what-can-you-do-body = Enhetens klokke er satt til { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }. Hvis dette er riktig, er sikkerhetsproblemet sannsynligvis med selve nettstedet. Hvis det er feil, kan du endre det i enhetens systeminnstillinger.
+# Variables:
+#   $error (string) - NSS error code string that specifies type of cert error. e.g. unknown issuer, invalid cert, etc.
+fp-cert-error-code = Feilkode: { $error }
+# Variables:
+#   $datetime (Date) - Current datetime.
+fp-datetime = { DATETIME($datetime, month: "short", year: "numeric", day: "numeric") } { DATETIME($datetime, timeStyle: "long") }
+fp-learn-more-about-secure-connection-failures = Les mer om feil med sikker tilkobling
+fp-learn-more-about-cert-issues = Les mer om slike sertifikatproblemer
+fp-learn-more-about-time-related-errors = Finn ut mer om feilsøking av tidsrelaterte feil
 
 ## Messages used for certificate error titles
 
@@ -109,3 +133,20 @@ networkProtocolError-title = Nettverksprotokollfeil
 nssBadCert-title = Advarsel: Potensiell sikkerhetsrisiko forut
 nssBadCert-sts-title = Koblet ikke til: Potensielt sikkerhetsproblem
 certerror-mitm-title = Programvare hindrer { -brand-short-name } fra sikker tilkobling til dette nettstedet
+
+## Felt Privacy V1 Strings
+
+fp-certerror-page-title = Advarsel: Sikkerhetsrisiko
+fp-certerror-body-title = Vær forsiktig. Noe ser ikke riktig ut.
+fp-certerror-why-site-dangerous = Hva får siden til å se farlig ut?
+fp-certerror-what-can-you-do = Hva kan du gjøre med det?
+fp-certerror-advanced-title = Avansert
+fp-certerror-advanced-button = Avansert
+fp-certerror-hide-advanced-button = Skjul avansert
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-certerror-override-exception-button = Fortsett til { $hostname } (risikofylt)
+fp-certerror-intro = { -brand-short-name } oppdaget et potensielt alvorlig sikkerhetsproblem med <strong>{ $hostname }</strong>. Noen som utgir seg for å være nettstedet kan prøve å stjele ting som kredittkortinformasjon, passord eller e-poster.
+fp-certerror-expired-into = { -brand-short-name } oppdaget et sikkerhetsproblem med <strong>{ $hostname }</strong>. Enten er nettstedet ikke konfigurert riktig eller enhetens klokke er satt til feil dato/tid.

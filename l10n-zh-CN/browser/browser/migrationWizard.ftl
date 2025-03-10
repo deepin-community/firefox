@@ -36,7 +36,7 @@ migration-wizard-migrator-display-name-chromium-edge-beta = Microsoft Edge Beta
 migration-wizard-migrator-display-name-edge-legacy = 旧版 Microsoft Edge
 migration-wizard-migrator-display-name-firefox = Firefox
 migration-wizard-migrator-display-name-file-password-csv = CSV 文件中的密码
-migration-wizard-migrator-display-name-file-bookmarks = 从 HTML 文件导入书签
+migration-wizard-migrator-display-name-file-bookmarks = HTML 文件中的书签
 migration-wizard-migrator-display-name-ie = Microsoft Internet Explorer（IE 浏览器）
 migration-wizard-migrator-display-name-opera = Opera
 migration-wizard-migrator-display-name-opera-gx = Opera GX
@@ -239,8 +239,8 @@ migration-wizard-progress-success-passwords = { $quantity } 个密码
 #  $maxAgeInDays (Number): the maximum number of days of history that might be imported.
 migration-wizard-progress-success-history =
     { $maxAgeInDays ->
-        [one] 昨天以来
-       *[other] 过去 { $maxAgeInDays } 天
+        [one] 昨天以来的数据
+       *[other] 过去 { $maxAgeInDays } 天内的数据
     }
 migration-wizard-progress-success-formdata = 表单历史记录
 # Shown in the migration wizard after importing payment methods from another

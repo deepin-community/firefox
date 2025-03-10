@@ -1,10 +1,150 @@
-firefox (131.0.2-1deepin1) unstable; urgency=medium
+firefox (136.0-1) unstable; urgency=medium
 
-  * Sync LoongArch patches from AOSC OS.
-  * Enable AMD GPU VA-API support.
-  * Enable GLES support for RISC-V (riscv64).
+  * New upstream release.
+  * Fixes for mfsa2025-15, also known as:
+    CVE-2025-1931, CVE-2025-1932, CVE-2025-1933, CVE-2025-1934,
+    CVE-2025-1942, CVE-2025-1935, CVE-2025-1936, CVE-2025-1937,
+    CVE-2025-1938, CVE-2025-1943.
 
- -- Mingcong Bai <baimingcong@uniontech.com>  Thu, 10 Oct 2024 21:17:33 +0800
+  * debian/control*: Bump nss build dependency.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 05 Mar 2025 06:10:56 +0900
+
+firefox (135.0.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 19 Feb 2025 05:34:58 +0900
+
+firefox (135.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2025-07, also known as:
+    CVE-2025-1009, CVE-2025-1010, CVE-2025-1018, CVE-2025-1011,
+    CVE-2025-1012, CVE-2025-1019, CVE-2025-1013, CVE-2025-1014,
+    CVE-2025-1016, CVE-2025-1017, CVE-2025-1020.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 05 Feb 2025 06:42:43 +0900
+
+firefox (134.0.2-3) unstable; urgency=medium
+
+  * mozglue/misc/StackWalk.cpp: Work around glibc issue leading to crash in
+    _Unwind_Backtrace on aarch64 linux with PAC. bz#1944461. Closes: #1094429.
+
+ -- Mike Hommey <glandium@debian.org>  Thu, 30 Jan 2025 05:53:20 +0900
+
+firefox (134.0.2-2) unstable; urgency=medium
+
+  * gfx/cairo/libpixman/src/moz.build: Don't use clang clang's integrated
+    assembler to compile pixman ARM neon code.
+  * gfx/ycbcr/yuv_convert_arm.cpp: Move the .fpu neon directive around.
+  * third_party/wasm2c/src/prebuilt/wasm2c_simd_source_declarations.cc,
+    third_party/wasm2c/src/prebuilt/wasm2c_source_declarations.cc: Apply
+    wasm2c upstream fix for clang targetting mips.
+  * media/libyuv/libyuv/libyuv.gyp: Apply the neon flags to libyuv_neon,
+    not libyuv.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 22 Jan 2025 13:44:47 +0900
+
+firefox (134.0.2-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 22 Jan 2025 07:55:35 +0900
+
+firefox (134.0.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+  * debian/rules:
+    - Properly enable clang only on trixie. Thanks David Turner.
+    - Revert work around for some binutils change. Upstream has had a fix for
+      it for a while now.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 15 Jan 2025 06:13:16 +0900
+
+firefox (134.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2025-01, also known as:
+    CVE-2025-0237, CVE-2025-0238, CVE-2025-0239, CVE-2025-0240,
+    CVE-2025-0241, CVE-2025-0242, CVE-2025-0243, CVE-2025-0247.
+
+  * debian/control*: Bump nss build dependency.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 08 Jan 2025 07:32:53 +0900
+
+firefox (133.0.3-1) unstable; urgency=medium
+
+  * New upstream release.
+
+  * debian/rules: Switch to clang as the compiler for trixie.
+
+  * python/mach/mach/site.py: Fix virtual environment sysconfig path
+    calculation. bz#1935621.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 11 Dec 2024 05:12:24 +0900
+
+firefox (133.0-1) unstable; urgency=medium
+
+  * New upstream release.
+    - Fixes FTBFS with python 3.13. Closes: #1084725
+  * Fixes for mfsa2024-63, also known as:
+    CVE-2024-11691, CVE-2024-11692, CVE-2024-11701, CVE-2024-11693,
+    CVE-2024-11694, CVE-2024-11695, CVE-2024-11696, CVE-2024-11697,
+    CVE-2024-11708, CVE-2024-11699.
+
+  * debian/control*: Bump nss build dependency.
+  * debian/browser.install.in: Remove minidump-analyzer, matching upstream
+    changes.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 27 Nov 2024 09:37:19 +0900
+
+firefox (132.0.2-1) unstable; urgency=medium
+
+  * New upstream release.
+
+  * debian/control*: Build depend on libdbus-1-dev rather than
+    libdbus-glib-1-dev. Closes: #955890.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 13 Nov 2024 07:55:46 +0900
+
+firefox (132.0.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Mike Hommey <glandium@debian.org>  Tue, 05 Nov 2024 10:26:41 +0900
+
+firefox (132.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2024-55, also known as:
+    CVE-2024-10458, CVE-2024-10459, CVE-2024-10460, CVE-2024-10461,
+    CVE-2024-10462, CVE-2024-10463, CVE-2024-10468, CVE-2024-10464,
+    CVE-2024-10465, CVE-2024-10466, CVE-2024-10467.
+
+  * debian/control*: Bump nss build dependency.
+
+ -- Mike Hommey <glandium@debian.org>  Wed, 30 Oct 2024 06:44:52 +0900
+
+firefox (131.0.3-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Fixes for mfsa2024-53, also known as CVE-2024-9936.
+
+  * debian/browser.lintian-overrides.in: Adjusted to make the report on
+    udd.debian.org happy. For some reason local lintian doesn't agree.
+
+ -- Mike Hommey <glandium@debian.org>  Tue, 15 Oct 2024 05:40:52 +0900
+
+firefox (131.0.2-2) unstable; urgency=medium
+
+  * debian/rules: Exclude -g from CXXFLAGS too. It's handled by the upstream
+    build system, and leaving it there breaks the build on 32-bits platforms
+    because the debug info is just too large to handle for the address space.
+    That's how it was before the changes in 128.3.1esr-1 anyways.
+
+ -- Mike Hommey <glandium@debian.org>  Thu, 10 Oct 2024 15:50:40 +0900
 
 firefox (131.0.2-1) unstable; urgency=medium
 

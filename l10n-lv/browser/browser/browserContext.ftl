@@ -14,7 +14,7 @@ navbar-tooltip-instruction =
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the Go Back command.
 main-context-menu-back-2 =
-    .tooltiptext = Iet vienu lapu atpakaļ ({ $shortcut })
+    .tooltiptext = Doties vienu lapu atpakaļ ({ $shortcut })
     .aria-label = Atpakaļ
     .accesskey = A
 # This menuitem is only visible on macOS
@@ -290,9 +290,7 @@ main-context-menu-send-to-device =
     .label = Sūtīt lapu uz ierīci
     .accesskey = I
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Izmantot saglabāto lietotājvārdu

@@ -86,6 +86,16 @@ tabbrowser-unblock-tab-audio-tooltip =
            *[other] Predvajaj { $tabCount } zavihkov
         }
 
+## Tooltips for tab audio control
+
+tabbrowser-unmute-tab-audio-aria-label =
+    .aria-label = Povrni glasnost zavihka
+tabbrowser-mute-tab-audio-aria-label =
+    .aria-label = Utišaj zavihek
+# Used to unblock a tab with audio from autoplaying
+tabbrowser-unblock-tab-audio-aria-label =
+    .aria-label = Predvajaj zavihek
+
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
@@ -99,6 +109,7 @@ tabbrowser-confirm-close-tabs-title =
        *[other] Zapri { $tabCount } zavihkov?
     }
 tabbrowser-confirm-close-tabs-button = Zapri zavihke
+tabbrowser-ask-close-tabs-checkbox = Vprašaj pred zapiranjem več zavihkov hkrati
 tabbrowser-confirm-close-tabs-checkbox = Vprašaj za potrditev pred zapiranjem več zavihkov hkrati
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
@@ -126,7 +137,21 @@ tabbrowser-confirm-close-tabs-with-key-title = Zapri okno in zapusti { -brand-sh
 tabbrowser-confirm-close-tabs-with-key-button = Izhod iz { -brand-short-name }a
 # Variables:
 #   $quitKey (String): the text of the keyboard shortcut for quitting.
+tabbrowser-ask-close-tabs-with-key-checkbox = Vprašaj pred zapiranjem s { $quitKey }
+# Variables:
+#   $quitKey (String): the text of the keyboard shortcut for quitting.
 tabbrowser-confirm-close-tabs-with-key-checkbox = Vprašaj za potrditev pred zapiranjem z { $quitKey }
+
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
+
+tabbrowser-confirm-close-warn-shortcut-title = Želite zapreti { -brand-short-name(sklon: "tozilnik") } ali trenutni zavihek?
+tabbrowser-confirm-close-windows-warn-shortcut-button =
+    { PLATFORM() ->
+        [windows] Izhod iz { -brand-short-name(sklon: "rodilnik") }
+       *[other] Izhod iz { -brand-short-name(sklon: "rodilnik") }
+    }
+tabbrowser-confirm-close-tab-only-button = Zapri trenutni zavihek
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
@@ -196,6 +221,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
         }
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = Utišaj zavihek
@@ -203,3 +231,127 @@ tabbrowser-manager-unmute-tab =
     .tooltiptext = Povrni glasnost zavihka
 tabbrowser-manager-close-tab =
     .tooltiptext = Zapri zavihek
+# This is for tab groups that have been "saved and closed" (see tab-group-editor-action-save). It does
+# not include "deleted" tab groups (see tab-group-editor-action-delete).
+tabbrowser-manager-closed-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } – Zaprta
+tabbrowser-manager-current-window-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } – Trenutno okno
+# "Show more" is for showing all open groups from other windows, as well as saved groups. Initially,
+# we only show up to six of these groups.
+tabbrowser-manager-tab-groups-show-more =
+    .label = Prikaži več
+
+## Tab Groups
+
+tab-group-editor-title-create = Ustvari skupino zavihkov
+tab-group-editor-title-edit = Upravljanje skupine zavihkov
+tab-group-editor-name-label = Ime
+tab-group-editor-name-field =
+    .placeholder = na primer: Nakupovanje
+tab-group-editor-cancel =
+    .label = Prekliči
+    .accesskey = P
+tab-group-editor-color-selector =
+    .aria-label = Barva skupine zavihkov
+tab-group-editor-color-selector2-blue = Modra
+    .title = Modra
+tab-group-editor-color-selector2-purple = Vijolična
+    .title = Vijolična
+tab-group-editor-color-selector2-cyan = Cian
+    .title = Cian
+tab-group-editor-color-selector2-orange = Oranžna
+    .title = Oranžna
+tab-group-editor-color-selector2-yellow = Rumena
+    .title = Rumena
+tab-group-editor-color-selector2-pink = Roza
+    .title = Roza
+tab-group-editor-color-selector2-green = Zelena
+    .title = Zelena
+tab-group-editor-color-selector2-gray = Siva
+    .title = Siva
+tab-group-editor-color-selector2-red = Rdeča
+    .title = Rdeča
+# Variables:
+#  $tabGroupName (String): The name of the tab group. Defaults to the value
+#                          of tab-group-name-default.
+tab-group-description = { $tabGroupName } – Skupina zavihkov
+tab-group-menu-header = Skupine zavihkov
+tab-context-unnamed-group =
+    .label = Neimenovana skupina
+tab-group-name-default = Neimenovana skupina
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
+tab-context-move-tab-to-new-group =
+    .label =
+        { $tabCount ->
+            [one] Dodaj zavihek k novi skupini
+            [two] Dodaj zavihka k novi skupini
+            [few] Dodaj zavihke k novi skupini
+           *[other] Dodaj zavihke k novi skupini
+        }
+    .accesskey = s
+tab-context-move-tab-to-group =
+    .label =
+        { $tabCount ->
+            [one] Dodaj zavihek k skupini
+            [two] Dodaj zavihka k skupini
+            [few] Dodaj zavihke k skupini
+           *[other] Dodaj zavihke k skupini
+        }
+    .accesskey = s
+tab-group-editor-action-new-tab =
+    .label = Nov zavihek v skupini
+tab-group-editor-action-new-window =
+    .label = Premakni skupino v novo okno
+tab-group-editor-action-save =
+    .label = Shrani in zapri skupino
+tab-group-editor-action-ungroup =
+    .label = Razdruži zavihke
+tab-group-editor-action-delete =
+    .label = Izbriši skupino
+tab-group-editor-done =
+    .label = Končano
+    .accessKey = K
+tab-context-reopen-tab-group =
+    .label = Znova odpri skupino zavihkov
+# Variables:
+#  $groupCount (Number): the number of tab groups that are affected by the action.
+tab-context-ungroup-tab =
+    .label =
+        { $groupCount ->
+            [one] Odstrani iz skupin
+            [two] Odstrani iz skupin
+            [few] Odstrani iz skupin
+           *[other] Odstrani iz skupin
+        }
+    .accesskey = O
+
+## Open/saved tab group context menu
+
+# For a tab group open in any window, clicking this will create a new
+# window and move this tab group to that new window.
+tab-group-context-move-to-new-window =
+    .label = Premakni skupino v novo okno
+# For a tab group open in a different window from the one that the
+# user is using to access the tab group menu, move that tab group into the
+# user's current window.
+tab-group-context-move-to-this-window =
+    .label = Premakni skupino v to okno
+# For a tab group that is open in any window, close the tab group and
+# do not save it. For a tab group that is closed but saved by the user, clicking
+# this will forget the saved tab group.
+tab-group-context-delete =
+    .label = Izbriši skupino
+# For a saved tab group that is not open in any window, open the tab group
+# in the user's current window.
+tab-group-context-open-saved-group-in-this-window =
+    .label = Odpri skupino v tem oknu
+# For a saved tab group that is not open in any window, create a new window and
+# open the tab group in that window.
+tab-group-context-open-saved-group-in-new-window =
+    .label = Odpri skupino v novem oknu

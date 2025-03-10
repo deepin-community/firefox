@@ -228,6 +228,7 @@ MSG_DEF(JSMSG_BAD_ARROW_ARGS,          0, JSEXN_SYNTAXERR, "invalid arrow-functi
 MSG_DEF(JSMSG_BAD_CLASS_MEMBER_DEF,    0, JSEXN_SYNTAXERR, "bad class member definition")
 MSG_DEF(JSMSG_BAD_COALESCE_MIXING,     0, JSEXN_SYNTAXERR, "cannot use `??` unparenthesized within `||` and `&&` expressions")
 MSG_DEF(JSMSG_BAD_CONST_DECL,          0, JSEXN_SYNTAXERR, "missing = in const declaration")
+MSG_DEF(JSMSG_BAD_USING_DECL,          0, JSEXN_SYNTAXERR, "missing = in using declaration")
 MSG_DEF(JSMSG_BAD_CONSTRUCTOR_DEF,     0, JSEXN_SYNTAXERR, "a class constructor definition must be a plain public method")
 MSG_DEF(JSMSG_BAD_CONTINUE,            0, JSEXN_SYNTAXERR, "continue must be inside loop")
 MSG_DEF(JSMSG_BAD_DESTRUCT_ASS,        0, JSEXN_SYNTAXERR, "invalid destructuring assignment operator")
@@ -330,7 +331,7 @@ MSG_DEF(JSMSG_NAMED_IMPORTS_OR_NAMESPACE_IMPORT, 0, JSEXN_SYNTAXERR, "expected n
 MSG_DEF(JSMSG_NO_BINDING_NAME,        0, JSEXN_SYNTAXERR, "missing binding name")
 MSG_DEF(JSMSG_NO_EXPORT_NAME,          0, JSEXN_SYNTAXERR, "missing export name")
 MSG_DEF(JSMSG_NO_IMPORT_NAME,          0, JSEXN_SYNTAXERR, "missing import name")
-MSG_DEF(JSMSG_NO_VARIABLE_NAME,        0, JSEXN_SYNTAXERR, "missing variable name")
+MSG_DEF(JSMSG_NO_VARIABLE_NAME,        1, JSEXN_SYNTAXERR, "missing variable name, got {0}")
 MSG_DEF(JSMSG_PAREN_AFTER_ARGS,        0, JSEXN_SYNTAXERR, "missing ) after argument list")
 MSG_DEF(JSMSG_PAREN_AFTER_CATCH,       0, JSEXN_SYNTAXERR, "missing ) after catch")
 MSG_DEF(JSMSG_PAREN_AFTER_COND,        0, JSEXN_SYNTAXERR, "missing ) after condition")
@@ -439,7 +440,7 @@ MSG_DEF(JSMSG_WASM_COMPILE_ERROR,      1, JSEXN_WASMCOMPILEERROR, "{0}")
 MSG_DEF(JSMSG_WASM_BAD_IMPORT_TYPE,    2, JSEXN_WASMLINKERROR, "import object field '{0}' is not a {1}")
 MSG_DEF(JSMSG_WASM_BAD_IMPORT_SIG,     2, JSEXN_WASMLINKERROR, "imported function '{0}.{1}' signature mismatch")
 MSG_DEF(JSMSG_WASM_BAD_TAG_SIG,        2, JSEXN_WASMLINKERROR, "imported tag '{0}.{1}' signature mismatch")
-MSG_DEF(JSMSG_WASM_BAD_IMP_INDEX,      1, JSEXN_WASMLINKERROR, "imported {0} with incompatible index type")
+MSG_DEF(JSMSG_WASM_BAD_IMP_ADDRESS,    1, JSEXN_WASMLINKERROR, "imported {0} with incompatible address type")
 MSG_DEF(JSMSG_WASM_BAD_IMP_SIZE,       1, JSEXN_WASMLINKERROR, "imported {0} with incompatible size")
 MSG_DEF(JSMSG_WASM_BAD_IMP_MAX,        1, JSEXN_WASMLINKERROR, "imported {0} with incompatible maximum size")
 MSG_DEF(JSMSG_WASM_IMP_SHARED_REQD,    0, JSEXN_WASMLINKERROR, "imported unshared memory but shared required")
@@ -488,7 +489,7 @@ MSG_DEF(JSMSG_WASM_BAD_ARRAYREF_VALUE,  0, JSEXN_TYPEERR,     "can only pass a W
 MSG_DEF(JSMSG_WASM_BAD_TYPEREF_VALUE,  0, JSEXN_TYPEERR,     "bad type")
 MSG_DEF(JSMSG_WASM_BAD_VAL_TYPE,       0, JSEXN_TYPEERR,     "cannot pass value to or from JS")
 MSG_DEF(JSMSG_WASM_BAD_STRING_VAL_TYPE,    0, JSEXN_TYPEERR,     "bad value type")
-MSG_DEF(JSMSG_WASM_BAD_STRING_IDX_TYPE,    0, JSEXN_TYPEERR,     "bad index type")
+MSG_DEF(JSMSG_WASM_BAD_STRING_ADDR_TYPE,    0, JSEXN_TYPEERR,     "bad address type")
 MSG_DEF(JSMSG_WASM_BAD_EXN_ARG,        0, JSEXN_TYPEERR,     "first argument must be a WebAssembly.Tag")
 MSG_DEF(JSMSG_WASM_BAD_EXN_PAYLOAD,    0, JSEXN_TYPEERR,     "second argument must be an object")
 MSG_DEF(JSMSG_WASM_BAD_EXN_PAYLOAD_LEN, 2, JSEXN_TYPEERR,    "expected {0} values but got {1}")
@@ -496,7 +497,6 @@ MSG_DEF(JSMSG_WASM_BAD_EXN_TAG,        0, JSEXN_TYPEERR,     "exception's tag di
 MSG_DEF(JSMSG_WASM_BAD_EXN_OPTIONS,    0, JSEXN_TYPEERR,     "argument cannot be converted to an ExceptionOptions")
 MSG_DEF(JSMSG_WASM_BAD_FUNCTION_VALUE, 0, JSEXN_TYPEERR,     "second argument must be a function")
 MSG_DEF(JSMSG_WASM_BAD_COMPILE_OPTIONS, 0, JSEXN_TYPEERR,    "argument cannot be converted to a CompileOptions")
-MSG_DEF(JSMSG_WASM_UNKNOWN_BUILTIN,     0, JSEXN_TYPEERR,    "unknown builtin")
 MSG_DEF(JSMSG_WASM_DUPLICATE_BUILTIN,   0, JSEXN_TYPEERR,    "duplicate builtin")
 MSG_DEF(JSMSG_WASM_BAD_CODEPOINT,       0, JSEXN_WASMRUNTIMEERROR,     "bad codepoint")
 MSG_DEF(JSMSG_WASM_NO_TRANSFER,        0, JSEXN_TYPEERR,     "cannot transfer WebAssembly/asm.js ArrayBuffer")
@@ -598,8 +598,10 @@ MSG_DEF(JSMSG_DEBUGGEE_WOULD_RUN,      2, JSEXN_DEBUGGEEWOULDRUN, "debuggee '{0}
 MSG_DEF(JSMSG_NOT_CALLABLE_OR_UNDEFINED, 0, JSEXN_TYPEERR, "value is not a function or undefined")
 MSG_DEF(JSMSG_NOT_TRACKING_ALLOCATIONS, 1, JSEXN_ERR, "Cannot call {0} without setting trackingAllocationSites to true")
 MSG_DEF(JSMSG_OBJECT_METADATA_CALLBACK_ALREADY_SET, 0, JSEXN_ERR, "Cannot track object allocation, because other tools are already doing so")
-MSG_DEF(JSMSG_QUERY_INNERMOST_WITHOUT_LINE_URL, 0, JSEXN_TYPEERR, "findScripts query object with 'innermost' property must have 'line' and either 'displayURL', 'url', or 'source'")
-MSG_DEF(JSMSG_QUERY_LINE_WITHOUT_URL, 0, JSEXN_TYPEERR, "findScripts query object has 'line' property, but no 'displayURL', 'url', or 'source' property")
+MSG_DEF(JSMSG_QUERY_INNERMOST_WITHOUT_LINE_URL, 0, JSEXN_TYPEERR, "findScripts query object with 'innermost' property must have 'line', or 'start' and 'end', and either 'displayURL', 'url', or 'source'")
+MSG_DEF(JSMSG_QUERY_LINE_WITHOUT_URL, 1, JSEXN_TYPEERR, "findScripts query object has {0}, but no 'displayURL', 'url', or 'source' property")
+MSG_DEF(JSMSG_QUERY_USE_START_AND_END_TOGETHER, 0, JSEXN_ERR, "findScripts query object's 'start' and 'end' properties must be used together")
+MSG_DEF(JSMSG_QUERY_START_LINE_IS_AFTER_END, 0, JSEXN_ERR, "findScripts query object's 'start.line' property is greater than its 'end.line' property, but it must be less than or equal to 'end.line'")
 MSG_DEF(JSMSG_DEBUG_CANT_SET_OPT_ENV, 1, JSEXN_REFERENCEERR, "can't set '{0}' in an optimized-out environment")
 MSG_DEF(JSMSG_DEBUG_INVISIBLE_COMPARTMENT, 0, JSEXN_TYPEERR, "object in compartment marked as invisible to Debugger")
 MSG_DEF(JSMSG_DEBUG_CENSUS_BREAKDOWN,  1, JSEXN_TYPEERR, "unrecognized 'by' value in takeCensus breakdown: {0}")
@@ -609,8 +611,8 @@ MSG_DEF(JSMSG_DEBUG_PROMISE_NOT_FULFILLED, 0, JSEXN_TYPEERR, "Promise hasn't bee
 MSG_DEF(JSMSG_DEBUG_PROMISE_NOT_REJECTED, 0, JSEXN_TYPEERR, "Promise hasn't been rejected")
 MSG_DEF(JSMSG_DEBUG_NO_BINARY_SOURCE,  0, JSEXN_ERR, "WebAssembly binary source is not available")
 MSG_DEF(JSMSG_DEBUG_EXCLUSIVE_FRAME_COVERAGE, 0, JSEXN_ERR, "onEnterFrame and collectCoverageInfo cannot be active at the same time")
+MSG_DEF(JSMSG_DEBUG_EXCLUSIVE_EXECUTION_TRACE_COVERAGE, 0, JSEXN_ERR, "execution trace and collectCoverageInfo cannot be active at the same time")
 MSG_DEF(JSMSG_NATIVE_TRACING_BUFFER_MALFORMED, 0, JSEXN_ERR, "bad data encountered while reading the native tracing buffer")
-MSG_DEF(JSMSG_NATIVE_TRACING_MUST_BE_ENABLED, 0, JSEXN_ERR, "Cannot collect a native trace without setting nativeTracing to true")
 
 // Testing functions
 MSG_DEF(JSMSG_TESTING_SCRIPTS_ONLY, 0, JSEXN_TYPEERR, "only works on scripts")
@@ -633,7 +635,7 @@ MSG_DEF(JSMSG_INVALID_LOCALE_MATCHER,  1, JSEXN_RANGEERR, "invalid locale matche
 MSG_DEF(JSMSG_INVALID_OPTION_VALUE,    2, JSEXN_RANGEERR, "invalid value {1} for option {0}")
 MSG_DEF(JSMSG_INVALID_TIME_ZONE,       1, JSEXN_RANGEERR, "invalid time zone in DateTimeFormat(): {0}")
 MSG_DEF(JSMSG_INVALID_DATETIME_OPTION, 2, JSEXN_TYPEERR, "can't set option {0} when {1} is used")
-MSG_DEF(JSMSG_INVALID_DATETIME_STYLE,  2, JSEXN_TYPEERR, "can't set option {0} in Date.{1}()")
+MSG_DEF(JSMSG_INVALID_DATETIME_STYLE,  2, JSEXN_TYPEERR, "can't set option {0} for {1} formats")
 MSG_DEF(JSMSG_UNDEFINED_CURRENCY,      0, JSEXN_TYPEERR, "undefined currency in NumberFormat() with currency style")
 MSG_DEF(JSMSG_UNDEFINED_UNIT,          0, JSEXN_TYPEERR, "undefined unit in NumberFormat() with unit style")
 MSG_DEF(JSMSG_UNDEFINED_DATE,          2, JSEXN_TYPEERR, "undefined {0}-date in DateTimeFormat.{1}()")
@@ -642,6 +644,16 @@ MSG_DEF(JSMSG_UNDEFINED_TYPE,          0, JSEXN_TYPEERR, "missing \"type\" optio
 MSG_DEF(JSMSG_NAN_NUMBER_RANGE,        3, JSEXN_RANGEERR, "range can't {0} with NaN in {1}.{2}()")
 MSG_DEF(JSMSG_INVALID_NUMBER_OPTION,   2, JSEXN_TYPEERR, "can't set option {0} when {1} is used")
 MSG_DEF(JSMSG_UNEQUAL_FRACTION_DIGITS, 0, JSEXN_RANGEERR, "fraction digits must be the same when roundingIncrement is used")
+MSG_DEF(JSMSG_INTL_DURATION_INVALID_NON_NUMERIC_OPTION, 2, JSEXN_RANGEERR, "invalid non-numeric value {0} for option {1}")
+MSG_DEF(JSMSG_INTL_DURATION_INVALID_DISPLAY_OPTION, 1, JSEXN_RANGEERR, "{0} can't use \"numeric\" style with \"always\" display")
+MSG_DEF(JSMSG_INTL_DURATION_INVALID_DISPLAY_OPTION_DEFAULT_STYLE, 1, JSEXN_RANGEERR, "{0} can't use \"always\" display when style defaults to \"numeric\"")
+MSG_DEF(JSMSG_INTL_DURATION_INVALID_DISPLAY_OPTION_DEFAULT_DISPLAY, 1, JSEXN_RANGEERR, "{0} can't use \"numeric\" style when display defaults to \"always\"")
+MSG_DEF(JSMSG_INTL_DURATION_NOT_INTEGER, 1, JSEXN_RANGEERR, "{0} isn't a valid duration value because it isn't an integer")
+MSG_DEF(JSMSG_INTL_DURATION_INVALID_SIGN, 0, JSEXN_RANGEERR, "duration elements must have the same sign")
+MSG_DEF(JSMSG_INTL_DURATION_INVALID_LIMIT, 0, JSEXN_RANGEERR, "duration elements must be below valid limits")
+MSG_DEF(JSMSG_INTL_DURATION_MISSING_UNIT, 0, JSEXN_TYPEERR, "Duration-like objects must have at least one duration unit")
+MSG_DEF(JSMSG_INTL_DURATION_UNEXPECTED_STRING, 0, JSEXN_RANGEERR, "duration can't be a string")
+MSG_DEF(JSMSG_INVALID_FORMAT_OPTIONS,  1, JSEXN_TYPEERR, "can't format {0} using the requested options")
 
 // RegExp
 MSG_DEF(JSMSG_BAD_CLASS_RANGE,         0, JSEXN_SYNTAXERR, "invalid range in character class")
@@ -675,6 +687,7 @@ MSG_DEF(JSMSG_INCOMPATIBLE_REGEXP_GETTER,  2, JSEXN_TYPEERR, "RegExp.prototype.{
 MSG_DEF(JSMSG_INVALID_CLASS_SET_OP,        0, JSEXN_SYNTAXERR, "invalid class set operation in regular expression")
 MSG_DEF(JSMSG_INVALID_CHAR_IN_CLASS,       0, JSEXN_SYNTAXERR, "invalid character in class in regular expression")
 MSG_DEF(JSMSG_NEGATED_CLASS_WITH_STR,      0, JSEXN_SYNTAXERR, "negated character class with strings in regular expression")
+MSG_DEF(JSMSG_MULTIPLE_FLAG_DASHES,        0, JSEXN_SYNTAXERR, "multiple dashes in flag group")
 
 // Typed object
 MSG_DEF(JSMSG_TYPEDOBJECT_SETTING_IMMUTABLE, 0, JSEXN_ERR, "setting immutable field")
@@ -733,6 +746,7 @@ MSG_DEF(JSMSG_SYMBOL_TO_NUMBER,        0, JSEXN_TYPEERR, "can't convert symbol t
 // Atomics and futexes
 MSG_DEF(JSMSG_ATOMICS_BAD_ARRAY,         0, JSEXN_TYPEERR, "invalid array type for the operation")
 MSG_DEF(JSMSG_ATOMICS_WAIT_NOT_ALLOWED,  0, JSEXN_TYPEERR, "waiting is not allowed on this thread")
+MSG_DEF(JSMSG_ATOMICS_PAUSE_BAD_COUNT,   0, JSEXN_TYPEERR, "Atomics.pause called with non-integral Number")
 
 // XPConnect wrappers and DOM bindings
 MSG_DEF(JSMSG_CANT_SET_INTERPOSED,       1, JSEXN_TYPEERR, "unable to set interposed data property '{0}'")
@@ -740,7 +754,7 @@ MSG_DEF(JSMSG_CANT_DEFINE_WINDOW_ELEMENT, 0, JSEXN_TYPEERR, "can't define elemen
 MSG_DEF(JSMSG_CANT_DELETE_WINDOW_ELEMENT, 0, JSEXN_TYPEERR, "can't delete elements from a Window object")
 MSG_DEF(JSMSG_CANT_DEFINE_WINDOW_NAMED_PROPERTY, 1, JSEXN_TYPEERR, "can't define property {0} on window's named properties object")
 MSG_DEF(JSMSG_CANT_DELETE_WINDOW_NAMED_PROPERTY, 1, JSEXN_TYPEERR, "can't delete property {0} from window's named properties object")
-MSG_DEF(JSMSG_CANT_PREVENT_EXTENSIONS,   0, JSEXN_TYPEERR, "can't prevent extensions on this proxy object")
+MSG_DEF(JSMSG_CANT_PREVENT_EXTENSIONS,   0, JSEXN_TYPEERR, "can't prevent extensions on this object")
 MSG_DEF(JSMSG_CANT_DEFINE_WINDOW_NC,     0, JSEXN_TYPEERR, "can't define non-configurable property on WindowProxy")
 MSG_DEF(JSMSG_NO_NAMED_SETTER,           2, JSEXN_TYPEERR, "{0} doesn't have a named property setter for '{1}'")
 MSG_DEF(JSMSG_NO_INDEXED_SETTER,         2, JSEXN_TYPEERR, "{0} doesn't have an indexed property setter for '{1}'")
@@ -966,6 +980,8 @@ MSG_DEF(JSMSG_TEMPORAL_PARSER_INVALID_UTC_DESIGNATOR_WITHOUT_NAME, 0, JSEXN_RANG
 MSG_DEF(JSMSG_TEMPORAL_PARSER_MONTH_DAY_CALENDAR_NOT_ISO8601, 0, JSEXN_RANGEERR, "Month-Day formats only support the \"iso8601\" calendar")
 MSG_DEF(JSMSG_TEMPORAL_PARSER_YEAR_MONTH_CALENDAR_NOT_ISO8601, 0, JSEXN_RANGEERR, "Year-Month formats only support the \"iso8601\" calendar")
 MSG_DEF(JSMSG_TEMPORAL_PARSER_INVALID_SUBMINUTE_TIMEZONE, 0, JSEXN_RANGEERR, "time zone offset must not contain seconds precision")
+MSG_DEF(JSMSG_TEMPORAL_PARSER_INCONSISTENT_DATE_SEPARATOR, 0, JSEXN_RANGEERR, "date separator '-' must be consistent")
+MSG_DEF(JSMSG_TEMPORAL_PARSER_INCONSISTENT_TIME_SEPARATOR, 0, JSEXN_RANGEERR, "time separator ':' must be consistent")
 
 // Explicit Resource Management
 
@@ -974,5 +990,22 @@ MSG_DEF(JSMSG_ERROR_WAS_SUPPRESSED, 0, IF_EXPLICIT_RESOURCE_MANAGEMENT(JSEXN_SUP
 
 // DisposableStack
 MSG_DEF(JSMSG_DISPOSABLE_STACK_DISPOSED, 0, JSEXN_REFERENCEERR, "DisposableStack has already been disposed")
+
+// Iterator.range
+MSG_DEF(JSMSG_ITERATOR_RANGE_INVALID_START, 0, JSEXN_TYPEERR, "The 'start' argument must be a number or BigInt")
+MSG_DEF(JSMSG_ITERATOR_RANGE_INVALID_START_RANGEERR, 0, JSEXN_RANGEERR, "The 'start' argument cannot be NaN")
+MSG_DEF(JSMSG_ITERATOR_RANGE_INVALID_END_RANGEERR, 0, JSEXN_RANGEERR, "The 'end' argument cannot be NaN")
+MSG_DEF(JSMSG_ITERATOR_RANGE_INVALID_END, 0, JSEXN_TYPEERR, "The 'end' argument must be a number or BigInt")
+MSG_DEF(JSMSG_ITERATOR_RANGE_START_INFINITY, 0, JSEXN_RANGEERR, "The 'start' argument must be a finite number")
+MSG_DEF(JSMSG_ITERATOR_RANGE_STEP_NAN, 0, JSEXN_RANGEERR, "The 'step' argument must not be NaN")
+MSG_DEF(JSMSG_ITERATOR_RANGE_STEP_NOT_NUMBER, 0, JSEXN_TYPEERR, "The 'step' argument must be a number")
+MSG_DEF(JSMSG_ITERATOR_RANGE_STEP_NOT_FINITE, 0, JSEXN_RANGEERR, "The 'step' argument must be a finite number")
+MSG_DEF(JSMSG_ITERATOR_RANGE_STEP_ZERO, 0, JSEXN_RANGEERR, "The 'step' argument must not be zero when 'start' is not equal to 'end'")
+MSG_DEF(JSMSG_ITERATOR_RANGE_INVALID_STEP, 0, JSEXN_TYPEERR, "The 'step' or options argument must be a valid number, BigInt, or an Object with valid properties")
+MSG_DEF(JSMSG_ITERATOR_RANGE_STEP_NOT_BIGINT, 0, JSEXN_TYPEERR, "The 'step' argument must be a BigInt when iterating over BigInt ranges")
+
+// Math.sumPrecise
+MSG_DEF(JSMSG_SUMPRECISE_TOO_MANY_VALUES, 0, JSEXN_RANGEERR, "too many values passed to Math.sumPrecise")
+MSG_DEF(JSMSG_SUMPRECISE_EXPECTED_NUMBER, 0, JSEXN_TYPEERR, "values passed to Math.sumPrecise must be numbers")
 
 //clang-format on

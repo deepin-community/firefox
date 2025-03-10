@@ -16,3 +16,10 @@ all-tabs-menu-close-duplicate-tabs =
     .label = 重複タブを閉じる
 all-tabs-menu-close-all-duplicate-tabs =
     .label = すべての重複タブを閉じる
+all-tabs-menu-synced-tabs =
+    .label = 他の端末からのタブ
+all-tabs-menu-current-window-header = 現在のウィンドウ
+# "Show all" is for showing all open groups as well as saved groups. Initially,
+# we only show up to five of these groups.
+all-tabs-menu-tab-groups-show-all =
+    .label = すべて表示

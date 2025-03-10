@@ -30,4 +30,13 @@ webext-perms-description-sessions = Truy cập các thẻ đã đóng gần đâ
 webext-perms-description-tabs = Truy cập các thẻ trên trình duyệt
 webext-perms-description-tabHide = Ẩn và hiển thỉ các thẻ trình duyệt
 webext-perms-description-topSites = Truy cập lịch sử duyệt web
+webext-perms-description-trialML = Tải xuống và chạy các mô hình AI trên thiết bị của bạn
+webext-perms-description-userScripts = Cho phép các tập lệnh của bên thứ ba chưa được xác minh truy cập vào dữ liệu của bạn
 webext-perms-description-webNavigation = Truy cập hoạt động của trình duyệt trong khi điều hướng
+
+## The userScripts permission includes an additional explanation that is
+## displayed prominently near the usual permission description.
+
+webext-perms-extra-warning-userScripts-long = Các tập lệnh chưa được xác minh có thể gây ra rủi ro về bảo mật và quyền riêng tư, chẳng hạn như chạy mã độc hại hoặc theo dõi hoạt động của trang web. Chỉ chạy tập lệnh từ tiện ích mở rộng hoặc nguồn mà bạn tin cậy.
+# A shorter warning is displayed in UI surfaces with little room, such as a permission prompt.
+webext-perms-extra-warning-userScripts-short = Các tập lệnh chưa được xác minh có thể gây ra rủi ro về bảo mật và quyền riêng tư. Chỉ chạy tập lệnh từ tiện ích mở rộng hoặc nguồn mà bạn tin cậy.

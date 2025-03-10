@@ -155,18 +155,24 @@ main-context-menu-save-link-to-pocket =
 
 main-context-menu-copy-email =
     .label = E-mejlowu adresu kopěrować
-    .accesskey = E
+    .accesskey = a
 main-context-menu-copy-phone =
     .label = Telefonowe čisło kopěrować
     .accesskey = T
 main-context-menu-copy-link-simple =
     .label = Wotkaz kopěrować
-    .accesskey = z
+    .accesskey = a
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Čisty wotkaz kopěrować
+    .accesskey = a
 # This command copies the link, removing additional
 # query parameters used to track users across sites.
 main-context-menu-strip-on-share-link =
     .label = Wotkaz bjez slědowanja sydła kopěrować
-    .accesskey = o
+    .accesskey = b
 
 ## Media (video/audio) controls
 ##
@@ -243,7 +249,7 @@ main-context-menu-image-copy =
     .accesskey = r
 main-context-menu-image-copy-link =
     .label = Wobrazowy wotkaz kopěrować
-    .accesskey = b
+    .accesskey = r
 main-context-menu-video-copy-link =
     .label = Widejowotkaz kopěrować
     .accesskey = i
@@ -290,9 +296,7 @@ main-context-menu-send-to-device =
     .label = Stronu na grat pósłać
     .accesskey = S
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Składowane přizjewjenje wužiwać

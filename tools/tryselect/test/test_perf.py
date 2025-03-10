@@ -33,7 +33,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 FTG_SAMPLE_PATH = pathlib.Path(here, "full-task-graph-perf-test.json")
 
 TASKS = [
-    "test-linux1804-64-shippable-qr/opt-browsertime-benchmark-firefox-motionmark-animometer",
+    "test-linux1804-64-shippable-qr/opt-browsertime-benchmark-firefox-motionmark-animometer-1-3",
     "test-linux1804-64-shippable-qr/opt-browsertime-benchmark-wasm-firefox-wasm-godot-optimizing",
     "test-linux1804-64-shippable-qr/opt-browsertime-benchmark-firefox-webaudio",
     "test-linux1804-64-shippable-qr/opt-browsertime-benchmark-firefox-speedometer",
@@ -48,7 +48,7 @@ TASKS = [
     "test-linux1804-64-shippable-qr/opt-browsertime-benchmark-firefox-assorted-dom",
     "test-linux1804-64-shippable-qr/opt-browsertime-benchmark-firefox-stylebench",
     "test-linux1804-64-shippable-qr/opt-browsertime-benchmark-wasm-firefox-wasm-misc-baseline",
-    "test-linux1804-64-shippable-qr/opt-browsertime-benchmark-firefox-motionmark-htmlsuite",
+    "test-linux1804-64-shippable-qr/opt-browsertime-benchmark-firefox-motionmark-htmlsuite-1-3",
     "test-linux1804-64-shippable-qr/opt-browsertime-benchmark-firefox-unity-webgl",
     "test-linux1804-64-shippable-qr/opt-browsertime-benchmark-wasm-firefox-wasm-godot",
     "test-linux1804-64-shippable-qr/opt-browsertime-amazon",
@@ -178,6 +178,27 @@ TEST_CATEGORIES = {
         "tasks": [],
         "description": "",
     },
+    "Machine Learning": {
+        "query": {
+            Suites.PERFTEST.value: ["'perftest '-ml-"],
+        },
+        "suites": [Suites.PERFTEST.value],
+        "platform-restrictions": [
+            Platforms.DESKTOP.value,
+            Platforms.LINUX.value,
+            Platforms.MACOSX.value,
+            Platforms.WINDOWS.value,
+        ],
+        "app-restrictions": {
+            Suites.PERFTEST.value: [
+                Apps.FIREFOX.value,
+            ],
+        },
+        "tasks": [],
+        "description": (
+            "A set of tests used to test machine learning performance in Firefox."
+        ),
+    },
 }
 
 
@@ -204,7 +225,7 @@ def setup_perfparser():
         # except for when there are requested apps/variants/platforms
         (
             {},
-            58,
+            66,
             {
                 "Benchmarks desktop": {
                     "raptor": [
@@ -252,6 +273,13 @@ def setup_perfparser():
                         "!swr",
                     ],
                 },
+                "Machine Learning desktop firefox": {
+                    "perftest": [
+                        "'perftest '-ml-",
+                        "!android",
+                        "!chrom !geckoview !fenix !safari !m-car !safari-tp",
+                    ],
+                },
             },
             [
                 "Responsiveness android-p2 geckoview",
@@ -259,7 +287,7 @@ def setup_perfparser():
         ),  # Default settings
         (
             {"live_sites": True},
-            66,
+            74,
             {
                 "Benchmarks desktop": {
                     "raptor": [
@@ -310,7 +338,7 @@ def setup_perfparser():
         ),
         (
             {"live_sites": True, "safari": True},
-            72,
+            80,
             {
                 "Benchmarks desktop": {
                     "raptor": [
@@ -350,7 +378,7 @@ def setup_perfparser():
         ),
         (
             {"safari-tp": True},
-            58,
+            66,
             {
                 "Benchmarks desktop": {
                     "raptor": [
@@ -387,7 +415,7 @@ def setup_perfparser():
         ),
         (
             {"live_sites": True, "chrome": True},
-            90,
+            98,
             {
                 "Benchmarks desktop": {
                     "raptor": [
@@ -421,7 +449,7 @@ def setup_perfparser():
         ),
         (
             {"android": True},
-            88,
+            96,
             {
                 "Benchmarks desktop": {
                     "raptor": [
@@ -436,10 +464,10 @@ def setup_perfparser():
                         "!safari-tp",
                     ],
                 },
-                "Responsiveness android-a51 geckoview": {
+                "Responsiveness android-a55 geckoview": {
                     "raptor": [
                         "'browsertime 'responsive",
-                        "'android 'a51 'shippable 'aarch64",
+                        "'android 'a55 'shippable 'aarch64",
                         "'geckoview",
                         "!nofis",
                         "!live",
@@ -448,13 +476,13 @@ def setup_perfparser():
                 },
             },
             [
-                "Responsiveness android-a51 chrome-m",
+                "Responsiveness android-a55 chrome-m",
                 "Firefox Pageload android",
             ],
         ),
         (
             {"android": True, "chrome": True},
-            118,
+            126,
             {
                 "Benchmarks desktop": {
                     "raptor": [
@@ -468,10 +496,10 @@ def setup_perfparser():
                         "!safari-tp",
                     ],
                 },
-                "Responsiveness android-a51 chrome-m": {
+                "Responsiveness android-a55 chrome-m": {
                     "raptor": [
                         "'browsertime 'responsive",
-                        "'android 'a51 'shippable 'aarch64",
+                        "'android 'a55 'shippable 'aarch64",
                         "'chrome-m",
                         "!nofis",
                         "!live",
@@ -483,7 +511,7 @@ def setup_perfparser():
         ),
         (
             {"android": True, "chrome": True, "profile": True},
-            156,
+            164,
             {
                 "Benchmarks desktop": {
                     "raptor": [
@@ -513,12 +541,12 @@ def setup_perfparser():
         ),
         (
             {"android": True, "fenix": True},
-            88,
+            96,
             {
-                "Pageload android-a51": {
+                "Pageload android-a55": {
                     "raptor": [
                         "'browsertime 'tp6",
-                        "'android 'a51 'shippable 'aarch64",
+                        "'android 'a55 'shippable 'aarch64",
                         "!nofis",
                         "!live",
                         "!profil",
@@ -528,10 +556,10 @@ def setup_perfparser():
                         "!safari-tp",
                     ]
                 },
-                "Pageload android-a51 fenix": {
+                "Pageload android-a55 fenix": {
                     "raptor": [
                         "'browsertime 'tp6",
-                        "'android 'a51 'shippable 'aarch64",
+                        "'android 'a55 'shippable 'aarch64",
                         "'fenix",
                         "!nofis",
                         "!live",
@@ -549,7 +577,7 @@ def setup_perfparser():
         # including the desktop catgeory
         (
             {"requested_platforms": ["windows"]},
-            14,
+            16,
             {
                 "Benchmarks windows firefox": {
                     "raptor": [
@@ -594,7 +622,7 @@ def setup_perfparser():
                 "Pageload android fenix": {
                     "raptor": [
                         "'browsertime 'tp6",
-                        "'android 'a51 'shippable 'aarch64",
+                        "'android 'a55 'shippable 'aarch64",
                         "'fenix",
                         "!nofis",
                         "!live",
@@ -616,7 +644,7 @@ def setup_perfparser():
                 "Benchmarks android geckoview": {
                     "raptor": [
                         "'browsertime 'benchmark",
-                        "'android 'a51 'shippable 'aarch64",
+                        "'android 'a55 'shippable 'aarch64",
                         "'geckoview",
                         "!nofis",
                         "!live",
@@ -626,7 +654,7 @@ def setup_perfparser():
                 "Pageload android fenix": {
                     "raptor": [
                         "'browsertime 'tp6",
-                        "'android 'a51 'shippable 'aarch64",
+                        "'android 'a55 'shippable 'aarch64",
                         "'fenix",
                         "!nofis",
                         "!live",
@@ -650,19 +678,19 @@ def setup_perfparser():
             },
             32,
             {
-                "Pageload android-a51 fenix": {
+                "Pageload android-a55 fenix": {
                     "raptor": [
                         "'browsertime 'tp6",
-                        "'android 'a51 'shippable 'aarch64",
+                        "'android 'a55 'shippable 'aarch64",
                         "'fenix",
                         "!live",
                         "!profil",
                     ],
                 },
-                "Pageload android-a51 fenix fission": {
+                "Pageload android-a55 fenix fission": {
                     "raptor": [
                         "'browsertime 'tp6",
-                        "'android 'a51 'shippable 'aarch64",
+                        "'android 'a55 'shippable 'aarch64",
                         "'fenix",
                         "'nofis",
                         "!live",
@@ -672,7 +700,7 @@ def setup_perfparser():
                 "Pageload (essential) android fenix fission": {
                     "raptor": [
                         "'browsertime 'tp6 'essential",
-                        "'android 'a51 'shippable 'aarch64",
+                        "'android 'a55 'shippable 'aarch64",
                         "'fenix",
                         "'nofis",
                         "!live",
@@ -696,28 +724,28 @@ def setup_perfparser():
             },
             40,
             {
-                "Pageload android-a51 fenix": {
+                "Pageload android-a55 fenix": {
                     "raptor": [
                         "'browsertime 'tp6",
-                        "'android 'a51 'shippable 'aarch64",
+                        "'android 'a55 'shippable 'aarch64",
                         "'fenix",
                         "!profil",
                     ],
                 },
-                "Pageload android-a51 fenix fission": {
+                "Pageload android-a55 fenix fission": {
                     "raptor": [
                         "'browsertime 'tp6",
-                        "'android 'a51 'shippable 'aarch64",
+                        "'android 'a55 'shippable 'aarch64",
                         "'fenix",
                         "'nofis",
                         "!live",
                         "!profil",
                     ],
                 },
-                "Pageload android-a51 fenix live-sites": {
+                "Pageload android-a55 fenix live-sites": {
                     "raptor": [
                         "'browsertime 'tp6",
-                        "'android 'a51 'shippable 'aarch64",
+                        "'android 'a55 'shippable 'aarch64",
                         "'fenix",
                         "'live",
                         "!nofis",
@@ -727,7 +755,7 @@ def setup_perfparser():
                 "Pageload (essential) android fenix fission": {
                     "raptor": [
                         "'browsertime 'tp6 'essential",
-                        "'android 'a51 'shippable 'aarch64",
+                        "'android 'a55 'shippable 'aarch64",
                         "'fenix",
                         "'nofis",
                         "!live",
@@ -737,7 +765,7 @@ def setup_perfparser():
                 "Pageload android fenix fission+live-sites": {
                     "raptor": [
                         "'browsertime 'tp6",
-                        "'android 'a51 'shippable 'aarch64",
+                        "'android 'a55 'shippable 'aarch64",
                         "'fenix",
                         "'nofis",
                         "'live",
@@ -759,7 +787,7 @@ def setup_perfparser():
                 "requested_variants": ["no-fission"],
                 "requested_platforms": ["windows"],
             },
-            14,
+            16,
             {
                 "Responsiveness windows firefox": {
                     "raptor": [
@@ -781,7 +809,7 @@ def setup_perfparser():
                 "requested_platforms": ["windows"],
                 "android": True,
             },
-            16,
+            18,
             {
                 "Responsiveness windows firefox": {
                     "raptor": [
@@ -821,6 +849,16 @@ def setup_perfparser():
                         "!-32 !10-64 'windows 'shippable",
                         "!profil",
                         "!swr",
+                    ],
+                },
+                "Machine Learning windows": {
+                    "perftest": [
+                        "'perftest '-ml-",
+                        "'windows",
+                        "!chrom",
+                        "!safari",
+                        "!m-car",
+                        "!safari-tp",
                     ],
                 },
             },
@@ -943,7 +981,7 @@ def test_category_expansion_with_non_pgo_flag(category_options, call_counts):
             ),
         ),
         (
-            {"show_all": True},
+            {"full": True},
             [1, 2, 2, 8, 2, 1],
             0,
             (
@@ -957,7 +995,7 @@ def test_category_expansion_with_non_pgo_flag(category_options, call_counts):
             ),
         ),
         (
-            {"show_all": True, "query": "'shippable !32 speedometer 'firefox"},
+            {"full": True, "query": "'shippable !32 speedometer 'firefox"},
             [1, 2, 2, 8, 2, 1],
             0,
             (
@@ -1022,7 +1060,7 @@ def test_category_expansion_with_non_pgo_flag(category_options, call_counts):
             ),
         ),
         (
-            {"tests": ["amazon"], "show_all": True},
+            {"tests": ["amazon"], "full": True},
             [1, 2, 2, 8, 2, 1],
             0,
             (
@@ -1436,7 +1474,7 @@ def test_save_revision_treeherder(args, call_counts, exists_cache_file):
         ),
         (
             MAX_PERF_TASKS,
-            {"show_all": True},
+            {"full": True},
             [9, 0, 0, 8],
             (
                 "For more information on the performance tests, see our "
@@ -1447,7 +1485,7 @@ def test_save_revision_treeherder(args, call_counts, exists_cache_file):
         (
             int((MAX_PERF_TASKS + 2) / 2),
             {
-                "show_all": True,
+                "full": True,
                 "try_config_params": {"try_task_config": {"rebuild": 2}},
             },
             [1, 0, 0, 1],
@@ -1509,7 +1547,7 @@ def test_max_perf_tasks(
     "try_config, selected_tasks, expected_try_config",
     [
         (
-            {"use-artifact-builds": True},
+            {"use-artifact-builds": True, "disable-pgo": True},
             ["some-android-task"],
             {"use-artifact-builds": False},
         ),
@@ -1524,7 +1562,7 @@ def test_max_perf_tasks(
             {"use-artifact-builds": False},
         ),
         (
-            {"use-artifact-builds": True},
+            {"use-artifact-builds": True, "disable-pgo": True},
             ["some-desktop-task", "some-android-task"],
             {"use-artifact-builds": False},
         ),
@@ -1552,7 +1590,7 @@ def test_build_category_description():
     "options, call_count",
     [
         ({}, [1, 1, 2]),
-        ({"show_all": True}, [0, 0, 1]),
+        ({"full": True}, [0, 0, 1]),
     ],
 )
 def test_preview_description(options, call_count):
@@ -1607,6 +1645,9 @@ def test_preview_description(options, call_count):
         (["awsy", "tp5n", "amazon"], 4, 3),
         (["awsy", "tp5n", "xperf"], 2, 3),
         (["non-existent"], 0, 0),
+        (["perftest_finder_ml_engine_perf.js"], 1, 1),
+        (["perftest/test/finder/path"], 1, 1),
+        (["perftest/test/finder/path/perftest_finder_ml_engine_perf.js"], 1, 1),
     ],
 )
 def test_test_selection(tests, tasks_found, categories_produced):

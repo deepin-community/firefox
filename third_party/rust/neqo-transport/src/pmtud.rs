@@ -88,7 +88,7 @@ impl Pmtud {
 
     /// Checks whether the PMTUD raise timer should be fired, and does so if needed.
     pub fn maybe_fire_raise_timer(&mut self, now: Instant) {
-        if self.probe_state == Probe::NotNeeded && self.raise_timer.map_or(false, |t| now >= t) {
+        if self.probe_state == Probe::NotNeeded && self.raise_timer.is_some_and(|t| now >= t) {
             qdebug!("PMTUD raise timer fired");
             self.raise_timer = None;
             self.start();
@@ -126,7 +126,6 @@ impl Pmtud {
         // seems OK to burn one byte here to simply include a PING.
         builder.encode_varint(FRAME_TYPE_PING);
         stats.frame_tx.ping += 1;
-        stats.frame_tx.all += 1;
         stats.pmtud_tx += 1;
         self.probe_count += 1;
         self.probe_state = Probe::Sent;
@@ -383,7 +382,7 @@ mod tests {
         let stats_before = stats.clone();
 
         // Fake a packet number, so the builder logic works.
-        let mut builder = PacketBuilder::short(Encoder::new(), false, []);
+        let mut builder = PacketBuilder::short(Encoder::new(), false, None::<&[u8]>);
         let pn = prot.next_pn();
         builder.pn(pn, 4);
         builder.set_initial_limit(&SendProfile::new_limited(pmtud.plpmtu()), 16, pmtud);

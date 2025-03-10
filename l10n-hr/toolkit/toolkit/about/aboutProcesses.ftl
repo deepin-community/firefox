@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # Page title
-about-processes-title = Upravitelj procesima
+about-processes-title = Upravljač procesa
 # The Actions column
 about-processes-column-action =
     .title = Radnje
@@ -24,6 +24,7 @@ about-processes-column-cpu-total = CPU
 ##    $pid (String) The process id of this process, assigned by the OS.
 
 about-processes-browser-process = { -brand-short-name } ({ $pid })
+about-processes-web-process = Dijeljeni web proces ({ $pid })
 about-processes-file-process = Datoteke ({ $pid })
 about-processes-extension-process = Proširenja ({ $pid })
 about-processes-privilegedabout-process = Informacije o stranicama ({ $pid })
@@ -33,6 +34,13 @@ about-processes-gmp-plugin-process = Gecko medijski dodaci ({ $pid })
 about-processes-gpu-process = GPU ({ $pid })
 about-processes-vr-process = VR ({ $pid })
 about-processes-socket-process = Mreža ({ $pid })
+about-processes-utility-process = Uslužni program ({ $pid })
+about-processes-inference-process = Zaključivanje ({ $pid })
+# Unknown process names
+# Variables:
+#    $pid (String) The process id of this process, assigned by the OS.
+#    $type (String) The raw type for this process.
+about-processes-unknown-process = Drugo: { $type } ({ $pid })
 
 ## Isolated process names
 ## Variables:
@@ -87,6 +95,8 @@ about-processes-cpu-almost-idle = < 0,1 %
 ##    $deltaUnit (String) The unit in which to display $delta. See the definitions
 ##                        of `memory-unit-*`.
 
+# Special case: no change.
+about-processes-total-memory-size-no-change = { NUMBER($total, maximumFractionDigits: 0) }{ $totalUnit }
 
 ## Duration units
 

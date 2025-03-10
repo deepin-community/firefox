@@ -220,6 +220,8 @@ shortcuts-duplicate-warning-message2 =
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Ginagamit na ng { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] Magpakita ng { $numberToShow } Pa
@@ -338,6 +340,10 @@ addon-detail-update-check-label = Maghanap ng mga Update
 install-update-button = I-update
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Pinagpayagan sa mga private window
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Pinagpayagan sa mga private window
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -355,6 +361,8 @@ addon-detail-private-browsing-disallow = Huwag Payagan
 addon-badge-recommended2 =
     .title = Inirerekomenda lamang ng { -brand-product-name } ang mga extension na pasok sa aming mga pamantayan pagdating sa seguridad at performance
     .aria-label = { addon-badge-recommended2.title }
+addon-badge-recommended3 =
+    .title = Inirerekomenda lamang ng { -brand-product-name } ang mga extension na pasok sa aming mga pamantayan pagdating sa seguridad at performance
 
 ##
 
@@ -390,7 +398,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = Ang { $name } ay di akma para sa { -brand-short-name } { $version }.
 # Variables:
 #   $version (string) - Application version.

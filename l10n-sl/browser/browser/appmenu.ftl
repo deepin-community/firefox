@@ -108,8 +108,11 @@ appmenu-fxa-sync-and-save-data2 = Sinhroniziraj in shrani podatke
 appmenu-fxa-signed-in-label = Prijava
 appmenu-fxa-setup-sync =
     .label = Vklopi sinhronizacijo …
+appmenu-fxa-setup-sync-new = Vklopi
 appmenuitem-save-page =
     .label = Shrani stran kot …
+appmenuitem-fxa-sync-off-title = Sinhronizacija je izklopljena
+appmenuitem-fxa-sync-off-description = Zavarujte svoje zaznamke, gesla in druge podatke ter jih imejte povsod pri roki.
 
 ## What's New panel in App menu.
 
@@ -238,7 +241,7 @@ appmenu-help-share-ideas =
     .label = Sporoči ideje in povratne informacije …
     .accesskey = D
 appmenu-help-switch-device =
-    .label = Preklapljanje na novo napravo
+    .label = Prehod na novo napravo
 
 ## appmenu-help-enter-troubleshoot-mode and appmenu-help-exit-troubleshoot-mode
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
@@ -277,5 +280,21 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Prejemajte opozorila o krajah podatkov
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Zakrijte svoj pravi e-poštni naslov in telefonsko številko
+appmenuitem-services-relay-description = Odpri pregledno ploščo e-poštnih mask
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Zaščitite svojo spletno dejavnost
+appmenu-services-header = Moje storitve
+appmenu-other-protection-header = Preskusite druga orodja { -vendor-short-name(sklon: "rodilnik") } za zaščito:
+
+## Profiles panel
+
+appmenu-profiles = Profili
+appmenu-other-profiles = Drugi profili
+appmenu-manage-profiles =
+    .label = Upravljanje profilov
+appmenu-create-profile =
+    .label = Nov profil
+appmenu-edit-profile =
+    .aria-label = Urejanje profila
+appmenu-profiles-2 =
+    .label = Profili

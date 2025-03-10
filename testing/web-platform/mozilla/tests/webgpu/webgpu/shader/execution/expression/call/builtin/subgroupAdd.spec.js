@@ -1,7 +1,7 @@
 /**
 * AUTO-GENERATED - DO NOT EDIT. Source: https://github.com/gpuweb/cts
 **/export const description = `
-Execution tests for subgroupAdd and subgroupExclusiveAdd
+Execution tests for subgroupAdd, subgroupExclusiveAdd, and subgroupInclusiveAdd
 
 Note: There is a lack of portability for non-uniform execution so these tests
 restrict themselves to uniform control flow.
@@ -24,6 +24,7 @@ import {
 import { FP } from '../../../../../util/floating_point.js';
 
 import {
+  kDataSentinel,
   kNumCases,
   kStride,
   kWGSizes,
@@ -38,7 +39,7 @@ const kIdentity = 0;
 
 const kDataTypes = objectsToRecord(kConcreteNumericScalarsAndVectors);
 
-const kOperations = ['subgroupAdd', 'subgroupExclusiveAdd'];
+const kOperations = ['subgroupAdd', 'subgroupExclusiveAdd', 'subgroupInclusiveAdd'];
 
 g.test('fp_accuracy').
 desc(
@@ -64,7 +65,6 @@ beforeAllSubcases((t) => {
   const features = ['subgroups'];
   if (t.params.type === 'f16') {
     features.push('shader-f16');
-    features.push('subgroups-f16');
   }
   t.selectDeviceOrSkipTestCase(features);
 }).
@@ -86,17 +86,20 @@ fn(async (t) => {
  * Expected results:
  * - subgroupAdd: each invocation should have result equal to real subgroup size
  * - subgroupExclusiveAdd: each invocation should have result equal to its subgroup invocation id
+ * - subgroupInclusiveAdd: each invocation should be equal to the result of subgroupExclusiveAdd plus the fill value
  * @param metadata An array containing actual subgroup size per invocation followed by
  *                 subgroup invocation id per invocation
  * @param output An array of additions
  * @param type The data type
  * @param operation Type of addition
+ * @param expectedfillValue The original value used to fill the test array
  */
 function checkAddition(
 metadata,
 output,
 type,
-operation)
+operation,
+expectedfillValue)
 {
   let numEles = 1;
   if (type instanceof VectorType) {
@@ -105,7 +108,11 @@ operation)
   const scalarTy = scalarTypeOf(type);
   const expectedOffset = operation === 'subgroupAdd' ? 0 : metadata.length / 2;
   for (let i = 0; i < metadata.length / 2; i++) {
-    const expected = metadata[i + expectedOffset];
+    let expected = metadata[i + expectedOffset];
+    if (operation === 'subgroupInclusiveAdd') {
+      expected += expectedfillValue;
+    }
+
     for (let j = 0; j < numEles; j++) {
       let idx = i * numEles + j;
       const isOdd = idx & 0x1;
@@ -162,7 +169,6 @@ beforeAllSubcases((t) => {
   const type = kDataTypes[t.params.type];
   if (type.requiresF16()) {
     features.push('shader-f16');
-    features.push('subgroups-f16');
   }
   t.selectDeviceOrSkipTestCase(features);
 }).
@@ -175,7 +181,7 @@ fn(async (t) => {
   const scalarType = scalarTypeOf(type);
   let enables = 'enable subgroups;\n';
   if (type.requiresF16()) {
-    enables += 'enable f16;\nenable subgroups_f16;\n';
+    enables += 'enable f16;\n';
   }
 
   const wgThreads = t.params.wgSize[0] * t.params.wgSize[1] * t.params.wgSize[2];
@@ -217,8 +223,8 @@ fn main(
 
   outputs[lid] = ${t.params.operation}(inputs[lid]);
 }`;
-
-  let fillValue = 1;
+  const expectedFillValue = 1;
+  let fillValue = expectedFillValue;
   let numUints = wgThreads * numEles;
   if (scalarType === Type.f32) {
     fillValue = numberToFloatBits(1, kFloat32Format);
@@ -234,7 +240,7 @@ fn main(
     numUints,
     new Uint32Array([...iterRange(numUints, (x) => fillValue)]),
     (metadata, output) => {
-      return checkAddition(metadata, output, type, t.params.operation);
+      return checkAddition(metadata, output, type, t.params.operation, expectedFillValue);
     }
   );
 });
@@ -263,14 +269,15 @@ filter)
     const id = metadata[output.length + i];
     let expected = 0;
     if (filter(id, size)) {
-      const bound = operation === 'subgroupAdd' ? size : id;
+      const bound =
+      operation === 'subgroupInclusiveAdd' ? id + 1 : operation === 'subgroupAdd' ? size : id;
       for (let j = 0; j < bound; j++) {
         if (filter(j, size)) {
           expected += j;
         }
       }
     } else {
-      expected = 999;
+      expected = kDataSentinel;
     }
     if (expected !== output[i]) {
       return new Error(`Invocation ${i}: incorrect result
@@ -301,6 +308,9 @@ fn(async (t) => {
 
   const wgsl = `
 enable subgroups;
+
+diagnostic(off, subgroup_uniformity);
+diagnostic(off, subgroup_branching);
 
 @group(0) @binding(0)
 var<storage> input : array<u32>;

@@ -64,7 +64,7 @@ app-basics-os-theme = სისტემის იერსახე
 app-basics-rosetta = Rosetta-ს თარგმნილი
 app-basics-memory-use = გამოყენებული მეხსიერება
 app-basics-performance = წარმადობა
-app-basics-service-workers = დარეგისტრებული Service Worker-ები
+app-basics-service-workers = დარეგისტრებული Service Worker
 app-basics-third-party = გარეშე მოდულები
 app-basics-profiles = პროფილები
 app-basics-launcher-process-status = გამშვები პროცესი
@@ -200,10 +200,13 @@ media-cdm-capabilities = შესაძლებლობები
 # are not encrypted. It allows playback to start without having to wait for
 # license response, improving video start time and user experience.
 media-cdm-clear-lead = დაუშიფრავად დაწყება
+# We choose 2.2 as this is the version which the video provider usually want to have in order to stream 4K video securely
+# HDCP version https://w3c.github.io/encrypted-media/#idl-def-hdcpversion
+media-hdcp-22-compatible = HDCP 2.2 თავსებადობა
 
 ##
 
-intl-title = საერთაშორისობა და ენებზე მორგება
+intl-title = საერთაშორისობა და ენებისთვის მორგება
 intl-app-title = პროგრამის პარამეტრები
 intl-locales-requested = მოთხოვნილი ენები
 intl-locales-available = ხელმისაწვდომი ენები
@@ -211,7 +214,7 @@ intl-locales-supported = პროგრამის ენები
 intl-locales-default = ნაგულისხმევი ენა
 intl-os-title = საოპერაციო სისტემა
 intl-os-prefs-system-locales = სისტემის ენები
-intl-regional-prefs = რეგიონული პარამეტრები
+intl-regional-prefs = სამხარეო პარამეტრები
 
 ## Remote Debugging
 ##
@@ -279,6 +282,7 @@ try-newer-driver = შეზღუდულია თქვენი გრა�
 # there are no good translations, these are only used in about:support
 clear-type-parameters = ClearType პარამეტრები
 compositing = გამოსახულების დამუშავება
+support-font-determination = შრიფტის ჩვენების გასამართი მონაცემები
 hardware-h264 = აპარატურული H264 გაშიფვრა
 main-thread-no-omtc = მთავარი ნაკადი, OMTC-ს გარეშე
 yes = დიახ
@@ -331,7 +335,7 @@ gpu-device-reset = მოწყობილობის ხელახალი
 gpu-device-reset-button = მოწყობილობაზე პარამეტრების ჩამოყრის ამოქმედება
 uses-tiling = მოზაიკურად
 content-uses-tiling = მოზაიკურად (შიგთავსი)
-off-main-thread-paint-enabled = გენერირება ძირითადი ნაკადის მიღმა, ჩართულია
+off-main-thread-paint-enabled = გამოსახვა ძირითადი ნაკადის მიღმა მოქმედია
 off-main-thread-paint-worker-count = ძირითადი ნაკადის მიღმა გენერირების ათვლა
 target-frame-rate = კადრის სასურველი სიხშირე
 min-lib-versions = მოსალოდნელი მინიმალური ვერსია
@@ -340,6 +344,9 @@ has-seccomp-bpf = Seccomp-BPF (სისტემური გამოძახ
 has-seccomp-tsync = Seccomp ნაკადის სინქრონიზაცია
 has-user-namespaces = მომხმარებლის სახელის სივრცეები
 has-privileged-user-namespaces = მომხმარებლის სახელთა სივრცეები უპირატესობის მქონე პროცესებისთვის
+# Variables
+# $status (string) - Boolean value of hasUserNamespaces (should only be false when support-user-namespaces-unavailable is used)
+support-user-namespaces-unavailable = { $status } — ეს შესაძლებლობა არაა ნებადართული თქვენს სისტემაში. შეიძლება ზღუდავდეს უსაფრთხოების საშუალებებს, რომელთაც იყენებს { -brand-short-name }.
 can-sandbox-content = შიგთავსის პროცესის გამიჯვნა
 can-sandbox-media = მედიამოდულის გამიჯვნა
 content-sandbox-level = შიგთავსის პროცესის გამიჯვნის დონე
@@ -378,14 +385,14 @@ fission-status-enabled-by-user-pref = ჩართული მომხმა�
 fission-status-disabled-by-user-pref = გამორთული მომხმარებლის მიერ
 fission-status-disabled-by-e10s-other = E10s გამორთული
 fission-status-enabled-by-rollout = ჩართულია თანდათანობითი დანერგვით
-async-pan-zoom = ასინქრონული პანორამირება/ზომის ცვლილება
+async-pan-zoom = ასინქრონული გაშლა/ზომის ცვლა
 apz-none = არაა
-wheel-enabled = რგოლით შეყვანა ჩართულია
-touch-enabled = შეხებით შეტანა ჩართულია
+wheel-enabled = რგოლით შეყვანა მოქმედია
+touch-enabled = შეხებით შეტანა მოქმედია
 drag-enabled = გადაადგილების ზოლის გადატანა შესაძლებელია
-keyboard-enabled = კლავიატურა ჩართულია
-autoscroll-enabled = თვითგადაადგილება ჩართულია
-zooming-enabled = ორი თითით გლუვი მოახლოება და დაშორება ჩართულია
+keyboard-enabled = კლავიატურა მოქმედია
+autoscroll-enabled = თვითგადაადგილება მოქმედია
+zooming-enabled = ორი თითით გლუვი მოახლოება მოქმედია
 
 ## Variables
 ## $preferenceKey (string) - String ID of preference
@@ -408,6 +415,20 @@ support-printing-modified-settings = ამობეჭდვის შეცვ
 support-printing-prefs-name = სახელი
 support-printing-prefs-value = მნიშვნელობა
 
+## Remote Settings sections
+
+support-remote-settings-title = დაშორებული პარამეტრები
+support-remote-settings-status = მდგომარეობა
+support-remote-settings-status-ok = გამართული
+# Status when synchronization is not working.
+support-remote-settings-status-broken = გაუმართავი
+support-remote-settings-last-check = ბოლო შემოწმება
+support-remote-settings-local-timestamp = ადგილობრივი დროის ნიშნული
+support-remote-settings-sync-history = ისტორია
+support-remote-settings-sync-history-status = მდგომარეობა
+support-remote-settings-sync-history-datetime = თარიღი
+support-remote-settings-sync-history-infos = ცნობები
+
 ## Normandy sections
 
 support-remote-experiments-title = დაშორებული კვლევები
@@ -424,3 +445,15 @@ pointing-device-mouse = თაგვი
 pointing-device-touchscreen = ხელშესახები ეკრანი
 pointing-device-pen-digitizer = კალმიანი პლანშეტი
 pointing-device-none = მიმთითებელი მოწყობილობა არა
+
+## Content Analysis (DLP)
+
+# DLP stands for Data Loss Prevention, an industry term for external software
+# that enterprises can set up to prevent sensitive data from being transferred
+# to external websites.
+content-analysis-title = შიგთავსის გარჩევა (DLP)
+content-analysis-active = მოქმედი
+content-analysis-connected-to-agent = მიერთებულია სამეთვალყურეო
+content-analysis-agent-path = სამეთვალყურეოს მდებარეობა
+content-analysis-agent-failed-signature-verification = სამეთვალყურეოს უშედეგო დამოწმება
+content-analysis-request-count = მოთხოვნის რაოდენობა

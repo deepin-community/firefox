@@ -201,7 +201,6 @@ cfr-cbh-confirm-button = Rifiuta banner per i cookie
     .accesskey = R
 cfr-cbh-dismiss-button = Non adesso
     .accesskey = N
-
 cookie-banner-blocker-onboarding-header = { -brand-short-name } ha appena rifiutato un banner per i cookie
 cookie-banner-blocker-onboarding-body = Meno distrazioni, meno cookie in grado di tracciarti su questo sito.
 cookie-banner-blocker-onboarding-learn-more = Ulteriori informazioni
@@ -243,6 +242,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Crea un account
 device-migration-fxa-spotlight-getting-new-device-header-2 = Nuovo dispositivo nel tuo futuro?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Segui alcuni semplici passaggi per portare con te segnalibri, cronologia e password quando inizi a utilizzare un nuovo dispositivo.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Come posso salvare i miei dati
+device-migration-fxa-spotlight-sync-header = Naviga senza perdere un colpo
+device-migration-fxa-spotlight-sync-body = Sincronizza tutte le tue informazioni più importanti, come segnalibri e password, e proteggile con la crittografia. Potrai accedervi ovunque utilizzi { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = Inizia
 
 ## Set as Default PDF Reader Infobar
 
@@ -286,8 +288,54 @@ root-certificate-succession-infobar-january-message = <strong>Le versioni più v
 root-certificate-succession-infobar-march-message = <strong>Aggiorna per continuare a utilizzare { -brand-short-name } dopo il 14 marzo 2025.</strong>
 root-certificate-succession-infobar-link = Perché devo aggiornare?
 root-certificate-succession-infobar-primary-button =
-  .label = Aggiorna adesso
-  .accesskey = A
+    .label = Aggiorna adesso
+    .accesskey = A
 root-certificate-succession-infobar-secondary-button =
-  .label = Più tardi
-  .accesskey = P
+    .label = Più tardi
+    .accesskey = P
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Ti sei perso un importante aggiornamento di { -brand-short-name }
+root-certificate-windows-background-notification-subtitle = Se non aggiorni, alcune parti del browser smetteranno di funzionare a breve. Adesso è il momento giusto per ottenere le nostre più recenti protezioni e funzionalità.
+root-certificate-windows-background-notification-learn-more-button = Ulteriori informazioni
+root-certificate-windows-background-notification-update-button = Aggiorna { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Chiudi
+    .aria-label = Chiudi
+fxa-menu-message-sign-up-button = Registrati
+fxa-menu-message-sync-devices-primary-text = Sincronizza tutti i tuoi dispositivi
+fxa-menu-message-sync-devices-secondary-text = Accedi al volo alle tue informazioni, come segnalibri e password, ovunque utilizzi { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = Sincronizza tutti i tuoi dispositivi
+fxa-menu-message-backup-data-primary-text = Salva i dati del browser
+fxa-menu-message-backup-data-secondary-text = Proteggi automaticamente segnalibri, password e altre informazioni su tutti i tuoi dispositivi.
+fxa-menu-message-backup-data-collapsed-text = Salva i dati del browser
+fxa-menu-message-backup-sync-primary-text = Mantieni i tuoi dati al sicuro e sincronizzati
+fxa-menu-message-backup-sync-secondary-text = La sincronizzazione esegue il backup della maggior parte dei tuoi dati, così puoi accedervi ovunque utilizzi { -brand-short-name }.
+fxa-menu-message-backup-sync-collapsed-text = Sincronizza e salva i tuoi dati
+fxa-menu-message-mobile-primary-text = Invia schede al tuo telefono
+fxa-menu-message-mobile-secondary-text = Riprendi immediatamente da dove eri rimasto sincronizzando le schede con un dispositivo mobile.
+fxa-menu-message-mobile-collapsed-text = Sincronizza con il tuo telefono
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Bentornato
+multi-cta-fox-doodle-set-default-checkbox = Imposta { -brand-short-name } come predefinito
+multi-cta-fox-doodle-pin-startmenu-checkbox = Aggiungi { -brand-short-name } al menu Start
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Mantieni { -brand-short-name } nel Dock
+       *[other] Aggiungi { -brand-short-name } al menu Start
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Inizia a navigare
+multi-cta-fox-doodle-main-browser-primary-button-label = Imposta { -brand-short-name } come browser principale
+multi-cta-fox-doodle-quick-reminder-subtitle = Un promemoria al volo: puoi avere il tuo browser preferito incentrato sulla privacy sempre a portata di clic.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Mantieni il tuo browser preferito incentrato sulla privacy sempre a portata di clic. Imposta { -brand-short-name } come browser predefinito per l’apertura dei link e aggiungilo alla barra delle applicazioni.
+       *[other] Mantieni il tuo browser preferito incentrato sulla privacy sempre a portata di clic. Imposta { -brand-short-name } come browser predefinito per l’apertura dei link, aggiungilo alla barra delle applicazioni e al menu Start.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Mantieni il tuo browser preferito incentrato sulla privacy sempre a portata di clic. Imposta { -brand-short-name } come browser predefinito per l’apertura dei link, aggiungilo alla barra delle applicazioni.

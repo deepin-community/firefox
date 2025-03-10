@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Send websteder signalet 'Spor mig ikke' ('Do not track') for at fortælle, at du ikke vil spores
+do-not-track-removal = Vi understøtter ikke længere "Spor mig ikke"-signalet
 do-not-track-description2 =
     .label = Send websteder en "Spor mig ikke"-forespørgsel
     .accesskey = d
@@ -137,6 +138,7 @@ windows-launch-on-login =
     .label = Åbn { -brand-short-name } automatisk når din computer starter
     .accesskey = a
 windows-launch-on-login-disabled = Denne indstilling er blevet deaktiveret i Windows. Gå til <a data-l10n-name="startup-link">Apps > Start</a> i Indstillinger for at ændre den.
+windows-launch-on-login-profile-disabled = Aktiver denne indstilling ved at sætte flueben ud for "{ profile-manager-use-selected.label }" i vinduet "Vælg din brugerprofil".
 startup-restore-warn-on-quit =
     .label = Advar mig, når jeg lukker browseren
 disable-extension =
@@ -146,6 +148,11 @@ preferences-data-migration-description = Importer bogmærker, adgangskoder, hist
 preferences-data-migration-button =
     .label = Importer data
     .accesskey = m
+preferences-profiles-header = Profiler
+preferences-manage-profiles-description = Hver profil har forskellige browsing-data og -indstillinger, inklusive historik, adgangskoder med mere.
+preferences-manage-profiles-learn-more = Læs mere
+preferences-manage-profiles-button =
+    .label = Håndter profiler
 tabs-group-header = Faneblade
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tabulator-tasten skifter mellem de senest anvendte faneblade
@@ -153,6 +160,17 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Åbn links i faneblade fremfor i nye vinduer
     .accesskey = f
+ask-on-close-multiple-tabs =
+    .label = Spørg, når jeg lukker flere faneblade
+    .accesskey = f
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = Spørg, inden jeg afslutter med { $quitKey }
+    .accesskey = a
 confirm-on-close-multiple-tabs =
     .label = Bekræft, når jeg lukker flere faneblade
     .accesskey = B
@@ -212,6 +230,16 @@ containers-remove-cancel-button = Fjern ikke denne kontekst
 settings-tabs-show-image-in-preview =
     .label = Forhåndsvis når musemarkøren er over et faneblad
     .accessKey = m
+browser-layout-header = Browser-layout
+browser-layout-horizontal-tabs =
+    .label = Vandrette faneblade
+browser-layout-horizontal-tabs-desc = Vises øverst i browseren
+browser-layout-vertical-tabs =
+    .label = Lodrette faneblade
+browser-layout-vertical-tabs-desc = Vis i siden, i sidepanelet
+browser-layout-show-sidebar =
+    .label = Vis sidepanel
+browser-layout-show-sidebar-desc = Få hurtig adgang til bogmærker, faneblade fra din telefon, AI-chatbots og mere uden at forlade din primære visning.
 
 ## General Section - Language & Appearance
 
@@ -568,8 +596,7 @@ home-prefs-shortcuts-description = Gemte eller besøgte websteder
 home-prefs-shortcuts-by-option-sponsored =
     .label = Sponsorerede genveje
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Anbefalet af { $provider }
@@ -640,6 +667,10 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Vis søgeforslag i adressefeltet
     .accesskey = a
+# With this option enabled, on the search results page
+# the URL will be replaced by the search terms in the address bar.
+search-show-search-term-option-2 =
+    .label = Vis søgestrenge i adressefeltet på resultatsider
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -783,6 +814,9 @@ sync-currently-syncing-creditcards = Betalingskort
 sync-currently-syncing-payment-methods = Betalingsmetoder
 sync-currently-syncing-addons = Tilføjelser
 sync-currently-syncing-settings = Indstillinger
+sync-manage-options =
+    .label = Håndter synkronisering…
+    .accesskey = H
 sync-change-options =
     .label = Skift…
     .accesskey = S
@@ -835,6 +869,13 @@ sync-engine-settings =
     .label = Indstillinger
     .tooltiptext = Generelle indstillinger, samt indstillinger for privatliv og sikkerhed, som du har ændret
     .accesskey = I
+sync-choose-what-to-sync-dialog4 =
+    .title = Håndter, hvad som skal synkroniseres til dine tilknyttede enheder
+    .style = min-width: 36em;
+    .buttonlabelaccept = Gem
+    .buttonaccesskeyaccept = G
+    .buttonlabelextra2 = Afbryd forbindelse…
+    .buttonaccesskeyextra2 = r
 
 ## The device name controls.
 
@@ -1281,17 +1322,40 @@ permissions-addon-exceptions =
 collection-header = Indsamling og brug af data i { -brand-short-name }
 collection-header2 = Indsamling og brug af data i { -brand-short-name }
     .searchkeywords = telemetry
+preferences-collection-description = Vi stræber efter at give dig mulighed for at vælge og indsamler kun data, der er nødvendige for at forbedre { -brand-product-name } for alle.
+preferences-collection-privacy-notice = Se privatlivserklæring
 collection-description = Vi stræber efter at give dig mulighed for selv at vælge og indsamler kun, hvad vi har brug for til at forbedre { -brand-short-name } for alle. Vi spørger altid om din tilladelse, før vi modtager personlig information.
 collection-privacy-notice = Privatlivserklæring
 collection-health-report-telemetry-disabled = Du tillader ikke længere, at { -vendor-short-name } indsamler teknisk data og data om brug. Alle tidligere data vil blive slettet indenfor 30 dage.
 collection-health-report-telemetry-disabled-link = Læs mere
+collection-usage-ping =
+    .label = Send ping for dagligt brug til { -vendor-short-name }
+    .accesskey = b
+collection-usage-ping-description = Dette hjælper { -vendor-short-name } med at vurdere antallet af aktive brugere.
+collection-health-report2 =
+    .label = Send tekniske data og data om brug til { -vendor-short-name }
+    .accesskey = r
 collection-health-report =
     .label = Tillad at { -brand-short-name } indsender tekniske data og data om brug til { -vendor-short-name }
     .accesskey = d
 collection-health-report-link = Læs mere
+collection-health-report-description = Dette hjælper os med at forbedre funktionerne i { -brand-product-name } samt ydelse og stabilitet.
+collection-studies2 =
+    .label = Installer og kør undersøgelser
+collection-studies-description = Prøv nye funktioner og idéer, før de bliver tilgængelige for alle.
 collection-studies =
     .label = Tillad at { -brand-short-name } installerer og afvikler undersøgelser
 collection-studies-link = Vis { -brand-short-name }-undersøgelser
+addon-recommendations2 =
+    .label = Tillad tilpassede anbefalinger af udvidelser
+addon-recommendations-description = Få anbefalinger om udvidelser, der kan forbedre din oplevelse på nettet.
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = Data-rapportering er deaktiveret for denne build-konfiguration.
+collection-backlogged-crash-reports2 =
+    .label = Send automatisk fejlrapporter
+    .accesskey = S
+collection-backlogged-crash-reports-description = Dette hjælper { -vendor-short-name } med at diagnosticere og løse problemer med browseren. Rapporter kan indeholde personlige eller følsomme data.
 addon-recommendations =
     .label = Tillad at { -brand-short-name } anbefaler udvidelser specielt udvalgt til dig
 addon-recommendations-link = Læs mere
@@ -1363,6 +1427,8 @@ space-alert-under-5gb-message2 =
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = Tilstanden Kun-HTTPS
+httpsonly-description3 = Tillad kun sikre forbindelser til websteder. { -brand-short-name } vil spørge, før en usikker forbindelse oprettes.
+httpsonly-learn-more2 = Sådan virker tilstanden kun-HTTPS
 httpsonly-description = HTTPS sørger for en sikker, krypteret forbindelse mellem { -brand-short-name } og de websteder, du besøger. De fleste websteder understøtter HTTPS, og hvis kun-HTTPS er slået til, så opgraderer { -brand-short-name } alle forbindelser til HTTPS.
 httpsonly-description2 = { -brand-short-name } etablerer sikre og krypterede forbindelser til de websteder, du besøger. Når Kun-HTTPS er slået til, advarer { -brand-short-name } dig, hvis forbindelsen ikke er sikker.
 httpsonly-learn-more = Læs mere
@@ -1372,6 +1438,9 @@ httpsonly-radio-enabled2 =
     .label = Brug udelukkende HTTPS i alle vinduer
 httpsonly-radio-enabled-pbm =
     .label = Slå udelukkende kun-HTTPS til for private vinduer
+httpsonly-radio-disabled3 =
+    .label = Slå ikke kun-HTTPS til
+    .description = { -brand-short-name } kan stadig opgradere nogle forbindelser
 httpsonly-radio-enabled-pbm2 =
     .label = Brug udelukkende HTTPS i private vinduer
 httpsonly-radio-disabled =

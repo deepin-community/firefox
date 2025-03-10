@@ -105,7 +105,8 @@ extern const char* selfHostedXDRPath;
 extern bool encodeSelfHostedCode;
 extern bool enableCodeCoverage;
 extern bool enableDisassemblyDumps;
-extern bool offthreadCompilation;
+extern bool offthreadBaselineCompilation;
+extern bool offthreadIonCompilation;
 extern JS::DelazificationOption defaultDelazificationMode;
 extern bool enableAsmJS;
 extern bool enableWasm;
@@ -129,7 +130,6 @@ extern bool enableArrayBufferResizable;
 extern bool enableSymbolsAsWeakMapKeys;
 extern bool enableNewSetMethods;
 extern bool enableImportAttributes;
-extern bool enableImportAttributesAssertSyntax;
 extern bool enableDestructuringFuse;
 #ifdef JS_GC_ZEAL
 extern uint32_t gZealBits;

@@ -8,11 +8,18 @@
 newtab-page-title = Tab Newydd
 newtab-settings-button =
     .title = Cyfaddasu eich tudalen Tab Newydd
+newtab-personalize-settings-icon-label =
+    .title = Personoli Tab Newydd
+    .aria-label = Gosodiadau
+newtab-settings-dialog-label =
+    .aria-label = Gosodiadau
 newtab-personalize-icon-label =
     .title = Personoli tab newydd
     .aria-label = Personoli tab newydd
 newtab-personalize-dialog-label =
     .aria-label = Personoli
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Cadw i { -pocket-brand-name }
 newtab-menu-delete-pocket = Dileu o { -pocket-brand-name }
 newtab-menu-archive-pocket = Archifo i { -pocket-brand-name }
 newtab-menu-show-privacy-info = Ein noddwyr a'ch preifatrwydd
+newtab-menu-about-fakespot = Ynghylch { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Rhwystro
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Dad-ddilyn Pwnc
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -234,6 +248,8 @@ newtab-pocket-cta-button = Defnyddio { -pocket-brand-name }
 newtab-pocket-cta-text = Cadw'r straeon rydych yn eu hoffi i { -pocket-brand-name } a bwydo'ch meddwl á deunydd diddorol.
 newtab-pocket-pocket-firefox-family = Mae { -pocket-brand-name } yn rhan o deulu { -brand-product-name }
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Cadw
 newtab-pocket-saved = Wedi'u Cadw
 
@@ -245,6 +261,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Nid i mi
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Diolch. Bydd eich adborth yn ein helpu i wella'ch llif.
 newtab-toast-thumbs-up-or-down = Diolch. Bydd eich adborth yn ein helpu i wella'ch llif.
 newtab-toast-dismiss-button =
     .title = Cau
@@ -302,6 +321,12 @@ newtab-custom-settings = Rheoli rhagor o osodiadau
 
 newtab-wallpaper-title = Papurau wal
 newtab-wallpaper-reset = Ailosod i'r rhagosodiad
+newtab-wallpaper-upload-image = Llwytho delwedd
+newtab-wallpaper-custom-color = Dewis lliw
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = Mae'r ddelwedd yn fwy na'r terfyn maint ffeil { $file_size }MB. Ceisiwch lwytho ffeil lai.
+newtab-wallpaper-error-file-type = Nid oes modd i ni lwytho'ch ffeil. Ceisiwch eto gyda gwahanol fathau o ffeil.
 newtab-wallpaper-light-red-panda = Panda coch
 newtab-wallpaper-light-mountain = Mynydd gwyn
 newtab-wallpaper-light-sky = Awyr gyda chymylau porffor a phinc
@@ -314,6 +339,8 @@ newtab-wallpaper-dark-panda = Panda coch wedi'i guddio yn y goedwig
 newtab-wallpaper-dark-sky = Tirwedd y ddinas gydag awyr y nos
 newtab-wallpaper-dark-mountain = Tirwedd mynydd
 newtab-wallpaper-dark-city = Tirwedd dinas borffor
+newtab-wallpaper-dark-fox-anniversary = Llwynog ar y palmant ger coedwig
+newtab-wallpaper-light-fox-anniversary = Llwynog mewn cae glaswelltog gyda thirlun mynydd niwlog
 
 ## Solid Colors
 
@@ -343,8 +370,12 @@ newtab-wallpaper-abstract-purple = Siapiau porffor
 newtab-wallpaper-abstract-orange = Siapiau oren
 newtab-wallpaper-gradient-orange = Graddiant oren a phinc
 newtab-wallpaper-abstract-blue-purple = Siapiau glas a phorffor
+newtab-wallpaper-abstract-white-curves = Gwyn gyda chromlinau cysgodol
+newtab-wallpaper-abstract-purple-green = Graddiant golau porffor a gwyrdd
+newtab-wallpaper-abstract-blue-purple-waves = Siapiau tonnog glas a phorffor
+newtab-wallpaper-abstract-black-waves = Siapiau tonnog du
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Ffotograffau
 newtab-wallpaper-beach-at-sunrise = Traeth ar godiad haul
@@ -353,6 +384,12 @@ newtab-wallpaper-storm-sky = Awyr stormus
 newtab-wallpaper-sky-with-pink-clouds = Awyr gyda chymylau pinc
 newtab-wallpaper-red-panda-yawns-in-a-tree = Panda coch yn dylyfu mewn coeden
 newtab-wallpaper-white-mountains = Mynyddoedd gwyn
+newtab-wallpaper-hot-air-balloons = Balwnau aer poeth o lliwiau amrywiol yn ystod y dydd
+newtab-wallpaper-starry-canyon = Noson serennog las
+newtab-wallpaper-suspension-bridge = Ffotograffau pont crog llwyd yn ystod y dydd
+newtab-wallpaper-sand-dunes = Twyni tywod gwyn
+newtab-wallpaper-palm-trees = Amlinell coed palmwydd cnau coco yn yr awr euraidd
+newtab-wallpaper-forest-trees = Coed wedi'u gorchuddio â niwl
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -368,6 +405,19 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Wybrennol
+newtab-wallpaper-celestial-lunar-eclipse = Eclipse lleuad
+newtab-wallpaper-celestial-earth-night = Llun nos o orbit daear isel
+newtab-wallpaper-celestial-starry-sky = Awyr serennog
+newtab-wallpaper-celestial-eclipse-time-lapse = Eclipse amser llithro lleuad
+newtab-wallpaper-celestial-black-hole = Darlun galaeth twll du
+newtab-wallpaper-celestial-river = Delwedd lloeren o'r afon
+
 ## New Tab Weather
 
 # Variables:
@@ -378,6 +428,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Wedi'i noddi
 newtab-weather-menu-change-location = Newid lleoliad
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Chwilio am leoliad
+    .aria-label = Chwilio am leoliad
 newtab-weather-change-location-search-input = Chwilio am leoliad
 newtab-weather-menu-weather-display = Dangos y tywydd
 # Display options are:
@@ -393,7 +446,7 @@ newtab-weather-menu-temperature-option-celsius = Celsius
 newtab-weather-menu-change-temperature-units-fahrenheit = Newid i Fahrenheit
 newtab-weather-menu-change-temperature-units-celsius = Newid i Celsius
 newtab-weather-menu-hide-weather = Cuddio'r tywydd ar Dab Newydd
-newtab-weather-menu-learn-more = Dysgu rhagor
+newtab-weather-menu-learn-more = Rhagor
 # This message is shown if user is working offline
 newtab-weather-error-not-available = Nid yw data tywydd ar gael ar hyn o bryd.
 
@@ -436,3 +489,45 @@ newtab-topic-selection-button-maybe-later = Rhywbryd eto
 newtab-topic-selection-privacy-link = Dyma sut rydym yn diogelu ac yn rheoli data
 newtab-topic-selection-button-update-interests = Diweddarwch eich diddordebau
 newtab-topic-selection-button-pick-interests = Dewiswch eich diddordebau
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Dilyn
+newtab-section-following-button = Yn dilyn
+newtab-section-unfollow-button = Dad-ddilyn
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Rhwystro
+newtab-section-blocked-button = Rhwystrwyd
+newtab-section-unblock-button = Dadrwystro
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = Ydych chi'n siŵr eich bod am rwystro'r adran hon?
+newtab-section-confirm-block-section-p2 = Ni fydd adran sydd wedi'i rwystro'n ymddangos yn eich llif bellach.
+newtab-section-block-section-button = Rhwystro'r adran hon
+newtab-section-cancel-button = Nid nawr
+newtab-section-confirm-block-topic-p1 = Ydych chi'n siŵr eich bod am rwystro'r pwnc hwn?
+newtab-section-confirm-block-topic-p2 = Ni fydd pynciau sydd wedi'u rhwystro yn ymddangos yn eich llif bellach.
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = Rhwystro { $topic }
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = Pynciau
+newtab-section-manage-topics-button-v2 =
+    .label = Rheoli pynciau
+newtab-section-mangage-topics-followed-topics = Dilynwyd
+newtab-section-mangage-topics-button =
+    .label = Pynciau wedi'u dilyn a'u rhwystro
+newtab-section-mangage-topics-followed-topics-subtitle = Pynciau'n Cael eu Dilyn
+newtab-section-mangage-topics-followed-topics-empty-state = Nid ydych wedi dilyn unrhyw bynciau eto.
+newtab-section-mangage-topics-blocked-topics = Rhwystrwyd
+newtab-section-mangage-topics-blocked-topics-subtitle = Pynciau wedi'u Rhwystro
+newtab-section-mangage-topics-blocked-topics-empty-state = Nid ydych wedi rhwystro unrhyw bynciau eto.

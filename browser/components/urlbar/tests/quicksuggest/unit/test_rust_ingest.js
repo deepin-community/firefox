@@ -77,71 +77,61 @@ add_task(async function disableEnable() {
   });
 });
 
-// For a feature that manages more than one Rust suggestion type, enabling one
-// type should ingest that type but not others, and enabling the feature itself
-// should not ingest suggestion types that remain disabled.
-add_task(async function featureWithMultipleSuggestionTypes() {
-  // Make sure we have a feature that manages multiple types.
-  let feature = QuickSuggest.getFeature("AdmWikipedia");
-  Assert.ok(!!feature, "This test expects the AdmWikipedia feature to exist");
-  Assert.deepEqual(
-    [...feature.rustSuggestionTypes].sort(),
-    ["Amp", "Wikipedia"],
-    "This test expects the AdmWikipedia feature to manage Amp and Wikipedia suggestions"
+// For a feature whose suggestion type provider has constraints, ingest should
+// happen when the constraints change.
+add_task(async function providerConstraintsChanged() {
+  // We'll use the Exposure feature since it has provider constraints. Make sure
+  // it exists.
+  let feature = QuickSuggest.getFeature("ExposureSuggestions");
+  Assert.ok(
+    !!feature,
+    "This test expects the ExposureSuggestions feature to exist"
+  );
+  Assert.equal(
+    feature.rustSuggestionType,
+    "Exposure",
+    "This test expects Exposure suggestions to exist"
   );
 
-  // Make sure we start with both sponsored and nonsponsored enabled.
-  UrlbarPrefs.set("suggest.quicksuggest.sponsored", true);
-  UrlbarPrefs.set("suggest.quicksuggest.nonsponsored", true);
-  await QuickSuggestTestUtils.forceSync();
-
+  let providersFilter = [SuggestionProvider.EXPOSURE];
   await withIngestStub(async ({ stub, rustBackend }) => {
-    let providersFilter = [
-      SuggestionProvider.AMP,
-      SuggestionProvider.WIKIPEDIA,
-    ];
+    // Set the pref to a few non-empty string values. Each time, an exposure
+    // ingest should be triggered.
+    for (let type of ["aaa", "bbb", "aaa,bbb"]) {
+      UrlbarPrefs.set("quicksuggest.exposureSuggestionTypes", type);
+      info("Awaiting ingest promise after setting exposureSuggestionTypes");
+      await rustBackend.ingestPromise;
 
-    // Disable sponsored. No ingest should happen.
-    UrlbarPrefs.set("suggest.quicksuggest.sponsored", false);
-    info("Awaiting ingest promise after disabling sponsored");
-    await rustBackend.ingestPromise;
-    checkIngestCounts({ stub, providersFilter, expected: {} });
+      checkIngestCounts({
+        stub,
+        providersFilter,
+        expected: {
+          [SuggestionProvider.EXPOSURE]: 1,
+        },
+      });
+    }
 
-    // Disable nonsponsored. No ingest should happen.
-    UrlbarPrefs.set("suggest.quicksuggest.nonsponsored", false);
-    info("Awaiting ingest promise after disabling nonsponsored");
+    // Set the pref to an empty string. The feature should become disabled and
+    // it shouldn't trigger ingest since no exposure suggestions are enabled.
+    UrlbarPrefs.set("quicksuggest.exposureSuggestionTypes", "");
+    info(
+      "Awaiting ingest promise after setting exposureSuggestionTypes to empty string"
+    );
     await rustBackend.ingestPromise;
-    checkIngestCounts({ stub, providersFilter, expected: {} });
 
     Assert.ok(
       !feature.isEnabled,
-      "The feature should be disabled after disabling sponsored and nonsponsored suggestions"
+      "Exposure feature should be disabled after setting exposureSuggestionTypes to empty string"
     );
-
-    // Re-enable sponsored. Only one Amp ingest should happen.
-    UrlbarPrefs.set("suggest.quicksuggest.sponsored", true);
-    info("Awaiting ingest promise after re-enabling sponsored");
-    await rustBackend.ingestPromise;
     checkIngestCounts({
       stub,
       providersFilter,
-      expected: {
-        [SuggestionProvider.AMP]: 1,
-      },
-    });
-
-    // Re-enable nonsponsored. Only Wikipedia ingest should happen.
-    UrlbarPrefs.set("suggest.quicksuggest.nonsponsored", true);
-    info("Awaiting ingest promise after re-enabling nonsponsored");
-    await rustBackend.ingestPromise;
-    checkIngestCounts({
-      stub,
-      providersFilter,
-      expected: {
-        [SuggestionProvider.WIKIPEDIA]: 1,
-      },
+      expected: {},
     });
   });
+
+  UrlbarPrefs.clear("quicksuggest.exposureSuggestionTypes");
+  await QuickSuggest.rustBackend.ingestPromise;
 });
 
 // Ingestion should be performed according to the defined interval.

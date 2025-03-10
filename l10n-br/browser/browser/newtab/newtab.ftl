@@ -13,6 +13,8 @@ newtab-personalize-icon-label =
     .aria-label = Personelaat un ivinell nevez
 newtab-personalize-dialog-label =
     .aria-label = Personelaat
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -225,11 +227,16 @@ newtab-pocket-cta-button = Staliañ { -pocket-brand-name }
 newtab-pocket-cta-text = Enrollit pennadoù a-zoare e { -pocket-brand-name } ha magit ho spered gant lennadennoù boemus.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } a zo ul lodenn eus familh { -brand-product-name }
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Enrollañ
 newtab-pocket-saved = Enrollet
 
 ## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
 
+newtab-toast-dismiss-button =
+    .title = Argas
+    .aria-label = Argas
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -312,7 +319,7 @@ newtab-wallpaper-abstract-purple = Furmoù limestra
 newtab-wallpaper-abstract-orange = Furmoù orañjez
 newtab-wallpaper-abstract-blue-purple = Furmoù limestra hag orañjez
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Fotoioù
 newtab-wallpaper-beach-at-sunrise = Traezhenn e-pad ar sav-heol
@@ -334,17 +341,24 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+
 ## New Tab Weather
 
 # Variables:
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Paeroniet
 newtab-weather-menu-change-location = Cheñch al lec’hiadur
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Klask ul lec’h
+    .aria-label = Klask ul lec’h
 newtab-weather-change-location-search-input = Klask ul lec’h
 # Display options are:
 # - Simple: Displays a current weather condition icon and the current temperature
 # - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
 newtab-weather-menu-weather-display-option-simple = Eeun
+newtab-weather-menu-weather-display-option-detailed = Munudoù
 newtab-weather-menu-temperature-units = Unanenn wrezverk
 newtab-weather-menu-temperature-option-fahrenheit = Fahrenheit
 newtab-weather-menu-temperature-option-celsius = Celsius
@@ -371,3 +385,20 @@ newtab-topic-label-travel = Beajiñ
 
 newtab-topic-selection-save-button = Enrollañ
 newtab-topic-selection-cancel-button = Nullañ
+newtab-topic-selection-button-maybe-later = Diwezhatoc’h marteze
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+
+## Confirmation modal for blocking a section
+
+
+## Panel in the Customize menu section to manage followed and blocked topics
+

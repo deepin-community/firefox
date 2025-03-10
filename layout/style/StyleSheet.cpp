@@ -732,7 +732,7 @@ already_AddRefed<dom::Promise> StyleSheet::Replace(const nsACString& aText,
       css::Loader::UseSystemPrincipal::No, css::StylePreloadKind::None,
       /* aPreloadEncoding */ nullptr, /* aObserver */ nullptr,
       mConstructorDocument->NodePrincipal(), GetReferrerInfo(),
-      /* aNonce */ u""_ns, FetchPriority::Auto);
+      /* aNonce */ u""_ns, FetchPriority::Auto, nullptr);
 
   // In parallel
   // 5.1 Parse aText into rules.
@@ -826,11 +826,11 @@ void StyleSheet::RuleRemoved(css::Rule& aRule) {
   NOTIFY(RuleRemoved, (*this, aRule));
 }
 
-void StyleSheet::RuleChanged(css::Rule* aRule, StyleRuleChangeKind aKind) {
+void StyleSheet::RuleChanged(css::Rule* aRule, const StyleRuleChange& aChange) {
   MOZ_ASSERT(!aRule || HasUniqueInner(),
              "Shouldn't have mutated a shared sheet");
   SetModifiedRules();
-  NOTIFY(RuleChanged, (*this, aRule, aKind));
+  NOTIFY(RuleChanged, (*this, aRule, aChange));
 }
 
 // nsICSSLoaderObserver implementation

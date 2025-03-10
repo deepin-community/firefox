@@ -5,8 +5,7 @@
 
 ### These strings are used inside the Application panel which is available
 ### by setting the preference `devtools-application-enabled` to true.
-
-
+###
 ### The correct localization of this file might be to keep it in English, or another
 ### language commonly spoken among web developers. You want to make that choice consistent
 ### across the developer tools. A good criteria is the language in which you'd find the
@@ -79,7 +78,7 @@ manifest-icon-purpose = Նպատակը՝<code>{ $purpose }</code>
 # Text displayed as the alt attribute for <img> tags showing the icons in the
 # manifest.
 manifest-icon-img =
-    .alt = Մանրանկար
+    .alt = Պատկերակ
 # Text displayed as the title attribute for <img> tags showing the icons in the
 # manifest.
 # Variables:

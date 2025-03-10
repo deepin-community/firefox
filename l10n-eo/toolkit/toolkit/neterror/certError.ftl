@@ -18,6 +18,9 @@ cert-error-trust-signature-algorithm-disabled = La atestilo ne estas fidata ĉar
 cert-error-trust-expired-issuer = La atestilo ne estas fidata ĉar la atestilo de la eldoninto senvalidiĝis.
 cert-error-trust-self-signed = La atestilo ne estas fidata ĉar ĝi estas memsubskribita.
 cert-error-trust-symantec = Atestiloj eldonitaj de RapidSSL, RapidSSL, Symantec, Thawte kaj VeriSign ne plu estas konsiderataj sekuraj, ĉar en la pasinteco tiuj atestilaj aŭtoritatoj ne plenumis sekurecajn praktikojn.
+# Variables:
+#   $hostname (string) - Hostname of the website with cert error.
+cert-error-trust-certificate-transparency = { -brand-short-name } ne fidas { $hostname } ĉar ĝi ne povis pruvi ĝian observon de la publikaj postuloj pri atestila travideblo.
 cert-error-untrusted-default = La atestilo ne venas el fidata origino.
 # Variables:
 #   $hostname (string) - Hostname of the website with cert error.
@@ -68,6 +71,45 @@ open-in-new-window-for-csp-or-xfo-error = Malfermi retejon en nova fenestro
 # Variables:
 #   $hostname (string) - Hostname of the website blocked by csp or xfo error.
 csp-xfo-blocked-long-desc = Por protekti vian sekurecon, { $hostname } ne permesas al { -brand-short-name } montri la paĝon se ĝi estis enmetita en alian retejon. Por vidi tiun ĉi paĝon, vi devas malfermi ĝin en nova fenestro.
+fp-certerror-view-certificate-link = Montri la atestilon de la retejo
+fp-certerror-return-to-previous-page-recommended-button = Reen (rekomendita)
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+#   $validHosts (String) - Valid hostnames.
+fp-certerror-bad-domain-why-dangerous-body = Tiu ĉi retejo nur akceptas sekurajn konektojn, sed estas problemo kun la atestilo de la retejo. Povus okazi ke iu trompe klopodu ŝajnigi esti tiu retejo. Retejoj uzas atestilojn eldonitaj de atestila aŭtoritato por pruvi sian identecon. { -brand-short-name } ne fidas tiun ĉi retejon ĉar ĝia atestilo ne estas valida por { $hostname }. La atestilo nur validas por: { $validHosts }.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-bad-domain-what-can-you-do-body = Probable temas pri nenio grava, ĉar verŝajne estas problemo en la retejo mem. Retejoj uzas atestilojn eldonitaj de atestila aŭtoritato por pruvi sian identecon. Sed se vi estas en entreprena reto, via helpa teamo povus havi pli da informoj. Se vi uzas kontraŭvirusan programon, provu serĉi ĉu estas eblaj konfliktoj aŭ konataj problemoj.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-certerror-unknown-issuer-why-dangerous-body = Estas problemo kun la atestilo de la retejo. Povus okazi ke iu trompe klopodu ŝajnigi esti tiu retejo. Retejoj uzas atestilojn eldonitaj de atestila aŭtoritato por pruvi sian identecon. { -brand-short-name } ne fidas tiun ĉi retejon ĉar ni ne povas determini kiu eldonis la atestilon, la atestilo estas memsubskribita aŭ la retejo ne sendas interajn atestilojn, kiujn ni fidas.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-unknown-issuer-what-can-you-do-body = Probable temas pri nenio grava, ĉar verŝajne estas problemo en la retejo mem. Retejoj uzas atestilojn eldonitaj de atestila aŭtoritato por pruvi sian identecon. Sed se vi estas en entreprena reto, via helpa teamo povus havi pli da informoj. Se vi uzas kontraŭvirusan programon, ĝi povus bezoni agordadon por funkcii kun { -brand-short-name }.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-certerror-self-signed-why-dangerous-body = Ĉar estas problemo kun la atestilo de la retejo. Retejoj uzas atestilojn eldonitaj de atestila aŭtoritato por pruvi sian identecon. La atestilo de tiu ĉi retejo estas memsubskribita. Ĝi ne estis eldonita de rekonita atestila aŭtoritato – do ni norme ne fidas ĝin.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-self-signed-what-can-you-do-body = Ne multe. Verŝajne estas problemo en la retejo mem.
+fp-certerror-self-signed-important-note = GRAVA NOTO: se vi klopodas viziti tiun ĉi retejon en entreprena intrareto, la laboristoj de IT eble uzas memsubskribitajn atestilojn. Ili povas helpi vin kontroli la aŭtentikecon.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate expiration date.
+fp-certerror-expired-why-dangerous-body = Retejoj uzas atestilojn eldonitaj de atestila aŭtoritato por pruvi sian identecon. { -brand-short-name } ne fidas tiun ĉi retejon ĉar ŝajnas ke ĝia atestilo senvalidiĝis je { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate start date.
+fp-certerror-not-yet-valid-why-dangerous-body = Retejoj uzas atestilojn eldonitaj de atestila aŭtoritato por pruvi sian identecon. { -brand-short-name } ne fidas tiun ĉi retejon ĉar ŝajnas ke ĝia atestilo ne estos valida antaŭ { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+# Variables:
+#   $date (Date) - Clock date.
+fp-certerror-expired-what-can-you-do-body = La horloĝo de via aparato montras { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }. Se tio ĝustas la sekureca problemo estas verŝajne en la retejo mem. Se tio malĝustas, vi povas tion ŝanĝi en la sistemaj agordoj de via aparato.
+# Variables:
+#   $error (string) - NSS error code string that specifies type of cert error. e.g. unknown issuer, invalid cert, etc.
+fp-cert-error-code = Erarkodo: { $error }
+# Variables:
+#   $datetime (Date) - Current datetime.
+fp-datetime = { DATETIME($datetime, month: "short", year: "numeric", day: "numeric") } { DATETIME($datetime, timeStyle: "long") }
+fp-learn-more-about-secure-connection-failures = Pli da informo pri malsukceso de sekuraj konektoj
+fp-learn-more-about-cert-issues = Pli da informo pri ĉi tiaj atestilaj problemoj
+fp-learn-more-about-time-related-errors = Pli da informo pri solvo de problemoj rilatitaj kun la dato kaj horo
 
 ## Messages used for certificate error titles
 
@@ -92,6 +134,7 @@ contentEncodingError-title = Eraro de enkodigo de enhavo
 unsafeContentType-title = Nesekura tipo de dosiero
 netReset-title = La konekto estis haltigita
 netTimeout-title = Limtempo por konekto atingita
+httpErrorPage-title = Ŝajne estas problemo kun tiu ĉi retejo
 serverError-title = Ŝajne estas problemo kun tiu ĉi retejo
 unknownProtocolFound-title = La adreso ne estis komprenita
 proxyConnectFailure-title = La retperanto rifuzas konektojn
@@ -109,3 +152,20 @@ networkProtocolError-title = Eraro en reta protokolo
 nssBadCert-title = Averto: Ebla sekureca risko antaŭ vi
 nssBadCert-sts-title = Malsukcesa konekto: ebla sekureca problemo
 certerror-mitm-title = Programaro malpermesas al { -brand-short-name } sekure konekti tiun ĉi retejon
+
+## Felt Privacy V1 Strings
+
+fp-certerror-page-title = Averto: sekureca risko
+fp-certerror-body-title = Estu singarda. Io ne ĝustas.
+fp-certerror-why-site-dangerous = Kio igas tiun ĉi retejon aspekti danĝere?
+fp-certerror-what-can-you-do = Kion vi povas fari pri tio?
+fp-certerror-advanced-title = Spertula
+fp-certerror-advanced-button = Spertula
+fp-certerror-hide-advanced-button = Kaŝi spertulajn elementojn
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-certerror-override-exception-button = Daŭrigi al { $hostname } (riska)
+fp-certerror-intro = { -brand-short-name } eltrovis eble gravan sekurecan problemon kun <strong>{ $hostname }</strong>. Iu kiu ŝajnigas esti tiu retejo povus ŝteli aferojn, ekzemple kreditkartajn informojn, pasvortojn aŭ retpoŝtajn mesaĝojn.
+fp-certerror-expired-into = { -brand-short-name } eltrovis sekurecan problemon kun <strong>{ $hostname }</strong>. Ĉu la retejo ne estas bone agordita ĉu la horloĝo en via aparato ne havas la ĝustan daton/horon.

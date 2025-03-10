@@ -88,6 +88,7 @@ appmenu-remote-tabs-unverified = మీ ఖాతాను తనిఖీ చ�
 appmenuitem-fxa-manage-account = ఖాతా నిర్వహణ
 appmenu-fxa-header2 = { -fxaccount-brand-name }
 appmenu-account-header = ఖాతా
+appmenu-fxa-signed-in-label = ప్రవేశించు
 appmenuitem-save-page =
     .label = పేజీని ఇలా భద్రపరచు…
 
@@ -116,6 +117,11 @@ profiler-popup-edit-settings-button =
     .label = అమరికలను మార్చండి…
 profiler-popup-discard-button =
     .label = విస్మరించు
+profiler-popup-start-shortcut =
+    { PLATFORM() ->
+        [macos] ⌃⇧1
+       *[other] Ctrl+Shift+1
+    }
 profiler-popup-capture-shortcut =
     { PLATFORM() ->
         [macos] ⌃⇧2
@@ -141,6 +147,8 @@ profiler-popup-presets-media-label =
     .label = మాధ్యమాలు
 profiler-popup-presets-networking-label =
     .label = నెట్‌వర్కింగ్
+profiler-popup-presets-custom-label =
+    .label = అభిమతం
 
 ## History panel
 
@@ -155,6 +163,9 @@ appmenu-recently-closed-tabs =
     .label = ఇటీవల మూసిన ట్యాబులు
 appmenu-recently-closed-windows =
     .label = ఇటీవల మూసిన విండోలు
+# This allows to search through the browser's history.
+appmenu-search-history =
+    .label = చరిత్రలో వెతకండి
 
 ## Help panel
 
@@ -171,6 +182,11 @@ appmenu-help-more-troubleshooting-info =
     .accesskey = T
 appmenu-help-report-site-issue =
     .label = సైటులోని సమస్యను నివేదించండి…
+appmenu-help-share-ideas =
+    .label = ఆలోచనలను, అభిప్రాయాలను పంచుకోండి…
+    .accesskey = S
+appmenu-help-switch-device =
+    .label = కొత్త పరికరంలోకి మారడం
 
 ## appmenu-help-enter-troubleshoot-mode and appmenu-help-exit-troubleshoot-mode
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
@@ -194,6 +210,20 @@ appmenu-help-not-deceptive =
 appmenu-customizetoolbar =
     .label = పనిముట్లపట్టీని మలుచుకోండి…
 appmenu-developer-tools-subheader = విహారిణి పనిముట్లు
+appmenu-developer-tools-extensions =
+    .label = డెవలపర్‌ల కోసం పొడగింతలు
+appmenuitem-report-broken-site =
+    .label = పనిచేయని సైటును నివేదించండి
 
 ## Panel for privacy and security products
+
+appmenuitem-sign-in-account = మీ ఖాతా లోనికి ప్రవేశించండి
+appmenuitem-monitor-title = { -monitor-brand-short-name }
+appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description = మీ ఆన్‌లైన్ కార్యాచరణను సంరక్షించుకోండి
+appmenu-services-header = నా సేవలు
+appmenu-other-protection-header = { -vendor-short-name } వారి ఇతర రక్షణ పనిముట్లని ప్రయత్నించండి:
+
+## Profiles panel
 

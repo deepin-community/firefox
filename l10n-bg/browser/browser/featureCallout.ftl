@@ -20,7 +20,7 @@ callout-firefox-view-colorways-title = Добавете пръска цвят
 callout-firefox-view-colorways-subtitle = Изберете цветовете, които обичате. Само в { -brand-product-name }.
 callout-firefox-view-colorways-reminder-title = Разгледайте най-новите цветове
 # “Shades” refers to the different color options in each colorways
-callout-firefox-view-colorways-reminder-subtitle = Оцветете браузъра си с тези емблематични нюанси, вдъхновени от независими гласове. Само в { -brand-product-name }.
+callout-firefox-view-colorways-reminder-subtitle = Оцветете мрежовия четец с тези емблематични нюанси, вдъхновени от независими гласове. Само в { -brand-product-name }.
 
 ## Continuous Onboarding - Firefox View: Tab pick up
 
@@ -43,3 +43,54 @@ callout-pdfjs-draw-body-a = Маркирайте PDF файлове, след к
 # “Mark up” refers to the process of “annotating” or adding free hand text or diagramming to the document.
 callout-pdfjs-draw-body-b = Без повече отпечатване и сканиране. Маркирайте PDF файловете, след което запазете промените.
 callout-pdfjs-draw-button = Разбрах!
+
+## Firefox View Discoverability Strings
+
+fx-view-discoverability-title = Затворихте раздела без да искате?
+fx-view-discoverability-subtitle = Намерете и го отворете бързо тук. Пазим история на скоро затворените раздели.
+fx-view-discoverability-primary-button-label = Отваряне на { -firefoxview-brand-name }
+fx-view-discoverability-secondary-button-label = Прекратяване
+
+## Split Dismiss Button Labels
+
+# Blocks the message from showing again
+split-dismiss-button-dont-show-option-label = Без повторно показване на препоръката
+# Dismisses message and reduces frequency of message
+split-dismiss-button-show-fewer-option-label = По-малко препоръки
+# Opens about:preferences#general-cfrfeatures
+split-dismiss-button-manage-settings-option-label = Настройки
+
+## Sidebar Strings
+
+sidebar-button-callout-title = Заглавия на разделите в страничната лента
+sidebar-button-callout-subtitle = Използвайте бутона на страничната лента, за да я разширите и да виждате заглавията на разделите.
+
+## Sidebar Callout Survey Strings
+
+sidebar-callout-survey-title = Помогнете ни да подобрим { -brand-short-name }
+sidebar-callout-survey-satisfaction-question = Доколко сте доволни от работата на страничната лента в { -brand-short-name }?
+sidebar-callout-survey-privacy-notice-link = Политика на поверителност
+sidebar-callout-survey-very-satisfied = Много доволни
+sidebar-callout-survey-satisfied = Доволни
+sidebar-callout-survey-neutral = Неутрално
+sidebar-callout-survey-dissatisfied-2 = Недоволни
+sidebar-callout-survey-very-dissatisfied-2 = Много недоволни
+sidebar-callout-survey-dont-use-it = Не я използвам
+sidebar-callout-survey-productive-question =
+    До каква степен сте съгласни или не с твърдението:<br/>
+    „Страничната лента на { -brand-short-name } ме прави по-продуктивен/а“?
+sidebar-callout-survey-strongly-agree = Напълно съгласни
+sidebar-callout-survey-agree = Съгласни
+sidebar-callout-survey-disagree = Несъгласни
+sidebar-callout-survey-strongly-disagree = Напълно несъгласни
+sidebar-callout-survey-features-question = По-долу са изброени евентуални възможности на страничната лента. Кое от тях най-много би подобрило продуктивността ви във { -brand-short-name }
+sidebar-callout-survey-split-view = Преглед на две страници една до друга едновременно
+sidebar-callout-survey-keep-website-open = В страничната лента да стои отворена страница като поща или календар докато разглеждам
+sidebar-callout-survey-saved-websites-2 = Бърз достъп до отметките
+sidebar-callout-survey-none-of-above = Нито едно от изброените
+sidebar-callout-survey-submit = Изпращане
+sidebar-callout-survey-thank-you = Благодарим ви за обратната връзка!
+sidebar-genai-survey-satisfaction-question = Доколко сте доволни от това, че имате достъп до чатбот с AI в страничната лента?
+sidebar-genai-survey-productive-question =
+    До каква степен сте съгласни или не с твърдението:<br/>
+    „Чатбота с AI в страничната лента ме прави по-продуктивен/а“?

@@ -16,3 +16,10 @@ all-tabs-menu-close-duplicate-tabs =
     .label = Stäng dubbla flikar
 all-tabs-menu-close-all-duplicate-tabs =
     .label = Stäng alla dubbla flikar
+all-tabs-menu-synced-tabs =
+    .label = Flikar från andra enheter
+all-tabs-menu-current-window-header = Aktuellt fönster
+# "Show all" is for showing all open groups as well as saved groups. Initially,
+# we only show up to five of these groups.
+all-tabs-menu-tab-groups-show-all =
+    .label = Visa alla

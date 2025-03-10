@@ -63,6 +63,7 @@ cfr-doorhanger-extension-total-users =
 
 cfr-doorhanger-bookmark-fxa-header = დაასინქრონეთ სანიშნები ყველგან.
 cfr-doorhanger-bookmark-fxa-body = რაც მთავარია! ახლა უკვე არ დარჩებით სანიშნის გარეშე თქვენს მობილურ მოწყობილობებზე. გამოიყენეთ { -fxaccount-brand-name }.
+cfr-doorhanger-bookmark-fxa-body-2 = რაც მთავარია! ახლა უკვე არ დარჩებით სანიშნის გარეშე თქვენს მობილურ მოწყობილობებზე. გამოიყენეთ დაიწყეთ ანგარიშის გამოყენება.
 cfr-doorhanger-bookmark-fxa-link-text = დაასინქრონეთ სანიშნები ახლავე...
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = დახურვის ღილაკი
@@ -204,8 +205,9 @@ cfr-cbh-confirm-button = ფუნთუშის მოთხოვნები
     .accesskey = უ
 cfr-cbh-dismiss-button = ახლა არა
     .accesskey = ა
-cookie-banner-blocker-cfr-header = { -brand-short-name } ახლახან დაგეხმარათ ფუნთუშების არიდებაში
-cookie-banner-blocker-cfr-body = თავისთავად იზღუდება ფუნთუშების ამომხტომი მოთხოვნები, რომ გაუძნელდეს საიტებს თქვენს მოქმედებეზე თვალის დევნება.
+cookie-banner-blocker-onboarding-header = { -brand-short-name } ახლახან დაგეხმარათ ფუნთუშების მოთხოვნის არიდებაში
+cookie-banner-blocker-onboarding-body = ნაკლები ხელის შემშლელი და მეთვალყურე შიგთავსი საიტზე.
+cookie-banner-blocker-onboarding-learn-more = ვრცლად
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -235,10 +237,6 @@ fxa-sync-cfr-secondary = მოგვიანებით შეხსენე
 
 ## Device Migration FxA Spotlight
 
-device-migration-fxa-spotlight-header = ძველ მოწყობილობას იყენებთ?
-device-migration-fxa-spotlight-body = გადაინახეთ მონაცემები, რომ არ დაგეკარგოთ მნიშვნელოვანი ინფორმაცია, მათ შორის სანიშნები და პაროლები — მით უფრო, თუ ახალ მოწყობილობაზე აპირებთ გადასვლას.
-device-migration-fxa-spotlight-primary-button = როგორაა შესაძლებელი დამარქაფება
-device-migration-fxa-spotlight-link = მოგვიანებით შეხსენება
 device-migration-fxa-spotlight-heavy-user-header = არ დაგავიწყდეთ მონაცემების დამარქაფება
 device-migration-fxa-spotlight-heavy-user-body = დარწმუნდით, რომ მნიშვნელოვანი მონაცემები – მათ შორის სანიშნები და პაროლები – განახლებული და დაცულია თქვენს ყველა მოწყობილობაზე.
 device-migration-fxa-spotlight-heavy-user-primary-button = დაიწყეთ
@@ -248,6 +246,9 @@ device-migration-fxa-spotlight-older-device-primary-button = შექმენ�
 device-migration-fxa-spotlight-getting-new-device-header-2 = ახალ მოწყობილობაზე გადადიხართ?
 device-migration-fxa-spotlight-getting-new-device-body-2 = მიჰყევით რამდენიმე მარტივ ნაბიჯს, რომ თან წაიყოლოთ თქვენი სანიშნები, ისტორია და პაროლები ახალ მოწყობილობაზე გადასვლისას.
 device-migration-fxa-spotlight-getting-new-device-primary-button = როგორაა შესაძლებელი დამარქაფება
+device-migration-fxa-spotlight-sync-header = მოინახულეთ გვერდები შეუფერხებლად
+device-migration-fxa-spotlight-sync-body = დაასინქრონეთ ყველა თქვენი მნიშვნელოვანი მონაცემი დაშიფვრით – მათ შორის სანიშნები და პაროლები. ყველაფერი შეგიძლიათ წაიღოთ თან ნებისმიერ ადგილას, სადაც გიყენიათ { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = დაიწყეთ
 
 ## Set as Default PDF Reader Infobar
 
@@ -273,3 +274,72 @@ launch-on-login-infobar-reject-button = ახლა არა
 launch-on-login-infobar-final-message = <strong>გაიხსნას { -brand-short-name } კომპიუტერის ყოველი ჩართვისას?</strong> ჩართვისას გაშვების გასამართად პარამეტრებში მოიძიეთ „startup“.
 launch-on-login-infobar-final-reject-button = არა, გმადლობთ
     .accesskey = რ
+
+## Tail Fox Set Default Spotlight
+
+# This title is displayed together with the picture of a running fox with a long tail.
+# In English, this is a figure of speech meaning 'stop something from following you'.
+# If the localization of this message is challenging, consider using a simplified
+# alternative as a reference for translation: 'Keep unwanted trackers away'.
+tail-fox-spotlight-title = მოიცილეთ კუდში დადევნებული მეთვალყურეები
+tail-fox-spotlight-subtitle = დაემშვიდობეთ მომაბეზრებელ სარეკლამო მეთვალყურეებს და მოიწყვეთ უსაფრთხო, სწრაფი გარემო გვერდების თვალიერებისას.
+tail-fox-spotlight-primary-button = ბმულების გასახსნელად გამოიყენებოდეს { -brand-short-name }
+tail-fox-spotlight-secondary-button = ახლა არა
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>{ -brand-short-name } პროგრამის ძველ ვერსიებს შესაძლოა, ხარვეზები დაეწყოს 2025 წლის 14 იანვრიდან.</strong>
+root-certificate-succession-infobar-march-message = <strong>განაახლეთ { -brand-short-name }, რომ შეუფერხებლად განაგრძოთ მისით სარგებლობა 2025 წლის 14 მარტის შემდეგ.</strong>
+root-certificate-succession-infobar-link = რა საჭიროა განახლება?
+root-certificate-succession-infobar-primary-button =
+    .label = ახლავე განახლება
+    .accesskey = ა
+root-certificate-succession-infobar-secondary-button =
+    .label = მოგვიანებით
+    .accesskey = მ
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = მნიშვნელოვანი განახლება გამოტოვეთ, რომელსაც საჭიროებს { -brand-short-name }
+root-certificate-windows-background-notification-subtitle = ბრაუზერის სხვადასხვა ნაწილი მალე შეწყვეტს მუშაობას, თუ არ განაახლებთ. ახლა მშვენიერი დროა უახლესი დაცვისა და შესაძლებლობების გამოსაცდელად.
+root-certificate-windows-background-notification-learn-more-button = ვრცლად
+root-certificate-windows-background-notification-update-button = განახლდეს { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = დახურვა
+    .aria-label = დახურვა
+fxa-menu-message-sign-up-button = ანგარიშის შექმნა
+fxa-menu-message-sync-devices-primary-text = დასინქრონება ყველა მოწყობილობაზე
+fxa-menu-message-sync-devices-secondary-text = დაუყოვნებლივ მიიღეთ თქვენს მონაცემებთან წვდომა – მათ შორის სანიშნებსა და პაროლებთან ყველგან, სადაც გიყენიათ { -brand-short-name }
+fxa-menu-message-sync-devices-collapsed-text = დასინქრონება ყველა მოწყობილობაზე
+fxa-menu-message-backup-data-primary-text = ბრაუზერის მონაცემების დამარქაფება
+fxa-menu-message-backup-data-secondary-text = სანიშნების, პაროლებისა და სხვა მონაცემების თავისთავადი დაცვა ყველა თქვენს მოწყობილობაზე.
+fxa-menu-message-backup-data-collapsed-text = მონაცემების დასინქრონება
+fxa-menu-message-backup-sync-primary-text = გქონდეთ მონაცემები დაცული და დასინქრონებული
+fxa-menu-message-backup-sync-secondary-text = სინქრონიზაცია თქვენი მონაცემების უმეტესობას ამარქაფებს, ასე რომ შეგიძლიათ მათთან წვდომა ყველგან, სადაც { -brand-short-name } გიყენიათ.
+fxa-menu-message-backup-sync-collapsed-text = დასინქრონება და დამარქაფება
+fxa-menu-message-mobile-primary-text = გაგზავნეთ ჩანართები თქვენს ტელეფონზე
+fxa-menu-message-mobile-secondary-text = განაგრძეთ იქიდან, სადაც გაჩერდით, ჩანართების მობილურ მოწყობილობასთან სინქრონიზაციით.
+fxa-menu-message-mobile-collapsed-text = დაასინქრონეთ ტელეფონთან
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = კეთილი იყოს თქვენი დაბრუნება
+multi-cta-fox-doodle-set-default-checkbox = აქციეთ { -brand-short-name } ნაგულისხმევად
+multi-cta-fox-doodle-pin-startmenu-checkbox = მიამაგრეთ { -brand-short-name } საწყის მენიუში
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] დარჩეს { -brand-short-name } Dock-ზოლზე
+       *[other] მიამაგრეთ { -brand-short-name } ამოცანათა ზოლზე
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = დაიწყეთ მოგზაურობა ინტერნეტში
+multi-cta-fox-doodle-main-browser-primary-button-label = გახდეს { -brand-short-name } ჩემი ძირითადი ბრაუზერი
+multi-cta-fox-doodle-quick-reminder-subtitle = აქვე შეხსენება, რომ თქვენი საყვარელი პირადულობის უზრუნველმყოფი ბრაუზერი შეგიძლიათ იქონიოთ თითის ერთ გაწვდენაზე.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] გქონდეთ პირადულობის უზრუნველყოფის ბრაუზერი თითის ერთ გაწვდენაზე. მიუთითეთ { -brand-short-name } ნაგულისხმევ ბრაუზერად ბმულების გახსნისთვის და მიამაგრეთ ამოცანათა Dock-ზოლზე.
+       *[other] გქონდეთ პირადულობის უზრუნველყოფის ბრაუზერი თითის ერთ გაწვდენაზე. მიუთითეთ { -brand-short-name } ნაგულისხმევ ბრაუზერად ბმულების გახსნისთვის და მიამაგრეთ ამოცანათა ზოლზე.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = გქონდეთ პირადულობის უზრუნველყოფის ბრაუზერი თითის ერთ გაწვდენაზე. მიუთითეთ { -brand-short-name } ნაგულისხმევ ბრაუზერად ბმულების გახსნისთვის და მიამაგრეთ ამოცანათა ზოლსა თუ საწყის მენიუში.

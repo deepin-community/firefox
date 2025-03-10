@@ -8,11 +8,18 @@
 newtab-page-title = Ny fane
 newtab-settings-button =
     .title = Tilpass siden for Ny fane
+newtab-personalize-settings-icon-label =
+    .title = Tilpass ny fane
+    .aria-label = Innstillinger
+newtab-settings-dialog-label =
+    .aria-label = Innstillinger
 newtab-personalize-icon-label =
     .title = Tilpass ny fane-side
     .aria-label = Tilpass ny fane-side
 newtab-personalize-dialog-label =
     .aria-label = Tilpass
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Lagre til { -pocket-brand-name }
 newtab-menu-delete-pocket = Slett fra { -pocket-brand-name }
 newtab-menu-archive-pocket = Arkiver i { -pocket-brand-name }
 newtab-menu-show-privacy-info = Våre sponsorer og ditt personvern
+newtab-menu-about-fakespot = Om { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Blokker
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Slutt å følge emnet
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -232,6 +246,8 @@ newtab-pocket-cta-button = Hent { -pocket-brand-name }
 newtab-pocket-cta-text = Lagre artiklene du synes er interessante i { -pocket-brand-name }, og stimuler dine tanker med fasinerende lesermateriell.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } er en del av { -brand-product-name }-familien.
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Lagre
 newtab-pocket-saved = Lagret
 
@@ -243,6 +259,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Ikke for meg
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Takk. Tilbakemeldingen din vil hjelpe oss med å forbedre kilden din.
 newtab-toast-thumbs-up-or-down = Takk. Tilbakemeldingen din vil hjelpe oss med å forbedre kilden din.
 newtab-toast-dismiss-button =
     .title = Lukk
@@ -308,6 +327,8 @@ newtab-wallpaper-dark-panda = Rødpanda gjemt i skogen
 newtab-wallpaper-dark-sky = Bylandskap med nattehimmel
 newtab-wallpaper-dark-mountain = Landskap fjell
 newtab-wallpaper-dark-city = Lilla bylandskap
+newtab-wallpaper-dark-fox-anniversary = En rev på fortauet nær en skog
+newtab-wallpaper-light-fox-anniversary = En rev i en gressmark med et tåkete fjellandskap
 
 ## Solid Colors
 
@@ -338,7 +359,7 @@ newtab-wallpaper-abstract-orange = Oransje former
 newtab-wallpaper-gradient-orange = Fargeovergang oransje og rosa
 newtab-wallpaper-abstract-blue-purple = Blå og lilla former
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Fotografier
 newtab-wallpaper-beach-at-sunrise = Strand ved soloppgang
@@ -362,6 +383,9 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+
 ## New Tab Weather
 
 # Variables:
@@ -372,6 +396,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Sponset
 newtab-weather-menu-change-location = Endre plassering
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Søk plassering
+    .aria-label = Søk plassering
 newtab-weather-change-location-search-input = Søk plassering
 newtab-weather-menu-weather-display = Værvisning
 # Display options are:
@@ -430,3 +457,26 @@ newtab-topic-selection-button-maybe-later = Kanskje senere
 newtab-topic-selection-privacy-link = Finn ut hvordan vi beskytter og behandler data
 newtab-topic-selection-button-update-interests = Oppdater dine interesser
 newtab-topic-selection-button-pick-interests = Velg dine interesser
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Følge
+newtab-section-following-button = Følger
+newtab-section-unfollow-button = Slutt å følge
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = Er du sikker på at du vil blokkere denne delen?
+newtab-section-confirm-block-section-p2 = Blokkert del vil ikke lenger vises i kilden din.
+newtab-section-block-section-button = Blokker denne delen
+newtab-section-cancel-button = Ikke nå
+
+## Panel in the Customize menu section to manage followed and blocked topics
+

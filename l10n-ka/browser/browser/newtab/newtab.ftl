@@ -8,11 +8,18 @@
 newtab-page-title = ახალი ჩანართი
 newtab-settings-button =
     .title = მოირგეთ ახალი ჩანართის გვერდი
+newtab-personalize-settings-icon-label =
+    .title = ახალი ჩანართის მორგება
+    .aria-label = პარამეტრები
+newtab-settings-dialog-label =
+    .aria-label = პარამეტრები
 newtab-personalize-icon-label =
     .title = ახალი ჩანართის მორგება
     .aria-label = ახალი ჩანართის მორგება
 newtab-personalize-dialog-label =
     .aria-label = მორგება
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -45,6 +52,7 @@ newtab-topsites-add-search-engine-header = საძიებო სისტე
 newtab-topsites-add-shortcut-header = ახალი მალსახმობი
 newtab-topsites-edit-topsites-header = რჩეული საიტის ჩასწორება
 newtab-topsites-edit-shortcut-header = მალსახმობის ჩასწორება
+newtab-topsites-add-shortcut-label = მალსახმობის დამატება
 newtab-topsites-title-label = დასახელება
 newtab-topsites-title-input =
     .placeholder = სათაურის შეყვანა
@@ -72,7 +80,7 @@ newtab-confirm-delete-history-p2 = ეს ქმედება შეუქც�
 
 ## Top Sites - Sponsored label
 
-newtab-topsite-sponsored = დაფინანსებული
+newtab-topsite-sponsored = დამკვეთისგან
 
 ## Context Menu - Action Tooltips.
 
@@ -107,7 +115,14 @@ newtab-menu-delete-history = ისტორიიდან ამოშლა
 newtab-menu-save-to-pocket = { -pocket-brand-name }-ში შენახვა
 newtab-menu-delete-pocket = წაშლა { -pocket-brand-name }-იდან
 newtab-menu-archive-pocket = დაარქივება { -pocket-brand-name }-ში
-newtab-menu-show-privacy-info = ჩვენი დამფინანსებლები და თქვენი პირადულობა
+newtab-menu-show-privacy-info = ჩვენი დამკვეთები და თქვენი პირადულობა
+newtab-menu-about-fakespot = გაიცანით { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = აკრძალვა
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = თემის მიდევნების შეწყვეტა
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -116,8 +131,8 @@ newtab-privacy-modal-button-manage = შეკვეთილი მასალ
 newtab-privacy-modal-header = თქვენი პირადულობა უმნიშვნელოვანესია.
 newtab-privacy-modal-paragraph-2 =
     გარდა საინტერესო ამბებისა, ასევე მოგაწვდით მნიშვნელოვან, ღირებულ
-    მასალას, შერჩეული მხარდამჭერებისგან. ნუ იღელვებთ, რასაც ათვალიერებთ, <strong>ინახავს, მხოლოდ თქვენი კუთვნილი { -brand-product-name }</strong>  — ვერც ჩვენ და ვერც
-    ჩვენი მხარდამჭერი კომპანიები ვერაფერს იხილავს.
+    მასალას შერჩეული დამკვეთებისგან. ნუ იღელვებთ, რასაც ათვალიერებთ, <strong>მხოლოდ ინახავს თქვენი კუთვნილი { -brand-product-name }</strong>  — ვერც ჩვენ და ვერც ჩვენი
+    დამკვეთები ვერაფერს იხილავენ.
 newtab-privacy-modal-link = იხილეთ, როგორ მუშაობს პირადი მონაცემების უსაფრთხოება ახალ ჩანართზე
 
 ##
@@ -197,6 +212,9 @@ newtab-section-header-recent-activity = ბოლო მოქმედებე
 # Variables:
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = { $provider } გირჩევთ
+newtab-section-header-stories = ღრმად ჩამაფიქრებელი ამბები
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = დღეს შერჩეული თქვენთვის
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
@@ -205,6 +223,8 @@ newtab-empty-section-highlights = დაიწყეთ გვერდები
 # Variables:
 #   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = უკვე ყველაფერს გაეცანით. მოგვიანებით შემოიარეთ მეტი რჩეული სტატიის სანახავად, რომელსაც { $provider } მოგაწვდით. ვერ ითმენთ? აირჩიეთ რომელიმე ფართოდ გავრცელებული საკითხი, ახალი საინტერესო სტატიების მოსაძიებლად.
+# Ex. When there are no more story recommendations, in the space where there would have been stories, this is shown instead.
+newtab-empty-section-topstories-generic = უკვე ყველაფერს გაეცანით. მოგვიანებით შემოიარეთ მეტი რჩეული სტატიის სანახავად. ვერ ითმენთ? აირჩიეთ რომელიმე ფართოდ გავრცელებული საკითხი ახალი საინტერესო სტატიების მოსაძიებლად.
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
@@ -226,8 +246,26 @@ newtab-pocket-cta-button = გამოიყენეთ { -pocket-brand-name }
 newtab-pocket-cta-text = გადაინახეთ სასურველი შიგთავსი { -pocket-brand-name }-ში და მიეცით გონებას საკვები, შთამბეჭდავი საკითხავი მასალის სახით.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } ეკუთვნის { -brand-product-name }-ოჯახს
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = შენახვა
 newtab-pocket-saved = შენახულია
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
+# Clicking the thumbs up button for this story will result in more stories like this one being recommended
+newtab-pocket-thumbs-up-tooltip =
+    .title = სხვა ამის მსგავსი
+# Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
+newtab-pocket-thumbs-down-tooltip =
+    .title = ჩემთვის არაა
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = გმადლობთ. თქვენი გამოხმაურება დაგვეხმარება სიახლეების არხის გაუმჯობესებაში.
+newtab-toast-thumbs-up-or-down = გმადლობთ. თქვენი გამოხმაურება დაგვეხმარება სიახლეების არხის გაუმჯობესებაში.
+newtab-toast-dismiss-button =
+    .title = აცილება
+    .aria-label = აცილება
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -254,18 +292,201 @@ newtab-custom-row-selector =
         [one] { $num } რიგი
        *[other] { $num } რიგი
     }
-newtab-custom-sponsored-sites = დაფინანსებული მალსახმობები
+newtab-custom-sponsored-sites = დამკვეთის მალსახმობები
 newtab-custom-pocket-title = გთავაზობთ { -pocket-brand-name }
 newtab-custom-pocket-subtitle = გამორჩეული მასალები, რომელთაც { -pocket-brand-name } გთავაზობთ, { -brand-product-name }-ოჯახის ნაწილი.
-newtab-custom-pocket-toggle =
-    .label = გთავაზობთ { -pocket-brand-name }
-    .description = გამორჩეული მასალები, რომელთაც { -pocket-brand-name } გთავაზობთ, { -brand-product-name }-ოჯახის ნაწილი.
-newtab-custom-pocket-sponsored = დაფინანსებული ამბები
+newtab-custom-stories-toggle =
+    .label = შემოთავაზებული ამბები
+    .description = გამორჩეული მასალები, რომელთაც შეგირჩევთ { -brand-product-name }
+newtab-custom-pocket-sponsored = ამბები დამკვეთისგან
 newtab-custom-pocket-show-recent-saves = ბოლოს შენახულის ჩვენება
 newtab-custom-recent-title = ბოლო მოქმედებები
 newtab-custom-recent-subtitle = ბოლოს ნანახი საიტებისა და მასალებიდან შერჩეული
 newtab-custom-recent-toggle =
     .label = ბოლო მოქმედებები
     .description = ბოლოს ნანახი საიტებისა და მასალებიდან შერჩეული
+newtab-custom-weather-toggle =
+    .label = ამინდი
+    .description = დღევანდელი ამინდისთვის თვალის შევლება
 newtab-custom-close-button = დახურვა
 newtab-custom-settings = დამატებითი პარამეტრების მართვა
+
+## New Tab Wallpapers
+
+newtab-wallpaper-title = ფონები
+newtab-wallpaper-reset = ნაგულისხმევზე ჩამოყრა
+newtab-wallpaper-light-red-panda = წითელი პანდა
+newtab-wallpaper-light-mountain = თეთრი მთა
+newtab-wallpaper-light-sky = ცა მოიისფრო და მოვარდისფრო ღრუბლებით
+newtab-wallpaper-light-color = ლურჯი, ვარდისფერი და ყვითელი ფორმები
+newtab-wallpaper-light-landscape = ცისფერი ნისლი მთის ხედით
+newtab-wallpaper-light-beach = სანაპირო პალმის ხით
+newtab-wallpaper-dark-aurora = ჩრდილოეთის ციალი
+newtab-wallpaper-dark-color = წითელი და ლურჯი ფორმები
+newtab-wallpaper-dark-panda = წითელი პანდა იმალება ტყეში
+newtab-wallpaper-dark-sky = ქალაქის ხედი ღამის ცით
+newtab-wallpaper-dark-mountain = მთის ხედი
+newtab-wallpaper-dark-city = ქალაქის მოიისფრო ხედი
+newtab-wallpaper-dark-fox-anniversary = მელა ქვაფენილზე ტყის მახლობლად
+newtab-wallpaper-light-fox-anniversary = მელა მდელოზე დაბურული მთის ხედით
+
+## Solid Colors
+
+newtab-wallpaper-category-title-colors = ერთგვაროვანი ფერები
+newtab-wallpaper-blue = ლურჯი
+newtab-wallpaper-light-blue = ცისფერი
+newtab-wallpaper-light-purple = ღია იისფერი
+newtab-wallpaper-light-green = ღია მწვანე
+newtab-wallpaper-green = მწვანე
+newtab-wallpaper-beige = ჩალისფერი
+newtab-wallpaper-yellow = ყვითელი
+newtab-wallpaper-orange = ნარინჯისფერი
+newtab-wallpaper-pink = ვარდისფერი
+newtab-wallpaper-light-pink = ღია ვარდისფერი
+newtab-wallpaper-red = წითელი
+newtab-wallpaper-dark-blue = მუქი ლურჯი
+newtab-wallpaper-dark-purple = მუქი იისფერი
+newtab-wallpaper-dark-green = მუქი მწვანე
+newtab-wallpaper-brown = ყავისფერი
+
+## Abstract
+
+newtab-wallpaper-category-title-abstract = წარმოსახვითი
+newtab-wallpaper-abstract-green = მწვანე ფორმები
+newtab-wallpaper-abstract-blue = ლურჯი ფორმები
+newtab-wallpaper-abstract-purple = იისფერი ფორმები
+newtab-wallpaper-abstract-orange = ნარინჯისფერი ფორმები
+newtab-wallpaper-gradient-orange = ნარინჯისფერი ვარდისფერში გადასული
+newtab-wallpaper-abstract-blue-purple = ლურჯი და იისფერი ფორმები
+
+## Celestial
+
+newtab-wallpaper-category-title-photographs = ფოტოსურათები
+newtab-wallpaper-beach-at-sunrise = სანაპირო მზის ამოსვლისას
+newtab-wallpaper-beach-at-sunset = სანაპირო მზის ჩასვლისას
+newtab-wallpaper-storm-sky = ქარიშხლის ცა
+newtab-wallpaper-sky-with-pink-clouds = ცა მოვარდისფრო ღრუბლებით
+newtab-wallpaper-red-panda-yawns-in-a-tree = წითელი პანდა ამთქნარებს ხეზე
+newtab-wallpaper-white-mountains = თოვლიანი მთები
+# Variables
+#   $author_string (String) - The name of the creator of the photo.
+#   $webpage_string (String) - The name of the webpage where the photo is located.
+newtab-wallpaper-attribution = სურათის გადამღებია <a data-l10n-name="name-link">{ $author_string }</a> საიტიდან <a data-l10n-name="webpage-link">{ $webpage_string }</a>
+newtab-wallpaper-feature-highlight-header = შეაფერადეთ
+newtab-wallpaper-feature-highlight-content = მიანიჭეთ განსხვავებული იერსახე თქვენს ახალ ჩანართს ფონის შეცვლით.
+newtab-wallpaper-feature-highlight-button = გასაგებია
+# Tooltip for dismiss button
+feature-highlight-dismiss-button =
+    .title = აცილება
+    .aria-label = ამომხტომის დახურვა
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## Celestial
+
+
+## New Tab Weather
+
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast =
+    .title = ამინდს გთავაზობთ { $provider }
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-sponsored = { $provider } ∙ დაკვეთილი
+newtab-weather-menu-change-location = მდებარეობის შეცვლა
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = მდებარეობის მოძიება
+    .aria-label = მდებარეობის მოძიება
+newtab-weather-change-location-search-input = მდებარეობის მოძიება
+newtab-weather-menu-weather-display = ამინდის ჩვენება
+# Display options are:
+# - Simple: Displays a current weather condition icon and the current temperature
+# - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
+newtab-weather-menu-weather-display-option-simple = მარტივი
+newtab-weather-menu-change-weather-display-simple = მარტივ ხედზე გადართვა
+newtab-weather-menu-weather-display-option-detailed = ვრცელი
+newtab-weather-menu-change-weather-display-detailed = ვრცელ ხედზე გადართვა
+newtab-weather-menu-temperature-units = ტემპერატურის ერთეულები
+newtab-weather-menu-temperature-option-fahrenheit = ფარენჰაიტი
+newtab-weather-menu-temperature-option-celsius = ცელსიუსი
+newtab-weather-menu-change-temperature-units-fahrenheit = ფარენჰაიტზე გადართვა
+newtab-weather-menu-change-temperature-units-celsius = ცელსიუსზე გადართვა
+newtab-weather-menu-hide-weather = ამინდის დამალვა ახალ ჩანართში
+newtab-weather-menu-learn-more = ვრცლად
+# This message is shown if user is working offline
+newtab-weather-error-not-available = ამინდის მონაცემები მიუწვდომელია ახლა.
+
+## Topic Labels
+
+newtab-topic-label-business = საქმიანობა
+newtab-topic-label-career = წინსვლა საქმეში
+newtab-topic-label-education = განათლება
+newtab-topic-label-arts = გართობა
+newtab-topic-label-food = საკვები
+newtab-topic-label-health = ჯანმრთელობა
+newtab-topic-label-hobbies = თამაშები
+# ”Money” = “Personal Finance”, refers to articles and stories that help readers better manage
+# and understand their personal finances – from saving money to buying a home. See the
+# “Curated by our editors“ section at the top of https://getpocket.com/explore/personal-finance for more context
+newtab-topic-label-finance = ფული
+newtab-topic-label-society-parenting = აღზრდა
+newtab-topic-label-government = პოლიტიკა
+newtab-topic-label-education-science = მეცნიერება
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = ცხოვრებისეული ხრიკები
+newtab-topic-label-sports = სპორტი
+newtab-topic-label-tech = ტექნოლოგია
+newtab-topic-label-travel = მოგზაურობა
+newtab-topic-label-home = სახლი და მებაღეობა
+
+## Topic Selection Modal
+
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = აირჩიეთ დარგი სიახლეების არხის მოსარგებად
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = აირჩიეთ ორი ან მეტი საკითხი. ჩვენი გამოცდილი ზედამხედველები შეარჩევენ თქვენზე მორგებულ მასალებს. შეგიძლიათ ნებისმიერ დროს შეცვალოთ.
+newtab-topic-selection-save-button = შენახვა
+newtab-topic-selection-cancel-button = გაუქმება
+newtab-topic-selection-button-maybe-later = მოგვიანებით გადავწყვეტ
+newtab-topic-selection-privacy-link = იხილეთ როგორ დაიცვათ და მართოთ მონაცემები
+newtab-topic-selection-button-update-interests = განაახლეთ შერჩეული მისწრაფებები
+newtab-topic-selection-button-pick-interests = აირციეთ მისწრაფებები
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = თვალის მიდევნება
+newtab-section-following-button = გამოწერილი
+newtab-section-unfollow-button = თვალის მიდევნების შეწყვეტა
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = შეზღუდვა
+newtab-section-blocked-button = შეზღუდულია
+newtab-section-unblock-button = შეზღუდვის მოხსნა
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = გსურთ ამ ნაწილის შეზღუდვა?
+newtab-section-confirm-block-section-p2 = შეზღუდული ნაწილები აღარ გამოჩნდება თქვენს არხში.
+newtab-section-block-section-button = ამ ნაწილის შეზღუდვა
+newtab-section-cancel-button = ახლა არა
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = თემები
+newtab-section-mangage-topics-button =
+    .label = მიდევნებული და შეზღუდული თემები
+newtab-section-mangage-topics-followed-topics-subtitle = მიდევნებული თემები
+newtab-section-mangage-topics-followed-topics-empty-state = თქვენ ჯერ არცერთ თემას არ ადევნებთ თვალს.
+newtab-section-mangage-topics-blocked-topics-subtitle = შეზღუდული თემები
+newtab-section-mangage-topics-blocked-topics-empty-state = თქვენ ჯერ არცერთი თემა არ შეგიზღუდავთ.

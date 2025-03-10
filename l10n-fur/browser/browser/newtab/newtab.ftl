@@ -8,11 +8,18 @@
 newtab-page-title = Gnove schede
 newtab-settings-button =
     .title = Personalize la pagjine de tô gnove schede
+newtab-personalize-settings-icon-label =
+    .title = Personalize Gnove schede
+    .aria-label = Impostazions
+newtab-settings-dialog-label =
+    .aria-label = Impostazions
 newtab-personalize-icon-label =
     .title = Personalize gnove schede
     .aria-label = Personalize gnove schede
 newtab-personalize-dialog-label =
     .aria-label = Personalize
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Salve su { -pocket-brand-name }
 newtab-menu-delete-pocket = Elimine di { -pocket-brand-name }
 newtab-menu-archive-pocket = Archivie in { -pocket-brand-name }
 newtab-menu-show-privacy-info = I nestris patrocinadôrs e la tô riservatece
+newtab-menu-about-fakespot = Informazions su { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Bloche
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Smet di sta daûr al argoment
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -234,6 +248,8 @@ newtab-pocket-cta-button = Oten { -pocket-brand-name }
 newtab-pocket-cta-text = Salve lis storiis che ti plasin in { -pocket-brand-name } e nudrìs il to cjâf cun leturis apassionantis.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } al è part de famee { -brand-product-name }
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Salve
 newtab-pocket-saved = Salvât
 
@@ -245,6 +261,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = No mi interesse
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Graciis. La tô opinion nus judarà a miorâ il to feed.
 newtab-toast-thumbs-up-or-down = Graciis. La tô opinion nus judarà a miorâ il to feed.
 newtab-toast-dismiss-button =
     .title = Siere
@@ -310,6 +329,8 @@ newtab-wallpaper-dark-panda = Panda ros platât tal bosc
 newtab-wallpaper-dark-sky = Paisaç di citât cun cîl di gnot
 newtab-wallpaper-dark-mountain = Paisaç cun montagne
 newtab-wallpaper-dark-city = Paisaç citadin cun tonalitât viole
+newtab-wallpaper-dark-fox-anniversary = Une bolp sul marcjepît dongje di un bosc
+newtab-wallpaper-light-fox-anniversary = Une bolp intun cjamp jerbôs cuntun paesaç di montagne infumatât
 
 ## Solid Colors
 
@@ -340,7 +361,7 @@ newtab-wallpaper-abstract-orange = Formis naranç
 newtab-wallpaper-gradient-orange = Gradient naranç e rose
 newtab-wallpaper-abstract-blue-purple = Formis blu e viole
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Fotografiis
 newtab-wallpaper-beach-at-sunrise = Splaze al cricâ dal dì
@@ -364,6 +385,9 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+
 ## New Tab Weather
 
 # Variables:
@@ -374,6 +398,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Sponsorizât
 newtab-weather-menu-change-location = Cambie localitât
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Cîr localitât
+    .aria-label = Cîr localitât
 newtab-weather-change-location-search-input = Cîr localitât
 newtab-weather-menu-weather-display = Visualizazion meteo
 # Display options are:
@@ -432,3 +459,36 @@ newtab-topic-selection-button-maybe-later = Magari plui indevant
 newtab-topic-selection-privacy-link = Scuvierç cemût che o gjestìn e o protezìn i dâts
 newtab-topic-selection-button-update-interests = Inzorne i tiei interès
 newtab-topic-selection-button-pick-interests = Sielç i tiei interès
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Sta daûr
+newtab-section-following-button = Tu stâs daûr
+newtab-section-unfollow-button = Smet di sta daûr
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Bloche
+newtab-section-blocked-button = Blocât
+newtab-section-unblock-button = Sbloche
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = Blocâ pardabon cheste sezion?
+newtab-section-confirm-block-section-p2 = La sezion blocade no vignarà plui fûr tai tiei feed.
+newtab-section-block-section-button = Bloche cheste sezion
+newtab-section-cancel-button = No cumò
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = Argoments
+newtab-section-mangage-topics-button =
+    .label = Argoments che tu stâs daûr e blocâts
+newtab-section-mangage-topics-followed-topics-subtitle = Argoments che tu stâs daûr
+newtab-section-mangage-topics-followed-topics-empty-state = No tu sês ancjemò daûr a nissun argoment.
+newtab-section-mangage-topics-blocked-topics-subtitle = Argoments blocâts
+newtab-section-mangage-topics-blocked-topics-empty-state = No tu âs ancjemò blocât nissun argoment.

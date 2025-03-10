@@ -8,11 +8,18 @@
 newtab-page-title = Neuer Tab
 newtab-settings-button =
     .title = Einstellungen für neue Tabs anpassen
+newtab-personalize-settings-icon-label =
+    .title = Neuen Tab anpassen
+    .aria-label = Einstellungen
+newtab-settings-dialog-label =
+    .aria-label = Einstellungen
 newtab-personalize-icon-label =
     .title = Neuen Tab anpassen
     .aria-label = Neuen Tab anpassen
 newtab-personalize-dialog-label =
     .aria-label = Anpassen
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Bei { -pocket-brand-name } speichern
 newtab-menu-delete-pocket = Aus { -pocket-brand-name } löschen
 newtab-menu-archive-pocket = In { -pocket-brand-name } archivieren
 newtab-menu-show-privacy-info = Unsere Sponsoren & Ihre Privatsphäre
+newtab-menu-about-fakespot = Über { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Blockieren
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Thema nicht mehr folgen
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -233,6 +247,8 @@ newtab-pocket-cta-button = { -pocket-brand-name } holen
 newtab-pocket-cta-text = Speichern Sie Ihre Lieblingstexte in { -pocket-brand-name } und gewinnen Sie gedankenreiche Einblicke durch faszinierende Texte.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } ist Teil der { -brand-product-name }-Familie
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Speichern
 newtab-pocket-saved = Gespeichert
 
@@ -244,6 +260,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Nichts für mich
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Vielen Dank. Ihr Feedback hilft uns, Ihren Feed zu verbessern.
 newtab-toast-thumbs-up-or-down = Vielen Dank. Ihr Feedback hilft uns, Ihren Feed zu verbessern.
 newtab-toast-dismiss-button =
     .title = Schließen
@@ -297,6 +316,12 @@ newtab-custom-settings = Weitere Einstellungen verwalten
 
 newtab-wallpaper-title = Hintergrundbilder
 newtab-wallpaper-reset = Standard wiederherstellen
+newtab-wallpaper-upload-image = Grafik hochladen
+newtab-wallpaper-custom-color = Farbe auswählen
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = Die Grafik hat die Größenbegrenzung von { $file_size } MB überschritten. Bitte versuchen Sie, eine kleinere Datei hochzuladen.
+newtab-wallpaper-error-file-type = Wir konnten Ihre Datei nicht hochladen. Bitte versuchen Sie es erneut mit einem anderen Dateityp.
 newtab-wallpaper-light-red-panda = Roter Panda
 newtab-wallpaper-light-mountain = Weißer Berg
 newtab-wallpaper-light-sky = Himmel mit violetten und rosafarbenen Wolken
@@ -309,6 +334,8 @@ newtab-wallpaper-dark-panda = Roter Panda im Wald versteckt
 newtab-wallpaper-dark-sky = Stadtlandschaft mit Nachthimmel
 newtab-wallpaper-dark-mountain = Berg in der Landschaft
 newtab-wallpaper-dark-city = Violette Stadtlandschaft
+newtab-wallpaper-dark-fox-anniversary = Ein Fuchs auf einer Straße in der Nähe eines Waldes
+newtab-wallpaper-light-fox-anniversary = Ein Fuchs auf einer Weide vor einer nebligen Berglandschaft
 
 ## Solid Colors
 
@@ -338,8 +365,12 @@ newtab-wallpaper-abstract-purple = Lila Formen
 newtab-wallpaper-abstract-orange = Orangefarbene Formen
 newtab-wallpaper-gradient-orange = Farbverlauf orange und rosa
 newtab-wallpaper-abstract-blue-purple = Blaue und lila Formen
+newtab-wallpaper-abstract-white-curves = Weiß mit schattierten Rundungen
+newtab-wallpaper-abstract-purple-green = Lilafarbener und grüner Lichtverlauf
+newtab-wallpaper-abstract-blue-purple-waves = Blaue und lila gewellte Formen
+newtab-wallpaper-abstract-black-waves = Schwarze gewellte Formen
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Fotos
 newtab-wallpaper-beach-at-sunrise = Strand bei Sonnenaufgang
@@ -348,6 +379,12 @@ newtab-wallpaper-storm-sky = Gewitterhimmel
 newtab-wallpaper-sky-with-pink-clouds = Himmel mit rosafarbenen Wolken
 newtab-wallpaper-red-panda-yawns-in-a-tree = Roter Panda gähnt auf einem Baum
 newtab-wallpaper-white-mountains = Weiße Berge
+newtab-wallpaper-hot-air-balloons = Heißluftballons in verschiedenen Farben bei Tag
+newtab-wallpaper-starry-canyon = Blaue sternenklare Nacht
+newtab-wallpaper-suspension-bridge = Graue Fotografie einer Hängebrücke bei Tag
+newtab-wallpaper-sand-dunes = Weiße Sanddünen
+newtab-wallpaper-palm-trees = Silhouette von Kokospalmen zur Goldenen Stunde
+newtab-wallpaper-forest-trees = Bäume im Nebel
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -363,6 +400,19 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Astronomie
+newtab-wallpaper-celestial-lunar-eclipse = Mondfinsternis
+newtab-wallpaper-celestial-earth-night = Nachtfoto aus der niedrigen Erdumlaufbahn
+newtab-wallpaper-celestial-starry-sky = Sternenhimmel
+newtab-wallpaper-celestial-eclipse-time-lapse = Zeitraffer zur Mondfinsternis
+newtab-wallpaper-celestial-black-hole = Illustration von Galaxie mit schwarzem Loch
+newtab-wallpaper-celestial-river = Satellitenbild eines Flusses
+
 ## New Tab Weather
 
 # Variables:
@@ -373,6 +423,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Gesponsert
 newtab-weather-menu-change-location = Standort ändern
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Standort suchen
+    .aria-label = Standort suchen
 newtab-weather-change-location-search-input = Standort suchen
 newtab-weather-menu-weather-display = Wetteranzeige
 # Display options are:
@@ -394,7 +447,7 @@ newtab-weather-error-not-available = Wetterdaten sind derzeit nicht verfügbar.
 
 ## Topic Labels
 
-newtab-topic-label-business = Geschäftliches
+newtab-topic-label-business = Wirtschaft
 newtab-topic-label-career = Karriere
 newtab-topic-label-education = Bildung
 newtab-topic-label-arts = Unterhaltung
@@ -431,3 +484,45 @@ newtab-topic-selection-button-maybe-later = Vielleicht später
 newtab-topic-selection-privacy-link = Erfahren Sie, wie wir Daten schützen und verwalten
 newtab-topic-selection-button-update-interests = Aktualisieren Sie Ihre Interessen
 newtab-topic-selection-button-pick-interests = Wählen Sie Ihre Interessen aus
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Folgen
+newtab-section-following-button = Folgen
+newtab-section-unfollow-button = Nicht mehr folgen
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Blockieren
+newtab-section-blocked-button = Blockiert
+newtab-section-unblock-button = Nicht mehr blockieren
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = Soll dieser Abschnitt wirklich blockiert werden?
+newtab-section-confirm-block-section-p2 = Ein blockierter Abschnitt erscheint nicht mehr in Ihrem Feed.
+newtab-section-block-section-button = Diesen Abschnitt blockieren
+newtab-section-cancel-button = Nicht jetzt
+newtab-section-confirm-block-topic-p1 = Soll dieses Thema wirklich blockiert werden?
+newtab-section-confirm-block-topic-p2 = Blockierte Themen erscheinen nicht mehr in Ihrem Feed.
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = { $topic } blockieren
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = Themen
+newtab-section-manage-topics-button-v2 =
+    .label = Themen verwalten
+newtab-section-mangage-topics-followed-topics = Gefolgt
+newtab-section-mangage-topics-button =
+    .label = Gefolgte und blockierte Themen
+newtab-section-mangage-topics-followed-topics-subtitle = Gefolgte Themen
+newtab-section-mangage-topics-followed-topics-empty-state = Sie folgen noch keinen Themen.
+newtab-section-mangage-topics-blocked-topics = Blockiert
+newtab-section-mangage-topics-blocked-topics-subtitle = Blockierte Themen
+newtab-section-mangage-topics-blocked-topics-empty-state = Sie haben noch keine Themen blockiert.

@@ -128,12 +128,8 @@ class ScrollAnchorContainer;
 }  // namespace layout
 
 // 039d8ffc-fa55-42d7-a53a-388cb129b052
-#define NS_PRESSHELL_IID                             \
-  {                                                  \
-    0x039d8ffc, 0xfa55, 0x42d7, {                    \
-      0xa5, 0x3a, 0x38, 0x8c, 0xb1, 0x29, 0xb0, 0x52 \
-    }                                                \
-  }
+#define NS_PRESSHELL_IID \
+  {0x039d8ffc, 0xfa55, 0x42d7, {0xa5, 0x3a, 0x38, 0x8c, 0xb1, 0x29, 0xb0, 0x52}}
 
 #undef NOISY_INTERRUPTIBLE_REFLOW
 
@@ -418,7 +414,7 @@ class PresShell final : public nsStubDocumentObserver,
    * viewport. Will return null in situations where we don't have a mobile
    * viewport, and for documents that are not the root content document.
    */
-  RefPtr<MobileViewportManager> GetMobileViewportManager() const;
+  MobileViewportManager* GetMobileViewportManager() const;
 
   /**
    * Called when document load completes.
@@ -1159,7 +1155,7 @@ class PresShell final : public nsStubDocumentObserver,
   MOZ_CAN_RUN_SCRIPT void FireResizeEvent();
   MOZ_CAN_RUN_SCRIPT void FireResizeEventSync();
 
-  void NativeAnonymousContentRemoved(nsIContent* aAnonContent);
+  void NativeAnonymousContentWillBeRemoved(nsIContent* aAnonContent);
 
   /**
    * See HTMLDocument.setKeyPressEventModel() in HTMLDocument.webidl for the
@@ -1259,7 +1255,8 @@ class PresShell final : public nsStubDocumentObserver,
   NS_IMETHOD GetDisplaySelection(int16_t* aToggle) override;
   NS_IMETHOD ScrollSelectionIntoView(RawSelectionType aRawSelectionType,
                                      SelectionRegion aRegion,
-                                     int16_t aFlags) override;
+                                     ControllerScrollFlags aFlags) override;
+  using nsISelectionController::ScrollSelectionIntoView;
   NS_IMETHOD RepaintSelection(RawSelectionType aRawSelectionType) override;
   void SelectionWillTakeFocus() override;
   void SelectionWillLoseFocus() override;
@@ -1474,6 +1471,12 @@ class PresShell final : public nsStubDocumentObserver,
    * Calls FrameNeedsReflow on all fixed position children of the root frame.
    */
   void MarkFixedFramesForReflow(IntrinsicDirty aIntrinsicDirty);
+
+  /**
+   * Similar to above MarkFixedFramesForReflow, but for sticky position children
+   * stuck to the root frame.
+   */
+  void MarkStickyFramesForReflow();
 
   void MaybeReflowForInflationScreenSizeChange();
 
@@ -2854,7 +2857,7 @@ class PresShell final : public nsStubDocumentObserver,
      * AutoCurrentEventInfoSetter() pushes and pops current event info of
      * aEventHandler.mPresShell.
      */
-    struct MOZ_STACK_CLASS AutoCurrentEventInfoSetter final {
+    struct MOZ_RAII AutoCurrentEventInfoSetter final {
       explicit AutoCurrentEventInfoSetter(EventHandler& aEventHandler)
           : mEventHandler(aEventHandler) {
         MOZ_DIAGNOSTIC_ASSERT(!mEventHandler.mCurrentEventInfoSetter);
@@ -3042,7 +3045,8 @@ class PresShell final : public nsStubDocumentObserver,
   // Text directives are supposed to be scrolled to the center of the viewport.
   // Since `ScrollToAnchor()` might get called after `GoToAnchor()` during a
   // load, the vertical view position should be preserved.
-  WhereToScroll mLastAnchorVerticalScrollViewPosition;
+  enum class AnchorScrollType : bool { Anchor, TextDirective };
+  AnchorScrollType mLastAnchorScrollType = AnchorScrollType::Anchor;
 
   // Information needed to properly handle scrolling content into view if the
   // pre-scroll reflow flush can be interrupted.  mContentToScrollTo is non-null

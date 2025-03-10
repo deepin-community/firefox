@@ -225,7 +225,9 @@ mr2022-onboarding-set-default-subtitle = Usa un navegador respaldado por una org
 mr2022-onboarding-get-started-primary-subtitle = Nuestra última versión está diseñada pensando en ti, lo que hace que navegar por la web sea más fácil que nunca. Está repleto de funciones que creemos que te encantarán.
 mr2022-onboarding-get-started-primary-button-label = Configurar en segundos
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Configuración ultrarrápida
 mr2022-onboarding-import-subtitle = Configura { -brand-short-name } como quieras. Agrega tus marcadores, contraseñas y más desde tu antiguo navegador.
@@ -356,6 +358,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Cuando tengas todo si
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } te respalda
 onboarding-gratitude-security-and-privacy-subtitle = Gracias por usar { -brand-short-name }, respaldado por la Fundación Mozilla. Con tu apoyo, estamos trabajando para que Internet sea más seguro y accesible para todos.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Sincronizar tus datos entre dispositivos
+onboarding-sign-up-description = Regístrate para tener una cuenta y toda tu información importante — contraseñas, marcadores y más — se guardarán de forma segura y estarán disponibles al iniciar sesión en cualquier dispositivo.
+onboarding-sign-up-button = Regístrate o inicia sesión
+onboarding-sign-up-secondary-button = Empieza a navegar
 
 ## New user time and familiarity survey strings
 
@@ -375,3 +382,78 @@ onboarding-new-user-survey-familiarity-based-option-1 = Soy nuevo
 onboarding-new-user-survey-familiarity-based-option-2 = Lo he usado un poco
 onboarding-new-user-survey-familiarity-based-option-3 = Estoy muy familiarizado
 onboarding-new-user-survey-familiarity-based-option-4 = Lo he usado antes pero ya tiene un tiempo
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Dinos dónde te gustaría que estuvieran tus pestañas
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Cámbialo cuando quieras en la configuración de la barra lateral.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Tus pestañas, a tu manera
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = ¿Dejas muchas pestañas abiertas? Prueba a colocarlas a un costado para una vista más simplificada. O mantén el estilo clásico con pestañas en la parte superior. Cambia cuando quieras.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Selecciona el diseño de tus pestañas
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Para una vista optimizada que te ayude a mantener la concentración, prueba las pestañas en el lateral. O también opta por el estilo clásico con pestañas en la parte superior. Cambia cuando quieras.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Pestañas en el lateral
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Pestañas en la parte superior
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Las pestañas verticales están aquí
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Presentamos las pestañas verticales
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Prueba tus pestañas en el lateral. Cambia de posición cuando quieras en la configuración de la barra lateral.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Pruebe las pestañas verticales
+onboarding-flair-text = ¡Nuevo!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Mantener las pestañas horizontales
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Una ventana del navegador que muestra las pestañas a lo largo del lateral de la pantalla como parte de la barra lateral de { -brand-shorter-name }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Una ventana del navegador que muestra las pestañas a lo largo del lateral de la pantalla como parte de la barra lateral de { -brand-shorter-name }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Una ventana del navegador que muestra las pestañas en la parte superior.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Una ventana del navegador que muestra las pestañas en la parte superior.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Prueba un chatbot de IA en la barra lateral
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Resume contenido web, genera ideas, redacta mensajes, todo mientras navegas. Elige entre varios proveedores y cámbialos en cualquier momento. <a data-l10n-name="learn-more">Saber más</a>.—
+onboarding-genai-sidebar-primary-button = Elige un chatbot
+onboarding-genai-sidebar-secondary-button = Empieza a navegar
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Terminar de configurar { -brand-short-name }
+onboarding-checklist-subtitle = Completa estos pasos para aprovechar al máximo la experiencia de navegación.
+onboarding-checklist-set-default = Establece { -brand-short-name } como tu navegador predeterminado
+onboarding-checklist-pin = Fijar { -brand-short-name } en la barra de tareas
+onboarding-checklist-import = Importar desde el navegador anterior
+onboarding-checklist-extension = Agregar una extensión
+onboarding-checklist-sign-up = Regístrate o inicia sesión en tu cuenta
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Prueba los grupos de pestañas para lograr menos desorden y más concentración
+tab-groups-onboarding-feature-callout-subtitle = Organízate arrastrando una pestaña encima de otra para crear tu primer grupo.
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Saluda a los perfiles en { -brand-product-name }
+multi-profile-spotlight-body = Cambia fácilmente entre la navegación por trabajo y por diversión. Los perfiles mantienen tu información de navegación, incluido el historial de búsqueda y las contraseñas, totalmente separada para que puedas mantenerte organizado.
+multi-profile-spotlight-cta = Crear un perfil
+multi-profile-callout-title = Crea diferentes perfiles para trabajo y diversión
+multi-profile-callout-subtitle = Los perfiles permiten mantener la información de navegación, como el historial de búsqueda y las contraseñas, totalmente separadas.
+multi-profile-callout-cta = Crear un perfil
+
+## Desktop to Mobile Adoption feature callout strings
+

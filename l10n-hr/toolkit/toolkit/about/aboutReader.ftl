@@ -36,7 +36,7 @@ about-reader-estimated-read-time =
        *[other] { $range } minuta
     }
 
-## These are used as tooltips in Type Control
+## Reader View text and layout menu
 
 about-reader-toolbar-minus =
     .title = Smanji veličinu fonta
@@ -86,8 +86,23 @@ about-reader-custom-colors-visited-links = Posjećene poveznice
 about-reader-custom-colors-selection-highlight = Marker za čitanje naglas
     .title = Uredi boju
 about-reader-reset-button = Obnovi standardne
+about-reader-custom-colors-foreground2 =
+    .label = Tekst
+    .title = Uredi boju
+about-reader-custom-colors-background2 =
+    .label = Pozadina
+    .title = Uredi boju
+about-reader-custom-colors-unvisited-links2 =
+    .label = Neposjećene poveznice
+    .title = Uredi boju
+about-reader-custom-colors-visited-links2 =
+    .label = Posjećene poveznice
+    .title = Uredi boju
+about-reader-custom-colors-selection-highlight2 =
+    .label = Marker za čitanje naglas
+    .title = Uredi boju
 
-## Reader View improved text and layout menu
+## Reader View text and layout menu
 
 about-reader-text-header = Tekst
 about-reader-text-size-label = Veličina teksta

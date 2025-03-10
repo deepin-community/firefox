@@ -164,6 +164,9 @@ class MOZ_STACK_CLASS ContentEventHandler {
   // eQueryDOMWidgetHittest event handler
   MOZ_CAN_RUN_SCRIPT nsresult
   OnQueryDOMWidgetHittest(WidgetQueryContentEvent* aEvent);
+  // eQueryDropTargetHittest event handler
+  MOZ_CAN_RUN_SCRIPT nsresult
+  OnQueryDropTargetHittest(WidgetQueryContentEvent* aEvent);
 
   // NS_SELECTION_* event
   MOZ_CAN_RUN_SCRIPT nsresult OnSelectionEvent(WidgetSelectionEvent* aEvent);
@@ -268,13 +271,8 @@ class MOZ_STACK_CLASS ContentEventHandler {
      * previous sibling of aContent actually.
      */
     static RawNodePosition Before(const nsIContent& aContent) {
-      if (!aContent.IsBeingRemoved()) {
-        return RawNodePosition(aContent.GetParentNode(),
-                               aContent.GetPreviousSibling());
-      }
-      RawNodePosition ret(const_cast<nsIContent*>(&aContent), 0u);
-      ret.mAfterOpenTag = false;
-      return ret;
+      return RawNodePosition(aContent.GetParentNode(),
+                             aContent.GetPreviousSibling());
     }
 
     RawNodePosition(nsINode* aContainer, uint32_t aOffset)
@@ -611,6 +609,10 @@ class MOZ_STACK_CLASS ContentEventHandler {
   static nsRect GetCaretRectAfter(nsPresContext& aPresContext,
                                   const nsRect& aCharRect,
                                   const WritingMode& aWritingMode);
+
+  nsresult QueryHittestImpl(WidgetQueryContentEvent* aEvent, bool aFlushLayout,
+                            bool aPerformRetargeting,
+                            Element** aContentUnderMouse);
 };
 
 }  // namespace mozilla

@@ -353,6 +353,7 @@ identity-connection-secure = ᱡᱩᱲᱟᱹᱣ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱜᱮ�
 identity-connection-failure = ᱡᱩᱲᱟᱹᱣ ᱰᱤᱜᱟᱹᱣ ᱮᱱᱟ
 identity-connection-internal = ᱱᱚᱶᱟ ᱫᱚ ᱨᱩᱠᱷᱤᱭᱟᱹ { -brand-short-name } ᱥᱟᱦᱴᱟ ᱠᱟᱱᱟ ᱾
 identity-connection-file = ᱱᱚᱶᱟ ᱥᱟᱦᱴᱟ ᱫᱚ ᱟᱢᱟᱜ ᱠᱚᱢᱯᱩᱴᱚᱨ ᱨᱮ ᱫᱚᱦᱚ ᱠᱟᱱᱟ ᱾
+identity-connection-associated = ᱱᱚᱶᱟ ᱥᱟᱦᱴᱟ ᱫᱚ ᱮᱴᱟᱜ ᱥᱟᱦᱴᱟ ᱠᱷᱚᱱ ᱞᱟᱫᱮ ᱠᱟᱱᱟ ᱾
 identity-extension-page = ᱱᱚᱶᱟ ᱥᱟᱦᱴᱟ ᱫᱚ ᱯᱟᱥᱱᱟᱣ ᱠᱷᱚᱱ ᱞᱟᱫᱮ ᱠᱟᱱᱟ ᱾
 identity-active-blocked = { -brand-short-name } ᱫᱚ ᱵᱟᱝ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱟᱱ ᱥᱟᱦᱴᱟ ᱫᱚ ᱵᱞᱚᱠ ᱠᱟᱜᱼᱟᱭ ᱾
 identity-custom-root = ᱡᱚᱲᱟᱹᱣ ᱫᱚ Mozilla ᱵᱟᱝ ᱪᱤᱱᱦᱟᱹᱣ ᱠᱟᱫ ᱯᱚᱨᱢᱟᱱ ᱥᱟᱠᱟᱢ ᱮᱢᱚᱜᱤᱡ ᱛᱮ ᱪᱤᱱᱦᱟᱹᱯ ᱠᱟᱱᱟ ᱾
@@ -554,6 +555,8 @@ urlbar-go-button =
     .tooltiptext = ᱴᱷᱟᱣ ᱵᱟᱨ ᱴᱷᱤᱠᱬᱟᱹ ᱨᱮ ᱪᱟᱞᱟᱣ
 urlbar-page-action-button =
     .tooltiptext = ᱥᱟᱦᱟᱴᱟ ᱠᱟᱹᱢᱤ ᱠᱚ
+urlbar-revert-button =
+    .tooltiptext = ᱴᱷᱟᱣ ᱵᱟᱨ ᱨᱮ ᱴᱷᱤᱠᱬᱟᱹ ᱫᱮᱠᱷᱟᱣ ᱢᱮ
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -574,6 +577,13 @@ urlbar-result-action-search-w-engine = { $engine } ᱥᱟᱶ ᱯᱟᱱᱛᱮ
 urlbar-result-action-sponsored = ᱠᱟᱹᱢᱤᱼᱤᱭᱟᱹ
 urlbar-result-action-switch-tab = ᱴᱮᱵᱽ ᱨᱮ ᱩᱪᱟᱹᱲᱚᱜ ᱢᱮ
 urlbar-result-action-visit = ᱦᱤᱨᱤ
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = <span>{ $container }</span> · ᱴᱮᱵᱽ ᱨᱮ ᱵᱚᱫᱚᱞ ᱢᱮ
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = ᱨᱮᱴᱚᱯᱵᱚᱰ ᱠᱷᱚᱱ ᱪᱟᱞᱟᱜ ᱢᱮ
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -604,6 +614,45 @@ urlbar-result-action-calculator-result = = { $result }
 
 ## Strings used for buttons in the urlbar
 
+# Label prompting user to search with a particular search engine.
+#  $engine (String): the name of a search engine that searches a specific site
+urlbar-result-search-with = { $engine } ᱥᱟᱶ ᱯᱟᱱᱛᱮ
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - { $localSearchMode } ᱥᱮᱸᱫᱽᱨᱟᱭ ᱢᱮ
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - { $engine } ᱥᱟᱶ ᱥᱮᱸᱫᱽᱨᱟᱭ ᱢᱮ
+urlbar-searchmode-dropmarker =
+    .tooltiptext = ᱥᱮᱸᱫᱽᱨᱟ ᱤᱧᱡᱤᱱ ᱵᱟᱪᱷᱟᱣ ᱢᱮ
+urlbar-searchmode-bookmarks =
+    .label = ᱵᱩᱠᱢᱟᱨᱠ ᱠᱚ
+urlbar-searchmode-tabs =
+    .label = ᱴᱮᱵᱽ ᱠᱚ
+urlbar-searchmode-history =
+    .label = ᱱᱟᱜᱟᱢ
+urlbar-searchmode-actions =
+    .label = ᱠᱟᱹᱢᱤ ᱠᱚ
+urlbar-searchmode-exit-button =
+    .tooltiptext = ᱵᱚᱸᱫᱚᱭ ᱢᱮ
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = ᱱᱤᱭᱟᱹ ᱫᱷᱟᱣ ᱱᱚᱶᱟ ᱛᱮ ᱥᱮᱸᱫᱽᱨᱟᱭ ᱢᱮᱺ
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = ᱥᱮᱸᱫᱽᱨᱟ ᱥᱟᱡᱟᱣ ᱠᱚ
+urlbar-searchmode-popup-search-settings = ᱥᱮᱸᱫᱽᱨᱟ ᱥᱟᱡᱟᱣ ᱠᱚ
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, ᱢᱤᱫ ᱥᱮᱸᱫᱽᱨᱟ ᱤᱧᱡᱤᱱ ᱵᱟᱪᱷᱟᱣ ᱢᱮ
+    .tooltiptext = { $engine }, ᱢᱤᱫ ᱥᱮᱸᱫᱽᱨᱟ ᱤᱧᱡᱤᱱ ᱵᱟᱪᱷᱟᱣ ᱢᱮ
+urlbar-searchmode-button-no-engine =
+    .label = ᱥᱚᱴᱠᱟᱴ ᱵᱟᱝ ᱵᱟᱪᱷᱟᱣ ᱟᱠᱟᱱᱟ, ᱢᱤᱫ ᱥᱚᱴᱠᱟᱴ ᱵᱟᱪᱷᱟᱣ ᱢᱮ
+    .tooltiptext = ᱥᱚᱴᱠᱟᱴ ᱵᱟᱝ ᱵᱟᱪᱷᱟᱣ ᱟᱠᱟᱱᱟ, ᱢᱤᱫ ᱥᱚᱴᱠᱟᱴ ᱵᱟᱪᱷᱟᱣ ᱢᱮ
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -629,6 +678,26 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = ᱞᱚᱜᱚᱱ ᱛᱮᱭᱟ ᱠᱚᱢᱤ
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = ᱱᱤᱛᱚᱜᱟᱜ ᱥᱮᱸᱫᱽᱨᱟ ᱠᱚ
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = { $engine } ᱨᱮ ᱴᱨᱮᱱᱰᱤᱝᱚᱜ ᱠᱟᱱᱟ
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = ᱴᱨᱮᱱᱰᱤᱝ ᱥᱮᱸᱫᱽᱨᱟ ᱟᱞᱚᱢ ᱩᱫᱩᱜᱼᱟ
+    .accesskey = D
+urlbar-result-menu-trending-why =
+    .label = ᱤᱧ ᱪᱮᱫᱟᱜ ᱱᱚᱣᱟᱧ ᱧᱮᱞᱮᱫᱼᱟ ?
+    .accesskey = W
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = ᱟᱢᱟᱜ ᱢᱚᱱᱚᱛ ᱞᱟᱹᱜᱤᱫ ᱥᱟᱨᱦᱟᱣ ᱾ ᱟᱢ ᱴᱨᱮᱱᱰᱤᱝ ᱥᱮᱸᱫᱽᱨᱟ ᱟᱨ ᱵᱟᱢ ᱧᱮᱞ ᱧᱟᱢᱟ ᱾
 
 ## Reader View toolbar buttons
 
@@ -896,6 +965,7 @@ restore-session-startup-suggestion-button = ᱫᱚᱠᱷᱟᱣ ᱟᱹᱧ ᱢᱮ 
 
 ## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
 
+filepicker-blocked-infobar = ᱟᱢᱟᱜ ᱜᱟᱶᱛᱟ ᱫᱚ ᱱᱚᱶᱟ ᱠᱚᱢᱯᱭᱩᱴᱟᱨ ᱨᱮ ᱞᱚᱠᱟᱞ ᱨᱮᱫ ᱠᱚ ᱨᱮᱭᱟᱜ ᱟᱫᱮᱨ ᱵᱚᱱᱫᱚ ᱠᱮᱫᱟᱭ
 
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
@@ -905,6 +975,18 @@ data-reporting-notification-button =
     .accesskey = C
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = ᱱᱤᱡᱮᱨᱟᱜ ᱵᱽᱨᱟᱣᱡᱤᱝ
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = ᱱᱤᱡᱮᱨᱟᱜ ᱵᱽᱨᱟᱣᱡᱤᱝ
+# Tooltip for the indicator shown in the window titlebar when content analysis is active.
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-indicator-tooltip =
+    .tooltiptext = ᱰᱟᱴᱟ ᱦᱟᱹᱱ ᱵᱚᱱᱫᱚ (DLP) ᱦᱚᱛᱮᱛᱮ { $agentName } ᱾ ᱵᱟᱹᱲᱛᱤ ᱵᱟᱰᱟᱭ ᱞᱟᱹᱜᱤᱫ ᱚᱛᱟᱭ ᱢᱮ ᱾
+content-analysis-panel-title = ᱰᱟᱴᱟ ᱨᱩᱠᱷᱤᱭᱟᱹ
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-panel-text-styled = ᱟᱢᱟᱜ ᱜᱟᱶᱛᱟ ᱰᱟᱴᱟ ᱟᱫ ᱠᱷᱚᱱ ᱨᱚᱠᱷᱤᱭᱟᱹ ᱞᱟᱹᱜᱤᱫ <b>{ $agentName }</b> ᱵᱮᱵᱷᱟᱨ ᱮᱫᱟᱭ ᱾ <a data-l10n-name="info">ᱵᱟᱹᱲᱛᱤ ᱵᱟᱰᱟᱭ ᱢᱮ</a>
 
 ## Unified extensions (toolbar) button
 
@@ -930,8 +1012,27 @@ unified-extensions-button-quarantined =
         ᱮᱠᱥᱴᱮᱱᱥᱚᱱᱠᱚ
         ᱛᱤᱱᱟᱹᱜ ᱜᱟᱱ ᱮᱠᱥᱴᱮᱱᱥᱚᱱ ᱫᱚ ᱵᱟᱝ ᱮᱢᱪᱷᱚᱜᱼᱟ
 
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+
 ## Private browsing reset button
 
+reset-pbm-toolbar-button =
+    .label = ᱯᱨᱟᱭᱣᱮᱴ ᱥᱮᱥᱚᱱ ᱢᱩᱪᱟᱹᱫ ᱢᱮ
+    .tooltiptext = ᱯᱨᱟᱭᱣᱮᱴ ᱥᱮᱥᱚᱱ ᱢᱩᱪᱟᱹᱫ ᱢᱮ
+reset-pbm-panel-heading = ᱱᱤᱡᱮᱨᱟᱜ ᱠᱟᱹᱢᱤ ᱦᱚᱨᱟ ᱵᱚᱸᱫᱚᱭ ᱟ ᱥᱮ ?
+reset-pbm-panel-description = ᱡᱚᱛᱚ ᱯᱨᱟᱭᱣᱮᱴ ᱴᱮᱵᱽ ᱠᱚ ᱵᱚᱸᱫᱚᱭ ᱢᱮ ᱟᱨ ᱦᱤᱛᱟᱹᱞ, ᱠᱩᱠᱤ ᱟᱨ ᱮᱴᱟᱜ ᱥᱟᱭᱤᱴ ᱰᱟᱴᱟ ᱠᱚ ᱢᱮᱴᱟᱣ ᱢᱮ ᱾
+reset-pbm-panel-always-ask-checkbox =
+    .label = ᱥᱟᱨᱟ ᱜᱷᱟᱹᱲᱤᱡ ᱤᱧ ᱠᱩᱞᱤᱧ ᱢᱮ
+    .accesskey = A
+reset-pbm-panel-cancel-button =
+    .label = ᱵᱟᱹᱰᱨᱟᱹ
+    .accesskey = C
+reset-pbm-panel-confirm-button =
+    .label = ᱠᱟᱹᱢᱤᱦᱚᱨᱟ ᱰᱟᱴᱟ ᱢᱮᱴᱟᱣ ᱢᱮ
+    .accesskey = D
+reset-pbm-panel-complete = ᱯᱨᱟᱭᱣᱮᱴ ᱥᱮᱥᱚᱱ ᱰᱟᱴᱟ ᱢᱮᱴᱟᱣ ᱮᱱᱟ
 
 ## Autorefresh blocker
 
@@ -954,6 +1055,11 @@ firefox-relay-offer-legal-notice = “ᱤᱢᱮᱞ ᱢᱟᱥᱠ ᱵᱮᱵᱷᱟ�
 popup-notification-addon-install-unsigned =
     .value = (ᱵᱟᱝ ᱧᱮᱞ ᱢᱤᱞᱟᱹᱣ)
 popup-notification-xpinstall-prompt-learn-more = ᱮᱰ-ᱚᱱ ᱵᱚᱦᱟᱞ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱵᱟᱵᱚᱛ ᱰᱷᱮᱨ ᱥᱮᱬᱟᱭ ᱢᱮ
+popup-notification-xpinstall-prompt-block-url = ᱵᱤᱵᱨᱟᱬ ᱧᱮᱞ ᱢᱮ
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = ᱯᱨᱟᱭᱣᱮᱴ ᱣᱤᱱᱰᱚᱡᱽ ᱨᱮ ᱪᱟᱹᱞᱩᱭ ᱢᱮ
+    .accesskey = P
 
 ## Pop-up warning
 
@@ -988,3 +1094,24 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = “{ $popupURI }” ᱫᱮᱠᱷᱟᱣᱢᱮ
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = ᱣᱤᱱᱰᱚᱡᱽ ᱨᱮᱫᱽᱼᱰᱟᱭᱞᱚᱜᱽ ᱵᱟᱝ ᱡᱷᱤᱡᱽ ᱫᱟᱲᱮᱭᱟᱜ ᱠᱟᱱᱟ ᱾ ᱪᱮᱫ ᱨᱮᱫᱽ ᱵᱟᱝᱠᱷᱟᱱ ᱯᱷᱚᱞᱰᱟᱨ ᱵᱟᱝ ᱵᱟᱪᱷᱟᱣ ᱫᱟᱲᱮᱭᱟᱜ ᱠᱟᱱᱟ ᱾
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = ᱣᱤᱱᱰᱚᱡᱽ ᱨᱮᱫᱽᱼᱰᱟᱭᱞᱚᱜᱽ ᱵᱟᱝ ᱡᱷᱤᱡᱽ ᱫᱟᱲᱮᱭᱟᱜ ᱠᱟᱱᱟ ᱾ ᱨᱮᱫᱽ ᱫᱚ { $path } ᱨᱮ ᱥᱟᱧᱪᱟᱣ ᱦᱩᱭᱩᱜᱼᱟ ᱾
+file-picker-failed-save-nowhere = ᱣᱤᱱᱰᱚᱡᱽ ᱨᱮᱫᱽᱼᱰᱟᱭᱞᱚᱜᱽ ᱵᱟᱝ ᱡᱷᱤᱡᱽ ᱫᱟᱲᱮᱭᱟᱜ ᱠᱟᱱᱟ ᱾ ᱪᱮᱫ ᱰᱤᱯᱷᱚᱞᱴ ᱯᱚᱴᱚᱢ ᱵᱟᱝ ᱧᱟᱢ ᱞᱮᱱᱟ; ᱨᱮᱫᱽ ᱫᱚ ᱵᱟᱝ ᱥᱟᱧᱪᱟᱣᱜᱼᱟ ᱾
+file-picker-crashed-open = ᱣᱤᱱᱰᱚᱡᱽ ᱨᱮᱫᱽᱼᱰᱟᱭᱞᱚᱜᱽ ᱰᱤᱜᱟᱹᱣ ᱮᱱᱟ ᱾ ᱪᱮᱫ ᱨᱮᱫᱽ ᱵᱟᱝᱠᱷᱟᱱ ᱯᱷᱚᱞᱰᱟᱨ ᱵᱟᱝ ᱵᱟᱪᱷᱟᱣ ᱫᱟᱲᱮᱭᱟᱜ ᱠᱟᱱᱟ ᱾
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = ᱣᱤᱱᱰᱚᱡᱽ ᱨᱮᱫᱽᱼᱰᱟᱭᱞᱚᱜᱽ ᱰᱤᱜᱟᱹᱣ ᱮᱱᱟ ᱾ ᱨᱮᱫᱽ ᱫᱚ { $path } ᱨᱮ ᱥᱟᱧᱪᱟᱣ ᱦᱩᱭᱩᱜᱼᱟ ᱾
+file-picker-crashed-save-nowhere = ᱣᱤᱱᱰᱚᱡᱽ ᱨᱮᱫᱽᱼᱰᱟᱭᱞᱚᱜᱽ ᱰᱤᱜᱟᱹᱣ ᱮᱱᱟ ᱾ ᱪᱮᱫ ᱰᱤᱯᱷᱚᱞᱴ ᱯᱚᱴᱚᱢ ᱵᱟᱝ ᱧᱟᱢ ᱞᱮᱱᱟ; ᱨᱮᱫᱽ ᱫᱚ ᱵᱟᱝ ᱥᱟᱧᱪᱟᱣᱜᱼᱟ ᱾
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = ᱯᱚᱴᱚᱢ ᱨᱮ ᱫᱮᱠᱷᱟᱣ ᱢᱮ
+    .accessKey = F

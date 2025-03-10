@@ -22,12 +22,14 @@
      then we will show another collapsed entry saying "Access your data on 2 other domains". This entry it's for the plural case, when the add-on is accessing more than one extra domain.
      %1$d will be replaced by an integer indicating the number of additional domains for which this web extension is requesting permission. -->
     <string name="mozac_feature_addons_permissions_extra_domains_description_plural" tools:ignore="PluralsCandidate">Haeziñ ho roadennoù war %1$d a zomanioù all</string>
+    <!-- When an add-on requires access to domains, this entry is used to describe the total number of domains. Underneath it will be the list of all the domains. %1$d is the number of all the domains that will be shown to the user as required. -->
+    <string name="mozac_feature_addons_permissions_all_domain_count_description" tools:ignore="PluralsCandidate">Haeziñ ho roadennoù evit lec’hiennoù en domanioù %1$d</string>
     <!-- Content description for a permission item, for an installed add-on details page. %1$s will be replaced with the permission text name, %2$d will be replaced with the permission position in the list and %3$d will be replaced with the total number of permissions in the list.Taking as an example "Read and modify privacy settings" the whole text will read Read and modify privacy settings, 2 of 6. -->
     <string name="mozac_feature_addons_permissions_content_description_item">%1$s, %2$d diwar %3$d</string>
     <!-- Description for tabs add-on permission. -->
     <string name="mozac_feature_addons_permissions_tabs_description">Haeziñ ivinelloù ar merdeer</string>
     <!-- Description for unlimited_storage permission. -->
-    <string name="mozac_feature_addons_permissions_unlimited_storage_description">Kadaviñ ur c’hementad anvevennek a roadennoù arval</string>
+    <string name="mozac_feature_addons_permissions_unlimited_storage_description" moz:removedIn="137" tools:ignore="UnusedResources">Kadaviñ ur c’hementad anvevennek a roadennoù arval</string>
     <!-- Description for navigation permission. -->
     <string name="mozac_feature_addons_permissions_web_navigation_description">Haeziñ oberiantiz ar merdeer e-pad ar merdeiñ</string>
     <!-- Description for bookmarks permission. -->
@@ -70,8 +72,18 @@
     <string name="mozac_feature_addons_permissions_tab_hide_description">Diskouez ha kuzhat ivinelloù ar merdeer</string>
     <!-- Description for top_sites permission. -->
     <string name="mozac_feature_addons_permissions_top_sites_description">Lenn ar roll istor merdeiñ</string>
+    <!-- Description for trialML permission. -->
+    <string name="mozac_feature_addons_permissions_trial_ml_description">Pellgargañ hag erounit patromoù NA war ho trevnad</string>
+    <!-- Description for userScripts permission. -->
+    <string name="mozac_feature_addons_permissions_user_scripts_description">Aotren skriptoù tredeoù da haeziñ ho roadennoù</string>
+    <!-- The text shown when an extension requests the userScripts permission, near the usual description of the userScripts permission -->
+    <string name="mozac_feature_addons_permissions_user_scripts_extra_warning">Skriptoù n\'int ket gwiriekaet a c\'hall sevel kudennoù diogelroez ha buhez prevez. Erounit skriptoù askouezhioù pe mammennoù ho peuz fiziañs eno.</string>
     <!-- Description for devtools permission. -->
     <string name="mozac_feature_addons_permissions_devtools_description">Digeriñ an ostilhoù diorren evit haeziñ ho roadennoù en ivinelloù digor</string>
+    <!-- Description for text button that expands the list of domain permissions -->
+    <string name="mozac_feature_addons_permissions_show_all_sites">Diskouez an holl lec\'hiennoù</string>
+    <!-- Description for text button that hides the majority of the list of domain permissions -->
+    <string name="mozac_feature_addons_permissions_show_fewer_sites">Diskouez nebeutoc\'h a lec\'hiennoù</string>
     <!-- The version on of add-on. -->
     <string name="mozac_feature_addons_version">Handelv</string>
     <!-- The author of an add-on. -->
@@ -130,6 +142,8 @@
     <string name="mozac_feature_addons_permissions_dialog_allow">Aotren</string>
     <!-- This is a button to deny the optional permissions requested by an add-on . -->
     <string name="mozac_feature_addons_permissions_dialog_deny">Nac’hañ</string>
+    <!-- Text link to learn more about permission requests on the add-on permissions dialog . -->
+    <string name="mozac_feature_addons_permissions_dialog_learn_more">Gouzout hiroc\'h</string>
     <!-- This is a button to cancel the add-on installation . -->
     <string name="mozac_feature_addons_permissions_dialog_cancel">Nullañ</string>
     <!-- Accessibility content description to install add-on button. %1$s is the add-on name. -->
@@ -186,10 +200,12 @@
     <string name="mozac_feature_addons_failed_to_translate">N’eo ket bet kavet an droidigezh, nag evit ar yezh %1$s nag evit ar yezh dre ziouer %2$s</string>
     <!-- Text shown after successfully installed an add-on. %1$s is the add-on name. -->
     <string name="mozac_feature_addons_successfully_installed">Staliet %1$s gant berzh</string>
-    <!-- Text shown after failed to install an add-on. %1$s is the add-on name. -->
+    <!-- Text shown after failing to install an add-on (when add-on type isn't supported or an unknown has errored). %1$s is the add-on name. -->
     <string name="mozac_feature_addons_failed_to_install">Cʼhwitadenn war staliadur %1$s</string>
-    <!-- Text shown after failing to install an extension for which we don't have its name. -->
+    <!-- Text shown after failing to install an extension for which we don't have its name (when add-on type isn't supported or an unknown has errored). -->
     <string name="mozac_feature_addons_extension_failed_to_install">Staliadur an askouezh c’hwitet.</string>
+    <!-- Text shown when installing an add-on has failed. -->
+    <string name="mozac_feature_addons_cant_install_extension">N’haller ket staliañ an askouezh</string>
     <!-- Text shown when attempting to install an extension and a network error happened. -->
     <string name="mozac_feature_addons_extension_failed_to_install_network_error">An askouezh-mañ n’hall ket bezañ pellgarget en abeg d’ur fazi kennask.</string>
     <!-- Text shown when attempting to install an extension and the downloaded file is corrupted. -->
@@ -198,10 +214,12 @@
     <string name="mozac_feature_addons_extension_failed_to_install_not_signed_error">An askouezh-mañ n\'hall ket bezañ staliet rak n\'eo ket bet gwiriet.</string>
     <!-- Text shown when attempting to install an add-on and an error occurred because the extension was incompatible. %1$s is the add-on name, %2$s is the app name and %3$s is the app version. -->
     <string name="mozac_feature_addons_failed_to_install_incompatible_error">%1$s n’hall ket bezañ staliet rak ne glot ket gant %2$s %3$s.</string>
-    <!-- Text shown when attempting to install a blocklisted add-on. %1$s is the add-on name. -->
-    <string name="mozac_feature_addons_blocklisted_1">%1$s n’hall ket bezañ staliet rak gallout a ra degas ur riskl bras a-fet stabilded pe diogelroez.</string>
+    <!-- Text shown when attempting to install a (hard) blocked add-on. %1$s is the add-on name. %2$s is the app name. -->
+    <string name="mozac_feature_addons_blocklisted_2">%1$s a za a-enep da bolitikerezh Mozilla ha n’hall ket bezañ staliet war %2$s.</string>
     <!-- Text shown when attempting to install an add-on that can only be install via Enterprise Policies, which is not supported on Android.  %1$s is the add-on name. -->
     <string name="mozac_feature_addons_admin_install_only">%1$s n’hall ket bezañ staliet rak n’hall bezañ staliet gant un aozadur a ra gant ar reolennoù embregerezh, ar pezh n’eo ket skoret war ar savenn-mañ.</string>
+    <!-- Text shown when attempting to install an add-on that is soft-blocked. %1$s is the add-on name. %2$s is the app name. -->
+    <string name="mozac_feature_addons_soft_blocked_1">%1$s a za a-enep da bolitikerezh Mozilla ha n’hall ket bezañ staliet war %2$s.</string>
     <!-- Text shown after successfully enabled an add-on. %1$s is the add-on name. -->
     <string name="mozac_feature_addons_successfully_enabled">Gweredekaet %1$s gant berzh</string>
     <!-- Text shown after failed to enable an add-on. %1$s is the add-on name. -->
@@ -246,8 +264,14 @@
     <string name="mozac_feature_addons_installed_dialog_okay_button_2">Mat eo</string>
     <!-- "Learn more" link displayed below an add-on status message. -->
     <string name="mozac_feature_addons_status_learn_more">Gouzout hiroc’h</string>
+    <!-- "See details" link displayed below an add-on status message. -->
+    <string name="mozac_feature_addons_status_see_details">Gwelet ar munudoù</string>
     <!-- Status message below an add-on in the add-ons manager when this add-on has been blocklisted. %1$s is the add-on name. -->
-    <string name="mozac_feature_addons_status_blocklisted">Diweredekaet eo bet %1$s en abeg da gudennoù a-fet surentez pe stabilded.</string>
+    <string name="mozac_feature_addons_status_blocklisted_1">Stanket eo an adkouezh-mañ dre ma za a-enep da bolitikerezh Mozilla ha diweredekaet eo bet.</string>
+    <!-- Status message below an add-on in the add-ons manager when this add-on has been soft-blocked. -->
+    <string name="mozac_feature_addons_status_softblocked_1">Strishaet eo bet an askouezh-mañ dre ma za a-enep da bolitikerezh Mozilla ha diweredekaet eo bet. Gallout a rit gweredekaat anezhañ met risklus e c’‘hall bezañ.</string>
+    <!-- Status message below an add-on in the add-ons manager when this add-on has been soft-blocked but the user re-enabled it. -->
+    <string name="mozac_feature_addons_status_softblocked_re_enabled">A-enep da bolitikerezh Mozilla ez a an askouezh-mañ. Risklus e c’hall bezañ ober gantañ.</string>
     <!-- Status message below an add-on in the add-ons manager when this add-on hasn't been signed correctly. %1$s is the add-on name. -->
     <string name="mozac_feature_addons_status_unsigned">N’haller ket gwiriekaat ma’z eo diogel %1$s ha diweredekaet eo bet.</string>
     <!-- Status message below an add-on in the add-ons manager when this add-on isn't compatible with the application version. %1$s is the add-on name, %2$s is the app name and %3$s is the app version. -->

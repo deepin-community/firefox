@@ -613,6 +613,14 @@ urlbar-result-action-calculator-result = ={ $result }
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = { $engine } मार्फत खोज्नुहोस्
+urlbar-searchmode-bookmarks =
+    .label = बुकमार्कहरु
+urlbar-searchmode-tabs =
+    .label = ट्याबहरू
+urlbar-searchmode-history =
+    .label = इतिहास
+urlbar-searchmode-actions =
+    .label = कार्य
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -941,9 +949,6 @@ private-browsing-indicator-label = निजी ब्राउजिङ्ग
 content-analysis-indicator-tooltip =
     .tooltiptext = { $agentName } द्वारा डेटा हानि रोकथाम (DLP)। थप जानकारीको लागि क्लिक गर्नुहोस्।
 content-analysis-panel-title = डाटा संरक्षण
-# Variables:
-#   $agentName (String): The name of the DLP agent that is connected
-content-analysis-panel-text = तपाईंको संस्थाले डाटा हराउनबाट जोगाउन { $agentName } प्रयोग गर्छ। <a data-l10n-name="info">थप जान्नुहोस्</a>
 
 ## Unified extensions (toolbar) button
 
@@ -964,6 +969,10 @@ unified-extensions-button-permissions-needed =
 unified-extensions-button-quarantined =
     .label = बिस्तारहरु
     .tooltiptext = बिस्तारहरु
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
 
 ## Private browsing reset button
 

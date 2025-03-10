@@ -31,8 +31,7 @@
 
 /* stylelint-disable-next-line media-query-no-invalid */
 @media (-moz-bool-pref: "browser.urlbar.searchModeSwitcher.featureGate") or (-moz-bool-pref: "browser.urlbar.scotchBonnet.enableOverride") {
-  #identity-box[pageproxystate="invalid"],
-  #identity-box.chromeUI {
+  #identity-box[pageproxystate="invalid"] {
     display: none;
   }
 }
@@ -74,6 +73,10 @@
 #identity-box[pageproxystate="valid"]:is(.notSecureText, .chromeUI, .extensionPage),
 #urlbar-label-box {
   margin-inline-end: 8px;
+  /* stylelint-disable-next-line media-query-no-invalid */
+  @media ((-moz-bool-pref: "browser.urlbar.searchModeSwitcher.featureGate") or (-moz-bool-pref: "browser.urlbar.scotchBonnet.enableOverride")) {
+    margin-inline-end: var(--urlbar-searchmodeswitcher-margin-inline-end);
+  }
 }
 
 #identity-box[pageproxystate="valid"]:is(.notSecureText, .chromeUI, .extensionPage) > .identity-box-button,

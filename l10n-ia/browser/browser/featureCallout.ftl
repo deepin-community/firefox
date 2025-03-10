@@ -43,3 +43,67 @@ callout-pdfjs-draw-body-a = Marca le files pdf, pois salva tu cambiamentos.
 # “Mark up” refers to the process of “annotating” or adding free hand text or diagramming to the document.
 callout-pdfjs-draw-body-b = Non plus imprimer e scannar. Annota le files pdf, pois salva tu cambiamentos.
 callout-pdfjs-draw-button = Io lo comprendeva!
+
+## Firefox View Discoverability Strings
+
+fx-view-discoverability-title = Non voleva tu clauder iste schedas?
+fx-view-discoverability-subtitle = Trova e reaperi lo velocemente. Nos reserva pro te un chronologia del schedas recentemente claudite.
+fx-view-discoverability-primary-button-label = Aperir { -firefoxview-brand-name }
+fx-view-discoverability-secondary-button-label = Dimitter
+
+## Split Dismiss Button Labels
+
+# Blocks the message from showing again
+split-dismiss-button-dont-show-option-label = Non monstrar de novo iste recommendation
+# Dismisses message and reduces frequency of message
+split-dismiss-button-show-fewer-option-label = Monstrar minus recommendationes
+# Opens about:preferences#general-cfrfeatures
+split-dismiss-button-manage-settings-option-label = Gerer parametros
+
+## Sidebar Strings
+
+sidebar-button-callout-title = Monstrar titulos de scheda in le barra lateral
+sidebar-button-callout-subtitle = Usa le button del barra lateral pro expander le barra lateral, assi que tu pote vider le titulos de scheda.
+sidebar-button-callout-vertical-tabs = Pro monstrar tu schedas, selige le button del barra lateral in le barra del instrumentos.
+
+## Sidebar Callout Survey Strings
+
+sidebar-callout-survey-title = Adjuta nos a meliorar { -brand-short-name }
+sidebar-callout-survey-satisfaction-question = Quanto es tu satisfacite del uso del barra lateral de { -brand-short-name }?
+sidebar-callout-survey-privacy-notice-link = Aviso de confidentialitate
+sidebar-callout-survey-very-satisfied = Absolutemente satisfacite
+sidebar-callout-survey-satisfied = Satisfacite
+sidebar-callout-survey-neutral = Neutral
+sidebar-callout-survey-dissatisfied-2 = Non satisfacite
+sidebar-callout-survey-very-dissatisfied-2 = Absolutemente non satisfacite
+sidebar-callout-survey-dont-use-it = Io non lo usa
+sidebar-callout-survey-productive-question = In que mesura concorda o dissenti tu de iste declaration:<br/> “Le barra lateral de { -brand-short-name } me adjuta a esser plus productive”?
+sidebar-callout-survey-strongly-agree = Fortemente de accordo
+sidebar-callout-survey-agree = De accordo
+sidebar-callout-survey-disagree = Io dissenti
+sidebar-callout-survey-strongly-disagree = Io dissenti fortemente
+sidebar-callout-survey-features-question = Le sequente es functiones potential de barra lateral. Qual meliorarea plus tu productivitate in { -brand-short-name }?
+sidebar-callout-survey-split-view = Vider contemporaneemente duo sitos web, in un presentation dividite in duo
+sidebar-callout-survey-keep-website-open = Mantener un sito web, como email o agenda, aperte in le barra lateral quando tu naviga
+sidebar-callout-survey-saved-websites-2 = Accesso rapide a tu marcapaginas
+sidebar-callout-survey-none-of-above = Nihil del previe unos
+sidebar-callout-survey-submit = Inviar
+sidebar-callout-survey-thank-you = Gratias pro tu commentario!
+sidebar-genai-survey-satisfaction-question = Quanto es tu satisfacite de haber accesso a un robot confabulator IA in le barra lateral?
+sidebar-genai-survey-productive-question = In que mesura concorda tu o dissenti de iste declaration:<br/> “Le robot confabulator IA in le barra lateral me adjuta a esser plus productive”?
+unified-search-callout-title = Muta motores de recerca
+unified-search-callout-subtitle = Selige lo que functiona melio pro tu recerca specific.
+unified-search-callout-primary-label = Sequente
+unified-search-callout-secondary-label = Dimitter
+unified-search-engines-callout-title = Cerca con un via-breve
+unified-search-engines-callout-subtitle = Typa “@” sequite per un parola clave pro cercar tu chronologia, marcapaginas, schedas, o con un altere motor de recerca.
+unified-search-engines-callout-primary-label = Comprendite
+actions-callout-title = Completar cargas commun o acceder parametros basic
+# The user can type "print" and "clear" and a button will appear in the
+# search bar (e.g. Print page) the user can click to initiate the action.
+# These example text inputs correlate to the the following strings
+# (either matching the whole string, or the first word of the string).
+# "print" - quickactions-cmd-print
+# "clear" - quickactions-cmd-clearhistory
+# When localizing, ensure the translations match to ensure the action button appears as expected.
+actions-callout-subtitle = Tenta typar un action como “imprimer” pro imprimer un pagina, o “vacuar” pro vacuar tu chronologia.

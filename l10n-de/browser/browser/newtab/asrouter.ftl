@@ -246,6 +246,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Konto erstellen
 device-migration-fxa-spotlight-getting-new-device-header-2 = Planen Sie die Anschaffung eines neuen Geräts?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Befolgen Sie nur wenige einfache Schritte, um Ihre Lesezeichen, Chronik und Passwörter bei den ersten Schritten auf einem neuen Gerät mitzunehmen.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Wie die Datensicherung funktioniert
+device-migration-fxa-spotlight-sync-header = Surfen Sie, ohne etwas zu verpassen
+device-migration-fxa-spotlight-sync-body = Synchronisieren Sie alle Ihre wichtigen Daten mit Verschlüsselung – wie Lesezeichen und Passwörter. Sie können alles dort abrufen, wo Sie { -brand-product-name } verwenden.
+device-migration-fxa-spotlight-sync-primary-button = Erste Schritte
 
 ## Set as Default PDF Reader Infobar
 
@@ -282,3 +285,61 @@ tail-fox-spotlight-title = Hängen Sie lästige Verfolger ab
 tail-fox-spotlight-subtitle = Verabschieden Sie sich von nervigen Werbe-Trackern und nutzen Sie ein sichereres und schnelleres Interneterlebnis.
 tail-fox-spotlight-primary-button = Meine Links mit { -brand-short-name } öffnen
 tail-fox-spotlight-secondary-button = Nicht jetzt
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Ältere Versionen von { -brand-short-name } können ab dem 14. Januar 2025 Probleme haben.</strong>
+root-certificate-succession-infobar-march-message = <strong>Führen Sie eine Aktualisierung durch, um { -brand-short-name } nach dem 14. März 2025 weiterhin zu verwenden.</strong>
+root-certificate-succession-infobar-link = Warum muss ich aktualisieren?
+root-certificate-succession-infobar-primary-button =
+    .label = Jetzt aktualisieren
+    .accesskey = a
+root-certificate-succession-infobar-secondary-button =
+    .label = Später
+    .accesskey = S
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Sie haben ein wichtiges { -brand-short-name }-Update verpasst
+root-certificate-windows-background-notification-subtitle = Teile des Browsers werden bald nicht mehr funktionieren, wenn Sie ihn nicht aktualisieren. Es ist eine gute Zeit, unsere neuesten Schutzmaßnahmen und Funktionen zu nutzen.
+root-certificate-windows-background-notification-learn-more-button = Weitere Informationen
+root-certificate-windows-background-notification-update-button = { -brand-short-name } aktualisieren
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Schließen
+    .aria-label = Schließen
+fxa-menu-message-sign-up-button = Registrieren
+fxa-menu-message-sync-devices-primary-text = Synchronisiere all deine Geräte
+fxa-menu-message-sync-devices-secondary-text = Greife sofort auf deine Inhalte – wie Lesezeichen und Passwörter – zu. Überall wo du { -brand-short-name } verwendest.
+fxa-menu-message-sync-devices-collapsed-text = Synchronisiere all deine Geräte
+fxa-menu-message-backup-data-primary-text = Sichere deine Browser-Daten
+fxa-menu-message-backup-data-secondary-text = Automatisch Lesezeichen, Passwörter und andere Daten auf all deinen Geräten sichern.
+fxa-menu-message-backup-data-collapsed-text = Sichere deine Browser-Daten
+fxa-menu-message-backup-sync-primary-text = Deine Daten – sicher und synchronisiert
+fxa-menu-message-backup-sync-secondary-text = Sicher deine Daten, sodass du überall darauf zugreifen kannst, wo du { -brand-short-name } verwenden.
+fxa-menu-message-backup-sync-collapsed-text = Daten synchronisieren und sichern
+fxa-menu-message-mobile-primary-text = Tabs an dein Handy senden
+fxa-menu-message-mobile-secondary-text = Mache genau dort weiter, wo du aufgehört hast – sofort, wenn du deine Tabs mit einem mobilen Gerät synchronisierst.
+fxa-menu-message-mobile-collapsed-text = Mit deinem Handy synchronisieren
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Willkommen zurück
+multi-cta-fox-doodle-set-default-checkbox = { -brand-short-name } als Standardbrowser festlegen
+multi-cta-fox-doodle-pin-startmenu-checkbox = { -brand-short-name } an Startmenü anheften
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] { -brand-short-name } im Dock behalten
+       *[other] { -brand-short-name } an Taskleiste anheften
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Lossurfen
+multi-cta-fox-doodle-main-browser-primary-button-label = { -brand-short-name } als meinen Hauptbrowser festlegen
+multi-cta-fox-doodle-quick-reminder-subtitle = Hier eine schnelle Erinnerung: deinen Lieblings-Browser mit Fokus auf Privatsphäre kannst du auch mit nur einem Klick aufrufen.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Halte deinen Lieblings-Browser mit Fokus auf Privatsphäre stets griffbereit. Lege { -brand-short-name } als Standardbrowser zum Öffnen von Links fest und behalte ihn im Dock.
+       *[other] Halte deinen Lieblings-Browser mit Fokus auf Privatsphäre stets griffbereit. Lege { -brand-short-name } als Standardbrowser zum Öffnen von Links fest und hefte ihn an deine Taskleiste.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Halte deinen Lieblings-Browser mit Fokus auf Privatsphäre stets griffbereit. Lege { -brand-short-name } als Standardbrowser zum Öffnen von Links fest und hefte ihn an deine Taskleiste und dein Startmenü.

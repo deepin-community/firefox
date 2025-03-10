@@ -14,6 +14,11 @@
 #include "jit/JitOptions.h"
 #include "js/HeapAPI.h"
 #include "js/Utility.h"
+
+#ifdef MOZ_MEMORY
+#  include "mozmemory_utils.h"
+#endif
+
 #include "util/Memory.h"
 
 #ifdef XP_WIN
@@ -36,6 +41,19 @@
 
 #endif  // !XP_WIN
 
+#if defined(XP_WIN) && !defined(MOZ_MEMORY)
+namespace mozilla {
+// On Windows platforms, mozjemalloc provides MozVirtualAlloc, a version of
+// VirtualAlloc that will sleep and retry on failure. This is a shim for when
+// that function is not available.
+MOZ_ALWAYS_INLINE void* MozVirtualAlloc(LPVOID lpAddress, SIZE_T dwSize,
+                                        DWORD flAllocationType,
+                                        DWORD flProtect) {
+  return VirtualAlloc(lpAddress, dwSize, flAllocationType, flProtect);
+}
+}  // namespace mozilla
+#endif  // defined(XP_WIN) && !defined(MOZ_MEMORY)
+
 namespace js::gc {
 
 /*
@@ -52,6 +70,12 @@ static size_t numAddressBits = 0;
 
 /* An estimate of the number of bytes available for virtual memory. */
 static size_t virtualMemoryLimit = size_t(-1);
+
+/* Whether decommit is enabled. */
+static bool decommitEnabled = false;
+
+/* Whether DisableDecommit() has been called. */
+static bool disableDecommitRequested = false;
 
 /*
  * System allocation functions may hand out regions of memory in increasing or
@@ -170,30 +194,43 @@ static bool TryToAlignChunk(void** aRegion, void** aRetainedRegion,
 #ifndef __wasi__
 static void* MapAlignedPagesSlow(size_t length, size_t alignment);
 #endif  // wasi
-static void* MapAlignedPagesLastDitch(size_t length, size_t alignment);
+static void* MapAlignedPagesLastDitch(size_t length, size_t alignment,
+                                      StallAndRetry stallAndRetry);
 
 #ifdef JS_64BIT
 static void* MapAlignedPagesRandom(size_t length, size_t alignment);
 #endif
 
 void* TestMapAlignedPagesLastDitch(size_t length, size_t alignment) {
-  return MapAlignedPagesLastDitch(length, alignment);
+  return MapAlignedPagesLastDitch(length, alignment, StallAndRetry::No);
 }
 
-bool DecommitEnabled() { return SystemPageSize() == PageSize; }
+bool DecommitEnabled() { return decommitEnabled; }
+
+void DisableDecommit() {
+  MOZ_RELEASE_ASSERT(
+      pageSize == 0,
+      "DisableDecommit should be called before InitMemorySubsystem");
+  disableDecommitRequested = true;
+}
 
 /* Returns the offset from the nearest aligned address at or below |region|. */
 static inline size_t OffsetFromAligned(void* region, size_t alignment) {
   return uintptr_t(region) % alignment;
 }
 
-template <Commit commit, PageAccess prot>
+template <Commit commit, StallAndRetry retry = StallAndRetry::No>
 static inline void* MapInternal(void* desired, size_t length) {
   void* region = nullptr;
 #ifdef XP_WIN
   DWORD flags =
       (commit == Commit::Yes ? MEM_RESERVE | MEM_COMMIT : MEM_RESERVE);
-  region = VirtualAlloc(desired, length, flags, DWORD(prot));
+  if constexpr (retry == StallAndRetry::Yes) {
+    region = mozilla::MozVirtualAlloc(desired, length, flags,
+                                      DWORD(PageAccess::ReadWrite));
+  } else {
+    region = VirtualAlloc(desired, length, flags, DWORD(PageAccess::ReadWrite));
+  }
 #elif defined(__wasi__)
   if (int err = posix_memalign(&region, gc::SystemPageSize(), length)) {
     MOZ_RELEASE_ASSERT(err == ENOMEM);
@@ -204,8 +241,8 @@ static inline void* MapInternal(void* desired, size_t length) {
   }
 #else
   int flags = MAP_PRIVATE | MAP_ANON;
-  region = MozTaggedAnonymousMmap(desired, length, int(prot), flags, -1, 0,
-                                  "js-gc-heap");
+  region = MozTaggedAnonymousMmap(desired, length, int(PageAccess::ReadWrite),
+                                  flags, -1, 0, "js-gc-heap");
   if (region == MAP_FAILED) {
     return nullptr;
   }
@@ -228,37 +265,37 @@ static inline void UnmapInternal(void* region, size_t length) {
 #endif
 }
 
-template <Commit commit = Commit::Yes, PageAccess prot = PageAccess::ReadWrite>
+template <Commit commit = Commit::Yes, StallAndRetry retry = StallAndRetry::No>
 static inline void* MapMemory(size_t length) {
   MOZ_ASSERT(length > 0);
 
-  return MapInternal<commit, prot>(nullptr, length);
+  return MapInternal<commit, retry>(nullptr, length);
 }
 
 /*
  * Attempts to map memory at the given address, but allows the system
  * to return a different address that may still be suitable.
  */
-template <Commit commit = Commit::Yes, PageAccess prot = PageAccess::ReadWrite>
+template <Commit commit = Commit::Yes>
 static inline void* MapMemoryAtFuzzy(void* desired, size_t length) {
   MOZ_ASSERT(desired && OffsetFromAligned(desired, allocGranularity) == 0);
   MOZ_ASSERT(length > 0);
 
   // Note that some platforms treat the requested address as a hint, so the
   // returned address might not match the requested address.
-  return MapInternal<commit, prot>(desired, length);
+  return MapInternal<commit>(desired, length);
 }
 
 /*
  * Attempts to map memory at the given address, returning nullptr if
  * the system returns any address other than the requested one.
  */
-template <Commit commit = Commit::Yes, PageAccess prot = PageAccess::ReadWrite>
+template <Commit commit = Commit::Yes>
 static inline void* MapMemoryAt(void* desired, size_t length) {
   MOZ_ASSERT(desired && OffsetFromAligned(desired, allocGranularity) == 0);
   MOZ_ASSERT(length > 0);
 
-  void* region = MapInternal<commit, prot>(desired, length);
+  void* region = MapInternal<commit>(desired, length);
   if (!region) {
     return nullptr;
   }
@@ -379,6 +416,11 @@ void InitMemorySubsystem() {
     pageSize = size_t(sysconf(_SC_PAGESIZE));
     allocGranularity = pageSize;
 #endif
+
+    // Decommit is supported if the system page size is the size as the
+    // compile time constant and has not been disabled.
+    decommitEnabled = pageSize == PageSize && !disableDecommitRequested;
+
 #ifdef JS_64BIT
 #  ifdef XP_WIN
     minValidAddress = size_t(sysinfo.lpMinimumApplicationAddress);
@@ -421,7 +463,8 @@ static inline bool IsInvalidRegion(void* region, size_t length) {
 }
 #endif
 
-void* MapAlignedPages(size_t length, size_t alignment) {
+void* MapAlignedPages(size_t length, size_t alignment,
+                      StallAndRetry stallAndRetry) {
   MOZ_RELEASE_ASSERT(length > 0 && alignment > 0);
   MOZ_RELEASE_ASSERT(length % pageSize == 0);
   MOZ_RELEASE_ASSERT(std::max(alignment, allocGranularity) %
@@ -492,7 +535,7 @@ void* MapAlignedPages(size_t length, size_t alignment) {
   if (!region) {
     // If there wasn't enough contiguous address space left for that,
     // try to find an alignable region using the last ditch allocator.
-    region = MapAlignedPagesLastDitch(length, alignment);
+    region = MapAlignedPagesLastDitch(length, alignment, stallAndRetry);
   }
 
   // At this point we should either have an aligned region or nullptr.
@@ -634,10 +677,18 @@ static void* MapAlignedPagesSlow(size_t length, size_t alignment) {
  * by temporarily holding onto the unaligned parts of each chunk until the
  * allocator gives us a chunk that either is, or can be aligned.
  */
-static void* MapAlignedPagesLastDitch(size_t length, size_t alignment) {
+static void* MapAlignedPagesLastDitch(size_t length, size_t alignment,
+                                      StallAndRetry stallAndRetry) {
   void* tempMaps[MaxLastDitchAttempts];
   int attempt = 0;
-  void* region = MapMemory(length);
+  void* region;
+
+  if (stallAndRetry == StallAndRetry::Yes) {
+    region = MapMemory<Commit::Yes, StallAndRetry::Yes>(length);
+  } else {
+    region = MapMemory<Commit::Yes, StallAndRetry::No>(length);
+  }
+
   if (OffsetFromAligned(region, alignment) == 0) {
     return region;
   }

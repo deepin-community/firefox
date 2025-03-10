@@ -91,7 +91,7 @@ shopping-settings-label =
     .label = Gosodiadau
 shopping-settings-recommendations-toggle2 =
     .label = Dangos argymhellion a chynnwys noddedig
-shopping-settings-recommendations-learn-more3 = Nid yw { -brand-product-name } yn rhannu eich data personol, felly ni fydd yr argymhellion hyn yn eich dilyn o gwmpas y rhyngrwyd. <a data-l10n-name="review-quality-url">Dysgu rhagor</a>
+shopping-settings-recommendations-learn-more3 = Nid yw { -brand-product-name } yn rhannu eich data personol, felly ni fydd yr argymhellion hyn yn eich dilyn o gwmpas y rhyngrwyd. <a data-l10n-name="review-quality-url">Rhagor</a>
 shopping-settings-recommendations-toggle =
     .label = Dangos hysbysebion yn y Gwirydd Adolygiadau
 shopping-settings-recommendations-learn-more2 = Byddwch yn gweld hysbysebion achlysurol am gynnyrch perthnasol. Rhaid i bob hysbyseb fodloni ein safonau ansawdd adolygiadau. <a data-l10n-name="review-quality-url">Darllen rhagor</a>
@@ -188,6 +188,18 @@ shopping-survey-submit-button-label = Cyflwyno
 shopping-survey-terms-link = Amodau defnydd
 shopping-survey-thanks =
     .heading = Diolch am eich adborth!
+
+## Shopping opted-out survey strings
+## Opt-out survey options are displayed as checkboxes and the user can select one or many.
+
+shopping-survey-opted-out-multiselect-label = Rhowch wybod i ni pam rydych wedi diffodd y Gwiriwr Adolygu. Dewiswch fwy nag un os oes angen.
+shopping-survey-thanks-title = Diolch am eich adborth!
+shopping-survey-opted-out-hard-to-understand = Mae'n anodd ei ddeall
+shopping-survey-opted-out-too-slow = Mae'n rhy araf
+shopping-survey-opted-out-not-accurate = Nid yw'n gywir
+shopping-survey-opted-out-not-helpful = Nid yw'n ddefnyddiol i mi
+shopping-survey-opted-out-check-myself = Byddai'n well gen i wirio adolygiadau fy hun
+shopping-survey-opted-out-other = Arall
 
 ## Shopping Feature Callout strings.
 ## "price tag" refers to the price tag icon displayed in the address bar to

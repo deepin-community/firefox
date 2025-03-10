@@ -11,6 +11,7 @@ more-from-moz-category =
 more-from-moz-subtitle = Vidu aliajn produktojn de { -vendor-short-name }, kiuj subtenas sanan interreton.
 more-from-moz-firefox-mobile-title = { -brand-product-name } por poŝaparatoj
 more-from-moz-firefox-mobile-description = La poŝaparata retumilo kiu zorgas unue pri via privateco.
+more-from-moz-firefox-mobile-title-1 = { -brand-product-name } por poŝaparatoj
 more-from-moz-mozilla-vpn-title = { -mozilla-vpn-brand-name }
 more-from-moz-mozilla-vpn-description = Malkovru aldonan tavolon de protekto kaj anonima retumo.
 more-from-moz-qr-code-box-firefox-mobile-title = Elŝutu per via poŝaparato. Celu per via fimilo la kodon QR. Kiam ligilo aperas, tuŝetu ĝin.
@@ -32,3 +33,9 @@ more-from-moz-mozilla-monitor-title = { -mozmonitor-brand-name }
 more-from-moz-mozilla-monitor-us-description = Aŭtomate repreni viajn elmetitajn personajn informojn.
 more-from-moz-mozilla-monitor-global-description = Ricevu atentigojn kiam viaj datumoj estas elmetitaj de datumfuĝo.
 more-from-moz-mozilla-monitor-button = Elŝuti { -monitor-brand-short-name }
+
+## These strings are for the Solo card in about:preferences moreFromMozilla page
+
+more-from-moz-solo-title = { -solo-ai-brand-name } A.I.
+more-from-moz-solo-description = Kreu vian propran retejon tuj kaj konektu senpage vian personecitigan nomregnon.
+more-from-moz-solo-button = Provu { -solo-ai-brand-name }

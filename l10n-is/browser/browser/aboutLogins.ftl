@@ -140,6 +140,8 @@ login-item-copied-username-button-text = Afritað!
 login-item-password-label = Lykilorð
 login-item-password-reveal-checkbox =
     .aria-label = Sýna lykilorð
+login-item-password-conceal-checkbox =
+    .aria-label = Fela lykilorð
 login-item-copy-password-button-text = Afrita
 login-item-copied-password-button-text = Afritað!
 login-item-save-changes-button = Vista breytingar
@@ -327,7 +329,7 @@ about-logins-vulnerable-alert-text2 = Þetta lykilorð hefur verið notað á ö
 # Variables:
 #   $hostname (String) - The hostname of the website associated with the login, e.g. "example.com"
 about-logins-vulnerable-alert-link = Fara á { $hostname }
-about-logins-vulnerable-alert-learn-more-link = Fræðast meira
+about-logins-vulnerable-alert-learn-more-link = Kanna nánar
 
 ## Error Messages
 

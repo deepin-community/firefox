@@ -30,7 +30,7 @@ genai-settings-chat-shortcuts =
 # Prompt purpose: help users understand what a selection covers at a glance
 genai-prompts-summarize =
     .label = Περίληψη
-    .value = Κάνε περίληψη της επιλογής με ακριβή και περιεκτική γλώσσα, χρήση κεφαλίδων και λιστών με κουκκίδες στην περίληψη για να υπάρχει δυνατότητα σάρωσης. Διατήρησε τη σημασία και την ακρίβεια των δεδομένων.
+    .value = Κάνε περίληψη της επιλογής με ακριβή και περιεκτική γλώσσα, χρήση κεφαλίδων και λιστών με κουκκίδες στην περίληψη για να υπάρχει δυνατότητα σάρωσης. Διατήρησε το νόημα και την ακρίβεια των πληροφοριών.
 # Prompt purpose: make a selection easier to read
 genai-prompts-simplify =
     .label = Απλοποίηση γλώσσας
@@ -38,11 +38,15 @@ genai-prompts-simplify =
 # Prompt purpose: test understanding of selection in an interactive way
 genai-prompts-quiz =
     .label = Ρώτησέ με
-    .value = Δημιουργία ερωτήσεων για αυτήν την επιλογή. Κάνε μου διάφορους τύπους ερωτήσεων, όπως πολλαπλών επιλογών, σωστού ή λάθους και σύντομων απαντήσεων. Περίμενε την απάντησή μου πριν προχωρήσεις στην επόμενη ερώτηση.
+    .value = Δημιούργησε ερωτήσεις για αυτήν την επιλογή. Κάνε μου διάφορους τύπους ερωτήσεων, όπως πολλαπλών επιλογών, σωστού ή λάθους και σύντομων απαντήσεων. Περίμενε την απάντησή μου πριν προχωρήσεις στην επόμενη ερώτηση.
 # Prompt purpose: helps users understand words, phrases, concepts
 genai-prompts-explain =
     .label = Εξήγησε αυτό
     .value = Εξήγησε τις βασικές ιδέες αυτής της επιλογής με απλές λέξεις και χρήση παραδειγμάτων.
+# Prompt purpose: writing tool that helps users with spelling and grammar mistakes and produce a response that identifies errors and rewrites the inputted text correctly
+genai-prompts-proofread =
+    .label = Έλεγχος κειμένου
+    .value = Έλεγξε το κείμενο για τυχόν ορθογραφικά και γραμματικά λάθη. Διατήρησε το νόημα και την ακρίβεια των πληροφοριών. Παρουσίασε πρώτα τη λίστα των διορθώσεων και στη συνέχεια, την τελική διορθωμένη εκδοχή του κειμένου.
 # This prompt is added to the beginning of selection prompts sent to a chatbot.
 # $tabTitle (string) - title of the webpage
 # $selection (string) - selected text
@@ -51,12 +55,111 @@ genai-prompt-prefix-selection = Βρίσκομαι στη σελίδα «{ $tabT
 ## Chatbot menu shortcuts
 
 genai-menu-ask-generic =
-    .label = Ερώτηση στο AI chatbot
+    .label = Ερώτηση στο chatbot ΤΝ
 # $provider (string) - name of the provider
 genai-menu-ask-provider =
     .label = Ερώτηση στο { $provider }
+genai-menu-remove-generic =
+    .label = Αφαίρεση chatbot ΤΝ
+# $provider (string) - name of the provider
+genai-menu-remove-provider =
+    .label = Αφαίρεση του { $provider }
 genai-input-ask-generic =
-    .placeholder = Ερώτηση στο AI chatbot…
+    .placeholder = Ερώτηση στο chatbot ΤΝ…
 # $provider (string) - name of the provider
 genai-input-ask-provider =
     .placeholder = Ερώτηση στο { $provider }…
+# $selectionLength (number) - selected text length
+# $maxLength (number) - max length of what can be selected
+genai-shortcuts-selected-warning-generic =
+    .heading = Το chatbot ΤΝ δεν θα λάβει την πλήρη επιλογή σας
+    .message =
+        { $selectionLength ->
+           *[other] Έχετε επιλέξει περίπου { $selectionLength } χαρακτήρες. Ο αριθμός των χαρακτήρων που μπορούμε να στείλουμε στο chatbot ΤΝ είναι περίπου { $maxLength }.
+        }
+# $provider (string) - name of the provider
+# $selectionLength (number) - selected text length
+# $maxLength (number) - max length of what can be selected
+genai-shortcuts-selected-warning =
+    .heading = Το { $provider } δεν θα λάβει την πλήρη επιλογή σας
+    .message =
+        { $selectionLength ->
+           *[other] Έχετε επιλέξει περίπου { $selectionLength } χαρακτήρες. Ο αριθμός των χαρακτήρων που μπορούμε να στείλουμε στο { $provider } είναι περίπου { $maxLength }.
+        }
+genai-shortcuts-hide =
+    .label = Απόκρυψη συντόμευσης chatbot
+
+## Chatbot header
+
+genai-chatbot-title = Chatbot ΤΝ
+genai-header-provider-menu =
+    .title = Επιλέξτε ένα chatbot
+genai-header-options-button =
+    .title = Άνοιγμα μενού
+genai-header-close-button =
+    .title = Κλείσιμο
+genai-provider-view-details =
+    .label = Προβολή λεπτομερειών chatbot
+genai-provider-about-chatbots =
+    .label = Σχετικά με αυτά τα chatbot
+genai-options-reload-generic =
+    .label = Επαναφόρτωση chatbot ΤΝ
+# $provider (string) - name of the provider
+genai-options-reload-provider =
+    .label = Επαναφόρτωση του { $provider }
+genai-options-show-shortcut =
+    .label = Εμφάνιση συντόμευσης κατά την επιλογή κειμένου
+genai-options-hide-shortcut =
+    .label = Απόκρυψη συντόμευσης κατά την επιλογή κειμένου
+genai-options-about-chatbot =
+    .label = Σχετικά με τα chatbot ΤΝ στο { -brand-short-name }
+
+## Chatbot onboarding
+
+genai-onboarding-header = Περιλήψεις, νέες ιδέες και πολλά άλλα κατά την περιήγηση
+# "Switch anytime" refers to allowing the user to switch to a different chatbot.
+genai-onboarding-description = Επιλέξτε ένα chatbot ΤΝ για χρήση στην πλαϊνή γραμμή του { -brand-short-name }. Θα σας εμφανίζουμε λεπτομέρειες για κάθε chatbot όταν το επιλέγετε. Αλλάξτε το ανά πάσα στιγμή. <a data-l10n-name="learn-more">Μάθετε περισσότερα</a>
+genai-onboarding-primary = Συνέχεια
+genai-onboarding-secondary = Κλείσιμο
+genai-onboarding-claude-tooltip =
+    .title = Anthropic Claude
+genai-onboarding-claude-learn = Μάθετε περισσότερα σχετικά με το Claude
+genai-onboarding-chatgpt-tooltip =
+    .title = ChatGPT
+genai-onboarding-chatgpt-learn = Μάθετε περισσότερα σχετικά με το ChatGPT
+genai-onboarding-copilot-tooltip =
+    .title = Copilot
+genai-onboarding-copilot-learn = Μάθετε περισσότερα σχετικά με το Copilot
+genai-onboarding-gemini-tooltip =
+    .title = Google Gemini
+genai-onboarding-gemini-learn = Μάθετε περισσότερα σχετικά με το Gemini
+genai-onboarding-huggingchat-tooltip =
+    .title = HuggingChat
+genai-onboarding-huggingchat-learn = Μάθετε περισσότερα σχετικά με το HuggingChat
+genai-onboarding-lechat-tooltip =
+    .title = Le Chat Mistral
+genai-onboarding-lechat-learn = Μάθετε περισσότερα σχετικά με το Le Chat
+genai-onboarding-select-header = Επιλέξτε κείμενο για να δείτε προτάσεις
+genai-onboarding-select-description = Όταν επιλέγετε κείμενο, θα προτείνουμε εντολές που μπορείτε να στείλετε στο chatbot. Μπορείτε επίσης να γράψετε τις δικές σας.
+genai-onboarding-select-primary = Έναρξη συνομιλίας
+
+## Chatbot onboarding choices
+## These describe features/capabilities of chatbot providers. These are not buttons/actions.
+
+genai-onboarding-claude-generate = Δημιουργία κειμένου και κώδικα
+genai-onboarding-claude-analyze = Ανάλυση εγγράφων και εικόνων
+genai-onboarding-claude-price = Δωρεάν και επί πληρωμή επιλογές· απαιτείται λογαριασμός
+genai-onboarding-chatgpt-generate = Δημιουργία κειμένου, εικόνων και κώδικα
+genai-onboarding-chatgpt-analyze = Ανάλυση εγγράφων και εικόνων
+genai-onboarding-chatgpt-price = Δωρεάν και επί πληρωμή επιλογές· απαιτείται λογαριασμός για ορισμένες χώρες και εργασίες
+genai-onboarding-copilot-generate = Δημιουργία κειμένου, εικόνων και κώδικα
+genai-onboarding-copilot-analyze = Ανάλυση εικόνων
+genai-onboarding-copilot-price = Δωρεάν και επί πληρωμή επιλογές· απαιτείται λογαριασμός για ορισμένες εργασίες
+genai-onboarding-gemini-generate = Δημιουργία κειμένου, εικόνων και κώδικα
+genai-onboarding-gemini-analyze = Ανάλυση εικόνων (δωρεάν) και εγγράφων (επί πληρωμή)
+genai-onboarding-gemini-price = Δωρεάν και επί πληρωμή επιλογές· απαιτείται λογαριασμός
+genai-onboarding-huggingchat-generate = Δημιουργία κειμένου και κώδικα
+genai-onboarding-huggingchat-switch = Εναλλαγή ανάμεσα σε ένα ευρύ φάσμα ανοικτών μοντέλων
+genai-onboarding-huggingchat-price-2 = Δωρεάν· απαιτείται λογαριασμός μετά από έναν ορισμένο αριθμό αιτημάτων
+genai-onboarding-lechat-generate = Δημιουργία κειμένου και κώδικα
+genai-onboarding-lechat-price = Δωρεάν· απαιτείται λογαριασμός

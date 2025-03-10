@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = Descartar
     .secondarybuttonaccesskey = e
 appmenu-update-restart-message2 = Instale a versão mais recente do { -brand-shorter-name }. As abas e janelas abertas serão restauradas.
+appmenu-theme-installed =
+    .secondarybuttonlabel = Desfazer
+    .secondarybuttonaccesskey = D
 appmenu-update-other-instance =
     .label = O { -brand-shorter-name } não conseguiu atualizar automaticamente para a versão mais recente.
     .buttonlabel = Atualizar o { -brand-shorter-name } mesmo assim
@@ -37,7 +40,6 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = Mais tarde
     .secondarybuttonaccesskey = M
 appmenu-update-other-instance-message = Uma nova atualização do { -brand-shorter-name } está disponível, mas não pode ser instalada porque outra cópia do { -brand-shorter-name } está em execução. Feche a outra cópia para continuar a atualização, ou escolha atualizar assim mesmo (a outra cópia pode não funcionar corretamente enquanto não for reiniciada).
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = OK
     .buttonaccesskey = O
@@ -45,7 +47,6 @@ appmenu-addon-post-install-message3 = Gerencie suas extensões e temas através 
 appmenu-addon-post-install-incognito-checkbox =
     .label = Permitir esta extensão em janelas privativas
     .accesskey = P
-    
 appmenu-new-tab-controlled-changes =
     .label = A página de nova aba mudou.
     .buttonlabel = Manter alterações

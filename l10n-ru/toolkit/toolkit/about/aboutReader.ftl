@@ -36,7 +36,7 @@ about-reader-estimated-read-time =
        *[many] { $range } минут
     }
 
-## These are used as tooltips in Type Control
+## Reader View text and layout menu
 
 about-reader-toolbar-minus =
     .title = Уменьшить размер шрифта
@@ -86,8 +86,23 @@ about-reader-custom-colors-visited-links = Посещённые ссылки
 about-reader-custom-colors-selection-highlight = Подсветка для чтения вслух
     .title = Изменить цвет
 about-reader-reset-button = Восстановить по умолчанию
+about-reader-custom-colors-foreground2 =
+    .label = Текст
+    .title = Изменить цвет
+about-reader-custom-colors-background2 =
+    .label = Фон
+    .title = Изменить цвет
+about-reader-custom-colors-unvisited-links2 =
+    .label = Непосещённые ссылки
+    .title = Изменить цвет
+about-reader-custom-colors-visited-links2 =
+    .label = Посещённые ссылки
+    .title = Изменить цвет
+about-reader-custom-colors-selection-highlight2 =
+    .label = Подсветка для чтения вслух
+    .title = Изменить цвет
 
-## Reader View improved text and layout menu
+## Reader View text and layout menu
 
 about-reader-text-header = Текст
 about-reader-text-size-label = Размер текста

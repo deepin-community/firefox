@@ -285,10 +285,9 @@ let ShellServiceInternal = {
       throw ex;
     } finally {
       try {
-        const histogram = Services.telemetry.getHistogramById(
-          "BROWSER_SET_DEFAULT_USER_CHOICE_RESULT"
-        );
-        histogram.add(telemetryResult);
+        Services.telemetry
+          .getHistogramById("BROWSER_SET_DEFAULT_USER_CHOICE_RESULT")
+          .add(telemetryResult);
       } catch (ex) {}
     }
   },
@@ -320,10 +319,11 @@ let ShellServiceInternal = {
       throw ex;
     } finally {
       try {
-        const histogram = Services.telemetry.getHistogramById(
-          "BROWSER_SET_DEFAULT_PDF_HANDLER_USER_CHOICE_RESULT"
-        );
-        histogram.add(telemetryResult);
+        Services.telemetry
+          .getHistogramById(
+            "BROWSER_SET_DEFAULT_PDF_HANDLER_USER_CHOICE_RESULT"
+          )
+          .add(telemetryResult);
       } catch (ex) {}
     }
   },
@@ -500,9 +500,8 @@ let ShellServiceInternal = {
   async pinToStartMenu() {
     if (await this.doesAppNeedStartMenuPin()) {
       try {
-        let pinSuccess = await this.shellService.pinCurrentAppToStartMenuAsync(
-          false
-        );
+        let pinSuccess =
+          await this.shellService.pinCurrentAppToStartMenuAsync(false);
         Services.prefs.setBoolPref(MSIX_PREVIOUSLY_PINNED_PREF, pinSuccess);
         return pinSuccess;
       } catch (err) {
@@ -584,9 +583,33 @@ let ShellServiceInternal = {
   },
 };
 
+// Functions may be present or absent dependent on whether the `nsIShellService`
+// has been queried for the interface implementing it, as querying the interface
+// adds it's functions to the queried JS object. Coincidental querying is more
+// likely to occur for Firefox Desktop than a Firefox Background Task. To force
+// consistent behavior, we query the native shell interface inheriting from
+// `nsIShellService` on setup.
+let shellInterface;
+switch (AppConstants.platform) {
+  case "win":
+    shellInterface = "nsIWindowsShellService";
+    break;
+  case "macosx":
+    shellInterface = "nsIMacShellService";
+    break;
+  case "linux":
+    shellInterface = "nsIGNOMEShellService";
+    break;
+  default:
+    lazy.log.warn(
+      `No platform native shell service interface for ${AppConstants.platform} queried, add for new platforms.`
+    );
+    shellInterface = "nsIShellService";
+}
+
 XPCOMUtils.defineLazyServiceGetters(ShellServiceInternal, {
   defaultAgent: ["@mozilla.org/default-agent;1", "nsIDefaultAgent"],
-  shellService: ["@mozilla.org/browser/shell-service;1", "nsIShellService"],
+  shellService: ["@mozilla.org/browser/shell-service;1", shellInterface],
   macDockSupport: ["@mozilla.org/widget/macdocksupport;1", "nsIMacDockSupport"],
 });
 
@@ -598,11 +621,13 @@ export var ShellService = new Proxy(ShellServiceInternal, {
     if (name in target) {
       return target[name];
     }
-    if (target.shellService) {
+    // n.b. If a native shell interface member is not present on `shellService`,
+    // it may be necessary to query the native interface.
+    if (target.shellService && name in target.shellService) {
       return target.shellService[name];
     }
-    Services.console.logStringMessage(
-      `${name} not found in ShellService: ${target.shellService}`
+    lazy.log.warn(
+      `${name.toString()} not found in ShellService: ${target.shellService}`
     );
     return undefined;
   },

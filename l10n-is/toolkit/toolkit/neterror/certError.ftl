@@ -18,6 +18,9 @@ cert-error-trust-signature-algorithm-disabled = Þessu skilríki er ekki treyst 
 cert-error-trust-expired-issuer = Þessu skilríki er ekki treyst því skilríki útgefanda er útrunnið.
 cert-error-trust-self-signed = Þessu skilríki er ekki treyst því það er sjálfundirritað.
 cert-error-trust-symantec = Skilríki útgefin af GeoTrust, RapidSSL, Symantec, Thwate og Verisign eru ekki lengur talin örugg vegna þess að þeim hefur áður mistekist að fylgja öryggisvenjum.
+# Variables:
+#   $hostname (string) - Hostname of the website with cert error.
+cert-error-trust-certificate-transparency = { -brand-short-name } treystir ekki { $hostname } vegna þess að ekki var hægt að sanna að það uppfylli kröfur um gagnsæi opinberra skilríkja.
 cert-error-untrusted-default = Skilríkið kemur ekki frá traustum aðila.
 # Variables:
 #   $hostname (string) - Hostname of the website with cert error.
@@ -68,6 +71,45 @@ open-in-new-window-for-csp-or-xfo-error = Opna vefsvæði í nýjum glugga
 # Variables:
 #   $hostname (string) - Hostname of the website blocked by csp or xfo error.
 csp-xfo-blocked-long-desc = Til að tryggja öryggi þitt mun { $hostname } ekki leyfa { -brand-short-name } að birta síðuna ef annað vefsvæði hefur fellt hana inn í sínar síður. Til að skoða þessa síðu þarftu að opna hana í nýjum glugga.
+fp-certerror-view-certificate-link = Skoða skilríki vefsvæðis
+fp-certerror-return-to-previous-page-recommended-button = Fara til baka (ráðlagt)
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+#   $validHosts (String) - Valid hostnames.
+fp-certerror-bad-domain-why-dangerous-body = Vefsvæðið er sett upp til að leyfa aðeins öruggar tengingar, en hins vegar er vandamál með skilríki vefsins. Hugsanlega er óprúttinn aðili að reyna að líkja eftir vefsvæðinu. Vefsvæði nota skilríki gefin út af vottunarstöðvum til að sanna að þau séu í raun og veru það sem þau segjast vera. { -brand-short-name } treystir ekki þessu vefsvæði vegna þess að skilríki þess er ekki gilt fyrir { $hostname }. Skilríkið gildir aðeins fyrir: { $validHosts }.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-bad-domain-what-can-you-do-body = Sennilega þarf ekki að hafa áhyggjur, líklega er vandamál með sjálft vefsvæðið. Vefsvæði nota skilríki gefin út af vottunarstöðvum til að sanna að þau séu í raun og veru það sem þau segjast vera. En ef þú ert á fyrirtækjaneti gæti aðstoðarteymið þitt haft frekari upplýsingar. Ef þú ert að nota vírusvarnarforrit skaltu reyna að leita að hugsanlegum árekstrum eða þekktum vandamálum.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-certerror-unknown-issuer-why-dangerous-body = Það er vandamál með skilríki vefsins. Hugsanlega er óprúttinn aðili að reyna að líkja eftir vefsvæðinu. Vefsvæði nota skilríki gefin út af vottunarstöðvum til að sanna að þau séu í raun og veru það sem þau segjast vera. { -brand-short-name } treystir ekki þessu vefsvæði vegna þess að við getum ekki séð hver gaf út skilríkið, það er sjálfundirritað, eða að vefsvæðið sendir ekki milliskilríki sem við treystum.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-unknown-issuer-what-can-you-do-body = Sennilega þarf ekki að hafa áhyggjur, líklega er vandamál með sjálft vefsvæðið. Vefsvæði nota skilríki gefin út af vottunarstöðvum til að sanna að þau séu í raun og veru það sem þau segjast vera. En ef þú ert á fyrirtækjaneti gæti aðstoðarteymið þitt haft frekari upplýsingar. Ef þú ert að nota vírusvarnarforrit gæti þurft að stilla það til að það virki með { -brand-short-name }.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-certerror-self-signed-why-dangerous-body = Vegna þess að það er vandamál með skilríki vefsvæðisins. Vefsvæði nota skilríki gefin út af vottunarstöðvum til að sanna að þau séu í raun og veru það sem þau segjast vera. Skilríki þessa vefsvæðis er sjálfundirritað. Það var ekki gefið út af viðurkenndri vottunarstöð - þannig að sjálfgefið treystum við því ekki.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-self-signed-what-can-you-do-body = Ekki margt. Það virðist vera vandamál með þetta vefsvæði.
+fp-certerror-self-signed-important-note = MIKILVÆG ATHUGASEMD: Ef þú ert að reyna að heimsækja þetta vefsvæði á innraneti fyrirtækis, gæti upplýsingatæknifólkið þitt verið að nota sjálfundirrituð skilríki. Þau geta hjálpað þér að athuga áreiðanleika slíkra skilríkja.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate expiration date.
+fp-certerror-expired-why-dangerous-body = Vefsvæði nota skilríki gefin út af vottunarstöð skilríkja til að sanna að þau séu í raun og veru það sem þau segjast vera. { -brand-short-name } treystir ekki þessu vefsvæði vegna þess að það lítur út fyrir að skilríkið hafi runnið út { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate start date.
+fp-certerror-not-yet-valid-why-dangerous-body = Vefsvæði nota skilríki gefin út af vottunarstöð skilríkja til að sanna að þau séu í raun og veru það sem þau segjast vera. { -brand-short-name } treystir ekki þessu vefsvæði vegna þess að það lítur út fyrir að skilríkið muni ekki verða gilt fyrr en { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+# Variables:
+#   $date (Date) - Clock date.
+fp-certerror-expired-what-can-you-do-body = Klukka tækisins þíns er stillt á { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }. Ef hún er rétt er öryggisvandamálið líklega varðandi sjálft vefsvæðið. Ef hún er röng geturðu breytt henni í kerfisstillingum tækisins.
+# Variables:
+#   $error (string) - NSS error code string that specifies type of cert error. e.g. unknown issuer, invalid cert, etc.
+fp-cert-error-code = Villunúmer: { $error }
+# Variables:
+#   $datetime (Date) - Current datetime.
+fp-datetime = { DATETIME($datetime, month: "short", year: "numeric", day: "numeric") } { DATETIME($datetime, timeStyle: "long") }
+fp-learn-more-about-secure-connection-failures = Lærðu meira um bilanir í öruggri tengingu
+fp-learn-more-about-cert-issues = Lærðu meira um þessar tegundir vandamála með skilríki
+fp-learn-more-about-time-related-errors = Frekari upplýsingar um lagfæringar á tímatengdum villum
 
 ## Messages used for certificate error titles
 
@@ -92,6 +134,7 @@ contentEncodingError-title = Kóðunarvilla í efni
 unsafeContentType-title = Óörugg skráartegund
 netReset-title = Tenging slitnaði
 netTimeout-title = Tengingin svaraði ekki tímanlega
+httpErrorPage-title = Það virðist vera vandamál með þetta vefsvæði
 serverError-title = Það virðist vera vandamál með þetta vefsvæði
 unknownProtocolFound-title = Vistfangið skildist ekki
 proxyConnectFailure-title = Milliþjónninn neitar tengingum
@@ -109,3 +152,20 @@ networkProtocolError-title = Villa í netsamskiptum
 nssBadCert-title = Viðvörun: Hugsanleg öryggisáhætta framundan
 nssBadCert-sts-title = Tengdist ekki: Mögulegt öryggisvandamál
 certerror-mitm-title = Einhver hugbúnaður kemur í veg fyrir að { -brand-short-name } tengist öruggt við þetta vefsvæði
+
+## Felt Privacy V1 Strings
+
+fp-certerror-page-title = Aðvörun: Öryggisáhætta
+fp-certerror-body-title = Farðu varlega. Eitthvað lítur ekki út fyrir að vera rétt.
+fp-certerror-why-site-dangerous = Hvað lætur vefsvæðið líta hættulega út?
+fp-certerror-what-can-you-do = Hvað getur þú gert í því?
+fp-certerror-advanced-title = Ítarlegt
+fp-certerror-advanced-button = Ítarlegt
+fp-certerror-hide-advanced-button = Fela ítarlegt
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-certerror-override-exception-button = Halda áfram á { $hostname } (áhættusamt)
+fp-certerror-intro = { -brand-short-name } kom auga á mögulega alvarlegt öryggisvandamál með <strong>{ $hostname }</strong>. Einhver sem þykist vera vefsvæðið gæti reynt að stela atriðum eins og kreditkortaupplýsingum, lykilorðum eða tölvupósti.
+fp-certerror-expired-into = { -brand-short-name } kom auga á öryggisvandamál með <strong>{ $hostname }</strong>. Annaðhvort er vefsvæðið ekki rétt uppsett eða klukka tækisins þíns er stillt á ranga dagsetningu/tíma.

@@ -57,7 +57,7 @@ static EnumeratedArray<RemoteDecodeIn, StaticRefPtr<GenericNonExclusivePromise>,
 // Only modified on the main-thread, read on any thread. While it could be read
 // on the main thread directly, for clarity we force access via the DataMutex
 // wrapper.
-static StaticDataMutex<StaticRefPtr<nsIThread>>
+MOZ_RUNINIT static StaticDataMutex<StaticRefPtr<nsIThread>>
     sRemoteDecoderManagerChildThread("sRemoteDecoderManagerChildThread");
 
 // Only accessed from sRemoteDecoderManagerChildThread
@@ -70,8 +70,9 @@ static StaticAutoPtr<nsTArray<RefPtr<Runnable>>> sRecreateTasks;
 // Used for protecting codec support information collected from different remote
 // processes.
 StaticMutex sProcessSupportedMutex;
-static EnumeratedArray<RemoteDecodeIn, Maybe<media::MediaCodecsSupported>,
-                       size_t(RemoteDecodeIn::SENTINEL)>
+MOZ_GLOBINIT static EnumeratedArray<RemoteDecodeIn,
+                                    Maybe<media::MediaCodecsSupported>,
+                                    size_t(RemoteDecodeIn::SENTINEL)>
     sProcessSupported MOZ_GUARDED_BY(sProcessSupportedMutex);
 
 class ShutdownObserver final : public nsIObserver {
@@ -277,8 +278,10 @@ bool RemoteDecoderManagerChild::Supports(
         }
         return aLocation == RemoteDecodeIn::UtilityProcess_MFMediaEngineCDM ||
                aLocation == RemoteDecodeIn::GpuProcess;
+#elif defined(MOZ_APPLEMEDIA)
+        return trackSupport.contains(TrackSupport::Video);
 #else
-        // TODO : in the future, we need to add HEVC check on other platforms.
+        // TODO : still need to add support on Android and Linux.
         return false;
 #endif
       }

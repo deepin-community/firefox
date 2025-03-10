@@ -13,8 +13,14 @@
 edition = "2021"
 rust-version = "1.76.0"
 name = "neqo-bin"
-version = "0.8.2"
+version = "0.11.0"
 authors = ["The Neqo Authors <necko@mozilla.com>"]
+build = false
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "A basic QUIC HTTP/0.9 and HTTP/3 client and server."
 homepage = "https://github.com/mozilla/neqo/"
 readme = "../README.md"
@@ -34,6 +40,8 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/mozilla/neqo/"
 
 [lib]
+name = "neqo_bin"
+path = "src/lib.rs"
 bench = false
 
 [[bin]]
@@ -48,6 +56,7 @@ bench = false
 
 [[bench]]
 name = "main"
+path = "benches/main.rs"
 harness = false
 required-features = ["bench"]
 
@@ -64,7 +73,8 @@ features = [
 default-features = false
 
 [dependencies.clap-verbosity-flag]
-version = "2.2"
+version = "3.0"
+features = ["log"]
 default-features = false
 
 [dependencies.futures]
@@ -101,7 +111,7 @@ version = "0.13"
 default-features = false
 
 [dependencies.quinn-udp]
-version = "0.5.4"
+version = "0.5.6"
 features = ["direct-log"]
 default-features = false
 
@@ -122,15 +132,13 @@ features = [
 default-features = false
 
 [dependencies.url]
-version = "2.5"
+version = "2.5.3"
+features = ["std"]
 default-features = false
 
 [dev-dependencies.criterion]
 version = "0.5"
-features = [
-    "html_reports",
-    "async_tokio",
-]
+features = ["async_tokio"]
 default-features = false
 
 [dev-dependencies.tokio]
@@ -139,7 +147,7 @@ features = ["sync"]
 default-features = false
 
 [features]
-bench = []
+bench = ["neqo-transport/bench"]
 
 [lints.clippy]
 multiple_crate_versions = "allow"

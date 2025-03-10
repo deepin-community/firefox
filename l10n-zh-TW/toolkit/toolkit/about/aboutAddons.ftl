@@ -282,6 +282,9 @@ find-more-themes = 尋找更多佈景主題
 # used for screen readers.
 addon-options-button =
     .aria-label = 更多選項
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 = 您可以使用擴充套件與佈景主題來自訂 { -brand-product-name }。您可以安裝它們來擴充隱私保護、加強生產力、改善媒體功能，調整 { -brand-product-name } 外觀，還有滿滿其他功能。這些小軟體通常都是由第三方打造的，以下是一系列 { -brand-product-name } <a data-l10n-name="learn-more-trigger">推薦的</a>，在安全性、效能、功能上均有傑出表現的套件。
 
 ## Add-on actions
 
@@ -367,6 +370,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = 允許於隱私瀏覽視窗運作
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = 允許於隱私瀏覽視窗運作
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -406,6 +413,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = 我們檢查過此擴充套件，確認符合安全性與運作效能標準
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } 僅推薦符合我們的安全性與效能標準的擴充套件
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = 由 Mozilla 打造的官方附加元件，符合各種安全性與運作效能標準
+addon-badge-verified3 =
+    .title = 我們檢查過此擴充套件，確認符合安全性與運作效能標準
 
 ##
 
@@ -413,15 +428,16 @@ available-updates-heading = 可用的更新
 recent-updates-heading = 最近的更新
 release-notes-loading = 載入中…
 release-notes-error = 抱歉，載入發行公告時發生錯誤。
+addon-permissions-empty2 = 此擴充套件並未要求任何權限。
 addon-permissions-empty = 此擴充套件並未要求任何權限
-addon-permissions-required = 核心功能需要下列權限:
-addon-permissions-optional = 選用功能需要下列權限:
+addon-permissions-required = 核心功能需要下列權限：
+addon-permissions-optional = 選用功能需要下列權限：
 addon-permissions-learnmore = 了解權限的更多資訊
 recommended-extensions-heading = 推薦的擴充套件
 recommended-themes-heading = 推薦的佈景主題
 # Variables:
 #   $hostname (string) - Host where the permissions are granted
-addon-sitepermissions-required = 讓 <span data-l10n-name="hostname">{ $hostname }</span> 有下列權限:
+addon-sitepermissions-required = 讓 <span data-l10n-name="hostname">{ $hostname }</span> 有下列權限：
 # A recommendation for the Firefox Color theme shown at the bottom of the theme
 # list view. The "Firefox Color" name itself should not be translated.
 recommended-theme-1 = 突然有個靈感嗎？<a data-l10n-name="link">使用 Firefox Color 來打造自己的佈景主題。</a>
@@ -462,10 +478,24 @@ details-notification-unsigned-and-disabled-link = 更多資訊
 details-notification-unsigned = 無法驗證 { $name } 於 { -brand-short-name } 使用，若要使用請小心。
 details-notification-unsigned2 =
     .message = 無法驗證 { $name } 於 { -brand-short-name } 使用，若要使用請小心。
+details-notification-hard-blocked-extension =
+    .message = 此擴充套件違反 Mozilla 的政策規定，已被停用。
+details-notification-hard-blocked-other =
+    .message = 此附加元件違反 Mozilla 的政策規定，已被停用。
 details-notification-unsigned-link = 更多資訊
 details-notification-blocked = 因為安全性或穩定性因素，{ $name } 已被停用。
 details-notification-blocked2 =
     .message = 因為安全性或穩定性因素，{ $name } 已被停用。
+details-notification-blocked-link2 = 檢視詳細資訊
+details-notification-soft-blocked-extension-disabled =
+    .message = 此擴充套件違反了 Mozilla 的政策規定，已被停用。您還是可以開啟，但可能會有風險。
+details-notification-soft-blocked-extension-enabled =
+    .message = 此擴充套件違反了 Mozilla 的政策規定，繼續使用可能會有風險。
+details-notification-soft-blocked-other-disabled =
+    .message = 此附加元件違反了 Mozilla 的政策規定，已被停用。您還是可以開啟，但可能會有風險。
+details-notification-soft-blocked-other-enabled =
+    .message = 此附加元件違反了 Mozilla 的政策規定，繼續使用可能會有風險。
+details-notification-softblocked-link2 = 檢視詳細資訊
 details-notification-blocked-link = 更多資訊
 details-notification-softblocked = 已知 { $name } 會造成安全性或穩定性問題。
 details-notification-softblocked2 =

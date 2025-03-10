@@ -218,6 +218,8 @@ shortcuts-duplicate-warning-message2 =
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = { $addon } দ্বারা ইতিমধ্যে ব্যবহৃত
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] আরও { $numberToShow } দেখাও
@@ -275,6 +277,10 @@ remove-addon-button = অপসারণ
 remove-addon-disabled-button = সরানো যাবে না <a data-l10n-name="link">কেনো?</a>
 disable-addon-button = নিষ্ক্রিয়
 enable-addon-button = সক্রিয়
+# This is used for the toggle on the extension card, it's a checkbox and this
+# is always its label.
+extension-enable-addon-button-label =
+    .aria-label = সক্ষম করুন
 preferences-addon-button =
     { PLATFORM() ->
         [windows] বিকল্প
@@ -340,6 +346,10 @@ addon-detail-update-check-label = হালনাগাদ এর জন্য �
 install-update-button = হালনাগাদ
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = ব্যক্তিগত উইন্ডোতে অনুমোদিত
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = ব্যক্তিগত উইন্ডোতে অনুমোদিত
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -357,6 +367,8 @@ addon-detail-private-browsing-disallow = অনুমতি দিও না
 addon-badge-recommended2 =
     .title = { -brand-product-name } কেবলমাত্র সেই সব এক্সটেনশনকে সুপারিশ করা হয় যা সুরক্ষা এবং কার্যক্ষমতার দিক দিয়ে আমাদের মানদণ্ড পূরণ করে
     .aria-label = { addon-badge-recommended2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } কেবলমাত্র সেই সব এক্সটেনশনকে সুপারিশ করা হয় যা সুরক্ষা এবং কার্যক্ষমতার দিক দিয়ে আমাদের মানদণ্ড পূরণ করে
 
 ##
 
@@ -391,7 +403,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } ,{ -brand-short-name } { $version } এর জন্য উপযুক্ত।
 # Variables:
 #   $version (string) - Application version.

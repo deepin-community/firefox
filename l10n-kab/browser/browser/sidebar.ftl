@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+menu-view-genai-chat =
+    .label = AI Chatbot
+menu-view-review-checker =
+    .label = Amsenqad n tamawt
 
 ## Labels for sidebar history panel
 
@@ -42,14 +46,18 @@ sidebar-position-left =
     .label = Sken deg zelmeḍ
 sidebar-position-right =
     .label = Sken deg yeffus
+sidebar-vertical-tabs =
+    .label = Accaren ubdiden
+sidebar-horizontal-tabs =
+    .label = Accaren iglawanen
 sidebar-customize-tabs-header =
     .label = Iɣewwaren n yiccer
-sidebar-customize-settings-header =
-    .label = Iɣewwaren n ufeggag adisan
-sidebar-visibility-always-show =
-    .label = Sken yal tikelt
-sidebar-visibility-hide-sidebar =
-    .label = Ffer afeggag adisan
+sidebar-customize-button-header =
+    .label = Taqeffalt n ufeggag adisan
+sidebar-customize-position-header =
+    .label = Adig n ufeggag adisan
+sidebar-visibility-setting-hide-sidebar =
+    .label = Sken syen ffer afeggag adisan
 
 ## Labels for sidebar context menu items
 
@@ -89,6 +97,18 @@ sidebar-menu-bookmarks-label =
     .label = Ticraḍ n isebtar
 sidebar-menu-customize-label =
     .label = Sagen afeggag adigan
+sidebar-menu-review-checker-label =
+    .label = Amsenqad n tamawt
+
+## Tooltips for sidebar menu items.
+
+sidebar-menu-close-ai-chatbot-tooltip = Mdel AI chatbot
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
 
 ## Headings for sidebar menu panels.
 
@@ -98,6 +118,14 @@ sidebar-menu-history-header =
     .heading = Azray
 sidebar-menu-syncedtabs-header =
     .heading = Iccaren seg ibenkan nniḍen
+sidebar-panel-header-close-button =
+    .tooltiptext = Mdel
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Sagen afeggag adigan
+sidebar-history-title = Azray
+sidebar-syncedtabs-title = Iccaren seg ibenkan niḍen
 
 ## Context for closing synced tabs when hovering over the items
 
@@ -107,3 +135,24 @@ sidebar-menu-syncedtabs-header =
 #   $deviceName (String) - the name of the device the user is closing a tab for
 synced-tabs-context-close-tab-title =
     .title = Mdel iccer ɣef { $deviceName }
+show-sidebars =
+    .tooltiptext = Sken igalisen idisanen
+    .label = Igalisen idisanen
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Fneẓ afeggag adisan ({ $shortcut })
+    .label = Igalisen idisanen
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Sken afeggag adisan ({ $shortcut })
+    .label = Igalisen idisanen
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Ffer afeggag adisan ({ $shortcut })
+    .label = Igalisen idisanen

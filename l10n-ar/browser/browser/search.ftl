@@ -31,3 +31,11 @@ searchbar-icon =
 ## $newEngine (String) - the search engine to replace the removed search engine.
 
 remove-search-engine-button = حسنًا
+
+## Infobar shown when user is prompted to install search engine.
+## Variables
+## $engineName (String) - the name of the search engine to install.
+
+install-search-engine = أضِف { $engineName } كمحرك بحث؟
+install-search-engine-add = أضِف
+install-search-engine-no = لا

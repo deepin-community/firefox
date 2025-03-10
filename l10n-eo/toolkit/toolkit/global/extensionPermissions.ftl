@@ -30,4 +30,13 @@ webext-perms-description-sessions = Aliri ĵuse fermitajn langetojn
 webext-perms-description-tabs = Aliri retumilajn langetojn
 webext-perms-description-tabHide = Kaŝi kaj montri langetojn de retumilo
 webext-perms-description-topSites = Aliri la retuman historion
+webext-perms-description-trialML = Elŝuti kaj ruli modelon de AI en via aparato
+webext-perms-description-userScripts = Permesi al nekontrolitaj skriptoj de aliaj la aliron al viaj datumoj
 webext-perms-description-webNavigation = Aliri la agojn de la retumilo dum retumo
+
+## The userScripts permission includes an additional explanation that is
+## displayed prominently near the usual permission description.
+
+webext-perms-extra-warning-userScripts-long = Nekontrolitaj skriptoj povas prezenti sekurecajn kaj privatecajn riskojn, kiel la ruladon de danĝera kodo aŭ la spurado de agado en retejoj. Nur rulu skriptojn de etendaĵoj aŭ fontoj, kiujn vi fidas.
+# A shorter warning is displayed in UI surfaces with little room, such as a permission prompt.
+webext-perms-extra-warning-userScripts-short = Nekontrolitaj skriptoj povas prezenti sekurecajn kaj privatecajn riskojn. Nur rulu skriptojn de etendaĵoj aŭ fontoj, kiujn vi fidas.

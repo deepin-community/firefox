@@ -28,3 +28,71 @@ callout-pdfjs-draw-body-a = כתיבה על קובצי PDF ושמירת השינ
 # “Mark up” refers to the process of “annotating” or adding free hand text or diagramming to the document.
 callout-pdfjs-draw-body-b = לא צריך עוד להדפיס ולסרוק. אפשר לסמן בקובצי PDF ואז לשמור את השינויים שלך.
 callout-pdfjs-draw-button = הבנתי!
+
+## Firefox View Discoverability Strings
+
+fx-view-discoverability-title = לא התכוונת לסגור את הלשונית ההיא?
+fx-view-discoverability-subtitle = ניתן למצוא ולפתוח אותה מחדש כאן. אנו שומרים עבורך היסטוריה של הלשוניות שנסגרו לאחרונה.
+fx-view-discoverability-primary-button-label = פתיחת { -firefoxview-brand-name }
+fx-view-discoverability-secondary-button-label = סגירה
+
+## Split Dismiss Button Labels
+
+# Blocks the message from showing again
+split-dismiss-button-dont-show-option-label = לא להציג המלצה זו שוב
+# Dismisses message and reduces frequency of message
+split-dismiss-button-show-fewer-option-label = להציג פחות המלצות
+# Opens about:preferences#general-cfrfeatures
+split-dismiss-button-manage-settings-option-label = ניהול הגדרות
+
+## Sidebar Strings
+
+sidebar-button-callout-title = הצגת כותרות של לשוניות בסרגל הצד
+sidebar-button-callout-subtitle = ניתן להשתמש בכפתור סרגל הצד כדי להרחב את סרגל הצד, כדי שיהיה באפשרותך לראות את הכותרות של הלשוניות.
+sidebar-button-callout-vertical-tabs = כדי לצפות בלשוניות שלך, יש לבחור בכפתור סרגל הצד בסרגל הכלים.
+
+## Sidebar Callout Survey Strings
+
+sidebar-callout-survey-title = עזרה בשיפור { -brand-short-name }
+sidebar-callout-survey-satisfaction-question = עד כמה הינך מרוצה מחווית סרגל הצד ב־{ -brand-short-name }?
+sidebar-callout-survey-privacy-notice-link = הצהרת פרטיות
+sidebar-callout-survey-very-satisfied = מאוד מרוצה
+sidebar-callout-survey-satisfied = מרוצה
+sidebar-callout-survey-neutral = נטרלי
+sidebar-callout-survey-dissatisfied-2 = לא מרוצה
+sidebar-callout-survey-very-dissatisfied-2 = מאוד לא מרוצה
+sidebar-callout-survey-dont-use-it = אין לי שימוש בזה
+sidebar-callout-survey-productive-question =
+    באיזו מידה היית נוטה להסכים או לא להסכים עם הצהרה זו:<br/>
+    ״סרגל הצד של { -brand-short-name } מסייע לי להיות יותר פרודקטיבי״?
+sidebar-callout-survey-strongly-agree = נוטה להסכים מאוד
+sidebar-callout-survey-agree = נוטה להסכים
+sidebar-callout-survey-disagree = נוטה לא להסכים
+sidebar-callout-survey-strongly-disagree = נוטה לא להסכים מאוד
+sidebar-callout-survey-features-question = להלן אפשרויות פוטנציאליות של סרגל הצד. מה ישפר הכי הרבה את הפרודקטיביות שלך ב־{ -brand-short-name }?
+sidebar-callout-survey-split-view = הצגת שני אתרים בו זמנית, בתצוגה מפוצלת זה לצד זה
+sidebar-callout-survey-keep-website-open = פתיחת אתר כמו דוא״ל או יומן בסרגל הצד תוך כדי גלישה
+sidebar-callout-survey-saved-websites-2 = גישה מהירה לסימניות שלך
+sidebar-callout-survey-none-of-above = אף אחד מהאמור לעיל
+sidebar-callout-survey-submit = שליחה
+sidebar-callout-survey-thank-you = אנו מודים לך על המשוב שלך!
+sidebar-genai-survey-satisfaction-question = עד כמה הינך מרוצה מכך שיש לך גישה לצ’אט בוט AI בסרגל הצד?
+sidebar-genai-survey-productive-question =
+    באיזו מידה היית נוטה להסכים או לא להסכים עם הצהרה זו:<br/>
+    ״צ’אט בוט AI בסרגל הצד מסייע לי להיות יותר פרודקטיבי״?
+unified-search-callout-title = מעבר בין מנועי חיפוש
+unified-search-callout-subtitle = באפשרותך לבחור במה שהכי מתאים לחיפוש הספציפי שלך.
+unified-search-callout-primary-label = הבא
+unified-search-callout-secondary-label = סגירה
+unified-search-engines-callout-title = חיפוש באמצעות קיצור דרך
+unified-search-engines-callout-subtitle = יש להקליד ״@״ ואחריו מילת מפתח כדי לחפש בהיסטוריה, בסימניות ובלשוניות שלך, או באמצעות מנוע חיפוש אחר.
+unified-search-engines-callout-primary-label = הבנתי
+actions-callout-title = השלמת משימות נפוצות או קבלת גישה להגדרות בסיסיות
+# The user can type "print" and "clear" and a button will appear in the
+# search bar (e.g. Print page) the user can click to initiate the action.
+# These example text inputs correlate to the the following strings
+# (either matching the whole string, or the first word of the string).
+# "print" - quickactions-cmd-print
+# "clear" - quickactions-cmd-clearhistory
+# When localizing, ensure the translations match to ensure the action button appears as expected.
+actions-callout-subtitle = ניתן לנסות להקליד פעולה כמו ״הדפס״ או ״הדפסה״ כדי להדפיס עמוד, או ״ניקוי״ כדי למחוק את ההיסטוריה שלך.

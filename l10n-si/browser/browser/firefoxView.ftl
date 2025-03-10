@@ -9,11 +9,15 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
     .title = වසන්න
     .aria-label = වසන්න
+firefoxview-empty-state-icon =
+    .alt = අවධානය:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = මේ දැන්
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -31,6 +35,7 @@ firefoxview-syncedtabs-signin-primarybutton = ලියාපදිංචිය 
 firefoxview-tabpickup-adddevice-description = දුරකථනය සඳහා { -brand-product-name } බාගත කර පිවිසෙන්න.
 firefoxview-tabpickup-adddevice-learn-how = කෙසේදැයි දැනගන්න
 firefoxview-tabpickup-adddevice-primarybutton = දුරකථනය සඳහා { -brand-product-name } ගන්න
+firefoxview-syncedtabs-adddevice-header-2 = ඕනෑම තැනකින් පටිති ඇහිඳින්න
 firefoxview-syncedtabs-adddevice-header = ඔබගේ අනෙකුත් උපාංග වලින් { -brand-product-name } වෙත පිවිසෙන්න
 firefoxview-syncedtabs-adddevice-description = ඔබ { -brand-product-name } භාවිතා කරන ඕනෑම තැනක දී ඔබගේ පටිති බැලීමට, ඔබගේ සියළුම උපාංග වලට පිවිසෙන්න. <a data-l10n-name="url">අතිරේක උපාංග සම්බන්ධ කරන ආකාරය</a> දැනගන්න.
 firefoxview-syncedtabs-adddevice-primarybutton = දුරකථනයට { -brand-product-name } දාගන්න
@@ -45,7 +50,7 @@ firefoxview-syncedtabs-loading-header = සමමුහූර්ත වෙමි
 firefoxview-syncedtabs-loading-description = අහවර වූ විට, ඔබ වෙනත් උපාංගවල විවෘත කර තිබෙන සියලුම පටිති දිස්වනු ඇත. මොහොතකින් පරීක්‍ෂා කරන්න.
 firefoxview-tabpickup-fxa-admin-disabled-header = ඔබගේ සංවිධානය සමමුහූර්තය අබල කර ඇත
 firefoxview-tabpickup-fxa-admin-disabled-description = ඔබගේ පරිපාලකයා සමමුහූර්තය අබල කර තිබෙන නිසා { -brand-short-name } මගින් උපාංග අතර පටිති සමමුහූර්ත කිරීමට නොහැකිය.
-firefoxview-tabpickup-network-offline-header = අන්තර්ජාල සම්බන්ධතාවය පරීක්‍ෂා කරන්න
+firefoxview-tabpickup-network-offline-header = අන්තර්ජාල සම්බන්ධතාව පරීක්‍ෂා කරන්න
 firefoxview-tabpickup-network-offline-description = ගිනිපවුරක් හෝ ප්‍රතියුක්තයක් භාවිතා කරන්නේ නම්, { -brand-short-name } සඳහා අන්තර්ජාලයට ප්‍රවේශ වීමට අවසර තිබේදැයි බලන්න.
 firefoxview-tabpickup-network-offline-primarybutton = නැවත
 firefoxview-tabpickup-sync-error-header = සමමුහූර්ත නොවීමේ ගැටලුවකි
@@ -55,10 +60,13 @@ firefoxview-tabpickup-sync-disconnected-header = ඉදිරියට යාම
 firefoxview-tabpickup-sync-disconnected-description = ඔබගේ පටිති ලබා ගැනීමට, { -brand-short-name } සමමුහූර්ත පහසුකමට ඉඩ දිය යුතුය.
 firefoxview-tabpickup-sync-disconnected-primarybutton = සැකසුම් තුළ සමමුහූර්තය සක්‍රිය කරන්න
 firefoxview-tabpickup-password-locked-header = පටිති දැකීමට ඔබගේ ප්‍රාථමික මුරපදය යොදන්න
+firefoxview-tabpickup-password-locked-description = ඔබගේ පටිති ලබා ගැනීමට, { -brand-short-name } වෙත ප්‍රාථමික මුරපදය ඇතුල් කළ යුතුය.
 firefoxview-tabpickup-password-locked-link = තව දැනගන්න
 firefoxview-tabpickup-password-locked-primarybutton = ප්‍රාථමික මුරපදය යොදන්න
 firefoxview-syncedtab-password-locked-link = <a data-l10n-name="syncedtab-password-locked-link">තව දැනගන්න</a>
 firefoxview-tabpickup-signed-out-header = යළි සබැඳීමට පිවිසෙන්න
+firefoxview-tabpickup-signed-out-description = නැවත සම්බන්ධ වී පටිති ඇහිඳ ගැනීමට ඔබගේ { -fxaccount-brand-name } ගිණුමට පිවිසෙන්න.
+firefoxview-tabpickup-signed-out-description2 = නැවත සම්බන්ධ වී පටිති ඇහිඳ ගැනීමට ඔබගේ ගිණුමට පිවිසෙන්න.
 firefoxview-tabpickup-signed-out-primarybutton = පිවිසෙන්න
 firefoxview-tabpickup-syncing = ඔබගේ පටිති මොහොතකින් සමමුහූර්ත වනු ඇත. රැඳී සිටින්න.
 firefoxview-mobile-promo-description = ඔබගේ නවතම ජංගම පටිති බැලීමට, අයිඕඑස් හෝ ඇන්ඩ්‍රොයිඩ් හරහා { -brand-product-name } වෙත පිවිසෙන්න.
@@ -85,6 +93,7 @@ firefoxview-change-colorway-button = වර්ණ පරාසය සංශෝ�
 #  $collection (String): Colorway Collection name
 firefoxview-colorway-description = { $intensity } · { $collection }
 firefoxview-synced-tabs-placeholder-header = තවම දකින්න දෙයක් නැත
+firefoxview-synced-tabs-placeholder-body = ඊළඟ වතාවේ ඔබ වෙනත් උපාංගයක { -brand-product-name } හි පිටුවක් අරින විට, විජ්ජාවක් මෙන් මෙතැනින් ඇහිඳින්න.
 firefoxview-collapse-button-show =
     .title = ලේඛනය පෙන්වන්න
 firefoxview-collapse-button-hide =
@@ -136,6 +145,7 @@ firefoxview-opentabs-focus-tab =
     .title = මෙම පටිත්තට මාරුවන්න
 firefoxview-show-more = තව පෙන්වන්න
 firefoxview-show-less = අඩුවෙන් පෙන්වන්න
+firefoxview-show-all = සියල්ල පෙන්වන්න
 firefoxview-search-text-box-clear-button =
     .title = මකන්න
 # Placeholder for the input field to search in recent browsing ("search" is a verb).
@@ -168,8 +178,10 @@ firefoxview-search-results-count =
 # Variables:
 #   $query (String) - The search query.
 firefoxview-search-results-empty = “{ $query }” සඳහා ප්‍රතිඵල නැත
-firefoxview-sort-history-by-date-label = දිනය අනුව පිළිවෙළට
-firefoxview-sort-history-by-site-label = අඩවිය අනුව පිළිවෙළට
+firefoxview-sort-history-by-date-label = දිනය අනුව වර්ගනය
+firefoxview-sort-history-by-site-label = අඩවිය අනුව වර්ගනය
+firefoxview-sort-open-tabs-by-recency-label = මෑත ක්‍රියාකාරකම් අනුව වර්ගනය
+firefoxview-sort-open-tabs-by-order-label = පටිති අනුපිළිවෙලට වර්ගනය
 # Variables:
 #   $url (string) - URL that will be opened in the new tab
 firefoxview-opentabs-tab-row =
@@ -195,7 +207,8 @@ firefoxview-view-more-browsing-history = තවත් පිරික්සු�
 ## Message displayed in Firefox View when the user has no history data
 
 firefoxview-history-empty-header = ඔබ සිටි තැනට ආපසු යන්න
-firefoxview-history-empty-description = ඔබ පිරික්සන විට, ඔබ ගොඩවදින පිටු මෙහි අනුපිළිවෙළට දිස්වේ.
+firefoxview-history-empty-description = ඔබ පිරික්සන විට, ඔබ ගොඩවදින පිටු මෙහි අනුපිළිවෙලට දිස්වේ.
+firefoxview-history-empty-description-two = ඔබගේ පෞද්ගලිකත්‍වය සුරැකීම අපගේ මූලික අරමුණයි. එබැවින් ඔබගේ <a data-l10n-name="history-settings-url">ඉතිහාස සැකසුම්</a> හරහා { -brand-short-name } රඳවා ගන්නා ක්‍රියාකාරකම් පාලනයට හැකිය.
 
 ##
 
@@ -206,6 +219,7 @@ firefoxview-choose-browser-button = අතිරික්සුව තෝරන�
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
 firefoxview-dont-remember-history-empty-header = කිසිවක් නැත
+firefoxview-dont-remember-history-empty-description = ඔබගේ පෞද්ගලිකත්‍වය සුරැකීම අපගේ මූලික අරමුණයි. එබැවින් ඔබට { -brand-short-name } රඳවා ගන්නා ක්‍රියාකාරකම් පාලනයට හැකිය.
 
 ##
 
@@ -227,11 +241,17 @@ firefoxview-recentlyclosed-empty-header = වැරදීමකින් පට�
 
 firefoxview-syncedtabs-device-notabs = මෙම උපාංගයේ විවෘත පටිති නැත
 firefoxview-syncedtabs-connect-another-device = වෙනත් උපාංගයක් සබඳින්න
+firefoxview-pinned-tabs =
+    .title = ඇමිණූ පටිති
+firefoxview-tabs =
+    .title = පටිති
 
 ## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
 ## Variables:
 ##  $tabTitle (string) - Title of pinned tab that will be opened when selected
 
+firefoxview-opentabs-pinned-tab =
+    .title = { $tabTitle } වෙත මාරුවන්න
 
 ## These tooltips will be displayed when hovering over an unpinned Open Tab
 ## Variables:

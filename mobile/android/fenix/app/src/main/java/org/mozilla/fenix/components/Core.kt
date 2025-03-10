@@ -39,6 +39,7 @@ import mozilla.components.browser.thumbnails.storage.ThumbnailStorage
 import mozilla.components.concept.base.crash.CrashReporting
 import mozilla.components.concept.engine.DefaultSettings
 import mozilla.components.concept.engine.Engine
+import mozilla.components.concept.engine.fission.WebContentIsolationStrategy
 import mozilla.components.concept.engine.mediaquery.PreferredColorScheme
 import mozilla.components.concept.fetch.Client
 import mozilla.components.feature.awesomebar.provider.SessionAutocompleteProvider
@@ -72,20 +73,27 @@ import mozilla.components.feature.sitepermissions.OnDiskSitePermissionsStorage
 import mozilla.components.feature.top.sites.DefaultTopSitesStorage
 import mozilla.components.feature.top.sites.PinnedSiteStorage
 import mozilla.components.feature.webcompat.WebCompatFeature
-import mozilla.components.feature.webcompat.reporter.WebCompatReporterFeature
 import mozilla.components.feature.webnotifications.WebNotificationFeature
 import mozilla.components.lib.dataprotect.SecureAbove22Preferences
-import mozilla.components.service.contile.ContileTopSitesProvider
-import mozilla.components.service.contile.ContileTopSitesUpdater
 import mozilla.components.service.digitalassetlinks.RelationChecker
 import mozilla.components.service.digitalassetlinks.local.StatementApi
 import mozilla.components.service.digitalassetlinks.local.StatementRelationChecker
 import mozilla.components.service.location.LocationService
 import mozilla.components.service.location.MozillaLocationService
+import mozilla.components.service.mars.MarsTopSitesProvider
+import mozilla.components.service.mars.MarsTopSitesRequestConfig
+import mozilla.components.service.mars.NEW_TAB_TILE_1_PLACEMENT_KEY
+import mozilla.components.service.mars.NEW_TAB_TILE_2_PLACEMENT_KEY
+import mozilla.components.service.mars.Placement
+import mozilla.components.service.mars.contile.ContileTopSitesProvider
+import mozilla.components.service.mars.contile.ContileTopSitesUpdater
+import mozilla.components.service.pocket.ContentRecommendationsRequestConfig
 import mozilla.components.service.pocket.PocketStoriesConfig
 import mozilla.components.service.pocket.PocketStoriesRequestConfig
 import mozilla.components.service.pocket.PocketStoriesService
 import mozilla.components.service.pocket.Profile
+import mozilla.components.service.pocket.mars.api.MarsSpocsRequestConfig
+import mozilla.components.service.pocket.mars.api.NEW_TAB_SPOCS_PLACEMENT_KEY
 import mozilla.components.service.sync.autofill.AutofillCreditCardsAddressesStorage
 import mozilla.components.service.sync.logins.SyncableLoginsStorage
 import mozilla.components.support.base.worker.Frequency
@@ -96,6 +104,8 @@ import org.mozilla.fenix.BuildConfig
 import org.mozilla.fenix.Config
 import org.mozilla.fenix.IntentReceiverActivity
 import org.mozilla.fenix.R
+import org.mozilla.fenix.browser.desktopmode.DefaultDesktopModeRepository
+import org.mozilla.fenix.browser.desktopmode.DesktopModeMiddleware
 import org.mozilla.fenix.components.search.SearchMigration
 import org.mozilla.fenix.downloads.DownloadService
 import org.mozilla.fenix.ext.components
@@ -116,6 +126,7 @@ import org.mozilla.fenix.utils.getUndoDelay
 import org.mozilla.geckoview.GeckoRuntime
 import java.util.UUID
 import java.util.concurrent.TimeUnit
+import mozilla.components.service.pocket.mars.api.Placement as MarsSpocsPlacement
 
 /**
  * Component group for all core browser functionality.
@@ -163,12 +174,6 @@ class Core(
             } else {
                 context.settings().blockSuspectedFingerprintersPrivateBrowsing
             },
-            fingerprintingProtectionOverrides =
-            if (FxNimbus.features.fingerprintingProtection.value().enabled) {
-                FxNimbus.features.fingerprintingProtection.value().overrides
-            } else {
-                ""
-            },
             fdlibmMathEnabled = FxNimbus.features.fingerprintingProtection.value().fdlibmMath,
             cookieBannerHandlingMode = context.settings().getCookieBannerHandling(),
             cookieBannerHandlingModePrivateBrowsing = context.settings().getCookieBannerHandlingPrivateMode(),
@@ -177,7 +182,29 @@ class Core(
             cookieBannerHandlingGlobalRulesSubFrames = context.settings().shouldEnableCookieBannerGlobalRulesSubFrame,
             emailTrackerBlockingPrivateBrowsing = true,
             userCharacteristicPingCurrentVersion = FxNimbus.features.userCharacteristics.value().currentVersion,
+            getDesktopMode = {
+                store.state.desktopMode
+            },
+            webContentIsolationStrategy = WebContentIsolationStrategy.ISOLATE_HIGH_VALUE,
+            fetchPriorityEnabled = FxNimbus.features.networking.value().fetchPriorityEnabled,
+            parallelMarkingEnabled = FxNimbus.features.javascript.value().parallelMarkingEnabled,
+            certificateTransparencyMode = FxNimbus.features.pki.value().certificateTransparencyMode,
         )
+
+        // Apply fingerprinting protection overrides if the feature is enabled in Nimbus
+        if (FxNimbus.features.fingerprintingProtection.value().enabled) {
+            defaultSettings.fingerprintingProtectionOverrides =
+                FxNimbus.features.fingerprintingProtection.value().overrides
+        }
+
+        // Apply third-party cookie blocking settings if the Nimbus feature is
+        // enabled.
+        if (FxNimbus.features.thirdPartyCookieBlocking.value().enabled) {
+            defaultSettings.cookieBehaviorOptInPartitioning =
+                FxNimbus.features.thirdPartyCookieBlocking.value().enabledNormal
+            defaultSettings.cookieBehaviorOptInPartitioningPBM =
+                FxNimbus.features.thirdPartyCookieBlocking.value().enabledPrivate
+        }
 
         GeckoEngine(
             context,
@@ -185,16 +212,6 @@ class Core(
             geckoRuntime,
         ).also {
             WebCompatFeature.install(it)
-
-            /**
-             * There are some issues around localization to be resolved, as well as questions around
-             * the capacity of the WebCompat team, so the "Report site issue" feature should stay
-             * disabled in Fenix Release builds for now.
-             * This is consistent with both Fennec and Firefox Desktop.
-             */
-            if (Config.channel.isNightlyOrDebug || Config.channel.isBeta) {
-                WebCompatReporterFeature.install(it, "fenix")
-            }
         }
     }
 
@@ -319,6 +336,11 @@ class Core(
                 SaveToPDFMiddleware(context),
                 FxSuggestFactsMiddleware(),
                 FileUploadsDirCleanerMiddleware(fileUploadsDirCleaner),
+                DesktopModeMiddleware(
+                    repository = DefaultDesktopModeRepository(
+                        context = context,
+                    ),
+                ),
             )
 
         BrowserStore(
@@ -449,7 +471,7 @@ class Core(
     /**
      * The storage component to sync and persist tabs in a Firefox Sync account.
      */
-    val lazyRemoteTabsStorage = lazyMonitored { RemoteTabsStorage(context) }
+    val lazyRemoteTabsStorage = lazyMonitored { RemoteTabsStorage(context, crashReporter) }
 
     val recentlyClosedTabsStorage =
         lazyMonitored { RecentlyClosedTabsStorage(context, engine, crashReporter) }
@@ -499,6 +521,19 @@ class Core(
             } else {
                 PocketStoriesRequestConfig()
             },
+            contentRecommendationsParams = ContentRecommendationsRequestConfig(
+                locale = LocaleManager.getSelectedLocale(context).toLanguageTag(),
+            ),
+            marsSponsoredContentsParams = MarsSpocsRequestConfig(
+                contextId = context.settings().contileContextId,
+                userAgent = engine.settings.userAgentString,
+                placements = listOf(
+                    MarsSpocsPlacement(
+                        placement = NEW_TAB_SPOCS_PLACEMENT_KEY,
+                        count = 10,
+                    ),
+                ),
+            ),
         )
     }
     val pocketStoriesService by lazyMonitored { PocketStoriesService(context, pocketStoriesConfig) }
@@ -511,11 +546,37 @@ class Core(
         )
     }
 
+    val marsTopSitesProvider by lazyMonitored {
+        MarsTopSitesProvider(
+            context = context,
+            client = client,
+            requestConfig = MarsTopSitesRequestConfig(
+                contextId = context.settings().contileContextId,
+                userAgent = engine.settings.userAgentString,
+                placements = listOf(
+                    Placement(
+                        placement = NEW_TAB_TILE_1_PLACEMENT_KEY,
+                        count = 1,
+                    ),
+                    Placement(
+                        placement = NEW_TAB_TILE_2_PLACEMENT_KEY,
+                        count = 1,
+                    ),
+                ),
+            ),
+            maxCacheAgeInSeconds = MARS_TOP_SITES_MAX_CACHE_AGE,
+        )
+    }
+
     @Suppress("MagicNumber")
     val contileTopSitesUpdater by lazyMonitored {
         ContileTopSitesUpdater(
             context = context,
-            provider = contileTopSitesProvider,
+            provider = if (context.settings().marsAPIEnabled) {
+                marsTopSitesProvider
+            } else {
+                contileTopSitesProvider
+            },
             frequency = Frequency(3, TimeUnit.HOURS),
         )
     }
@@ -592,7 +653,11 @@ class Core(
         DefaultTopSitesStorage(
             pinnedSitesStorage = pinnedSiteStorage,
             historyStorage = historyStorage,
-            topSitesProvider = contileTopSitesProvider,
+            topSitesProvider = if (context.settings().marsAPIEnabled) {
+                marsTopSitesProvider
+            } else {
+                contileTopSitesProvider
+            },
             defaultTopSites = defaultTopSites,
         )
     }
@@ -641,6 +706,7 @@ class Core(
         private const val RECENTLY_CLOSED_MAX = 10
         const val HISTORY_METADATA_MAX_AGE_IN_MS = 14 * 24 * 60 * 60 * 1000 // 14 days
         private const val CONTILE_MAX_CACHE_AGE = 3600L // 60 minutes
+        private const val MARS_TOP_SITES_MAX_CACHE_AGE = 1800L // 30 minutes
         const val HISTORY_SEARCH_ENGINE_ID = "history_search_engine_id"
         const val BOOKMARKS_SEARCH_ENGINE_ID = "bookmarks_search_engine_id"
         const val TABS_SEARCH_ENGINE_ID = "tabs_search_engine_id"

@@ -48,10 +48,10 @@ appmenuitem-exit2 =
            *[other] ਬਾਹਰ
         }
 appmenu-menu-button-closed2 =
-    .tooltiptext = ਐਪਲੀਕੇਸ਼ਨ ਮੇਨੂ ਖੋਲ੍ਹੋ
+    .tooltiptext = ਐਪਲੀਕੇਸ਼ਨ ਮੇਨੂ ਨੂੰ ਖੋਲ੍ਹੋ
     .label = { -brand-short-name }
 appmenu-menu-button-opened2 =
-    .tooltiptext = ਐਪਲੀਕੇਸ਼ਨ ਮੇਨੂ ਬੰਦ ਕਰੋ
+    .tooltiptext = ਐਪਲੀਕੇਸ਼ਨ ਮੇਨੂ ਨੂੰ ਬੰਦ ਕਰੋ
     .label = { -brand-short-name }
 # Settings is now used to access the browser settings across all platforms,
 # instead of Options or Preferences.
@@ -75,7 +75,7 @@ appmenu-remote-tabs-turn-on-sync =
     .label = …ਸਿੰਕ ਚਾਲੂ ਕਰੋ
 # This is shown after the tabs list if we can display more tabs by clicking on the button
 appmenu-remote-tabs-showmore =
-    .label = ਹੋਰ ਟੈਬਾਂ ਵੇਖਾਓ
+    .label = ਹੋਰ ਟੈਬਾਂ ਨੂੰ ਵੇਖਾਓ
     .tooltiptext = ਇਸ ਡਿਵਾਈਸ ਤੋਂ ਹੋਰ ਟੈਬਾਂ ਨੂੰ ਵੇਖੋ
 # This is shown as the label for an element to show inactive tabs from this device.
 appmenu-remote-tabs-show-inactive-tabs =
@@ -108,8 +108,11 @@ appmenu-fxa-sync-and-save-data2 = ਡਾਟਾ ਸਿੰਕ ਕਰੋ ਤੇ ਸ
 appmenu-fxa-signed-in-label = ਸਾਈਨ ਇਨ
 appmenu-fxa-setup-sync =
     .label = ਸਿੰਕ ਕਰਨਾ ਚਾਲੂ ਕਰੋ…
+appmenu-fxa-setup-sync-new = ਚਾਲੂ ਕਰੋ
 appmenuitem-save-page =
     .label = …ਸਫ਼ੇ ਨੂੰ ਇੰਝ ਸੰਭਾਲੋ
+appmenuitem-fxa-sync-off-title = ਸਿੰਕ ਬੰਦ ਹੈ
+appmenuitem-fxa-sync-off-description = ਆਪਣੇ ਬੁੱਕਮਾਰਕਾਂ, ਪਾਸਵਰਡਾਂ ਤੇ ਹੋਰ ਚੀਜ਼ਾਂ ਨੂੰ ਸੁਰੱਖਿਅਤ ਬਣਾਓ ਅਤੇ ਕਿਤੋਂ ਵੀ ਵਰਤੋਂ।
 
 ## What's New panel in App menu.
 
@@ -145,7 +148,7 @@ profiler-popup-settings =
     .value = ਸੈਟਿੰਗਾਂ
 # This link takes the user to about:profiling, and is only visible with the Custom preset.
 profiler-popup-edit-settings-button =
-    .label = …ਸੈਟਿੰਗਾਂ ਸੋਧੋ
+    .label = …ਸੈਟਿੰਗਾਂ ਨੂੰ ਸੋਧੋ
 profiler-popup-recording-screen = ਰਿਕਾਰਡ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ…
 profiler-popup-start-recording-button =
     .label = ਰਿਕਾਰਡਿੰਗ ਸ਼ੁਰੂ ਕਰੋ
@@ -277,5 +280,21 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = ਡਾਟਾ ਉਲੰਘਣਾਵਾਂ ਬਾਰੇ ਚੇਤਾਵਨੀਆਂ ਲਵੋ
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = ਆਪਣੇ ਅਸਲ ਈਮੇਲ ਅਤੇ ਫ਼ੋਨ ਨੂੰ ਲੁਕਾਓ
+appmenuitem-services-relay-description = ਈਮੇਲ ਮਾਸਕ ਡੈਸ਼ਬੋਰਡ ਨੂੰ ਚਲਾਓ
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = ਆਪਣੀ ਆਨਲਾਈਨ ਸਰਗਰਮੀ ਨੂੰ ਸੁਰੱਖਿਅਤ ਕਰੋ
+appmenu-services-header = ਮੇਰੀਆਂ ਸੇਵਾਵਾਂ
+appmenu-other-protection-header = { -vendor-short-name } ਵਲੋਂ ਹੋਰ ਸੁਰੱਖਿਆ ਦੇਣ ਵਾਲੇ ਟੂਲਾਂ ਨੂੰ ਅਜ਼ਮਾਓ:
+
+## Profiles panel
+
+appmenu-profiles = ਪਰੋਫਾਇਲ
+appmenu-other-profiles = ਹੋਰ ਪਰੋਫਾਇਲ
+appmenu-manage-profiles =
+    .label = ਪਰੋਫਾਇਲਾਂ ਦਾ ਬੰਦੋਬਸਤ ਕਰੋ
+appmenu-create-profile =
+    .label = ਨਵਾਂ ਪਰੋਫਾਇਲ
+appmenu-edit-profile =
+    .aria-label = ਪਰੋਫਾਇਲ ਨੂੰ ਸੋਧੋ
+appmenu-profiles-2 =
+    .label = ਪਰੋਫਾਇਲ

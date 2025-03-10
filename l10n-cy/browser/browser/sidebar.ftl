@@ -4,6 +4,12 @@
 
 menu-view-genai-chat =
     .label = Sgwrsfot AI
+menu-view-review-checker =
+    .label = Gwirydd Adolygiadau
+menu-view-contextual-password-manager =
+    .label = Cyfrineiriau
+sidebar-options-menu-button =
+    .title = Agor dewislen
 
 ## Labels for sidebar history panel
 
@@ -46,16 +52,30 @@ sidebar-position-right =
     .label = Dangos ar y dde
 sidebar-vertical-tabs =
     .label = Tabiau fertigol
+sidebar-settings =
+    .label = Gosodiadau bar ochr
+sidebar-hide-tabs-and-sidebar =
+    .label = Cuddio tabiau a bar ochr
+sidebar-show-on-the-right =
+    .label = Symud y bar ochr i'r dde
+sidebar-show-on-the-left =
+    .label = Symud y bar ochr i'r chwith
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = Ehangu'r bar ochr wrth hofran
 sidebar-horizontal-tabs =
     .label = Tabiau llorweddol
 sidebar-customize-tabs-header =
     .label = Gosodiadau tabiau
-sidebar-customize-settings-header =
-    .label = Gosodiadau bariau ochr
-sidebar-visibility-always-show =
-    .label = Dangos bob tro
-sidebar-visibility-hide-sidebar =
-    .label = Cuddio'r bar ochr
+sidebar-customize-button-header =
+    .label = Botwm bar ochr
+sidebar-customize-position-header =
+    .label = Safle'r bar ochr
+sidebar-visibility-setting-always-show =
+    .label = Ehangu a chau'r bar ochr
+sidebar-visibility-setting-hide-sidebar =
+    .label = Dangos a chuddio'r bar ochr
 
 ## Labels for sidebar context menu items
 
@@ -73,6 +93,10 @@ sidebar-context-menu-bookmark-tab =
     .label = Gosod Nod Tudalen i'r Tab…
 sidebar-context-menu-copy-link =
     .label = Copïo'r Ddolen
+# Variables:
+#   $deviceName (String) - The name of the device the user is closing a tab for
+sidebar-context-menu-close-remote-tab =
+    .label = Cau tab ar { $deviceName }
 
 ## Labels for sidebar history context menu items
 
@@ -91,6 +115,41 @@ sidebar-menu-bookmarks-label =
     .label = Nodau Tudalen
 sidebar-menu-customize-label =
     .label = Cyfaddasu'r bar offer
+sidebar-menu-review-checker-label =
+    .label = Gwirydd Adolygiadau
+sidebar-menu-contextual-password-manager-label =
+    .label = Cyfrineiriau
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = Agor hanes ( { $shortcut } )
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = Cau hanes ( { $shortcut } )
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = Agor nodau tudalen ( { $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = Cau nodau tudalen ( { $shortcut } )
+sidebar-menu-open-ai-chatbot-tooltip = Agor sgwrsfot AI
+sidebar-menu-close-ai-chatbot-tooltip = Cau sgwrsfot AI
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = Agor sgwrsfot AI ( { $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = Agor { $provider } ( { $shortcut } )
+sidebar-menu-close-ai-chatbot-tooltip-generic = Cau sgwrsfot AI ( { $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = Cau { $provider } ( { $shortcut } )
 
 ## Headings for sidebar menu panels.
 
@@ -100,3 +159,50 @@ sidebar-menu-history-header =
     .heading = Hanes
 sidebar-menu-syncedtabs-header =
     .heading = Tabiau o ddyfeisiau eraill
+sidebar-menu-bookmarks-header =
+    .heading = Nodau Tudalen
+sidebar-menu-cpm-header =
+    .heading = Cyfrineiriau
+sidebar-panel-header-close-button =
+    .tooltiptext = Cau
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Cyfaddasu'r bar offer
+sidebar-history-title = Hanes
+sidebar-syncedtabs-title = Tabiau o ddyfeisiau eraill
+
+## Context for closing synced tabs when hovering over the items
+
+# Context for hovering over the close tab button that will
+# send a push to the device to close said tab
+# Variables:
+#   $deviceName (String) - the name of the device the user is closing a tab for
+synced-tabs-context-close-tab-title =
+    .title = Cau tab ar { $deviceName }
+show-sidebars =
+    .tooltiptext = Dangos barau ochr
+    .label = Barrau Ochr
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = Ehangu'r bar ochr ({ $shortcut })
+    .label = Barrau Ochr
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Cau'r bar ochr ({ $shortcut })
+    .label = Barrau Ochr
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Dangos y bar ochr ({ $shortcut })
+    .label = Barrau Ochr
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Cuddio'r bar ochr ({ $shortcut })
+    .label = Barrau Ochr

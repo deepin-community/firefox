@@ -12,6 +12,7 @@ neterror-blocked-by-policy-page-title = Заблакаваная старонк�
 neterror-captive-portal-page-title = Злучыцца з сеткай
 neterror-dns-not-found-title = Сервер не знойдзены
 neterror-malformed-uri-page-title = Несапраўдны URL
+general-body-title = Будзьце асцярожныя. Нешта выглядае не так.
 
 ## Error page actions
 
@@ -41,6 +42,9 @@ neterror-generic-error = { -brand-short-name } не можа загрузіць 
 neterror-load-error-try-again = Магчыма, сайт часова недаступны ці перагружаны. Паспрабуйце зноў крыху пазней.
 neterror-load-error-connection = Калі ніводная старонка не адкрываецца, праверце злучэнне камп'ютара з сеткай.
 neterror-load-error-firewall = Калі ваш камп'ютар ці сетка ахоўваюцца фаерволам ці проксі, пераканайцеся, што { -brand-short-name } дазволена мець доступ да сеціва.
+# This warning is only shown on macOS Sequoia and later (see bug 1929377)
+neterror-load-osx-permission = Калі вы спрабуеце загрузіць старонку з лакальнай сеткі, пераканайцеся, што { -brand-short-name } атрымаў дазволы на лакальную сетку ў наладах прыватнасці і бяспекі macOS.
+neterror-http-error-page = Праверце, ці правільна вы ўвялі адрас сайта.
 neterror-captive-portal = Вы павінны ўвайсці ў гэту сетку перад тым, як зможаце атрымаць доступ у Інтэрнэт.
 # Variables:
 # $hostAndPath (String) - a suggested site (e.g. "www.example.com") that the user may have meant instead.
@@ -96,6 +100,9 @@ neterror-proxy-connect-failure-settings = Упэўніцеся, што нала�
 neterror-proxy-connect-failure-contact-admin = Звяжыцеся з адміністратарам сеткі, каб ўпэўніцца, што проксі-сервер працуе.
 neterror-content-encoding-error = Паведамце, калі ласка, уладальнікам вэб-сайта пра гэтую праблему.
 neterror-unsafe-content-type = Паведамце, калі ласка, уладальнікам вэб-сайта пра гэтую праблему.
+# Variables:
+# $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-basic-http-auth = { -brand-short-name } не давярае { $hostname }, таму што злучэнне не бяспечнае. Паспрабуйце змяніць URL на HTTPS.
 neterror-nss-failure-not-verified = Старонка, якую вы спрабуеце адкрыць, не можа быць паказана, бо сапраўднасць атрыманых звестак нельга пацвердзіць.
 neterror-nss-failure-contact-website = Калі ласка, паведаміце ўладальніку сайта пра гэтую праблему.
 # Variables:
@@ -148,3 +155,11 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = Калі вы не знаё
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = <b>{ $hostname }</b> мае палітыку бяспекі, што называецца HTTP Strict Transport Security (HSTS), і гэта азначае, што { -brand-short-name } можа звязвацца з ім толькі абароненым злучэннем. Вы не можаце дадаць выключэнне для наведвання гэтага сайта.
+cert-error-trust-certificate-transparency-what-can-you-do-about-it = Хутчэй за ўсё, нічога, таму што, выглядае на тое, праблема з самім сайтам.
+certerror-blocked-by-corp-headers-description = Часам сайты ўсталёўваюць абарону для сябе і такіх людзей, як вы, ад непажаданага ўзаемадзеяння з іншымі сайтамі.
+certerror-coop-learn-more = Даведацца больш пра Палітыку адкрыцця крос-паходжання (Cross Origin Opener Policies, COOP)
+certerror-coep-learn-more = Даведацца больш пра Палітыку ўбудоўвання крос-паходжання (Cross Origin Embedder Policies, COEP)
+# Variables:
+#   $responsestatus (string) - HTTP response status code (e.g., 500).
+#   $responsestatustext (string) - HTTP response status text (e.g., "Internal Server Error").
+neterror-response-status-code = Код памылкі: { $responsestatus } { $responsestatustext }

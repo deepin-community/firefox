@@ -289,6 +289,14 @@ find-more-themes = Dalšne drastwy pytaś
 # used for screen readers.
 addon-options-button =
     .aria-label = Dalšne nastajenja
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 =
+    Rozšyrjenja a drastwy wam zmóžnjaju, { -brand-product-name } pśiměriś. Mógu priwatnosć pówušyś,
+    produktiwitu pówušyś, medije pólěpšyś, naglěd { -brand-product-name } změniś a
+    wjele wěcej. Toś te małe programy se cesto wót tśeśich wuwijaju. How jo
+    wuběrk, kótaryž { -brand-product-name } <a data-l10n-name="learn-more-trigger">dopórucujo</a>
+    za wósebnjejšu wěstotu, wósebnjejše wugbaśe a wósebnjejšu funkcionalnosć.
 
 ## Add-on actions
 
@@ -377,6 +385,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = W priwatnych woknach dowólony
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = W priwatnych woknach dowólony
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -416,6 +428,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Toś to rozšyrjenje jo se pśeglědało, aby našym standardam za wěstotu a wugbaśe wótpowědował.
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } jano rozšyrjenja dopórucujo, kótarež našym standardam za wěstotu a wugbaśe wótpowěduju.
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Oficielne rozšyrjenje, wuwite wót Mozilla. Docynja wěstotne a wugbaśowe standardy.
+addon-badge-verified3 =
+    .title = Toś to rozšyrjenje jo se pśeglědało, aby našym standardam za wěstotu a wugbaśe wótpowědował.
 
 ##
 
@@ -423,6 +443,7 @@ available-updates-heading = K dispoziciji stojece aktualizacije
 recent-updates-heading = Nejnowše aktualizacije
 release-notes-loading = Zacytujo se…
 release-notes-error = Pśi zacytowanju wersijowych informacijow jo bóžko zmólka nastała.
+addon-permissions-empty2 = Toś to rozšyrjenje se pšawa njepomina.
 addon-permissions-empty = Toś to rozšyrjenje se pšawa njepomina
 addon-permissions-required = Trjebne pšawa za jědrowu funkcionalnosć:
 addon-permissions-optional = Opcionalne pšawa za pśidanu funkcionalnosć:
@@ -472,10 +493,24 @@ details-notification-unsigned-and-disabled-link = Dalšne informacije
 details-notification-unsigned = { $name } njedajo se za wužywanje w { -brand-short-name } wobkšuśiś. Pókšacujśo z glědanim.
 details-notification-unsigned2 =
     .message = { $name } njedajo se za wužywanje w { -brand-short-name } wobkšuśiś. Pókšacujśo z glědanim.
+details-notification-hard-blocked-extension =
+    .message = Toś to rozšyrjenje jo dla pśejźenja pśeśiwo pšawidłam Mozilla blokěrowane a jo se znjemóžniło.
+details-notification-hard-blocked-other =
+    .message = Toś ten dodank jo dla pśejźenja pśeśiwo pšawidłam Mozilla blokěrowany a jo se znjemóžnił.
 details-notification-unsigned-link = Dalšne informacije
 details-notification-blocked = { $name } jo se dla problemow wěstoty abo stabilnosći znjemóžnił.
 details-notification-blocked2 =
     .message = { $name } jo se dla problemow wěstoty abo stabilnosći znjemóžnił.
+details-notification-blocked-link2 = Glejśo drobnostki
+details-notification-soft-blocked-extension-disabled =
+    .message = Toś to rozšyrjenje jo dla pśejźenja pśeśiwo pšawidłam Mozilla wobgranicowane a jo se znjemóžniło. Móžośo jo zmóžniś, ale to jo snaź riskantne.
+details-notification-soft-blocked-extension-enabled =
+    .message = Toś to rozšyrjenje se pśeśiwo pšawidłam Mozilla pśejźo. Jo riskantne jo wužywaś.
+details-notification-soft-blocked-other-disabled =
+    .message = Toś ten dodank jo dla pśejźenja pśeśiwo pšawidłam Mozilla wobgranicowany a jo se znjemóžnił. Móžośo jo zmóžniś, ale to jo snaź riskantne.
+details-notification-soft-blocked-other-enabled =
+    .message = Toś ten dodank se pśeśiwo pšawidłam Mozilla pśejźo. Jo riskantne jen wužywaś.
+details-notification-softblocked-link2 = Glejśo drobnostki
 details-notification-blocked-link = Dalšne informacije
 details-notification-softblocked = { $name } jo za to znaty, až zawinujo problemy wěstoty abo stabilnosći.
 details-notification-softblocked2 =

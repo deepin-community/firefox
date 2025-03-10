@@ -8,11 +8,18 @@
 newtab-page-title = Nov tab
 newtab-settings-button =
     .title = Persunalisar tia pagina per novs tabs
+newtab-personalize-settings-icon-label =
+    .title = Persunalisar novs tabs
+    .aria-label = Parameters
+newtab-settings-dialog-label =
+    .aria-label = Parameters
 newtab-personalize-icon-label =
     .title = Persunalisar novs tabs
     .aria-label = Persunalisar novs tabs
 newtab-personalize-dialog-label =
     .aria-label = Persunalisar
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Memorisar en { -pocket-brand-name }
 newtab-menu-delete-pocket = Stizzar da { -pocket-brand-name }
 newtab-menu-archive-pocket = Archivar en { -pocket-brand-name }
 newtab-menu-show-privacy-info = Noss sponsurs & tia sfera privata
+newtab-menu-about-fakespot = Davart { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Bloccar
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Betg pli suandar il tema
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -233,6 +247,8 @@ newtab-pocket-cta-button = Obtegnair { -pocket-brand-name }
 newtab-pocket-cta-text = Memorisescha ils artitgels che ta plaschan en { -pocket-brand-name } e procura per inspiraziun cuntinuanta cun lectura fascinanta.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } fa part da la paletta da products { -brand-product-name }
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Memorisar
 newtab-pocket-saved = Memorisà
 
@@ -244,6 +260,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Na m’interessescha betg
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Grazia. Tes resun ans vegn a gidar a meglierar tes pavel.
 newtab-toast-thumbs-up-or-down = Grazia. Tes resun ans vegn a gidar a meglierar tes pavel.
 newtab-toast-dismiss-button =
     .title = Serrar
@@ -297,6 +316,12 @@ newtab-custom-settings = Administrar ulteriurs parameters
 
 newtab-wallpaper-title = Maletgs dal fund davos
 newtab-wallpaper-reset = Restaurar il standard
+newtab-wallpaper-upload-image = Transferir in maletg
+newtab-wallpaper-custom-color = Tscherner ina colur
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = Il maletg surpassa la grondezza maximala permessa da { $file_size } MB. Emprova per plaschair da transferir ina datoteca pli pitschna.
+newtab-wallpaper-error-file-type = I n’è betg reussì da transferir tia datoteca. Emprova per plaschair anc ina giada cun in auter tip da datoteca.
 newtab-wallpaper-light-red-panda = Panda cotschen
 newtab-wallpaper-light-mountain = Muntogna alva
 newtab-wallpaper-light-sky = Tschiel cun nivels violets e rosas
@@ -309,6 +334,8 @@ newtab-wallpaper-dark-panda = Panda cotschen zuppà en il guaud
 newtab-wallpaper-dark-sky = Cuntrada da citad cun tschiel nocturn
 newtab-wallpaper-dark-mountain = Cuntrada da muntognas
 newtab-wallpaper-dark-city = Cuntrada da citad violetta
+newtab-wallpaper-dark-fox-anniversary = Ina vulp sin la sulada datiers dad in guaud
+newtab-wallpaper-light-fox-anniversary = Ina vulp sin in prà en ina cuntrada muntagnarda cun brentina
 
 ## Solid Colors
 
@@ -338,8 +365,12 @@ newtab-wallpaper-abstract-purple = Furmas violetas
 newtab-wallpaper-abstract-orange = Furmas oranschas
 newtab-wallpaper-gradient-orange = Dissoluziun dad oransch e rosa
 newtab-wallpaper-abstract-blue-purple = Furmas blauas e violetas
+newtab-wallpaper-abstract-white-curves = Alv cun curvas nianzadas
+newtab-wallpaper-abstract-purple-green = Dissoluziun da glisch violetta e verda
+newtab-wallpaper-abstract-blue-purple-waves = Furmas undegiadas blauas e violettas
+newtab-wallpaper-abstract-black-waves = Furmas nairas undegiadas
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Fotografias
 newtab-wallpaper-beach-at-sunrise = Splagia sin il far di
@@ -348,6 +379,12 @@ newtab-wallpaper-storm-sky = Tschiel stemprà
 newtab-wallpaper-sky-with-pink-clouds = Tschiel cun nivels rosa
 newtab-wallpaper-red-panda-yawns-in-a-tree = Panda cotschen che susda sin ina planta
 newtab-wallpaper-white-mountains = Muntognas alvas
+newtab-wallpaper-hot-air-balloons = Balluns ad aria chauda en colurs assortidas da di
+newtab-wallpaper-starry-canyon = Notg blaua stailida
+newtab-wallpaper-suspension-bridge = Fotografia d’ina punt pendenta grischa da di
+newtab-wallpaper-sand-dunes = Dunas da sablun alvas
+newtab-wallpaper-palm-trees = Siluetta da palmas da cocos sin il far notg
+newtab-wallpaper-forest-trees = Plantas en la tschajera
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -363,6 +400,19 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Astronomic
+newtab-wallpaper-celestial-lunar-eclipse = Stgiradetgna da la glina
+newtab-wallpaper-celestial-earth-night = Fotografia nocturna da l’orbit terrester bass
+newtab-wallpaper-celestial-starry-sky = Firmament
+newtab-wallpaper-celestial-eclipse-time-lapse = Stgiradetgna da la glina a temp accelerà
+newtab-wallpaper-celestial-black-hole = Illustraziun dad ina galaxia cun rusna naira
+newtab-wallpaper-celestial-river = Maletg da satellit dad in flum
+
 ## New Tab Weather
 
 # Variables:
@@ -373,6 +423,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Sponsurà
 newtab-weather-menu-change-location = Midar la posiziun
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Tschertgar in lieu
+    .aria-label = Tschertgar in lieu
 newtab-weather-change-location-search-input = Tschertgar in lieu
 newtab-weather-menu-weather-display = Visualisaziun da l’aura
 # Display options are:
@@ -431,3 +484,45 @@ newtab-topic-selection-button-maybe-later = Forsa pli tard
 newtab-topic-selection-privacy-link = Ve a savair co nus protegin e gestin las datas
 newtab-topic-selection-button-update-interests = Actualisescha tes interess
 newtab-topic-selection-button-pick-interests = Tscherna tes interess
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Suandar
+newtab-section-following-button = Ti suondas
+newtab-section-unfollow-button = Chalar da suandar
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Bloccar
+newtab-section-blocked-button = Bloccà
+newtab-section-unblock-button = Debloccar
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = Vuls ti propi bloccar questa secziun?
+newtab-section-confirm-block-section-p2 = La secziun bloccada na vegn pli a cumparair en tes feed.
+newtab-section-block-section-button = Bloccar questa secziun
+newtab-section-cancel-button = Betg ussa
+newtab-section-confirm-block-topic-p1 = Vuls ti propi bloccar quest tema?
+newtab-section-confirm-block-topic-p2 = Temas bloccads na vegnan betg pli a cumparair en tes feed.
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = Bloccar { $topic }
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = Temas
+newtab-section-manage-topics-button-v2 =
+    .label = Administrar ils temas
+newtab-section-mangage-topics-followed-topics = Suandà
+newtab-section-mangage-topics-button =
+    .label = Temas suandads e bloccads
+newtab-section-mangage-topics-followed-topics-subtitle = Temas suandads
+newtab-section-mangage-topics-followed-topics-empty-state = Ti na suondas anc nagins temas.
+newtab-section-mangage-topics-blocked-topics = Bloccà
+newtab-section-mangage-topics-blocked-topics-subtitle = Temas bloccads
+newtab-section-mangage-topics-blocked-topics-empty-state = Ti n’has anc bloccà nagins temas.

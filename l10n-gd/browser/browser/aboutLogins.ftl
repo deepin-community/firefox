@@ -148,6 +148,8 @@ login-item-copied-username-button-text = Lethbhreac air a dhèanamh!
 login-item-password-label = Facal-faire
 login-item-password-reveal-checkbox =
     .aria-label = Seall am facal-faire
+login-item-password-conceal-checkbox =
+    .aria-label = Falaich am facal-faire
 login-item-copy-password-button-text = Lethbhreac
 login-item-copied-password-button-text = Lethbhreac air a dhèanamh!
 login-item-save-changes-button = Sàbhail na h-atharraichean
@@ -179,6 +181,13 @@ about-logins-edit-login-os-auth-dialog-message-win = Airson an clàradh a-steach
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = an clàradh a-steach a shàbhail thu a dheasachadh
+# The macOS strings are preceded by the operating system with "Firefox is trying to ".
+# This message can be seen when attempting to disable osauth in about:preferences.
+about-logins-os-auth-dialog-message =
+    { PLATFORM() ->
+        [macos] atharraich roghainnean nam faclan-faire
+       *[other] Tha { -brand-short-name } a’ feuchainn ri roghainnean nam faclan-faire atharrachadh. Cleachd clàradh a-steach an uidheim agad airson seo a cheadachadh.
+    }
 # This message can be seen when attempting to edit a login in about:logins on Windows.
 about-logins-edit-login-os-auth-dialog-message2-win = Airson am facal-faire agad a dheasachadh, cuir a-steach teisteas clàraidh a-steach Windows. Cuiridh seo ri dìon tèarainteachd nan cunntasan agad.
 # This message can be seen when attempting to edit a login in about:logins
@@ -523,6 +532,27 @@ about-logins-import-report-no-change =
         [two] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">chlàradh a-steach dùblaichte</div> <div data-l10n-name="not-imported">(gun ion-phortadh)</div>
         [few] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">clàraidhean a-steach dùblaichte</div> <div data-l10n-name="not-imported">(gun ion-phortadh)</div>
        *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">clàradh a-steach dùblaichte</div> <div data-l10n-name="not-imported">(gun ion-phortadh)</div>
+    }
+about-logins-import-report-added2 =
+    { $count ->
+        [one] <div data-l10n-name="count">Chaidh { $count }</div> <div data-l10n-name="details">fhacal-faire ùr a chur ris</div>
+        [two] <div data-l10n-name="count">Chaidh { $count }</div> <div data-l10n-name="details">fhacal-faire ùr a chur ris</div>
+        [few] <div data-l10n-name="count">Chaidh { $count }</div> <div data-l10n-name="details">faclan-faire ùra a chur ris</div>
+       *[other] <div data-l10n-name="count">Chaidh { $count }</div> <div data-l10n-name="details">facal-faire ùr a chur ris</div>
+    }
+about-logins-import-report-modified2 =
+    { $count ->
+        [one] <div data-l10n-name="count">Chaidh { $count }</div> <div data-l10n-name="details">innteart làithreach ùrachadh</div>
+        [two] <div data-l10n-name="count">Chaidh { $count }</div> <div data-l10n-name="details">innteart làithreach ùrachadh</div>
+        [few] <div data-l10n-name="count">Chaidh { $count }</div> <div data-l10n-name="details">innteartan làithreach ùrachadh</div>
+       *[other] <div data-l10n-name="count">Chaidh { $count }</div> <div data-l10n-name="details">innteart làithreach ùrachadh</div>
+    }
+about-logins-import-report-no-change2 =
+    { $count ->
+        [one] <div data-l10n-name="count">Bha { $count }</div> <div data-l10n-name="details">innteart dùblaichte ann</div> <div data-l10n-name="not-imported">(cha deach ion-phortadh)</div>
+        [two] <div data-l10n-name="count">Bha { $count }</div> <div data-l10n-name="details">innteart dùblaichte ann</div> <div data-l10n-name="not-imported">(cha deach ion-phortadh)</div>
+        [few] <div data-l10n-name="count">Bha { $count }</div> <div data-l10n-name="details">innteartan dùblaichte ann</div> <div data-l10n-name="not-imported">(cha deach ion-phortadh)</div>
+       *[other] <div data-l10n-name="count">Bha { $count }</div> <div data-l10n-name="details">innteart dùblaichte ann</div> <div data-l10n-name="not-imported">(cha deach ion-phortadh)</div>
     }
 about-logins-import-report-error =
     { $count ->

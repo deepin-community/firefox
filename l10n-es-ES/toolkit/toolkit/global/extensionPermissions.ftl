@@ -30,4 +30,13 @@ webext-perms-description-sessions = Acceder a las pestañas recientemente cerrad
 webext-perms-description-tabs = Acceder a las pestañas del navegador
 webext-perms-description-tabHide = Ocultar y mostrar pestañas del navegador
 webext-perms-description-topSites = Acceder al historial de navegación
+webext-perms-description-trialML = Descargar y ejecutar modelos de IA en su dispositivo
+webext-perms-description-userScripts = Permitir que scripts de terceros no verificados accedan a sus datos
 webext-perms-description-webNavigation = Acceder a la actividad del navegador durante la navegación
+
+## The userScripts permission includes an additional explanation that is
+## displayed prominently near the usual permission description.
+
+webext-perms-extra-warning-userScripts-long = Los scripts no verificados pueden representar riesgos de seguridad y privacidad, como ejecutar código dañino o rastrear la actividad del sitio web. Solo ejecute scripts de extensiones o fuentes en las que confíe.
+# A shorter warning is displayed in UI surfaces with little room, such as a permission prompt.
+webext-perms-extra-warning-userScripts-short = Los scripts no verificados pueden representar riesgos de seguridad y privacidad. Solo ejecute scripts de extensiones o fuentes en las que confíe.

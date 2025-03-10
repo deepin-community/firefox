@@ -3,10 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-## Colorway collections
-
-
 ## Colorway names and descriptions
 
 visionary-colorway-name = దార్శనికుడు
-
+dreamer-colorway-name = స్వాప్నికుడు
+innovator-colorway-name = ఆవిష్కర్త

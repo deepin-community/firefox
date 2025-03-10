@@ -55,10 +55,10 @@ genai-settings-chat-title =
 # Updated sidebar settings
 sidebar-title =
     .label = Ta’ãngarupa yke
+sidebar-description = Eike tembiasakue, tendayke ambue mba’e’okapegua, jepysokue tenda yke rehegua ha hetave eikundaha aja. <a data-l10n-name="connect">Emoherakuã temiandu</a>
 vertical-tabs-title =
     .label = Tendayke ñembo’y
-experimental-features-group-browsing =
-    .label = Ñeikundaha
+vertical-tabs-description = Emongue umi tendayke yvatégui ne kundahárape ijyke gotyo. Avei oikotevẽ tenda yke jeporu. <a data-l10n-name="connect">Emoherakuã temiandu</a>
 experimental-features-group-developer-tools =
     .label = Mboguatahára rembiporu
 experimental-features-group-webpage-display =

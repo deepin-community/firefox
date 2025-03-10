@@ -8,11 +8,18 @@
 newtab-page-title = Nove scheda
 newtab-settings-button =
     .title = Personalisar tu pagina de nove scheda
+newtab-personalize-settings-icon-label =
+    .title = Personalisar le scheda nove
+    .aria-label = Parametros
+newtab-settings-dialog-label =
+    .aria-label = Parametros
 newtab-personalize-icon-label =
     .title = Personalisar nove scheda
     .aria-label = Personalisar nove scheda
 newtab-personalize-dialog-label =
     .aria-label = Personalisar
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Salvar in { -pocket-brand-name }
 newtab-menu-delete-pocket = Deler de { -pocket-brand-name }
 newtab-menu-archive-pocket = Archivar in { -pocket-brand-name }
 newtab-menu-show-privacy-info = Nostre sponsores e tu vita private
+newtab-menu-about-fakespot = A proposito de { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Blocar
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Non plus sequer le argumento
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -229,6 +243,8 @@ newtab-pocket-cta-button = Obtener { -pocket-brand-name }
 newtab-pocket-cta-text = Salva le articulos que tu ama in { -pocket-brand-name }, e alimenta tu mente con lecturas fascinante.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } es parte del familia de { -brand-product-name }
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Salvar
 newtab-pocket-saved = Salvate
 
@@ -240,6 +256,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Non me interessa
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Gratias. Cognoscer tu opinion nos adjuta a meliorar tu canal.
 newtab-toast-thumbs-up-or-down = Gratias. Cognoscer tu opinion nos adjuta a meliorar tu canal.
 newtab-toast-dismiss-button =
     .title = Dimitter
@@ -293,6 +312,12 @@ newtab-custom-settings = Gerer altere parametros
 
 newtab-wallpaper-title = Fundos
 newtab-wallpaper-reset = Restaurar le predefinition
+newtab-wallpaper-upload-image = Cargar un imagine
+newtab-wallpaper-custom-color = Eliger un color
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = Le imagine excedeva le limite de dimension de file de { $file_size }MB. Tenta cargar un file minus grande.
+newtab-wallpaper-error-file-type = Impossibile cargar tu file. Retenta con typo de file differente.
 newtab-wallpaper-light-red-panda = Panda rubie
 newtab-wallpaper-light-mountain = Montania blanc
 newtab-wallpaper-light-sky = Celo con nubes purpuree e rosate
@@ -305,6 +330,8 @@ newtab-wallpaper-dark-panda = Panda rubie celate in bosco
 newtab-wallpaper-dark-sky = Paisage urban con un celo nocturne
 newtab-wallpaper-dark-mountain = Paisage montan
 newtab-wallpaper-dark-city = Paisage urban purpuree
+newtab-wallpaper-dark-fox-anniversary = Un vulpe sur le pavimento presso un bosco
+newtab-wallpaper-light-fox-anniversary = Un vulpe in un prato con un brumose paisage montan
 
 ## Solid Colors
 
@@ -334,8 +361,12 @@ newtab-wallpaper-abstract-purple = Formas violette
 newtab-wallpaper-abstract-orange = Formas orange
 newtab-wallpaper-gradient-orange = Gradiente orange e rosate
 newtab-wallpaper-abstract-blue-purple = Formas blau e violette
+newtab-wallpaper-abstract-white-curves = Blanc con curvas umbrate
+newtab-wallpaper-abstract-purple-green = Gradiente purpuree e verde clar
+newtab-wallpaper-abstract-blue-purple-waves = Formas undulate blau e purpuree
+newtab-wallpaper-abstract-black-waves = Formas undulate nigre
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Photos
 newtab-wallpaper-beach-at-sunrise = Plagia al levar del sol
@@ -344,6 +375,12 @@ newtab-wallpaper-storm-sky = Celo tempestuose
 newtab-wallpaper-sky-with-pink-clouds = Celo con nubes rosate
 newtab-wallpaper-red-panda-yawns-in-a-tree = Un panda rubie que balla sur un arbore
 newtab-wallpaper-white-mountains = Montanias blanc
+newtab-wallpaper-hot-air-balloons = Aerostatos de colores assortite durante le die
+newtab-wallpaper-starry-canyon = Nocte stellate blau
+newtab-wallpaper-suspension-bridge = Photographia de un ponte suspendite durante le die
+newtab-wallpaper-sand-dunes = Dunas de arena blanc
+newtab-wallpaper-palm-trees = Silhouette de palmas de coco durante le hora aurate
+newtab-wallpaper-forest-trees = Arbores coperte de bruma
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -359,6 +396,19 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Celo
+newtab-wallpaper-celestial-lunar-eclipse = Eclipse lunar
+newtab-wallpaper-celestial-earth-night = Photo nocturne ab orbita terrestre basse
+newtab-wallpaper-celestial-starry-sky = Celo stellate
+newtab-wallpaper-celestial-eclipse-time-lapse = Time-lapse de eclipse lunar
+newtab-wallpaper-celestial-black-hole = Illustration de galaxia con foramine nigre
+newtab-wallpaper-celestial-river = Imagine ab satellite de fluvio
+
 ## New Tab Weather
 
 # Variables:
@@ -369,6 +419,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Sponsorisate
 newtab-weather-menu-change-location = Cambiar loco
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Cercar loco
+    .aria-label = Cercar loco
 newtab-weather-change-location-search-input = Cercar loco
 newtab-weather-menu-weather-display = Visualisation meteo
 # Display options are:
@@ -427,3 +480,45 @@ newtab-topic-selection-button-maybe-later = Forsan un altere vice
 newtab-topic-selection-privacy-link = Apprende como nos protege e gere le datos
 newtab-topic-selection-button-update-interests = Actualisa tu interesses
 newtab-topic-selection-button-pick-interests = Selige tu interesses
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Sequer
+newtab-section-following-button = Sequente
+newtab-section-unfollow-button = Non plus sequer
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Blocar
+newtab-section-blocked-button = Blocate
+newtab-section-unblock-button = Disblocar
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = Desira tu vermente blocar iste section?
+newtab-section-confirm-block-section-p2 = Le section blocate non plus apparera in tu fluxo.
+newtab-section-block-section-button = Blocar iste section
+newtab-section-cancel-button = Non ora
+newtab-section-confirm-block-topic-p1 = Desira tu vermente blocar iste argumento?
+newtab-section-confirm-block-topic-p2 = Le argumentos blocate non plus apparera in tu fluxo.
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = Blocar { $topic }
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = Argumentos
+newtab-section-manage-topics-button-v2 =
+    .label = Gerer argumentos
+newtab-section-mangage-topics-followed-topics = Sequite
+newtab-section-mangage-topics-button =
+    .label = Themas sequite e blocate
+newtab-section-mangage-topics-followed-topics-subtitle = Themas sequite
+newtab-section-mangage-topics-followed-topics-empty-state = Tu non ha sequite alcun thema ancora.
+newtab-section-mangage-topics-blocked-topics = Blocate
+newtab-section-mangage-topics-blocked-topics-subtitle = Themas blocate
+newtab-section-mangage-topics-blocked-topics-empty-state = Tu non ha blocate alcun thema ancora.

@@ -12,6 +12,7 @@ neterror-blocked-by-policy-page-title = Blokirana stranica
 neterror-captive-portal-page-title = Prijava na mrežu
 neterror-dns-not-found-title = Server nije pronađen
 neterror-malformed-uri-page-title = Neispravan URL
+general-body-title = Oprez. Nešto nije u redu.
 
 ## Error page actions
 
@@ -41,6 +42,8 @@ neterror-generic-error = { -brand-short-name } iz nekog razloga ne može učitat
 neterror-load-error-try-again = Ova je stranica privremeno nedostupna ili prezauzeta. Pokušaj ponovo malo kasnije.
 neterror-load-error-connection = Ako ne možeš učitati niti jednu stranicu, provjeri mrežne postavke tvog računala.
 neterror-load-error-firewall = Ako je tvoje računalo ili mreža zaštićena vatrozidom ili proxyem, provjeri ima li { -brand-short-name } dozvolu za pristup internetu.
+# This warning is only shown on macOS Sequoia and later (see bug 1929377)
+neterror-load-osx-permission = Ako pokušavaš učitati stranicu lokalne mreže, provjeri je li { -brand-short-name } dobio dozvole lokalne mreže u postavkama privatnosti i sigurnosti macOS-a.
 neterror-captive-portal = Za upotrebu interneta, moraš se najprije prijaviti na ovu mreži.
 # Variables:
 # $hostAndPath (String) - a suggested site (e.g. "www.example.com") that the user may have meant instead.
@@ -64,6 +67,7 @@ neterror-dns-not-found-trr-offline = Nisi povezan/a na internet.
 neterror-dns-not-found-trr-unknown-host2 = Ovu web stranicu nije pronašao { $trrDomain }.
 neterror-dns-not-found-trr-server-problem = Došlo je do problema s { $trrDomain }.
 neterror-dns-not-found-bad-trr-url = Neispravan URL.
+neterror-dns-not-found-system-sleep = Sustav se nalazi u stanju mirovanja.
 neterror-dns-not-found-trr-unknown-problem = Neočekivani problem.
 
 ## Native fallback specific messages
@@ -147,3 +151,9 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = Ako ne poznaš <b>{ $mitm }
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = <b>{ $hostname }</b> provodi sigurnosnu politiku koja se zove HTTP Strict Transport Security (HSTS), što znači da se { -brand-short-name } s njom može povezati samo na siguran način. Za posjećivanje stranice ne možeš dodati iznimku.
+cert-error-trust-certificate-transparency-what-can-you-do-about-it = Najvjerojatnije ništa, jer se problem vjerojatno nalazi u web stranici.
+certerror-blocked-by-corp-headers-description = Ponekad web stranice postavljaju zaštitu za sebe i ljude poput tebe od neželjenih interakcija s drugim stranicama.
+# Variables:
+#   $responsestatus (string) - HTTP response status code (e.g., 500).
+#   $responsestatustext (string) - HTTP response status text (e.g., "Internal Server Error").
+neterror-response-status-code = Kod greške: { $responsestatus } { $responsestatustext }

@@ -70,7 +70,7 @@ ninja_params=()
 
 # Assume that MSVC is wanted if this is running on windows.
 platform=$(uname -s)
-if [ "${platform%-*}" = "MINGW32_NT" -o "${platform%-*}" = "MINGW64_NT" ]; then
+if [ "${platform%-*}" = "MINGW32_NT" -o "${platform%-*}" = "MINGW64_NT" -o "${platform%%-*}" = "MSYS_NT" ]; then
     msvc=1
 fi
 
@@ -104,12 +104,14 @@ while [ $# -gt 0 ]; do
         --pprof) gyp_params+=(-Duse_pprof=1) ;;
         --asan) enable_sanitizer asan ;;
         --msan) enable_sanitizer msan ;;
+        --tsan) enable_sanitizer tsan ;;
         --sourcecov) enable_sourcecov ;;
         --ubsan) enable_ubsan ;;
         --ubsan=?*) enable_ubsan "${1#*=}" ;;
         --fuzz) fuzz=1 ;;
         --fuzz=oss) fuzz=1; fuzz_oss=1 ;;
         --fuzz=tls) fuzz=1; fuzz_tls=1 ;;
+        --gtests-corpus) gyp_params+=(-Dgtests_corpus=1) ;;
         --sancov) enable_sancov; gyp_params+=(-Dcoverage=1) ;;
         --sancov=?*) enable_sancov "${1#*=}"; gyp_params+=(-Dcoverage=1) ;;
         --emit-llvm) gyp_params+=(-Demit_llvm=1 -Dsign_libs=0) ;;
@@ -138,6 +140,18 @@ while [ $# -gt 0 ]; do
     esac
     shift
 done
+
+if [ "$opt_build" = 1 ] && [ "$fuzz" = 1 ]; then
+    echo "Specifiying --opt with --fuzz is not supported." >&2
+    exit 1
+fi
+
+if [ -n "${sanitizers["tsan"]:-}" ] && ([ "$CC" != "clang" ] ||
+                                        [ "$CCC" != "clang++" ] ||
+                                        [ "$CXX" != "clang++" ]); then
+    echo "Specifying --tsan requires clang." >&2
+    exit 1
+fi
 
 if [ -n "$python" ]; then
     gyp_params+=(-Dpython="$python")

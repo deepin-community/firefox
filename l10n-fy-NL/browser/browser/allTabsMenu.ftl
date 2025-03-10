@@ -16,3 +16,6 @@ all-tabs-menu-close-duplicate-tabs =
     .label = Dûbele ljepblêden slute
 all-tabs-menu-close-all-duplicate-tabs =
     .label = Alle dûbele ljepblêden slute
+all-tabs-menu-synced-tabs =
+    .label = Ljepblêden fan oare apparaten
+all-tabs-menu-current-window-header = Aktuele finster

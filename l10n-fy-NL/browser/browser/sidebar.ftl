@@ -4,6 +4,10 @@
 
 menu-view-genai-chat =
     .label = AI-chatbot
+menu-view-review-checker =
+    .label = Beoardielingskontrôle
+sidebar-options-menu-button =
+    .title = Menu iepenje
 
 ## Labels for sidebar history panel
 
@@ -36,7 +40,7 @@ sidebar-search-results-header =
 
 ## Labels for sidebar customize panel
 
-sidebar-customize-extensions-header = Sydbalke-útwreidingen
+sidebar-customize-extensions-header = Sidebalke-útwreidingen
 sidebar-customize-firefox-tools-header =
     .label = { -brand-product-name }-ark
 sidebar-customize-firefox-settings = { -brand-short-name }-ynstellingen beheare
@@ -46,16 +50,30 @@ sidebar-position-right =
     .label = Oan de rjochterkant toane
 sidebar-vertical-tabs =
     .label = Fertikale ljepblêden
+sidebar-settings =
+    .label = Sidebalke-ynstellingen
+sidebar-hide-tabs-and-sidebar =
+    .label = Ljepblêden en sidebalke ferstopje
+sidebar-show-on-the-right =
+    .label = Sidebalke nei rjochts ferpleatse
+sidebar-show-on-the-left =
+    .label = Sidebalke nei links ferpleatse
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = Sydbalke by oanwizen útklappe
 sidebar-horizontal-tabs =
     .label = Horizontale ljepblêden
 sidebar-customize-tabs-header =
     .label = Ljepblêdynstellingen
-sidebar-customize-settings-header =
-    .label = Sydbalke-ynstellingen
-sidebar-visibility-always-show =
-    .label = Altyd toane
-sidebar-visibility-hide-sidebar =
-    .label = Sydbalke ferstopje
+sidebar-customize-button-header =
+    .label = Sidebalkeknop
+sidebar-customize-position-header =
+    .label = Posysje sidebalke
+sidebar-visibility-setting-always-show =
+    .label = Sidebalke útklappe en ynklappe
+sidebar-visibility-setting-hide-sidebar =
+    .label = Sidebalke toane en ferstopje
 
 ## Labels for sidebar context menu items
 
@@ -94,16 +112,59 @@ sidebar-menu-synced-tabs-label =
 sidebar-menu-bookmarks-label =
     .label = Blêdwizers
 sidebar-menu-customize-label =
-    .label = Sydbalke oanpasse
+    .label = Sidebalke oanpasse
+sidebar-menu-review-checker-label =
+    .label = Beoardielingskontrôle
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = Skiednis iepenje ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = Skiednis slute ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = Blêdwizers iepenje ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = Blêdwizers slute ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = AI-chatbot iepenje
+sidebar-menu-close-ai-chatbot-tooltip = AI-chatbot slute
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = AI-chatbot iepenje ({ $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = { $provider } iepenje ({ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip-generic = AI-chatbot slute ({ $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = { $provider } slute ({ $shortcut })
 
 ## Headings for sidebar menu panels.
 
 sidebar-menu-customize-header =
-    .heading = Sydbalke oanpasse
+    .heading = Sidebalke oanpasse
 sidebar-menu-history-header =
     .heading = Skiednis
 sidebar-menu-syncedtabs-header =
     .heading = Ljepblêden fan oare apparaten
+sidebar-menu-bookmarks-header =
+    .heading = Blêdwizers
+sidebar-panel-header-close-button =
+    .tooltiptext = Slute
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Sidebalke oanpasse
+sidebar-history-title = Skiednis
+sidebar-syncedtabs-title = Ljepblêden fan oare apparaten
 
 ## Context for closing synced tabs when hovering over the items
 
@@ -113,3 +174,29 @@ sidebar-menu-syncedtabs-header =
 #   $deviceName (String) - the name of the device the user is closing a tab for
 synced-tabs-context-close-tab-title =
     .title = Ljepblêd op { $deviceName } slute
+show-sidebars =
+    .tooltiptext = Sidebalken toane
+    .label = Sidebalken
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = Sidebalke útklappe ({ $shortcut })
+    .label = Sidebalken
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Sidebalke ynklappe ({ $shortcut })
+    .label = Sidebalken
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Sidebalke toane ({ $shortcut })
+    .label = Sidebalken
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Sidebalke ferstopje ({ $shortcut })
+    .label = Sidebalken

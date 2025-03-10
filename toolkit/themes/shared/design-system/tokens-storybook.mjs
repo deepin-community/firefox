@@ -82,7 +82,9 @@ export const storybookTables = {
       value: {
         forcedColors: "ButtonFace",
         brand: { default: "color-mix(in srgb, currentColor 7%, transparent)" },
-        platform: { default: "var(--button-bgcolor)" },
+        platform: {
+          default: "color-mix(in srgb, currentColor 13%, transparent)",
+        },
       },
       name: "--button-background-color",
     },
@@ -90,7 +92,9 @@ export const storybookTables = {
       value: {
         forcedColors: "SelectedItemText",
         brand: { default: "color-mix(in srgb, currentColor 14%, transparent)" },
-        platform: { default: "var(--button-hover-bgcolor)" },
+        platform: {
+          default: "color-mix(in srgb, currentColor 17%, transparent)",
+        },
       },
       name: "--button-background-color-hover",
     },
@@ -98,7 +102,9 @@ export const storybookTables = {
       value: {
         forcedColors: "SelectedItemText",
         brand: { default: "color-mix(in srgb, currentColor 21%, transparent)" },
-        platform: { default: "var(--button-active-bgcolor)" },
+        platform: {
+          default: "color-mix(in srgb, currentColor 30%, transparent)",
+        },
       },
       name: "--button-background-color-active",
     },
@@ -184,6 +190,26 @@ export const storybookTables = {
     {
       value: "var(--button-background-color-hover)",
       name: "--button-background-color-ghost-hover",
+    },
+    {
+      value: { default: "var(--background-color-canvas)" },
+      name: "--table-row-background-color",
+    },
+    {
+      value: {
+        forcedColors: "var(--background-color-canvas)",
+        brand: {
+          light: "#f0f0f4",
+          dark: "var(--color-gray-80)",
+          default: "light-dark(#f0f0f4, var(--color-gray-80))",
+        },
+        platform: {
+          light: "rgba(0,0,0,5%)",
+          dark: "rgba(255,255,255,5%)",
+          default: "light-dark(rgba(0,0,0,5%), rgba(255,255,255,5%))",
+        },
+      },
+      name: "--table-row-background-color-alternate",
     },
   ],
   "border-color": [
@@ -418,7 +444,7 @@ export const storybookTables = {
           dark: "var(--color-gray-05)",
           default: "light-dark(var(--color-gray-100), var(--color-gray-05))",
         },
-        platform: { default: "var(--button-color)" },
+        platform: { default: "currentColor" },
       },
       name: "--button-text-color",
     },
@@ -494,7 +520,7 @@ export const storybookTables = {
           dark: "var(--color-gray-100)",
           default: "light-dark(var(--color-gray-05), var(--color-gray-100))",
         },
-        platform: { default: "var(--button-primary-color)" },
+        platform: { default: "AccentColorText" },
       },
       name: "--button-text-color-primary",
     },
@@ -531,6 +557,13 @@ export const storybookTables = {
         prefersContrast: "inherit",
       },
       name: "--text-color-deemphasized",
+    },
+    {
+      value: {
+        default: "color-mix(in srgb, currentColor 40%, transparent)",
+        forcedColors: "GrayText",
+      },
+      name: "--text-color-disabled",
     },
     {
       value: {
@@ -587,7 +620,7 @@ export const storybookTables = {
           dark: "var(--color-cyan-50)",
           default: "light-dark(var(--color-blue-50), var(--color-cyan-50))",
         },
-        platform: { default: "var(--button-primary-bgcolor, AccentColor)" },
+        platform: { default: "AccentColor" },
       },
       name: "--color-accent-primary",
     },
@@ -599,7 +632,9 @@ export const storybookTables = {
           dark: "var(--color-cyan-30)",
           default: "light-dark(var(--color-blue-60), var(--color-cyan-30))",
         },
-        platform: { default: "var(--button-primary-hover-bgcolor)" },
+        platform: {
+          default: "color-mix(in srgb, black 10%, var(--color-accent-primary))",
+        },
       },
       name: "--color-accent-primary-hover",
     },
@@ -611,7 +646,9 @@ export const storybookTables = {
           dark: "var(--color-cyan-20)",
           default: "light-dark(var(--color-blue-70), var(--color-cyan-20))",
         },
-        platform: { default: "var(--button-primary-active-bgcolor)" },
+        platform: {
+          default: "color-mix(in srgb, black 20%, var(--color-accent-primary))",
+        },
       },
       name: "--color-accent-primary-active",
     },
@@ -690,6 +727,8 @@ export const storybookTables = {
       },
       name: "--icon-color-critical",
     },
+    { value: "currentColor", name: "--button-icon-fill" },
+    { value: "var(--button-icon-fill)", name: "--button-icon-stroke" },
   ],
   "icon-size": [
     { value: "var(--size-item-small)", name: "--icon-size-default" },
@@ -731,6 +770,12 @@ export const storybookTables = {
       name: "--link-color-visited",
     },
     { value: "1px", name: "--link-focus-outline-offset" },
+  ],
+  "page-main": [
+    {
+      value: { brand: { default: "664px" } },
+      name: "--page-main-content-width",
+    },
   ],
   space: [
     { value: "calc(0.5 * var(--space-xsmall))", name: "--space-xxsmall" },
@@ -835,17 +880,17 @@ export const variableLookupTable = {
   "button-background-color": {
     forcedColors: "ButtonFace",
     brand: { default: "color-mix(in srgb, currentColor 7%, transparent)" },
-    platform: { default: "var(--button-bgcolor)" },
+    platform: { default: "color-mix(in srgb, currentColor 13%, transparent)" },
   },
   "button-background-color-hover": {
     forcedColors: "SelectedItemText",
     brand: { default: "color-mix(in srgb, currentColor 14%, transparent)" },
-    platform: { default: "var(--button-hover-bgcolor)" },
+    platform: { default: "color-mix(in srgb, currentColor 17%, transparent)" },
   },
   "button-background-color-active": {
     forcedColors: "SelectedItemText",
     brand: { default: "color-mix(in srgb, currentColor 21%, transparent)" },
-    platform: { default: "var(--button-active-bgcolor)" },
+    platform: { default: "color-mix(in srgb, currentColor 30%, transparent)" },
   },
   "button-background-color-disabled": {
     default: "var(--button-background-color)",
@@ -954,6 +999,8 @@ export const variableLookupTable = {
   "button-font-size": "var(--font-size-root)",
   "button-font-size-small": "var(--font-size-small)",
   "button-font-weight": "var(--font-weight-bold)",
+  "button-icon-fill": "currentColor",
+  "button-icon-stroke": "var(--button-icon-fill)",
   "button-min-height": "var(--size-item-large)",
   "button-min-height-small": "var(--size-item-medium)",
   "button-opacity-disabled": { default: 0.5, forcedColors: 1 },
@@ -968,7 +1015,7 @@ export const variableLookupTable = {
       dark: "var(--color-gray-05)",
       default: "light-dark(var(--color-gray-100), var(--color-gray-05))",
     },
-    platform: { default: "var(--button-color)" },
+    platform: { default: "currentColor" },
   },
   "button-text-color-active": {
     default: "var(--button-text-color)",
@@ -1017,7 +1064,7 @@ export const variableLookupTable = {
       dark: "var(--color-gray-100)",
       default: "light-dark(var(--color-gray-05), var(--color-gray-100))",
     },
-    platform: { default: "var(--button-primary-color)" },
+    platform: { default: "AccentColorText" },
   },
   "button-text-color-primary-active": "var(--button-text-color-primary-hover)",
   "button-text-color-primary-disabled": "var(--button-text-color-primary)",
@@ -1069,7 +1116,7 @@ export const variableLookupTable = {
       dark: "var(--color-cyan-50)",
       default: "light-dark(var(--color-blue-50), var(--color-cyan-50))",
     },
-    platform: { default: "var(--button-primary-bgcolor, AccentColor)" },
+    platform: { default: "AccentColor" },
   },
   "color-accent-primary-hover": {
     forcedColors: "SelectedItem",
@@ -1078,7 +1125,9 @@ export const variableLookupTable = {
       dark: "var(--color-cyan-30)",
       default: "light-dark(var(--color-blue-60), var(--color-cyan-30))",
     },
-    platform: { default: "var(--button-primary-hover-bgcolor)" },
+    platform: {
+      default: "color-mix(in srgb, black 10%, var(--color-accent-primary))",
+    },
   },
   "color-accent-primary-active": {
     forcedColors: "var(--color-accent-primary-hover)",
@@ -1087,7 +1136,9 @@ export const variableLookupTable = {
       dark: "var(--color-cyan-20)",
       default: "light-dark(var(--color-blue-70), var(--color-cyan-20))",
     },
-    platform: { default: "var(--button-primary-active-bgcolor)" },
+    platform: {
+      default: "color-mix(in srgb, black 20%, var(--color-accent-primary))",
+    },
   },
   "focus-outline":
     "var(--focus-outline-width) solid var(--focus-outline-color)",
@@ -1180,6 +1231,7 @@ export const variableLookupTable = {
     prefersContrast: "var(--border-color)",
     default: "light-dark(var(--color-red-50), var(--color-red-20))",
   },
+  "page-main-content-width": { brand: { default: "664px" } },
   "size-item-small": "16px",
   "size-item-medium": "28px",
   "size-item-large": "32px",
@@ -1190,6 +1242,20 @@ export const variableLookupTable = {
   "space-large": "calc(4 * var(--space-xsmall))",
   "space-xlarge": "calc(6 * var(--space-xsmall))",
   "space-xxlarge": "calc(8 * var(--space-xsmall))",
+  "table-row-background-color": { default: "var(--background-color-canvas)" },
+  "table-row-background-color-alternate": {
+    forcedColors: "var(--background-color-canvas)",
+    brand: {
+      light: "#f0f0f4",
+      dark: "var(--color-gray-80)",
+      default: "light-dark(#f0f0f4, var(--color-gray-80))",
+    },
+    platform: {
+      light: "rgba(0,0,0,5%)",
+      dark: "rgba(255,255,255,5%)",
+      default: "light-dark(rgba(0,0,0,5%), rgba(255,255,255,5%))",
+    },
+  },
   "text-color": {
     prefersContrast: "CanvasText",
     brand: {
@@ -1202,6 +1268,10 @@ export const variableLookupTable = {
   "text-color-deemphasized": {
     default: "color-mix(in srgb, currentColor 69%, transparent)",
     prefersContrast: "inherit",
+  },
+  "text-color-disabled": {
+    default: "color-mix(in srgb, currentColor 40%, transparent)",
+    forcedColors: "GrayText",
   },
   "text-color-error": {
     light: "var(--color-red-50)",

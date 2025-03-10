@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Emondo ñanduti rendápe kuaaharã “Jehapykueho’ỹ” ipota’ỹva ojehapykueho
+do-not-track-removal = Nañamoneĩvéima pe kuaaukaha “Ani ehapykueho”
 do-not-track-description2 =
     .label = Emondo ñanduti rendápe mba’ejeure “Jehapykueho’ỹ”
     .accesskey = d
@@ -137,6 +138,7 @@ windows-launch-on-login =
     .label = Embjuruja { -brand-short-name } ijeheguiete hendývo ne mohendaha
     .accesskey = O
 windows-launch-on-login-disabled = Ko jeguerohoryvéva osẽma Windows-gui. Emoambue hag̃ua, eike <a data-l10n-name="startup-link">Tembiporu’i ñepyrũgua</a> apopyvusu ñembohekópe.
+windows-launch-on-login-profile-disabled = Emyandy ko erohoryvéva emongurusúvo “{ profile-manager-use-selected.label }” ovetã “Eiporavo poruhára mba’ete”.
 startup-restore-warn-on-quit =
     .label = Eñatoĩva’erã esẽnguévo kundahágui.
 disable-extension =
@@ -146,6 +148,10 @@ preferences-data-migration-description = Egueru techaukaha, ñe’ẽñemi, temb
 preferences-data-migration-button =
     .label = Mba’ekuaarã Mba’egueru
     .accesskey = m
+preferences-profiles-header = Mba’etekuéra
+preferences-manage-profiles-learn-more = Kuaave
+preferences-manage-profiles-button =
+    .label = Eñangareko Mba’etekuérare
 tabs-group-header = Tendayke
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab cycles tendayke rupive eiporu ramovévape
@@ -153,6 +159,17 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Eike tendayke joajuhápe ovetã pyahu rendaguépe
     .accesskey = E
+ask-on-close-multiple-tabs =
+    .label = Eporandu emboty mboyve heta tendayke
+    .accesskey = m
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = Eporandu esẽ mboyve { $quitKey } ndive
+    .accesskey = b
 confirm-on-close-multiple-tabs =
     .label = Emoneĩ emboty mboyve heta tendayke
     .accesskey = m
@@ -212,6 +229,15 @@ containers-remove-cancel-button = Aníke eipe’a ko guerekoha
 settings-tabs-show-image-in-preview =
     .label = Ehechauka hechaha ypy embohasávo hekaha tendayke ári
     .accessKey = h
+browser-layout-header = Kundahára jeporukuaa
+browser-layout-horizontal-tabs =
+    .label = Tendayke ñeno
+browser-layout-horizontal-tabs-desc = Ehechauka yvate gotyo kundahárape
+browser-layout-vertical-tabs =
+    .label = Tendayke ñembo’y
+browser-layout-vertical-tabs-desc = Ehechauka peteĩ yképe, tenda yképe
+browser-layout-show-sidebar =
+    .label = Ehechauka tenda yke
 
 ## General Section - Language & Appearance
 
@@ -568,8 +594,7 @@ home-prefs-shortcuts-description = Tenda eñongatúva térã eikeha
 home-prefs-shortcuts-by-option-sponsored =
     .label = Jeike pya’eha jehepyme’ẽpyre
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = { $provider } he’i ndéve reike hag̃ua
@@ -640,6 +665,10 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Ehechauka ñe’ẽreka joguaha kundaharape ha avei jejuhu hague rendápe
     .accesskey = l
+# With this option enabled, on the search results page
+# the URL will be replaced by the search terms in the address bar.
+search-show-search-term-option-2 =
+    .label = Ehechauka ñe’ẽ ehekaséva kundaharape renda kuatiarogue jehechatahápe
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -783,6 +812,9 @@ sync-currently-syncing-creditcards = Kuatia’atã ñemurã
 sync-currently-syncing-payment-methods = Mba’éicha ehepyme’ẽta
 sync-currently-syncing-addons = Moĩmbaha
 sync-currently-syncing-settings = Ñemboheko
+sync-manage-options =
+    .label = Eñangareko ñembojuehére
+    .accesskey = M
 sync-change-options =
     .label = Moambue
     .accesskey = M
@@ -835,6 +867,13 @@ sync-engine-settings =
     .label = Ñemboheko
     .tooltiptext = Ñembokeo tuichaháicha, ñemigua ha tekorosã emoambuéva
     .accesskey = s
+sync-choose-what-to-sync-dialog4 =
+    .title = Eñengareko embojuehéva ne mba’e’oka pa’ũmere
+    .style = min-width: 36em;
+    .buttonlabelaccept = Ñongatu
+    .buttonaccesskeyaccept = S
+    .buttonlabelextra2 = Embogue…
+    .buttonaccesskeyextra2 = D
 
 ## The device name controls.
 
@@ -1281,17 +1320,30 @@ permissions-addon-exceptions =
 collection-header = { -brand-short-name } Ñembyaty ha mba’ekuaarã jeporu
 collection-header2 = { -brand-short-name } Ñembyaty ha mba’ekuaarã jeporu
     .searchkeywords = telemetría
+preferences-collection-privacy-notice = Ehecha marandu’i ñemi rehegua
 collection-description = Roñeha’ãmbaite rome’ẽ hag̃ua jeporavorã ha rombyaty roikotevẽva rome’ẽ ha romoĩporãve { -brand-short-name } arapy tuichakue javépe g̃uarã. Rojerure ñemoneĩ marandu og̃uahẽ mboyve oréve.
 collection-privacy-notice = Marandu Ñemigua
 collection-health-report-telemetry-disabled = Nomoneĩvéima { -vendor-short-name } ojapyhývo mba’ekuaarã aporekogua ha oñondiveguáva. Opaite mba’ekuaarã itujavéva oguéta 30 ára ohasávo.
 collection-health-report-telemetry-disabled-link = Kuaave
+collection-usage-ping =
+    .label = Emondo { -vendor-short-name }-pe ping eiporúva ára ha ára
+    .accesskey = u
+collection-usage-ping-description = Kóva oipytyvõ { -vendor-short-name } oikuaa hag̃ua mboy poruhárapa oĩ.
+collection-health-report2 =
+    .label = Emondo mba’ekuaarã aporekogua ha ñomongeta { -vendor-short-name }-pe
+    .accesskey = r
 collection-health-report =
     .label = Toñemoneĩ { -brand-short-name } omondo hag̃ua kuaapy aporeko rehegua { -vendor-short-name }-pe
     .accesskey = r
 collection-health-report-link = Kuaave
+collection-studies2 =
+    .label = Emohenda ha emongu’e mba’ekuarã
 collection-studies =
     .label = Emoneĩ { -brand-short-name } omohenda ha omongu’e hag̃ua kuaarã
 collection-studies-link = Ehecha kuaarã { -brand-short-name } mba’éva
+collection-backlogged-crash-reports2 =
+    .label = Toho ijehegui marandu jejavy rehegua
+    .accesskey = c
 addon-recommendations =
     .label = Emoneĩ { -brand-short-name } ojapóvo ñe’ẽporã jepysokue momba’epyrépe
 addon-recommendations-link = Kuaave
@@ -1359,6 +1411,7 @@ space-alert-under-5gb-message2 = <strong>{ -brand-short-name } opyta disco pa’
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = HTTPS año ayvu
+httpsonly-learn-more2 = Mba’éichapa oku’e HTTPS ayvu ha’eño
 httpsonly-description = HTTPS ome’ẽ jeikekatu ha ipapapýva { -brand-short-name } ha ñanduti renda eike hague pa’ũme. Heta ñanduti renda omoneĩ HTTPS, ha pe ayvu ha’eñóva-HTTPS oñemoneĩma, upévare { -brand-short-name } ombohekopyahúta opaite HTTPS-pe jeike.
 httpsonly-learn-more = Eikuaave
 httpsonly-radio-enabled =
@@ -1367,6 +1420,9 @@ httpsonly-radio-enabled2 =
     .label = Eiporu HTTPS año opaite ovetãme
 httpsonly-radio-enabled-pbm =
     .label = Embojuruja HTTPS año ayvu opaite ovetãme
+httpsonly-radio-disabled3 =
+    .label = Ani emyandy HTTPS ayvu ha’eño
+    .description = { -brand-short-name } ombohekopyahukuaa gueteri heta juajurã
 httpsonly-radio-enabled-pbm2 =
     .label = Eiporu HTTPS año umi ovetã ñemiguápe
 httpsonly-radio-disabled =

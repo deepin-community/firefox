@@ -13,6 +13,7 @@
 #endif
 
 #include "mozilla/gfx/Logging.h"
+#include "mozilla/layers/GpuFence.h"
 #include "ScopedGLHelpers.h"
 
 namespace mozilla {
@@ -41,8 +42,8 @@ static bool CreateTextureForPlane(uint8_t aPlaneID, gl::GLContext* aGL,
 }
 
 RenderMacIOSurfaceTextureHost::RenderMacIOSurfaceTextureHost(
-    MacIOSurface* aSurface)
-    : mSurface(aSurface), mTextureHandles{0, 0, 0} {
+    MacIOSurface* aSurface, layers::GpuFence* aGpuFence)
+    : mSurface(aSurface), mGpuFence(aGpuFence), mTextureHandles{0, 0, 0} {
   MOZ_COUNT_CTOR_INHERITED(RenderMacIOSurfaceTextureHost, RenderTextureHost);
 }
 
@@ -105,10 +106,10 @@ wr::WrExternalImage RenderMacIOSurfaceTextureHost::Lock(uint8_t aChannelIndex,
     }
   }
 
-  const auto uvs = GetUvCoords(GetSize(aChannelIndex));
-  return NativeTextureToWrExternalImage(GetGLHandle(aChannelIndex), uvs.first.x,
-                                        uvs.first.y, uvs.second.x,
-                                        uvs.second.y);
+  const auto size = GetSize(aChannelIndex);
+  return NativeTextureToWrExternalImage(GetGLHandle(aChannelIndex), 0.0, 0.0,
+                                        static_cast<float>(size.width),
+                                        static_cast<float>(size.height));
 }
 
 void RenderMacIOSurfaceTextureHost::Unlock() {}

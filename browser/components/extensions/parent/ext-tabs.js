@@ -8,6 +8,7 @@
 
 ChromeUtils.defineESModuleGetters(this, {
   BrowserUIUtils: "resource:///modules/BrowserUIUtils.sys.mjs",
+  CustomizableUI: "resource:///modules/CustomizableUI.sys.mjs",
   DownloadPaths: "resource://gre/modules/DownloadPaths.sys.mjs",
   ExtensionControlledPopup:
     "resource:///modules/ExtensionControlledPopup.sys.mjs",
@@ -30,13 +31,15 @@ const TAB_ID_NONE = -1;
 ChromeUtils.defineLazyGetter(this, "tabHidePopup", () => {
   return new ExtensionControlledPopup({
     confirmedType: TAB_HIDE_CONFIRMED_TYPE,
-    anchorId: "alltabs-button",
     popupnotificationId: "extension-tab-hide-notification",
     descriptionId: "extension-tab-hide-notification-description",
     descriptionMessageId: "tabHideControlled.message",
     getLocalizedDescription: (doc, message, addonDetails) => {
       let image = doc.createXULElement("image");
-      image.setAttribute("class", "extension-controlled-icon alltabs-icon");
+      image.classList.add("extension-controlled-icon", "alltabs-icon");
+      if (!doc.getElementById("alltabs-button")?.closest("#TabsToolbar")) {
+        image.classList.add("alltabs-icon-generic");
+      }
       return BrowserUIUtils.getLocalizedFragment(
         doc,
         message,
@@ -1150,7 +1153,7 @@ this.tabs = class extends ExtensionAPIPersistent {
             // the current set of pinned tabs. Unpinned tabs, likewise, can only
             // be moved to a position after the current set of pinned tabs.
             // Attempts to move a tab to an illegal position are ignored.
-            let numPinned = gBrowser._numPinnedTabs;
+            let numPinned = gBrowser.pinnedTabCount;
             let ok = nativeTab.pinned
               ? insertionPoint <= numPinned
               : insertionPoint >= numPinned;
@@ -1606,6 +1609,17 @@ this.tabs = class extends ExtensionAPIPersistent {
           }
           if (hidden.length) {
             let win = Services.wm.getMostRecentWindow("navigator:browser");
+
+            // Before showing the hidden tabs warning,
+            // move alltabs-button to somewhere visible if it isn't already.
+            if (!CustomizableUI.widgetIsLikelyVisible("alltabs-button", win)) {
+              CustomizableUI.addWidgetToArea(
+                "alltabs-button",
+                CustomizableUI.verticalTabsEnabled
+                  ? CustomizableUI.AREA_NAVBAR
+                  : CustomizableUI.AREA_TABSTRIP
+              );
+            }
             tabHidePopup.open(win, extension.id);
           }
           return hidden;

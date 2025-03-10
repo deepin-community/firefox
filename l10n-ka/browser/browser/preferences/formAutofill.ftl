@@ -9,6 +9,8 @@ autofill-manage-addresses-title = დამახსოვრებული მ
 autofill-manage-addresses-list-header = მისამართები
 autofill-manage-credit-cards-title = დამახსოვრებული საკრედიტო ბარათები
 autofill-manage-credit-cards-list-header = საკრედიტო ბარათები
+autofill-manage-payment-methods-title = შენახული გადახდის საშუალებები
+autofill-manage-cards-list-header = ბარათები
 autofill-manage-dialog =
     .style = min-width: 560px
 autofill-manage-remove-button = მოცილება
@@ -37,14 +39,18 @@ address-capture-manage-address-button =
     .label = მისამართის პარამეტრები
 address-capture-learn-more-button =
     .label = ვრცლად
+address-capture-open-menu-button =
+    .aria-label = მენიუს გახსნა
+address-capture-edit-address-button =
+    .aria-label = მისამართის ჩასწორება
 # The dialog title for creating addresses in browser preferences.
-autofill-add-new-address-title = ახალი მისამართის დამატება
+autofill-add-address-title = მისამართის დამატება
 # The dialog title for editing addresses in browser preferences.
 autofill-edit-address-title = მისამართის ჩასწორება
-autofill-address-name = სახელი
 autofill-address-given-name = სახელი
 autofill-address-additional-name = მეორე სახელი
 autofill-address-family-name = გვარი
+autofill-address-name = სახელი
 autofill-address-organization = დაწესებულება
 autofill-address-street-address = ქუჩის მისამართი
 autofill-address-street = მისამართი
@@ -57,13 +63,13 @@ autofill-address-neighborhood = სამეზობლო
 autofill-address-village-township = სოფელი ან დაბა
 autofill-address-island = კუნძული
 # Used in IE
-autofill-address-townland = დასახლებული პუნქტი
+autofill-address-townland = დასახლება
 
 ## address-level-2 names
 
 autofill-address-city = ქალაქი
 # Used in HK, SD, SY, TR as Address Level-2 and used in KR as Sublocality.
-autofill-address-district = რაიონი
+autofill-address-district = უბანი
 # Used in GB, NO, SE
 autofill-address-post-town = საფოსტო ქალაქი
 # Used in AU as Address Level-2 and used in ZZ as Sublocality.
@@ -100,9 +106,8 @@ autofill-address-eircode = Eir-კოდი
 
 ##
 
-
-##
-
+# The dialog title for creating addresses in browser preferences.
+autofill-add-new-address-title = ახალი მისამართის დამატება
 autofill-address-country = ქვეყანა ან მხარე
 autofill-address-country-only = ქვეყანა
 autofill-address-tel = ტელეფონი
@@ -122,6 +127,11 @@ autofill-edit-card-password-prompt =
         [windows] { -brand-short-name } ცდილობს გამოაჩინოს საკრედიტო ბარათის მონაცემები. დაადასტურეთ ამ Windows-ანგარიშთან წვდომა.
        *[other] { -brand-short-name } ცდილობს გამოაჩინოს საკრედიტო ბარათის მონაცემები.
     }
+autofill-message-tooltip = შეტყობინების ნახვა თვითშევსების შესახებ
+# The dialog title for creating credit cards in browser preferences.
+autofill-add-card-title = ბარათის დამატება
+# The dialog title for editing credit cards in browser preferences.
+autofill-edit-card-title2 = ბარათის ჩასწორება
 autofill-card-number = ბარათის ნომერი
 autofill-card-invalid-number = გთხოვთ, მიუთითეთ ბარათის მართებული ნომერი
 autofill-card-name-on-card = მფლობელის სახელი

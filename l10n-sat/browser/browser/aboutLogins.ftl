@@ -144,6 +144,8 @@ login-item-copied-username-button-text = ᱱᱚᱠᱚᱞᱮᱱᱟ!
 login-item-password-label = ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽ
 login-item-password-reveal-checkbox =
     .aria-label = ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽ ᱫᱮᱠᱷᱟᱣ
+login-item-password-conceal-checkbox =
+    .aria-label = ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽ ᱩᱠᱩ
 login-item-copy-password-button-text = ᱱᱚᱠᱚᱞ
 login-item-copied-password-button-text = ᱱᱚᱠᱚᱞᱮᱱᱟ!
 login-item-save-changes-button = ᱵᱚᱫᱚᱞ ᱠᱚ ᱥᱟᱺᱪᱟᱣ ᱢᱮ
@@ -286,12 +288,40 @@ about-logins-confirm-remove-all-dialog-title2 =
         [two] { $count } ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽᱠᱤᱱ ᱚᱪᱚᱜᱟᱢ ᱥᱮ ?
        *[other] { $count } ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽᱠᱚ ᱚᱪᱚᱜᱟᱢ ᱥᱮ ?
     }
+# Message for modal to confirm the removal of saved passwords when user is NOT synced
+about-logins-confirm-remove-all-dialog-message2 =
+    { $count ->
+        [1] ᱱᱚᱣᱟ ᱫᱚ { -brand-short-name } ᱟᱨ ᱡᱟᱦᱟᱱ ᱵᱨᱤᱪ ᱮᱞᱟᱨᱴ ᱨᱮ ᱥᱟᱧᱪᱟᱣ ᱟᱠᱟᱱ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽ ᱚᱪᱚᱜᱼᱟᱭ ᱾  ᱟᱢ ᱱᱚᱣᱟ ᱠᱟᱹᱢᱤ ᱵᱟᱢ ᱚᱪᱚᱜ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ᱾
+        [one] ᱱᱚᱣᱟ ᱫᱚ { -brand-short-name } ᱟᱨ ᱡᱟᱦᱟᱱ ᱵᱨᱤᱪ ᱮᱞᱟᱨᱴ ᱨᱮ ᱥᱟᱧᱪᱟᱣ ᱟᱠᱟᱱ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽ ᱚᱪᱚᱜᱼᱟᱭ ᱾  ᱟᱢ ᱱᱚᱣᱟ ᱠᱟᱹᱢᱤ ᱵᱟᱢ ᱚᱪᱚᱜ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ᱾
+        [two] ᱱᱚᱣᱟ ᱫᱚ { -brand-short-name } ᱟᱨ ᱡᱟᱦᱟᱱ ᱵᱨᱤᱪ ᱮᱞᱟᱨᱴ ᱨᱮ ᱥᱟᱧᱪᱟᱣ ᱟᱠᱟᱱ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽ ᱠᱤᱱ ᱚᱪᱚᱜᱼᱟᱭ ᱾  ᱟᱢ ᱱᱚᱣᱟ ᱠᱟᱹᱢᱤ ᱵᱟᱢ ᱚᱪᱚᱜ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ᱾
+       *[other] ᱱᱚᱣᱟ ᱫᱚ { -brand-short-name } ᱟᱨ ᱡᱟᱦᱟᱱ ᱵᱨᱤᱪ ᱮᱞᱟᱨᱴ ᱨᱮ ᱥᱟᱧᱪᱟᱣ ᱟᱠᱟᱱ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽᱠᱚ ᱪᱚᱜᱼᱟᱭ ᱾  ᱟᱢ ᱱᱚᱣᱟ ᱠᱟᱹᱢᱤ ᱵᱟᱢ ᱚᱪᱚᱜ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ᱾
+    }
+# Title for modal to confirm the removal of all saved passwords when user IS SYNCED
+about-logins-confirm-remove-all-sync-dialog-title2 =
+    { $count ->
+        [one] ᱡᱷᱚᱛᱚ ᱥᱟᱫᱷᱚᱱ ᱠᱷᱚᱱ { $count } ᱫᱟᱱᱟᱝᱥᱟᱵᱟᱫ ᱚᱪᱚᱜᱟᱢ ᱥᱮ?
+        [two] ᱡᱷᱚᱛᱚ ᱥᱟᱫᱷᱚᱱ ᱠᱷᱚᱱ { $count } ᱫᱟᱱᱟᱝᱥᱟᱵᱟᱫ ᱠᱤᱱ ᱚᱪᱚᱜᱟᱢ ᱥᱮ?
+       *[other] ᱡᱷᱚᱛᱚ ᱥᱟᱫᱷᱚᱱ ᱠᱷᱚᱱ { $count } ᱫᱟᱱᱟᱝᱥᱟᱵᱟᱫᱠᱚ ᱚᱪᱚᱜᱟᱢ ᱥᱮ?
+    }
+# Message for modal to confirm the removal of saved passwords when user IS synced.
+about-logins-confirm-remove-all-sync-dialog-message3 =
+    { $count ->
+        [1] ᱱᱚᱣᱟ ᱫᱚ ᱟᱢᱟᱜ ᱡᱚᱛᱚ ᱥᱤᱝᱠ ᱥᱟᱫᱷᱚᱱ ᱨᱮ { -brand-short-name } ᱥᱟᱧᱪᱟᱣ ᱟᱠᱟᱱ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽ ᱚᱪᱚᱜᱼᱟᱭ ᱾ ᱱᱚᱣᱟ ᱦᱚᱸ ᱚᱪᱚᱜᱼᱟ ᱡᱟᱦᱟᱱ ᱵᱨᱤᱪ ᱮᱞᱟᱨᱴ ᱡᱟᱦᱟᱸ ᱫᱚ ᱱᱚᱸᱰᱮ ᱧᱮᱞᱚᱜ ᱠᱟᱱᱟ ᱾ ᱟᱢ ᱱᱚᱣᱟ ᱠᱟᱹᱢᱤ ᱵᱟᱢ ᱩᱞᱴᱟ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱾
+        [one] ᱱᱚᱣᱟ ᱫᱚ ᱟᱢᱟᱜ ᱡᱚᱛᱚ ᱥᱤᱝᱠ ᱥᱟᱫᱷᱚᱱ ᱨᱮ { -brand-short-name } ᱥᱟᱧᱪᱟᱣ ᱟᱠᱟᱱ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽ ᱚᱪᱚᱜᱼᱟᱭ ᱾ ᱱᱚᱣᱟ ᱦᱚᱸ ᱚᱪᱚᱜᱼᱟ ᱡᱟᱦᱟᱱ ᱵᱨᱤᱪ ᱮᱞᱟᱨᱴ ᱡᱟᱦᱟᱸ ᱫᱚ ᱱᱚᱸᱰᱮ ᱧᱮᱞᱚᱜ ᱠᱟᱱᱟ ᱾ ᱟᱢ ᱱᱚᱣᱟ ᱠᱟᱹᱢᱤ ᱵᱟᱢ ᱩᱞᱴᱟ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱾
+        [two] ᱱᱚᱣᱟ ᱫᱚ ᱟᱢᱟᱜ ᱡᱚᱛᱚ ᱥᱤᱝᱠ ᱥᱟᱫᱷᱚᱱ ᱨᱮ { -brand-short-name } ᱥᱟᱧᱪᱟᱣ ᱟᱠᱟᱱ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽᱠᱤᱱ ᱚᱪᱚᱜᱼᱟᱭ ᱾ ᱱᱚᱣᱟ ᱦᱚᱸ ᱚᱪᱚᱜᱼᱟ ᱡᱟᱦᱟᱱ ᱵᱨᱤᱪ ᱮᱞᱟᱨᱴ ᱡᱟᱦᱟᱸ ᱫᱚ ᱱᱚᱸᱰᱮ ᱧᱮᱞᱚᱜ ᱠᱟᱱᱟ ᱾ ᱟᱢ ᱱᱚᱣᱟ ᱠᱟᱹᱢᱤ ᱵᱟᱢ ᱩᱞᱴᱟ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱾
+       *[other] ᱱᱚᱣᱟ ᱫᱚ ᱟᱢᱟᱜ ᱡᱚᱛᱚ ᱥᱤᱝᱠ ᱥᱟᱫᱷᱚᱱ ᱨᱮ { -brand-short-name } ᱥᱟᱧᱪᱟᱣ ᱟᱠᱟᱱ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽᱠᱚ ᱚᱪᱚᱜᱼᱟᱭ ᱾ ᱱᱚᱣᱟ ᱦᱚᱸ ᱚᱪᱚᱜᱼᱟ ᱡᱟᱦᱟᱱ ᱵᱨᱤᱪ ᱮᱞᱟᱨᱴ ᱡᱟᱦᱟᱸ ᱫᱚ ᱱᱚᱸᱰᱮ ᱧᱮᱞᱚᱜ ᱠᱟᱱᱟ ᱾ ᱟᱢ ᱱᱚᱣᱟ ᱠᱟᱹᱢᱤ ᱵᱟᱢ ᱩᱞᱴᱟ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱾
+    }
 
 ##
 
 about-logins-confirm-export-dialog-title = ᱞᱚᱜᱤᱱ ᱠᱚ ᱟᱨ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽ ᱵᱷᱮᱡᱟᱭ ᱢᱮ
 about-logins-confirm-export-dialog-message = ᱟᱢᱟᱜᱽ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽ ᱠᱚ ᱫᱚ ᱯᱟᱲᱦᱟᱣ ᱚᱞ ᱞᱮᱠᱷᱟᱛᱮ ᱥᱟᱺᱪᱟᱣᱜᱼᱟ (e.g., BadP@ssw0rd) ᱢᱮᱱᱠᱷᱟᱱ ᱡᱟᱦᱟᱸᱭ ᱜᱮ ᱵᱷᱮᱡᱟ ᱠᱟᱱ ᱨᱮᱫ ᱠᱷᱩᱞᱟᱹ ᱠᱟᱛᱮ ᱧᱮᱞ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱠᱚ ᱾
 about-logins-confirm-export-dialog-confirm-button = ᱵᱟᱦᱨᱮ ᱠᱩᱞ ᱢᱮ…
+about-logins-confirm-export-dialog-title2 = ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫ ᱩᱪᱟᱹᱲ ᱵᱟᱨᱮᱛᱮ ᱢᱤᱫ ᱱᱚᱴ
+about-logins-confirm-export-dialog-message2 =
+    ᱡᱚᱠᱷᱚᱱ ᱟᱢ ᱮᱢ ᱩᱪᱟᱹᱲ ᱟ, ᱟᱢᱟᱜ ᱯᱟᱥᱣᱟᱨᱰ ᱫᱚ ᱯᱟᱲᱦᱟᱣ ᱞᱮᱠᱟᱱ ᱚᱱᱚᱞ ᱥᱟᱶ ᱢᱤᱫ ᱨᱮᱫ ᱨᱮ ᱥᱟᱧᱪᱟᱣ ᱛᱟᱦᱮᱱᱟ ᱾
+     ᱟᱢ ᱯᱷᱟᱭᱤᱞ ᱵᱮᱵᱷᱟᱨ ᱢᱩᱪᱟᱹᱫ ᱠᱟᱛᱮ, ᱟᱞᱮ ᱫᱚ ᱚᱱᱟ ᱢᱮᱴᱟᱣ ᱜᱤᱰᱤ ᱞᱟᱹᱜᱤᱫ ᱞᱮ ᱢᱮᱛᱟᱜ ᱢᱮᱭᱟ ᱡᱮ ᱮᱴᱟᱜ ᱠᱚ ᱡᱟᱦᱟᱸᱭ ᱱᱚᱶᱟ ᱥᱟᱫᱷᱚᱱ ᱠᱚ ᱵᱮᱵᱷᱟᱨ ᱮᱫᱟ ᱩᱱᱠᱩ ᱟᱢᱟᱜ ᱯᱟᱥᱣᱟᱨᱰ ᱵᱟᱠᱚ ᱧᱮᱞ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱾
+about-logins-confirm-export-dialog-confirm-button2 = ᱩᱪᱟᱹᱲ ᱥᱟᱞᱟᱜ ᱞᱟᱦᱟ
 about-logins-alert-import-title = ᱟᱹᱜᱩ ᱯᱩᱨᱟᱹᱣ ᱮᱱᱟ
 about-logins-alert-import-message = ᱠᱷᱟᱴᱚ ᱵᱤᱵᱨᱚᱬ ᱵᱟᱵᱚᱛ ᱫᱮᱠᱷᱟᱣ ᱢᱮ
 confirm-discard-changes-dialog-title = ᱵᱟᱝ ᱥᱟᱺᱪᱟᱣ ᱵᱚᱫᱚᱞ ᱠᱚ ᱵᱟᱹᱨᱜᱤᱞ ᱜᱤᱰᱤ ᱟᱢ ᱢᱮ?
@@ -333,6 +363,11 @@ about-logins-export-file-picker-title = ᱨᱮᱫ ᱵᱚᱞᱚ ᱠᱚ ᱵᱷᱮ�
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = logins.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = { -brand-short-name } ᱠᱷᱚᱱ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱠᱚ ᱩᱪᱟᱹᱲ
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = ᱫᱟᱱᱟᱝᱥᱟᱵᱟᱫ.csv
 about-logins-export-file-picker-export-button = ᱵᱟᱦᱨᱮ ᱠᱩᱞ ᱢᱮ
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -346,6 +381,8 @@ about-logins-export-file-picker-csv-filter-title =
 
 # Title of the file picker dialog
 about-logins-import-file-picker-title = ᱵᱚᱞᱚ ᱨᱮᱫ ᱠᱚ ᱟᱹᱜᱩᱭ ᱢᱮ
+# Title of the file picker dialog
+about-logins-import-file-picker-title2 = { -brand-short-name } ᱛᱮ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽ ᱞᱟᱫᱮ ᱢᱮ
 about-logins-import-file-picker-import-button = ᱟᱹᱜᱩ
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -385,6 +422,24 @@ about-logins-import-dialog-items-no-change =
         [two] <span>ᱰᱩᱯᱞᱤᱠᱮᱴ ᱵᱚᱞᱚ ᱠᱤᱱ ᱧᱟᱢ ᱮᱱᱟ :</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ᱵᱟᱝ ᱟᱹᱜᱩ ᱠᱟᱱᱟ)</span>
        *[other] <span>ᱰᱩᱯᱞᱤᱠᱮᱴ ᱵᱚᱞᱚᱠᱚ ᱧᱟᱢ ᱮᱱᱟ :</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ᱵᱟᱝ ᱟᱹᱜᱩ ᱠᱟᱱᱟ)</span>
     }
+about-logins-import-dialog-items-added2 =
+    { $count ->
+        [one] <span>ᱱᱟᱶᱟ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽ ᱥᱮᱞᱮᱫ ᱮᱱᱟ:</span> <span data-l10n-name="count">{ $count }</span>
+        [two] <span>ᱱᱟᱶᱟ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽ ᱠᱤᱱ ᱥᱮᱞᱮᱫ ᱮᱱᱟ:</span> <span data-l10n-name="count">{ $count }</span>
+       *[other] <span>ᱱᱟᱶᱟ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽᱠᱚ ᱥᱮᱞᱮᱫ ᱮᱱᱟ:</span> <span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-modified2 =
+    { $count ->
+        [one] <span> ᱢᱟᱲᱟᱝᱟᱜ ᱮᱞ ᱱᱟᱶᱟ ᱟᱠᱟᱱᱟ:</span><span data-l10n-name="count">{ $count }</span>
+        [two] <span> ᱢᱟᱲᱟᱝᱟᱜ ᱮᱞᱠᱤᱱ ᱱᱟᱶᱟ ᱟᱠᱟᱱᱟ:</span><span data-l10n-name="count">{ $count }</span>
+       *[other] <span> ᱢᱟᱲᱟᱝᱟᱜ ᱮᱞᱠᱚ ᱱᱟᱶᱟ ᱟᱠᱟᱱᱟ:</span><span data-l10n-name="count">{ $count }</span>
+    }
+about-logins-import-dialog-items-no-change2 =
+    { $count ->
+        [one] <span>ᱰᱩᱯᱞᱤᱠᱮᱴ ᱮᱞ ᱧᱟᱢ ᱮᱱᱟ :</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ᱵᱟᱝ ᱟᱹᱜᱩ ᱠᱟᱱᱟ)</span>
+        [two] <span>ᱰᱩᱯᱞᱤᱠᱮᱴ ᱮᱞᱠᱤᱱ ᱧᱟᱢ ᱮᱱᱟ :</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ᱵᱟᱝ ᱟᱹᱜᱩ ᱠᱟᱱᱟ)</span>
+       *[other] <span>ᱰᱩᱯᱞᱤᱠᱮᱴ ᱮᱞᱠᱚ ᱧᱟᱢ ᱮᱱᱟ :</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ᱵᱟᱝ ᱟᱹᱜᱩ ᱠᱟᱱᱟ)</span>
+    }
 about-logins-import-dialog-items-error =
     { $count ->
         [one] <span>ᱵᱷᱩᱞ :</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(ᱵᱟᱝ ᱟᱹᱜᱩ ᱠᱟᱱᱟ)</span>
@@ -407,6 +462,7 @@ about-logins-import-dialog-error-try-import-again = ᱟᱹᱜᱩ ᱩᱛᱟᱹᱨ
 about-logins-import-dialog-error-cancel = ᱵᱟᱹᱰᱨᱟᱹ
 about-logins-import-report-title = ᱟᱹᱜᱩ ᱵᱤᱵᱨᱚᱬ
 about-logins-import-report-description = ᱵᱚᱞᱚᱠᱚ ᱟᱨ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽ ᱠᱚ { -brand-short-name } ᱠᱷᱚᱱ ᱟᱹᱜᱩ ᱠᱟᱱᱟ ᱾
+about-logins-import-report-description2 = ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫ { -brand-short-name } ᱠᱷᱚᱱ ᱟᱹᱜᱩ ᱠᱟᱱᱟ ᱾
 #
 # Variables:
 #  $number (number) - The number of the row
@@ -414,6 +470,7 @@ about-logins-import-report-row-index = ᱛᱷᱟᱨ { $number }
 about-logins-import-report-row-description-no-change = ᱰᱩᱯᱞᱤᱠᱮᱴ : ᱢᱟᱲᱟᱝᱟᱜ ᱵᱚᱞᱚ ᱨᱮᱭᱟᱜ ᱥᱚᱴᱷᱤᱠ ᱡᱩᱲᱟᱹᱣ
 about-logins-import-report-row-description-modified = ᱢᱟᱲᱟᱝ ᱠᱷᱚᱱ ᱵᱚᱞᱚ ᱠᱚ ᱟᱹᱯᱰᱮᱴᱮᱱᱟ
 about-logins-import-report-row-description-added = ᱱᱟᱶᱟ ᱵᱚᱞᱚ ᱥᱮᱞᱮᱫ ᱮᱱᱟ
+about-logins-import-report-row-description-no-change2 = ᱰᱩᱯᱞᱤᱠᱮᱴ : ᱢᱟᱲᱟᱝᱟᱜ ᱮᱞ ᱨᱮᱭᱟᱜ ᱥᱚᱴᱷᱤᱠ ᱡᱩᱲᱟᱹᱣ
 about-logins-import-report-row-description-modified2 = ᱢᱟᱲᱟᱝ ᱠᱷᱚᱱ ᱢᱮᱱᱟᱜ ᱟᱫᱮᱨᱠᱚ ᱦᱟᱹᱞᱤᱭᱟᱹᱠ ᱮᱱᱟ
 about-logins-import-report-row-description-added2 = ᱱᱟᱣᱟ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽ ᱥᱮᱞᱮᱫ ᱮᱱᱟ
 about-logins-import-report-row-description-error = ᱵᱷᱩᱞ: ᱟᱫ ᱡᱟᱭᱜᱟ
@@ -446,6 +503,24 @@ about-logins-import-report-no-change =
         [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ᱰᱩᱯᱞᱤᱠᱮᱴ ᱞᱚᱜᱚᱱ</div> <div data-l10n-name="not-imported">(ᱵᱟᱝ ᱟᱹᱜᱩ ᱠᱟᱱᱟ)</div>
         [two] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ᱰᱩᱯᱞᱤᱠᱮᱴ ᱞᱚᱜᱚᱱ ᱠᱤᱱ</div> <div data-l10n-name="not-imported">(ᱵᱟᱝ ᱟᱹᱜᱩ ᱠᱟᱱᱟ)</div>
        *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ᱰᱩᱯᱞᱤᱠᱮᱴ ᱞᱚᱜᱚᱱ ᱠᱚ</div> <div data-l10n-name="not-imported">(ᱵᱟᱝ ᱟᱹᱜᱩ ᱠᱟᱱᱟ)</div>
+    }
+about-logins-import-report-added2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ᱱᱟᱶᱟ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫ ᱥᱮᱞᱮᱫᱮᱱᱟ</div>
+        [two] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ᱱᱟᱶᱟ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱠᱤᱱ ᱥᱮᱞᱮᱫᱮᱱᱟ</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ᱱᱟᱶᱟ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫ ᱠᱚ ᱥᱮᱞᱮᱫᱮᱱᱟ</div>
+    }
+about-logins-import-report-modified2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ᱢᱟᱲᱟᱝ ᱮᱞ ᱛᱟᱢ ᱦᱟᱹᱞᱤᱭᱟᱹᱠ ᱮᱱᱟ</div>
+        [two] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ᱢᱟᱲᱟᱝ ᱮᱞᱠᱤᱱ ᱛᱟᱢ ᱦᱟᱹᱞᱤᱭᱟᱹᱠ ᱮᱱᱟ</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ᱢᱟᱲᱟᱝ ᱮᱞᱠᱚ ᱛᱟᱢ ᱦᱟᱹᱞᱤᱭᱟᱹᱠ ᱮᱱᱟ</div>
+    }
+about-logins-import-report-no-change2 =
+    { $count ->
+        [one] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ᱰᱩᱯᱞᱤᱠᱮᱴ ᱮᱱᱴᱨᱤ</div> <div data-l10n-name="not-imported">(ᱵᱟᱝ ᱟᱹᱜᱩ ᱟᱠᱟᱱᱟ)</div>
+        [two] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ᱰᱩᱯᱞᱤᱠᱮᱴ ᱮᱱᱴᱨᱤᱠᱤᱱ</div> <div data-l10n-name="not-imported">(ᱵᱟᱝ ᱟᱹᱜᱩ ᱟᱠᱟᱱᱟ)</div>
+       *[other] <div data-l10n-name="count">{ $count }</div> <div data-l10n-name="details">ᱰᱩᱯᱞᱤᱠᱮᱴ ᱮᱱᱴᱨᱤ ᱠᱚ</div> <div data-l10n-name="not-imported">(ᱵᱟᱝ ᱟᱹᱜᱩ ᱟᱠᱟᱱᱟ)</div>
     }
 about-logins-import-report-error =
     { $count ->

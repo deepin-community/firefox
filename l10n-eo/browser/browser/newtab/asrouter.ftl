@@ -245,6 +245,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Krei konton
 device-migration-fxa-spotlight-getting-new-device-header-2 = Ĉu vi planas akiri novan aparaton?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Sekfu kelkajn simplajn paŝojn por kunporti kun vi viajn legosignojn, historion kaj pasvortojn kiam vi komencas uzi novan aparaton.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Kiel fari sekurkopion de miaj datumoj
+device-migration-fxa-spotlight-sync-header = Retumi sen maltrafi ion ajn
+device-migration-fxa-spotlight-sync-body = Ĉifrite spegulu ĉiujn viajn gravajn informojn — ekzemple legosignojn kaj pasvortojn. Vi povas aliri ĉion denove el ie ajn per { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = Unuaj paŝoj
 
 ## Set as Default PDF Reader Infobar
 
@@ -281,3 +284,61 @@ tail-fox-spotlight-title = Forpelu nedeziratajn spurilojn
 tail-fox-spotlight-subtitle = Adiaŭu nedeziratajn reklamajn spurilojn kaj ĝuu pli sekuran kaj rapidan sperton retuman.
 tail-fox-spotlight-primary-button = Malfermi miajn ligilojn per { -brand-short-name }
 tail-fox-spotlight-secondary-button = Ne nun
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Malnovaj versioj de { -brand-short-name } povus ekhavi problemojn ekde la 14a de januaro 2025.</strong>
+root-certificate-succession-infobar-march-message = <strong>Por povi plu uzi { -brand-short-name } post la 14a de marto 2025, bonvolu ĝisdatigi ĝin.</strong>
+root-certificate-succession-infobar-link = Kiam bezonatas ĝisdatigi?
+root-certificate-succession-infobar-primary-button =
+    .label = Ĝisdatigi nun
+    .accesskey = n
+root-certificate-succession-infobar-secondary-button =
+    .label = Poste
+    .accesskey = P
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Vi maltrafis gravan ĝisdatigon de { -brand-short-name }
+root-certificate-windows-background-notification-subtitle = Kelkaj partoj de la retumilo baldaŭ ĉesos funkcii se vi ne ĝisdatigas. Nun estas bonega momento ricevi niajn lastajn protektojn kaj trajtojn.
+root-certificate-windows-background-notification-learn-more-button = Pli da informo
+root-certificate-windows-background-notification-update-button = Ĝisdatigi { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Fermi
+    .aria-label = Fermi
+fxa-menu-message-sign-up-button = Krei konton
+fxa-menu-message-sync-devices-primary-text = Speguli ĉiujn viajn aparatojn
+fxa-menu-message-sync-devices-secondary-text = Tuj ricevi viajn informojn — kiel legosignojn kaj pasvortojn — ie ajn, kie vi uzas { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = Speguli ĉiujn viajn aparatojn
+fxa-menu-message-backup-data-primary-text = Faru sekurkopion de viaj retumilaj datumoj
+fxa-menu-message-backup-data-secondary-text = Aŭtomate protekti legosignojn, pasvortojn kaj aliajn informojn en ĉiuj viaj aparatoj.
+fxa-menu-message-backup-data-collapsed-text = Fari sekurkopion de la retumilaj datumoj
+fxa-menu-message-backup-sync-primary-text = Tenu viajn datumojn sekuraj kaj spegulitaj
+fxa-menu-message-backup-sync-secondary-text = Speguli faras sekurkopion de la plimulto de viaj datumoj, tiel ke vi povas aliri ilin el ie ajn, kie vi uzas { -brand-short-name }.
+fxa-menu-message-backup-sync-collapsed-text = Speguli kaj fari sekurkopion de datumoj
+fxa-menu-message-mobile-primary-text = Sendi langetojn al via telefono
+fxa-menu-message-mobile-secondary-text = Tuj daŭrigi el tie, kie vi haltis, per spegulado de viaj langetoj al portebla aparato.
+fxa-menu-message-mobile-collapsed-text = Speguli kun via telefono
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Bonvenon denove
+multi-cta-fox-doodle-set-default-checkbox = Igi { -brand-short-name } la norma retumilo
+multi-cta-fox-doodle-pin-startmenu-checkbox = Alpingli { -brand-short-name } al la komenca menuo
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Alpingli { -brand-short-name } al via Dock
+       *[other] Alpingli { -brand-short-name } al la taska ilaro
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Komenci retumi
+multi-cta-fox-doodle-main-browser-primary-button-label = Igi { -brand-short-name } mia ĉefa retumilo
+multi-cta-fox-doodle-quick-reminder-subtitle = Jen rapida memorigo, pri tio ke vi povas havi vian preferatan privatecozorgan retumilon atingebla je unu alklako.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Havu vian preferatan privatecozorgan retumilon atingebla je unu alklako. Igi { -brand-short-name } via norma retumilo por malfermo de ligiloj kaj alpinglu ĝin al via Dock.
+       *[other] Havu vian preferatan privatecozorgan retumilon atingebla je unu alklako. Igi { -brand-short-name } via norma retumilo por malfermo de ligiloj kaj alpinglu ĝin al via taska ilaro.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Havu vian preferatan privatecozorgan retumilon atingebla je unu alklako. Igi { -brand-short-name } via norma retumilo por malfermo de ligiloj kaj alpinglu ĝin al la komenca menuo.

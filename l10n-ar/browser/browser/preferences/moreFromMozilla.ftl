@@ -25,3 +25,9 @@ more-from-moz-learn-more-link = اطّلع على المزيد
 more-from-moz-firefox-relay-title = { -relay-brand-name }
 more-from-moz-firefox-relay-description = احمِ صندوق الوارد وهويتك بتقنيع البريد الإلكتروني مجانا.
 more-from-moz-firefox-relay-button = احصل على { -relay-brand-short-name }
+
+## These strings are for the Mozilla Monitor card in about:preferences moreFromMozilla page
+
+
+## These strings are for the Solo card in about:preferences moreFromMozilla page
+

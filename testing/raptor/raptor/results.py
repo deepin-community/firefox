@@ -679,7 +679,7 @@ class BrowsertimeResultsHandler(PerftestResultsHandler):
             # mdict: a dictionary to look through to find the mname
             #        value.
 
-            if type(mname) != list:
+            if type(mname) is not list:
                 if mname in mdict:
                     return mdict[mname]
                 return retval
@@ -768,6 +768,7 @@ class BrowsertimeResultsHandler(PerftestResultsHandler):
 
             if support_class:
                 bt_result["custom_data"] = True
+                support_class.save_data(raw_result, bt_result)
                 support_class.handle_result(
                     bt_result,
                     raw_result,

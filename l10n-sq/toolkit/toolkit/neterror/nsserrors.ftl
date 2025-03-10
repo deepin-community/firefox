@@ -8,25 +8,24 @@
 # gen_aboutneterror_codes.py . If we end up needing fluent attributes or
 # refactoring them in some way, the script will need updating.
 
-psmerr-ssl-disabled = S’lidhet dot në mënyrë të sigurt, sepse protokolli SSL është çaktivizuar.
-psmerr-ssl2-disabled = S’lidhet dot në mënyrë të sigurt, sepse sajti përdor një version të vjetër, të pasigurt të protokollit SSL.
+psmerr-ssl-disabled = S’lidhet dot në mënyrë të siguruar, sepse protokolli SSL është çaktivizuar.
+psmerr-ssl2-disabled = S’lidhet dot në mënyrë të siguruar, sepse sajti përdor një version të vjetër, të pasiguruar të protokollit SSL.
 # This is a multi-line message.
 psmerr-hostreusedissuerandserial =
-    Keni marrë një dëshmi të pavlefshme. Ju lutemi, lidhuni me administratorin e shërbyesit ose i dërgoni një email korrespondentit dhe jepuni atyre të dhënat vijuese:
+    Keni marrë një dëshmi të pavlefshme. Ju lutemi, lidhuni me administratorin e shërbyesit ose i dërgoni një email korrespondentit dhe jepuni atyre hollësitë vijuese:
     
     Dëshmia juaj përmban të njëjtin numër serial me një tjetër dëshmi të lëshuar nga autoriteti i dëshmive. Ju lutemi, merrni një dëshmi të re që të përmbajë një numër serial unik.
-
-ssl-error-export-only-server = S’arrihet të komunikohet në mënyrë të sigurt. Ana tjetër s’mbulon fshehtëzim të shkallës së lartë.
-ssl-error-us-only-server = S’arrihet të komunikohet në mënyrë të sigurt. Ana tjetër kërkon fshehtëzim të shkallës së lartë, i cili nuk mbulohet.
-ssl-error-no-cypher-overlap = S’komunikohet dot në mënyrë të sigurt me anën tjetër: s’ka algoritëm(e) të njëjtë fshehtëzimesh.
+ssl-error-export-only-server = S’arrihet të komunikohet në mënyrë të siguruar. Ana tjetër s’mbulon fshehtëzim të shkallës së lartë.
+ssl-error-us-only-server = S’arrihet të komunikohet në mënyrë të siguruar. Ana tjetër kërkon fshehtëzim të shkallës së lartë, i cili s’mbulohet.
+ssl-error-no-cypher-overlap = S’komunikohet dot në mënyrë të siguruar me anën tjetër: s’ka algoritëm(e) të njëjtë fshehtëzimesh.
 ssl-error-no-certificate = S’arrihet të gjendet dëshmi ose kyç i nevojshëm për mirëfilltësimin.
-ssl-error-bad-certificate = S’arrihet të komunikohet në mënyrë të sigurt me anën tjetër: dëshmia e anës tjetër u hodh tej.
+ssl-error-bad-certificate = S’arrihet të komunikohet në mënyrë të siguruar me anën tjetër: dëshmia e anës tjetër u hodh tej.
 ssl-error-bad-client = Shërbyesi hasi të dhëna klienti të dëmtuara.
 ssl-error-bad-server = Klienti hasi të dhëna shërbyesi të dëmtuara.
 ssl-error-unsupported-certificate-type = Lloj i pambuluar dëshmie.
 ssl-error-unsupported-version = Ana tjetër po përdor version të pambuluar protokoll sigurie.
 ssl-error-wrong-certificate = Mirëfilltësimi i klientit dështoi: kyçi privat në bazën e të dhënave për kyçet s’përputhet me kyçin publik te baza e të dhënave për dëshmitë.
-ssl-error-bad-cert-domain = S’arrihet të komunikohet në mënyrë të sigurt me anën tjetër: emri i strehës së kërkuar s’përputhet me dëshminë e shërbyesit.
+ssl-error-bad-cert-domain = S’arrihet të komunikohet në mënyrë të siguruar me anën tjetër: emri i strehës së kërkuar s’përputhet me dëshminë e shërbyesit.
 ssl-error-post-warning = Kod gabimi të panjohur SSL.
 ssl-error-ssl2-disabled = Ana tjetër mbulon vetëm versionin 2 për SSL-në, çka është lokalisht e çaktivizuar.
 ssl-error-bad-mac-read = SSL-ja mori regjistrim me një Kod të pasaktë Mirëfilltësimi Mesazhi.
@@ -99,7 +98,7 @@ ssl-error-session-key-gen-failure = Klienti s’arriti të prodhonte kyçe sesio
 ssl-error-no-server-key-for-alg = Shërbyesi s’ka kyç për algoritmin e provuar për shkëmbim kyçesh.
 ssl-error-token-insertion-removal = Tokeni PKCS#11 u fut ose u nxor ndërkohë që veprimi qe në rrugë e sipër.
 ssl-error-token-slot-not-found = S’u gjet dot token PKCS#11 për të bërë një veprim të nevojshëm.
-ssl-error-no-compression-overlap = S’komunikohet dot në mënyrë të sigurt me anën tjetër: pa algoritëm(e) të përbashkët për ngjeshjen.
+ssl-error-no-compression-overlap = S’komunikohet dot në mënyrë të siguruar me anën tjetër: pa algoritëm(e) të përbashkët për ngjeshjen.
 ssl-error-handshake-not-completed = S’fillohet dot një tjetër duarshtrëngim SSL përpara se të plotësohet duarshtrëngimi i tanishëm.
 ssl-error-bad-handshake-hash-value = Prej anës tjetër u morën vlera hash të pasakta për duarshtrëngimin.
 ssl-error-cert-kea-mismatch = Dëshmia e furnizuar s’mund të përdoret me algoritmin e përzgjedhur për shkëmbim kyçesh.
@@ -113,11 +112,11 @@ ssl-error-decode-error-alert = Ana tjetër s’shkodon dot mesazh duarshtrëngim
 ssl-error-decrypt-error-alert = Ana tjetër njofton dështim vërtetimi nënshkrimi ose shkëmbimi kyçesh.
 ssl-error-export-restriction-alert = Ana tjetër njofton negociatë jo në përputhje me rregullat e eksportit.
 ssl-error-protocol-version-alert = Ana tjetër njofton version të papërputhshëm ose të pambuluar për protokollin.
-ssl-error-insufficient-security-alert = Shërbyesi lyp shifrime më të sigurta se sa ato që mbulon klienti.
+ssl-error-insufficient-security-alert = Shërbyesi lyp shifrime më të siguruara se sa ato që mbulon klienti.
 ssl-error-internal-error-alert = Ana tjetër njofton se pati një gabim të brendshëm.
 ssl-error-user-canceled-alert = Përdoruesi i anës tjetër anuloi duarshtrëngimin.
 ssl-error-no-renegotiation-alert = Ana tjetër s’lejon rindërmjetësim të parametrave SSL të sigurisë.
-ssl-error-server-cache-not-configured = Fshehtinë SSL shërbyesi e paformësuar dhe jo e aktivizuar për këtë "socket".
+ssl-error-server-cache-not-configured = Fshehtinë SSL shërbyesi e paformësuar dhe jo e aktivizuar për këtë “socket”.
 ssl-error-unsupported-extension-alert = Ana tjetër SSL s’e mbulon zgjerimin TLS për "hello".
 ssl-error-certificate-unobtainable-alert = Ana tjetër SSL s’mori dot prej URL-së furnizuar dëshminë tuaj.
 ssl-error-unrecognized-name-alert = Ana tjetër SSL s’ka dëshmi për emrin DNS e kërkuar.
@@ -152,7 +151,6 @@ ssl-error-no-supported-signature-algorithm = S’pat të formësuar algoritm në
 ssl-error-unsupported-signature-algorithm = Ana tjetër përdori një ndërthurje të pambuluar algoritmesh nënshkrimi dhe hashi.
 ssl-error-missing-extended-master-secret = Ana tjetër provoi të bënte rrimarrje pa një zgjerim të saktë extended_master_secret.
 ssl-error-unexpected-extended-master-secret = Ana tjetër provoi të bënte rimarrje me një zgjerim extended_master_secret të papritur.
-
 sec-error-io = Ndodhi një gabim I/O gjatë autorizimit të sigurisë.
 sec-error-library-failure = dështim librarie sigurie.
 sec-error-bad-data = librari sigurie: u morën të dhëna të dëmtuara.
@@ -318,11 +316,10 @@ sec-error-expired-password = Fjalëkalimi ka skaduar.
 sec-error-locked-password = Fjalëkalimi është bllokuar.
 sec-error-unknown-pkcs11-error = Gabim i panjohur PKCS #11.
 sec-error-bad-crl-dp-url = URL e pavlefshme ose e pambuluar te emër pike shpërndarjesh CRL.
-sec-error-cert-signature-algorithm-disabled = Dëshmia është nënshkruar duke përdorur një algoritëm nënshkrimi që është i çaktivizuar, sepse s’është i sigurt.
-
+sec-error-cert-signature-algorithm-disabled = Dëshmia është nënshkruar duke përdorur një algoritëm nënshkrimi që është i çaktivizuar, sepse s’është i siguruar.
 mozilla-pkix-error-key-pinning-failure = Shërbyesi përdor “key pinning” (HPKP), por s’u krijua dot zinxhir dëshmish të besuara dhe që i korrespondojnë pinset-it. Shkeljet e “key pinning”-ut s’mund të anashkalohen.
 mozilla-pkix-error-ca-cert-used-as-end-entity = Shërbyesi përdor një dëshmi me një zgjerim të thjeshtë kufizimesh që e identifikon atë si autoritet dëshmish. S’do të duhej të ishte kështu, për një dëshmi të lëshuar siç duhet.
-mozilla-pkix-error-inadequate-key-size = Shërbyesi paraqiti një dëshmi me madhësi kyçi që është shumë e vogël për të vendosur një lidhje të sigurt.
+mozilla-pkix-error-inadequate-key-size = Shërbyesi paraqiti një dëshmi me madhësi kyçi që është shumë e vogël për të vendosur një lidhje të siguruar.
 mozilla-pkix-error-v1-cert-used-as-ca = Për emetimin e dëshmisë së shërbyesit u përdor një dëshmi X.509 version 1, e cila s’është spirancë besimi. Shkësillohen dëshmitë X.509 version 1 dhe s’duhet të përdoren për të nënshkruar dëshmi të tjera.
 mozilla-pkix-error-not-yet-valid-certificate = Shërbyesi paraqiti një dëshmi që s’është ende e vlefshme.
 mozilla-pkix-error-not-yet-valid-issuer-certificate = Për emetimin e dëshmisës së shërbyesit është përdorur një dëshmi që s’është ende e vlefshme.
@@ -334,16 +331,15 @@ mozilla-pkix-error-invalid-integer-encoding = Shërbyesi paraqiti një dëshmi q
 mozilla-pkix-error-empty-issuer-name = Shërbyesi paraqiti një dëshmi me emër të dalluar lëshuesi të zbrazët.
 mozilla-pkix-error-additional-policy-constraint-failed = Dështoi një kufizim shtesë rregulli teksa vlerësohej kjo dëshmi.
 mozilla-pkix-error-self-signed-cert = Dëshmia nuk besohet, ngaqë është e vetënënshkruar.
-
+mozilla-pkix-error-issuer-no-longer-trusted = Autoritetit të dëshmive që ka emetuar dëshminë s’i qe zënë besë, para se të qe emetuar dëshmia.
 xp-java-remove-principal-error = S’hoqi dot kryesorin
 xp-java-delete-privilege-error = S’fshiu dot privilegjin
 xp-java-cert-not-exists-error = Ky kryesor s’ka dëshmi
-
 xp-sec-fortezza-bad-card = Karta Fortezza s’është vënë në punë si duhet. Ju lutemi, hiqeni dhe kthejani lëshuesit.
 xp-sec-fortezza-no-card = S’u Gjetën karta Fortezza
 xp-sec-fortezza-none-selected = S’ka përzgjedhje karte Fortezza
 xp-sec-fortezza-more-info = Ju lutemi, përzgjidhni një personalitet mbi të cilin të kihen më tepër të dhëna
 xp-sec-fortezza-person-not-found = S’u gjet personalitet
-xp-sec-fortezza-no-more-info = S’ka më tepër të dhëna mbi atë Personalitet
+xp-sec-fortezza-no-more-info = S’ka tjetër informacion mbi atë Personalitet
 xp-sec-fortezza-bad-pin = Pin i Pavlefshëm
 xp-sec-fortezza-person-error = S’gatit dot personalitete Fortezza.

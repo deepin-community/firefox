@@ -28,7 +28,7 @@
 #include "mozilla/dom/PerformanceStorage.h"
 #include "mozilla/dom/PerformanceTiming.h"
 #include "mozilla/dom/ServiceWorkerDescriptor.h"
-#include "mozilla/glean/GleanMetrics.h"
+#include "mozilla/glean/NetwerkMetrics.h"
 #include "mozilla/ipc/BackgroundUtils.h"
 #include "mozilla/net/CookieJarSettings.h"
 
@@ -68,6 +68,7 @@ FetchServicePromises::GetResponseEndPromise() {
 void FetchServicePromises::ResolveResponseAvailablePromise(
     FetchServiceResponse&& aResponse, StaticString aMethodName) {
   if (mAvailablePromise) {
+    mAvailablePromiseResolved = true;
     mAvailablePromise->Resolve(std::move(aResponse), aMethodName);
   }
 }
@@ -82,6 +83,7 @@ void FetchServicePromises::RejectResponseAvailablePromise(
 void FetchServicePromises::ResolveResponseTimingPromise(
     ResponseTiming&& aTiming, StaticString aMethodName) {
   if (mTimingPromise) {
+    mTimingPromiseResolved = true;
     mTimingPromise->Resolve(std::move(aTiming), aMethodName);
   }
 }
@@ -96,6 +98,7 @@ void FetchServicePromises::RejectResponseTimingPromise(
 void FetchServicePromises::ResolveResponseEndPromise(ResponseEndArgs&& aArgs,
                                                      StaticString aMethodName) {
   if (mEndPromise) {
+    mEndPromiseResolved = true;
     mEndPromise->Resolve(std::move(aArgs), aMethodName);
   }
 }
@@ -276,7 +279,13 @@ RefPtr<FetchServicePromises> FetchService::FetchInstance::Fetch() {
     }
     mFetchDriver->SetAssociatedBrowsingContextID(
         args.mAssociatedBrowsingContextID);
-    mFetchDriver->SetIsThirdPartyWorker(Some(args.mIsThirdPartyContext));
+    mFetchDriver->SetIsThirdPartyContext(Some(args.mIsThirdPartyContext));
+    mFetchDriver->SetIsOn3PCBExceptionList(args.mIsOn3PCBExceptionList);
+  }
+
+  if (mArgsType == FetchArgsType::MainThreadFetch) {
+    auto& args = mArgs.as<MainThreadFetchArgs>();
+    mFetchDriver->SetIsThirdPartyContext(Some(args.mIsThirdPartyContext));
   }
 
   mFetchDriver->EnableNetworkInterceptControl();
@@ -297,7 +306,19 @@ RefPtr<FetchServicePromises> FetchService::FetchInstance::Fetch() {
   return mPromises;
 }
 
-void FetchService::FetchInstance::Cancel() {
+bool FetchService::FetchInstance::IsLocalHostFetch() const {
+  if (!mPrincipal) {
+    return false;
+  }
+  bool res;
+  nsresult rv = mPrincipal->GetIsLoopbackHost(&res);
+  if (NS_WARN_IF(NS_FAILED(rv))) {
+    return false;
+  }
+  return res;
+}
+
+void FetchService::FetchInstance::Cancel(bool aForceAbort) {
   MOZ_ASSERT(XRE_IsParentProcess());
   MOZ_ASSERT(NS_IsMainThread());
 
@@ -308,6 +329,34 @@ void FetchService::FetchInstance::Cancel() {
   // FetchInstance::OnResponseEnd() to resolve the pending promises.
   // Otherwise, resolving the pending promises here.
   if (mFetchDriver) {
+    // if keepalive is active and it is NOT user initiated Abort, then
+    // do not cancel the request.
+    if (mRequest->GetKeepalive() && !aForceAbort) {
+      FETCH_LOG(("Cleaning up the worker for keepalive[%p]", this));
+
+      MOZ_ASSERT(mArgs.is<WorkerFetchArgs>());
+      if (mArgs.is<WorkerFetchArgs>()) {
+        // delete the actors for cleanup for worker keep-alive requests.
+        // Non-worker keepalive requests need actors to be active until request
+        // completion, because we update request quota per load-group in
+        // FetchChild::ActorDestroy.
+        MOZ_ASSERT((mArgs.as<WorkerFetchArgs>().mFetchParentPromise));
+        if (mArgs.as<WorkerFetchArgs>().mResponseEndPromiseHolder.Exists()) {
+          FETCH_LOG(
+              ("FetchInstance::Cancel() [%p] mResponseEndPromiseHolder exists",
+               this));
+
+          mArgs.as<WorkerFetchArgs>().mResponseEndPromiseHolder.Disconnect();
+
+          // the parent promise resolution leads to deleting of actors
+          // mActorDying prevents further access to FetchParent
+          mActorDying = true;
+          mArgs.as<WorkerFetchArgs>().mFetchParentPromise->Resolve(true,
+                                                                   __func__);
+        }
+      }
+      return;
+    }
     mFetchDriver->RunAbortAlgorithm();
     return;
   }
@@ -355,26 +404,28 @@ void FetchService::FetchInstance::OnResponseEnd(
 
   MOZ_ASSERT(mPromises);
 
+  if (mArgs.is<WorkerFetchArgs>() &&
+      mArgs.as<WorkerFetchArgs>().mResponseEndPromiseHolder.Exists()) {
+    mArgs.as<WorkerFetchArgs>().mResponseEndPromiseHolder.Complete();
+  }
+
   if (aReason == eAborted) {
     // If ResponseAvailablePromise has not resolved yet, resolved with
-    // NS_ERROR_DOM_ABORT_ERR response.
-    if (!mPromises->GetResponseAvailablePromise()->IsResolved()) {
-      mPromises->ResolveResponseAvailablePromise(
-          InternalResponse::NetworkError(NS_ERROR_DOM_ABORT_ERR), __func__);
-    }
+    // NS_ERROR_DOM_ABORT_ERR response. If the promise is already resolved,
+    // this will have no effect.
+    mPromises->ResolveResponseAvailablePromise(
+        InternalResponse::NetworkError(NS_ERROR_DOM_ABORT_ERR), __func__);
 
     // If ResponseTimingPromise has not resolved yet, resolved with empty
-    // ResponseTiming.
-    if (!mPromises->GetResponseTimingPromise()->IsResolved()) {
-      mPromises->ResolveResponseTimingPromise(ResponseTiming(), __func__);
-    }
+    // ResponseTiming. If the promise is already resolved, this has no effect.
+    mPromises->ResolveResponseTimingPromise(ResponseTiming(), __func__);
     // Resolve the ResponseEndPromise
     mPromises->ResolveResponseEndPromise(ResponseEndArgs(aReason), __func__);
     return;
   }
 
-  MOZ_ASSERT(mPromises->GetResponseAvailablePromise()->IsResolved() &&
-             mPromises->GetResponseTimingPromise()->IsResolved());
+  MOZ_ASSERT(mPromises->IsResponseAvailablePromiseResolved() &&
+             mPromises->IsResponseTimingPromiseResolved());
 
   // Resolve the ResponseEndPromise
   mPromises->ResolveResponseEndPromise(ResponseEndArgs(aReason), __func__);
@@ -404,7 +455,7 @@ void FetchService::FetchInstance::OnResponseAvailableInternal(
        this, body.get()));
   MOZ_ASSERT(mRequest);
 
-  if (mArgsType != FetchArgsType::NavigationPreload) {
+  if (mArgsType != FetchArgsType::NavigationPreload && !mActorDying) {
     nsCOMPtr<nsIRunnable> r = NS_NewRunnableFunction(
         __func__,
         [response = mResponse.clonePtr(), actorID = GetActorID()]() mutable {
@@ -445,7 +496,7 @@ void FetchService::FetchInstance::OnDataAvailable() {
 
   MOZ_ASSERT(mRequest);
 
-  if (mArgsType != FetchArgsType::NavigationPreload) {
+  if (mArgsType != FetchArgsType::NavigationPreload && !mActorDying) {
     nsCOMPtr<nsIRunnable> r =
         NS_NewRunnableFunction(__func__, [actorID = GetActorID()]() {
           FETCH_LOG(("FetchInstance::OnDataAvailable, Runnable"));
@@ -462,7 +513,7 @@ void FetchService::FetchInstance::OnDataAvailable() {
 void FetchService::FetchInstance::FlushConsoleReport() {
   FETCH_LOG(("FetchInstance::FlushConsoleReport [%p]", this));
 
-  if (mArgsType != FetchArgsType::NavigationPreload) {
+  if (mArgsType != FetchArgsType::NavigationPreload && !mActorDying) {
     if (!mReporter) {
       return;
     }
@@ -487,7 +538,7 @@ void FetchService::FetchInstance::OnReportPerformanceTiming() {
   MOZ_ASSERT(mFetchDriver);
   MOZ_ASSERT(mPromises);
 
-  if (mPromises->GetResponseTimingPromise()->IsResolved()) {
+  if (mPromises->IsResponseTimingPromiseResolved()) {
     return;
   }
 
@@ -505,7 +556,7 @@ void FetchService::FetchInstance::OnReportPerformanceTiming() {
   // Force replace initiatorType for ServiceWorkerNavgationPreload.
   if (mArgsType == FetchArgsType::NavigationPreload) {
     timing.initiatorType() = u"navigation"_ns;
-  } else {
+  } else if (!mActorDying) {
     nsCOMPtr<nsIRunnable> r = NS_NewRunnableFunction(
         __func__, [actorID = GetActorID(), timing = timing]() {
           FETCH_LOG(("FetchInstance::OnReportPerformanceTiming, Runnable"));
@@ -778,12 +829,15 @@ NS_IMETHODIMP FetchService::Observe(nsISupports* aSubject, const char* aTopic,
     mOffline = false;
   } else {
     mOffline = true;
-    // Network is offline, cancel running fetchs.
-    for (auto it = mFetchInstanceTable.begin(), end = mFetchInstanceTable.end();
-         it != end; ++it) {
-      it->GetData()->Cancel();
-    }
-    mFetchInstanceTable.Clear();
+    // Network is offline, cancel the running fetch that is not to local server.
+    mFetchInstanceTable.RemoveIf([](auto& entry) {
+      bool res = entry.Data()->IsLocalHostFetch();
+      if (res) {
+        return false;
+      }
+      entry.Data()->Cancel(true);
+      return true;
+    });
   }
   return NS_OK;
 }
@@ -795,11 +849,6 @@ RefPtr<FetchServicePromises> FetchService::Fetch(FetchArgs&& aArgs) {
   FETCH_LOG(("FetchService::Fetch (%s)", aArgs.is<NavigationPreloadArgs>()
                                              ? "NavigationPreload"
                                              : "WorkerFetch"));
-  if (mOffline) {
-    FETCH_LOG(("FetchService::Fetch network offline"));
-    return NetworkErrorResponse(NS_ERROR_OFFLINE, aArgs);
-  }
-
   // Create FetchInstance
   RefPtr<FetchInstance> fetch = MakeRefPtr<FetchInstance>();
 
@@ -810,11 +859,16 @@ RefPtr<FetchServicePromises> FetchService::Fetch(FetchArgs&& aArgs) {
     return NetworkErrorResponse(rv, fetch->Args());
   }
 
+  if (mOffline && !fetch->IsLocalHostFetch()) {
+    FETCH_LOG(("FetchService::Fetch network offline"));
+    return NetworkErrorResponse(NS_ERROR_OFFLINE, fetch->Args());
+  }
+
   // Call FetchInstance::Fetch() to start an asynchronous fetching.
   RefPtr<FetchServicePromises> promises = fetch->Fetch();
   MOZ_ASSERT(promises);
 
-  if (!promises->GetResponseAvailablePromise()->IsResolved()) {
+  if (!promises->IsResponseAvailablePromiseResolved()) {
     // Insert the created FetchInstance into FetchInstanceTable.
     if (!mFetchInstanceTable.WithEntryHandle(promises, [&](auto&& entry) {
           if (entry.HasEntry()) {
@@ -833,7 +887,8 @@ RefPtr<FetchServicePromises> FetchService::Fetch(FetchArgs&& aArgs) {
   return promises;
 }
 
-void FetchService::CancelFetch(const RefPtr<FetchServicePromises>&& aPromises) {
+void FetchService::CancelFetch(const RefPtr<FetchServicePromises>&& aPromises,
+                               bool aForceAbort) {
   MOZ_ASSERT(XRE_IsParentProcess());
   MOZ_ASSERT(NS_IsMainThread());
   MOZ_ASSERT(aPromises);
@@ -843,11 +898,22 @@ void FetchService::CancelFetch(const RefPtr<FetchServicePromises>&& aPromises) {
   if (entry) {
     // Notice any modifications here before entry.Remove() probably should be
     // reflected to Observe() offline case.
-    entry.Data()->Cancel();
+    entry.Data()->Cancel(aForceAbort);
     entry.Remove();
     FETCH_LOG(
         ("FetchService::CancelFetch entry [%p] removed", aPromises.get()));
   }
+}
+
+MozPromiseRequestHolder<FetchServiceResponseEndPromise>&
+FetchService::GetResponseEndPromiseHolder(
+    const RefPtr<FetchServicePromises>& aPromises) {
+  MOZ_ASSERT(XRE_IsParentProcess());
+  MOZ_ASSERT(NS_IsMainThread());
+  MOZ_ASSERT(aPromises);
+  auto entry = mFetchInstanceTable.Lookup(aPromises);
+  MOZ_ASSERT(entry);
+  return entry.Data()->GetResponseEndPromiseHolder();
 }
 
 }  // namespace mozilla::dom

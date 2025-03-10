@@ -8,11 +8,18 @@
 newtab-page-title = Nýr flipi
 newtab-settings-button =
     .title = Sérsníða nýju flipasíðuna
+newtab-personalize-settings-icon-label =
+    .title = Sérsníða nýjan flipa
+    .aria-label = Stillingar
+newtab-settings-dialog-label =
+    .aria-label = Stillingar
 newtab-personalize-icon-label =
     .title = Sérsníða nýjan flipa
     .aria-label = Sérsníða nýjan flipa
 newtab-personalize-dialog-label =
     .aria-label = Sérsníða
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Vista í { -pocket-brand-name }
 newtab-menu-delete-pocket = Eyða úr { -pocket-brand-name }
 newtab-menu-archive-pocket = Safna í { -pocket-brand-name }
 newtab-menu-show-privacy-info = Styrktaraðilar okkar og friðhelgi þín
+newtab-menu-about-fakespot = Um { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Loka á
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Hætta að fylgjast með viðfangsefni
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -233,6 +247,8 @@ newtab-pocket-cta-button = Sækja { -pocket-brand-name }
 newtab-pocket-cta-text = Vistaðu sögurnar sem þú elskar í { -pocket-brand-name } og fáðu innblástur í huga þinn með heillandi lesningu.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } er hluti af { -brand-product-name } fjölskyldunni
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Vista
 newtab-pocket-saved = Vistað
 
@@ -244,6 +260,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Ekki fyrir mig
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Takk. Álit þitt mun hjálpa okkur að bæta streymið þitt.
 newtab-toast-thumbs-up-or-down = Takk. Álit þitt mun hjálpa okkur að bæta streymið þitt.
 newtab-toast-dismiss-button =
     .title = Afgreiða
@@ -297,6 +316,12 @@ newtab-custom-settings = Sýsla með fleiri stillingar
 
 newtab-wallpaper-title = Bakgrunnar
 newtab-wallpaper-reset = Endurstilla á sjálfgefið
+newtab-wallpaper-upload-image = Senda inn mynd
+newtab-wallpaper-custom-color = Veldu lit
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = Myndin er stærri en takmörkin á stærð skráa { $file_size }MB. Reyndu að senda inn minni skrá.
+newtab-wallpaper-error-file-type = Ekki var hægt að senda inn skrána þína. Reyndu aftur með annarri skráartegund.
 newtab-wallpaper-light-red-panda = Rauð panda
 newtab-wallpaper-light-mountain = Hvítt fjall
 newtab-wallpaper-light-sky = Himinn með fjólubláum og bleikum skýjum
@@ -309,6 +334,8 @@ newtab-wallpaper-dark-panda = Rauð panda falin í skógi
 newtab-wallpaper-dark-sky = Borgarlandslag með næturhimni
 newtab-wallpaper-dark-mountain = Fjöllótt landslag
 newtab-wallpaper-dark-city = Fjólublátt borgarlandslag
+newtab-wallpaper-dark-fox-anniversary = Refur á gangstétt nálægt skógi
+newtab-wallpaper-light-fox-anniversary = Refur í grasi með þokufullu fjallalandslagi
 
 ## Solid Colors
 
@@ -338,8 +365,12 @@ newtab-wallpaper-abstract-purple = Fjólublá form
 newtab-wallpaper-abstract-orange = Appelsínugul form
 newtab-wallpaper-gradient-orange = Litstigull appelsínugult og bleikt
 newtab-wallpaper-abstract-blue-purple = Blá og fjólublá form
+newtab-wallpaper-abstract-white-curves = Hvíttt með skyggðum línum
+newtab-wallpaper-abstract-purple-green = Fjólublár og grænn ljósleitur litstigull
+newtab-wallpaper-abstract-blue-purple-waves = Blá og fjólublá bylgjuform
+newtab-wallpaper-abstract-black-waves = Svört bylgjuform
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Ljósmyndir
 newtab-wallpaper-beach-at-sunrise = Strönd við sólarupprás
@@ -348,6 +379,12 @@ newtab-wallpaper-storm-sky = Stormský
 newtab-wallpaper-sky-with-pink-clouds = Himinn með bleikum skýjum
 newtab-wallpaper-red-panda-yawns-in-a-tree = Rauð panda geispar í tré
 newtab-wallpaper-white-mountains = Hvít fjöll
+newtab-wallpaper-hot-air-balloons = Fjölbreyttir litir á heitaloftbelgjum í dagsbirtu
+newtab-wallpaper-starry-canyon = Blá stjörnubjört nótt
+newtab-wallpaper-suspension-bridge = Ljósmynd af gráum hengibrúm í dagsbirtu
+newtab-wallpaper-sand-dunes = Hvítar sandöldur
+newtab-wallpaper-palm-trees = Skuggamynd af kókospálmatrjám við sólarlag
+newtab-wallpaper-forest-trees = Tré þakin þoku
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -363,6 +400,19 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Himneskt
+newtab-wallpaper-celestial-lunar-eclipse = Tunglmyrkvi
+newtab-wallpaper-celestial-earth-night = Næturmynd frá lágri braut um jörðu
+newtab-wallpaper-celestial-starry-sky = Stjörnubjartur himinn
+newtab-wallpaper-celestial-eclipse-time-lapse = Tímaruna tunglmyrkva
+newtab-wallpaper-celestial-black-hole = Svarthols-vetrarbrautarmynd
+newtab-wallpaper-celestial-river = Gervihnattamynd af fljóti
+
 ## New Tab Weather
 
 # Variables:
@@ -373,6 +423,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Kostað
 newtab-weather-menu-change-location = Breyta staðsetningu
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Leita að staðsetningu
+    .aria-label = Leita að staðsetningu
 newtab-weather-change-location-search-input = Leita að staðsetningu
 newtab-weather-menu-weather-display = Birting veðurs
 # Display options are:
@@ -431,3 +484,45 @@ newtab-topic-selection-button-maybe-later = Kannski seinna
 newtab-topic-selection-privacy-link = Sjáðu hvernig við verndum og stjórnum gögnum
 newtab-topic-selection-button-update-interests = Uppfærðu áhugamálin þín
 newtab-topic-selection-button-pick-interests = Veldu áhugamálin þín
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Fylgjast með
+newtab-section-following-button = Fylgist með
+newtab-section-unfollow-button = Hætta að fylgjast með
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Loka á
+newtab-section-blocked-button = Lokað á
+newtab-section-unblock-button = Opna fyrir
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = Ertu viss um að þú viljir loka á þennan hluta?
+newtab-section-confirm-block-section-p2 = Hluti sem lokað er á mun ekki lengur birtast í streyminu þínu.
+newtab-section-block-section-button = Loka á þennan hluta
+newtab-section-cancel-button = Ekki núna
+newtab-section-confirm-block-topic-p1 = Ertu viss um að þú viljir loka á þetta umfjöllunarefni?
+newtab-section-confirm-block-topic-p2 = Umfjöllunarefni sem lokað er á munu ekki lengur birtast í streyminu þínu.
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = Loka á { $topic }
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = Umfjöllunarefni
+newtab-section-manage-topics-button-v2 =
+    .label = Sýsla með umfjöllunarefni
+newtab-section-mangage-topics-followed-topics = Fylgst með
+newtab-section-mangage-topics-button =
+    .label = Efni sem fylgst er með og lokað á
+newtab-section-mangage-topics-followed-topics-subtitle = Efni sem fylgst er með
+newtab-section-mangage-topics-followed-topics-empty-state = Þú hefur ekki fylgst með neinu umfjöllunarefni ennþá.
+newtab-section-mangage-topics-blocked-topics = Lokað á
+newtab-section-mangage-topics-blocked-topics-subtitle = Umfjöllunarefni sem lokað er á
+newtab-section-mangage-topics-blocked-topics-empty-state = Þú hefur ekki lokað á neitt umfjöllunarefni ennþá.

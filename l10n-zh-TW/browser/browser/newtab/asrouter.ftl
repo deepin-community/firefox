@@ -90,7 +90,7 @@ cfr-whatsnew-release-notes-link-text = 閱讀發行公告
 #   $date (Datetime) - The date we began recording the count of blocked trackers
 cfr-doorhanger-milestone-heading2 =
     { $blockedCount ->
-       *[other] 自 { DATETIME($date, month: "long", year: "numeric") } 起，{ -brand-short-name } 已封鎖超過 <b>{ $blockedCount }</b> 組追蹤器！
+       *[other] 自 { DATETIME($date, month: "long", year: "numeric") }起，{ -brand-short-name } 已封鎖超過 <b>{ $blockedCount }</b> 組追蹤器！
     }
 cfr-doorhanger-milestone-ok-button = 檢視全部
     .accesskey = S
@@ -243,6 +243,9 @@ device-migration-fxa-spotlight-older-device-primary-button = 註冊帳號
 device-migration-fxa-spotlight-getting-new-device-header-2 = 打算要換新裝置？
 device-migration-fxa-spotlight-getting-new-device-body-2 = 只要有幾個簡單步驟，就可以將書籤、瀏覽紀錄、密碼帶到新裝置上面立即使用。
 device-migration-fxa-spotlight-getting-new-device-primary-button = 如何備份我的資料
+device-migration-fxa-spotlight-sync-header = 上網不漏拍
+device-migration-fxa-spotlight-sync-body = 將您的重要資訊（書籤、網站密碼等）加密後進行同步。這樣就可以隨時隨地透過同一套資料使用 { -brand-product-name }。
+device-migration-fxa-spotlight-sync-primary-button = 開始使用
 
 ## Set as Default PDF Reader Infobar
 
@@ -279,3 +282,61 @@ tail-fox-spotlight-title = 別讓討厭的追蹤器跟上來
 tail-fox-spotlight-subtitle = 跟令人討厭的廣告追蹤器說再見，並且有一套更快、更安全的上網體驗。
 tail-fox-spotlight-primary-button = 用 { -brand-short-name } 開啟我的鏈結
 tail-fox-spotlight-secondary-button = 現在不要
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>舊版的 { -brand-short-name } 可能會在 2025 年 1 月 14 起遇到啟動問題。</strong>
+root-certificate-succession-infobar-march-message = <strong>若要在 2025 年 3 月 14 日後繼續使用 { -brand-short-name }，請更新。</strong>
+root-certificate-succession-infobar-link = 為什麼我需要更新？
+root-certificate-succession-infobar-primary-button =
+    .label = 立即更新
+    .accesskey = U
+root-certificate-succession-infobar-secondary-button =
+    .label = 以後再更新
+    .accesskey = L
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = 您還沒有安裝 { -brand-short-name } 的重大更新
+root-certificate-windows-background-notification-subtitle = 若不更新的話，瀏覽器有部分功能將無法繼續使用。是時候更新，取得最新保護與功能了！
+root-certificate-windows-background-notification-learn-more-button = 更多資訊
+root-certificate-windows-background-notification-update-button = 更新 { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = 關閉
+    .aria-label = 關閉
+fxa-menu-message-sign-up-button = 註冊
+fxa-menu-message-sync-devices-primary-text = 同步您的所有裝置
+fxa-menu-message-sync-devices-secondary-text = 隨時隨地使用 { -brand-short-name }，均可立即獲得您的書籤與網站密碼等資訊。
+fxa-menu-message-sync-devices-collapsed-text = 同步您的所有裝置
+fxa-menu-message-backup-data-primary-text = 備份您的瀏覽器資料
+fxa-menu-message-backup-data-secondary-text = 自動在您的所有裝置上保護書籤、密碼與其他資訊。
+fxa-menu-message-backup-data-collapsed-text = 備份瀏覽器資料
+fxa-menu-message-backup-sync-primary-text = 保持資料安全與同步
+fxa-menu-message-backup-sync-secondary-text = 可透過同步功能，將您大部分的資料備份起來，這樣就可以隨時隨地在您其他裝置上的 { -brand-short-name } 使用。
+fxa-menu-message-backup-sync-collapsed-text = 同步並備份資料
+fxa-menu-message-mobile-primary-text = 傳送分頁到手機
+fxa-menu-message-mobile-secondary-text = 將分頁同步到行動裝置上後，就可以從中斷的地方立即繼續瀏覽。
+fxa-menu-message-mobile-collapsed-text = 與手機同步
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = 歡迎回來
+multi-cta-fox-doodle-set-default-checkbox = 將 { -brand-short-name } 設為預設瀏覽器
+multi-cta-fox-doodle-pin-startmenu-checkbox = 將 { -brand-short-name } 釘選到開始選單
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] 將 { -brand-short-name } 放置於 Dock
+       *[other] 將 { -brand-short-name } 釘選到工具列
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = 開始上網
+multi-cta-fox-doodle-main-browser-primary-button-label = 將 { -brand-short-name } 設為我的主要瀏覽器
+multi-cta-fox-doodle-quick-reminder-subtitle = 小提醒：您可以把最愛的隱私保護瀏覽器釘選起來，點一下即可開啟。
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] 把您最愛的隱私保護瀏覽器保留起來，點一下即可開啟。將 { -brand-short-name } 設定為您的預設瀏覽器，並放置於 Dock。
+       *[other] 把您最愛的隱私保護瀏覽器保留起來，點一下即可開啟。將 { -brand-short-name } 設定為您的預設瀏覽器，並釘選至工具列。
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = 把您最愛的隱私保護瀏覽器保留起來，點一下即可開啟。將 { -brand-short-name } 設定為您的預設瀏覽器，並釘選至工具列與開始選單。

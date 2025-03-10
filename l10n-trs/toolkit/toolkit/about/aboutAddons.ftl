@@ -219,6 +219,8 @@ shortcuts-duplicate-warning-message2 =
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Nga arajsun sa gu'nàj { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
        *[other] Digân { $numberToShow } Doj
@@ -326,6 +328,10 @@ addon-detail-update-check-label = Nana'uì' sa Nahuin nakà doj
 install-update-button = Nagi'iaj nakà
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Màn riña nej bentanâ huìi huaj
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Màn riña nej bentanâ huìi huaj
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -340,11 +346,11 @@ addon-detail-private-browsing-disallow = Si ga'nï'
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
 
-# This is the tooltip text for the recommended badge for an extension in about:addons. The
-# badge is a small icon displayed next to an extension when it is recommended on AMO.
 addon-badge-recommended2 =
     .title = { -brand-product-name } nadiganj nej ekstensiûn nikò’ si nuguàn’ ñûnj dàj duguminj nī dàj ‘iaj sunj
     .aria-label = { addon-badge-recommended2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } nadiganj nej ekstensiûn nikò’ si nuguàn’ ñûnj dàj duguminj nī dàj ‘iaj sunj
 
 ##
 
@@ -379,7 +385,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } nitaj si aran'anj ngà { -brand-short-name }{ $version }.
 # Variables:
 #   $version (string) - Application version.

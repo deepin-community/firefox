@@ -39,6 +39,7 @@ default-browser-prompt-message-pin-mac =
         [neuter] { -brand-short-name } буде надохват руке – поставите га
        *[other] програм { -brand-short-name } буде надохват руке – поставите га
     } као подразумевани прегледач и додајте на док.
+default-browser-prompt-button-primary-set = Постави као примарни прегледач
 default-browser-prompt-button-primary-pin = Постави као примарни прегледач
 default-browser-prompt-title-alt =
     Поставити { -brand-short-name.gender ->
@@ -51,3 +52,20 @@ default-browser-prompt-message-alt = Претражујте интернет б�
 default-browser-prompt-button-primary-alt = Постави као подразумевани прегледач
 default-browser-prompt-checkbox-not-again-label = Не приказуј поново
 default-browser-prompt-button-secondary = Не сада
+
+## Strings for a Windows native guidance notification when the user is forced to
+## use Windows Settings to set the default browser. Instructions differ for
+## Windows 10 and 11.
+
+default-browser-guidance-notification-title = Заврши постављање { -brand-short-name }-а као подразумеваног
+# Quoted text are keywords to look for in the Windows Settings app.
+default-browser-guidance-notification-body-instruction-win10 =
+    Корак 1: Идите на Подешавања > Подразумеване апликације
+    Корак 2: Скролујте надоле до „Веб прегледач”
+    Корак 3: Изаберите { -brand-short-name }
+# Quoted text are keywords to look for in the Windows Settings app.
+default-browser-guidance-notification-body-instruction-win11 =
+    Корак 1: Идите на Подешавања > Подразумеване апликације
+    Корак 2: Изаберите „Постави као подразумевано” за { -brand-short-name }
+default-browser-guidance-notification-info-page = Покажи ми
+default-browser-guidance-notification-dismiss = Готово

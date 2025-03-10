@@ -112,7 +112,7 @@ cfr-doorhanger-doh-secondary-button = Անջատել
 
 cfr-doorhanger-video-support-body = { -brand-short-name }-ի այս տարբերակում տեսանյութերը կարող են ճիշտ չնվագարկվել: Տեսանյութի լրիվ աջակցման համար թարմացրեք { -brand-short-name }-ը հիմա:
 cfr-doorhanger-video-support-header = Թարմացրեք { -brand-short-name }-ը՝ տեսանյութը նվագարկելու համար
-cfr-doorhanger-video-support-primary-button = Թարմացնել Հիմա
+cfr-doorhanger-video-support-primary-button = Արդիացնել
     .accesskey = U
 
 ## VPN promotion dialog for public Wi-Fi users
@@ -121,6 +121,8 @@ cfr-doorhanger-video-support-primary-button = Թարմացնել Հիմա
 ## bit of info about how to improve their privacy and then offered a button
 ## to the Mozilla VPN page and a link to dismiss the dialog.
 
+# This header text can be explicitly wrapped.
+spotlight-public-wifi-vpn-header = Կարծես թե դուք օգտագործում եք հանրային Wi-Fi
 spotlight-public-wifi-vpn-primary-button = Մնացեք գաղտնի { -mozilla-vpn-brand-name }-ի հետ
     .accesskey = S
 spotlight-public-wifi-vpn-link = Ոչ հիմա
@@ -208,6 +210,7 @@ device-migration-fxa-spotlight-older-device-header = Մտքի խաղաղությ
 device-migration-fxa-spotlight-older-device-primary-button = Ստեղծել հաշիվ
 device-migration-fxa-spotlight-getting-new-device-header-2 = Ձեր ապագայում նոր սարք:
 device-migration-fxa-spotlight-getting-new-device-primary-button = Ինչպես պահուստավորել իմ տվյալները
+device-migration-fxa-spotlight-sync-primary-button = Սկսեք
 
 ## Set as Default PDF Reader Infobar
 
@@ -238,3 +241,41 @@ launch-on-login-infobar-final-reject-button = Ոչ, շնորհակալությո
 
 tail-fox-spotlight-primary-button = Բացել իմ հղումները { -brand-short-name }-ով
 tail-fox-spotlight-secondary-button = Ոչ հիմա
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-march-message = <strong>Մինչև 2025 թ. մարտի 14-ն արդիացրեք { -brand-short-name }-ը, որպեսզի կարողանաք այն օգտագործել:</strong>
+root-certificate-succession-infobar-link = Ինչո՞ւ է պետք արդիացնել:
+root-certificate-succession-infobar-primary-button =
+    .label = Արդիացնել
+    .accesskey = U
+root-certificate-succession-infobar-secondary-button =
+    .label = Ավելի ուշ
+    .accesskey = L
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Դուք բաց եք թողել կարևոր { -brand-short-name } թարմացումը
+root-certificate-windows-background-notification-learn-more-button = Իմանալ ավելին
+root-certificate-windows-background-notification-update-button = Արդիացնել { -brand-short-name }­-ը
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Փակել
+    .aria-label = Փակել
+fxa-menu-message-sign-up-button = Գրանցվել
+fxa-menu-message-sync-devices-primary-text = Համաժամացրեք ձեր բոլոր սարքերը
+fxa-menu-message-sync-devices-collapsed-text = Համաժամացրեք ձեր բոլոր սարքերը
+fxa-menu-message-backup-data-collapsed-text = Պահուստավորել դիտարկիչի տվյալները
+fxa-menu-message-backup-sync-primary-text = Պահպանեք ձեր տվյալները ապահով և համաժամեցված
+fxa-menu-message-backup-sync-collapsed-text = Համաժամեցնել և պահուստավորել տվյալները
+fxa-menu-message-mobile-primary-text = Ուղարկեք ներդիրները ձեր հեռախոսին
+fxa-menu-message-mobile-collapsed-text = Համաժամեցեք ձեր հեռախոսի հետ
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Բարի վերադարձ
+multi-cta-fox-doodle-set-default-checkbox = Կայել { -brand-short-name }-ը որպես սկզբնադիր
+multi-cta-fox-doodle-pin-startmenu-checkbox = Ամրացրեք { -brand-short-name }-ը Մեկնարկ ցանկին
+multi-cta-fox-doodle-start-browsing-primary-button-label = Սկսել դիտարկումը

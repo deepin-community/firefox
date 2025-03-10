@@ -34,6 +34,7 @@ about-webauthn-new-pin-label = Novi PIN:
 about-webauthn-repeat-pin-label = Ponovi novi PIN:
 about-webauthn-current-pin-label = Trenutačni PIN:
 about-webauthn-pin-required-label = Upiši tvoj PIN:
+about-webauthn-confirm-deletion-label = Izbrisat ćeš:
 
 ## Buttons
 
@@ -82,7 +83,7 @@ about-webauthn-auth-info-max-msg-size = Maksimalna veličina poruke
 # AAGUID should not be translated.
 about-webauthn-auth-info-aaguid = AAGUID
 about-webauthn-auth-info-extensions = Proširenja
-about-webauthn-auth-info-versions = Inačice
+about-webauthn-auth-info-versions = Verzije
 # Shows when boolean value for an info field is True. True should not be translated.
 about-webauthn-auth-info-true = True
 # Shows when boolean value for an info field is False. False should not be translated.
@@ -91,11 +92,38 @@ about-webauthn-auth-info-null = Nije podržano
 
 ## Bio enrollment sample feedbacks
 
+# To register a new enrollment (e.g. fingerprint) usually
+# multiple scans of the same finger have to be sampled.
+# This shows how many the user still has to do.
+# Variables:
+#  $repeatCount (Number): number of tries left
+about-webauthn-samples-still-needed =
+    { $repeatCount ->
+        [one] Potreban je još { $repeatCount } uzorak.
+        [few] Potrebna su još { $repeatCount } uzorka.
+       *[other] Potrebno je još { $repeatCount } uzoraka.
+    }
+# Scan (e.g. of fingerprint) was successful.
+about-webauthn-ctap2-enroll-feedback-good = Uzorak je bio dobar.
 
 ## Scan (e.g. of fingerprint) was off-center (e.g. too high, too left, etc.).
 
+about-webauthn-ctap2-enroll-feedback-too-high = Uzorak je bio previsok.
+about-webauthn-ctap2-enroll-feedback-too-low = Uzorak je bio prenizak.
+about-webauthn-ctap2-enroll-feedback-too-left = Uzorak je bio previše lijevo.
+about-webauthn-ctap2-enroll-feedback-too-right = Uzorak je bio previše desno.
 
 ##
 
+about-webauthn-ctap2-enroll-feedback-too-fast = Uzorak je bio prebrz.
+about-webauthn-ctap2-enroll-feedback-too-slow = Uzorak je bio prespor.
+about-webauthn-ctap2-enroll-feedback-poor-quality = Uzorak je bio loše kvalitete.
+# Skewed in the sense of fingerprint/iris scan was too distorted
+about-webauthn-ctap2-enroll-feedback-too-skewed = Uzorak je bio previše ukoso.
+about-webauthn-ctap2-enroll-feedback-too-short = Uzorak je bio prekratak.
+# Scan (e.g. of fingerprint) couldn't be merged with previous samples.
+about-webauthn-ctap2-enroll-feedback-merge-failure = Neuspjelo spajanje uzorka.
+# Scan (e.g. of fingerprint) is somehow identical to an existing sample.
+about-webauthn-ctap2-enroll-feedback-exists = Uzorak već postoji.
 about-webauthn-ctap2-enroll-feedback-no-user-activity = Nema aktivnosti od korisnika.
 about-webauthn-ctap2-enroll-feedback-other = Primjer greške.

@@ -16,3 +16,10 @@ all-tabs-menu-close-duplicate-tabs =
     .label = Pecha as lapelas duplicadas
 all-tabs-menu-close-all-duplicate-tabs =
     .label = Pecha todas as lapelas duplicadas
+all-tabs-menu-synced-tabs =
+    .label = As lapelas doutros dispositivos
+all-tabs-menu-current-window-header = Ventá actual
+# "Show all" is for showing all open groups as well as saved groups. Initially,
+# we only show up to five of these groups.
+all-tabs-menu-tab-groups-show-all =
+    .label = Amosar todo

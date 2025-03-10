@@ -17,21 +17,15 @@ class CodeGeneratorMIPS : public CodeGeneratorMIPSShared {
   CodeGeneratorMIPS(MIRGenerator* gen, LIRGraph* graph, MacroAssembler* masm)
       : CodeGeneratorMIPSShared(gen, graph, masm) {}
 
-  void emitBigIntDiv(LBigIntDiv* ins, Register dividend, Register divisor,
-                     Register output, Label* fail);
-  void emitBigIntMod(LBigIntMod* ins, Register dividend, Register divisor,
-                     Register output, Label* fail);
-
   template <typename T>
   void emitWasmLoadI64(T* ins);
   template <typename T>
   void emitWasmStoreI64(T* ins);
 
-  ValueOperand ToValue(LInstruction* ins, size_t pos);
-  ValueOperand ToTempValue(LInstruction* ins, size_t pos);
-
-  // Functions for LTestVAndBranch.
-  void splitTagForTest(const ValueOperand& value, ScratchTagScope& tag);
+  void emitBigIntPtrDiv(LBigIntPtrDiv* ins, Register dividend, Register divisor,
+                        Register output);
+  void emitBigIntPtrMod(LBigIntPtrMod* ins, Register dividend, Register divisor,
+                        Register output);
 };
 
 typedef CodeGeneratorMIPS CodeGeneratorSpecific;

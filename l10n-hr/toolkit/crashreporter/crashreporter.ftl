@@ -8,7 +8,7 @@ crashreporter-plea = Da biste nam pomogli u ispravljanju problema, možete nam p
 # $details (String) - the reason that a crash report cannot be submitted
 crashreporter-error-details = Detaljji: { $details }
 crashreporter-no-run-message = Ovaj program pokreće se nakon rušenja kako bi prijavio problem programerima programa. Ne bi se smio izravno pokretati.
-crashreporter-button-details = Detalji…
+crashreporter-button-details = Detalji …
 crashreporter-loading-details = Učitavanje …
 crashreporter-view-report-title = Sadržaj izvještaja
 crashreporter-comment-prompt = Dodaj komentar (komentari su javno vidljivi)
@@ -17,7 +17,7 @@ crashreporter-submit-status = Tvoj izvještaj o prekidu programa bit će poslan 
 crashreporter-submit-in-progress = Slanje tvog izvještaja …
 crashreporter-submit-success = Izvještaj uspješno poslan!
 crashreporter-submit-failure = Došlo je do problema prilikom slanja izvještaja.
-crashreporter-resubmit-status = Ponovo slanja izvještaja koji prethodno nisu poslani…
+crashreporter-resubmit-status = Ponovno slanje izvještaja koji se prethodno nisu uspjeli poslati …
 crashreporter-button-quit = Zatvori { -brand-short-name }
 crashreporter-button-restart = Ponovo pokreni { -brand-short-name }
 crashreporter-button-ok = U redu
@@ -29,3 +29,10 @@ crashreporter-crash-identifier = ID rušenja: { $id }
 
 # $path (String) - the file path
 crashreporter-error-opening-file = Neuspjelo otvaranje datoteke ({ $path })
+# $path (String) - the file path
+crashreporter-error-loading-file = Neuspjelo učitavanje datoteke ({ $path })
+# $path (String) - the path
+crashreporter-error-creating-dir = Neuspjelo stvaranje direktorija ({ $path })
+# $from (String) - the source path
+# $to (String) - the destination path
+crashreporter-error-moving-path = Neuspjelo premještanje { $from } u { $to }

@@ -633,8 +633,11 @@ void MacroAssemblerMIPSShared::ma_load_unaligned(
   }
 
   BufferOffset load;
+  unsigned byteSize = access.byteSize();
   switch (size) {
     case SizeHalfWord:
+      // begins with 1-byte load
+      byteSize = 1;
       if (extension == ZeroExtend) {
         load = as_lbu(temp, base, hiOffset);
       } else {
@@ -662,7 +665,7 @@ void MacroAssemblerMIPSShared::ma_load_unaligned(
       MOZ_CRASH("Invalid argument for ma_load");
   }
 
-  append(access, wasm::TrapMachineInsnForLoad(Scalar::byteSize(access.type())),
+  append(access, wasm::TrapMachineInsnForLoad(byteSize),
          FaultingCodeOffset(load.getOffset()));
 }
 
@@ -876,8 +879,11 @@ void MacroAssemblerMIPSShared::ma_store_unaligned(
   }
 
   BufferOffset store;
+  unsigned byteSize = access.byteSize();
   switch (size) {
     case SizeHalfWord:
+      // begins with 1-byte store
+      byteSize = 1;
       ma_ext(temp, data, 8, 8);
       store = as_sb(temp, base, hiOffset);
       as_sb(data, base, lowOffset);
@@ -895,7 +901,7 @@ void MacroAssemblerMIPSShared::ma_store_unaligned(
     default:
       MOZ_CRASH("Invalid argument for ma_store");
   }
-  append(access, wasm::TrapMachineInsnForStore(Scalar::byteSize(access.type())),
+  append(access, wasm::TrapMachineInsnForStore(byteSize),
          FaultingCodeOffset(store.getOffset()));
 }
 
@@ -1797,8 +1803,8 @@ CodeOffset MacroAssembler::move32WithPatch(Register dest) {
   return offs;
 }
 
-void MacroAssembler::patchMove32(CodeOffset offset, int32_t n) {
-  patchSub32FromStackPtr(offset, Imm32(n));
+void MacroAssembler::patchMove32(CodeOffset offset, Imm32 n) {
+  patchSub32FromStackPtr(offset, n);
 }
 
 void MacroAssembler::pushReturnAddress() { push(ra); }
@@ -1870,45 +1876,37 @@ void MacroAssembler::wasmTruncateFloat32ToInt32(FloatRegister input,
   ma_b(ScratchRegister, Imm32(0), oolEntry, Assembler::NotEqual);
 }
 
-void MacroAssembler::oolWasmTruncateCheckF32ToI32(FloatRegister input,
-                                                  Register output,
-                                                  TruncFlags flags,
-                                                  wasm::BytecodeOffset off,
-                                                  Label* rejoin) {
+void MacroAssembler::oolWasmTruncateCheckF32ToI32(
+    FloatRegister input, Register output, TruncFlags flags,
+    const wasm::TrapSiteDesc& trapSiteDesc, Label* rejoin) {
   outOfLineWasmTruncateToInt32Check(input, output, MIRType::Float32, flags,
-                                    rejoin, off);
+                                    rejoin, trapSiteDesc);
 }
 
-void MacroAssembler::oolWasmTruncateCheckF64ToI32(FloatRegister input,
-                                                  Register output,
-                                                  TruncFlags flags,
-                                                  wasm::BytecodeOffset off,
-                                                  Label* rejoin) {
+void MacroAssembler::oolWasmTruncateCheckF64ToI32(
+    FloatRegister input, Register output, TruncFlags flags,
+    const wasm::TrapSiteDesc& trapSiteDesc, Label* rejoin) {
   outOfLineWasmTruncateToInt32Check(input, output, MIRType::Double, flags,
-                                    rejoin, off);
+                                    rejoin, trapSiteDesc);
 }
 
-void MacroAssembler::oolWasmTruncateCheckF32ToI64(FloatRegister input,
-                                                  Register64 output,
-                                                  TruncFlags flags,
-                                                  wasm::BytecodeOffset off,
-                                                  Label* rejoin) {
+void MacroAssembler::oolWasmTruncateCheckF32ToI64(
+    FloatRegister input, Register64 output, TruncFlags flags,
+    const wasm::TrapSiteDesc& trapSiteDesc, Label* rejoin) {
   outOfLineWasmTruncateToInt64Check(input, output, MIRType::Float32, flags,
-                                    rejoin, off);
+                                    rejoin, trapSiteDesc);
 }
 
-void MacroAssembler::oolWasmTruncateCheckF64ToI64(FloatRegister input,
-                                                  Register64 output,
-                                                  TruncFlags flags,
-                                                  wasm::BytecodeOffset off,
-                                                  Label* rejoin) {
+void MacroAssembler::oolWasmTruncateCheckF64ToI64(
+    FloatRegister input, Register64 output, TruncFlags flags,
+    const wasm::TrapSiteDesc& trapSiteDesc, Label* rejoin) {
   outOfLineWasmTruncateToInt64Check(input, output, MIRType::Double, flags,
-                                    rejoin, off);
+                                    rejoin, trapSiteDesc);
 }
 
 void MacroAssemblerMIPSShared::outOfLineWasmTruncateToInt32Check(
     FloatRegister input, Register output, MIRType fromType, TruncFlags flags,
-    Label* rejoin, wasm::BytecodeOffset trapOffset) {
+    Label* rejoin, const wasm::TrapSiteDesc& trapSiteDesc) {
   bool isUnsigned = flags & TRUNC_UNSIGNED;
   bool isSaturating = flags & TRUNC_SATURATING;
 
@@ -1966,14 +1964,14 @@ void MacroAssemblerMIPSShared::outOfLineWasmTruncateToInt32Check(
     asMasm().branchFloat(Assembler::DoubleUnordered, input, input, &inputIsNaN);
   }
 
-  asMasm().wasmTrap(wasm::Trap::IntegerOverflow, trapOffset);
+  asMasm().wasmTrap(wasm::Trap::IntegerOverflow, trapSiteDesc);
   asMasm().bind(&inputIsNaN);
-  asMasm().wasmTrap(wasm::Trap::InvalidConversionToInteger, trapOffset);
+  asMasm().wasmTrap(wasm::Trap::InvalidConversionToInteger, trapSiteDesc);
 }
 
 void MacroAssemblerMIPSShared::outOfLineWasmTruncateToInt64Check(
     FloatRegister input, Register64 output_, MIRType fromType, TruncFlags flags,
-    Label* rejoin, wasm::BytecodeOffset trapOffset) {
+    Label* rejoin, const wasm::TrapSiteDesc& trapSiteDesc) {
   bool isUnsigned = flags & TRUNC_UNSIGNED;
   bool isSaturating = flags & TRUNC_SATURATING;
 
@@ -2057,9 +2055,9 @@ void MacroAssemblerMIPSShared::outOfLineWasmTruncateToInt64Check(
 
 #endif
 
-  asMasm().wasmTrap(wasm::Trap::IntegerOverflow, trapOffset);
+  asMasm().wasmTrap(wasm::Trap::IntegerOverflow, trapSiteDesc);
   asMasm().bind(&inputIsNaN);
-  asMasm().wasmTrap(wasm::Trap::InvalidConversionToInteger, trapOffset);
+  asMasm().wasmTrap(wasm::Trap::InvalidConversionToInteger, trapSiteDesc);
 }
 
 void MacroAssembler::wasmLoad(const wasm::MemoryAccessDesc& access,
@@ -2142,20 +2140,22 @@ void MacroAssemblerMIPSShared::wasmLoadImpl(
   }
 
   asMasm().memoryBarrierBefore(access.sync());
-  asMasm().append(access,
-                  wasm::TrapMachineInsnForLoad(Scalar::byteSize(access.type())),
-                  FaultingCodeOffset(currentOffset()));
+  FaultingCodeOffset fco;
   if (isFloat) {
     if (byteSize == 4) {
-      asMasm().ma_ls(output.fpu(), address);
+      fco = asMasm().ma_ls(output.fpu(), address);
     } else {
-      asMasm().ma_ld(output.fpu(), address);
+      fco = asMasm().ma_ld(output.fpu(), address);
     }
   } else {
-    asMasm().ma_load(output.gpr(), address,
-                     static_cast<LoadStoreSize>(8 * byteSize),
-                     isSigned ? SignExtend : ZeroExtend);
+    fco = asMasm().ma_load(output.gpr(), address,
+                           static_cast<LoadStoreSize>(8 * byteSize),
+                           isSigned ? SignExtend : ZeroExtend);
   }
+  asMasm().append(access,
+                  wasm::TrapMachineInsnForLoad(Scalar::byteSize(access.type())),
+                  fco);
+
   asMasm().memoryBarrierAfter(access.sync());
 }
 
@@ -2195,26 +2195,57 @@ void MacroAssemblerMIPSShared::wasmStoreImpl(
 
   asMasm().memoryBarrierBefore(access.sync());
   // Only the last emitted instruction is a memory access.
-  asMasm().append(
-      access, wasm::TrapMachineInsnForStore(Scalar::byteSize(access.type())),
-      FaultingCodeOffset(currentOffset()));
+  FaultingCodeOffset fco;
   if (isFloat) {
     if (byteSize == 4) {
-      asMasm().ma_ss(value.fpu(), address);
+      fco = asMasm().ma_ss(value.fpu(), address);
     } else {
-      asMasm().ma_sd(value.fpu(), address);
+      fco = asMasm().ma_sd(value.fpu(), address);
     }
   } else {
-    asMasm().ma_store(value.gpr(), address,
-                      static_cast<LoadStoreSize>(8 * byteSize),
-                      isSigned ? SignExtend : ZeroExtend);
+    fco = asMasm().ma_store(value.gpr(), address,
+                            static_cast<LoadStoreSize>(8 * byteSize),
+                            isSigned ? SignExtend : ZeroExtend);
   }
+  asMasm().append(
+      access, wasm::TrapMachineInsnForStore(Scalar::byteSize(access.type())),
+      fco);
   asMasm().memoryBarrierAfter(access.sync());
 }
 
 void MacroAssembler::enterFakeExitFrameForWasm(Register cxreg, Register scratch,
                                                ExitFrameType type) {
   enterFakeExitFrame(cxreg, scratch, type);
+}
+
+CodeOffset MacroAssembler::sub32FromMemAndBranchIfNegativeWithPatch(
+    Address address, Label* label) {
+  ScratchRegisterScope scratch(asMasm());
+  MOZ_ASSERT(scratch != address.base);
+  ma_load(scratch, address);
+  // mips doesn't have imm subtract insn, instead we use addiu rs, rt, -imm.
+  // 128 is arbitrary, but makes `*address` count upwards, which may help
+  // to identify cases where the subsequent ::patch..() call was forgotten.
+  as_addiu(scratch, scratch, 128);
+  // Points immediately after the insn to patch
+  CodeOffset patchPoint = CodeOffset(currentOffset());
+  ma_store(scratch, address);
+  ma_b(scratch, scratch, label, Assembler::Signed);
+  return patchPoint;
+}
+
+void MacroAssembler::patchSub32FromMemAndBranchIfNegative(CodeOffset offset,
+                                                          Imm32 imm) {
+  int32_t val = imm.value;
+  // Patching it to zero would make the insn pointless
+  MOZ_RELEASE_ASSERT(val >= 1 && val <= 127);
+  InstImm* inst = (InstImm*)m_buffer.getInst(BufferOffset(offset.offset() - 4));
+  // mips doesn't have imm subtract insn, instead we use addiu rs, rt, -imm.
+  // 31     25 20 15
+  // |      |  |  |
+  // 001001 rs rt imm = addiu rs, rt, imm
+  MOZ_ASSERT(inst->extractOpcode() == ((uint32_t)op_addiu >> OpcodeShift));
+  inst->setImm16(-val & 0xffff);
 }
 
 // ========================================================================
@@ -2963,6 +2994,8 @@ void MacroAssembler::atomicEffectOpJS(Scalar::Type arrayType,
                  offsetTemp, maskTemp);
 }
 
+void MacroAssembler::atomicPause() { as_sync(); }
+
 void MacroAssembler::flexibleQuotient32(Register rhs, Register srcDest,
                                         bool isUnsigned,
                                         const LiveRegisterSet&) {
@@ -3258,35 +3291,40 @@ void MacroAssembler::roundDoubleToInt32(FloatRegister src, Register dest,
 void MacroAssembler::truncFloat32ToInt32(FloatRegister src, Register dest,
                                          Label* fail) {
   Label notZero;
+  // Perform trunc.w.s
   as_truncws(ScratchFloat32Reg, src);
+  // Bail if NaN, Infinity, or int32 overflow.
   as_cfc1(ScratchRegister, Assembler::FCSR);
-  moveFromFloat32(ScratchFloat32Reg, dest);
   ma_ext(ScratchRegister, ScratchRegister, Assembler::CauseV, 1);
+  branch32(Assembler::NotEqual, ScratchRegister, Imm32(0), fail);
 
+  moveFromFloat32(ScratchFloat32Reg, dest);
   ma_b(dest, Imm32(0), &notZero, Assembler::NotEqual, ShortJump);
   moveFromFloat32(src, ScratchRegister);
   // Check if src is in ]-1; -0] range by checking the sign bit.
   as_slt(ScratchRegister, ScratchRegister, zero);
-  bind(&notZero);
-
   branch32(Assembler::NotEqual, ScratchRegister, Imm32(0), fail);
+  bind(&notZero);
 }
 
 void MacroAssembler::truncDoubleToInt32(FloatRegister src, Register dest,
                                         Label* fail) {
   Label notZero;
+  // Perform trunc.w.d
   as_truncwd(ScratchFloat32Reg, src);
+  // Bail if NaN, Infinity, or int32 overflow.
   as_cfc1(ScratchRegister, Assembler::FCSR);
-  moveFromFloat32(ScratchFloat32Reg, dest);
   ma_ext(ScratchRegister, ScratchRegister, Assembler::CauseV, 1);
+  branch32(Assembler::NotEqual, ScratchRegister, Imm32(0), fail);
 
+  // Skip the negative zero check if nonzero
+  moveFromFloat32(ScratchFloat32Reg, dest);
   ma_b(dest, Imm32(0), &notZero, Assembler::NotEqual, ShortJump);
   moveFromDoubleHi(src, ScratchRegister);
   // Check if src is in ]-1; -0] range by checking the sign bit.
   as_slt(ScratchRegister, ScratchRegister, zero);
-  bind(&notZero);
-
   branch32(Assembler::NotEqual, ScratchRegister, Imm32(0), fail);
+  bind(&notZero);
 }
 
 void MacroAssembler::nearbyIntDouble(RoundingMode mode, FloatRegister src,

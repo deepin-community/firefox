@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Sendi al retejoj sciigon, ke vi ne volas esti spurata
+do-not-track-removal = Ni ne plu subtenas la signalon “Do Not Track”
 do-not-track-description2 =
     .label = Sendi “Ne spuru min” petojn al retejoj
     .accesskey = S
@@ -137,6 +138,7 @@ windows-launch-on-login =
     .label = Aŭtomate malfermi { -brand-short-name } kiam la komputilo ŝaltiĝas
     .accesskey = A
 windows-launch-on-login-disabled = Tiu ĉi prefero estis malaktivigita en Windows. Por ŝanĝi ĝin, vizitu <a data-l10n-name="startup-link">Aŭtomata malfermo</a> en la sistemaj agordoj.
+windows-launch-on-login-profile-disabled = Aktivigu tiun ĉi preferon per marko de “{ profile-manager-use-selected.label }” en la fenestro "Elekti profilon de uzanto".
 startup-restore-warn-on-quit =
     .label = Averti min antaŭ ol fini la retumilon.
 disable-extension =
@@ -146,6 +148,11 @@ preferences-data-migration-description = Enporti legosignojn, pasvortojn, histor
 preferences-data-migration-button =
     .label = Enporti datumojn
     .accesskey = E
+preferences-profiles-header = Profiloj
+preferences-manage-profiles-description = Ĉiu profilo havas apartigitajn retumajn datumojn kaj agordojn, kio inkluzivas historion, pasvortojn kaj pli.
+preferences-manage-profiles-learn-more = Pli da informo
+preferences-manage-profiles-button =
+    .label = Administri profilojn
 tabs-group-header = Langetoj
 ctrl-tab-recently-used-order =
     .label = Stir+Tabo rondiras inter langetoj ordigitaj laŭ ĵuseco
@@ -153,6 +160,17 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Malfermi ligilojn en langetoj anstataŭ ol en nova fenestroj
     .accesskey = l
+ask-on-close-multiple-tabs =
+    .label = Demandi antaŭ ol fermi plurajn langetojn
+    .accesskey = D
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = Demandi antaŭ ol fini per { $quitKey }
+    .accesskey = a
 confirm-on-close-multiple-tabs =
     .label = Konfirmi antaŭ fermi plurajn langetojn
     .accesskey = p
@@ -212,6 +230,16 @@ containers-remove-cancel-button = Ne forigi tiun ĉi ingon
 settings-tabs-show-image-in-preview =
     .label = Montri antaŭvidon kiam vi movas la muson super langeto
     .accessKey = a
+browser-layout-header = Aranĝo de la retumilo
+browser-layout-horizontal-tabs =
+    .label = Horizontalaj langetoj
+browser-layout-horizontal-tabs-desc = Langetoj supre
+browser-layout-vertical-tabs =
+    .label = Vertikalaj langetoj
+browser-layout-vertical-tabs-desc = Langetoj flanke, en la flanka strio
+browser-layout-show-sidebar =
+    .label = Montri flankan strion
+browser-layout-show-sidebar-desc = Rapide aliru legosignojn aŭ langetojn el via telefono, dialogantojn A.I. kaj pli sen devi eliri el la ĉefa vido.
 
 ## General Section - Language & Appearance
 
@@ -568,8 +596,7 @@ home-prefs-shortcuts-description = Retejoj konservitaj aŭ vizititaj de vi
 home-prefs-shortcuts-by-option-sponsored =
     .label = Patronitaj ŝparvojoj
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Rekomendita de { $provider }
@@ -640,6 +667,10 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Montri sugestojn de serĉiloj en la rezultoj de la adresa strio
     .accesskey = M
+# With this option enabled, on the search results page
+# the URL will be replaced by the search terms in the address bar.
+search-show-search-term-option-2 =
+    .label = Montri serĉan tekston en la adresa strio de la paĝoj de rezultoj
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -783,6 +814,9 @@ sync-currently-syncing-creditcards = kreditkartojn
 sync-currently-syncing-payment-methods = Pagmetodoj
 sync-currently-syncing-addons = aldonaĵojn
 sync-currently-syncing-settings = Agordoj
+sync-manage-options =
+    .label = Administri speguladon…
+    .accesskey = A
 sync-change-options =
     .label = Ŝanĝi…
     .accesskey = a
@@ -835,6 +869,13 @@ sync-engine-settings =
     .label = Agordoj
     .tooltiptext = Ĝeneralaj, privatecaj kaj sekurecaj agordoj ŝanĝitaj de vi
     .accesskey = v
+sync-choose-what-to-sync-dialog4 =
+    .title = Administri kio estos spegulita en ĉiuj viaj konektitaj aparatoj
+    .style = min-width: 36em;
+    .buttonlabelaccept = Konservi
+    .buttonaccesskeyaccept = K
+    .buttonlabelextra2 = Malkonekti…
+    .buttonaccesskeyextra2 = M
 
 ## The device name controls.
 
@@ -1281,17 +1322,40 @@ permissions-addon-exceptions =
 collection-header = Kolekto kaj uzo de datumojn de { -brand-short-name }
 collection-header2 = Kolekto kaj uzo de datumojn de { -brand-short-name }
     .searchkeywords = telemezuro
+preferences-collection-description = Ni strebas lasi vin decidi, kaj nur kolektas la minimumajn datumojn bezonatajn por plibonigi { -brand-product-name } por ĉiuj.
+preferences-collection-privacy-notice = Vidi rimarkon pri privateco
 collection-description = Ni penas doni al vi plurajn eblojn, kaj kolekti nur tion, kion ni bezonas por fari kaj plibonigi { -brand-short-name } por ĉiuj. Ni ĉiam petos permeson antaŭ ol ricevi personajn informojn.
 collection-privacy-notice = Rimarko pri privateco
 collection-health-report-telemetry-disabled = Vi ne plu permesas al { -vendor-short-name } kapti teĥnikajn kaj interagajn datumojn. Ĉiuj antaŭaj datumoj estos forigitaj dum la venontaj 30 tagoj.
 collection-health-report-telemetry-disabled-link = Pli da informo
+collection-usage-ping =
+    .label = Sendi ping pri taga uzo al { -vendor-short-name }
+    .accesskey = u
+collection-usage-ping-description = Tio helpas { -vendor-short-name } taksi la nombron de aktivaj uzantoj.
+collection-health-report2 =
+    .label = Sendi teknikajn kaj interagajn datumojn al { -vendor-short-name }
+    .accesskey = r
 collection-health-report =
     .label = Permesi al { -brand-short-name } sendi teĥnikajn kaj interagajn datumojn al { -vendor-short-name }
     .accesskey = P
 collection-health-report-link = Pli da informo
+collection-health-report-description = Tio helpas nin plibonigi la trajtojn, efikecon kaj stabilecon de { -brand-product-name }.
+collection-studies2 =
+    .label = Instali kaj ruli esplorojn
+collection-studies-description = Testu trajtojn kaj ideojn antaŭ ol ili estos liveritaj al ĉiuj.
 collection-studies =
     .label = Permesi al { -brand-short-name } instali kaj fari studojn
 collection-studies-link = Vidi studojn de { -brand-short-name }
+addon-recommendations2 =
+    .label = Permesi personecigitajn rekomendojn pri etendaĵoj
+addon-recommendations-description = Ricevu rekomendojn pri etendaĵoj por plibonigi vian retuman sperton.
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = La raporto de datumoj estas malŝaltita pro la agordoj de konstruo.
+collection-backlogged-crash-reports2 =
+    .label = Aŭtomate sendi raportojn pri paneoj
+    .accesskey = p
+collection-backlogged-crash-reports-description = Tio ĉi helpas { -vendor-short-name } diagnozi kaj solvi problemojn en la retumilo. Raportoj povus inkluzivi personajn aŭ delikatajn datumojn.
 addon-recommendations =
     .label = Permesi al { -brand-short-name } fari personecigitajn proponojn pri etendaĵoj
 addon-recommendations-link = Pli da informo
@@ -1359,6 +1423,8 @@ space-alert-under-5gb-message2 = <strong>Elĉerpiĝas la diska spaco por { -bran
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = HTTPS-nura reĝimo
+httpsonly-description3 = Nur permesi sekurajn konektojn al retejoj. { -brand-short-name } demandos antaŭ ol konektiĝi nesekure.
+httpsonly-learn-more2 = Kiel funkcias HTTPS-nura reĝimo
 httpsonly-description = HTTPS provizas sekuran, ĉifritan konekton inter { -brand-short-name } kaj la vizitataj retejoj. Plimulto de la retejoj subtenas HTTPS kaj, se la HTTPS-nura reĝimo estas aktiva, { -brand-short-name } movos ĉiujn konektojn al HTTPS.
 httpsonly-description2 = { -brand-short-name } kreas sekurajn kaj ĉifritajn konektojn al la retejoj, kiujn vi vizitas. Se la HTTPS-nura reĝimo estas ŝaltita { -brand-short-name } avertos vin se konekto ne estas sekura.
 httpsonly-learn-more = Pli da informo
@@ -1368,6 +1434,9 @@ httpsonly-radio-enabled2 =
     .label = Nur uzi HTTPS en ĉiuj fenestroj
 httpsonly-radio-enabled-pbm =
     .label = Aktivigi HTTPS-nuran reĝimon nur en privataj fenestroj
+httpsonly-radio-disabled3 =
+    .label = Ne aktivigi HTTPS-nuran reĝimon
+    .description = { -brand-short-name } povus tamen plisekurigi kelkajn konektojn
 httpsonly-radio-enabled-pbm2 =
     .label = Nur uzi HTTPS en privataj fenestroj
 httpsonly-radio-disabled =
@@ -1413,7 +1482,7 @@ preferences-doh-setting-enabled =
     .accesskey = P
 preferences-doh-enabled-desc = Vi decidas kiam uzi sekuran DNS kaj mem elektas la provizanton.
 preferences-doh-enabled-detailed-desc-1 = Uzi la provizanton elektita de vi
-preferences-doh-enabled-detailed-desc-2 = Nur uzi vian normal serĉilon DNS se estas problemo kun la sekura DNS
+preferences-doh-enabled-detailed-desc-2 = Nur uzi vian norman DNS serĉilon se estas problemo kun sekura DNS
 preferences-doh-setting-strict =
     .label = Plej forta protekto
     .accesskey = f
@@ -1424,7 +1493,7 @@ preferences-doh-strict-detailed-desc-3 = Se sekura DNS ne estas disponebla, rete
 preferences-doh-setting-off =
     .label = Malŝaltita
     .accesskey = M
-preferences-doh-off-desc = Uzi vian normal serĉilon DNS
+preferences-doh-off-desc = Uzi vian norman DNS serĉilon
 preferences-doh-checkbox-warn =
     .label = Averti se iu alia aktive evitas la uzon de sekura DNS
     .accesskey = A

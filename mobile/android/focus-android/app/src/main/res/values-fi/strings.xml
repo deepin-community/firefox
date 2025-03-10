@@ -84,7 +84,6 @@
     <string name="share_dialog_title">Jaa palvelulla</string>
 
     <string name="notification_erase_title_android_14">Poistetaanko selaushistoria?</string>
-    <string name="notification_erase_text_android_14" moz:RemovedIn="124" tools:ignore="UnusedResources">Napauta tai tyhjennä tämä ilmoitus tyhjentääksesi selaushistoriasi turvallisesti.</string>
 
     <!-- Text shown in the notification description that pops up to remind the user that a browsing session is active
     for Android 14+. -->
@@ -352,6 +351,11 @@
     <!-- %1$s will be replaced with the name of the app (e.g. Firefox Focus) -->
     <string name="preference_mozilla_telemetry_summary2">Mozilla pyrkii keräämään vain tietoja, jotka ovat tarpeellisia %1$sen jakelun ja kehittämisen kannalta.</string>
 
+    <!-- Preference switch for daily usage ping data collection -->
+    <string name="preference_daily_usage_ping_title">Päivittäinen käyttöilmoitus</string>
+    <string name="preference_daily_usage_ping_description">Tämä auttaa Mozillaa arvioimaan aktiivisten käyttäjien määrää.</string>
+    <string name="preference_daily_usage_ping_learn_more">Lue lisää</string>
+
     <!-- In-app link (in settings) to Focus privacy notice. -->
     <string name="preference_privacy_notice">Tietosuojakäytäntö</string>
 
@@ -360,6 +364,9 @@
 
     <!-- Link to Focus licensing information from other libraries that we use. -->
     <string name="preference_libraries_we_use">Käyttämämme kirjastot</string>
+
+    <!-- Link to Focus Crash reports list. -->
+    <string name="preference_crashes">Kaatumiset</string>
 
     <!-- Open Source Licenses page title. The first parameter is the app name -->
     <string name="open_source_licenses_title">%s | Avoimen lähdekoodin kirjastot</string>
@@ -516,10 +523,7 @@
 
 
 
-  <!-- Content description (not visible, for screen readers etc.): This is the description for the close button from the new onboarding flow screen one and two -->
-    <string name="onboarding_close_button_content_description">Sulje</string>
-
-    <!-- New Onboarding flow first screen title -->
+  <!-- New Onboarding flow first screen title -->
     <!-- %1$s will be replaced by the app name and build variant(e.g. Firefox Focus, Firefox Klar Nightly) -->
     <string name="onboarding_first_screen_title">Tervetuloa %1$siin</string>
 
@@ -840,7 +844,7 @@
     <string name="studies_learn_more">Lue lisää</string>
 
     <!-- Dialog message shown when some changes are made on studies -->
-    <string name="studies_restart_app">Tämä sovellus sulkeutuu, jotta muutokset tulevat käyttöön</string>
+    <string name="studies_restart_app" moz:removedIn="135">Tämä sovellus sulkeutuu, jotta muutokset tulevat käyttöön</string>
 
     <!-- Title of the remove studies button -->
     <string name="studies_remove">Poista</string>
@@ -928,9 +932,6 @@
 
     <!-- Label for the button in the snackbar that switches to the newly opened tab -->
     <string name="open_new_tab_snackbar">Vaihda</string>
-
-    <!-- Text displayed in a notification when the user enters full screen mode -->
-    <string name="full_screen_notification" moz:removedIn="130" tools:ignore="UnusedResources">Siirrytään koko näytön tilaan</string>
 
     <!-- Preference for switching to a new tab immediately after opening -->
     <string name="preference_open_new_tab">Siirry välilehteen heti linkin avaamisen jälkeen</string>
@@ -1121,8 +1122,10 @@
     <string name="promote_search_widget_snackbar_message">Widget lisätty aloitusnäyttöön</string>
 
     <!-- Messages explaining how to exit fullscreen mode -->
-    <!-- Message shown to explain how to exit fullscreen mode when gesture navigation is enabled -->
-    <string name="exit_fullscreen_with_gesture">Poistu koko näytöstä vetämällä ylhäältä ja käyttämällä Takaisin-elettä</string>
-    <!-- Message shown to explain how to exit fullscreen mode when using back button navigation -->
-    <string name="exit_fullscreen_with_back_button">Poistu koko näytöstä vetämällä ylhäältä ja painamalla takaisin</string>
+    <!-- Message shown to explain how to exit fullscreen mode when gesture navigation is enabled. -->
+    <!-- Localisation note: this text should be as short as possible, max 68 chars -->
+    <string name="exit_fullscreen_with_gesture_short">Vedä ylhäältä ja poistu takaisin-eleellä</string>
+    <!-- Message shown to explain how to exit fullscreen mode when using back button navigation. -->
+    <!-- Localisation note: this text should be as short as possible, max 68 chars -->
+    <string name="exit_fullscreen_with_back_button_short">Vedä ylhäältä ja paina takaisin poistuaksesi</string>
 </resources>

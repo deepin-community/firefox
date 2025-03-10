@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = 傳送「Do Not Track」訊號，告訴網站您不想被追蹤
+do-not-track-removal = 我們不再支援「Do Not Track」訊號
 do-not-track-description2 =
     .label = 告訴網站「不要追蹤我」
     .accesskey = d
@@ -98,7 +99,7 @@ extension-controlling-password-saving = <img data-l10n-name="icon"/> 此設定�
 extension-controlling-web-notifications = <img data-l10n-name="icon"/> 此設定受 <strong>{ $name }</strong> 控制。
 # This string is shown to notify the user that Container Tabs
 # are being enabled by an extension.
-extension-controlling-privacy-containers = <img data-l10n-name="icon"/><strong>{ $name }</strong> 必須開啟容器分頁功能。
+extension-controlling-privacy-containers = 必須開啟容器分頁功能才能使用 <img data-l10n-name="icon"/> <strong>{ $name }</strong>。
 # This string is shown to notify the user that their content blocking "All Detected Trackers"
 # preferences are being controlled by an extension.
 extension-controlling-websites-content-blocking-all-trackers = <img data-l10n-name="icon"/> 此設定受 <strong>{ $name }</strong> 控制。
@@ -137,6 +138,7 @@ windows-launch-on-login =
     .label = 電腦開機時自動開啟 { -brand-short-name }
     .accesskey = O
 windows-launch-on-login-disabled = 已在 Windows 停用此偏好設定。若要變更，請到系統設定中的<a data-l10n-name="startup-link">啟動應用程式</a>頁面調整設定。
+windows-launch-on-login-profile-disabled = 勾選「選擇使用者設定檔」視窗中的「{ profile-manager-use-selected.label }」開啟此設定。
 startup-restore-warn-on-quit =
     .label = 關閉瀏覽器時警告您
 disable-extension =
@@ -146,6 +148,11 @@ preferences-data-migration-description = 將書籤、密碼、瀏覽紀錄與網
 preferences-data-migration-button =
     .label = 匯入資料
     .accesskey = m
+preferences-profiles-header = 設定檔
+preferences-manage-profiles-description = 每套設定檔的上網資料與設定（包含瀏覽紀錄、網頁密碼等等）各自獨立，不互相影響。
+preferences-manage-profiles-learn-more = 更多資訊
+preferences-manage-profiles-button =
+    .label = 管理設定檔
 tabs-group-header = 分頁
 ctrl-tab-recently-used-order =
     .label = 按下 Ctrl+Tab 時，依照最近使用分頁的順序切換分頁標籤
@@ -153,6 +160,17 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = 以分頁開啟鏈結，而不使用新視窗
     .accesskey = w
+ask-on-close-multiple-tabs =
+    .label = 關閉多個分頁前先問我
+    .accesskey = m
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = 按 { $quitKey } 離開之前先問我
+    .accesskey = b
 confirm-on-close-multiple-tabs =
     .label = 關閉多個分頁前跟我確認
     .accesskey = m
@@ -200,6 +218,16 @@ containers-remove-cancel-button = 不要移除此容器
 settings-tabs-show-image-in-preview =
     .label = 當滑鼠移動到分頁標籤上時，顯示分頁預覽
     .accessKey = h
+browser-layout-header = 瀏覽器版面
+browser-layout-horizontal-tabs =
+    .label = 水平分頁標籤
+browser-layout-horizontal-tabs-desc = 於瀏覽器頂端顯示
+browser-layout-vertical-tabs =
+    .label = 垂直分頁標籤
+browser-layout-vertical-tabs-desc = 於旁邊的側邊欄顯示
+browser-layout-show-sidebar =
+    .label = 顯示側邊欄
+browser-layout-show-sidebar-desc = 不用離開主畫面就能快速開啟書籤、手機上的分頁、AI 聊天機器人等功能。
 
 ## General Section - Language & Appearance
 
@@ -397,11 +425,11 @@ update-application-title = { -brand-short-name } 更新
 update-application-description = 保持更新 { -brand-short-name }，獲得最佳效能、穩定度以及安全性。
 # Variables:
 # $version (string) - Firefox version
-update-application-version = { $version } 版 <a data-l10n-name="learn-more">有什麼新鮮事</a>
+update-application-version = { $version } 版<a data-l10n-name="learn-more">有什麼新鮮事</a>
 update-history =
     .label = 顯示更新紀錄…
     .accesskey = p
-update-application-allow-description = 讓 { -brand-short-name }:
+update-application-allow-description = 讓 { -brand-short-name }：
 update-application-auto =
     .label = 自動安裝更新（推薦）
     .accesskey = A
@@ -556,8 +584,7 @@ home-prefs-shortcuts-description = 您儲存或造訪過的網站
 home-prefs-shortcuts-by-option-sponsored =
     .label = 贊助捷徑
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = { $provider } 推薦
@@ -628,6 +655,10 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = 在網址列結果中顯示搜尋建議
     .accesskey = l
+# With this option enabled, on the search results page
+# the URL will be replaced by the search terms in the address bar.
+search-show-search-term-option-2 =
+    .label = 在結果頁的網址列顯示搜尋詞彙
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -771,6 +802,9 @@ sync-currently-syncing-creditcards = 信用卡資料
 sync-currently-syncing-payment-methods = 付款方式
 sync-currently-syncing-addons = 附加元件
 sync-currently-syncing-settings = 選項
+sync-manage-options =
+    .label = 管理同步…
+    .accesskey = M
 sync-change-options =
     .label = 修改…
     .accesskey = C
@@ -823,6 +857,13 @@ sync-engine-settings =
     .label = 選項
     .tooltiptext = 您調整過的一般、隱私權與安全性選項
     .accesskey = s
+sync-choose-what-to-sync-dialog4 =
+    .title = 管理要在您連結的裝置間同步哪些資料
+    .style = min-width: 36em;
+    .buttonlabelaccept = 儲存
+    .buttonaccesskeyaccept = S
+    .buttonlabelextra2 = 取消連線…
+    .buttonaccesskeyextra2 = D
 
 ## The device name controls.
 
@@ -1269,17 +1310,40 @@ permissions-addon-exceptions =
 collection-header = { -brand-short-name } 資料收集與使用
 collection-header2 = { -brand-short-name } 資料收集與使用
     .searchkeywords = telemetry
+preferences-collection-description = 我們盡力提供您不同選擇，也只會收集最少而必須的資料，以用於為所有人改善 { -brand-product-name }。
+preferences-collection-privacy-notice = 檢視隱私權公告
 collection-description = 我們致力於提供您選擇，也只會收集我們在提供與改善 { -brand-short-name } 時所必需的資料。我們也一定會經過您的同意才收集您的個人資訊。
 collection-privacy-notice = 隱私權公告
 collection-health-report-telemetry-disabled = 將不再允許 { -vendor-short-name } 捕捉技術與互動資料，之前收集的資料將於 30 天內刪除。
 collection-health-report-telemetry-disabled-link = 了解更多
+collection-usage-ping =
+    .label = 傳送每日使用情況回報給 { -vendor-short-name }
+    .accesskey = u
+collection-usage-ping-description = 此資訊可幫助 { -vendor-short-name } 估算活躍使用者數。
+collection-health-report2 =
+    .label = 傳送技術與互動資料給 { -vendor-short-name }
+    .accesskey = r
 collection-health-report =
     .label = 允許 { -brand-short-name } 傳送技術與互動資料給 { -vendor-short-name }
     .accesskey = r
 collection-health-report-link = 更多資訊
+collection-health-report-description = 此資料可幫助我們改進 { -brand-product-name } 產品功能、效能與穩定度。
+collection-studies2 =
+    .label = 安裝並進行使用者研究
+collection-studies-description = 在功能推出給所有人之前，搶先試用新功能與點子。
 collection-studies =
     .label = 允許 { -brand-short-name } 安裝並進行研究
 collection-studies-link = 檢視 { -brand-short-name } 所進行的研究
+addon-recommendations2 =
+    .label = 允許個人化推薦的擴充套件
+addon-recommendations-description = 依照您的使用方式推薦擴充套件，改進您的上網體驗。
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = 進行編譯設定時，已停用了資料回報功能。
+collection-backlogged-crash-reports2 =
+    .label = 自動傳送錯誤報告
+    .accesskey = c
+collection-backlogged-crash-reports-description = 此資料可幫助 { -vendor-short-name } 找出瀏覽器的問題並進行修正。報告內容可能會包含私人或敏感資料。
 addon-recommendations =
     .label = 允許 { -brand-short-name } 提供個人化的擴充套件推薦項目
 addon-recommendations-link = 了解更多
@@ -1347,8 +1411,10 @@ space-alert-under-5gb-message2 = <strong>{ -brand-short-name } 的磁碟空間�
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = 純 HTTPS 模式
+httpsonly-description3 = 僅允許對網站使用安全連線。{ -brand-short-name } 會在進行不安全連線前先詢問。
+httpsonly-learn-more2 = 純 HTTPS 模式的運作原理是什麼？
 httpsonly-description = HTTPS 讓您與要造訪的網站間，能夠有安全而加密過的連線。大部分的網站都支援 HTTPS，開啟純 HTTPS 模式後，{ -brand-short-name } 就會將所有的連線都升級為 HTTPS 連線。
-httpsonly-description2 = { -brand-short-name } 會與您造訪的網站建立安全、加密過的連線。開啟 HTTPS-Only 後，若遇到不安全的連線，{ -brand-short-name } 會警告您。
+httpsonly-description2 = { -brand-short-name } 會以安全、加密過的方式連線到您要造訪的網站。開啟純 HTTPS 模式後，若遇到不安全連線，{ -brand-short-name } 會警告您。
 httpsonly-learn-more = 了解更多
 httpsonly-radio-enabled =
     .label = 在所有視窗都開啟純 HTTPS 模式
@@ -1356,6 +1422,9 @@ httpsonly-radio-enabled2 =
     .label = 在所有視窗都只使用 HTTPS 連線
 httpsonly-radio-enabled-pbm =
     .label = 僅在隱私瀏覽視窗開啟純 HTTPS 模式
+httpsonly-radio-disabled3 =
+    .label = 不要開啟純 HTTPS 模式
+    .description = { -brand-short-name } 可能還是會將某些連線升級為 HTTPS 連線
 httpsonly-radio-enabled-pbm2 =
     .label = 在隱私視窗僅使用 HTTPS 連線
 httpsonly-radio-disabled =
@@ -1426,4 +1495,4 @@ preferences-doh-manage-exceptions =
 
 desktop-folder-name = 桌面
 downloads-folder-name = 下載
-choose-download-folder-title = 選取下載目錄:
+choose-download-folder-title = 選取下載目錄：

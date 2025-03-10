@@ -75,20 +75,6 @@ void LIRGeneratorMIPS64::lowerUModI64(MMod* mod) {
   defineInt64(lir, mod);
 }
 
-void LIRGeneratorMIPS64::lowerBigIntDiv(MBigIntDiv* ins) {
-  auto* lir = new (alloc()) LBigIntDiv(useRegister(ins->lhs()),
-                                       useRegister(ins->rhs()), temp(), temp());
-  define(lir, ins);
-  assignSafepoint(lir, ins);
-}
-
-void LIRGeneratorMIPS64::lowerBigIntMod(MBigIntMod* ins) {
-  auto* lir = new (alloc()) LBigIntMod(useRegister(ins->lhs()),
-                                       useRegister(ins->rhs()), temp(), temp());
-  define(lir, ins);
-  assignSafepoint(lir, ins);
-}
-
 void LIRGeneratorMIPS64::lowerAtomicLoad64(MLoadUnboxedScalar* ins) {
   const LUse elements = useRegister(ins->elements());
   const LAllocation index =
@@ -129,10 +115,10 @@ void LIRGenerator::visitUnbox(MUnbox* unbox) {
   MDefinition* box = unbox->getOperand(0);
   MOZ_ASSERT(box->type() == MIRType::Value);
 
-  LUnbox* lir;
+  LInstructionHelper<1, BOX_PIECES, 0>* lir;
   if (IsFloatingPointType(unbox->type())) {
-    lir = new (alloc())
-        LUnboxFloatingPoint(useRegisterAtStart(box), unbox->type());
+    MOZ_ASSERT(unbox->type() == MIRType::Double);
+    lir = new (alloc()) LUnboxFloatingPoint(useBoxAtStart(box));
   } else if (unbox->fallible()) {
     // If the unbox is fallible, load the Value in a register first to
     // avoid multiple loads.

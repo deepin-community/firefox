@@ -187,6 +187,18 @@ shopping-survey-terms-link = Conditions d’utilisation
 shopping-survey-thanks =
     .heading = Merci de votre retour !
 
+## Shopping opted-out survey strings
+## Opt-out survey options are displayed as checkboxes and the user can select one or many.
+
+shopping-survey-opted-out-multiselect-label = Indiquez-nous pourquoi vous avez désactivé le vérificateur d’avis. Sélectionnez plusieurs raisons au besoin.
+shopping-survey-thanks-title = Merci de votre retour !
+shopping-survey-opted-out-hard-to-understand = Il est difficile à comprendre
+shopping-survey-opted-out-too-slow = Il est trop lent
+shopping-survey-opted-out-not-accurate = Il n’est pas précis
+shopping-survey-opted-out-not-helpful = Il ne m’est pas utile
+shopping-survey-opted-out-check-myself = Je préfère vérifier les avis moi-même
+shopping-survey-opted-out-other = Autre
+
 ## Shopping Feature Callout strings.
 ## "price tag" refers to the price tag icon displayed in the address bar to
 ## access the feature.

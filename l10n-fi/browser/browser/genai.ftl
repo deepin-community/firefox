@@ -43,6 +43,10 @@ genai-prompts-quiz =
 genai-prompts-explain =
     .label = Selitä tämä
     .value = Selitä tämän valinnan keskeisimmät käsitteet käyttäen yksinkertaisia sanoja. Käytä myös esimerkkejä.
+# Prompt purpose: writing tool that helps users with spelling and grammar mistakes and produce a response that identifies errors and rewrites the inputted text correctly
+genai-prompts-proofread =
+    .label = Oikolue
+    .value = Oikolue valittu teksti kirjoitus- ja kielioppivirheiden varalta. Tunnista kaikki mahdolliset virheet ja tarjoa korjattu versio tekstistä. Säilytä tarkoitus ja faktuaalinen tarkkuus, ja tulosta ensin lista ehdotetuista korjauksista, jonka jälkeen tulosta viimeistelty, korjattu versio tekstistä.
 # This prompt is added to the beginning of selection prompts sent to a chatbot.
 # $tabTitle (string) - title of the webpage
 # $selection (string) - selected text
@@ -55,8 +59,107 @@ genai-menu-ask-generic =
 # $provider (string) - name of the provider
 genai-menu-ask-provider =
     .label = Kysy palvelulta { $provider }
+genai-menu-remove-generic =
+    .label = Poista AI-chatbotti
+# $provider (string) - name of the provider
+genai-menu-remove-provider =
+    .label = Poista { $provider }
 genai-input-ask-generic =
     .placeholder = Kysy AI-chatbotilta…
 # $provider (string) - name of the provider
 genai-input-ask-provider =
     .placeholder = Kysy { $provider }…
+# $selectionLength (number) - selected text length
+# $maxLength (number) - max length of what can be selected
+genai-shortcuts-selected-warning-generic =
+    .heading = AI-chatbotti ei saa koko valintaasi
+    .message =
+        { $selectionLength ->
+           *[other] You’ve selected about { $selectionLength } characters. The number of characters we can send to the AI chatbot is about { $maxLength }.
+        }
+# $provider (string) - name of the provider
+# $selectionLength (number) - selected text length
+# $maxLength (number) - max length of what can be selected
+genai-shortcuts-selected-warning =
+    .heading = { $provider } ei saa koko valintaasi
+    .message =
+        { $selectionLength ->
+           *[other] You’ve selected about { $selectionLength } characters. The number of characters we can send to { $provider } is about { $maxLength }.
+        }
+genai-shortcuts-hide =
+    .label = Piilota chatbotin oikotie
+
+## Chatbot header
+
+genai-chatbot-title = AI-chatbotti
+genai-header-provider-menu =
+    .title = Valitse chatbotti
+genai-header-options-button =
+    .title = Avaa valikko
+genai-header-close-button =
+    .title = Sulje
+genai-provider-view-details =
+    .label = Näytä chatbotin tiedot
+genai-provider-about-chatbots =
+    .label = Tietoja näistä chatboteista
+genai-options-reload-generic =
+    .label = Lataa AI-chatbotti uudelleen
+# $provider (string) - name of the provider
+genai-options-reload-provider =
+    .label = Lataa uudelleen { $provider }
+genai-options-show-shortcut =
+    .label = Näytä oikotie tekstiä valittaessa
+genai-options-hide-shortcut =
+    .label = Piilota oikotie tekstiä valittaessa
+genai-options-about-chatbot =
+    .label = Tietoja { -brand-short-name }in AI-chatboteista
+
+## Chatbot onboarding
+
+genai-onboarding-header = Tee yhteenveto, harjoita aivoriiheilyä ja muuta selaamisen aikana
+# "Switch anytime" refers to allowing the user to switch to a different chatbot.
+genai-onboarding-description = Valitse käytettävä AI-chatbotti { -brand-short-name }in sivupalkista. Näytämme kunkin chatbotin tiedot, kun valitset sen. Vaihda milloin tahansa. <a data-l10n-name="learn-more">Lisätietoja</a>
+genai-onboarding-primary = Jatka
+genai-onboarding-secondary = Sulje
+genai-onboarding-claude-tooltip =
+    .title = Anthropic Claude
+genai-onboarding-claude-learn = Lue lisää Claudesta
+genai-onboarding-chatgpt-tooltip =
+    .title = ChatGPT
+genai-onboarding-chatgpt-learn = Lue lisää ChatGPT:stä
+genai-onboarding-copilot-tooltip =
+    .title = Copilot
+genai-onboarding-copilot-learn = Lue lisää Copilotista
+genai-onboarding-gemini-tooltip =
+    .title = Google Gemini
+genai-onboarding-gemini-learn = Lue lisää Geministä
+genai-onboarding-huggingchat-tooltip =
+    .title = HuggingChat
+genai-onboarding-huggingchat-learn = Lue lisää HuggingChatista
+genai-onboarding-lechat-tooltip =
+    .title = Le Chat Mistral
+genai-onboarding-lechat-learn = Lue lisää Le Chatista
+genai-onboarding-select-header = Valitse teksti nähdäksesi ehdotukset
+genai-onboarding-select-description = Kun valitset tekstiä, ehdotamme kehotteita, jotka voit lähettää chatbotille. Voit myös kirjoittaa omia kehotteita.
+genai-onboarding-select-primary = Aloita keskustelu
+
+## Chatbot onboarding choices
+## These describe features/capabilities of chatbot providers. These are not buttons/actions.
+
+genai-onboarding-claude-generate = Luo tekstiä ja koodia
+genai-onboarding-claude-analyze = Analysoi asiakirjoja ja kuvia
+genai-onboarding-claude-price = Ilmainen ja maksullinen vaihtoehto; tili vaaditaan
+genai-onboarding-chatgpt-generate = Luo tekstiä, kuvia ja koodia
+genai-onboarding-chatgpt-analyze = Analysoi asiakirjoja ja kuvia
+genai-onboarding-chatgpt-price = Ilmaiset ja maksulliset vaihtoehdot; tili vaaditaan joissakin maissa ja tehtävissä
+genai-onboarding-copilot-generate = Luo tekstiä, kuvia ja koodia
+genai-onboarding-copilot-analyze = Analysoi kuvia
+genai-onboarding-copilot-price = Ilmainen ja maksullinen vaihtoehto; tili vaaditaan joihinkin tehtäviin
+genai-onboarding-gemini-generate = Luo tekstiä, kuvia ja koodia
+genai-onboarding-gemini-analyze = Analysoi kuvia (ilmainen) ja asiakirjoja (maksullinen)
+genai-onboarding-gemini-price = Ilmainen ja maksullinen vaihtoehto; tili vaaditaan
+genai-onboarding-huggingchat-generate = Luo tekstiä ja koodia
+genai-onboarding-huggingchat-switch = Vaihda useiden avointen mallien välillä
+genai-onboarding-huggingchat-price-2 = Ilmainen; tili vaaditaan tietyn pyyntömäärän jälkeen
+genai-onboarding-lechat-generate = Luo tekstiä ja koodia
+genai-onboarding-lechat-price = Ilmainen; tili vaaditaan

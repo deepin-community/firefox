@@ -16,6 +16,11 @@ about-glean-interface-description =
     je zběrka datow, kotraž so w projektach { -vendor-short-name } wužiwa.
     Tutón powjerch je so wuwił, zo by so wot wuwiwarjow a testowarjow wužiwał, zo bychu manuelnje
     <a data-l10n-name="fog-link">instrumentaciju testowali</a>.
+about-glean-category-about-glean = Wo { -glean-brand-name }
+about-glean-category-manual-testing = Manuelne testowanje
+about-glean-category-adhoc-testing = Testowanje ad hoc
+about-glean-category-profiler = Wukonowu analyzu wužiwać
+about-glean-category-about-data = Wo datach
 about-glean-upload-enabled = Nahraće datow je zmóžnjene.
 about-glean-upload-disabled = Nahraće datow je znjemóžnjene.
 about-glean-upload-enabled-local = Nahraće datow je jenož za słanje na lokalny serwer zmóžnjene.
@@ -43,6 +48,9 @@ about-glean-glean-android = <code>MOZ_GLEAN_ANDROID</code>: { $glean-android-def
 #   $moz-official-define-value (Boolean): the value of the MOZILLA_OFFICIAL define.
 # Do not translate strings between <code> </code> tags.
 about-glean-moz-official = <code>MOZILLA_OFFICIAL</code>: { $moz-official-define-value }
+about-glean-additional-links =
+    Za wujasnjenje rozdźělnych móžnosćow daty natočić a namakać, hlejće
+    rajtark <strong>Wo datach</strong>.
 about-glean-about-testing-header = Wo testowanju
 # This message is followed by a numbered list.
 about-glean-manual-testing =
@@ -100,8 +108,38 @@ about-glean-adhoc-note =
     Prošu dźiwajće na to, zo API Glean JS z pomocu konsole wuwiwarskich nastrojow wužiwać.
     To rěka, zo so metriska kategorija a metriske mjeno w
     <code>camelCase</code> formatěrujetej, na rozdźěl wot API Rust a C++.
+about-glean-profiler-explanation =
+    Zo byšće dospołny napohlad wšěch natočenych metrikow widźał, móžeće { -profiler-brand-name } wužiwać.
+    Dyrbiće najprjedy <a data-l10n-name="firefox-profiler-link">wukonowy profil registrować</a>.
+    Hdyž profil registrujeće, wubjerće <q>markowy diagram</q> a hladajće na marki pod <q>Telemetrija</q>.
+about-glean-profiler-explanation-profiler =
+    We wukonowym profilu móžeće wšě zhromadźene metriki widźeć, hdy su so
+    zhromadźili a eksaktnje, kotre hódnoty su so zhromadźili. Hdyž z kursorom myški nad jednotliwymi markami wostawaće, móžeće přepruwować, hač korektna hódnota je so zhromadźiła a hač je so wuběr w prawym času stał.
 controls-button-label-verbose = Nastajenja nałožić a ping wotpósłać
+about-glean-feedback-settings-only =
+    .message = Nastajenja nałožene!
+about-glean-feedback-settings-and-ping =
+    .message = Nastajenja su so nałožili a ping je so pósłał!
 about-glean-about-data-header = Wo datach
+about-glean-about-data-description =
+    Su někotre rozdźělne nastroje, kotrež móžeće wužiwać, zo byšće sej swoje daty wobhladał, wotwisujo wot toho,
+    štož pytaće.
+about-glean-about-data-description-list-intro =
+    Poćahujće so prošu na slědowacu lisćinu za wěste
+    nałožowanske pady za kóždy nastroj:
+about-glean-about-data-list-item-dictionary =
+    Zo byšće lisćinu datow přepytał, kotrež je { -glean-brand-name } za kóžde nałoženje zhromadźił, skonsultujće
+    <a data-l10n-name="glean-dictionary-link">{ -glean-brand-name } Słownik</a>.
+about-glean-about-data-list-item-about-telemetry =
+    Zo byšće daty přepytał, kotrež su so přez staršu telemetriju zhromadźili, skonsultujće prošu
+    <a data-l10n-name="about-telemetry-link">about:telemetry</a>.
+about-glean-about-data-list-item-debug-ping-viewer =
+    Zo byšće znački pytanja zmylkow přepytał, podawkowe prudźenje live widźeć abo so metriske
+    wizualizacije wobhlada, konsultujće
+    <a data-l10n-name="glean-debug-ping-viewer"> { glean-debug-ping-viewer-brand-name }</a>
+about-glean-about-data-list-item-firefox-profiler =
+    Zo byšće wukonowy profil registrował a wšě natočene metriki widźał, wužiwajće prošu
+    <a data-l10n-name="about-glean-firefox-profiler">{ -profiler-brand-name }</a>.
 about-glean-about-data-explanation =
     Zo byšće lisćinu zhromadźenych datow přepytał, skonsultujće
     <a data-l10n-name="glean-dictionary-link">{ -glean-brand-name } Słownik</a>.

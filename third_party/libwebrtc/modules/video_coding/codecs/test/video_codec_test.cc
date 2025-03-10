@@ -53,16 +53,16 @@ ABSL_FLAG(std::string,
           "Decoder: dav1d, libvpx-vp9, libvpx-vp8, ffmpeg-h264, hw-vp8, "
           "hw-vp9, hw-av1, hw-h264, hw-h265");
 ABSL_FLAG(std::string, scalability_mode, "L1T1", "Scalability mode.");
-ABSL_FLAG(absl::optional<int>, width, absl::nullopt, "Encode width.");
-ABSL_FLAG(absl::optional<int>, height, absl::nullopt, "Encode height.");
+ABSL_FLAG(std::optional<int>, width, std::nullopt, "Encode width.");
+ABSL_FLAG(std::optional<int>, height, std::nullopt, "Encode height.");
 ABSL_FLAG(std::vector<std::string>,
           bitrate_kbps,
           {"1024"},
           "Encode target bitrate per layer (l0t0,l0t1,...l1t0,l1t1 and so on) "
           "in kbps.");
-ABSL_FLAG(absl::optional<double>,
+ABSL_FLAG(std::optional<double>,
           framerate_fps,
-          absl::nullopt,
+          std::nullopt,
           "Encode target frame rate of the top temporal layer in fps.");
 ABSL_FLAG(bool, screencast, false, "Enable screen encoding mode.");
 ABSL_FLAG(bool, frame_drop, true, "Enable frame dropping.");
@@ -193,7 +193,7 @@ std::unique_ptr<VideoCodecStats> RunEncodeDecodeTest(
       CreateEncoderFactory(encoder_impl);
   if (!encoder_factory
            ->QueryCodecSupport(sdp_video_format,
-                               /*scalability_mode=*/absl::nullopt)
+                               /*scalability_mode=*/std::nullopt)
            .is_supported) {
     RTC_LOG(LS_WARNING) << "No " << encoder_impl << " encoder for video format "
                         << sdp_video_format.ToString();
@@ -262,7 +262,7 @@ std::unique_ptr<VideoCodecStats> RunEncodeTest(
       CreateEncoderFactory(encoder_impl);
   if (!encoder_factory
            ->QueryCodecSupport(sdp_video_format,
-                               /*scalability_mode=*/absl::nullopt)
+                               /*scalability_mode=*/std::nullopt)
            .is_supported) {
     RTC_LOG(LS_WARNING) << "No encoder for video format "
                         << sdp_video_format.ToString();
@@ -582,7 +582,8 @@ TEST(VideoCodecTest, DISABLED_EncodeDecode) {
   uint32_t timestamp_rtp = 90000;
   std::map<uint32_t, EncodingSettings> frame_settings;
   for (int frame_num = 0; frame_num < num_frames; ++frame_num) {
-    encoding_settings.keyframe = (frame_num % (key_interval + 1) == 0);
+    encoding_settings.keyframe =
+        (key_interval > 0 && (frame_num % key_interval) == 0);
     frame_settings.emplace(timestamp_rtp, encoding_settings);
     timestamp_rtp += k90kHz / framerate;
   }

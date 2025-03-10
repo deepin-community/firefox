@@ -21,6 +21,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = అమరికలలో వెతకండి
 managed-notice = మీ విహారిణి మీ సంస్థ ద్వారా నిర్వహించబడుతోంది.
+managed-notice-info-icon =
+    .alt = సమాచారం
 category-list =
     .aria-label = వర్గాలు
 pane-general-title = సాధారణం
@@ -91,6 +93,9 @@ is-not-default = { -brand-short-name } ప్రస్తుతం మీ అప
 set-as-my-default-browser =
     .label = అప్రమేయం చేయి…
     .accesskey = D
+startup-restore-windows-and-tabs =
+    .label = మునుపటి కిటికీలను, ట్యాబులను తెరువు
+    .accesskey = s
 startup-restore-warn-on-quit =
     .label = విహారిణిని మూసివేస్తున్నప్పుడు నన్ను హెచ్చరించు
 disable-extension =
@@ -102,6 +107,9 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = లంకెలను కొత్త విండోలలో కాక ట్యాబులలో తెరువు
     .accesskey = w
+ask-on-close-multiple-tabs =
+    .label = పలు ట్యాబులను ఒకేసారి మూసివేస్తున్నప్పుడు అడుగు
+    .accesskey = m
 warn-on-open-many-tabs =
     .label = ఎక్కువ ట్యాబులను తెరిచినప్పుడు { -brand-short-name }‌ నెమ్మదిస్తూంటే నన్ను హెచ్చరించు
     .accesskey = d
@@ -139,7 +147,7 @@ containers-disable-alert-ok-button =
 containers-disable-alert-cancel-button = చేతనంగా ఉంచు
 containers-remove-alert-title = ఈ కంటెయినరును తీసీవేయాలా?
 # Variables:
-#   $count (Number) - Number of tabs that will be closed.
+#   $count (number) - Number of tabs that will be closed.
 containers-remove-alert-msg =
     { $count ->
         [one] మీరు ఇప్పుడు ఈ కంటైనర్ని తీసివేస్తే, { $count } కంటైనర్ టాబు మూసివేయబడుతుంది. మీరు ఈ కంటైనర్ తొలగించాలని నిశ్చయించుకున్నారా?
@@ -151,7 +159,7 @@ containers-remove-cancel-button = ఈ కంటెయినరును తొ�
 ## General Section - Language & Appearance
 
 language-and-appearance-header = భాష, రూపురేఖలు
-preferences-web-appearance-choice-light = వెలుతురు
+preferences-web-appearance-choice-light = లేత
 preferences-web-appearance-choice-dark = చీకటి
 preferences-colors-header = రంగులు
 default-font = అప్రమేయ ఫాంటు
@@ -161,6 +169,8 @@ default-font-size = పరిమాణం
 advanced-fonts =
     .label = ఉన్నతం…
     .accesskey = A
+# Variables:
+#   $percentage (number) - Zoom percentage value
 preferences-default-zoom-value =
     .label = { $percentage }%
 preferences-zoom-text-only =
@@ -246,15 +256,15 @@ applications-manage-app =
 applications-always-ask =
     .label = ఎల్లప్పుడు అడుగు
 # Variables:
-#   $type-description (String) - Description of the type (e.g "Portable Document Format")
-#   $type (String) - the MIME type (e.g application/binary)
+#   $type-description (string) - Description of the type (e.g "Portable Document Format")
+#   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 # Variables:
-#   $extension (String) - file extension (e.g .TXT)
-#   $type (String) - the MIME type (e.g application/binary)
+#   $extension (string) - File extension (e.g .TXT)
+#   $type (string) - The MIME type (e.g application/binary)
 applications-file-ending-with-type = { applications-file-ending } ({ $type })
 # Variables:
-#   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
+#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = { $plugin-name } వాడు ({ -brand-short-name }లో)
 applications-open-inapp =
@@ -290,6 +300,8 @@ play-drm-content =
 play-drm-content-learn-more = ఇంకా తెలుసుకోండి
 update-application-title = { -brand-short-name } తాజాకరణలు
 update-application-description = ఉత్తమ పనితీరు, స్థిరత్వం, భద్రతల కొరకు { -brand-short-name } తాజాగా ఉంచుకోండి.
+# Variables:
+# $version (string) - Firefox version
 update-application-version = సంచిక { $version } <a data-l10n-name="learn-more">కొత్తవి ఏమిటి</a>
 update-history =
     .label = తాజాకరణ చరిత్రను చూపించు…
@@ -329,7 +341,7 @@ performance-limit-content-process-option = కంటెంట్ ప్రాస
     .accesskey = L
 performance-limit-content-process-enabled-desc = బహుళ ట్యాబ్లను ఉపయోగిస్తున్నప్పుడు అదనపు కంటెంట్ ప్రాసెస్లు పనితీరును మెరుగుపరుస్తాయి, అయితే మరింత మెమరీని కూడా ఉపయోగిస్తాయి.
 # Variables:
-#   $num - default value of the `dom.ipc.processCount` pref.
+#   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (అప్రమేయం)
 
@@ -404,8 +416,7 @@ choose-bookmark =
 home-prefs-search-header =
     .label = జాల వెతుకులాట
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = { $provider }చే సిఫార్సు చేయబడినది
@@ -431,6 +442,8 @@ home-prefs-recent-activity-header =
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = సంగతులు
+# Variables:
+#   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
     .label =
         { $num ->
@@ -482,7 +495,7 @@ search-find-more-link = మరిన్ని శోధన యంత్రాల
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = నకిలీ కీ పదము
 # Variables:
-#   $name (String) - Name of a search engine.
+#   $name (string) - Name of a search engine.
 search-keyword-warning-engine = మీరు ఎంచుకున్న కీపదము ప్రస్తుతం  "{ $name }" చేత ఉపయోగించబడుతోంది. దయచేసి వేరొక దానిని ఎంచుకొనము.
 search-keyword-warning-bookmark = మీరు ఎంచుకున్న కీపదము ప్రస్తుతం ఒక ఇష్టాంశముచేత ఉపయోగించబడుతోంది.దయచేసి వేరొక దానిని ఎంచుకొనుము.
 
@@ -563,6 +576,7 @@ sync-currently-syncing-tabs = తెరిచివున్న ట్యాబ�
 sync-currently-syncing-logins-passwords = ప్రవేశాలు, సంకేతపదాలు
 sync-currently-syncing-addresses = చిరునామాలు
 sync-currently-syncing-creditcards = క్రెడిట్ కార్డులు
+sync-currently-syncing-payment-methods = చెల్లింపు పద్ధతులు
 sync-currently-syncing-addons = పొడిగింతలు
 sync-currently-syncing-settings = అమరికలు
 sync-change-options =
@@ -593,6 +607,10 @@ sync-engine-creditcards =
     .label = క్రెడిట్ కార్డులు
     .tooltiptext = పేర్లూ, నెంబర్లూ, కాల పరిమితి తేదీలు (డెస్క్‌టాపులో మాత్రమే)
     .accesskey = C
+sync-engine-payment-methods2 =
+    .label = చెల్లింపు పద్ధతులు
+    .tooltiptext = పేర్లు, కార్డు నెంబర్లు, కాలంచెల్లు తేదీలు
+    .accesskey = n
 sync-engine-addons =
     .label = పొడగింతలు
     .tooltiptext = డెస్కుటాప్ Firefox కోసం పొడగింతలు, అలంకారాలు
@@ -756,6 +774,7 @@ sitedata-cookies-exceptions =
 
 ## Privacy Section - Cookie Banner Blocking
 
+cookie-banner-learn-more = ఇంకా తెలుసుకోండి
 
 ## Privacy Section - Address Bar
 
@@ -866,6 +885,9 @@ permissions-microphone = మైక్రోఫోను
 permissions-microphone-settings =
     .label = అమరికలు…
     .accesskey = m
+permissions-speaker-settings =
+    .label = అమరికలు…
+    .accesskey = t
 permissions-notification = గమనింపులు
 permissions-notification-settings =
     .label = అమరికలు…
@@ -955,6 +977,9 @@ httpsonly-radio-disabled =
 
 ## DoH Section
 
+# Variables:
+#   $status (string) - The status of the DoH connection
+preferences-doh-status = స్థితి: { $status }
 
 ## The following strings are used in the Download section of settings
 

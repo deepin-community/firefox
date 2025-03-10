@@ -225,7 +225,9 @@ mr2022-onboarding-set-default-subtitle = Uporabite brskalnik, ki ga podpira nepr
 mr2022-onboarding-get-started-primary-subtitle = Naša najnovejša različica je zgrajena okoli vas, kar naredi brskanje po spletu lažje kot kdaj koli prej. Polna je novosti, ki jih boste oboževali.
 mr2022-onboarding-get-started-primary-button-label = Nastavite v nekaj sekundah
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Bliskovito hitra nastavitev
 mr2022-onboarding-import-subtitle = Nastavite { -brand-short-name } po svoji meri. Dodajte svoje zaznamke, gesla in druge podatke iz starega brskalnika.
@@ -356,6 +358,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Pri sinhronizaciji { 
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } vam krije hrbet
 onboarding-gratitude-security-and-privacy-subtitle = Hvala, ker uporabljate { -brand-short-name }, ki ga podpira Mozilla Foundation. Z vašo podporo si prizadevamo narediti internet varnejši in dostopnejši za vse.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Sinhronizirajte svoje podatke med napravami
+onboarding-sign-up-description = Ustvarite si račun in vsi vaši pomembni podatki – gesla, zaznamki in drugi – bodo varno shranjeni in vam na voljo, ko se prijavite v katerokoli napravo.
+onboarding-sign-up-button = Registracija ali prijava
+onboarding-sign-up-secondary-button = Začnite z brskanjem
 
 ## New user time and familiarity survey strings
 
@@ -375,3 +382,82 @@ onboarding-new-user-survey-familiarity-based-option-1 = sem popoln začetnik
 onboarding-new-user-survey-familiarity-based-option-2 = imam nekaj izkušenj
 onboarding-new-user-survey-familiarity-based-option-3 = zelo mi je domač
 onboarding-new-user-survey-familiarity-based-option-4 = uporabljal/a sem ga v preteklosti, a je minilo že nekaj časa
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Kje želite imeti zavihke?
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = V nastavitvah stranske vrstice lahko to spremenite, kadarkoli želite.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Vaši zavihki, po vaše
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Imate odprtih veliko zavihkov? Preizkusite preglednejši seznam zavihkov ob strani. Ali pa obdržite klasiko z zavihki na vrhu. Kadarkoli si lahko premislite.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Izberite postavitev zavihkov
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Za poenostavljen pogled, ki vam pomaga ostati osredotočen, preskusite zavihke ob strani. Ali pa naj bo klasika z zavihki na vrhu. Preklopite lahko kadarkoli.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Ob strani
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Na vrhu
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Navpični zavihki so tu
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Predstavljamo navpične zavihke
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Preizkusite zavihke ob strani. Njihov položaj lahko spremenite, kadarkoli želite, v nastavitvah stranske vrstice.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Preizkusite navpične zavihke
+onboarding-flair-text = Novo!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Obdrži vodoravne zavihke
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Okno brskalnika, v katerem so zavihki prikazani vzdolž roba zaslona v { -brand-shorter-name }ovi stranski vrstici.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Okno brskalnika, v katerem so zavihki prikazani vzdolž roba zaslona v { -brand-shorter-name }ovi stranski vrstici.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Okno brskalnika, v katerem so zavihki prikazani vzdolž zgornjega roba.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Okno brskalnika, v katerem so zavihki prikazani vzdolž zgornjega roba.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Preskusite UI-klepetalnik v stranski vrstici
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Povzemite spletne vsebine, razmislite o idejah in napišite osnutke sporočil kar med brskanjem. Izbirajte med več ponudniki. Preklopite kadarkoli. <a data-l10n-name="learn-more">Več o tem</a>
+onboarding-genai-sidebar-primary-button = Izberite klepetalnik
+onboarding-genai-sidebar-secondary-button = Začni z brskanjem
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Dokončaj nastavitev { -brand-short-name(sklon: "rodilnik") }
+onboarding-checklist-subtitle = Izvedite naslednje korake in kar najbolje izkoristite brskalnik.
+onboarding-checklist-set-default = Nastavi { -brand-short-name } kot privzeti brskalnik
+onboarding-checklist-pin = Pripni { -brand-short-name } v opravilno vrstico
+onboarding-checklist-import = Uvozi iz prejšnjega brskalnika
+onboarding-checklist-extension = Dodaj razširitev
+onboarding-checklist-sign-up = Registrirajte se ali se prijavite v svoj račun
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Preizkusite skupine zavihkov za manj nereda in več osredotočenosti
+tab-groups-onboarding-feature-callout-subtitle = Organizirajte se: povlecite en zavihek na drugega in ustvarite svojo prvo skupino.
+tab-groups-onboarding-saved-groups-title = Skupine zavihkov, ki ste jih zaprli, lahko tukaj kadarkoli znova odprete.
+tab-groups-onboarding-dismiss = V redu
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Spoznajte { -brand-product-name }ove profile
+multi-profile-spotlight-body = Preklapljajte med brskanjem za delo in zabavo. Profili ohranjajo vaše podatke o brskanju, vključno z zgodovino iskanja in gesli, popolnoma ločene, tako da lahko ostanete organizirani.
+multi-profile-spotlight-cta = Ustvari profil
+multi-profile-callout-title = Ustvarite ločena profila za delo in zabavo
+multi-profile-callout-subtitle = Profili vam omogočajo, da ločite podatke o brskanju, kot so zgodovina iskanja in gesla.
+multi-profile-callout-cta = Ustvari profil
+
+## Desktop to Mobile Adoption feature callout strings
+
+dismiss-button-label = Skrij
+sync-to-mobile-button-label = Sinhronizacija z mobilno napravo

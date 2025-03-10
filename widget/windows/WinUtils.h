@@ -33,12 +33,10 @@
 #include "nsIDownloader.h"
 #include "nsIURI.h"
 #include "nsIWidget.h"
-#include "nsIThread.h"
+#include "nsWindowsHelpers.h"
 
 #include "mozilla/Attributes.h"
 #include "mozilla/EventForwards.h"
-#include "mozilla/HalScreenConfiguration.h"
-#include "mozilla/HashTable.h"
 #include "mozilla/LazyIdleThread.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/Vector.h"
@@ -308,7 +306,7 @@ class WinUtils {
    * |                         |         TRUE          |         FALSE         |
    + +-----------------+-------+-----------------------+-----------------------+
    * |                 |       |  * an independent top level window            |
-   * |                 | TRUE  |  * a pupup window (WS_POPUP)                  |
+   * |                 | TRUE  |  * a popup window (WS_POPUP)                  |
    * |                 |       |  * an owned top level window (like dialog)    |
    * | aStopIfNotChild +-------+-----------------------+-----------------------+
    * |                 |       |  * independent window | * only an independent |
@@ -416,11 +414,8 @@ class WinUtils {
    * returns the LayoutDeviceIntRegion.
    */
   static LayoutDeviceIntRegion ConvertHRGNToRegion(HRGN aRgn);
-  /**
-   * Performs the inverse of ConvertHRGNToRegion.
-   * The region must be cleaned up with DeleteObject().
-   */
-  static HRGN RegionToHRGN(const LayoutDeviceIntRegion&);
+  /** Performs the inverse of ConvertHRGNToRegion. */
+  static nsAutoRegion RegionToHRGN(const LayoutDeviceIntRegion&);
 
   /**
    * ToIntRect converts a Windows RECT to a LayoutDeviceIntRect.
@@ -468,9 +463,11 @@ class WinUtils {
   static PointerCapabilities GetPrimaryPointerCapabilities();
   // For any-pointer and any-hover media queries features.
   static PointerCapabilities GetAllPointerCapabilities();
-  // Returns a string containing a comma-separated list of Fluent IDs
-  // representing the currently active pointing devices
-  static void GetPointerExplanation(nsAString* aExplanation);
+
+  // Returns whether the system has any active device for each pointer type.
+  static bool SystemHasMouse();
+  static bool SystemHasTouch();
+  static bool SystemHasPen();
 
   /**
    * Fully resolves a path to its final path name. So if path contains
@@ -560,6 +557,8 @@ class WinUtils {
 
   static bool GetClassName(HWND aHwnd, nsAString& aName);
 
+  static bool MicaEnabled();
+
   static void EnableWindowOcclusion(const bool aEnable);
 
   static bool GetTimezoneName(wchar_t* aBuffer);
@@ -572,6 +571,8 @@ class WinUtils {
   static bool GetAutoRotationState(AR_STATE* aRotationState);
 
   static void GetClipboardFormatAsString(UINT aFormat, nsAString& aOutput);
+
+  static nsresult GetProcessImageName(DWORD aProcessId, nsAString& aName);
 
  private:
   static WhitelistVec BuildWhitelist();

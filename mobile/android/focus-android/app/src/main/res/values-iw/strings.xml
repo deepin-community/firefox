@@ -85,8 +85,6 @@
 
     <string name="notification_erase_title_android_14">למחוק את היסטוריית הגלישה?</string>
 
-    <string name="notification_erase_text_android_14" moz:RemovedIn="124" tools:ignore="UnusedResources">יש להקיש או לנקות התרעה זו כדי למחוק בצורה מאובטחת את היסטוריית הגלישה שלך.</string>
-
     <!-- Text shown in the notification description that pops up to remind the user that a browsing session is active
     for Android 14+. -->
     <string name="notification_erase_text_android_14_1">יש להקיש או להחליק על התרעה זו כדי למחוק בצורה מאובטחת את היסטוריית הגלישה שלך.</string>
@@ -280,9 +278,9 @@
     <string name="preference_privacy_block_ads">חסימת רכיבי מעקב</string>
     <string name="preference_privacy_block_ads_summary">חלק מהפרסומות עוקבות אחר הביקורים באתרים, אפילו אם לא לחצת על הפרסומות</string>
     <string name="preference_privacy_block_analytics">חסימת מעקב של כלי ניתוח</string>
-    <string name="preference_privacy_block_analytics_summary">משמשות לאיסוף ניתוח ומדידת פעילויות כגון לחיצה וגלילה</string>
+    <string name="preference_privacy_block_analytics_summary">משמש לאיסוף, ניתוח ומדידת פעילויות כמו לחיצה וגלילה</string>
     <string name="preference_privacy_block_social">חסימת רכיבי מעקב חברתיים</string>
-    <string name="preference_privacy_block_social_summary">מוטמעות באתרים לצורך מעקב אחר הביקורים שלך והצגת רכיבים כגון כפתורי שיתוף</string>
+    <string name="preference_privacy_block_social_summary">מוטמעים באתרים לצורך מעקב אחר הביקורים שלך ולצורך הצגת רכיבים כגון כפתורי שיתוף</string>
     <string name="preference_privacy_block_content">חסימת כלי מעקב אחרים</string>
     <string name="preference_privacy_block_content_summary2">הפעלת התכונה עשויה לגרום לחלק מהאתרים להתנהג שלא כצפוי</string>
     <string name="preference_privacy_category_cookies">חסימת עוגיות</string>
@@ -340,6 +338,11 @@
     <!-- %1$s will be replaced with the name of the app (e.g. Firefox Focus) -->
     <string name="preference_mozilla_telemetry_summary2">‏Mozilla חותרת לאסוף רק מה שנדרש לצורך שיפור %1$s לטובת הכלל.</string>
 
+    <!-- Preference switch for daily usage ping data collection -->
+    <string name="preference_daily_usage_ping_title">פינג שימוש יומי</string>
+    <string name="preference_daily_usage_ping_description">זה מסייע ל־Mozilla להעריך כמה יש משתמשים פעילים.</string>
+    <string name="preference_daily_usage_ping_learn_more">מידע נוסף</string>
+
     <!-- In-app link (in settings) to Focus privacy notice. -->
     <string name="preference_privacy_notice">הצהרת פרטיות</string>
 
@@ -348,6 +351,9 @@
 
     <!-- Link to Focus licensing information from other libraries that we use. -->
     <string name="preference_libraries_we_use">ספריות בהן אנו משתמשים</string>
+
+    <!-- Link to Focus Crash reports list. -->
+    <string name="preference_crashes">קריסות</string>
 
     <!-- Open Source Licenses page title. The first parameter is the app name -->
     <string name="open_source_licenses_title">‏%s | ספריות OSS</string>
@@ -504,10 +510,7 @@
 
 
 
-  <!-- Content description (not visible, for screen readers etc.): This is the description for the close button from the new onboarding flow screen one and two -->
-    <string name="onboarding_close_button_content_description">סגירה</string>
-
-    <!-- New Onboarding flow first screen title -->
+  <!-- New Onboarding flow first screen title -->
     <!-- %1$s will be replaced by the app name and build variant(e.g. Firefox Focus, Firefox Klar Nightly) -->
     <string name="onboarding_first_screen_title">ברוכים הבאים אל %1$s</string>
 
@@ -538,7 +541,7 @@
     <!-- First run tour (Default browser): Title -->
     <string name="firstrun_defaultbrowser_title">חיזוק הפרטיות שלך</string>
     <!-- First run tour (Default browser): Text. -->
-    <string name="firstrun_defaultbrowser_text2">לקחת את הגלישה המאובטחת לרמה הבאה. ניתן לחסום פרסומות ותוכן אחר שעשוי לסייע במעקב אחריך בין אתרים שונים ולהפריע לזמני טעינת עמודים.</string>
+    <string name="firstrun_defaultbrowser_text2">לקחת את הגלישה המאובטחת לרמה הבאה. ניתן לחסום פרסומות ותוכן אחר שעשוי לעקוב אחריך בין אתרים שונים ולהפריע לזמני טעינת עמודים.</string>
 
     <!-- First run tour (Search): Title -->
     <string name="firstrun_search_title">החיפוש שלך, בדרך שלך</string>
@@ -548,7 +551,7 @@
     <!-- First run tour (Shortcut): Title -->
     <string name="firstrun_shortcut_title">הוספת קיצורי דרך למסך הבית שלך</string>
     <!-- First run tour (Shortcut): Text. %1$s will be replaced with the name of the app (e.g. Firefox Focus) -->
-    <string name="firstrun_shortcut_text">ניתן לחזור לאתרים המועדפים עליך ב־%1$s בקלות. עליך פשוט לבחור באפשרות „הוספה למסך הבית” מהתפריט %1$s.</string>
+    <string name="firstrun_shortcut_text">ניתן לחזור לאתרים המועדפים עליך ב־%1$s בקלות. עליך פשוט לבחור באפשרות ״הוספה למסך הבית״ מהתפריט %1$s.</string>
 
     <!-- First run tour (Privacy): Title -->
     <string name="firstrun_privacy_title">להפוך את הפרטיות להרגל</string>
@@ -618,6 +621,11 @@
 
     <!-- Text shown in the "Your rights" screen.
     %1$s will be replaced with the name of the app (e.g. Firefox Focus)
+    %2$s will be replaced with a URL linking to the trademark policy (e.g. https://www.mozilla.org/foundation/trademarks/policy/) -->
+    <string name="your_rights_content3" tools:ignore="BrandUsage,IncorrectStraightDoubleQuote"><![CDATA[לא הוענקו לך זכויות או רישיונות כלשהם לסימנים המסחריים של קרן Mozilla או גורם כלשהו, לרבות השמות או סמלי הלוגו של Mozilla, ‏Firefox או %1$s. מידע נוסף ניתן למצוא <a href="%2$s">כאן</a>.]]></string>
+
+    <!-- Text shown in the "Your rights" screen.
+    %1$s will be replaced with the name of the app (e.g. Firefox Focus)
     %2$s will be replaced with a URL linking to the list of licenses used by the dependencies.-->
     <string name="your_rights_content4" tools:ignore="IncorrectStraightDoubleQuote"><![CDATA[קוד מקור נוסף עבור %1$s זמין תחת מגוון <a href="%2$s">רישיונות</a> קוד פתוח נוספים.]]></string>
 
@@ -637,7 +645,7 @@
     <string name="security_popup_secure_connection">חיבור מאובטח</string>
     <string name="security_popup_insecure_connection">חיבור לא מאובטח</string>
     <!-- %1$s will be replaced with organization that granted the SSL certificate -->
-    <string name="security_popup_security_verified">מאומת ע״י: %1$s</string>
+    <string name="security_popup_security_verified">מאומת על־ידי: %1$s</string>
 
     <!-- Content Description of Security Icon in toolbar -->
     <string name="site_security_icon_content_description">אבטחת האתר</string>
@@ -813,7 +821,7 @@
     <string name="studies_learn_more">מידע נוסף</string>
 
     <!-- Dialog message shown when some changes are made on studies -->
-    <string name="studies_restart_app">היישומון ייסגר להחלת השינויים</string>
+    <string name="studies_restart_app" moz:removedIn="135">היישומון ייסגר להחלת השינויים</string>
 
     <!-- Title of the remove studies button -->
     <string name="studies_remove">הסרה</string>
@@ -903,9 +911,6 @@
 
     <!-- Label for the button in the snackbar that switches to the newly opened tab -->
     <string name="open_new_tab_snackbar">מעבר</string>
-
-    <!-- Text displayed in a notification when the user enters full screen mode -->
-    <string name="full_screen_notification" moz:removedIn="130" tools:ignore="UnusedResources">עברת למצב מסך מלא</string>
 
     <!-- Preference for switching to a new tab immediately after opening -->
     <string name="preference_open_new_tab">מעבר לקישור בלשונית החדשה מיידית</string>
@@ -1095,8 +1100,10 @@
     <string name="promote_search_widget_snackbar_message">יישומון נוסף למסך הבית</string>
 
     <!-- Messages explaining how to exit fullscreen mode -->
-    <!-- Message shown to explain how to exit fullscreen mode when gesture navigation is enabled -->
-    <string name="exit_fullscreen_with_gesture">כדי לצאת ממסך מלא, יש לגרור מלמעלה ולהשתמש בתנועת אחורה</string>
-    <!-- Message shown to explain how to exit fullscreen mode when using back button navigation -->
-    <string name="exit_fullscreen_with_back_button">כדי לצאת ממסך מלא, יש לגרור מלמעלה וללחוץ על חזרה</string>
+    <!-- Message shown to explain how to exit fullscreen mode when gesture navigation is enabled. -->
+    <!-- Localisation note: this text should be as short as possible, max 68 chars -->
+    <string name="exit_fullscreen_with_gesture_short">יש לגרור מלמעלה ולהשתמש בתנועת החזרה כדי לצאת</string>
+    <!-- Message shown to explain how to exit fullscreen mode when using back button navigation. -->
+    <!-- Localisation note: this text should be as short as possible, max 68 chars -->
+    <string name="exit_fullscreen_with_back_button_short">יש לגרור מלמעלה וללחוץ על כפתור החזרה כדי לצאת</string>
 </resources>

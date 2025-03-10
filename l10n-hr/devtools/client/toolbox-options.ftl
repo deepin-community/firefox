@@ -34,6 +34,20 @@ options-show-user-agent-styles-tooltip =
 options-collapse-attrs-label = Skrati DOM atribute
 options-collapse-attrs-tooltip =
     .title = Skrati duge atribute u inspektoru
+# The label for the checkbox option to enable the "drag to update" feature
+options-inspector-draggable-properties-label = Klikni i povuci za uređivanje vrijednosti veličine
+options-inspector-draggable-properties-tooltip =
+    .title = Klikni i povuci za uređivanje vrijednosti veličine u prikazu pravila inspektora.
+# The label for the checkbox option to enable simplified highlighting on page elements
+# within the inspector for users who enabled prefers-reduced-motion = reduce
+options-inspector-simplified-highlighters-label = Koristi jednostavnija isticanja s funkcijom prefers-reduced-motion
+options-inspector-simplified-highlighters-tooltip =
+    .title = Aktivira pojednostavljena isticanja kada je funkcija prefers-reduced-motion aktivirana. Iscrtava crte umjesto ispunjenih pravokutnika oko istaknutih elemenata kako bi se izbjegli efekti treperenja.
+# The label for the checkbox option to make the Enter key move the focus to the next input
+# when editing a property name or value in the Inspector rules view
+options-inspector-rules-focus-next-on-enter-label = Fokusiraj sljedeći unos nakon pritiskanja tipke <kbd>Enter</kbd>
+options-inspector-rules-focus-next-on-enter-tooltip =
+    .title = Kada je aktivirano, pritiskom tipke Enter prilikom uređivanja selektora, ime svojstva ili vrijednost će premjestiti fokus na sljedeći unos.
 
 ## "Default Color Unit" options for the Inspector
 
@@ -42,10 +56,13 @@ options-default-color-unit-authored = Izvorno
 options-default-color-unit-hex = Hex
 options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
+options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Imena boja
 
 ## Web Console section
 
+# The heading
+options-webconsole-label = Web konzola
 # The label for the checkbox that toggle whether the Split console is enabled
 options-webconsole-split-console-label = Aktiviraj podijeljenu konzolu
 options-webconsole-split-console-tooltip =
@@ -64,6 +81,10 @@ options-stylesheet-autocompletion-tooltip =
 
 # The heading
 options-screenshot-label = Ponašanje snimke ekrana
+# Label for the checkbox that toggles screenshot to clipboard feature
+options-screenshot-clipboard-only-label = Snimka ekrana samo u međuspremnik
+options-screenshot-clipboard-tooltip2 =
+    .title = Sprema snimku ekrana izravno u međuspremnik
 # Label for the checkbox that toggles the camera shutter audio for screenshot tool
 options-screenshot-audio-label = Pokreni zvuk okidača kamere
 options-screenshot-audio-tooltip =
@@ -93,7 +114,7 @@ options-context-advanced-settings = Napredne postavke
 # The label for the checkbox that toggles the HTTP cache on or off
 options-disable-http-cache-label = Onemogući HTTP predmemoriju (kada je kutija alata otvorena)
 options-disable-http-cache-tooltip =
-    .title = Uključivanjem ove mogućnosti, onemogućit će se HTTP predmemorija za sve kartice na kojima su otvoreni alati. Ova mogućnost nema utjecaja na radne procese.
+    .title = Uključivanjem ove mogućnosti, onemogućit će se HTTP predmemorija za sve kartice na kojima su otvoreni alati. Ova mogućnost nema utjecaja na service workere.
 # The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = Onemogući JavaScript *
 options-disable-javascript-tooltip =
@@ -115,9 +136,9 @@ options-enable-custom-formatters-label = Aktiviraj prilagođeno formatiranje
 options-enable-custom-formatters-tooltip =
     .title = Uključivanjem ove opcije će web stranicama dozvoliti definirati prilagođeno formatiranje za DOM objekte
 # The label for checkbox that toggles the service workers testing over HTTP on or off.
-options-enable-service-workers-http-label = Uključi radne procese usluge putem HTTP-a (kada je kutija alata otvorena)
+options-enable-service-workers-http-label = Aktiviraj service workere putem HTTP-a (kada je kutija alata otvorena)
 options-enable-service-workers-http-tooltip =
-    .title = Uključivanje ove mogućnosti omogućiti će se korištenje radne procese usluge putem HTTP-a za sve kartice koje imaju otvorenu alatnu traku.
+    .title = Uključivanje ove mogućnosti omogućiti će se korištenje service workera putem HTTP-a za sve kartice koje imaju otvorenu alatnu traku.
 # The label for the checkbox that toggles source maps in all tools.
 options-source-maps-label = Aktiviraj mapiranja izvora
 options-source-maps-tooltip =

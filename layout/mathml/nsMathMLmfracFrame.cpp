@@ -100,8 +100,9 @@ nscoord nsMathMLmfracFrame::CalcLineThickness(nsPresContext* aPresContext,
     }
   }
   // use minimum if the lineThickness is a non-zero value less than minimun
-  if (lineThickness && lineThickness < minimumThickness)
+  if (lineThickness && lineThickness < minimumThickness) {
     lineThickness = minimumThickness;
+  }
 
   return lineThickness;
 }
@@ -120,23 +121,24 @@ void nsMathMLmfracFrame::BuildDisplayList(nsDisplayListBuilder* aBuilder,
 nsresult nsMathMLmfracFrame::AttributeChanged(int32_t aNameSpaceID,
                                               nsAtom* aAttribute,
                                               int32_t aModType) {
-  if (nsGkAtoms::linethickness_ == aAttribute) {
+  if (aNameSpaceID == kNameSpaceID_None &&
+      nsGkAtoms::linethickness_ == aAttribute) {
+    // The thickness changes, so a repaint of the bar is needed.
     InvalidateFrame();
+    // The thickness affects vertical offsets.
+    PresShell()->FrameNeedsReflow(this, IntrinsicDirty::None,
+                                  NS_FRAME_IS_DIRTY);
+    return NS_OK;
   }
   return nsMathMLContainerFrame::AttributeChanged(aNameSpaceID, aAttribute,
                                                   aModType);
 }
 
-/* virtual */
-nsresult nsMathMLmfracFrame::MeasureForWidth(DrawTarget* aDrawTarget,
-                                             ReflowOutput& aDesiredSize) {
-  PlaceFlags flags(PlaceFlag::IntrinsicSize, PlaceFlag::MeasureOnly);
-  return PlaceInternal(aDrawTarget, flags, aDesiredSize);
-}
-
 nscoord nsMathMLmfracFrame::FixInterFrameSpacing(ReflowOutput& aDesiredSize) {
   nscoord gap = nsMathMLContainerFrame::FixInterFrameSpacing(aDesiredSize);
-  if (!gap) return 0;
+  if (!gap) {
+    return 0;
+  }
 
   mLineRect.MoveBy(gap, 0);
   return gap;
@@ -146,12 +148,6 @@ nscoord nsMathMLmfracFrame::FixInterFrameSpacing(ReflowOutput& aDesiredSize) {
 nsresult nsMathMLmfracFrame::Place(DrawTarget* aDrawTarget,
                                    const PlaceFlags& aFlags,
                                    ReflowOutput& aDesiredSize) {
-  return PlaceInternal(aDrawTarget, aFlags, aDesiredSize);
-}
-
-nsresult nsMathMLmfracFrame::PlaceInternal(DrawTarget* aDrawTarget,
-                                           const PlaceFlags& aFlags,
-                                           ReflowOutput& aDesiredSize) {
   ////////////////////////////////////
   // Get the children's desired sizes
   nsBoundingMetrics bmNum, bmDen;
@@ -159,7 +155,9 @@ nsresult nsMathMLmfracFrame::PlaceInternal(DrawTarget* aDrawTarget,
   ReflowOutput sizeDen(aDesiredSize.GetWritingMode());
   nsIFrame* frameDen = nullptr;
   nsIFrame* frameNum = mFrames.FirstChild();
-  if (frameNum) frameDen = frameNum->GetNextSibling();
+  if (frameNum) {
+    frameDen = frameNum->GetNextSibling();
+  }
   if (!frameNum || !frameDen || frameDen->GetNextSibling()) {
     // report an error, encourage people to get their markups in order
     if (!aFlags.contains(PlaceFlag::MeasureOnly)) {
@@ -344,12 +342,14 @@ nsresult nsMathMLmfracFrame::PlaceInternal(DrawTarget* aDrawTarget,
   mBoundingMetrics.rightBearing =
       std::max(dxNum + bmNum.rightBearing + numMargin.LeftRight(),
                dxDen + bmDen.rightBearing + denMargin.LeftRight());
-  if (mBoundingMetrics.rightBearing < width - rightSpace)
+  if (mBoundingMetrics.rightBearing < width - rightSpace) {
     mBoundingMetrics.rightBearing = width - rightSpace;
+  }
   mBoundingMetrics.leftBearing =
       std::min(dxNum + bmNum.leftBearing, dxDen + bmDen.leftBearing);
-  if (mBoundingMetrics.leftBearing > leftSpace)
+  if (mBoundingMetrics.leftBearing > leftSpace) {
     mBoundingMetrics.leftBearing = leftSpace;
+  }
   mBoundingMetrics.ascent = bmNum.ascent + numShift + numMargin.top;
   mBoundingMetrics.descent = bmDen.descent + denShift + denMargin.bottom;
   mBoundingMetrics.width = width;
@@ -361,6 +361,18 @@ nsresult nsMathMLmfracFrame::PlaceInternal(DrawTarget* aDrawTarget,
                           denShift;
   aDesiredSize.Width() = mBoundingMetrics.width;
   aDesiredSize.mBoundingMetrics = mBoundingMetrics;
+
+  // Apply width/height to math content box.
+  auto sizes = GetWidthAndHeightForPlaceAdjustment(aFlags);
+  auto shiftX = ApplyAdjustmentForWidthAndHeight(aFlags, sizes, aDesiredSize,
+                                                 mBoundingMetrics);
+  if (sizes.width) {
+    // MathML Core says the math content box is horizontally centered
+    // but the fraction bar still takes the full width of the content box.
+    dxNum += shiftX;
+    dxDen += shiftX;
+    width = *sizes.width;
+  }
 
   // Add padding+border.
   auto borderPadding = GetBorderPaddingForPlace(aFlags);
@@ -384,8 +396,8 @@ nsresult nsMathMLmfracFrame::PlaceInternal(DrawTarget* aDrawTarget,
                       ReflowChildFlags::Default);
     // place denominator
     dxDen += denMargin.left;
-    dy = aDesiredSize.Height() - sizeDen.Height() - denMargin.bottom -
-         borderPadding.bottom;
+    dy =
+        aDesiredSize.BlockStartAscent() + denShift - sizeDen.BlockStartAscent();
     FinishReflowChild(frameDen, presContext, sizeDen, nullptr, dxDen, dy,
                       ReflowChildFlags::Default);
     // place the fraction bar - dy is top of bar

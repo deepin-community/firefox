@@ -1,5 +1,6 @@
 <!doctype html>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>scroll{Width,Height} with visible overflow and negative margins.</title>
 <link rel="help" href="https://drafts.csswg.org/cssom-view/#extension-to-the-element-interface">
 <link rel="help" href="https://bugzilla.mozilla.org/show_bug.cgi?id=1906475">
@@ -38,7 +39,7 @@ const paddingBox = {
   width: contentBox.width + 4 + 16,
   height: contentBox.height + 1 + 8,
 };
-for (let display of ["block", "flex", "grid"]) {
+for (let display of ["flow-root", "flex", "grid"]) {
   for (let flexDirection of ["row", "row-reverse", "column", "column-reverse"]) {
     if (flexDirection != "row" && display != "flex") {
       // Don't bother retesting with all flexDirection values unless we're actually a flex container

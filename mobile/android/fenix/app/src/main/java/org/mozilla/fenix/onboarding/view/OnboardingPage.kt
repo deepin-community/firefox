@@ -31,9 +31,9 @@ import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import mozilla.components.compose.base.annotation.LightDarkPreview
 import org.mozilla.fenix.R
 import org.mozilla.fenix.compose.LinkText
-import org.mozilla.fenix.compose.annotation.LightDarkPreview
 import org.mozilla.fenix.compose.button.PrimaryButton
 import org.mozilla.fenix.compose.button.SecondaryButton
 import org.mozilla.fenix.theme.FirefoxTheme
@@ -174,7 +174,7 @@ fun OnboardingPage(
 /**
  * Calculates the image height to be set. The ratio is selected based on parent height.
  */
-private fun imageHeight(boxWithConstraintsScope: BoxWithConstraintsScope): Dp {
+fun imageHeight(boxWithConstraintsScope: BoxWithConstraintsScope): Dp {
     val imageHeightRatio: Float = when {
         boxWithConstraintsScope.maxHeight <= 550.dp -> IMAGE_HEIGHT_RATIO_SMALL
         boxWithConstraintsScope.maxHeight <= 650.dp -> IMAGE_HEIGHT_RATIO_MEDIUM
@@ -191,21 +191,21 @@ private fun OnboardingPagePreview() {
             pageState = OnboardingPageState(
                 imageRes = R.drawable.ic_notification_permission,
                 title = stringResource(
-                    id = R.string.onboarding_home_enable_notifications_title,
+                    id = R.string.onboarding_home_welcome_title_2,
                     formatArgs = arrayOf(stringResource(R.string.app_name)),
                 ),
                 description = stringResource(
-                    id = R.string.onboarding_home_enable_notifications_description,
+                    id = R.string.onboarding_home_welcome_description,
                     formatArgs = arrayOf(stringResource(R.string.app_name)),
                 ),
                 primaryButton = Action(
                     text = stringResource(
-                        id = R.string.onboarding_home_enable_notifications_positive_button,
+                        id = R.string.onboarding_home_get_started_button,
                     ),
                     onClick = {},
                 ),
                 secondaryButton = Action(
-                    text = stringResource(id = R.string.onboarding_home_enable_notifications_negative_button),
+                    text = stringResource(id = R.string.onboarding_home_skip_button),
                     onClick = {},
                 ),
                 onRecordImpressionEvent = {},

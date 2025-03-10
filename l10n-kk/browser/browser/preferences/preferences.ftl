@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Сайттарға "Мені бақыламау" сигналын жіберу арқылы сіз өзіңізді бақыламауды қалайтыныңыз туралы хабарлау
+do-not-track-removal = Біз енді «Мені бақыламау» сигналын қолдамаймыз
 do-not-track-description2 =
     .label = Веб-сайттарға "Мені бақыламау" сұранымын жіберу
     .accesskey = л
@@ -137,6 +138,7 @@ windows-launch-on-login =
     .label = Компьютеріңіз іске қосылғанда { -brand-short-name } қолданбасын автоматты түрде іске қосу
     .accesskey = о
 windows-launch-on-login-disabled = Бұл баптау Windows жүйесінде сөндірілген. Оны өзгерту үшін, Жүйе баптауларынан <a data-l10n-name="startup-link">Қолданбалардың автоматты іске қосылуы</a> қараңыз.
+windows-launch-on-login-profile-disabled = "Пайдаланушы профилін таңдау" терезесіндегі "{ profile-manager-use-selected.label }" жалаушасын орнату арқылы бұл баптауды іске қосыңыз.
 startup-restore-warn-on-quit =
     .label = Браузерден шыққан кезде ескерту
 disable-extension =
@@ -153,6 +155,17 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Сілтемелерді жаңа терезелер орнына жаңа беттерде ашу
     .accesskey = р
+ask-on-close-multiple-tabs =
+    .label = Бірнеше бетті жабу бұрын сұрау
+    .accesskey = ш
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = { $quitKey } көмегімен шығу алдында сұрау
+    .accesskey = л
 confirm-on-close-multiple-tabs =
     .label = Бірнеше бетті жаппас бұрын растау
     .accesskey = с
@@ -212,6 +225,15 @@ containers-remove-cancel-button = Бұл контейнерді өшірмеу
 settings-tabs-show-image-in-preview =
     .label = Бетке курсорды апарған кезде суреттің алдын ала қарауын көрсету
     .accessKey = с
+browser-layout-header = Браузер жаймасы
+browser-layout-horizontal-tabs =
+    .label = Горизонталды беттер
+browser-layout-horizontal-tabs-desc = Браузердің жоғарғы жағында көрсету
+browser-layout-vertical-tabs =
+    .label = Вертикалды беттер
+browser-layout-vertical-tabs-desc = Жанында, бүйірлік панельде көрсету
+browser-layout-show-sidebar =
+    .label = Бүйір панелін көрсету
 
 ## General Section - Language & Appearance
 
@@ -568,8 +590,7 @@ home-prefs-shortcuts-description = Сіз сақтайтын немесе шол
 home-prefs-shortcuts-by-option-sponsored =
     .label = Демеушілік жарлықтары
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Ұсынушы { $provider }
@@ -640,6 +661,10 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Адрестер жолағы нәтижелерінде іздеу ұсыныстарын көрсету
     .accesskey = р
+# With this option enabled, on the search results page
+# the URL will be replaced by the search terms in the address bar.
+search-show-search-term-option-2 =
+    .label = Нәтижелер беттеріндегі адрес жолағында іздеу ұғымдарын көрсету
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -783,6 +808,9 @@ sync-currently-syncing-creditcards = Несиелік карталар
 sync-currently-syncing-payment-methods = Төлем әдістері
 sync-currently-syncing-addons = Қосымшалар
 sync-currently-syncing-settings = Баптаулар
+sync-manage-options =
+    .label = Синхрондауды басқару…
+    .accesskey = б
 sync-change-options =
     .label = Өзгерту…
     .accesskey = з
@@ -835,6 +863,13 @@ sync-engine-settings =
     .label = Баптаулар
     .tooltiptext = Сіз өзгерткен Жалпы, Жекелік және Қауіпсіздік баптаулары
     .accesskey = п
+sync-choose-what-to-sync-dialog4 =
+    .title = Барлық қосылған құрылғыларда синхрондалатын деректерді басқарыңыз
+    .style = min-width: 36em;
+    .buttonlabelaccept = Сақтау
+    .buttonaccesskeyaccept = С
+    .buttonlabelextra2 = Байланысты үзу…
+    .buttonaccesskeyextra2 = з
 
 ## The device name controls.
 
@@ -1289,9 +1324,21 @@ collection-health-report =
     .label = { -brand-short-name } үшін { -vendor-short-name } адресіне техникалық және әрекеттесу деректерін жіберуді рұқсат ету
     .accesskey = р
 collection-health-report-link = Көбірек білу
+collection-studies2 =
+    .label = Зерттеулерді орнату және жөнелту
+collection-studies-description = Мүмкіндіктер мен идеяларды барлығына шығарар алдында қолданып көріңіз.
 collection-studies =
     .label = { -brand-short-name } үшін зерттеулерді орнатып, орындауды рұқсат ету
 collection-studies-link = { -brand-short-name } зерттеулерін қарау
+addon-recommendations2 =
+    .label = Жекелендірілген кеңейу ұсыныстарына рұқсат ету
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = Деректер есептемесін беру бұл жинақта сөндірілген.
+collection-backlogged-crash-reports2 =
+    .label = Құлау хабарламаларын автоматты түрде жіберу
+    .accesskey = л
+collection-backlogged-crash-reports-description = Бұл { -vendor-short-name } үшін браузердегі ақауларды диагностикалауға және түзетуге мүмкіндік береді. Есептемелер жеке немесе сезімтал деректерді қамтуы мүмкін.
 addon-recommendations =
     .label = { -brand-short-name } үшін жекеленген кеңейтулер ұсыныстарын жасауға рұқсат ету
 addon-recommendations-link = Көбірек білу

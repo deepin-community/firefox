@@ -259,7 +259,7 @@ expected.
 
 .. code:: bash
 
-    ./mach gradle geckoview:apiLintWithGeckoBinariesDebug
+    ./mach gradle geckoview:apiLintDebug
 
 Running the above command should cause the build to fail and the output should contain an API key,
 which should be used to update the ``[api-version]`` field in the changelog. Next, run the command
@@ -267,7 +267,7 @@ again:
 
 .. code:: bash
 
-    ./mach gradle geckoview:apiLintWithGeckoBinariesDebug
+    ./mach gradle geckoview:apiLintDebug
 
 The build should pass this time, and an api.txt file will be generated for the changes. Next, follow
 the next command to double check that the changes made do not break the existing API:
@@ -326,7 +326,7 @@ To view the javadoc locally, choose one of the two options:
 
   .. code:: bash
 
-     cd <path_of_javadoc_from_above>
+     cd path_of_javadoc_from_above
 
 Now, we want to launch a local web server. To launch locally, use any web server, for example:
 

@@ -1,50 +1,82 @@
-From: Jan Grulich <jgrulich@redhat.com>
-Date: Sat, 15 Jun 2024 11:27:00 +0000
-Subject: Bug 1902615 - WebRTC backport: PipeWire camera - check for node
- existence before adding it to the list r=pehrsons,webrtc-reviewers
+From: Andreas Pehrson <apehrson@mozilla.com>
+Date: Tue, 27 Aug 2024 10:01:00 +0000
+Subject: Bug 1914835 - With ScreenCaptureKit embed the mouse cursor directly.
+ r=webrtc-reviewers,ng
 
-This is a simple backport of an WebRTC upstream change.
+The MouseCursorMonitor on macOS is rather expensive, as for every pulled frame
+it compares all pixels of the cursors used for the current and last frames.
+Getting to the pixels may also incur a conversion.
 
-Upstream commit: 633a41ff8edec405cefa109ac3c8f9662a020cc1
+Note that this comparison happens even if the backend reports it had embedded
+the cursor already, as the embedding only affects composing the monitored cursor
+into a captured frame.
 
-Differential Revision: https://phabricator.services.mozilla.com/D213749
-Mercurial Revision: https://hg.mozilla.org/mozilla-central/rev/dc5e463eb0f570b9b89aef8cddd47f6659bdd16e
+Differential Revision: https://phabricator.services.mozilla.com/D220092
+Mercurial Revision: https://hg.mozilla.org/mozilla-central/rev/8ca7b371646d8aa40b2c3faf54570fcd1331a677
 ---
- modules/video_capture/linux/pipewire_session.cc | 17 +++++++++++------
- 1 file changed, 11 insertions(+), 6 deletions(-)
+ .../desktop_capture/mac/screen_capturer_sck.h   |  3 +++
+ .../desktop_capture/mac/screen_capturer_sck.mm  | 17 ++++++++++++++---
+ 2 files changed, 17 insertions(+), 3 deletions(-)
 
-diff --git a/modules/video_capture/linux/pipewire_session.cc b/modules/video_capture/linux/pipewire_session.cc
-index 4d1b200aca..90ac4a3bdd 100644
---- a/modules/video_capture/linux/pipewire_session.cc
-+++ b/modules/video_capture/linux/pipewire_session.cc
-@@ -354,6 +354,13 @@ void PipeWireSession::OnRegistryGlobal(void* data,
-                                        const spa_dict* props) {
-   PipeWireSession* that = static_cast<PipeWireSession*>(data);
+diff --git a/modules/desktop_capture/mac/screen_capturer_sck.h b/modules/desktop_capture/mac/screen_capturer_sck.h
+index 2c5241d33e..105cbf0783 100644
+--- a/modules/desktop_capture/mac/screen_capturer_sck.h
++++ b/modules/desktop_capture/mac/screen_capturer_sck.h
+@@ -18,6 +18,9 @@
  
-+  // Skip already added nodes to avoid duplicate camera entries
-+  if (std::find_if(that->nodes_.begin(), that->nodes_.end(),
-+                   [id](const PipeWireNode& node) {
-+                     return node.id() == id;
-+                   }) != that->nodes_.end())
-+    return;
+ namespace webrtc {
+ 
++// Returns true if the ScreenCaptureKit capturer is available.
++bool ScreenCapturerSckAvailable();
 +
-   if (type != absl::string_view(PW_TYPE_INTERFACE_Node))
-     return;
+ // A DesktopCapturer implementation that uses ScreenCaptureKit.
+ std::unique_ptr<DesktopCapturer> CreateScreenCapturerSck(
+     const DesktopCaptureOptions& options);
+diff --git a/modules/desktop_capture/mac/screen_capturer_sck.mm b/modules/desktop_capture/mac/screen_capturer_sck.mm
+index 9e2d9047e6..6bd08e52ce 100644
+--- a/modules/desktop_capture/mac/screen_capturer_sck.mm
++++ b/modules/desktop_capture/mac/screen_capturer_sck.mm
+@@ -24,6 +24,8 @@
  
-@@ -372,12 +379,10 @@ void PipeWireSession::OnRegistryGlobal(void* data,
- void PipeWireSession::OnRegistryGlobalRemove(void* data, uint32_t id) {
-   PipeWireSession* that = static_cast<PipeWireSession*>(data);
+ using webrtc::DesktopFrameIOSurface;
  
--  for (auto it = that->nodes_.begin(); it != that->nodes().end(); ++it) {
--    if ((*it).id() == id) {
--      that->nodes_.erase(it);
--      break;
--    }
--  }
-+  auto it = std::remove_if(
-+      that->nodes_.begin(), that->nodes_.end(),
-+      [id](const PipeWireNode& node) { return node.id() == id; });
-+  that->nodes_.erase(it, that->nodes_.end());
++#define SCK_AVAILABLE @available(macOS 14.0, *)
++
+ namespace webrtc {
+ class ScreenCapturerSck;
+ }  // namespace webrtc
+@@ -48,6 +50,14 @@ - (void)releaseCapturer;
+ 
+ namespace webrtc {
+ 
++bool ScreenCapturerSckAvailable() {
++  bool sonomaOrHigher = false;
++  if (SCK_AVAILABLE) {
++    sonomaOrHigher = true;
++  }
++  return sonomaOrHigher;
++}
++
+ class API_AVAILABLE(macos(14.0)) ScreenCapturerSck final : public DesktopCapturer {
+  public:
+   explicit ScreenCapturerSck(const DesktopCaptureOptions& options);
+@@ -353,11 +363,10 @@ class API_AVAILABLE(macos(14.0)) ScreenCapturerSck final : public DesktopCapture
  }
  
- void PipeWireSession::Finish(VideoCaptureOptions::Status status) {
+ std::unique_ptr<DesktopCapturer> CreateScreenCapturerSck(const DesktopCaptureOptions& options) {
+-  if (@available(macOS 14.0, *)) {
++  if (SCK_AVAILABLE) {
+     return std::make_unique<ScreenCapturerSck>(options);
+-  } else {
+-    return nullptr;
+   }
++  return nullptr;
+ }
+ 
+ }  // namespace webrtc
+@@ -419,3 +428,5 @@ - (void)releaseCapturer {
+ }
+ 
+ @end
++
++#undef SCK_AVAILABLE

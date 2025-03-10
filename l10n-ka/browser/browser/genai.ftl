@@ -1,3 +1,167 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+## Generative AI (GenAI) Settings section
+
+genai-settings-chat-description = ამატებს თანამოსაუბრეს თქვენ მიერ შერჩეულ გვერდით ზოლზე ვებსივრცის თვალიერებისას სწრაფი წვდომისთვის. <a data-l10n-name="connect">გამოგვეხმაურეთ</a>
+genai-settings-chat-choose = აირჩიეთ თანამოსაუბრე
+genai-settings-chat-choose-one-menuitem =
+    .label = ერთ-ერთის შერჩევა
+genai-settings-chat-links = თანამოსაუბრის არჩევით, ეთანხმებით მომწოდებლის მომსახურების პირობებსა და პირადულობის დებულებას.
+genai-settings-chat-chatgpt-links = ვინაიდან აირჩიეთ ChatGPT, ეთანხმებით <a data-l10n-name="link1">მომსახურების პირობებსა</a> და <a data-l10n-name="link2">პირადულობის დაცვის განაცხადს</a>, რომელსაც ადგენს OpenAI.
+genai-settings-chat-claude-links = ვინაიდან აირჩიეთ Anthropic Claude, ეთანხმებით <a data-l10n-name="link1">მომხმარებლისა და მომსახურების პირობებს</a>, <a data-l10n-name="link2">გამოყენების დებულებას</a>, აგრეთვე, <a data-l10n-name="link3">პირადულობის დებულებას</a>, რომელთაც ადგენს Anthropic.
+genai-settings-chat-copilot-links = ვინაიდან აირჩიეთ Copilot, ეთანხმებით<a data-l10n-name="link1">პირობებს, რომლითაც შეგიძლიათ გამოიყენოთ Copilot-AI</a> და <a data-l10n-name="link2">Microsoft-ის პირადულობის დებულებას</a>.
+genai-settings-chat-gemini-links = ვინაიდან აირჩიეთ Google Gemini, ეთანხმებით <a data-l10n-name="link1">Google-ის მომსახურების პირობებს</a>, <a data-l10n-name="link2">Generative-AI-ის არამართლზომიერი გამოყენების შეზღუდვებს</a>, აგრეთვე, <a data-l10n-name="link3">Gemini-Apps-ის პირადულობის დებულებას</a>.
+genai-settings-chat-huggingchat-links = ვინაიდან აირჩიეთ HuggingChat, ეთანხმებით <a data-l10n-name="link1">HuggingChat-ის პირადულობის განაცხადსა</a> და <a data-l10n-name="link2">პირადულობის დებულებას, რომელსაც ადგენს Hugging Face</a>.
+genai-settings-chat-lechat-links = ვინაიდან აირჩიეთ Le Chat Mistral, ეთანხმებით <a data-l10n-name="link1">მომსახურების პირობებსა</a> და <a data-l10n-name="link2">პირადულობის დებულებას</a>, რომელსაც ადგენს Mistral AI.
+genai-settings-chat-localhost-links = დაამატეთ თქვენი საკუთარი ადგილობრივი თანამოსაუბრე, როგორიცაა <a data-l10n-name="link1">llamafile</a>, რომელსაც გთავაზობთ სიახლეების დამნერგავი საზოგადოება { -vendor-short-name }.
+genai-settings-chat-shortcuts =
+    .description = მოთხოვნის მალსახმობის გამოჩენა ტექსტის მონიშვნისას. { -brand-short-name } გადაუგზავნის ტექსტს, გვერდის სათაურსა და მოთხოვნას თანამოსაუბრეს.
+    .label = მოთხოვნების ჩვენება ტექსტის მონიშვნისას
+
+## Chatbot prompts
+## Prompts are plain language ‘instructions’ sent to a chatbot.
+## These prompts have been made concise and direct in English because some chatbot providers
+## have character restrictions and being direct reduces the chance for misinterpretation.
+## When localizing, please be concise and direct, but not at the expense of losing meaning.
+
+# Prompt purpose: help users understand what a selection covers at a glance
+genai-prompts-summarize =
+    .label = შეჯამება
+    .value = შეაჯამე მონიშნული ნათლად და გასაგები ენით. გამოიყენე სათაურები და გამოყოფილი სია დასკვნის წარმოსადგენად, ადვილად აღსაქმელი რომ იყოს. შეინარჩუნე შინაარსობრივი სიზუსტე და სინამდვილესთან თანხვედრა.
+# Prompt purpose: make a selection easier to read
+genai-prompts-simplify =
+    .label = გასაგები ენით
+    .value = გადმოეცი მონიშნული მოკლე წინადადებებითა და ადვილი სიტყვებით. შეინარჩუნე შინაარსობრივი სიზუსტე და სინამდვილესთან თანხვედრა.
+# Prompt purpose: test understanding of selection in an interactive way
+genai-prompts-quiz =
+    .label = გამოკითხვა
+    .value = გამომცადე მონიშნულის მიხედვით. დამისვი სხვადასხვა შეკითხვა, რომელიც საჭიროებს ერთ-ერთი პასუხის არჩევას, აგრეთვე გამოცნობას, ჭეშმარიტია, თუ მცდარია და ზოგჯერ მოკლე პასუხის გაცემასაც. ჯერ დაელოდე წინა კითხვაზე პასუხს, სანამ მომდევნოზე გადახვალ.
+# Prompt purpose: helps users understand words, phrases, concepts
+genai-prompts-explain =
+    .label = ახსნა
+    .value = გადმოეცი მონიშნულის ძირითადი აზრი ადვილად გასაგები სიტყვებით. ამასთანავე, მაგალითების მოხმობით.
+# Prompt purpose: writing tool that helps users with spelling and grammar mistakes and produce a response that identifies errors and rewrites the inputted text correctly
+genai-prompts-proofread =
+    .label = გასწორება
+    .value = გაასწორე მონიშნულ ნაწერში გრამატიკული და მართლწერის უზუსტობები. იპოვე შეცდომები და გამართულად გადმოიტანე ტექსტი. შეინარჩუნე შინაარსობრივი სიზუსტე და სინამდვილესთან თანხვედრა, ჯერ გამოიტანე შემოთავაზებული შესწორებების ჩამონათვალი და ამის შემდეგ დაურთე საბოლოო, გამართული ტექსტი.
+# This prompt is added to the beginning of selection prompts sent to a chatbot.
+# $tabTitle (string) - title of the webpage
+# $selection (string) - selected text
+genai-prompt-prefix-selection = ვიმყოფები გვერდზე “{ $tabTitle }”, მონიშნულია “{ $selection }”.
+
+## Chatbot menu shortcuts
+
+genai-menu-ask-generic =
+    .label = ჰკითხეთ AI-თანამოსაუბრეს
+# $provider (string) - name of the provider
+genai-menu-ask-provider =
+    .label = გიპასუხებთ { $provider }
+genai-menu-remove-generic =
+    .label = AI-თანამოსაუბრის მოცილება
+# $provider (string) - name of the provider
+genai-menu-remove-provider =
+    .label = მოცილდეს { $provider }
+genai-input-ask-generic =
+    .placeholder = ჰკითხეთ AI-თანამოსაუბრეს…
+# $provider (string) - name of the provider
+genai-input-ask-provider =
+    .placeholder = გიპასუხებთ { $provider }…
+# $selectionLength (number) - selected text length
+# $maxLength (number) - max length of what can be selected
+genai-shortcuts-selected-warning-generic =
+    .heading = AI-თანამოსაუბრე სრულად ვერ გაეცნობა მონიშნულს.
+    .message =
+        { $selectionLength ->
+            [one] თქვენ მიერ მონიშნული შედგება { $selectionLength } ასონიშნისგან. AI-თანამოსაუბრეს კი შეიძლება გაეგზავნოს მხოლოდ { $maxLength }.
+           *[other] თქვენ მიერ მონიშნული შედგება { $selectionLength } ასონიშნისგან. AI-თანამოსაუბრეს კი შეიძლება გაეგზავნოს მხოლოდ { $maxLength }.
+        }
+# $provider (string) - name of the provider
+# $selectionLength (number) - selected text length
+# $maxLength (number) - max length of what can be selected
+genai-shortcuts-selected-warning =
+    .heading = { $provider } სრულად ვერ გაეცნობა მონიშნულს.
+    .message =
+        { $selectionLength ->
+            [one] თქვენ მიერ მონიშნული შედგება { $selectionLength } ასონიშნისგან. { $provider } კი მიიღებს მხოლოდ { $maxLength }-ს.
+           *[other] თქვენ მიერ მონიშნული შედგება { $selectionLength } ასონიშნისგან. { $provider } კი მიიღებს მხოლოდ { $maxLength }-ს.
+        }
+genai-shortcuts-hide =
+    .label = თანამოსაუბრის მალსახმობის დამალვა
+
+## Chatbot header
+
+genai-chatbot-title = AI-თანამოსაუბრე
+genai-header-provider-menu =
+    .title = აირჩიეთ თანამოსაუბრე
+genai-header-options-button =
+    .title = მენიუს გახსნა
+genai-header-close-button =
+    .title = დახურვა
+genai-provider-view-details =
+    .label = იხილეთ თანამოსაუბრის მონაცემები
+genai-provider-about-chatbots =
+    .label = ამ თანამოსაუბრეების შესახებ
+genai-options-reload-generic =
+    .label = ახლიდან ჩაიტვირთოს თანამოსაუბრე
+# $provider (string) - name of the provider
+genai-options-reload-provider =
+    .label = ახლიდან ჩაიტვირთოს { $provider }
+genai-options-show-shortcut =
+    .label = მალსახმობის ჩვენება ტექსტის მონიშვნისას
+genai-options-hide-shortcut =
+    .label = მალსახმობის დამალვა ტექსტის მონიშვნისას
+genai-options-about-chatbot =
+    .label = გაეცნით, რომელ AI-თანამოსაბრეს გთავაზობთ { -brand-short-name }
+
+## Chatbot onboarding
+
+genai-onboarding-header = იხილეთ დასკვნები, ახალი მოსაზრებები და ა. შ. გვერდების მონახულებისას
+# "Switch anytime" refers to allowing the user to switch to a different chatbot.
+genai-onboarding-description = აირჩიეთ AI-თანამოსაუბრე, რომელსაც გაგიხსნით { -brand-short-name } გვერდით ზოლზე გამოსაყენებლად. დაწვრილებით იხილავთ თითოეული თანამოსაუბრის შესახებ მათი შერჩევისას. ნებისმიერ დროს შეგეძლებათ შეცვლას. <a data-l10n-name="learn-more">ვრცლად</a>
+genai-onboarding-primary = განაგრძეთ
+genai-onboarding-secondary = დახურვა
+genai-onboarding-claude-tooltip =
+    .title = Anthropic Claude
+genai-onboarding-claude-learn = უკეთ გაიცანით Claude
+genai-onboarding-chatgpt-tooltip =
+    .title = ChatGPT
+genai-onboarding-chatgpt-learn = უკეთ გაიცანით ChatGPT
+genai-onboarding-copilot-tooltip =
+    .title = Copilot
+genai-onboarding-copilot-learn = უკეთ გაიცანით Copilot
+genai-onboarding-gemini-tooltip =
+    .title = Google Gemini
+genai-onboarding-gemini-learn = უკეთ გაიცანით Gemini
+genai-onboarding-huggingchat-tooltip =
+    .title = HuggingChat
+genai-onboarding-huggingchat-learn = უკეთ გაიცანით HuggingChat
+genai-onboarding-lechat-tooltip =
+    .title = Le Chat Mistral
+genai-onboarding-lechat-learn = უკეთ გაიცანით Le Chat
+genai-onboarding-select-header = მონიშნეთ ტექსტი შემოთავაზებებისთვის
+genai-onboarding-select-description = ტექსტის მონიშვნისას შემოგთავაზებთ მოთხოვნებს, რომელთა გაგზავნაც შეგეძლებათ თანამოსაუბრისთვის. აგრეთვე შეგეძლებათ თავად მიუწეროთ თქვენი მოთხოვნები.
+genai-onboarding-select-primary = მიმოწერის დაწყება
+
+## Chatbot onboarding choices
+## These describe features/capabilities of chatbot providers. These are not buttons/actions.
+
+genai-onboarding-claude-generate = ტექსტისა და კოდის შედგენა
+genai-onboarding-claude-analyze = დოკუმენტებისა და სურათების გარჩევა
+genai-onboarding-claude-price = უფასო და ფასიანი შესაძლებლობები; საჭიროებს ანგარიშს
+genai-onboarding-chatgpt-generate = ტექსტის, სურათებისა და კოდის შედგენა
+genai-onboarding-chatgpt-analyze = დოკუმენტებისა და სურათების გარჩევა
+genai-onboarding-chatgpt-price = უფასო და ფასიანი შესაძლებლობები; საჭიროებს ანგარიშს ზოგიერთი ქვეყნისა და დავალებისთვის
+genai-onboarding-copilot-generate = ტექსტის, სურათებისა და კოდის შედგენა
+genai-onboarding-copilot-analyze = სურათების გარჩევა
+genai-onboarding-copilot-price = უფასო და ფასიანი შესაძლებლობები; საჭიროებს ანგარიშს ზოგიერთი დავალებისთვის
+genai-onboarding-gemini-generate = ტექსტის, სურათებისა და კოდის შედგენა
+genai-onboarding-gemini-analyze = სურათებისა (უფასო) და დოკუმენტების გარჩევა (ფასიანი)
+genai-onboarding-gemini-price = უფასო და ფასიანი შესაძლებლობები; საჭიროებს ანგარიშს
+genai-onboarding-huggingchat-generate = ტექსტისა და კოდის შედგენა
+genai-onboarding-huggingchat-switch = სხვადასხვა ღია მოდელებზე გადართვა
+genai-onboarding-huggingchat-price-2 = უფასო; საჭიროებს ანგარიშს გარკვეული ოდენობის მოთხოვნების შემდეგ
+genai-onboarding-lechat-generate = ტექსტისა და კოდის შედგენა
+genai-onboarding-lechat-price = უფასო; საჭიროებს ანგარიშს

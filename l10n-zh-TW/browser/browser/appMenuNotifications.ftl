@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = 知道了！
     .secondarybuttonaccesskey = m
 appmenu-update-restart-message2 = 下載最新版的 { -brand-shorter-name }，重新啟動後將保留已經開啟的分頁與視窗。
+appmenu-theme-installed =
+    .secondarybuttonlabel = 還原
+    .secondarybuttonaccesskey = U
 appmenu-update-other-instance =
     .label = { -brand-shorter-name } 無法自動更新至最新版本。
     .buttonlabel = 仍然更新 { -brand-shorter-name }
@@ -37,7 +40,6 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = 現在不要
     .secondarybuttonaccesskey = N
 appmenu-update-other-instance-message = { -brand-shorter-name } 已經推出，但由於有另一份 { -brand-shorter-name } 仍在執行，無法安裝。請將其關閉來完成更新，或是點擊「仍然更新」（但那一份 { -brand-shorter-name } 在重新啟動前運作可能會不正常）。
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = 好的
     .buttonaccesskey = O
@@ -45,7 +47,6 @@ appmenu-addon-post-install-message3 = 透過應用程式選單管理您的附加
 appmenu-addon-post-install-incognito-checkbox =
     .label = 允許此擴充套件於隱私瀏覽視窗中執行
     .accesskey = A
-    
 appmenu-new-tab-controlled-changes =
     .label = 您的新分頁已經變更。
     .buttonlabel = 保留變更

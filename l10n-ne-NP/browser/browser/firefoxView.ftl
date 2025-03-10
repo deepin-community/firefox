@@ -142,7 +142,7 @@ firefoxview-search-results-header = “{ $query }” को लागि खो�
 # Variables:
 #   $count (Number) - The number of visits matching the search query.
 firefoxview-search-results-count =
-    { NUMBER($count) ->
+    { $count ->
         [one] { $count } साइट
        *[other] { $count } साइटहरू
     }

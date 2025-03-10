@@ -8,11 +8,18 @@
 newtab-page-title = Νέα καρτέλα
 newtab-settings-button =
     .title = Προσαρμογή της σελίδας Νέας Καρτέλας
+newtab-personalize-settings-icon-label =
+    .title = Εξατομίκευση νέας καρτέλας
+    .aria-label = Ρυθμίσεις
+newtab-settings-dialog-label =
+    .aria-label = Ρυθμίσεις
 newtab-personalize-icon-label =
     .title = Εξατομίκευση νέας καρτέλας
     .aria-label = Εξατομίκευση νέας καρτέλας
 newtab-personalize-dialog-label =
     .aria-label = Εξατομίκευση
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -60,7 +67,7 @@ newtab-topsites-image-validation = Αποτυχία φόρτωσης εικόν�
 ## Top Sites - General form dialog buttons. These are verbs/actions.
 
 newtab-topsites-cancel-button = Ακύρωση
-newtab-topsites-delete-history-button = Διαγραφή
+newtab-topsites-delete-history-button = Διαγραφή από ιστορικό
 newtab-topsites-save-button = Αποθήκευση
 newtab-topsites-preview-button = Προεπισκόπηση
 newtab-topsites-add-button = Προσθήκη
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Αποθήκευση στο { -pocket-brand-name }
 newtab-menu-delete-pocket = Διαγραφή από το { -pocket-brand-name }
 newtab-menu-archive-pocket = Αρχειοθέτηση στο { -pocket-brand-name }
 newtab-menu-show-privacy-info = Οι χορηγοί μας και το απόρρητό σας
+newtab-menu-about-fakespot = Σχετικά με το { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Φραγή
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Άρση παρακολούθησης θέματος
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -233,6 +247,8 @@ newtab-pocket-cta-button = Αποκτήστε το { -pocket-brand-name }
 newtab-pocket-cta-text = Αποθηκεύστε τις ιστορίες που αγαπάτε στο { -pocket-brand-name } και τροφοδοτήστε το μυαλό σας με εκπληκτικά κείμενα.
 newtab-pocket-pocket-firefox-family = Το { -pocket-brand-name } ανήκει στην οικογένεια του { -brand-product-name }
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Αποθήκευση
 newtab-pocket-saved = Αποθηκεύτηκε
 
@@ -244,6 +260,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Όχι για μένα
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Ευχαριστούμε. Τα σχόλιά σας θα μας βοηθήσουν να βελτιώσουμε τη ροή σας.
 newtab-toast-thumbs-up-or-down = Ευχαριστούμε. Τα σχόλιά σας θα μας βοηθήσουν να βελτιώσουμε τη ροή σας.
 newtab-toast-dismiss-button =
     .title = Απόρριψη
@@ -297,6 +316,12 @@ newtab-custom-settings = Διαχείριση περισσότερων ρυθμ�
 
 newtab-wallpaper-title = Ταπετσαρίες
 newtab-wallpaper-reset = Επαναφορά προεπιλογής
+newtab-wallpaper-upload-image = Μεταφόρτωση εικόνας
+newtab-wallpaper-custom-color = Επιλογή χρώματος
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = Η εικόνα υπερέβη το όριο μεγέθους των { $file_size }MB. Δοκιμάστε να μεταφορτώσετε ένα μικρότερο αρχείο.
+newtab-wallpaper-error-file-type = Δεν ήταν δυνατή η μεταφόρτωση του αρχείου σας. Δοκιμάστε ξανά με έναν άλλο τύπο αρχείου.
 newtab-wallpaper-light-red-panda = Κόκκινο πάντα
 newtab-wallpaper-light-mountain = Λευκό βουνό
 newtab-wallpaper-light-sky = Ουρανός με μωβ και ροζ σύννεφα
@@ -309,6 +334,8 @@ newtab-wallpaper-dark-panda = Κόκκινο πάντα στο δάσος
 newtab-wallpaper-dark-sky = Αστικό τοπίο με νυχτερινό ουρανό
 newtab-wallpaper-dark-mountain = Ορεινό τοπίο
 newtab-wallpaper-dark-city = Μωβ αστικό τοπίο
+newtab-wallpaper-dark-fox-anniversary = Μια αλεπού στο πεζοδρόμιο κοντά σε ένα δάσος
+newtab-wallpaper-light-fox-anniversary = Μια αλεπού μέσα σε γρασίδι, με ένα ομιχλώδες ορεινό τοπίο
 
 ## Solid Colors
 
@@ -338,8 +365,12 @@ newtab-wallpaper-abstract-purple = Μωβ σχήματα
 newtab-wallpaper-abstract-orange = Πορτοκαλί σχήματα
 newtab-wallpaper-gradient-orange = Διαβάθμιση πορτοκαλί και ροζ
 newtab-wallpaper-abstract-blue-purple = Μπλε και μωβ σχήματα
+newtab-wallpaper-abstract-white-curves = Λευκό με σκιασμένες καμπύλες
+newtab-wallpaper-abstract-purple-green = Διαβάθμιση μωβ και πράσινου φωτός
+newtab-wallpaper-abstract-blue-purple-waves = Μπλε και μωβ κυματιστές μορφές
+newtab-wallpaper-abstract-black-waves = Μαύρες κυματιστές μορφές
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Φωτογραφίες
 newtab-wallpaper-beach-at-sunrise = Παραλία στην ανατολή του ήλιου
@@ -348,6 +379,12 @@ newtab-wallpaper-storm-sky = Ουρανός με καταιγίδα
 newtab-wallpaper-sky-with-pink-clouds = Ουρανός με ροζ σύννεφα
 newtab-wallpaper-red-panda-yawns-in-a-tree = Κόκκινο πάντα που χασμουριέται σε ένα δέντρο
 newtab-wallpaper-white-mountains = Λευκά βουνά
+newtab-wallpaper-hot-air-balloons = Αερόστατα διάφορων χρωμάτων στο φως της ημέρας
+newtab-wallpaper-starry-canyon = Μπλε έναστρη νύχτα
+newtab-wallpaper-suspension-bridge = Γκρι φωτογραφία με μια κρεμαστή γέφυρα κατά τη διάρκεια της ημέρας
+newtab-wallpaper-sand-dunes = Λευκοί αμμόλοφοι
+newtab-wallpaper-palm-trees = Φιγούρες κοκοφοινίκων κατά τη «χρυσή ώρα»
+newtab-wallpaper-forest-trees = Δέντρα που καλύπτονται από ομίχλη
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -363,6 +400,19 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Ουράνια
+newtab-wallpaper-celestial-lunar-eclipse = Έκλειψη Σελήνης
+newtab-wallpaper-celestial-earth-night = Νυχτερινή φωτογραφία από τη χαμηλή τροχιά της Γης
+newtab-wallpaper-celestial-starry-sky = Έναστρος ουρανός
+newtab-wallpaper-celestial-eclipse-time-lapse = Έκλειψη Σελήνης σε βαθμιαία παρέλευση χρόνου
+newtab-wallpaper-celestial-black-hole = Εικονογράφηση γαλαξία με μια μαύρη τρύπα
+newtab-wallpaper-celestial-river = Δορυφορική εικόνα ποταμού
+
 ## New Tab Weather
 
 # Variables:
@@ -373,6 +423,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Χορηγία
 newtab-weather-menu-change-location = Αλλαγή τοποθεσίας
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Αναζήτηση τοποθεσίας
+    .aria-label = Αναζήτηση τοποθεσίας
 newtab-weather-change-location-search-input = Αναζήτηση τοποθεσίας
 newtab-weather-menu-weather-display = Προβολή καιρού
 # Display options are:
@@ -431,3 +484,45 @@ newtab-topic-selection-button-maybe-later = Ίσως αργότερα
 newtab-topic-selection-privacy-link = Μάθετε πώς προστατεύουμε και διαχειριζόμαστε τα δεδομένα
 newtab-topic-selection-button-update-interests = Ενημερώστε τα ενδιαφέροντά σας
 newtab-topic-selection-button-pick-interests = Επιλέξτε τα ενδιαφέροντά σας
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Ακολουθήστε
+newtab-section-following-button = Ακολουθείται
+newtab-section-unfollow-button = Άρση παρακολούθησης
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Φραγή
+newtab-section-blocked-button = Φραγή
+newtab-section-unblock-button = Άρση φραγής
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = Θέλετε σίγουρα να αποκλείσετε αυτήν την ενότητα;
+newtab-section-confirm-block-section-p2 = Η αποκλεισμένη ενότητα δεν θα εμφανίζεται πλέον στη ροή σας.
+newtab-section-block-section-button = Αποκλεισμός ενότητας
+newtab-section-cancel-button = Όχι τώρα
+newtab-section-confirm-block-topic-p1 = Θέλετε σίγουρα να αποκλείσετε αυτό το θέμα;
+newtab-section-confirm-block-topic-p2 = Τα αποκλεισμένα θέματα δεν θα εμφανίζονται πλέον στη ροή σας.
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = Αποκλεισμός του «{ $topic }»
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = Θέματα
+newtab-section-manage-topics-button-v2 =
+    .label = Διαχείριση θεμάτων
+newtab-section-mangage-topics-followed-topics = Ακολουθούνται
+newtab-section-mangage-topics-button =
+    .label = Παρακολουθούμενα και αποκλεισμένα θέματα
+newtab-section-mangage-topics-followed-topics-subtitle = Παρακολουθούμενα θέματα
+newtab-section-mangage-topics-followed-topics-empty-state = Δεν έχετε παρακολουθήσει κανένα θέμα ακόμα.
+newtab-section-mangage-topics-blocked-topics = Αποκλεισμένα
+newtab-section-mangage-topics-blocked-topics-subtitle = Αποκλεισμένα θέματα
+newtab-section-mangage-topics-blocked-topics-empty-state = Δεν έχετε αποκλείσει κανένα θέμα ακόμα.

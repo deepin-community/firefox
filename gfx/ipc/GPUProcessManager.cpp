@@ -25,7 +25,7 @@
 #include "mozilla/gfx/gfxVars.h"
 #include "mozilla/gfx/GPUChild.h"
 #include "mozilla/gfx/GPUParent.h"
-#include "mozilla/glean/GleanMetrics.h"
+#include "mozilla/glean/GfxMetrics.h"
 #include "mozilla/ipc/Endpoint.h"
 #include "mozilla/ipc/ProcessChild.h"
 #include "mozilla/layers/APZCTreeManagerChild.h"
@@ -265,13 +265,13 @@ bool GPUProcessManager::LaunchGPUProcess() {
   mProcessAttemptLastTime = TimeStamp::Now();
   mProcessStable = false;
 
-  std::vector<std::string> extraArgs;
+  geckoargs::ChildProcessArgs extraArgs;
   ipc::ProcessChild::AddPlatformBuildID(extraArgs);
 
   // The subprocess is launched asynchronously, so we wait for a callback to
   // acquire the IPDL actor.
   mProcess = new GPUProcessHost(this);
-  if (!mProcess->Launch(extraArgs)) {
+  if (!mProcess->Launch(std::move(extraArgs))) {
     DisableGPUProcess("Failed to launch GPU process");
   }
 

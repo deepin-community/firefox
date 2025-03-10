@@ -113,6 +113,7 @@ describe("<CollectionCardGrid>", () => {
       tile_id: undefined,
       recommendation_id: undefined,
       scheduled_corpus_item_id: undefined,
+      corpus_item_id: undefined,
       received_rank: undefined,
       recommended_at: undefined,
       isSponsoredTopSite: undefined,
@@ -120,6 +121,7 @@ describe("<CollectionCardGrid>", () => {
       card_type: undefined,
       position: 0,
       is_pocket_card: false,
+      is_list_card: undefined,
     }));
 
     assert.deepEqual(firstCall.args[0].data, expected);

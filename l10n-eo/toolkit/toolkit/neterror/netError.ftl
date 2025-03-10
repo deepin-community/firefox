@@ -12,6 +12,7 @@ neterror-blocked-by-policy-page-title = Blokita paĝo
 neterror-captive-portal-page-title = Komenci seancon en tiu ĉi reto
 neterror-dns-not-found-title = Servilo ne trovita
 neterror-malformed-uri-page-title = Nevalida retadreso
+general-body-title = Estu singarda. Io ne ĝustas.
 
 ## Error page actions
 
@@ -41,6 +42,9 @@ neterror-generic-error = Pro iu kialo { -brand-short-name } ne povas ŝargi tiun
 neterror-load-error-try-again = La retejo povas esti tempe ne atingebla aŭ troe okupata. Klopodu denove post kelkaj momentoj.
 neterror-load-error-connection = Se vi ne sukcesas ŝargi iun ajn paĝon, kontrolu la komputilan retan konekton.
 neterror-load-error-firewall = Se via komputilo aŭ reto estas protektataj de retbarilo aŭ retperanto, certiĝu ke { -brand-short-name } rajtas aliri la TTT-n.
+# This warning is only shown on macOS Sequoia and later (see bug 1929377)
+neterror-load-osx-permission = Se vi klopodas ŝargi paĝon el la loka reto, bonvolu kontroli ĉu { -brand-short-name } ricevis la permesojn por la loka reto en la agordoj de privateco kaj sekureco de de macOS.
+neterror-http-error-page = Certiĝu esti ĝuste tajpinta la adreson de la retejo.
 neterror-captive-portal = Vi devas komenci seancon en tiu ĉi reto antaŭ ol vi povos aliri la Interreton.
 # Variables:
 # $hostAndPath (String) - a suggested site (e.g. "www.example.com") that the user may have meant instead.
@@ -96,6 +100,9 @@ neterror-proxy-connect-failure-settings = Kontrolu la agordojn de la retperanto 
 neterror-proxy-connect-failure-contact-admin = Kontaktu vian retan administranton por certiĝi ke la retperanto nuntempe funkcias.
 neterror-content-encoding-error = Bonvolu kontakti la retejajn posedantojn por raporti al ili tiun ĉi problemon.
 neterror-unsafe-content-type = Bonvolu kontakti la retejajn posedantojn por raporti al ili tiun ĉi problemon.
+# Variables:
+# $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-basic-http-auth = { -brand-short-name } ne fidas { $hostname } ĉar la konekto ne estas sekura. Provu ŝanĝi la retadreson al HTTPS.
 neterror-nss-failure-not-verified = La paĝo, kiun vi klopodas vidi, ne povas esti montrita ĉar la aŭtentikeco de la ricevitaj datumoj ne povis esti kontrolita.
 neterror-nss-failure-contact-website = Bonvolu kontakti la posedantojn de la retejo por raporti al ili tiun ĉi problemon.
 # Variables:
@@ -148,3 +155,11 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = Se vi ne rekonas la nomon <
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = <b>{ $hostname }</b> uzas sekurecan politikon, kiun oni nomas HTTP Strict Transport Security (HSTS), kiu devigas { -brand-short-name } konektiĝi sekure. Vi ne povas aldoni escepton por viziti tiun ĉi retejon.
+cert-error-trust-certificate-transparency-what-can-you-do-about-it = Verŝajne temas pri nenio grava, sed eble estas problemo en la retejo.
+certerror-blocked-by-corp-headers-description = Kelkefoje retejoj agordas, por si mem kaj por personoj kiel vi, protektojn kontraŭ nedezirataj interagoj kun aliaj retejoj.
+certerror-coop-learn-more = Pli da informo pri la politikoj de malfermo el malsamaj originoj (Cross Origin Opener Policies, COOP)
+certerror-coep-learn-more = Pli da informo pri la politikoj de inkrusto el malsamaj originoj (Cross Origin Embedder Policies, COEP)
+# Variables:
+#   $responsestatus (string) - HTTP response status code (e.g., 500).
+#   $responsestatustext (string) - HTTP response status text (e.g., "Internal Server Error").
+neterror-response-status-code = Erarkodo: { $responsestatus } { $responsestatustext }

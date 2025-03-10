@@ -46,13 +46,6 @@ XPCOMUtils.defineLazyPreferenceGetter(
 
 XPCOMUtils.defineLazyPreferenceGetter(
   lazy,
-  "REVEAL_PASSWORD_ENABLED",
-  "layout.forms.reveal-password-context-menu.enabled",
-  false
-);
-
-XPCOMUtils.defineLazyPreferenceGetter(
-  lazy,
   "TEXT_RECOGNITION_ENABLED",
   "dom.text-recognition.enabled",
   false
@@ -62,6 +55,13 @@ XPCOMUtils.defineLazyPreferenceGetter(
   lazy,
   "STRIP_ON_SHARE_ENABLED",
   "privacy.query_stripping.strip_on_share.enabled",
+  false
+);
+
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
+  "STRIP_ON_SHARE_CAN_DISABLE",
+  "privacy.query_stripping.strip_on_share.canDisable",
   false
 );
 
@@ -87,7 +87,7 @@ export class nsContextMenu {
    * A promise to retrieve the translations language pair
    * if the context menu was opened in a context relevant to
    * open the SelectTranslationsPanel.
-   * @type {Promise<{fromLanguage: string, toLanguage: string}>}
+   * @type {Promise<{sourceLanguage: string, targetLanguage: string}>}
    */
   #translationsLangPairPromise;
 
@@ -1033,12 +1033,17 @@ export class nsContextMenu {
     this.showItem(
       "context-stripOnShareLink",
       lazy.STRIP_ON_SHARE_ENABLED &&
-        this.onLink &&
+        (this.onLink || this.onPlainTextLink) &&
         !this.onMailtoLink &&
         !this.onTelLink &&
         !this.onMozExtLink &&
         !this.isSecureAboutPage()
     );
+
+    let canNotStrip =
+      lazy.STRIP_ON_SHARE_CAN_DISABLE && !this.#canStripParams();
+
+    this.setItemAttr("context-stripOnShareLink", "disabled", canNotStrip);
 
     let copyLinkSeparator = this.document.getElementById(
       "context-sep-copylink"
@@ -1278,7 +1283,7 @@ export class nsContextMenu {
       if (!onViewSource) {
         return;
       }
-      check().then(checked => this.setItemAttr(fullId, "checked", checked));
+      this.setItemAttr(fullId, "checked", check());
       this.setItemAttr(fullId, "label", getString(`context_${id}_label`));
       if (accesskey) {
         this.setItemAttr(
@@ -1291,14 +1296,12 @@ export class nsContextMenu {
 
     const onViewSource = this.browser.currentURI.schemeIs("view-source");
 
-    showViewSourceItem("goToLine", async () => false, true);
+    showViewSourceItem("goToLine", () => false, true);
     showViewSourceItem("wrapLongLines", () =>
-      this.window.gViewSourceUtils.getPageActor(this.browser).queryIsWrapping()
+      Services.prefs.getBoolPref("view_source.wrap_long_lines", false)
     );
     showViewSourceItem("highlightSyntax", () =>
-      this.window.gViewSourceUtils
-        .getPageActor(this.browser)
-        .queryIsSyntaxHighlighting()
+      Services.prefs.getBoolPref("view_source.syntax_highlight", false)
     );
   }
 
@@ -1367,7 +1370,7 @@ export class nsContextMenu {
   }
 
   initPasswordControlItems() {
-    let shouldShow = this.onPassword && lazy.REVEAL_PASSWORD_ENABLED;
+    let shouldShow = this.onPassword;
     if (shouldShow) {
       let revealPassword = this.document.getElementById(
         "context-reveal-password"
@@ -1387,7 +1390,7 @@ export class nsContextMenu {
 
   openPasswordManager() {
     lazy.LoginHelper.openPasswordManager(this.window, {
-      entryPoint: "contextmenu",
+      entryPoint: "Contextmenu",
     });
   }
 
@@ -1572,7 +1575,7 @@ export class nsContextMenu {
       Services.obs.notifyObservers(
         this.window,
         "menuitem-screenshot",
-        "context_menu"
+        "ContextMenu"
       );
     } else {
       Services.obs.notifyObservers(
@@ -2352,13 +2355,30 @@ export class nsContextMenu {
         this.linkURI
       );
     } catch (e) {
-      console.warn(`stripForCopyOrShare: ${e.message}`);
+      console.warn(`getStrippedLink: ${e.message}`);
       return this.linkURI;
     }
 
     // If nothing can be stripped, we return the original URI
     // so the feature can still be used.
     return strippedLinkURI ?? this.linkURI;
+  }
+
+  /**
+   * Checks if there is a query parameter that can be stripped
+   * @returns {Boolean}
+   *
+   */
+  #canStripParams() {
+    if (!this.linkURI) {
+      return false;
+    }
+    try {
+      return lazy.QueryStringStripper.canStripForShare(this.linkURI);
+    } catch (e) {
+      console.warn("canStripForShare failed!", e);
+      return false;
+    }
   }
 
   /**
@@ -2550,23 +2570,22 @@ export class nsContextMenu {
    * @returns {Promise<void>}
    */
   async localizeTranslateSelectionItem(translateSelectionItem) {
-    const { toLanguage } = await this.#translationsLangPairPromise;
+    const { targetLanguage } = await this.#translationsLangPairPromise;
 
-    if (toLanguage) {
+    if (targetLanguage) {
       // A valid to-language exists, so localize the menuitem for that language.
       let displayName;
 
       try {
-        const displayNames = new Services.intl.DisplayNames(undefined, {
-          type: "language",
-        });
-        displayName = displayNames.of(toLanguage);
+        const languageDisplayNames =
+          lazy.TranslationsParent.createLanguageDisplayNames();
+        displayName = languageDisplayNames.of(targetLanguage);
       } catch {
-        // Services.intl.DisplayNames.of threw, do nothing.
+        // languageDisplayNames.of threw, do nothing.
       }
 
       if (displayName) {
-        translateSelectionItem.setAttribute("target-language", toLanguage);
+        translateSelectionItem.setAttribute("target-language", targetLanguage);
         this.document.l10n.setAttributes(
           translateSelectionItem,
           this.isTextSelected
@@ -2659,7 +2678,7 @@ export class nsContextMenu {
     let menuItemPrivate = document.getElementById(
       "context-searchselect-private"
     );
-    if (!Services.search.isInitialized) {
+    if (!Services.search.hasSuccessfullyInitialized) {
       menuItem.hidden = true;
       menuItemPrivate.hidden = true;
       return;

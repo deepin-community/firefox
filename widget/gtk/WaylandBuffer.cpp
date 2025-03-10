@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "WaylandBuffer.h"
+#include "WaylandSurface.h"
+#include "WaylandSurfaceLock.h"
 
 #include <sys/mman.h>
 #include <fcntl.h>
@@ -34,12 +36,12 @@ using namespace mozilla::gl;
 namespace mozilla::widget {
 
 #define BUFFER_BPP 4
-gfx::SurfaceFormat WaylandBuffer::mFormat = gfx::SurfaceFormat::B8G8R8A8;
 
 #ifdef MOZ_LOGGING
-int WaylandBufferSHM::mDumpSerial =
+MOZ_RUNINIT int WaylandBufferSHM::mDumpSerial =
     PR_GetEnv("MOZ_WAYLAND_DUMP_WL_BUFFERS") ? 1 : 0;
-char* WaylandBufferSHM::mDumpDir = PR_GetEnv("MOZ_WAYLAND_DUMP_DIR");
+MOZ_RUNINIT char* WaylandBufferSHM::mDumpDir =
+    PR_GetEnv("MOZ_WAYLAND_DUMP_DIR");
 #endif
 
 /* static */
@@ -52,7 +54,7 @@ RefPtr<WaylandShmPool> WaylandShmPool::Create(nsWaylandDisplay* aWaylandDisplay,
 
   RefPtr<WaylandShmPool> shmPool = new WaylandShmPool();
 
-  shmPool->mShm = MakeUnique<base::SharedMemory>();
+  shmPool->mShm = MakeRefPtr<ipc::SharedMemory>();
   if (!shmPool->mShm->Create(aSize)) {
     NS_WARNING("WaylandShmPool: Unable to allocate shared memory!");
     return nullptr;
@@ -77,7 +79,7 @@ void* WaylandShmPool::GetImageData() {
     NS_WARNING("WaylandShmPool: Failed to map Shm!");
     return nullptr;
   }
-  mImageData = mShm->memory();
+  mImageData = mShm->Memory();
   return mImageData;
 }
 
@@ -85,41 +87,140 @@ WaylandShmPool::~WaylandShmPool() {
   MozClearPointer(mShmPool, wl_shm_pool_destroy);
 }
 
-static const struct wl_buffer_listener sBufferListenerWaylandBuffer = {
-    WaylandBuffer::BufferReleaseCallbackHandler};
-
 WaylandBuffer::WaylandBuffer(const LayoutDeviceIntSize& aSize) : mSize(aSize) {}
 
-void WaylandBuffer::AttachAndCommit(wl_surface* aSurface) {
+wl_buffer* WaylandBuffer::BorrowBuffer(RefPtr<WaylandSurface> aWaylandSurface) {
+  MOZ_RELEASE_ASSERT(!mSurface, "We're already attached!");
+
+  if (CreateWlBuffer()) {
+    mSurface = std::move(aWaylandSurface);
+  }
+
   LOGWAYLAND(
-      "WaylandBuffer::AttachAndCommit [%p] wl_surface %p ID %d wl_buffer "
-      "%p ID %d\n",
-      (void*)this, (void*)aSurface,
-      aSurface ? wl_proxy_get_id((struct wl_proxy*)aSurface) : -1,
-      (void*)GetWlBuffer(),
-      GetWlBuffer() ? wl_proxy_get_id((struct wl_proxy*)GetWlBuffer()) : -1);
+      "WaylandBuffer::BorrowBuffer() [%p] WaylandSurface [%p] wl_buffer [%p]",
+      (void*)this, mSurface ? mSurface->GetLoggingWidget() : nullptr,
+      mWLBuffer);
 
-  wl_buffer* buffer = GetWlBuffer();
-  if (buffer) {
-    mAttached = true;
-    wl_surface_attach(aSurface, buffer, 0, 0);
-    wl_surface_commit(aSurface);
+  MOZ_DIAGNOSTIC_ASSERT(!IsWaitingToBufferDelete(), "We're already deleted!");
+  return mWLBuffer;
+}
+
+void WaylandBuffer::DeleteWlBuffer() {
+  if (!mWLBuffer) {
+    return;
   }
+  LOGWAYLAND("WaylandBuffer::DeleteWlBuffer() [%p] wl_buffer [%p]\n",
+             (void*)this, mWLBuffer);
+  MozClearPointer(mWLBuffer, wl_buffer_destroy);
 }
 
-void WaylandBuffer::BufferReleaseCallbackHandler(wl_buffer* aBuffer) {
-  mAttached = false;
+static void BufferDeleteSyncFinished(void* aData, struct wl_callback* callback,
+                                     uint32_t time) {
+  LOGWAYLAND("BufferDeleteSyncFinished() [%p]", aData);
+  RefPtr buffer = already_AddRefed(static_cast<WaylandBuffer*>(aData));
+  // wl_buffer should be already deleted on our side.
+  buffer->BufferDetachedCallbackHandler(nullptr, /* aWlBufferDeleted */ true);
+}
 
-  if (mBufferReleaseFunc) {
-    mBufferReleaseFunc(mBufferReleaseData, aBuffer);
+static const struct wl_callback_listener sBufferDeleteSyncListener = {
+    .done = BufferDeleteSyncFinished,
+};
+
+void WaylandBuffer::ReturnBuffer(RefPtr<WaylandSurface> aWaylandSurface) {
+  LOGWAYLAND("WaylandBuffer::ReturnBuffer() [%p] WaylandSurface [%p]",
+             (void*)this, mSurface.get());
+
+  MutexAutoLock lock(mBufferReleaseMutex);
+  MOZ_RELEASE_ASSERT(aWaylandSurface == mSurface || !mSurface);
+
+  if (mBufferDeleteSyncCallback) {
+    MOZ_DIAGNOSTIC_ASSERT(!HasWlBuffer());
+    return;
   }
+
+  DeleteWlBuffer();
+
+  // We're already detached from WaylandSurface
+  if (!mSurface) {
+    return;
+  }
+
+  // There are various Wayland queues processed for every thread.
+  // It's possible that wl_buffer release event is pending in any
+  // queue while we already asked for wl_buffer delete.
+  // We need to finish wl_buffer removal when all events from this
+  // point are processed so we use sync callback.
+  //
+  // When wl_display_sync comes back to us (from main thread)
+  // we know all events are processed and there isn't any
+  // wl_buffer operation pending so we can safely release WaylandSurface
+  // and WaylandBuffer objects.
+  mBufferDeleteSyncCallback = wl_display_sync(WaylandDisplayGetWLDisplay());
+  // Addref this to keep it live until sync,
+  // we're unref it at sBufferDeleteSyncListener
+  AddRef();
+  wl_callback_add_listener(mBufferDeleteSyncCallback,
+                           &sBufferDeleteSyncListener, this);
 }
 
-void WaylandBuffer::BufferReleaseCallbackHandler(void* aData,
-                                                 wl_buffer* aBuffer) {
-  auto* buffer = reinterpret_cast<WaylandBuffer*>(aData);
-  buffer->BufferReleaseCallbackHandler(aBuffer);
+void WaylandBuffer::BufferDetachedCallbackHandler(wl_buffer* aBuffer,
+                                                  bool aWlBufferDeleted) {
+  LOGWAYLAND(
+      "WaylandBuffer::BufferDetachedCallbackHandler() [%p] WaylandSurface [%p] "
+      "aBuffer [%p] aWlBufferDeleted %d GetWlBuffer() [%p]",
+      (void*)this, mSurface ? mSurface->GetLoggingWidget() : nullptr, aBuffer,
+      aWlBufferDeleted, GetWlBuffer());
+
+  // BufferDetachedCallbackHandler() should be caled by Wayland compostor
+  // on main thread only.
+  AssertIsOnMainThread();
+
+  // aWlBufferDeleted means wl_buffer should be nullptr
+  MOZ_DIAGNOSTIC_ASSERT(!aBuffer == aWlBufferDeleted);
+
+  RefPtr<WaylandSurface> surface;
+
+  // Don't take mBufferReleaseMutex and mSurface locks together,
+  // may lead to deadlock.
+  {
+    MutexAutoLock lock(mBufferReleaseMutex);
+
+    // We should release correct buffer.
+    // If GetWlBuffer() is nullptr (deleted) we should have valid delete
+    // callback.
+    MOZ_DIAGNOSTIC_ASSERT(aBuffer == GetWlBuffer() ||
+                          (!GetWlBuffer() && mBufferDeleteSyncCallback));
+
+    if (aWlBufferDeleted) {
+      MOZ_DIAGNOSTIC_ASSERT(mBufferDeleteSyncCallback);
+      mBufferDeleteSyncCallback = nullptr;
+    }
+
+    // We might be unreffed by previous BufferDetachedCallbackHandler() callback
+    // as it's called for both wl_buffer delete and wl_buffer detach events.
+    if (!mSurface) {
+      return;
+    }
+
+    // Clear surface reference so WaylandBuffer is marked as not attached now.
+    surface = std::move(mSurface);
+  }
+
+  // Notify WaylandSurface we're detached by Wayland compositor
+  // so it can clear reference to us.
+  WaylandSurfaceLock surfaceLock(surface);
+  surface->DetachedByWaylandCompositorLocked(surfaceLock, this);
 }
+
+static void BufferDetachedCallbackHandler(void* aData, wl_buffer* aBuffer) {
+  LOGWAYLAND("BufferDetachedCallbackHandler() [%p] received wl_buffer [%p]",
+             aData, aBuffer);
+  RefPtr<WaylandBuffer> buffer = static_cast<WaylandBuffer*>(aData);
+  buffer->BufferDetachedCallbackHandler(aBuffer, /* aWlBufferDeleted */ false);
+}
+
+static const struct wl_buffer_listener sBufferDetachListener = {
+    BufferDetachedCallbackHandler};
 
 /* static */
 RefPtr<WaylandBufferSHM> WaylandBufferSHM::Create(
@@ -127,43 +228,70 @@ RefPtr<WaylandBufferSHM> WaylandBufferSHM::Create(
   RefPtr<WaylandBufferSHM> buffer = new WaylandBufferSHM(aSize);
   nsWaylandDisplay* waylandDisplay = WaylandDisplayGet();
 
+  LOGWAYLAND("WaylandBufferSHM::Create() [%p] [%d x %d]", (void*)buffer,
+             aSize.width, aSize.height);
+
   int size = aSize.width * aSize.height * BUFFER_BPP;
   buffer->mShmPool = WaylandShmPool::Create(waylandDisplay, size);
   if (!buffer->mShmPool) {
+    LOGWAYLAND("  failed to create shmPool");
     return nullptr;
   }
 
-  buffer->mWLBuffer = wl_shm_pool_create_buffer(
-      buffer->mShmPool->GetShmPool(), 0, aSize.width, aSize.height,
-      aSize.width * BUFFER_BPP, WL_SHM_FORMAT_ARGB8888);
-  if (!buffer->mWLBuffer) {
-    return nullptr;
-  }
-
-  wl_buffer_add_listener(buffer->GetWlBuffer(), &sBufferListenerWaylandBuffer,
-                         buffer.get());
-
-  LOGWAYLAND("WaylandBufferSHM Created [%p] WaylandDisplay [%p]\n",
-             buffer.get(), waylandDisplay);
+  LOGWAYLAND("  created [%p] WaylandDisplay [%p]\n", buffer.get(),
+             waylandDisplay);
 
   return buffer;
 }
 
+bool WaylandBufferSHM::CreateWlBuffer() {
+  if (mWLBuffer) {
+    return true;
+  }
+  LOGWAYLAND("WaylandBufferSHM::CreateWlBuffer() [%p]", (void*)this);
+
+  mWLBuffer = wl_shm_pool_create_buffer(mShmPool->GetShmPool(), 0, mSize.width,
+                                        mSize.height, mSize.width * BUFFER_BPP,
+                                        WL_SHM_FORMAT_ARGB8888);
+  if (!mWLBuffer) {
+    LOGWAYLAND("  failed to create wl_buffer");
+    return false;
+  }
+
+  if (wl_buffer_add_listener(mWLBuffer, &sBufferDetachListener, this) < 0) {
+    LOGWAYLAND("  failed to attach listener");
+    return false;
+  }
+
+  return true;
+}
+
 WaylandBufferSHM::WaylandBufferSHM(const LayoutDeviceIntSize& aSize)
-    : WaylandBuffer(aSize) {}
+    : WaylandBuffer(aSize) {
+  LOGWAYLAND("WaylandBufferSHM::WaylandBufferSHM() [%p]\n", (void*)this);
+}
 
 WaylandBufferSHM::~WaylandBufferSHM() {
-  MozClearPointer(mWLBuffer, wl_buffer_destroy);
+  LOGWAYLAND("WaylandBufferSHM::~WaylandBufferSHM() [%p]\n", (void*)this);
+  MOZ_DIAGNOSTIC_ASSERT(!IsWaitingToBufferDelete());
+  MOZ_DIAGNOSTIC_ASSERT(!IsAttached());
+  if (!IsAttached()) {
+    DeleteWlBuffer();
+  }
+  MOZ_DIAGNOSTIC_ASSERT(!HasWlBuffer());
 }
 
 already_AddRefed<gfx::DrawTarget> WaylandBufferSHM::Lock() {
+  LOGWAYLAND("WaylandBufferSHM::lock() [%p]\n", (void*)this);
   return gfxPlatform::CreateDrawTargetForData(
       static_cast<unsigned char*>(mShmPool->GetImageData()),
       mSize.ToUnknownSize(), BUFFER_BPP * mSize.width, GetSurfaceFormat());
 }
 
 void WaylandBufferSHM::Clear() {
-  memset(mShmPool->GetImageData(), 0, mSize.height * mSize.width * BUFFER_BPP);
+  LOGWAYLAND("WaylandBufferSHM::Clear() [%p]\n", (void*)this);
+  memset(mShmPool->GetImageData(), 0xff,
+         mSize.height * mSize.width * BUFFER_BPP);
 }
 
 #ifdef MOZ_LOGGING
@@ -196,29 +324,77 @@ void WaylandBufferSHM::DumpToFile(const char* aHint) {
 #endif
 
 /* static */
-RefPtr<WaylandBufferDMABUF> WaylandBufferDMABUF::Create(
-    const LayoutDeviceIntSize& aSize, GLContext* aGL) {
+already_AddRefed<WaylandBufferDMABUF> WaylandBufferDMABUF::CreateRGBA(
+    const LayoutDeviceIntSize& aSize, GLContext* aGL,
+    RefPtr<DRMFormat> aFormat) {
   RefPtr<WaylandBufferDMABUF> buffer = new WaylandBufferDMABUF(aSize);
 
-  const auto flags =
-      static_cast<DMABufSurfaceFlags>(DMABUF_TEXTURE | DMABUF_ALPHA);
-  buffer->mDMABufSurface =
-      DMABufSurfaceRGBA::CreateDMABufSurface(aSize.width, aSize.height, flags);
+  buffer->mDMABufSurface = DMABufSurfaceRGBA::CreateDMABufSurface(
+      aSize.width, aSize.height, aFormat,
+      DMABUF_SCANOUT | DMABUF_USE_MODIFIERS);
   if (!buffer->mDMABufSurface || !buffer->mDMABufSurface->CreateTexture(aGL)) {
+    LOGWAYLAND("  failed to create texture");
     return nullptr;
   }
 
-  if (!buffer->mDMABufSurface->CreateWlBuffer()) {
-    return nullptr;
+  LOGWAYLAND("WaylandBufferDMABUF::CreateRGBA() [%p] UID %d [%d x %d]",
+             (void*)buffer, buffer->mDMABufSurface->GetUID(), aSize.width,
+             aSize.height);
+  return buffer.forget();
+}
+
+/* static */
+already_AddRefed<WaylandBufferDMABUF> WaylandBufferDMABUF::CreateExternal(
+    RefPtr<DMABufSurface> aSurface) {
+  const auto size =
+      LayoutDeviceIntSize(aSurface->GetWidth(), aSurface->GetWidth());
+  RefPtr<WaylandBufferDMABUF> buffer = new WaylandBufferDMABUF(size);
+
+  LOGWAYLAND("WaylandBufferDMABUF::CreateExternal() [%p] UID %d [%d x %d]",
+             (void*)buffer, aSurface->GetUID(), size.width, size.height);
+
+  buffer->mDMABufSurface = aSurface;
+  return buffer.forget();
+}
+
+bool WaylandBufferDMABUF::CreateWlBuffer() {
+  MOZ_DIAGNOSTIC_ASSERT(mDMABufSurface);
+
+  if (mWLBuffer) {
+    return true;
   }
 
-  wl_buffer_add_listener(buffer->GetWlBuffer(), &sBufferListenerWaylandBuffer,
-                         buffer.get());
+  LOGWAYLAND("WaylandBufferDMABUF::CreateWlBuffer() [%p] UID %d", (void*)this,
+             mDMABufSurface->GetUID());
 
-  return buffer;
+  mWLBuffer = mDMABufSurface->CreateWlBuffer();
+  if (!mWLBuffer) {
+    LOGWAYLAND("  failed to create wl_buffer");
+    return false;
+  }
+
+  if (wl_buffer_add_listener(mWLBuffer, &sBufferDetachListener, this) < 0) {
+    LOGWAYLAND("  failed to attach listener!");
+    return false;
+  }
+
+  return true;
 }
 
 WaylandBufferDMABUF::WaylandBufferDMABUF(const LayoutDeviceIntSize& aSize)
-    : WaylandBuffer(aSize) {}
+    : WaylandBuffer(aSize) {
+  LOGWAYLAND("WaylandBufferDMABUF::WaylandBufferDMABUF [%p]\n", (void*)this);
+}
+
+WaylandBufferDMABUF::~WaylandBufferDMABUF() {
+  LOGWAYLAND("WaylandBufferDMABUF::~WaylandBufferDMABUF [%p] UID %d\n",
+             (void*)this, mDMABufSurface ? mDMABufSurface->GetUID() : -1);
+  MOZ_DIAGNOSTIC_ASSERT(!IsWaitingToBufferDelete());
+  MOZ_DIAGNOSTIC_ASSERT(!IsAttached());
+  if (!IsAttached()) {
+    DeleteWlBuffer();
+  }
+  MOZ_DIAGNOSTIC_ASSERT(!HasWlBuffer());
+}
 
 }  // namespace mozilla::widget

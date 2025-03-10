@@ -96,14 +96,14 @@ urlbar-web-rtc-share-devices-notification-anchor =
 urlbar-web-rtc-share-speaker-notification-anchor =
     .tooltiptext = Կառավարեք  բարձրախոսի համօգտագործումը այս կայքի հետ
 urlbar-autoplay-notification-anchor =
-    .tooltiptext = Բացեք ինքնաշխատ վահանակը
+    .tooltiptext = Բացել ինքնանվագարկման վահանակը
 urlbar-persistent-storage-notification-anchor =
     .tooltiptext = Պահել տվյալները Մշտական պահեստում
 urlbar-addons-notification-anchor =
     .tooltiptext = Բացել հավելման տեղադրման հաղորդագրության վահանակը
 urlbar-tip-help-icon =
     .title = Ստանալ օգնություն
-urlbar-search-tips-confirm = Հասկանալի է։
+urlbar-search-tips-confirm = Լավ, հասկացա
 urlbar-search-tips-confirm-short = Հասկացա
 # Read out before Urlbar Tip text content so screenreader users know the
 # subsequent text is a tip offered by the browser. It should end in a colon or
@@ -118,8 +118,8 @@ urlbar-result-menu-learn-more =
     .label = Իմանալ ավելին
     .accesskey = L
 urlbar-result-menu-remove-from-history =
-    .label = Ջնջել Պատմությունից
-    .accesskey = R
+    .label = Ջնջել պատմությունից
+    .accesskey = Ջ
 urlbar-result-menu-tip-get-help =
     .label = Ստանալ օգնություն
     .accesskey = h
@@ -133,6 +133,9 @@ urlbar-search-tips-onboard = Մուտքագրեք քիչ, գտեք շատ. որ�
 urlbar-search-tips-redirect-2 = Սկսեք Ձեր որոնումը հասցեագոտում՝ տեսնելու համար { $engineName }-ի առաջարկները և Ձեր դիտարկումների պատմությունը:
 # Make sure to match the name of the Search panel in settings.
 urlbar-search-tips-persist = Որոնումը ավելի պարզ է դարձել: Փորձեք ավելի հստակեցնել Ձեր որոնումն այստեղ՝ հասցեագոտում: Փոխարենը հասցեն ցուցադրելու համար այցելեք «Որոնում»՝ կարգավորումներում:
+# Prompts users to use the Urlbar when they are typing in the domain of a
+# search engine, e.g. google.com or amazon.com.
+urlbar-tabtosearch-onboard = Ընտրեք այս դյուրանցումը, որպեսզի ավելի արագ գտնեք այն, ինչ ձեզ հարկավոր է:
 
 ## Local search mode indicator labels in the urlbar
 
@@ -366,6 +369,7 @@ identity-https-only-dropdown-off =
 identity-https-only-dropdown-off-temporarily =
     .label = Ժամանակավորապես անջատված է
 identity-https-only-info-turn-on2 = Միացրեք Միայն HTTPS կերպը այս կայքի համար, եթե ցանկանում եք, որ { -brand-short-name }-ը արդիացնի կապակցումը, երբ հնարավոր է:
+identity-https-only-info-turn-off2 = Եթե էջը կարծես խախտված է, կարող եք անջատել միայն HTTPS-ի ռեժիմը, որպեսզի այս կայքը կրկին բեռնվի՝ օգտագործելով անապահով HTTP:
 identity-https-only-info-no-upgrade = Հնարավոր չէ HTTP-ից թարմացնել կապը:
 identity-permissions-storage-access-header = Միջկայքային թխուկներ
 identity-permissions-storage-access-hint = Այս կողմերը կարող են օգտագործել միջկայքաին թխուկներ և կայքի տվյալներ, երբ դուք գտնվում եք այս կայքում:
@@ -419,7 +423,7 @@ browser-tab-audio-muted2 = ԼՌԵՑՎԱԾ
 # This label should be written in all capital letters if your locale supports them.
 browser-tab-audio-blocked = ԻՆՔՆԱՆՎԱԳԱՐԿՈՒՄՆ ԱՐԳԵԼԱՓԱԿՎԱԾ Է
 # This label should be written in all capital letters if your locale supports them.
-browser-tab-audio-pip = ՆԿԱՐ ՆԿԱՐՈՒՄ
+browser-tab-audio-pip = ՆԿԱՐԸ ՆԿԱՐՈՒՄ
 
 ## These labels should be written in all capital letters if your locale supports them.
 ## Variables:
@@ -534,7 +538,7 @@ urlbar-remote-control-notification-anchor2 =
 urlbar-permissions-granted =
     .tooltiptext = Դուք տրամադրել եք այս կայքէջին լրացուցիչ թույլտվություններ:
 urlbar-switch-to-tab =
-    .value = Անցնել ներդիրի՝
+    .value = Փոխարկել ներդիրին՝
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
     .value = Ընդլայնում՝
@@ -560,7 +564,7 @@ urlbar-result-action-search-in-private = Որոնել գաղտնի պատուհ�
 #  $engine (String): the name of a search engine
 urlbar-result-action-search-w-engine = Որոնել { $engine }-ով
 urlbar-result-action-sponsored = Հովանավորված
-urlbar-result-action-switch-tab = Փոխանջատել ներդիրը
+urlbar-result-action-switch-tab = Փոխարկվել ներդիրին
 urlbar-result-action-visit = Այցելել
 # "Switch to tab with container" is used when the target tab is located in a
 # different container.
@@ -602,6 +606,42 @@ urlbar-result-action-calculator-result = = { $result }
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = Որոնել { $engine }-ով
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - Որոնում { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - Որոնել { $engine }-ով
+urlbar-searchmode-dropmarker =
+    .tooltiptext = Ավելացնել որոնիչ
+urlbar-searchmode-bookmarks =
+    .label = Էջանիշեր
+urlbar-searchmode-tabs =
+    .label = Ներդիրներ
+urlbar-searchmode-history =
+    .label = Պատմություն
+urlbar-searchmode-actions =
+    .label = Գործողություններ
+urlbar-searchmode-exit-button =
+    .tooltiptext = Փակել
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = Այս անգամ որոնել հետևյալով՝
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = Որոնման կարգավորումներ
+urlbar-searchmode-popup-search-settings = Որոնման կարգավորումներ
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, ընտրեք որոնիչ
+    .tooltiptext = { $engine }, ընտրեք որոնիչ
+urlbar-searchmode-button-no-engine =
+    .label = Դյուրանցում ընտրված չէ, ընտրեք դյուրանցում
+    .tooltiptext = Դյուրանցում ընտրված չէ, ընտրեք դյուրանցում
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -611,6 +651,12 @@ urlbar-result-action-search-bookmarks = Որոնել էջանիշեր
 urlbar-result-action-search-history = Որոնման պատմություն
 urlbar-result-action-search-tabs = Որոնել ներդիրներ
 urlbar-result-action-search-actions = Որոնման գործողություններ
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = Փոխարկվել { $group }-ին
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = Բացել { $group }
 
 ## Labels shown above groups of urlbar results
 
@@ -632,6 +678,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Վերջին որոնումները
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = Թրենդային { $engine }-ում
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Մի ցուցադրեք թրենդային որոնումները
+    .accesskey = D
+urlbar-result-menu-trending-why =
+    .label = Ինչո՞ւ եմ ես սա տեսնում:
+    .accesskey = W
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Շնորհակալություն արձագանքի համար: Դուք այլևս չեք տեսնի թրենդային որոնումներ:
 
 ## Reader View toolbar buttons
 
@@ -648,7 +709,11 @@ reader-view-close-button =
 
 picture-in-picture-urlbar-button-open =
     .tooltiptext = Բացեք նկարը նկարում ({ $shortcut })
-picture-in-picture-panel-header = Նկար-նկարում
+picture-in-picture-urlbar-button-close =
+    .tooltiptext = Փակել նկարը նկարում ({ $shortcut })
+picture-in-picture-panel-header = Նկարը նկարում
+picture-in-picture-panel-headline = Այս կայքը խորհուրդ չի տալիս «Նկարը նկարում»:
+picture-in-picture-panel-body = Տեսանյութերը կարող են չցուցադրվել այնպես, ինչպես մշակողը նախատեսել է, մինչ «Պատկերը նկարում» միացված է:
 picture-in-picture-enable-toggle =
     .label = Միացնել ամեն դեպքում
 
@@ -895,6 +960,7 @@ restore-session-startup-suggestion-button = Ցույց տուր ինձ, թե ի�
 
 ## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
 
+filepicker-blocked-infobar = Ձեր կազմակերպությունն արգելափակել է մատչումը տեղային ֆայլերին այս համակարգչում
 
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
@@ -904,7 +970,18 @@ data-reporting-notification-button =
     .accesskey = C
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Գաղտնի դիտարկում
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = Գաղտնի դիտարկում
+# Tooltip for the indicator shown in the window titlebar when content analysis is active.
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-indicator-tooltip =
+    .tooltiptext = Տվյալների կորստի կանխարգելում (DLP) { $agentName }-ի կողմից: Սեղմեք՝ լրացուցիչ տեղեկությունների համար:
 content-analysis-panel-title = Տվյալների պաշտպանություն
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-panel-text-styled = Ձեր կազմակերպությունն օգտագործում է <b>{ $agentName }</b> տվյալների կորստից պաշտպանվելու համար: <a data-l10n-name="info">Իմանալ ավելին</a>
 
 ## Unified extensions (toolbar) button
 
@@ -927,6 +1004,15 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Ընդլայնումներ
         Որոշ Ընդլայնումներ թույլատրված չեն
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = Ընդլայնումներ
+    .tooltiptext =
+        Ընդլայնումներ
+        Որոշ ընդլայնումներ անջատված են
 
 ## Private browsing reset button
 
@@ -956,12 +1042,18 @@ refresh-blocked-allow =
 
 ## Firefox Relay integration
 
+firefox-relay-offer-why-to-use-relay = Մեր անվտանգ, հեշտ օգտագործման դիմակները պաշտպանում են ձեր ինքնությունը և կանխում թափոնը՝ թաքցնելով ձեր էլ.փոստի հասցեն:
 
 ## Add-on Pop-up Notifications
 
 popup-notification-addon-install-unsigned =
     .value = (Չստուգված)
 popup-notification-xpinstall-prompt-learn-more = Իմացեք ավելին հավելումների ապահով տեղակայման մասին
+popup-notification-xpinstall-prompt-block-url = Դիտել մանրամասները
+# Note: Access key is set to P to match "Private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox =
+    .label = Աշխատեցնել գաղտնի պատուհաններում
+    .accesskey = P
 
 ## Pop-up warning
 
@@ -969,13 +1061,13 @@ popup-notification-xpinstall-prompt-learn-more = Իմացեք ավելին հա�
 #   $popupCount (Number): the number of pop-ups blocked.
 popup-warning-message =
     { $popupCount ->
-        [one] { -brand-short-name } կանխվել է Pop-up-ի բացումը այս կայքից:
-       *[other] { -brand-short-name } կանխել է { $popupCount } Pop-up պատուհանների բացումը:
+        [one] { -brand-short-name } կանխվել է թռուցիկի բացումը այս կայքից:
+       *[other] { -brand-short-name } կանխել է { $popupCount } թռուցիկի բացումը:
     }
 # The singular form is left out for English, since the number of blocked pop-ups is always greater than 1.
 # Variables:
 #   $popupCount (Number): the number of pop-ups blocked.
-popup-warning-exceeded-message = { -brand-short-name } արգելափակեց այս կայքը ավելի բացելու քան { $popupCount } ելնող պատուհաններ։
+popup-warning-exceeded-message = { -brand-short-name } արգելափակեց այս կայքը ավելի բացելու քան { $popupCount } թռուցիկ պատուհաններ։
 popup-warning-button =
     .label =
         { PLATFORM() ->
@@ -991,3 +1083,16 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Ցուցադրել '{ $popupURI }'-ը
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Ցուցադրել պանակում
+    .accessKey = F

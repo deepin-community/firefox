@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Передавати вебсайтам сигнал “Не стежити”
+do-not-track-removal = Ми більше не підтримуємо сигнал “Не відстежувати”
 do-not-track-description2 =
     .label = Надсилати вебсайтам запит “Не стежити”
     .accesskey = ж
@@ -12,8 +13,8 @@ do-not-track-option-default-content-blocking-known =
 do-not-track-option-always =
     .label = Завжди
 global-privacy-control-description =
-    .label = Вказувати вебсайтам не продавати та не ділитися моїми даними
-    .accesskey = п
+    .label = Вказувати вебсайтам не продавати мої дані та не ділитися ними
+    .accesskey = к
 non-technical-privacy-header = Налаштування приватності вебсайту
 # Do not translate.
 # "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
@@ -137,6 +138,7 @@ windows-launch-on-login =
     .label = Відкривати { -brand-short-name } автоматично під час запуску комп'ютера
     .accesskey = В
 windows-launch-on-login-disabled = Це налаштування вимкнено у Windows. Щоб змінити його, відвідайте <a data-l10n-name="startup-link">Програми для запуску</a> в налаштуваннях системи.
+windows-launch-on-login-profile-disabled = Увімкніть цей параметр, позначивши “{ profile-manager-use-selected.label }” у вікні “Вибір профілю користувача”.
 startup-restore-warn-on-quit =
     .label = Попереджати при виході з браузера
 disable-extension =
@@ -153,6 +155,17 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Відкривати посилання у вкладках замість нових вікон
     .accesskey = л
+ask-on-close-multiple-tabs =
+    .label = Запитувати перед закриттям кількох вкладок
+    .accesskey = к
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = Запитувати перед виходом за допомогою { $quitKey }
+    .accesskey = ю
 confirm-on-close-multiple-tabs =
     .label = Підтверджувати перед закриттям кількох вкладок
     .accesskey = і
@@ -571,8 +584,7 @@ home-prefs-shortcuts-description = Сайти, які ви зберігаєте 
 home-prefs-shortcuts-by-option-sponsored =
     .label = Спонсоровані ярлики
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Рекомендації від { $provider }
@@ -644,6 +656,10 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Показувати пошукові пропозиції в результатах панелі адреси
     .accesskey = ш
+# With this option enabled, on the search results page
+# the URL will be replaced by the search terms in the address bar.
+search-show-search-term-option-2 =
+    .label = Показувати пошукові терміни в панелі адреси на сторінках результатів
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -787,6 +803,9 @@ sync-currently-syncing-creditcards = Кредитні картки
 sync-currently-syncing-payment-methods = Способи оплати
 sync-currently-syncing-addons = Додатки
 sync-currently-syncing-settings = Налаштування
+sync-manage-options =
+    .label = Керування синхронізацією…
+    .accesskey = с
 sync-change-options =
     .label = Змінити…
     .accesskey = З
@@ -839,6 +858,13 @@ sync-engine-settings =
     .label = Налаштування
     .tooltiptext = Змінені вами налаштування приватності, безпеки та інші
     .accesskey = Н
+sync-choose-what-to-sync-dialog4 =
+    .title = Керуйте синхронізованими даними на всіх під'єднаних пристроях
+    .style = min-width: 36em;
+    .buttonlabelaccept = Зберегти
+    .buttonaccesskeyaccept = З
+    .buttonlabelextra2 = Від'єднати…
+    .buttonaccesskeyextra2 = В
 
 ## The device name controls.
 
@@ -1289,13 +1315,34 @@ collection-description = Ми прагнемо надати вам вибір і
 collection-privacy-notice = Положення про приватність
 collection-health-report-telemetry-disabled = Ви більше не дозволяєте { -vendor-short-name } збирати технічні дані й інформацію про взаємодію. Всі минулі дані будуть видалені протягом 30 днів.
 collection-health-report-telemetry-disabled-link = Докладніше
+collection-usage-ping =
+    .label = Надсилати щоденний сигнал використання до { -vendor-short-name }
+    .accesskey = г
+collection-usage-ping-description = Це допомагає { -vendor-short-name } оцінити активних користувачів.
+collection-health-report2 =
+    .label = Надсилати технічні й аналітичні дані до { -vendor-short-name }
+    .accesskey = с
 collection-health-report =
     .label = Дозволити { -brand-short-name } надсилати технічні та користувацькі дані в { -vendor-short-name }
     .accesskey = к
 collection-health-report-link = Докладніше
+collection-health-report-description = Це допомагає вдосконалити функції, продуктивність і стабільність { -brand-product-name }.
+collection-studies2 =
+    .label = Встановлювати й запускати дослідження
+collection-studies-description = Випробуйте нові функції та ідеї, перш ніж вони стануть доступними для всіх.
 collection-studies =
     .label = Дозволити { -brand-short-name } встановлювати й виконувати дослідження
 collection-studies-link = Переглянути дослідження { -brand-short-name }
+addon-recommendations2 =
+    .label = Дозволити персоналізовані рекомендації розширень
+addon-recommendations-description = Отримуйте рекомендації щодо розширень, щоб покращити роботу в інтернеті.
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = Відправлення даних вимкнено для цієї конфігурації збірки.
+collection-backlogged-crash-reports2 =
+    .label = Автоматично надсилати звіти про збої
+    .accesskey = з
+collection-backlogged-crash-reports-description = Це допомагає { -vendor-short-name } діагностувати й усувати проблеми з браузером. Звіти можуть містити особисті або конфіденційні дані.
 addon-recommendations =
     .label = Дозволити { -brand-short-name } робити персоналізовані рекомендації розширень
 addon-recommendations-link = Докладніше

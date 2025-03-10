@@ -52,6 +52,20 @@ static inline int32_t ToInt32(const LAllocation* a) {
   MOZ_CRASH("this is not a constant!");
 }
 
+static inline intptr_t ToIntPtr(const LAllocation* a) {
+  if (a->isConstantValue()) {
+    const MConstant* cst = a->toConstant();
+    if (cst->type() == MIRType::Int32) {
+      return cst->toInt32();
+    }
+    return cst->toIntPtr();
+  }
+  if (a->isConstantIndex()) {
+    return a->toConstantIndex()->index();
+  }
+  MOZ_CRASH("this is not a constant!");
+}
+
 static inline int64_t ToInt64(const LAllocation* a) {
   if (a->isConstantValue()) {
     return a->toConstant()->toInt64();
@@ -156,10 +170,6 @@ static inline Register ToTempUnboxRegister(const LDefinition* def) {
   return ToTempRegisterOrInvalid(def);
 }
 
-static inline Register ToRegisterOrInvalid(const LDefinition* a) {
-  return a ? ToRegister(a) : InvalidReg;
-}
-
 static inline FloatRegister ToFloatRegister(const LAllocation& a) {
   MOZ_ASSERT(a.isFloatReg());
   return a.toFloatReg()->reg();
@@ -208,12 +218,11 @@ static inline ValueOperand ToOutValue(LInstruction* ins) {
 #endif
 }
 
-static inline ValueOperand GetTempValue(Register type, Register payload) {
+static inline ValueOperand ToValue(const LBoxAllocation& a) {
 #if defined(JS_NUNBOX32)
-  return ValueOperand(type, payload);
+  return ValueOperand(ToRegister(a.type()), ToRegister(a.payload()));
 #elif defined(JS_PUNBOX64)
-  (void)type;
-  return ValueOperand(payload);
+  return ValueOperand(ToRegister(a.value()));
 #else
 #  error "Unknown"
 #endif

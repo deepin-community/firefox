@@ -4,10 +4,8 @@
 
 places-error-title = { -brand-short-name }
 places-no-title = (унвон нест)
-
 # Do not translate `javascript:` and `data:`, they refer to the scheme used in URLs
 places-load-js-data-url-error = Бо мақсадҳои бехатарӣ, нишониҳои URL-и «javascript:» ё «data:» аз равзанаи таърих ё навори ҷонибӣ бор карда намешаванд.
-
 places-bookmarks-backup-title = Номи файли нусхаи эҳтиётии хатбаракҳо
 places-bookmarks-restore-alert-title = Барқарор кардани хатбаракҳо
 places-bookmarks-restore-alert = Ин амал ҳамаи хатбаракҳои ҷории шуморо бо нусхаи эҳтиётӣ иваз мекунад. Шумо мутмаин ҳастед?
@@ -15,6 +13,7 @@ places-bookmarks-restore-title = Интихоби нусхаи эҳтиётии 
 places-bookmarks-restore-filter-name = JSON
 places-bookmarks-restore-format-error = Навъи файл дастгирӣ намешавад.
 places-bookmarks-restore-parse-error = Татбиқи файли нусхаи эҳтиётӣ иҷро нашуд.
-
 places-bookmarks-import = Ворид кардани файли хатбаракҳо
 places-bookmarks-export = Содир кардани файли хатбаракҳо
+places-bookmarks-paste-error-title = Нишони(ҳо)и URL-и нодуруст ёфт шуд
+places-bookmarks-paste-error-message-header = Нишони(ҳо)и URL-и зерин ба хатбаракҳои шумо илова карда намешаванд. Кӯшиш кунед, ки шаклсозиро тафтиш карда, онҳоро аз нав илова намоед.

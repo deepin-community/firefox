@@ -18,6 +18,9 @@ cert-error-trust-signature-algorithm-disabled = האישור אינו מהימן
 cert-error-trust-expired-issuer = האישור אינו מהימן מכיוון שתוקף האישור של הגורם המנפיק פג.
 cert-error-trust-self-signed = האישור אינו מהימן מכיוון שהוא נחתם עצמית.
 cert-error-trust-symantec = אישורים שהונפקו על־ידי GeoTrust, ‏RapidSSL, ‏Symantec, ‏Thawte ו־VeriSign אינם נחשבים עוד כבטוחים מכיוון שרשויות האישורים הללו כשלו ביישום נהלי אבטחה.
+# Variables:
+#   $hostname (string) - Hostname of the website with cert error.
+cert-error-trust-certificate-transparency = ‏{ -brand-short-name } לא נותן אמון ב־{ $hostname } מכיוון שהוא לא הוכיח שהוא עומד בדרישות השקיפות של אישורים ציבוריים.
 cert-error-untrusted-default = האישור לא מגיע ממקור מהימן.
 # Variables:
 #   $hostname (string) - Hostname of the website with cert error.
@@ -68,6 +71,45 @@ open-in-new-window-for-csp-or-xfo-error = פתיחת אתר בחלון חדש
 # Variables:
 #   $hostname (string) - Hostname of the website blocked by csp or xfo error.
 csp-xfo-blocked-long-desc = כדי להגן על האבטחה שלך, { $hostname } לא יאפשר ל־{ -brand-short-name } להציג את הדף אם אתר אחר הטמיע אותו. כדי לצפות בדף זה, עליך לפתוח אותו בחלון חדש.
+fp-certerror-view-certificate-link = הצגת אישור האתר
+fp-certerror-return-to-previous-page-recommended-button = חזרה (מומלץ)
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+#   $validHosts (String) - Valid hostnames.
+fp-certerror-bad-domain-why-dangerous-body = האתר מוגדר לאפשר רק חיבורים מאובטחים, אבל יש בעיה באישור האתר. ייתכן שגורם זדוני מנסה להתחזות לאתר. אתרים משתמשים באישורי אבטחה המונפקים על־ידי רשות אישורים כדי להוכיח שהם באמת מי שהם אומרים שהם. { -brand-short-name } לא נותן אמון באתר זה מכיוון שאישור האבטחה שלו אינו תקף עבור { $hostname }. האישור תקף רק עבור: { $validHosts }.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-bad-domain-what-can-you-do-body = כנראה שכלום, מכיוון שסביר להניח שיש בעיה באתר עצמו. אתרים משתמשים באישורי אבטחה המונפקים על־ידי רשות אישורים כדי להוכיח שהם באמת מי שהם אומרים שהם. אבל אם הינך ברשת ארגונית, ייתכן שלצוות התמיכה שלך יהיה מידע נוסף. אם מותקנת אצלך תוכנת אנטיוירוס, כדאי לנסות לחפש אחר התנגשויות פוטנציאליות או בעיות ידועות.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-certerror-unknown-issuer-why-dangerous-body = ישנה בעיה באישור האבטחה של האתר. ייתכן שגורם זדוני מנסה להתחזות לאתר. אתרים משתמשים באישורי אבטחה המונפקים על־ידי רשות אישורים כדי להוכיח שהם באמת מי שהם אומרים שהם. { -brand-short-name } לא נותן אמון באתר זה מכיוון שאיננו יכולים לדעת מי הנפיק את אישור האבטחה, הוא נחתם עצמית או שהאתר לא שולח אישורי ביניים שעליהם אנו נותנים אמון.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-unknown-issuer-what-can-you-do-body = כנראה שכלום, מכיוון שסביר להניח שיש בעיה באתר עצמו. אם הינך ברשת ארגונית, ייתכן שלצוות התמיכה שלך יהיה מידע נוסף. אם מותקנת אצלך תוכנת אנטיוירוס, ייתכן שיש צורך להגדיר אותה כדי שתעבוד עם { -brand-short-name }.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-certerror-self-signed-why-dangerous-body = מכיוון שיש בעיה עם אישור האבטחה של האתר. אתרים משתמשים באישורי אבטחה המונפקים על־ידי רשות אישורים כדי להוכיח שהם באמת מי שהם אומרים שהם. אישור האבטחה של אתר זה נחתם עצמית, הוא לא הונפק על־ידי רשות אישורים מוכרת - ולכן איננו נותנים בה אמון כברירת מחדל.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-self-signed-what-can-you-do-body = לא הרבה. סביר להניח שיש בעיה באתר עצמו.
+fp-certerror-self-signed-important-note = הערה חשובה: אם הינך מנסה לבקר באתר זה באינטראנט של ארגון, צוות ה־IT עשוי להשתמש באישורים אבטחה חתומים עצמית. הם יוכלו לסייע לך לבדוק את האמינות שלהם.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate expiration date.
+fp-certerror-expired-why-dangerous-body = אתרים משתמשים באישורי אבטחה המונפקים על־ידי רשות אישורים כדי להוכיח שהם באמת מי שהם אומרים שהם. { -brand-short-name } לא נותן אמון באתר זה מכיוון שנראה שפג התוקף של אישור האבטחה ב־{ DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate start date.
+fp-certerror-not-yet-valid-why-dangerous-body = אתרים משתמשים באישורי אבטחה המונפקים על־ידי רשות אישורים כדי להוכיח שהם באמת מי שהם אומרים שהם. { -brand-short-name } לא נותן אמון באתר זה מכיוון שנראה שאישור האבטחה לא יהיה תקף עד { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+# Variables:
+#   $date (Date) - Clock date.
+fp-certerror-expired-what-can-you-do-body = שעון המכשיר שלך מוגדר ל־{ DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }. אם זה נכון, בעיית האבטחה היא כנראה באתר עצמו. אם זה שגוי, באפשרותך לשנות את התאריך והשעה בהגדרות המערכת של המכשיר שלך.
+# Variables:
+#   $error (string) - NSS error code string that specifies type of cert error. e.g. unknown issuer, invalid cert, etc.
+fp-cert-error-code = קוד שגיאה: { $error }
+# Variables:
+#   $datetime (Date) - Current datetime.
+fp-datetime = { DATETIME($datetime, month: "short", year: "numeric", day: "numeric") } { DATETIME($datetime, timeStyle: "long") }
+fp-learn-more-about-secure-connection-failures = מידע נוסף על כשלים בחיבור מאובטח
+fp-learn-more-about-cert-issues = מידע נוסף על סוגים אלה של בעיות אישורי אבטחה
+fp-learn-more-about-time-related-errors = מידע נוסף על פתרון בעיות של שגיאות הקשורות לזמן
 
 ## Messages used for certificate error titles
 
@@ -92,6 +134,7 @@ contentEncodingError-title = שגיאה בקידוד תוכן
 unsafeContentType-title = סוג קובץ מסוכן
 netReset-title = החיבור הופסק
 netTimeout-title = תם הזמן המוקצב לחיבור
+httpErrorPage-title = נראה שיש בעיה באתר הזה
 serverError-title = נראה שיש בעיה באתר הזה
 unknownProtocolFound-title = כתובת זו אינה מובנת
 proxyConnectFailure-title = השרת המתווך דחה את ההתחברות
@@ -109,3 +152,20 @@ networkProtocolError-title = שגיאת פרוטוקול רשת
 nssBadCert-title = אזהרה: סכנת אבטחה אפשרית לפניך
 nssBadCert-sts-title = לא בוצעה התחברות: חולשת אבטחה אפשרית
 certerror-mitm-title = תכנית כלשהי מונעת מ־{ -brand-short-name } להתחבר באופן מאובטח לאתר הזה
+
+## Felt Privacy V1 Strings
+
+fp-certerror-page-title = אזהרה: סיכון אבטחה
+fp-certerror-body-title = נא להיזהר. משהו לא נראה תקין.
+fp-certerror-why-site-dangerous = מה גורם לאתר להיראות מסוכן?
+fp-certerror-what-can-you-do = מה ניתן לעשות בנדון?
+fp-certerror-advanced-title = מתקדם
+fp-certerror-advanced-button = מתקדם
+fp-certerror-hide-advanced-button = הסתרת מתקדם
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-certerror-override-exception-button = המשך אל { $hostname } (מסוכן)
+fp-certerror-intro = ‏{ -brand-short-name } זיהה בעיית אבטחה שעלולה להיות חמורה עם <strong>{ $hostname }</strong>. מישהו שמתחזה לאתר יכול לנסות לגנוב דברים כמו פרטי כרטיסי אשראי, ססמאות או דוא״ל.
+fp-certerror-expired-into = ‏{ -brand-short-name } זיהה בעיית אבטחה עם <strong>{ $hostname }</strong>. או שהאתר לא מוגדר נכון או ששעון המכשיר שלך מוגדר לתאריך/שעה הלא נכונים.

@@ -54,6 +54,8 @@ mr1-onboarding-theme-header = Jadikan milik Anda
 mr1-onboarding-theme-subtitle = Personalisasikan { -brand-short-name } dengan tema.
 mr1-onboarding-theme-secondary-button-label = Jangan sekarang
 newtab-wallpaper-onboarding-title = Coba berbagai ragam warna
+newtab-wallpaper-onboarding-subtitle = Pilih gambar latar untuk memberikan tampilan baru pada Tab Baru Anda.
+newtab-wallpaper-onboarding-primary-button-label = Tetapkan gambar latar
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Tema sistem
 mr1-onboarding-theme-label-light = Terang
@@ -186,6 +188,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Simpan { -brand-short-name } di Dock
        *[other] Sematkan { -brand-short-name } di bilah tugas
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Sematkan { -brand-short-name } ke taskbar dan menu mulai
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -221,7 +225,9 @@ mr2022-onboarding-set-default-subtitle = Gunakan peramban yang didukung oleh org
 mr2022-onboarding-get-started-primary-subtitle = Versi terbaru kami dibangun untuk Anda, membuatnya lebih mudah dari sebelumnya untuk menjelajah web. Penuh dengan fitur yang kami rasa akan Anda sukai.
 mr2022-onboarding-get-started-primary-button-label = Siapkan dalam hitungan detik
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Pengaturan secepat kilat
 mr2022-onboarding-import-subtitle = Siapkan { -brand-short-name } sesuai keinginan Anda. Tambahkan markah, sandi, dan lainnya dari peramban lama Anda.
@@ -326,11 +332,130 @@ mr2022-onboarding-colorways-image-alt =
 
 ## Device migration onboarding
 
+onboarding-device-migration-image-alt =
+    .aria-label = Seekor rubah di layar komputer laptop melambai. Laptop memiliki mouse yang dicolokkan ke sana.
 onboarding-device-migration-title = Selamat datang kembali!
+onboarding-device-migration-subtitle = Masuk ke { -fxaccount-brand-name(capitalization: "sentence") } Anda untuk membawa markah, kata sandi, dan riwayat Anda ke perangkat baru.
+onboarding-device-migration-subtitle2 = Masuk ke akun Anda untuk membawa markah, kata sandi, dan riwayat Anda di perangkat baru.
 onboarding-device-migration-primary-button-label = Masuk
+
+## Add-ons Picker screen
+
+amo-picker-title = Ubahsuai { -brand-short-name } Anda
+amo-picker-subtitle = Ekstensi adalah seperti aplikasi untuk browser Anda, dan mereka memungkinkan Anda melindungi kata sandi, mengunduh video, menemukan penawaran, memblokir iklan yang mengganggu, mengubah tampilan browser, dan banyak lagi.
+amo-picker-install-button-label = Tambahkan ke { -brand-short-name }
+amo-picker-install-complete-label = Terinstal
+amo-picker-collection-link = Jelajahi lebih banyak pengaya
 
 ## The following screens have been updated to use security and privacy focused strings:
 
+# Easy setup screen
+onboarding-easy-setup-security-and-privacy-title = Kami senang menjaga Anda tetap aman
+onboarding-easy-setup-security-and-privacy-subtitle = Peramban nirlaba kami membantu menghentikan perusahaan secara diam-diam mengikuti Anda di web.
+# Mobile download screen
+onboarding-mobile-download-security-and-privacy-title = Selalu terenkripsi saat Anda berpindah antar perangkat
+onboarding-mobile-download-security-and-privacy-subtitle = Saat disinkronkan, { -brand-short-name } mengenkripsi kata sandi, markah, dan lainnya. Selain itu, Anda dapat mengambil tab dari perangkat lainnya.
+# Gratitude screen
+onboarding-gratitude-security-and-privacy-title = { -brand-short-name } mendukung Anda
+onboarding-gratitude-security-and-privacy-subtitle = Terima kasih telah menggunakan { -brand-short-name }, yang didukung oleh Mozilla Foundation. Dengan dukungan Anda, kami berupaya membuat internet lebih aman dan lebih mudah diakses oleh semua orang.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Sinkronkan data Anda di seluruh perangkat
+onboarding-sign-up-description = Daftar untuk mendapatkan akun. Semua info penting Anda — kata sandi, markah, dan lainnya — akan disimpan dengan aman dan tersedia saat Anda masuk ke perangkat mana saja.
+onboarding-sign-up-button = Daftar atau masuk
+onboarding-sign-up-secondary-button = Mulai menjelajah
 
 ## New user time and familiarity survey strings
+
+onboarding-new-user-time-based-survey-title = Sudah berapa lama Anda menggunakan { -brand-short-name }?
+onboarding-new-user-familiarity-based-survey-title = Seberapa familier Anda dengan { -brand-short-name }?
+onboarding-new-user-survey-subtitle = Umpan balik Anda membantu membuat { -brand-short-name } menjadi lebih baik.
+# When translating "next" it means the next screen in onboarding.
+onboarding-new-user-survey-next-button-label = Selanjutnya
+onboarding-new-user-survey-legal-link-label = Dengan memilih “{ onboarding-new-user-survey-next-button-label }”, Anda menyetujui <a data-l10n-name="privacy_notice">Pemberitahuan Privasi</a> { -brand-product-name }
+# When translating "brand new" it means completely new.
+onboarding-new-user-survey-time-based-option-1 = Baru kenal
+onboarding-new-user-survey-time-based-option-2 = Kurang dari 1 bulan
+onboarding-new-user-survey-time-based-option-3 = Lebih dari 1 bulan, pengguna reguler
+onboarding-new-user-survey-time-based-option-4 = Lebih dari 1 bulan, hanya kadang-kadang
+# When translating "brand new" it means completely new.
+onboarding-new-user-survey-familiarity-based-option-1 = Baru kenal
+onboarding-new-user-survey-familiarity-based-option-2 = Sudah beberapa kali menggunakan
+onboarding-new-user-survey-familiarity-based-option-3 = Sudah sangat familier
+onboarding-new-user-survey-familiarity-based-option-4 = Dulu pernah menggunakan, jarang akhir-akhir ini
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Beri tahu kami di sisi mana Anda ingin meletakkan daftar tab
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Ganti posisinya kapan saja di pengaturan bilah sisi.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Tab Anda, cara Anda
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Membiarkan banyak tab terbuka? Coba tab di samping untuk tampilan yang lebih ramping. Atau tetap klasik dengan tab di bagian atas. Beralih kapan saja.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Pilih tata letak tab Anda
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Untuk tampilan yang diringkas yang dapat membantu Anda tetap fokus, coba tab di samping. Atau tetap klasik dengan tab di bagian atas. Beralih kapan saja.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Tab di samping
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Tab di atas
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Tab vertikal telah tersedia
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Memperkenalkan tab vertikal
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Coba letakkan daftar tab Anda di samping. Ganti posisinya kapan saja di pengaturan bilah sisi.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Coba tab vertikal
+onboarding-flair-text = Baru!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Gunakan tab horizontal saja
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Jendela peramban yang menampilkan tab di samping layar sebagai bagian dari bilah samping { -brand-shorter-name }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Jendela peramban yang menampilkan tab di samping layar sebagai bagian dari bilah samping { -brand-shorter-name }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Jendela peramban yang menampilkan daftar tab di bagian atas.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Jendela peramban yang menampilkan daftar tab di bagian atas.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Coba chatbot AI di bilah samping
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Rangkum konten web, curahkan gagasan, buat konsep pesan — semuanya saat Anda menjelajah. Pilih dari beberapa penyedia. Beralih kapan saja. <a data-l10n-name="learn-more">Pelajari lebih lanjut</a>
+onboarding-genai-sidebar-primary-button = Pilih chatbot
+onboarding-genai-sidebar-secondary-button = Mulai menjelajah
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Selesaikan penyiapan { -brand-short-name }
+onboarding-checklist-subtitle = Selesaikan langkah berikut untuk mendapatkan hasil maksimal dari pengalaman menjelajah Anda.
+onboarding-checklist-set-default = Atur { -brand-short-name } sebagai peramban baku
+onboarding-checklist-pin = Sematkan { -brand-short-name } di taskbar
+onboarding-checklist-import = Impor dari peramban sebelumnya
+onboarding-checklist-extension = Tambahkan ekstensi
+onboarding-checklist-sign-up = Daftar atau masuk ke akun Anda
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Coba grup tab untuk mengurangi tercecer, lebih fokus
+tab-groups-onboarding-feature-callout-subtitle = Atur dengan menyeret satu tab di atas tab lainnya untuk membuat grup pertama Anda.
+tab-groups-onboarding-saved-groups-title = Jika Anda menutup grup tab, Anda dapat membukanya kembali di sini kapan saja.
+tab-groups-onboarding-dismiss = Oke
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Kenali profil { -brand-product-name }
+multi-profile-spotlight-body = Beralih dengan mudah antara penjelajahan untuk bekerja dan bersenang-senang. Profil menjaga info penjelajahan Anda, termasuk riwayat pencarian dan kata sandi, benar-benar terpisah sehingga Anda dapat tetap teratur.
+multi-profile-spotlight-cta = Buat profil
+multi-profile-callout-title = Buat profil berbeda untuk bekerja dan bersenang-senang
+multi-profile-callout-subtitle = Profil memungkinkan Anda menyimpan info penjelajahan Anda, seperti riwayat pencarian dan kata sandi, benar-benar terpisah.
+multi-profile-callout-cta = Buat profil
+
+## Desktop to Mobile Adoption feature callout strings
 

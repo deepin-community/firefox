@@ -57,6 +57,12 @@ pub struct ClientRemoteTabs {
     pub remote_tabs: Vec<RemoteTab>,
 }
 
+pub(crate) enum DbConnection {
+    Created,
+    Open(Connection),
+    Closed,
+}
+
 // Tabs has unique requirements for storage:
 // * The "local_tabs" exist only so we can sync them out. There's no facility to
 //   query "local tabs", so there's no need to store these persistently - ie, they
@@ -72,7 +78,7 @@ pub struct ClientRemoteTabs {
 pub struct TabsStorage {
     local_tabs: RefCell<Option<Vec<RemoteTab>>>,
     db_path: PathBuf,
-    db_connection: Option<Connection>,
+    db_connection: DbConnection,
 }
 
 impl TabsStorage {
@@ -80,7 +86,18 @@ impl TabsStorage {
         Self {
             local_tabs: RefCell::default(),
             db_path: db_path.as_ref().to_path_buf(),
-            db_connection: None,
+            db_connection: DbConnection::Created,
+        }
+    }
+
+    pub fn close(&mut self) {
+        if let DbConnection::Open(conn) =
+            std::mem::replace(&mut self.db_connection, DbConnection::Closed)
+        {
+            if let Err(err) = conn.close() {
+                // Log the error, but continue with shutdown
+                log::error!("Failed to close the connection: {:?}", err);
+            }
         }
     }
 
@@ -93,8 +110,10 @@ impl TabsStorage {
 
     /// If a DB file exists, open and return it.
     pub fn open_if_exists(&mut self) -> Result<Option<&Connection>> {
-        if let Some(ref existing) = self.db_connection {
-            return Ok(Some(existing));
+        match self.db_connection {
+            DbConnection::Open(ref conn) => return Ok(Some(conn)),
+            DbConnection::Closed => return Ok(None),
+            DbConnection::Created => {}
         }
         let flags = OpenFlags::SQLITE_OPEN_NO_MUTEX
             | OpenFlags::SQLITE_OPEN_URI
@@ -105,12 +124,17 @@ impl TabsStorage {
             &crate::schema::TabsMigrationLogic,
         ) {
             Ok(conn) => {
-                self.db_connection = Some(conn);
-                Ok(self.db_connection.as_ref())
+                log::info!("tabs storage is opening an existing database");
+                self.db_connection = DbConnection::Open(conn);
+                match self.db_connection {
+                    DbConnection::Open(ref conn) => Ok(Some(conn)),
+                    _ => unreachable!("impossible value"),
+                }
             }
             Err(open_database::Error::SqlError(rusqlite::Error::SqliteFailure(code, _)))
                 if code.code == rusqlite::ErrorCode::CannotOpen =>
             {
+                log::info!("tabs storage could not open an existing database and hasn't been asked to create one");
                 Ok(None)
             }
             Err(e) => Err(e.into()),
@@ -119,8 +143,10 @@ impl TabsStorage {
 
     /// Open and return the DB, creating it if necessary.
     pub fn open_or_create(&mut self) -> Result<&Connection> {
-        if let Some(ref existing) = self.db_connection {
-            return Ok(existing);
+        match self.db_connection {
+            DbConnection::Open(ref conn) => return Ok(conn),
+            DbConnection::Closed => return Err(Error::UnexpectedConnectionState),
+            DbConnection::Created => {}
         }
         let flags = OpenFlags::SQLITE_OPEN_NO_MUTEX
             | OpenFlags::SQLITE_OPEN_URI
@@ -131,12 +157,18 @@ impl TabsStorage {
             flags,
             &crate::schema::TabsMigrationLogic,
         )?;
-        self.db_connection = Some(conn);
-        Ok(self.db_connection.as_ref().unwrap())
+        log::info!("tabs storage is creating a database connection");
+        self.db_connection = DbConnection::Open(conn);
+        match self.db_connection {
+            DbConnection::Open(ref conn) => Ok(conn),
+            _ => unreachable!("We just set to Open, this should be impossible."),
+        }
     }
 
     pub fn update_local_state(&mut self, local_state: Vec<RemoteTab>) {
+        let num_tabs = local_state.len();
         self.local_tabs.borrow_mut().replace(local_state);
+        log::info!("update_local_state has {num_tabs} tab entries");
     }
 
     // We try our best to fit as many tabs in a payload as possible, this includes
@@ -170,8 +202,15 @@ impl TabsStorage {
             // Sort the tabs so when we trim tabs it's the oldest tabs
             sanitized_tabs.sort_by(|a, b| b.last_used.cmp(&a.last_used));
             trim_tabs_length(&mut sanitized_tabs, MAX_PAYLOAD_SIZE);
+            log::info!(
+                "prepare_local_tabs_for_upload found {} tabs",
+                sanitized_tabs.len()
+            );
             return Some(sanitized_tabs);
         }
+        // It's a less than ideal outcome if at startup (or any time) we are asked to
+        // sync tabs before the app has told us what the tabs are, so make noise.
+        log::warn!("prepare_local_tabs_for_upload - have no local tabs");
         None
     }
 
@@ -1530,5 +1569,32 @@ mod tests {
             .contains(&("device-1".to_string(), "https://example1.com".to_string())));
         assert!(remaining_commands
             .contains(&("device-2".to_string(), "https://example3.com".to_string())));
+    }
+
+    #[test]
+    fn test_close_connection() {
+        let dir = tempfile::tempdir().unwrap();
+        let db_path = dir.path().join("test_close_connection.db");
+        let mut storage = TabsStorage::new(db_path);
+
+        // Open the connection
+        storage.open_or_create().unwrap();
+
+        // Verify that the connection is open
+        assert!(matches!(storage.db_connection, DbConnection::Open(_)));
+
+        // Close the connection
+        storage.close();
+
+        // Verify that the connection is closed
+        assert!(matches!(storage.db_connection, DbConnection::Closed));
+
+        // Attempt to reopen the connection should fail
+        let result = storage.open_or_create();
+        assert!(result.is_err());
+        assert!(matches!(
+            result.unwrap_err(),
+            Error::UnexpectedConnectionState
+        ));
     }
 }

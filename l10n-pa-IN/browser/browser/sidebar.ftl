@@ -4,6 +4,12 @@
 
 menu-view-genai-chat =
     .label = AI ਚੈਟਬੋਟ
+menu-view-review-checker =
+    .label = ਰੀਵਿਊ ਚੈਕਰ
+menu-view-contextual-password-manager =
+    .label = ਪਾਸਵਰਡ
+sidebar-options-menu-button =
+    .title = ਮੇਨੂ ਨੂੰ ਖੋਲ੍ਹੋ
 
 ## Labels for sidebar history panel
 
@@ -46,16 +52,30 @@ sidebar-position-right =
     .label = ਸੱਜੇ ਪਾਸੇ ਵੇਖਾਓ
 sidebar-vertical-tabs =
     .label = ਖੜ੍ਹਵੀਆਂ ਟੈਬਾਂ
+sidebar-settings =
+    .label = ਬਾਹੀ ਦੀਆਂ ਸੈਟਿੰਗਾਂ
+sidebar-hide-tabs-and-sidebar =
+    .label = ਟੈਬਾਂ ਅਤੇ ਬਾਹੀ ਨੂੰ ਲੁਕਾਓ
+sidebar-show-on-the-right =
+    .label = ਬਾਹੀ ਨੂੰ ਸੱਜੇ ਭੇਜੋ
+sidebar-show-on-the-left =
+    .label = ਬਾਹੀ ਨੂੰ ਖੱਬੇ ਭੇਜੋ
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = ਮਾਊਸ ਕੋਲ ਲੈ ਜਾਣ ਉੱਤੇ ਬਾਹੀ ਨੂੰ ਫੈਲਾਓ
 sidebar-horizontal-tabs =
     .label = ਲੇਟਵੀਆਂ ਟੈਬਾਂ
 sidebar-customize-tabs-header =
     .label = ਟੈਬ ਦੀਆਂ ਸੈਟਿੰਗਾਂ
-sidebar-customize-settings-header =
-    .label = ਬਾਹੀ ਦੀਆਂ ਸੈਟਿੰਗਾਂ
-sidebar-visibility-always-show =
-    .label = ਹਮੇਸ਼ਾਂ ਵੇਖਾਓ
-sidebar-visibility-hide-sidebar =
-    .label = ਬਾਹੀ ਨੂੰ ਓਹਲੇ ਕਰੋ
+sidebar-customize-button-header =
+    .label = ਬਾਹੀ ਬਟਨ
+sidebar-customize-position-header =
+    .label = ਬਾਹੀ ਦੀ ਸਥਿਤੀ
+sidebar-visibility-setting-always-show =
+    .label = ਬਾਹੀ ਨੂੰ ਫੈਲਾਓ ਤੇ ਸਮੇਟੋ
+sidebar-visibility-setting-hide-sidebar =
+    .label = ਬਾਹੀ ਨੂੰ ਵੇਖਾਓ ਤੇ ਓਹਲੇ ਕਰੋ
 
 ## Labels for sidebar context menu items
 
@@ -95,6 +115,41 @@ sidebar-menu-bookmarks-label =
     .label = ਬੁੱਕਮਾਰਕ
 sidebar-menu-customize-label =
     .label = ਬਾਹੀ ਨੂੰ ਕਸਟਮਾਈਜ਼ ਕਰੋ
+sidebar-menu-review-checker-label =
+    .label = ਰੀਵਿਊ ਚੈਕਰ
+sidebar-menu-contextual-password-manager-label =
+    .label = ਪਾਸਵਰਡ
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = ਅਤੀਤ ਨੂੰ ਖੋਲ੍ਹੋ ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = ਅਤੀਤ ਨੂੰ ਬੰਦ ਕਰੋ ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = ਬੁੱਕਮਾਰਕਾਂ ਨੂੰ ਖੋਲ੍ਹੋ ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = ਬੁੱਕਮਾਰਕਾਂ ਨੂੰ ਬੰਦ ਕਰੋ ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = AI ਚੈਟ-ਬੋਟ ਨੂੰ ਖੋਲ੍ਹੋ
+sidebar-menu-close-ai-chatbot-tooltip = AI ਚੈਟ-ਬੋਟ ਨੂੰ ਬੰਦ ਕਰੋ
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = AI ਚੈਟਬੋਟ ਨੂੰ ਖੋਲ੍ਹੋ ({ $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = { $provider } ਨੂੰ ਖੋਲ੍ਹੋ ({ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip-generic = AI ਚੈਟਬੋਟ ਨੂੰ ਬੰਦ ਕਰੋ ({ $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = { $provider } ਨੂੰ ਬੰਦ ਕਰੋ ({ $shortcut })
 
 ## Headings for sidebar menu panels.
 
@@ -104,6 +159,18 @@ sidebar-menu-history-header =
     .heading = ਅਤੀਤ
 sidebar-menu-syncedtabs-header =
     .heading = ਹੋਰ ਡਿਵਾਈਸਾਂ ਤੋਂ ਟੈਬਾਂ
+sidebar-menu-bookmarks-header =
+    .heading = ਬੁੱਕਮਾਰਕ
+sidebar-menu-cpm-header =
+    .heading = ਪਾਸਵਰਡ
+sidebar-panel-header-close-button =
+    .tooltiptext = ਬੰਦ ਕਰੋ
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = ਬਾਹੀ ਨੂੰ ਕਸਟਮਾਈਜ਼ ਕਰੋ
+sidebar-history-title = ਅਤੀਤ
+sidebar-syncedtabs-title = ਹੋਰ ਡਿਵਾਈਸਾਂ ਤੋਂ ਟੈਬਾਂ
 
 ## Context for closing synced tabs when hovering over the items
 
@@ -113,3 +180,29 @@ sidebar-menu-syncedtabs-header =
 #   $deviceName (String) - the name of the device the user is closing a tab for
 synced-tabs-context-close-tab-title =
     .title = { $deviceName } ਉੱਤੇ ਟੈਬ ਨੂੰ ਬੰਦ ਕਰੋ
+show-sidebars =
+    .tooltiptext = ਬਾਹੀਆਂ ਨੂੰ ਵੇਖੋ
+    .label = ਬਾਹੀ
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = ਬਾਹੀ ਨੂੰ ਫੈਲਾਓ ({ $shortcut })
+    .label = ਬਾਹੀ
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = ਬਾਹੀ ਨੂੰ ਸਮੇਟੋ ({ $shortcut })
+    .label = ਬਾਹੀ
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = ਬਾਹੀ ਨੂੰ ਵੇਖਾਓ ({ $shortcut })
+    .label = ਬਾਹੀ
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = ਬਾਹੀ ਨੂੰ ਓਹਲੇ ਕਰੋ ({ $shortcut })
+    .label = ਬਾਹੀ

@@ -11,6 +11,7 @@ more-from-moz-category =
 more-from-moz-subtitle = ਹੋਰ { -vendor-short-name } ਉਤਪਾਦ ਵੇਖੋ, ਜੋ ਕਿ ਮਜ਼ਬੂਤ ਇੰਟਰਨੈੱਟ ਦੇ ਹੱਕ ਵਿੱਚ ਕੰਮ ਕਰਦੇ ਹਨ।
 more-from-moz-firefox-mobile-title = { -brand-product-name } ਮੋਬਾਇਲ
 more-from-moz-firefox-mobile-description = ਮੋਬਾਇਲ ਬਰਾਊਜ਼ਰ ਜੋ ਤੁਹਾਡੀ ਪਰਦੇਦਾਰੀ ਨੂੰ ਪਹਿਲ ਦਿੰਦਾ ਹੈ।
+more-from-moz-firefox-mobile-title-1 = ਮੋਬਾਈਲ ਲਈ { -brand-product-name }
 more-from-moz-mozilla-vpn-title = { -mozilla-vpn-brand-name }
 more-from-moz-mozilla-vpn-description = ਬਰਾਊਜ਼ ਕਰਨ ਵਾਲੇ ਅਣਪਛਾਤੇ ਰਹਿਣ ਦੀ ਪਰਤ ਜੋੜਨ ਅਤੇ ਸੁਰੱਖਿਆ ਲੈਣ ਬਾਰੇ ਜਾਣਕਾਰੀ ਲਵੋ।
 more-from-moz-qr-code-box-firefox-mobile-title = ਆਪਣੇ ਮੋਬਾਈਲ ਡਿਵਾਈਸ ਨੂੰ ਵਰਤ ਕੇ ਡਾਊਨਲੋਡ ਕਰੋ। ਆਪਣੇ ਕੈਮਰੇ ਨੂੰ QR ਕੋਡ ਵੱਲ ਕਰੋ। ਜਦੋਂ ਲਿੰਕ ਦਿਖਾਈ ਦੇਵੇ ਤਾਂ ਇਸ ਨੂੰ ਛੂਹੋ।
@@ -32,3 +33,9 @@ more-from-moz-mozilla-monitor-title = { -mozmonitor-brand-name }
 more-from-moz-mozilla-monitor-us-description = ਤੁਹਾਡੀ ਜ਼ਾਹਿਰ ਹੋਈ ਨਿੱਜੀ ਜਾਣਕਾਰੀ ਨੂੰ ਆਪਣੇ-ਆਪ ਵਾਪਸ ਲਵੋ।
 more-from-moz-mozilla-monitor-global-description = ਜਦੋਂ ਤੁਹਾਡੇ ਡਾਟੇ ਨੂੰ ਸੰਨ੍ਹ ਲੱਗੇ ਤਾਂ ਚੇਤਾਵਨੀਆਂ ਲਵੋ।
 more-from-moz-mozilla-monitor-button = { -monitor-brand-short-name } ਲਵੋ
+
+## These strings are for the Solo card in about:preferences moreFromMozilla page
+
+more-from-moz-solo-title = { -solo-ai-brand-name } AI
+more-from-moz-solo-description = ਆਪਣੀ ਵੈੱਬਸਾਈਟ ਫ਼ੌਰਨ ਬਣਾਓ ਅਤੇ ਮੁਫ਼ਤ ਵਿੱਚ ਆਪਣੀ ਪਸੰਦੀਦਾ ਡੋਮੇਨ ਨਾਲ ਕਨੈਕਟ ਕਰੋ।
+more-from-moz-solo-button = { -solo-ai-brand-name } ਨੂੰ ਅਜ਼ਮਾਓ

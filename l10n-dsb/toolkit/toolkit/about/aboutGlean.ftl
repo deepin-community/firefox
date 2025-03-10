@@ -16,6 +16,11 @@ about-glean-interface-description =
     jo zběrka datow, kótaraž se w projektach { -vendor-short-name } wužywa.
     Toś ten pówjerch jo se wuwił, aby se wót wuwijarjow a testowarjow wužywał, aby manuelnje
     <a data-l10n-name="fog-link">instrumentaciju testowali</a>.
+about-glean-category-about-glean = Wó { -glean-brand-name }
+about-glean-category-manual-testing = Manuelne testowanje
+about-glean-category-adhoc-testing = Testowanje ad hoc
+about-glean-category-profiler = Wugbaśowu analyzu wužywaś
+about-glean-category-about-data = Wó datach
 about-glean-upload-enabled = Nagraśe datow jo zmóžnjone.
 about-glean-upload-disabled = Nagraśe datow jo znjemóžnjone.
 about-glean-upload-enabled-local = Nagraśe datow jo jano za słanje na lokalny serwer zmóžnjone.
@@ -43,6 +48,9 @@ about-glean-glean-android = <code>MOZ_GLEAN_ANDROID</code>: { $glean-android-def
 #   $moz-official-define-value (Boolean): the value of the MOZILLA_OFFICIAL define.
 # Do not translate strings between <code> </code> tags.
 about-glean-moz-official = <code>MOZILLA_OFFICIAL</code>: { $moz-official-define-value }
+about-glean-additional-links =
+    Za wujasnjenje rozdźělnych móžnosćow daty nagraś a namakaś, glejśo
+    rejtarik <strong>Wó datach</strong>.
 about-glean-about-testing-header = Wó testowanju
 # This message is followed by a numbered list.
 about-glean-manual-testing =
@@ -100,8 +108,38 @@ about-glean-adhoc-note =
     Pšosym źiwajśo na to, až API Glean JS z pomocu konsole wuwijaŕskichrědow wužywaś.
     To groni, až se metriska kategorija a metriske mě w
     <code>camelCase</code> formatěrujotej, na rozdźěl wót API Rust a C++.
+about-glean-profiler-explanation =
+    Aby dopołny naglěd wšych nagratych metrikow wiźeł, móžośo { -profiler-brand-name } wužywaś.
+    Musyśo nejpjerwjej <a data-l10n-name="firefox-profiler-link">wugbaśowy profil registrěrowaś</a>.
+    Gaž profil registrěrujośo, wubjeŕśo <q>markowy diagram</q> a glědajśo na marki pód <q>Telemetrija</q>.
+about-glean-profiler-explanation-profiler =
+    We wugbaśowem profilu móžośo wšykne zgromaźone metriki wiźeś, gdy su se
+    zgromaźili a eksaktnje, kótare gódnoty su se zgromaźili. Gaž z kursorom myški nad jadnotliwymi markami wóstawaśo, móžośo pśeglědowaś, lěc korektna gódnota jo se zgromaźiła a lěc jo se wuběrk w pšawem casu stał.
 controls-button-label-verbose = Nastajenja nałožyś a ping wótpósłaś
+about-glean-feedback-settings-only =
+    .message = Nastajenja nałožone!
+about-glean-feedback-settings-and-ping =
+    .message = Nastajenja su se nałožyli a ping jo se pósłał!
 about-glean-about-data-header = Wó datach
+about-glean-about-data-description =
+    Dajo někotare rozdźělne rědy, kótarež móžośo wužywaś, aby se swóje daty woglědał, wótwisujucy wót togo,
+    což pytaśo.
+about-glean-about-data-description-list-intro =
+    Póśěgujśo se pšosym na slědujucu lisćinu za wěste
+    nałožowańske pady za kuždy rěd:
+about-glean-about-data-list-item-dictionary =
+    Aby lisćinu datow pśepytał, kótarež jo { -glean-brand-name } za kužde nałoženje zgromaźił, konsultěrujśo
+    <a data-l10n-name="glean-dictionary-link">{ -glean-brand-name } Słownik</a>.
+about-glean-about-data-list-item-about-telemetry =
+    Aby daty pśepytał, kótarež su se zgromaźili pśez staršu telemetriju, konsultěrujśo pšosym
+    <a data-l10n-name="about-telemetry-link">about:telemetry</a>.
+about-glean-about-data-list-item-debug-ping-viewer =
+    Aby wobznamjenja pytanja zmólkow pśepytał, tšojeńsku tšugu live wiźeś abo se metriske
+    wizualizacije woglědaś, konsultěrujśo
+    <a data-l10n-name="glean-debug-ping-viewer"> { glean-debug-ping-viewer-brand-name }</a>
+about-glean-about-data-list-item-firefox-profiler =
+    Aby wugbaśowy profil registrěrował a wšykne nagrate metriki wiźeł, wužywajśo pšosym
+    <a data-l10n-name="about-glean-firefox-profiler">{ -profiler-brand-name }</a>.
 about-glean-about-data-explanation =
     Aby lisćinu zgromaźonych datow pśepytował, konsultěrujśo
     <a data-l10n-name="glean-dictionary-link">{ -glean-brand-name } Słownik</a>.

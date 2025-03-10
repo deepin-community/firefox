@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+menu-view-contextual-password-manager =
+    .label = Hasła
+sidebar-options-menu-button =
+    .title = Otwórz menu
 
 ## Labels for sidebar history panel
 
@@ -44,16 +48,30 @@ sidebar-position-right =
     .label = Wyświetlaj po prawej stronie
 sidebar-vertical-tabs =
     .label = Karty pionowe
+sidebar-settings =
+    .label = Ustawienia panelu bocznego
+sidebar-hide-tabs-and-sidebar =
+    .label = Ukryj karty i panel boczny
+sidebar-show-on-the-right =
+    .label = Przenieś panel boczny na prawo
+sidebar-show-on-the-left =
+    .label = Przenieś panel boczny na lewo
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = Rozwijaj panel boczny po najechaniu kursorem
 sidebar-horizontal-tabs =
     .label = Karty poziome
 sidebar-customize-tabs-header =
     .label = Ustawienia kart
-sidebar-customize-settings-header =
-    .label = Ustawienia panelu bocznego
-sidebar-visibility-always-show =
-    .label = Zawsze wyświetlaj
-sidebar-visibility-hide-sidebar =
-    .label = Ukryj panel boczny
+sidebar-customize-button-header =
+    .label = Przycisk panelu bocznego
+sidebar-customize-position-header =
+    .label = Położenie panelu bocznego
+sidebar-visibility-setting-always-show =
+    .label = Rozwiń i zwiń panel boczny
+sidebar-visibility-setting-hide-sidebar =
+    .label = Wyświetl i ukryj panel boczny
 
 ## Labels for sidebar context menu items
 
@@ -91,6 +109,33 @@ sidebar-menu-bookmarks-label =
     .label = Zakładki
 sidebar-menu-customize-label =
     .label = Dostosuj panel boczny
+sidebar-menu-contextual-password-manager-label =
+    .label = Hasła
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = Otwórz historię ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = Zamknij historię ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = Otwórz zakładki ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = Zamknij zakładki ({ $shortcut })
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
 
 ## Headings for sidebar menu panels.
 
@@ -100,6 +145,18 @@ sidebar-menu-history-header =
     .heading = Historia
 sidebar-menu-syncedtabs-header =
     .heading = Karty z innych urządzeń
+sidebar-menu-bookmarks-header =
+    .heading = Zakładki
+sidebar-menu-cpm-header =
+    .heading = Hasła
+sidebar-panel-header-close-button =
+    .tooltiptext = Zamknij
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Dostosuj panel boczny
+sidebar-history-title = Historia
+sidebar-syncedtabs-title = Karty z innych urządzeń
 
 ## Context for closing synced tabs when hovering over the items
 
@@ -109,3 +166,29 @@ sidebar-menu-syncedtabs-header =
 #   $deviceName (String) - the name of the device the user is closing a tab for
 synced-tabs-context-close-tab-title =
     .title = Zamknij kartę na „{ $deviceName }”
+show-sidebars =
+    .tooltiptext = Wyświetl panele boczne
+    .label = Panele boczne
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = Rozwiń panel boczny ({ $shortcut })
+    .label = Panele boczne
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Zwiń panel boczny ({ $shortcut })
+    .label = Panele boczne
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Wyświetl panel boczny ({ $shortcut })
+    .label = Panele boczne
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Ukryj panel boczny ({ $shortcut })
+    .label = Panele boczne

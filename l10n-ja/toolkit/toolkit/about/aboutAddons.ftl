@@ -177,6 +177,10 @@ addon-updates-check-for-updates = 今すぐ更新を確認
     .accesskey = C
 addon-updates-view-updates = 最近更新したアドオンを表示
     .accesskey = V
+
+# This menu item is a checkbox that toggles the default global behavior for
+# add-on update checking.
+
 # This menu item is a checkbox that toggles the default global behavior for
 # add-on update checking.
 # (^m^) en-US: Update Add-ons Automatically
@@ -251,7 +255,7 @@ shortcuts-exists = すでに { $addon } が使用しています
 # Variables:
 #   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
-    { NUMBER($numberToShow) ->
+    { $numberToShow ->
        *[other] さらに { $numberToShow } 個表示
     }
 shortcuts-card-collapse-button = 折りたたむ
@@ -297,6 +301,14 @@ find-more-themes = 他のテーマを検索
 # used for screen readers.
 addon-options-button =
     .aria-label = 他のオプション
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 =
+    拡張機能やテーマを使用すると { -brand-product-name } をカスタマイズできます。
+    プライバシー保護を強化したり、生産性を向上させたり、メディアを見やすくしたり、
+    { -brand-product-name } の見た目を変更したり、その他さまざまな拡張機能やテーマがあります。
+    これらの小さなソフトウェアプログラムのほとんどは、サードパーティーによって開発されています。
+    セキュリティ、パフォーマンス、生産性を向上させる { -brand-product-name } の<a data-l10n-name="learn-more-trigger">おすすめ</a>はこちらです。
 
 ## Add-on actions
 
@@ -379,6 +391,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = プライベートウィンドウでの実行
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = プライベートウィンドウでの実行
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -418,6 +434,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = この拡張機能はセキュリティとパフォーマンスの基準に適合するようレビューされています。
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } は Mozilla が定めた安全性とパフォーマンスの基準に適合する拡張機能のみをおすすめします
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Mozilla により作成された公式の拡張機能です。安全性とパフォーマンスの基準に適合します
+addon-badge-verified3 =
+    .title = この拡張機能はセキュリティとパフォーマンスの基準に適合するようレビューされています。
 
 ##
 
@@ -425,6 +449,7 @@ available-updates-heading = 更新可能
 recent-updates-heading = 最近の更新
 release-notes-loading = 読み込み中...
 release-notes-error = リリースノートの読み込み中にエラーが発生しました。
+addon-permissions-empty2 = この拡張機能は権限を必要としません。
 addon-permissions-empty = この拡張機能は権限を必要としません。
 addon-permissions-required = 中核機能に必要な権限:
 addon-permissions-optional = 追加機能の任意の権限:
@@ -474,10 +499,24 @@ details-notification-unsigned-and-disabled-link = 詳細情報
 details-notification-unsigned = { $name } は { -brand-short-name } での使用が検証できません。配布元を確認して慎重に使用してください。
 details-notification-unsigned2 =
     .message = { $name } は { -brand-short-name } での使用が検証できません。配布元を確認して慎重に使用してください。
+details-notification-hard-blocked-extension =
+    .message = この拡張機能は Mozilla のポリシーに違反しているためブロックされ、無効化されています。
+details-notification-hard-blocked-other =
+    .message = このアドオンは Mozilla のポリシーに違反しているためブロックされ、無効化されています。
 details-notification-unsigned-link = 詳細情報
 details-notification-blocked = { $name } はセキュリティまたは安定性に問題があるため無効化されています。
 details-notification-blocked2 =
     .message = { $name } はセキュリティまたは安定性に問題があるため無効化されています。
+details-notification-blocked-link2 = 詳細を表示
+details-notification-soft-blocked-extension-disabled =
+    .message = この拡張機能は Mozilla のポリシーに違反しているため制限され、無効化されています。有効にすると危険を伴う可能性があります。
+details-notification-soft-blocked-extension-enabled =
+    .message = この拡張機能は Mozilla のポリシーに違反しています。使用すると危険を伴う可能性があります。
+details-notification-soft-blocked-other-disabled =
+    .message = このアドオンは Mozilla のポリシーに違反しているため制限され、無効化されています。有効にすると危険を伴う可能性があります。
+details-notification-soft-blocked-other-enabled =
+    .message = このアドオンは Mozilla のポリシーに違反しています。使用すると危険を伴う可能性があります。
+details-notification-softblocked-link2 = 詳細を表示
 details-notification-blocked-link = 詳細情報
 details-notification-softblocked = { $name } はセキュリティまたは安定性の問題を引き起こすことが知られています。
 details-notification-softblocked2 =

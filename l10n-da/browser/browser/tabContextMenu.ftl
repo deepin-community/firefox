@@ -28,11 +28,17 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Luk faneblade til venstre
     .accesskey = v
+close-tabs-to-the-start-vertical =
+    .label = Luk faneblade ovenfor
+    .accesskey = o
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Luk faneblade til højre
     .accesskey = h
+close-tabs-to-the-end-vertical =
+    .label = Luk faneblade nedenfor
+    .accesskey = n
 close-other-tabs =
     .label = Luk øvrige faneblade
     .accesskey = ø
@@ -78,6 +84,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Del
     .accesskey = D
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Nyt faneblad til højre
+    .accesskey = N
+tab-context-new-tab-open-vertical =
+    .label = Ny fane nedenfor
+    .accesskey = N
+tab-context-new-group =
+    .label = Ny gruppe
+    .accesskey = g
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -112,4 +128,4 @@ tab-context-send-tabs-to-device =
             [one] Send faneblad til enhed
            *[other] Send { $tabCount } faneblade til enhed
         }
-    .accesskey = n
+    .accesskey = d

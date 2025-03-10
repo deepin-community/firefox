@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Отправлять сайтам сигнал «Не отслеживать», означающий, что вы не хотите, чтобы вас отслеживали
+do-not-track-removal = Мы больше не поддерживаем сигнал «Не отслеживать»
 do-not-track-description2 =
     .label = Отправлять веб-сайтам запрос «Не отслеживать»
     .accesskey = в
@@ -134,9 +135,10 @@ startup-restore-windows-and-tabs =
     .label = Открыть предыдущие окна и вкладки
     .accesskey = п
 windows-launch-on-login =
-    .label = Открывать { -brand-short-name } автоматически при загрузке компьютера.
+    .label = Открывать { -brand-short-name } автоматически при загрузке компьютера
     .accesskey = м
 windows-launch-on-login-disabled = Эта настройка отключена в Windows. Чтобы изменить это, откройте <a data-l10n-name="startup-link">Автозагрузка приложений</a> в настройках системы.
+windows-launch-on-login-profile-disabled = Включите эту настройку, установив флажок «{ profile-manager-use-selected.label }» в окне «Выбор профиля пользователя».
 startup-restore-warn-on-quit =
     .label = Предупреждать при выходе из браузера
 disable-extension =
@@ -146,6 +148,11 @@ preferences-data-migration-description = Импорт закладок, паро
 preferences-data-migration-button =
     .label = Импорт данных
     .accesskey = м
+preferences-profiles-header = Профили
+preferences-manage-profiles-description = Каждый профиль имеет отдельные данные и настройки просмотра, включая историю просмотра, пароли и пр.
+preferences-manage-profiles-learn-more = Подробнее
+preferences-manage-profiles-button =
+    .label = Управление профилями
 tabs-group-header = Вкладки
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab переключает между вкладками в порядке недавнего использования
@@ -153,6 +160,17 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Открывать ссылки во вкладках вместо новых окон
     .accesskey = ы
+ask-on-close-multiple-tabs =
+    .label = Спрашивать перед закрытием нескольких вкладок
+    .accesskey = ь
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = Спрашивать перед выходом с помощью { $quitKey }
+    .accesskey = и
 confirm-on-close-multiple-tabs =
     .label = Подтвердить перед закрытием нескольких вкладок
     .accesskey = е
@@ -215,6 +233,16 @@ containers-remove-cancel-button = Не удалять этот контейне�
 settings-tabs-show-image-in-preview =
     .label = Отображать предпросмотр изображения при наведении на вкладку
     .accessKey = h
+browser-layout-header = Внешний вид браузера
+browser-layout-horizontal-tabs =
+    .label = Горизонтальные вкладки
+browser-layout-horizontal-tabs-desc = Отображать в верхней части браузера
+browser-layout-vertical-tabs =
+    .label = Вертикальные вкладки
+browser-layout-vertical-tabs-desc = Отображать сбоку, в боковой панели
+browser-layout-show-sidebar =
+    .label = Показать боковую панель
+browser-layout-show-sidebar-desc = Быстрый доступ к закладкам, вкладкам с телефона, ИИ-чат-ботам и многому другому, не покидая основного вида.
 
 ## General Section - Language & Appearance
 
@@ -571,8 +599,7 @@ home-prefs-shortcuts-description = Сохранённые или посещае�
 home-prefs-shortcuts-by-option-sponsored =
     .label = Спонсируемые ярлыки
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Рекомендовано { $provider }
@@ -644,6 +671,10 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Отображать поисковые предложения при использовании адресной строки
     .accesskey = ж
+# With this option enabled, on the search results page
+# the URL will be replaced by the search terms in the address bar.
+search-show-search-term-option-2 =
+    .label = Показывать поисковые запросы в адресной строке на страницах с результатами
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -787,6 +818,9 @@ sync-currently-syncing-creditcards = Банковские карты
 sync-currently-syncing-payment-methods = Способы оплаты
 sync-currently-syncing-addons = Дополнения
 sync-currently-syncing-settings = Настройки
+sync-manage-options =
+    .label = Управление синхронизацией…
+    .accesskey = Ь
 sync-change-options =
     .label = Изменить…
     .accesskey = м
@@ -839,6 +873,13 @@ sync-engine-settings =
     .label = Настройки
     .tooltiptext = Изменённые вами общие настройки, настройки приватности и безопасности
     .accesskey = а
+sync-choose-what-to-sync-dialog4 =
+    .title = Управляйте синхронизируемыми данными на всех подключённых устройствах
+    .style = min-width: 36em;
+    .buttonlabelaccept = Сохранить
+    .buttonaccesskeyaccept = Ы
+    .buttonlabelextra2 = Отключить…
+    .buttonaccesskeyextra2 = В
 
 ## The device name controls.
 
@@ -1285,17 +1326,40 @@ permissions-addon-exceptions =
 collection-header = Сбор и использование данных { -brand-short-name }
 collection-header2 = Сбор и использование данных { -brand-short-name }
     .searchkeywords = телеметрия
+preferences-collection-description = Мы стремимся предоставить вам возможность выбора и собираем только минимальные данные, необходимые для улучшения { -brand-product-name } для всех и каждого.
+preferences-collection-privacy-notice = Просмотреть Уведомление о конфиденциальности
 collection-description = Мы стремимся предоставить вам выбор и собирать только то, что нам нужно, для выпуска и улучшения { -brand-short-name } для всех и каждого. Мы всегда спрашиваем разрешения перед получением личных сведений.
 collection-privacy-notice = Уведомление о конфиденциальности
 collection-health-report-telemetry-disabled = Вы больше не разрешаете { -vendor-short-name } собирать технические данные и данные взаимодействия. Все собранные ранее данные будут удалены в течение 30 дней.
 collection-health-report-telemetry-disabled-link = Подробнее
+collection-usage-ping =
+    .label = Отправлять ежедневный пинг использования в { -vendor-short-name }
+    .accesskey = г
+collection-usage-ping-description = Это помогает { -vendor-short-name } оценить активных пользователей.
+collection-health-report2 =
+    .label = Отправлять технические данные и данные взаимодействия в { -vendor-short-name }
+    .accesskey = к
 collection-health-report =
     .label = Разрешить { -brand-short-name } отправлять технические данные и данные взаимодействия в { -vendor-short-name }
     .accesskey = е
 collection-health-report-link = Подробнее
+collection-health-report-description = Это поможет нам улучшить возможности, производительность и стабильность { -brand-product-name }.
+collection-studies2 =
+    .label = Установите и запускайте исследования
+collection-studies-description = Опробуйте функции и идеи перед тем, как они станут доступны для всех и каждого.
 collection-studies =
     .label = Разрешить { -brand-short-name } устанавливать и проводить исследования
 collection-studies-link = Просмотреть исследования { -brand-short-name }
+addon-recommendations2 =
+    .label = Разрешить персонализированные рекомендации расширений
+addon-recommendations-description = Получать рекомендации расширений, чтобы улучшить свою работу в Интернете.
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = Для этой конфигурации сборки отправка данных отключена.
+collection-backlogged-crash-reports2 =
+    .label = Автоматически отправлять сообщения о падениях
+    .accesskey = с
+collection-backlogged-crash-reports-description = Это помогает { -vendor-short-name } диагностировать и устранять проблемы с браузером. Отчёты могут содержать личные или важные данные.
 addon-recommendations =
     .label = Разрешить { -brand-short-name } давать персональные рекомендации расширений
 addon-recommendations-link = Подробнее
@@ -1363,6 +1427,8 @@ space-alert-under-5gb-message2 = <strong>У { -brand-short-name } заканчи
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = Режим «Только HTTPS»
+httpsonly-description3 = Разрешает только защищённые соединения с веб-сайтами. { -brand-short-name } будет спрашивать перед незащищённым соединением.
+httpsonly-learn-more2 = Как работает «Только HTTPS»
 httpsonly-description = HTTPS обеспечивает безопасное и зашифрованное соединение между { -brand-short-name } и сайтами, которые вы посещаете. Большинство сайтов поддерживают HTTPS, и если включён режим «Только HTTPS», то { -brand-short-name } переключит все соединения на HTTPS.
 httpsonly-description2 = { -brand-short-name } создает безопасные и зашифрованные соединения с посещаемыми вами сайтами. { -brand-short-name } будет предупреждать вас, если соединение не защищено при включенном «Только HTTPS».
 httpsonly-learn-more = Подробнее
@@ -1372,6 +1438,9 @@ httpsonly-radio-enabled2 =
     .label = Во всех окнах использовать только HTTPS
 httpsonly-radio-enabled-pbm =
     .label = Включить режим «Только HTTPS» только в приватных окнах
+httpsonly-radio-disabled3 =
+    .label = Не включать режим «Только HTTPS»
+    .description = { -brand-short-name } сможет всё ещё переключать некоторые соединения
 httpsonly-radio-enabled-pbm2 =
     .label = В приватных окнах использовать только HTTPS
 httpsonly-radio-disabled =

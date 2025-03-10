@@ -162,9 +162,9 @@ extensions-warning-check-compatibility2 =
     .message = A verificação de compatibilidade de extensões está desativada. Você pode ter extensões incompatíveis.
 extensions-warning-check-compatibility-button = Ativar
     .title = Ativar verificação de compatibilidade de extensões
-extensions-warning-update-security = A verificação de segurança de atualizações de extensões está desativada. Atualizações de extensões podem comprometer seu computador.
+extensions-warning-update-security = A verificação de segurança de atualizações de extensões está desativada. Atualizações de extensões podem comprometer este computador.
 extensions-warning-update-security2 =
-    .message = A verificação de segurança de atualizações de extensões está desativada. Atualizações de extensões podem comprometer seu computador.
+    .message = A verificação de segurança de atualizações de extensões está desativada. Atualizações de extensões podem comprometer este computador.
 extensions-warning-update-security-button = Ativar
     .title = Ativar verificação de segurança da atualização de extensões
 extensions-warning-imported-addons2 =
@@ -297,6 +297,9 @@ find-more-themes = Encontrar mais temas
 # used for screen readers.
 addon-options-button =
     .aria-label = Mais opções
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 = Extensões e temas permitem personalizar o { -brand-product-name }. Elas podem melhorar a privacidade, aumentar a produtividade, aprimorar mídias, mudar a aparência do { -brand-product-name } e muito mais. Esses pequenos programas de software geralmente são desenvolvidos por terceiros. Eis uma seleção que o { -brand-product-name } <a data-l10n-name="learn-more-trigger">recomenda</a> por ter excepcional segurança, desempenho e funcionalidade.
 
 ## Add-on actions
 
@@ -383,6 +386,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Permitido em janelas privativas
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Permitido em janelas privativas
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -422,6 +429,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Esta extensão foi revisada para atender aos nossos padrões de segurança e desempenho.
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = O { -brand-product-name } só recomenda extensões que atendem aos nossos padrões de segurança e desempenho
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Extensão oficial desenvolvida pela Mozilla. Atende aos padrões de desempenho e segurança
+addon-badge-verified3 =
+    .title = Esta extensão foi revisada para atender aos nossos padrões de segurança e desempenho.
 
 ##
 
@@ -429,6 +444,7 @@ available-updates-heading = Atualizações disponíveis
 recent-updates-heading = Atualizações recentes
 release-notes-loading = Carregando…
 release-notes-error = Desculpe, houve um erro ao carregar as notas de atualização.
+addon-permissions-empty2 = Esta extensão não requer nenhuma permissão.
 addon-permissions-empty = Esta extensão não exige nenhum permissão
 addon-permissions-required = Permissões necessárias para a funcionalidade principal:
 addon-permissions-optional = Permissões opcionais para funcionalidades adicionais:
@@ -478,10 +494,24 @@ details-notification-unsigned-and-disabled-link = Mais informações
 details-notification-unsigned = { $name } não pôde ser verificado para uso em { -brand-short-name }. Proceda com cautela.
 details-notification-unsigned2 =
     .message = { $name } não pôde ser verificado para uso em { -brand-short-name }. Proceda com cautela.
+details-notification-hard-blocked-extension =
+    .message = Esta extensão foi bloqueada por violar diretrizes da Mozilla e foi desativada.
+details-notification-hard-blocked-other =
+    .message = Esta extensão foi bloqueada por violar diretrizes da Mozilla e foi desativada.
 details-notification-unsigned-link = Mais informações
 details-notification-blocked = O { $name } foi desativado devido a problemas de segurança ou estabilidade.
 details-notification-blocked2 =
     .message = O { $name } foi desativado devido a problemas de segurança ou estabilidade.
+details-notification-blocked-link2 = Ver detalhes
+details-notification-soft-blocked-extension-disabled =
+    .message = Esta extensão está restrita por violar diretrizes da Mozilla e foi desativada. Você tem opção de ativar, mas pode ser arriscado.
+details-notification-soft-blocked-extension-enabled =
+    .message = Esta extensão viola diretrizes da Mozilla. Usar pode ser arriscado.
+details-notification-soft-blocked-other-disabled =
+    .message = Esta extensão está restrita por violar diretrizes da Mozilla e foi desativada. Você tem opção de ativar, mas pode ser arriscado.
+details-notification-soft-blocked-other-enabled =
+    .message = Esta extensão viola diretrizes da Mozilla. Usar pode ser arriscado.
+details-notification-softblocked-link2 = Ver detalhes
 details-notification-blocked-link = Mais informações
 details-notification-softblocked = O { $name } é reconhecido como causa de problemas de segurança ou estabilidade.
 details-notification-softblocked2 =

@@ -824,33 +824,6 @@ void MacroAssembler::callWithABINoProfiler(const Address& fun, ABIType result) {
 // ===============================================================
 // Move instructions
 
-void MacroAssembler::moveValue(const TypedOrValueRegister& src,
-                               const ValueOperand& dest) {
-  if (src.hasValue()) {
-    moveValue(src.valueReg(), dest);
-    return;
-  }
-
-  MIRType type = src.type();
-  AnyRegister reg = src.typedReg();
-
-  if (!IsFloatingPointType(type)) {
-    if (reg.gpr() != dest.payloadReg()) {
-      movl(reg.gpr(), dest.payloadReg());
-    }
-    mov(ImmWord(MIRTypeToTag(type)), dest.typeReg());
-    return;
-  }
-
-  ScratchDoubleScope scratch(*this);
-  FloatRegister freg = reg.fpu();
-  if (type == MIRType::Float32) {
-    convertFloat32ToDouble(freg, scratch);
-    freg = scratch;
-  }
-  boxDouble(freg, dest, scratch);
-}
-
 void MacroAssembler::moveValue(const ValueOperand& src,
                                const ValueOperand& dest) {
   Register s0 = src.typeReg();
@@ -886,6 +859,21 @@ void MacroAssembler::moveValue(const Value& src, const ValueOperand& dest) {
   } else {
     movl(Imm32(src.toNunboxPayload()), dest.payloadReg());
   }
+}
+
+// ===============================================================
+// Arithmetic functions
+
+void MacroAssembler::flexibleQuotientPtr(
+    Register rhs, Register srcDest, bool isUnsigned,
+    const LiveRegisterSet& volatileLiveRegs) {
+  flexibleQuotient32(rhs, srcDest, isUnsigned, volatileLiveRegs);
+}
+
+void MacroAssembler::flexibleRemainderPtr(
+    Register rhs, Register srcDest, bool isUnsigned,
+    const LiveRegisterSet& volatileLiveRegs) {
+  flexibleRemainder32(rhs, srcDest, isUnsigned, volatileLiveRegs);
 }
 
 // ===============================================================
@@ -1879,7 +1867,6 @@ void MacroAssembler::wasmBoundsCheck64(Condition cond, Register64 index,
   bind(&notOk);
 }
 
-#ifdef ENABLE_WASM_TAIL_CALLS
 void MacroAssembler::wasmMarkCallAsSlow() {
   static_assert(esi == InstanceReg);
   or32(esi, esi);
@@ -1893,6 +1880,5 @@ void MacroAssembler::wasmCheckSlowCallsite(Register ra, Label* notSlow,
   cmp16(Address(ra, 0), Imm32(SlowCallMarker));
   j(Assembler::NotEqual, notSlow);
 }
-#endif  // ENABLE_WASM_TAIL_CALLS
 
 //}}} check_macroassembler_style

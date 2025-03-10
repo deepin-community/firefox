@@ -16,6 +16,12 @@ ChromeUtils.defineLazyGetter(lazy, "logConsole", () => {
   });
 });
 
+const BinaryInputStream = Components.Constructor(
+  "@mozilla.org/binaryinputstream;1",
+  "nsIBinaryInputStream",
+  "setInputStream"
+);
+
 const BROWSER_SEARCH_PREF = "browser.search.";
 
 /**
@@ -158,6 +164,7 @@ export var SearchUtils = {
     SEARCH: "text/html",
     OPENSEARCH: "application/opensearchdescription+xml",
     TRENDING_JSON: "application/x-trending+json",
+    SEARCH_FORM: "searchform",
   },
 
   ENGINES_URLS: {
@@ -182,17 +189,6 @@ export var SearchUtils = {
 
   // A tag to denote when we are using the "default_locale" of an engine.
   DEFAULT_TAG: "default",
-
-  // Query parameters can have the property "purpose", whose value
-  // indicates the context that initiated a search. This list contains
-  // defined search contexts.
-  PARAM_PURPOSES: {
-    CONTEXTMENU: "contextmenu",
-    HOMEPAGE: "homepage",
-    KEYWORD: "keyword",
-    NEWTAB: "newtab",
-    SEARCHBAR: "searchbar",
-  },
 
   LoadListener,
 
@@ -219,7 +215,7 @@ export var SearchUtils = {
    *
    * @param {string} urlSpec
    *        The URL string from which to create an nsIURI.
-   * @returns {nsIURI} an nsIURI object, or null if the creation of the URI failed.
+   * @returns {?nsIURI} an nsIURI object, or null if the creation of the URI failed.
    */
   makeURI(urlSpec) {
     try {
@@ -245,10 +241,15 @@ export var SearchUtils = {
     }
     try {
       let uri = typeof url == "string" ? Services.io.newURI(url) : url;
+      let principal =
+        uri.scheme == "moz-extension"
+          ? Services.scriptSecurityManager.createContentPrincipal(uri, {})
+          : Services.scriptSecurityManager.createNullPrincipal({});
+
       return Services.io.newChannelFromURI(
         uri,
         null /* loadingNode */,
-        Services.scriptSecurityManager.createNullPrincipal({}),
+        principal,
         null /* triggeringPrincipal */,
         Ci.nsILoadInfo.SEC_ALLOW_CROSS_ORIGIN_SEC_CONTEXT_IS_NULL,
         contentPolicyType
@@ -276,7 +277,7 @@ export var SearchUtils = {
    *   The current settings version.
    */
   get SETTINGS_VERSION() {
-    return 10;
+    return 12;
   },
 
   /**
@@ -442,6 +443,141 @@ export var SearchUtils = {
     });
 
     return [...sortedEngines, ...remainingEngines];
+  },
+
+  /**
+   * Chooses the best size out of an array of sizes. If there is no exact match,
+   * chooses the next smaller icon if the difference of the preferred size
+   * to the larger icon is more than 4 times the difference to the the smaller
+   * icon. Otherwise chooses the next larger one.
+   *
+   * @param {number} preferredSize
+   *   The preferred size. Must not be 0.
+   * @param {number[]} availableSizes
+   *   Array of available sizes. Must not be empty.
+   * @returns {number}
+   *   The element of availableSizes chosen by the algorithm.
+   */
+  chooseIconSize(preferredSize, availableSizes) {
+    availableSizes = availableSizes.toSorted((a, b) => b - a);
+    let bestSize = availableSizes.shift();
+    for (let currentSize of availableSizes) {
+      if (currentSize >= preferredSize) {
+        bestSize = currentSize;
+      } else {
+        if (
+          bestSize > preferredSize &&
+          preferredSize - currentSize < (bestSize - preferredSize) / 4
+        ) {
+          bestSize = currentSize;
+        }
+        break;
+      }
+    }
+
+    return bestSize;
+  },
+
+  /**
+   * Fetches an icon without sending cookies to the page and returns
+   * the data and the mime type. Rejects if the icon cannot be fetched.
+   *
+   * @param {string|nsIURI} uri
+   *  The URI to the icon.
+   * @returns {Promise<[number[], string]>}
+   *   The data as a byte array and the mime type as a string.
+   */
+  async fetchIcon(uri) {
+    return new Promise((resolve, reject) => {
+      let chan = SearchUtils.makeChannel(uri, Ci.nsIContentPolicy.TYPE_IMAGE);
+      let listener = new SearchUtils.LoadListener(
+        chan,
+        /^image\//,
+        (byteArray, contentType) => {
+          if (!byteArray) {
+            reject(new Error(""));
+          }
+          resolve([byteArray, contentType]);
+        }
+      );
+      chan.notificationCallbacks = listener;
+      chan.asyncOpen(listener);
+    });
+  },
+
+  /**
+   * Decodes the image to extract the size. Returns null
+   * if the image is not square or there is a decoding error.
+   *
+   * @param {string} byteString the raw image data
+   * @param {string} contentType the contentType
+   * @returns {?number} the size of the image
+   */
+  decodeSize(byteString, contentType) {
+    if (contentType == "image/svg+xml") {
+      let parser = new DOMParser();
+      let doc = parser.parseFromString(byteString, contentType);
+      if (doc.querySelector("parsererror")) {
+        return null;
+      }
+      let width = doc.documentElement.width.baseVal.value;
+      let height = doc.documentElement.height.baseVal.value;
+      if (width != height) {
+        return null;
+      }
+      return width;
+    }
+
+    let imageTools = Cc["@mozilla.org/image/tools;1"].getService(Ci.imgITools);
+    let imgDecoded;
+    try {
+      imgDecoded = imageTools.decodeImageFromBuffer(
+        byteString,
+        byteString.length,
+        contentType
+      );
+    } catch {
+      return null;
+    }
+    if (imgDecoded.width != imgDecoded.height) {
+      return null;
+    }
+
+    return imgDecoded.width;
+  },
+
+  /**
+   * Tries to rescale an icon to a given size.
+   *
+   * @param {Array} byteArray
+   *   Byte array containing the icon payload.
+   * @param {string} contentType
+   *   Mime type of the payload.
+   * @param {number} [size]
+   *   Desired icon size.
+   * @returns {Array}
+   *   An array of two elements - an array of integers and a string for the content
+   *   type.
+   * @throws if the icon cannot be rescaled or the rescaled icon is too big.
+   */
+  rescaleIcon(byteArray, contentType, size = 32) {
+    if (contentType == "image/svg+xml") {
+      throw new Error("Cannot rescale SVG image");
+    }
+
+    let imgTools = Cc["@mozilla.org/image/tools;1"].getService(Ci.imgITools);
+    let arrayBuffer = new Int8Array(byteArray).buffer;
+    let container = imgTools.decodeImageFromArrayBuffer(
+      arrayBuffer,
+      contentType
+    );
+    let stream = imgTools.encodeScaledImage(container, "image/png", size, size);
+    let streamSize = stream.available();
+    if (streamSize > SearchUtils.MAX_ICON_SIZE) {
+      throw new Error("Icon is too big");
+    }
+    let bis = new BinaryInputStream(stream);
+    return [bis.readByteArray(streamSize), "image/png"];
   },
 };
 

@@ -378,6 +378,12 @@ urlbar-result-action-calculator-result = = { $result }
 
 ## Strings used for buttons in the urlbar
 
+urlbar-searchmode-bookmarks =
+    .label = बुकमार्क
+urlbar-searchmode-tabs =
+    .label = टैब
+urlbar-searchmode-history =
+    .label = इतिहास
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -618,6 +624,10 @@ data-reporting-notification-button =
 ## Note that the new line is intentionally part of the tooltip.
 
 
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+
 ## Private browsing reset button
 
 
@@ -662,3 +672,13 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = '{ $popupURI }' दिखाएँ
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+

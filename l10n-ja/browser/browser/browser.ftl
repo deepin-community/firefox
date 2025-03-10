@@ -51,6 +51,70 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = { -brand-shortcut-name } プライベートブラウジング
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } プライベートブラウジング
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } プライベートブラウジング
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — { -brand-full-name } プライベートブラウジング
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — { -brand-full-name } プライベートブラウジング
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — プライベートブラウジング
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } プライベートブラウジング
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — プライベートブラウジング
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — プライベートブラウジング
+# This gets set as the initial title, and is overridden as soon as we start
+# updating the titlebar based on loaded tabs or private browsing state.
+# This should match the `data-title-default` attribute in both
+# `browser-main-window` and `browser-main-window-mac`.
+browser-main-window-default-title = { -brand-full-name }
 
 ##
 
@@ -135,7 +199,7 @@ urlbar-search-tips-redirect-2 = アドレスバーで検索を始めると、{ $
 urlbar-search-tips-persist = 検索がシンプルになりました。アドレスバーで具体的な語句を用いて検索してみてください。代わりに URL を表示するには、設定の検索パネルを開いてください。
 # Prompts users to use the Urlbar when they are typing in the domain of a
 # search engine, e.g. google.com or amazon.com.
-urlbar-tabtosearch-onboard = このショートカットを選択すると、より素早く検索できます。
+urlbar-tabtosearch-onboard = このショートカットを選択すると、必要なものを早く見つけられます。
 
 ## Local search mode indicator labels in the urlbar
 
@@ -309,6 +373,10 @@ quickactions-cmd-viewsource = view source, source
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = クイックアクションについての詳細
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = タブキーを押して選択:
 
 ## Bookmark Panel
 
@@ -321,7 +389,7 @@ bookmark-panel-cancel =
 #  $count (number): number of bookmarks that will be removed
 bookmark-panel-remove =
     .label =
-        { NUMBER($count) ->
+        { $count ->
             [1] ブックマークを削除
            *[other] { $count } 個のブックマークを削除
         }
@@ -432,17 +500,17 @@ browser-tab-audio-pip = ピクチャーインピクチャー
 ##  $count (number): number of affected tabs
 
 browser-tab-mute =
-    { NUMBER($count) ->
+    { $count ->
         [1] タブをミュート
        *[other] { $count } 個のタブをミュート
     }
 browser-tab-unmute =
-    { NUMBER($count) ->
+    { $count ->
         [1] タブのミュートを解除
        *[other] { $count } 個のタブのミュートを解除
     }
 browser-tab-unblock =
-    { NUMBER($count) ->
+    { $count ->
         [1] タブのメディアを再生
        *[other] { $count } 個のタブのメディアを再生
     }
@@ -452,7 +520,7 @@ browser-tab-unblock =
 browser-import-button2 =
     .label = ブックマークをインポートする...
     .tooltiptext = ブックマークを他のブラウザーから { -brand-short-name } にインポートします。
-bookmarks-toolbar-empty-message = ブックマークをこのブックマークツールバーに配置すると、素早くアクセスできます。<a data-l10n-name="manage-bookmarks">ブックマークを管理...</a>
+bookmarks-toolbar-empty-message = ブックマークをこのブックマークツールバーに配置すると、すばやくアクセスできます。<a data-l10n-name="manage-bookmarks">ブックマークを管理...</a>
 
 ## WebRTC Pop-up notifications
 
@@ -549,8 +617,6 @@ urlbar-page-action-button =
     .tooltiptext = ページ操作
 urlbar-revert-button =
     .tooltiptext = ロケーションバーにアドレスを表示します
-urlbar-show-page-actions-button =
-    .tooltiptext = すべてのページ操作を表示します
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -605,12 +671,59 @@ urlbar-result-action-copy-to-clipboard = コピー
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+# The string returned for an undefined calculator result such as when dividing by 0
+urlbar-result-action-undefined-calculator-result = 未定義
+# Shows the result of a formula expression being calculated, to a maximum of 9 significant
+# digits. The last = sign will be shown as part of the result (e.g. "= 2").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-2 = = { NUMBER($result, maximumSignificantDigits: 9) }
+# Shows the result of a formula expression being calculated, in scientific notation.
+# The last = sign will be shown as part of the result (e.g. "= 1.0e17").
+# Variables
+#  $result (String): the string representation for a result in scientific notation
+#  (e.g. "1.0e17").
+urlbar-result-action-calculator-result-scientific-notation = = { $result }
 
 ## Strings used for buttons in the urlbar
 
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = { $engine } で検索
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - { $localSearchMode } を検索
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - { $engine } で検索
+urlbar-searchmode-dropmarker =
+    .tooltiptext = 検索エンジンを選択します
+urlbar-searchmode-bookmarks =
+    .label = ブックマーク
+urlbar-searchmode-tabs =
+    .label = タブ
+urlbar-searchmode-history =
+    .label = 履歴
+urlbar-searchmode-actions =
+    .label = アクション
+urlbar-searchmode-exit-button =
+    .tooltiptext = 閉じる
+urlbar-searchmode-popup-description = 今回だけ使う検索エンジン:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = 検索設定
+urlbar-searchmode-popup-search-settings = 検索設定
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = 検索エンジン: { $engine }、別の検索エンジンを選択
+    .tooltiptext = 検索エンジン: { $engine }、別の検索エンジンを選択します
+urlbar-searchmode-button-no-engine =
+    .label = ショートカットが選択されていません。ショートカットを選択
+    .tooltiptext = ショートカットが選択されていません。ショートカットを選択します
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -620,6 +733,12 @@ urlbar-result-action-search-bookmarks = ブックマークを検索
 urlbar-result-action-search-history = 履歴を検索
 urlbar-result-action-search-tabs = タブを検索
 urlbar-result-action-search-actions = アクションを検索
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = { $group } に切り替え
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = { $group } を開く
 
 ## Labels shown above groups of urlbar results
 
@@ -645,7 +764,7 @@ urlbar-group-recent-searches =
 # Variables:
 #  $engine (String): the name of the search engine providing the trending suggestions
 urlbar-group-trending =
-  .label = { $engine } の検索トレンド
+    .label = { $engine } の検索トレンド
 # The result menu labels shown next to trending results.
 urlbar-result-menu-trending-dont-show =
     .label = 検索トレンドを表示しない
@@ -933,6 +1052,9 @@ data-reporting-notification-button =
     .accesskey = C
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = プライベートブラウジング
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = プライベートブラウジング
 # Tooltip for the indicator shown in the window titlebar when content analysis is active.
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
@@ -941,7 +1063,7 @@ content-analysis-indicator-tooltip =
 content-analysis-panel-title = データ保護
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
-content-analysis-panel-text = データ損失から保護するため所属組織が { $agentName } を利用しています。<a data-l10n-name="info">詳細情報</a>
+content-analysis-panel-text-styled = データ損失から保護するため所属組織が <b>{ $agentName }</b> を利用しています。<a data-l10n-name="info">詳細情報</a>
 
 ## Unified extensions (toolbar) button
 
@@ -966,6 +1088,15 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         拡張機能
         一部の拡張機能は許可されていません
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = 拡張機能
+    .tooltiptext =
+        拡張機能
+        一部の拡張機能が無効になっています
 
 ## Private browsing reset button
 
@@ -1006,6 +1137,7 @@ firefox-relay-offer-legal-notice = [メールマスクを使用] をクリック
 popup-notification-addon-install-unsigned =
     .value = (未検証)
 popup-notification-xpinstall-prompt-learn-more = アドオンの安全なインストールの詳細
+popup-notification-xpinstall-prompt-block-url = 詳細を見る
 # Note: Access key is set to P to match "Private" in the corresponding localized label.
 popup-notification-addon-privatebrowsing-checkbox =
     .label = プライベートウィンドウで実行する
@@ -1016,15 +1148,15 @@ popup-notification-addon-privatebrowsing-checkbox =
 # Variables:
 #   $popupCount (Number): the number of pop-ups blocked.
 popup-warning-message =
-    { NUMBER($popupCount) ->
+    { $popupCount ->
         [1] { -brand-short-name } がこのサイトでポップアップウィンドウをブロックしました。
        *[other] { -brand-short-name } がこのサイトで { $popupCount } 個のポップアップウィンドウをブロックしました。
     }
 # The singular form is left out for English, since the number of blocked pop-ups is always greater than 1.
 # Variables:
 #   $popupCount (Number): the number of pop-ups blocked.
-popup-warning-exceeded-message = 
-    { NUMBER($popupCount) ->
+popup-warning-exceeded-message =
+    { $popupCount ->
        *[other] { -brand-short-name } がこのサイトで { $popupCount } 個以上のポップアップウィンドウをブロックしました。
     }
 popup-warning-button =
@@ -1053,11 +1185,13 @@ file-picker-crashed-open = Windows のファイルダイアログがクラッシ
 #   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
 file-picker-crashed-save-somewhere = Windows のファイルダイアログがクラッシュしました。ファイルは { $path } に保存されます。
 file-picker-crashed-save-nowhere = Windows のファイルダイアログがクラッシュしました。既定のフォルダーが見つからないためファイルは保存されません。
+
 # Button used with file-picker-crashed-save-default. Opens the folder in Windows
 # Explorer, with the saved file selected and in focus.
 #
 # The wording here should be consistent with the Windows variant of
 # `downloads-cmd-show-menuitem-2` and similar messages.
+
 file-picker-crashed-show-in-folder =
     .label = フォルダーを開く
     .accessKey = F

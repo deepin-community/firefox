@@ -225,9 +225,11 @@ newtab-pocket-learn-more = Tetamäx ch'aqa' chik
 newtab-pocket-cta-button = Tik'ul { -pocket-brand-name }
 newtab-pocket-cta-text = Ke'ayaka' ri taq b'anob'äl ye'awajo' pa { -pocket-brand-name }, chuqa' taya' ruchuq'a' ajolom kik'in jeb'ël taq sik'inïk.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } jun { -brand-product-name } qach'alal
-# A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Tiyak
 newtab-pocket-saved = Xyak
+
+## Thumbs up and down buttons that shows over a newtab stories card thumbnail on hover.
+
 
 ## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
 
@@ -256,9 +258,6 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Xto' chojmin okem
 newtab-custom-pocket-title = Chilab'en ruma { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Cha'on rupam cha'on ruma { -pocket-brand-name }, rach'ala'ïl { -brand-product-name }
-newtab-custom-pocket-toggle =
-    .label = Chilab'en ruma { -pocket-brand-name }
-    .description = Cha'on rupam cha'on ruma { -pocket-brand-name }, rach'ala'ïl { -brand-product-name }
 newtab-custom-pocket-sponsored = To'on taq b'anob'äl
 newtab-custom-pocket-show-recent-saves = Kek'ut k'ab'a' eyakon
 newtab-custom-recent-title = K'ak'a' samaj
@@ -268,3 +267,43 @@ newtab-custom-recent-toggle =
     .description = Jun cha'on taq ruxaq chuqa' k'ak'a' rupam
 newtab-custom-close-button = Titz'apïx
 newtab-custom-settings = Tinuk'samajïx ch'aqa' runuk'ulem
+
+## New Tab Wallpapers
+
+
+## Solid Colors
+
+
+## Abstract
+
+
+## Celestial
+
+
+## Celestial
+
+
+## New Tab Weather
+
+
+## Topic Labels
+
+
+## Topic Selection Modal
+
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+
+## Confirmation modal for blocking a section
+
+
+## Panel in the Customize menu section to manage followed and blocked topics
+

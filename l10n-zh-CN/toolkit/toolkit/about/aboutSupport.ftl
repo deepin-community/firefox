@@ -54,8 +54,8 @@ app-basics-show-update-history = 显示更新历史
 app-basics-binary = 应用程序二进制文件
 app-basics-profile-dir =
     { PLATFORM() ->
-        [linux] 配置文件夹
-       *[other] 配置文件夹
+        [linux] 配置文件文件夹
+       *[other] 配置文件文件夹
     }
 app-basics-enabled-plugins = 已启用的插件
 app-basics-build-config = 构建配置
@@ -176,7 +176,7 @@ media-device-channels = 声道
 media-device-rate = 采样率
 media-device-latency = 延迟
 media-capabilities-title = 媒体能力
-media-codec-support-info = 解码器支持信息
+media-codec-support-info = 编解码器支持信息
 # List all the entries of the database.
 media-capabilities-enumerate = 枚举数据库
 
@@ -217,7 +217,7 @@ intl-locales-supported = 应用程序语言环境
 intl-locales-default = 默认语言环境
 intl-os-title = 操作系统
 intl-os-prefs-system-locales = 系统语言环境
-intl-regional-prefs = 地区偏好
+intl-regional-prefs = 区域偏好
 
 ## Remote Debugging
 ##

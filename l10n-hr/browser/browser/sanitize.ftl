@@ -19,7 +19,7 @@ sanitize-dialog-title-everything =
     .title = Izbriši svu povijest
     .style = min-width: 34em
 clear-data-settings-label = Kad se zatvori, { -brand-short-name } bi automatski trebao sve izbrisati
-sanitize-on-shutdown-description = Automatski obriši sve označene stavke kada se { -brand-short-name } zatvori.
+sanitize-on-shutdown-description = Automatski izbriši sve označene stavke kada se { -brand-short-name } zatvori.
 
 ## clear-time-duration-prefix is followed by a dropdown list, with
 ## values localized using clear-time-duration-value-* messages.
@@ -41,6 +41,10 @@ clear-time-duration-value-last-2-hours =
     .label = zadnja dva sata
 clear-time-duration-value-last-4-hours =
     .label = zadnja četiri sata
+# Variables:
+#   $midnightTime (String) - Time of midnight (00:00 hours) - to inform the user that history will be cleared after midnight
+clear-time-duration-value-since-midnight =
+    .label = Od { $midnightTime }
 clear-time-duration-value-today =
     .label = danas
 clear-time-duration-value-everything =
@@ -55,6 +59,7 @@ history-section-label = Povijest
 item-history-and-downloads =
     .label = Povijest pregledavanja i preuzimanja
     .accesskey = v
+item-history-and-downloads-description = Briše povijest pretraživanja, web stranica i preuzimanja
 item-history-form-data-downloads =
     .label = Povijest
     .accesskey = v
@@ -94,6 +99,10 @@ item-form-search-history =
 item-site-prefs =
     .label = Postavke web stranice
     .accesskey = i
+item-formdata-prefs =
+    .label = Spremljene informacije obrasca
+    .accesskey = o
+item-formdata-description = Briše stvari kao što su imena, e-mail adrese i druge stvari koje upisuješ u obrasce
 item-site-prefs-description = Resetira tvoje dozvole i postavke za web stranicu na izvorne postavke
 data-section-label = Podaci
 item-site-settings =

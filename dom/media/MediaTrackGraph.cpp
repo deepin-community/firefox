@@ -1033,7 +1033,8 @@ void MediaTrackGraphImpl::DeviceChanged() {
 
   // Dispatch to the bg thread to do the (potentially expensive) query of the
   // maximum channel count, and then dispatch back to the main thread, then to
-  // the graph, with the new info.
+  // the graph, with the new info. The "special case" above is to be handled
+  // back on the main thread as well for the same reasons.
   RefPtr<MediaTrackGraphImpl> self = this;
   NS_DispatchBackgroundTask(NS_NewRunnableFunction(
       "MaxChannelCountUpdateOnBgThread", [self{std::move(self)}]() {
@@ -1055,6 +1056,13 @@ void MediaTrackGraphImpl::DeviceChanged() {
                 MediaTrackGraphImpl* mGraphImpl;
                 uint32_t mMaxChannelCount;
               };
+
+              if (self->mMainThreadTrackCount == 0 &&
+                  self->mMainThreadPortCount == 0) {
+                // See comments above.
+                return;
+              }
+
               self->AppendMessage(
                   MakeUnique<MessageToGraph>(self, maxChannelCount));
             }));
@@ -1401,9 +1409,9 @@ void MediaTrackGraphImpl::UpdateGraph(GraphTime aEndBlockingDecisions) {
                MediaTimeToSeconds(track->GetEnd()),
                MediaTimeToSeconds(
                    track->GraphTimeToTrackTime(aEndBlockingDecisions))));
-          MOZ_DIAGNOSTIC_ASSERT(false,
-                                "A non-ended SourceMediaTrack wasn't fed "
-                                "enough data by NotifyPull");
+          MOZ_DIAGNOSTIC_CRASH(
+              "A non-ended SourceMediaTrack wasn't fed "
+              "enough data by NotifyPull");
         }
       }
 #endif /* MOZ_DIAGNOSTIC_ASSERT_ENABLED */
@@ -1620,9 +1628,10 @@ bool MediaTrackGraphImpl::UpdateMainThreadState() {
   return false;
 }
 
-auto MediaTrackGraphImpl::OneIteration(
-    GraphTime aStateTime, GraphTime aIterationEnd,
-    MixerCallbackReceiver* aMixerReceiver) -> IterationResult {
+auto MediaTrackGraphImpl::OneIteration(GraphTime aStateTime,
+                                       GraphTime aIterationEnd,
+                                       MixerCallbackReceiver* aMixerReceiver)
+    -> IterationResult {
   if (mGraphRunner) {
     return mGraphRunner->OneIteration(aStateTime, aIterationEnd,
                                       aMixerReceiver);
@@ -2932,10 +2941,7 @@ static void MoveToSegment(SourceMediaTrack* aTrack, MediaSegment* aIn,
       if (!last || last->mTimeStamp.IsNull()) {
         // This is the first frame, or the last frame pushed to `out` has been
         // all consumed. Just append and we deal with its duration later.
-        out->AppendFrame(do_AddRef(c->mFrame.GetImage()),
-                         c->mFrame.GetIntrinsicSize(),
-                         c->mFrame.GetPrincipalHandle(),
-                         c->mFrame.GetForceBlack(), c->mTimeStamp);
+        out->AppendFrame(*c);
         if (c->GetDuration() > 0) {
           out->ExtendLastFrameBy(c->GetDuration());
         }
@@ -2952,10 +2958,7 @@ static void MoveToSegment(SourceMediaTrack* aTrack, MediaSegment* aIn,
       }
 
       // Append the current frame (will have duration 0).
-      out->AppendFrame(do_AddRef(c->mFrame.GetImage()),
-                       c->mFrame.GetIntrinsicSize(),
-                       c->mFrame.GetPrincipalHandle(),
-                       c->mFrame.GetForceBlack(), c->mTimeStamp);
+      out->AppendFrame(*c);
       if (c->GetDuration() > 0) {
         out->ExtendLastFrameBy(c->GetDuration());
       }
@@ -3139,10 +3142,7 @@ void SourceMediaTrack::AddDirectListenerImpl(
       continue;
     }
     ++videoFrames;
-    bufferedData.AppendFrame(do_AddRef(iter->mFrame.GetImage()),
-                             iter->mFrame.GetIntrinsicSize(),
-                             iter->mFrame.GetPrincipalHandle(),
-                             iter->mFrame.GetForceBlack(), iter->mTimeStamp);
+    bufferedData.AppendFrame(*iter);
   }
 
   VideoSegment& video = static_cast<VideoSegment&>(*mUpdateTrack->mData);
@@ -3150,10 +3150,7 @@ void SourceMediaTrack::AddDirectListenerImpl(
        iter.Next()) {
     ++videoFrames;
     MOZ_ASSERT(!iter->mTimeStamp.IsNull());
-    bufferedData.AppendFrame(do_AddRef(iter->mFrame.GetImage()),
-                             iter->mFrame.GetIntrinsicSize(),
-                             iter->mFrame.GetPrincipalHandle(),
-                             iter->mFrame.GetForceBlack(), iter->mTimeStamp);
+    bufferedData.AppendFrame(*iter);
   }
 
   LOG(LogLevel::Info,

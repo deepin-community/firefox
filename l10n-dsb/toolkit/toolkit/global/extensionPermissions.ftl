@@ -30,4 +30,13 @@ webext-perms-description-sessions = Mějśo pśistup k njedawno zacynjonyn rejta
 webext-perms-description-tabs = Mějśo pśistup k rejtarikam wobglědowaka
 webext-perms-description-tabHide = Rejtariki wobglědowaka schowaś a pokazaś
 webext-perms-description-topSites = Mějśo pśistup k pśeglědowańskej historiji
+webext-perms-description-trialML = Ześěgniśo a wuwjeźćo Modele KI na swójom rěźe
+webext-perms-description-userScripts = Njepśeglědanym skriptam tśeśich póbitowarjow pśistup k wašym datam dowóliś
 webext-perms-description-webNavigation = Mějśo pśistup k aktiwiśe wobglědowaka za nawigaciju
+
+## The userScripts permission includes an additional explanation that is
+## displayed prominently near the usual permission description.
+
+webext-perms-extra-warning-userScripts-long = Njepśeglědane skripty mógu rizika za wěstotu a priwatnosć byś, gaž na pśikład škódny kode wuwjedu abo aktiwiśe websedłow slěduju. Wuwjeźćo jano skripty z rozšyrjenjow abo žrědłow, kótarymž dowěriśo.
+# A shorter warning is displayed in UI surfaces with little room, such as a permission prompt.
+webext-perms-extra-warning-userScripts-short = Njepśeglědane skripty mógu rizika za wěstotu a priwatnosć byś. Wuwjeźćo jano skripty z rozšyrjenjow abo žrědłow, kótarymž dowěriśo.

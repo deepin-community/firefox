@@ -246,6 +246,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Een account aanmake
 device-migration-fxa-spotlight-getting-new-device-header-2 = Nieuw apparaat in de toekomst?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Volg een paar eenvoudige stappen om uw bladwijzers, geschiedenis en wachtwoorden mee te nemen als u op een nieuw apparaat aan de slag gaat.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Hoe maak ik een reservekopie van mijn gegevens
+device-migration-fxa-spotlight-sync-header = Surf zonder ook maar iets te missen
+device-migration-fxa-spotlight-sync-body = Synchroniseer al uw belangrijke gegevens met versleuteling – zoals bladwijzers en wachtwoorden. U kunt alles overal waar u { -brand-product-name } gebruikt ophalen.
+device-migration-fxa-spotlight-sync-primary-button = Beginnen
 
 ## Set as Default PDF Reader Infobar
 
@@ -282,3 +285,61 @@ tail-fox-spotlight-title = Houd vervelende trackers van u af
 tail-fox-spotlight-subtitle = Zeg vaarwel tegen vervelende advertentietrackers en geniet van een veiligere, snelle internetervaring.
 tail-fox-spotlight-primary-button = Mijn koppelingen openen met { -brand-short-name }
 tail-fox-spotlight-secondary-button = Niet nu
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Oudere versies van { -brand-short-name } beginnen mogelijk problemen te krijgen op 14 januari 2025.</strong>
+root-certificate-succession-infobar-march-message = <strong>Werk bij om { -brand-short-name } na 14 maart 2025 te blijven gebruiken.</strong>
+root-certificate-succession-infobar-link = Waarom moet ik bijwerken?
+root-certificate-succession-infobar-primary-button =
+    .label = Nu bijwerken
+    .accesskey = w
+root-certificate-succession-infobar-secondary-button =
+    .label = Later
+    .accesskey = L
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = U hebt een belangrijke update van { -brand-short-name } gemist
+root-certificate-windows-background-notification-subtitle = Delen van de browser werken binnenkort niet meer als u niet bijwerkt. Nu is een goed moment om onze nieuwste beschermingen en functies te ontvangen.
+root-certificate-windows-background-notification-learn-more-button = Meer info
+root-certificate-windows-background-notification-update-button = { -brand-short-name } bijwerken
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Sluiten
+    .aria-label = Sluiten
+fxa-menu-message-sign-up-button = Registreren
+fxa-menu-message-sync-devices-primary-text = Al uw apparaten synchroniseren
+fxa-menu-message-sync-devices-secondary-text = Ontvang direct uw gegevens – zoals bladwijzers en wachtwoorden – overal waar u { -brand-short-name } gebruikt.
+fxa-menu-message-sync-devices-collapsed-text = Al uw apparaten synchroniseren
+fxa-menu-message-backup-data-primary-text = Een reservekopie van uw browsergegevens maken
+fxa-menu-message-backup-data-secondary-text = Bescherm automatisch bladwijzers, wachtwoorden en andere gegevens op al uw apparaten.
+fxa-menu-message-backup-data-collapsed-text = Reservekopie van browsergegevens maken
+fxa-menu-message-backup-sync-primary-text = Houd uw gegevens veilig en gesynchroniseerd
+fxa-menu-message-backup-sync-secondary-text = Synchronisatie maakt een reservekopie van de meeste van uw gegevens, zodat u ze overal waar u { -brand-short-name } gebruikt kunt openen.
+fxa-menu-message-backup-sync-collapsed-text = Gegevens synchroniseren en er een reservekopie van maken
+fxa-menu-message-mobile-primary-text = Tabbladen naar uw telefoon verzenden
+fxa-menu-message-mobile-secondary-text = Ga direct verder waar u was gebleven wanneer u uw tabbladen synchroniseert met een mobiel apparaat.
+fxa-menu-message-mobile-collapsed-text = Synchroniseren met uw telefoon
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Welkom terug
+multi-cta-fox-doodle-set-default-checkbox = { -brand-short-name } instellen als standaard
+multi-cta-fox-doodle-pin-startmenu-checkbox = { -brand-short-name } aan het menu Start vastmaken
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] { -brand-short-name } in de Dock houden
+       *[other] { -brand-short-name } aan de taakbalk vastmaken
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Beginnen met browsen
+multi-cta-fox-doodle-main-browser-primary-button-label = { -brand-short-name } mijn hoofdbrowser maken
+multi-cta-fox-doodle-quick-reminder-subtitle = Dit is een korte herinnering dat u uw favoriete op privacy gefocuste browser op slechts één klik afstand kunt houden.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Houd uw favoriete op privacy gerichte browser op slechts één klik afstand. Stel { -brand-short-name } in als uw standaardbrowser voor het openen van koppelingen en houd het programma in uw Dock.
+       *[other] Houd uw favoriete op privacy gerichte browser op slechts één klik afstand. Stel { -brand-short-name } in als uw standaardbrowser voor het openen van koppelingen en zet het programma vast op uw taakbalk.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Houd uw favoriete op privacy gerichte browser op slechts één klik afstand. Stel { -brand-short-name } in als uw standaardbrowser voor het openen van koppelingen en zet het programma vast aan uw taakbalk en startmenu.

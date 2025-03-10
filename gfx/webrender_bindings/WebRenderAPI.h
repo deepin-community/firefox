@@ -132,7 +132,8 @@ class TransactionBuilder final {
 
   void ClearDisplayList(Epoch aEpoch, wr::WrPipelineId aPipeline);
 
-  void GenerateFrame(const VsyncId& aVsyncId, wr::RenderReasons aReasons);
+  void GenerateFrame(const VsyncId& aVsyncId, bool aPresent,
+                     wr::RenderReasons aReasons);
 
   void InvalidateRenderedFrame(wr::RenderReasons aReasons);
 
@@ -157,7 +158,7 @@ class TransactionBuilder final {
   void AddExternalImage(ImageKey key, const ImageDescriptor& aDescriptor,
                         ExternalImageId aExtID,
                         wr::ExternalImageType aImageType,
-                        uint8_t aChannelIndex = 0);
+                        uint8_t aChannelIndex = 0, bool aNormalizedUvs = false);
 
   void UpdateImageBuffer(wr::ImageKey aKey, const ImageDescriptor& aDescriptor,
                          wr::Vec<uint8_t>& aBytes);
@@ -171,14 +172,13 @@ class TransactionBuilder final {
   void UpdateExternalImage(ImageKey aKey, const ImageDescriptor& aDescriptor,
                            ExternalImageId aExtID,
                            wr::ExternalImageType aImageType,
-                           uint8_t aChannelIndex = 0);
+                           uint8_t aChannelIndex = 0,
+                           bool aNormalizedUvs = false);
 
-  void UpdateExternalImageWithDirtyRect(ImageKey aKey,
-                                        const ImageDescriptor& aDescriptor,
-                                        ExternalImageId aExtID,
-                                        wr::ExternalImageType aImageType,
-                                        const wr::DeviceIntRect& aDirtyRect,
-                                        uint8_t aChannelIndex = 0);
+  void UpdateExternalImageWithDirtyRect(
+      ImageKey aKey, const ImageDescriptor& aDescriptor, ExternalImageId aExtID,
+      wr::ExternalImageType aImageType, const wr::DeviceIntRect& aDirtyRect,
+      uint8_t aChannelIndex = 0, bool aNormalizedUvs = false);
 
   void SetBlobImageVisibleArea(BlobImageKey aKey,
                                const wr::DeviceIntRect& aArea);
@@ -186,6 +186,10 @@ class TransactionBuilder final {
   void DeleteImage(wr::ImageKey aKey);
 
   void DeleteBlobImage(wr::BlobImageKey aKey);
+
+  void AddSnapshotImage(wr::SnapshotImageKey aKey);
+
+  void DeleteSnapshotImage(wr::SnapshotImageKey aKey);
 
   void AddRawFont(wr::FontKey aKey, wr::Vec<uint8_t>& aBytes, uint32_t aIndex);
 
@@ -591,7 +595,7 @@ class DisplayListBuilder final {
 
   Maybe<wr::WrSpatialId> PushStackingContext(
       const StackingContextParams& aParams, const wr::LayoutRect& aBounds,
-      const wr::RasterSpace& aRasterSpace);
+      const wr::RasterSpace& aRasterSpace, const wr::SnapshotInfo* aSnapshot);
   void PopStackingContext(bool aIsReferenceFrame);
 
   wr::WrClipChainId DefineClipChain(const nsTArray<wr::WrClipId>& aClips,

@@ -4,6 +4,12 @@
 
 menu-view-genai-chat =
     .label = AI 聊天機器人
+menu-view-review-checker =
+    .label = 商品評論檢查器
+menu-view-contextual-password-manager =
+    .label = 密碼
+sidebar-options-menu-button =
+    .title = 開啟選單
 
 ## Labels for sidebar history panel
 
@@ -46,16 +52,30 @@ sidebar-position-right =
     .label = 在右邊顯示
 sidebar-vertical-tabs =
     .label = 垂直分頁標籤
+sidebar-settings =
+    .label = 側邊欄選項
+sidebar-hide-tabs-and-sidebar =
+    .label = 隱藏分頁與側邊欄
+sidebar-show-on-the-right =
+    .label = 將側邊欄移至右方
+sidebar-show-on-the-left =
+    .label = 將側邊欄移至左方
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = 在滑鼠移到上方時展開
 sidebar-horizontal-tabs =
     .label = 水平分頁標籤
 sidebar-customize-tabs-header =
     .label = 分頁選項
-sidebar-customize-settings-header =
-    .label = 側邊欄選項
-sidebar-visibility-always-show =
-    .label = 總是顯示
-sidebar-visibility-hide-sidebar =
-    .label = 隱藏側邊欄
+sidebar-customize-button-header =
+    .label = 側邊欄按鈕
+sidebar-customize-position-header =
+    .label = 側邊欄位置
+sidebar-visibility-setting-always-show =
+    .label = 展開或摺疊側邊欄
+sidebar-visibility-setting-hide-sidebar =
+    .label = 顯示或隱藏側邊欄
 
 ## Labels for sidebar context menu items
 
@@ -95,6 +115,41 @@ sidebar-menu-bookmarks-label =
     .label = 書籤
 sidebar-menu-customize-label =
     .label = 自訂側邊欄
+sidebar-menu-review-checker-label =
+    .label = 商品評論檢查器
+sidebar-menu-contextual-password-manager-label =
+    .label = 密碼
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = 開啟瀏覽紀錄（{ $shortcut }）
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = 關閉瀏覽紀錄（{ $shortcut }）
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = 開啟書籤（{ $shortcut }）
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = 關閉書籤（{ $shortcut }）
+sidebar-menu-open-ai-chatbot-tooltip = 開啟 AI 聊天機器人
+sidebar-menu-close-ai-chatbot-tooltip = 關閉 AI 聊天機器人
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = 開啟 AI 聊天機器人（{ $shortcut }）
+sidebar-menu-open-ai-chatbot-provider-tooltip = 開啟 { $provider }（{ $shortcut }）
+sidebar-menu-close-ai-chatbot-tooltip-generic = 關閉 AI 聊天機器人（{ $shortcut }）
+sidebar-menu-close-ai-chatbot-provider-tooltip = 關閉 { $provider }（{ $shortcut }）
 
 ## Headings for sidebar menu panels.
 
@@ -104,6 +159,18 @@ sidebar-menu-history-header =
     .heading = 瀏覽紀錄
 sidebar-menu-syncedtabs-header =
     .heading = 來自其他裝置的分頁
+sidebar-menu-bookmarks-header =
+    .heading = 書籤
+sidebar-menu-cpm-header =
+    .heading = 密碼
+sidebar-panel-header-close-button =
+    .tooltiptext = 關閉
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = 自訂側邊欄
+sidebar-history-title = 瀏覽紀錄
+sidebar-syncedtabs-title = 來自其他裝置的分頁
 
 ## Context for closing synced tabs when hovering over the items
 
@@ -113,3 +180,29 @@ sidebar-menu-syncedtabs-header =
 #   $deviceName (String) - the name of the device the user is closing a tab for
 synced-tabs-context-close-tab-title =
     .title = 關閉 { $deviceName } 上的分頁
+show-sidebars =
+    .tooltiptext = 顯示側邊欄
+    .label = 側邊欄
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = 展開側邊欄 ({ $shortcut })
+    .label = 側邊欄
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = 摺疊側邊欄 ({ $shortcut })
+    .label = 側邊欄
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = 顯示側邊欄 ({ $shortcut })
+    .label = 側邊欄
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = 隱藏側邊欄 ({ $shortcut })
+    .label = 側邊欄

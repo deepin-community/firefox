@@ -12,6 +12,7 @@ neterror-blocked-by-policy-page-title = Pagjine blocade
 neterror-captive-portal-page-title = Jentre te rêt
 neterror-dns-not-found-title = Servidôr no cjatât
 neterror-malformed-uri-page-title = URL no valit
+general-body-title = Sta atent. Alc nol è just.
 
 ## Error page actions
 
@@ -41,6 +42,9 @@ neterror-generic-error = { -brand-short-name } nol rive a cjamâ cheste pagjine 
 neterror-load-error-try-again = Il sît al podarès jessi no disponibil pal moment opûr masse impegnât. Torne prove chi di pôc.
 neterror-load-error-connection = Se no tu rivis a cjariâ nissune pagjine, controle la conession di rêt dal computer.
 neterror-load-error-firewall = Se il computer o la rêt a son protets di un firewall o di un proxy, verifiche che { -brand-short-name } al vedi i permès di acès al Web.
+# This warning is only shown on macOS Sequoia and later (see bug 1929377)
+neterror-load-osx-permission = Se tu stâs cirint di cjariâ une pagjine de rêt locâl, controle che a { -brand-short-name } a sedin stadis concedûts i permès pe rêt locâl tes impostazions di riservatece e sigurece di macOS.
+neterror-http-error-page = Verifiche di vê scrite juste la direzion dal sît web.
 neterror-captive-portal = Tu scugnis jentrâ in cheste rêt prime di podê acedi a Internet.
 # Variables:
 # $hostAndPath (String) - a suggested site (e.g. "www.example.com") that the user may have meant instead.
@@ -96,6 +100,9 @@ neterror-proxy-connect-failure-settings = Controle lis impostazions dal proxy pa
 neterror-proxy-connect-failure-contact-admin = Contate l'aministradôr de rêt par verificâ che il servidôr al funzioni.
 neterror-content-encoding-error = Contate par plasê i proprietaris dal sît par informâju di chest probleme.
 neterror-unsafe-content-type = Par plasê contate i proprietaris dal sît par informâju di chest probleme.
+# Variables:
+# $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-basic-http-auth = { -brand-short-name } nol considere { $hostname } afidabil parcè che la conession no je sigure. Prove modifiche la direzion doprant HTTPS.
 neterror-nss-failure-not-verified = No si pues visualizâ la pagjine che tu stâs cirint di viodi parcè che no si à podût verificâ la autenticitât dai dâts ricevûts.
 neterror-nss-failure-contact-website = Par plasê contate i proprietaris dal sît web par informâju di chest probleme.
 # Variables:
@@ -148,3 +155,11 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = Se no tu cognossis <b>{ $mi
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = <b>{ $hostname }</b> al à une politiche di sigurece clamade HTTP Strict Transport Security (HSTS), par furlan sigurece rigorose di traspuart HTTP, che al significhe che { -brand-short-name } i pues conetisi dome in maniere sigure. No tu puedis zontâ une ecezion par visitâ chest sît.
+cert-error-trust-certificate-transparency-what-can-you-do-about-it = Forsit nuie, viodût che al è probabil che al sedi un probleme cul sît stes.
+certerror-blocked-by-corp-headers-description = Cualchi volte i sîts web si protezin, e a protezin personis come te, da lis interazions malvoludis cun altris sîts.
+certerror-coop-learn-more = Altris informazions su lis politichis COOP (Cross Origin Opener Policies)
+certerror-coep-learn-more = Altris informazions su lis politichis COEP (Cross Origin Embedder Policies)
+# Variables:
+#   $responsestatus (string) - HTTP response status code (e.g., 500).
+#   $responsestatustext (string) - HTTP response status text (e.g., "Internal Server Error").
+neterror-response-status-code = Codiç di erôr: { $responsestatus } { $responsestatustext }

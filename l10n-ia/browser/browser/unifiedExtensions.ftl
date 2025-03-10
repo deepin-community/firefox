@@ -21,6 +21,9 @@ unified-extensions-manage-extensions =
 unified-extensions-item-open-menu =
     .aria-label = Aperir le menu pro { $extensionName }
 unified-extensions-item-message-manage = Gerer extension
+# Variables:
+#   $extensionName (String) - Name of the user-enabled soft-blocked extension.
+unified-extensions-item-messagebar-softblocked = { $extensionName } viola le directivas de Mozilla. Usar lo pote esser riscose.
 
 ## Extension's context menu
 
@@ -41,10 +44,41 @@ unified-extensions-context-menu-move-widget-down =
 
 unified-extensions-mb-quarantined-domain-title = Alcun extensiones non es permittite
 unified-extensions-mb-quarantined-domain-message = Solo alcun extensiones surveliate per { -vendor-short-name } es permittite in iste sito pro proteger tu datos.
-unified-extensions-mb-quarantined-domain-message-2 = Pro proteger tu datos, alcun extensiones non pote leger o cambiar datos in iste sito. Usar le parametros de extension pro permitter los sur sitos limitate per { -vendor-short-name }.
 # .heading is processed by moz-message-bar to be used as a heading attribute
 unified-extensions-mb-quarantined-domain-message-3 =
     .heading = Alcun extensiones non es permittite
     .message = Pro proteger tu datos, alcun extensiones non pote leger o cambiar datos in iste sito. Usar le parametros de extension pro permitter los sur sitos limitate per { -vendor-short-name }.
 unified-extensions-mb-quarantined-domain-learn-more = Pro saper plus
     .aria-label = Saper plus: alcun extensiones non es permittite
+unified-extensions-mb-about-addons-link = Ir a parametros de extension
+# Variables:
+#   $extensionName (String) - Name of the extension disabled through a soft-block.
+unified-extensions-mb-blocklist-warning-single =
+    .heading = { $extensionName } disactivate
+    .message =
+        Iste extensiones viola le directivas de Mozilla e ha essite disactivate.
+        Tu pote activar los in parametros, ma isto pote esser riscose.
+# Variables:
+#   $extensionName (String) - Name of the extension disabled through a hard-block.
+unified-extensions-mb-blocklist-error-single =
+    .heading = { $extensionName } disactivate
+    .message = Iste extension viola le directivas de Mozilla e ha essite disactivate.
+# Variables:
+#   $extensionsCount (Number) - Number of extensions disabled through both soft and hard-blocks (always going to be greater than 1)
+unified-extensions-mb-blocklist-warning-multiple =
+    .heading =
+        { $extensionsCount ->
+           *[other] { $extensionsCount } extensiones disactivate
+        }
+    .message =
+        Alcun de tu extensiones viola le directivas de Mozilla e ha essite disactivate.
+        Tu pote activar los, ma isto pote esser riscose.
+# Variables:
+#   $extensionsCount (Number) - Number of extensions disabled through hard-blocks.
+unified-extensions-mb-blocklist-error-multiple =
+    .heading =
+        { $extensionsCount ->
+            [one] { $extensionsCount } extension disactivate
+           *[other] { $extensionsCount } extensiones disactivate
+        }
+    .message = Alcun de tu extensiones viola le directivas de Mozilla e ha essite disactivate.

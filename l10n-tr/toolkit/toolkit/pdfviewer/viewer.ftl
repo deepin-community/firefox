@@ -316,6 +316,9 @@ pdfjs-highlight-floating-button1 =
     .title = Vurgula
     .aria-label = Vurgula
 pdfjs-highlight-floating-button-label = Vurgula
+pdfjs-editor-signature-button =
+    .title = İmza ekle
+pdfjs-editor-signature-button-label = İmza ekle
 
 ## Remove button for the various kind of editor.
 
@@ -327,6 +330,8 @@ pdfjs-editor-remove-stamp-button =
     .title = Resmi kaldır
 pdfjs-editor-remove-highlight-button =
     .title = Vurgulamayı kaldır
+pdfjs-editor-remove-signature-button =
+    .title = İmzayı kaldır
 
 ##
 
@@ -343,6 +348,13 @@ pdfjs-editor-stamp-add-image-button-label = Resim ekle
 pdfjs-editor-free-highlight-thickness-input = Kalınlık
 pdfjs-editor-free-highlight-thickness-title =
     .title = Metin dışındaki öğeleri vurgularken kalınlığı değiştir
+pdfjs-editor-signature-add-signature-button =
+    .title = Yeni imza ekle
+pdfjs-editor-signature-add-signature-button-label = Yeni imza ekle
+# .default-content is used as a placeholder in an empty text editor.
+pdfjs-free-text2 =
+    .aria-label = Metin düzenleyicisi
+    .default-content = Yazmaya başlayın…
 pdfjs-free-text =
     .aria-label = Metin düzenleyicisi
 pdfjs-free-text-default-content = Yazmaya başlayın…
@@ -353,8 +365,9 @@ pdfjs-ink-canvas =
 
 ## Alt-text dialog
 
-# Alternative text (alt text) helps when people can't see the image.
 pdfjs-editor-alt-text-button-label = Alternatif metin
+pdfjs-editor-alt-text-edit-button =
+    .aria-label = Alternatif metni düzenle
 pdfjs-editor-alt-text-edit-button-label = Alternatif metni düzenle
 pdfjs-editor-alt-text-dialog-label = Bir seçenek seçin
 pdfjs-editor-alt-text-dialog-description = Alternatif metin, insanlar resmi göremediğinde veya resim yüklenmediğinde işe yarar.
@@ -368,6 +381,9 @@ pdfjs-editor-alt-text-decorative-tooltip = Dekoratif olarak işaretlendi
 # .placeholder: This is a placeholder for the alt text input area
 pdfjs-editor-alt-text-textarea =
     .placeholder = Örneğin, “Genç bir adam yemek yemek için masaya oturuyor”
+# Alternative text (alt text) helps when people can't see the image.
+pdfjs-editor-alt-text-button =
+    .aria-label = Alternatif metin
 
 ## Editor resizers
 ## This is used in an aria label to help to understand the role of the resizer.
@@ -449,10 +465,16 @@ pdfjs-editor-new-alt-text-error-close-button = Kapat
 pdfjs-editor-new-alt-text-ai-model-downloading-progress = Alt metin yapay zekâ modeli indiriliyor ({ $downloadedSize } / { $totalSize } MB)
     .aria-valuetext = Alt metin yapay zekâ modeli indiriliyor ({ $downloadedSize } / { $totalSize } MB)
 # This is a button that users can click to edit the alt text they have already added.
+pdfjs-editor-new-alt-text-added-button =
+    .aria-label = Alternatif metin eklendi
 pdfjs-editor-new-alt-text-added-button-label = Alt metin eklendi
 # This is a button that users can click to open the alt text editor and add alt text when it is not present.
+pdfjs-editor-new-alt-text-missing-button =
+    .aria-label = Alternatif metin eksik
 pdfjs-editor-new-alt-text-missing-button-label = Alt metin eksik
 # This is a button that opens up the alt text modal where users should review the alt text that was automatically generated.
+pdfjs-editor-new-alt-text-to-review-button =
+    .aria-label = Alternatif metni incele
 pdfjs-editor-new-alt-text-to-review-button-label = Alt metni incele
 # "Created automatically" is a prefix that will be added to the beginning of any alt text that has been automatically generated. After the colon, the user will see/hear the actual alt text description. If the alt text has been edited by a human, this prefix will not appear.
 # Variables:
@@ -479,3 +501,92 @@ pdfjs-editor-alt-text-settings-editor-title = Alt metin düzenleyicisi
 pdfjs-editor-alt-text-settings-show-dialog-button-label = Resim eklerken alt metin düzenleyicisini hemen göster
 pdfjs-editor-alt-text-settings-show-dialog-description = Tüm resimlerinizin alt metne sahip olduğundan emin olmanızı sağlar.
 pdfjs-editor-alt-text-settings-close-button = Kapat
+
+## "Annotations removed" bar
+
+pdfjs-editor-undo-bar-message-highlight = Vurgulama silindi
+pdfjs-editor-undo-bar-message-freetext = Metin silindi
+pdfjs-editor-undo-bar-message-ink = Çizim silindi
+pdfjs-editor-undo-bar-message-stamp = Görsel silindi
+pdfjs-editor-undo-bar-message-signature = İmza kaldırıldı
+# Variables:
+#   $count (Number) - the number of removed annotations.
+pdfjs-editor-undo-bar-message-multiple =
+    { $count ->
+        [one] { $count } ek açıklama silindi
+       *[other] { $count } ek açıklama silindi
+    }
+pdfjs-editor-undo-bar-undo-button =
+    .title = Geri al
+pdfjs-editor-undo-bar-undo-button-label = Geri al
+pdfjs-editor-undo-bar-close-button =
+    .title = Kapat
+pdfjs-editor-undo-bar-close-button-label = Kapat
+
+## Add a signature dialog
+
+pdfjs-editor-add-signature-dialog-title = İmza ekle
+
+## Tab names
+
+# Type is a verb (you can type your name as signature)
+pdfjs-editor-add-signature-type-button = Yaz
+    .title = Yaz
+# Draw is a verb (you can draw your signature)
+pdfjs-editor-add-signature-draw-button = Çiz
+    .title = Çiz
+pdfjs-editor-add-signature-image-button = Resim
+    .title = Resim
+
+## Tab panels
+
+pdfjs-editor-add-signature-type-input =
+    .aria-label = İmzanızı yazın
+    .placeholder = İmzanızı yazın
+pdfjs-editor-add-signature-draw-placeholder = İmzanızı çizin
+pdfjs-editor-add-signature-draw-thickness-range-label = Kalınlık
+# Variables:
+#   $thickness (Number) - the thickness (in pixels) of the line used to draw a signature.
+pdfjs-editor-add-signature-draw-thickness-range =
+    .title = Çizgi kalınlığı: { $thickness }
+pdfjs-editor-add-signature-image-placeholder = Yüklenecek dosyayı buraya sürükleyin
+pdfjs-editor-add-signature-image-browse-link =
+    { PLATFORM() ->
+        [macos] Veya resim dosyalarına göz atın
+       *[other] Veya resim dosyalarına göz atın
+    }
+
+## Controls
+
+pdfjs-editor-add-signature-description-label = Açıklama (alt metin)
+pdfjs-editor-add-signature-description-input =
+    .title = Açıklama (alt metin)
+pdfjs-editor-add-signature-description-default-when-drawing = İmza
+pdfjs-editor-add-signature-clear-button-label = İmzayı temizle
+pdfjs-editor-add-signature-clear-button =
+    .title = İmzayı temizle
+pdfjs-editor-add-signature-save-checkbox = İmzayı kaydet
+pdfjs-editor-add-signature-save-warning-message = Kayıtlı 5 imza sınırına ulaştınız. Daha fazla imza kaydetmek için imzalardan birini kaldırın.
+pdfjs-editor-add-signature-image-upload-error-title = Resim yüklenemedi
+pdfjs-editor-add-signature-image-upload-error-description = Ağ bağlantınızı kontrol edin veya başka bir resim deneyin.
+pdfjs-editor-add-signature-error-close-button = Kapat
+
+## Dialog buttons
+
+pdfjs-editor-add-signature-cancel-button = Vazgeç
+pdfjs-editor-add-signature-add-button = Ekle
+pdfjs-editor-edit-signature-update-button = Güncelle
+
+## Main menu for adding/removing signatures
+
+pdfjs-editor-delete-signature-button =
+    .title = İmzayı kaldır
+pdfjs-editor-delete-signature-button-label = İmzayı kaldır
+
+## Editor toolbar
+
+pdfjs-editor-add-signature-edit-button-label = Açıklamayı düzenle
+
+## Edit signature description dialog
+
+pdfjs-editor-edit-signature-dialog-title = Açıklamayı düzenle

@@ -23,14 +23,17 @@ pub mod frame;
 #[cfg(not(fuzzing))]
 mod frame;
 mod pace;
-#[cfg(fuzzing)]
+#[cfg(any(fuzzing, feature = "bench"))]
 pub mod packet;
-#[cfg(not(fuzzing))]
+#[cfg(not(any(fuzzing, feature = "bench")))]
 mod packet;
 mod path;
 mod pmtud;
 mod qlog;
 mod quic_datagrams;
+#[cfg(feature = "bench")]
+pub mod recovery;
+#[cfg(not(feature = "bench"))]
 mod recovery;
 #[cfg(feature = "bench")]
 pub mod recv_stream;
@@ -107,7 +110,6 @@ pub enum Error {
     DecodingFrame,
     DecryptError,
     DisabledVersion,
-    HandshakeFailed,
     IdleTimeout,
     IntegerOverflow,
     InvalidInput,
@@ -127,6 +129,7 @@ pub enum Error {
     KeyUpdateBlocked,
     NoAvailablePath,
     NoMoreData,
+    NotAvailable,
     NotConnected,
     PacketNumberOverlap,
     PeerApplicationError(AppError),
@@ -138,7 +141,6 @@ pub enum Error {
     UnknownFrameType,
     VersionNegotiation,
     WrongRole,
-    NotAvailable,
 }
 
 impl Error {

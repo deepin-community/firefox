@@ -8,11 +8,18 @@
 newtab-page-title = Nieuw tabblad
 newtab-settings-button =
     .title = Uw Nieuw-tabbladpagina aanpassen
+newtab-personalize-settings-icon-label =
+    .title = Nieuw tabblad personaliseren
+    .aria-label = Instellingen
+newtab-settings-dialog-label =
+    .aria-label = Instellingen
 newtab-personalize-icon-label =
     .title = Nieuw tabblad personaliseren
     .aria-label = Nieuw tabblad personaliseren
 newtab-personalize-dialog-label =
     .aria-label = Personaliseren
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Opslaan naar { -pocket-brand-name }
 newtab-menu-delete-pocket = Verwijderen uit { -pocket-brand-name }
 newtab-menu-archive-pocket = Archiveren in { -pocket-brand-name }
 newtab-menu-show-privacy-info = Onze sponsors en uw privacy
+newtab-menu-about-fakespot = Over { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Blokkeren
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Onderwerp niet meer volgen
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -233,6 +247,8 @@ newtab-pocket-cta-button = { -pocket-brand-name } gebruiken
 newtab-pocket-cta-text = Bewaar de verhalen die u interessant vindt in { -pocket-brand-name }, en stimuleer uw gedachten met boeiende leesstof.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } maakt deel uit van de { -brand-product-name }-familie
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Opslaan
 newtab-pocket-saved = Opgeslagen
 
@@ -244,6 +260,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Niets voor mij
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Bedankt. Uw feedback helpt ons uw feed te verbeteren.
 newtab-toast-thumbs-up-or-down = Bedankt. Uw feedback helpt ons uw feed te verbeteren.
 newtab-toast-dismiss-button =
     .title = Sluiten
@@ -309,6 +328,8 @@ newtab-wallpaper-dark-panda = Rode panda verborgen in bos
 newtab-wallpaper-dark-sky = Stadslandschap met een nachtelijke hemel
 newtab-wallpaper-dark-mountain = Landschap met berg
 newtab-wallpaper-dark-city = Paars stadslandschap
+newtab-wallpaper-dark-fox-anniversary = Een vos op de stoep bij een bos
+newtab-wallpaper-light-fox-anniversary = Een vos in een grasveld met een mistig berglandschap
 
 ## Solid Colors
 
@@ -339,7 +360,7 @@ newtab-wallpaper-abstract-orange = Oranje vormen
 newtab-wallpaper-gradient-orange = Verloop oranje en roze
 newtab-wallpaper-abstract-blue-purple = Blauwe en paarse vormen
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Foto’s
 newtab-wallpaper-beach-at-sunrise = Strand bij zonsopgang
@@ -363,6 +384,9 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+
 ## New Tab Weather
 
 # Variables:
@@ -373,6 +397,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Gesponsord
 newtab-weather-menu-change-location = Locatie wijzigen
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Locatie zoeken
+    .aria-label = Locatie zoeken
 newtab-weather-change-location-search-input = Locatie zoeken
 newtab-weather-menu-weather-display = Weerweergave
 # Display options are:
@@ -431,3 +458,36 @@ newtab-topic-selection-button-maybe-later = Misschien later
 newtab-topic-selection-privacy-link = Lees hoe we gegevens beschermen en beheren
 newtab-topic-selection-button-update-interests = Werk uw interesses bij
 newtab-topic-selection-button-pick-interests = Kies uw interesses
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Volgen
+newtab-section-following-button = Volgend
+newtab-section-unfollow-button = Ontvolgen
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Blokkeren
+newtab-section-blocked-button = Geblokkeerd
+newtab-section-unblock-button = Blokkering opheffen
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = Weet u zeker dat u deze sectie wilt blokkeren?
+newtab-section-confirm-block-section-p2 = Geblokkeerde sectie verschijnt niet meer in uw feed.
+newtab-section-block-section-button = Deze sectie blokkeren
+newtab-section-cancel-button = Niet nu
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = Onderwerpen
+newtab-section-mangage-topics-button =
+    .label = Gevolgde en geblokkeerde onderwerpen
+newtab-section-mangage-topics-followed-topics-subtitle = Gevolgde onderwerpen
+newtab-section-mangage-topics-followed-topics-empty-state = U hebt nog geen onderwerpen gevolgd.
+newtab-section-mangage-topics-blocked-topics-subtitle = Geblokkeerde onderwerpen
+newtab-section-mangage-topics-blocked-topics-empty-state = U hebt nog geen onderwerpen geblokkeerd.

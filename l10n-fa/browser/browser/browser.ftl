@@ -51,6 +51,11 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = { -brand-shortcut-name } مرور ناشناس
+# This gets set as the initial title, and is overridden as soon as we start
+# updating the titlebar based on loaded tabs or private browsing state.
+# This should match the `data-title-default` attribute in both
+# `browser-main-window` and `browser-main-window-mac`.
+browser-main-window-default-title = { -brand-full-name }
 
 ##
 
@@ -279,6 +284,9 @@ quickactions-cmd-plugins = افزایه‌ها
 # Opens the print dialog
 quickactions-print2 = چاپ صفحه
 quickactions-cmd-print = چاپ
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = ذخیره صفحه به صورت PDF
+quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = گشایش پنجره ناشناس
 quickactions-cmd-private = مرور ناشناس
@@ -348,6 +356,7 @@ identity-connection-secure = اتصال امن است
 identity-connection-failure = شکست در برقراری ارتباط
 identity-connection-internal = این یک صفحهٔ امن { -brand-short-name } است.
 identity-connection-file = این صفحه بر روی رایانه شما ذخیره شده است.
+identity-connection-associated = این برگه از برگه دیگری بارگیری می‌شود.
 identity-extension-page = این صفحه توسط یک افزونه بارگیری شده است.
 identity-active-blocked = { -brand-short-name } قسمت‌هایی از این صفحه را که ایمن نیستند، مسدود کرده است.
 identity-custom-root = گواهیِ این اتصال، توسط صادرکننده‌ای ایجاد شده است که برای موزیلا قابل شناسایی نیست.
@@ -357,6 +366,7 @@ identity-weak-encryption = این صفحه از کدگذاری ضعیفی است
 identity-insecure-login-forms = اطلاعات ورودی که در این صفحه وارد می‌کنید می‌توانند فاش شوند.
 identity-https-only-connection-upgraded = (ارتقا یافته به HTTPS)
 identity-https-only-label = حالت فقط HTTPS
+identity-https-only-label2 = به‌طور خودکار این وبگاه را به یک اتصال امن ارتقاء دهید.
 identity-https-only-dropdown-on =
     .label = روشن
 identity-https-only-dropdown-off =
@@ -365,6 +375,8 @@ identity-https-only-dropdown-off-temporarily =
     .label = خاموش موقت
 identity-https-only-info-turn-on2 = اگر می‌خواهید در صورت امکان { -brand-short-name } اتصال را ارتقا دهد، حالت فقط HTTPS را برای این سایت روشن کنید.
 identity-https-only-info-turn-off2 = اگر صفحه خراب به نظر می‌رسد، ممکن است بخواهید حالت فقط HTTPS را برای این سایت خاموش کنید تا سایت در حال غیر امن HTTP بارگیری شود.
+identity-https-only-info-turn-on3 = اگر می‌خواهید { -brand-short-name } در صورت امکان اتصال را ارتقا دهد، ارتقاهای HTTPS را برای این وبگاه فعال کنید.
+identity-https-only-info-turn-off3 = اگر صفحه خراب به نظر می‌رسد، ممکن است بخواهید ارتقاء HTTPS را برای این وبگاه غیرفعال کنید تا با استفاده از HTTP ناامن دوباره بارگذاری شود.
 identity-https-only-info-no-upgrade = ارتقا اتصال از HTTP امکان‌پذیر نبود.
 identity-permissions-storage-access-header = کلوچک‌های میان‌پایگاهی
 identity-permissions-storage-access-hint = این سازمان‌ها می‌توانند از کلوچک‌های میان‌پایگاهی و داده‌های پایگاه‌ها در حالی که شما در این پایگاه هستید استفاده کنند.
@@ -540,6 +552,8 @@ urlbar-go-button =
     .tooltiptext = رفتن به نشانی موجود در نوار مکان
 urlbar-page-action-button =
     .tooltiptext = کنش‌های صفحه
+urlbar-revert-button =
+    .tooltiptext = نمایش نشانی در نوار مکان
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -560,6 +574,13 @@ urlbar-result-action-search-w-engine = جست‌وجو از طریق { $engine }
 urlbar-result-action-sponsored = حمایت شده
 urlbar-result-action-switch-tab = پرش به زبانه
 urlbar-result-action-visit = بازدید
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = تعویض به زبانه · <span>{ $container }</span>
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = بازدید از تخته‌گیره
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -587,6 +608,39 @@ urlbar-result-action-copy-to-clipboard = رونوشت
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+
+## Strings used for buttons in the urlbar
+
+# Label prompting user to search with a particular search engine.
+#  $engine (String): the name of a search engine that searches a specific site
+urlbar-result-search-with = جست‌وجو با { $engine }
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - جستجو { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - جستجو با { $engine }
+urlbar-searchmode-dropmarker =
+    .tooltiptext = انتخاب یک موتور جستجو
+urlbar-searchmode-bookmarks =
+    .label = نشانک‌ها
+urlbar-searchmode-tabs =
+    .label = زبانه‌ها
+urlbar-searchmode-history =
+    .label = تاریخچه
+urlbar-searchmode-actions =
+    .label = کنش‌ها
+urlbar-searchmode-exit-button =
+    .tooltiptext = بستن
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = این بار جستجو با:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = تنظیمات جستجو
+urlbar-searchmode-popup-search-settings = تنظیمات جستجو
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -869,6 +923,9 @@ tabs-toolbar-list-all-tabs =
 restore-session-startup-suggestion-message = <strong>می‌خواهید برگه‌های قبلی را باز کنید؟</strong> می‌توانید نشست قبلی خود را از منوی { -brand-short-name } <img data-l10n-name="icon"/>، در قسمت تاریخچه بازیابی کنید.
 restore-session-startup-suggestion-button = نمایش روش کار
 
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name } به صورت خودکار بعضی اطلاعات را جهت بهبود تجربه کاربری شما به { -vendor-short-name } می‌فرستد.
@@ -877,6 +934,9 @@ data-reporting-notification-button =
     .accesskey = ا
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = مرور ناشناس
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = مرور ناشناس
 
 ## Unified extensions (toolbar) button
 
@@ -902,8 +962,24 @@ unified-extensions-button-quarantined =
         افزونه‌ها
         بعضی افزونه‌ها مجاز نیستند
 
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = افزونه‌ها
+    .tooltiptext =
+        افزونه‌ها
+        برخی از افزونه‌ها غیرفعال هستند
+
 ## Private browsing reset button
 
+reset-pbm-toolbar-button =
+    .label = پایان نشست خصوصی
+    .tooltiptext = پایان نشست خصوصی
+reset-pbm-panel-heading = آیا می‌خواهید نشست خصوصی خود را خاتمه دهید؟
+reset-pbm-panel-cancel-button =
+    .label = انصراف
+    .accesskey = ا
 
 ## Autorefresh blocker
 
@@ -921,6 +997,7 @@ refresh-blocked-allow =
 popup-notification-addon-install-unsigned =
     .value = (تایید نشده)
 popup-notification-xpinstall-prompt-learn-more = در مورد نصبِ امنِ افزونه‌ها اطلاعات بیشتر بیاموزید
+popup-notification-xpinstall-prompt-block-url = مشاهده جزئیات
 
 ## Pop-up warning
 
@@ -950,3 +1027,13 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = نمایش «‪{ $popupURI }‬»
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+

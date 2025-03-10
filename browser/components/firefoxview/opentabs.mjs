@@ -271,22 +271,21 @@ class OpenTabsInView extends ViewPage {
       >
         ${when(
           currentWindowIndex && currentWindowTabs,
-          () =>
-            html`
-              <view-opentabs-card
-                class=${cardClasses}
-                .tabs=${currentWindowTabs}
-                .paused=${this.paused}
-                data-inner-id="${this.currentWindow.windowGlobalChild
-                  .innerWindowId}"
-                data-l10n-id="firefoxview-opentabs-current-window-header"
-                data-l10n-args="${JSON.stringify({
-                  winID: currentWindowIndex,
-                })}"
-                .searchQuery=${this.searchQuery}
-                .bookmarkList=${this.bookmarkList}
-              ></view-opentabs-card>
-            `
+          () => html`
+            <view-opentabs-card
+              class=${cardClasses}
+              .tabs=${currentWindowTabs}
+              .paused=${this.paused}
+              data-inner-id="${this.currentWindow.windowGlobalChild
+                .innerWindowId}"
+              data-l10n-id="firefoxview-opentabs-current-window-header"
+              data-l10n-args="${JSON.stringify({
+                winID: currentWindowIndex,
+              })}"
+              .searchQuery=${this.searchQuery}
+              .bookmarkList=${this.bookmarkList}
+            ></view-opentabs-card>
+          `
         )}
         ${map(
           otherWindows,
@@ -472,15 +471,9 @@ class OpenTabsInViewCard extends ViewPageContent {
       (event.type == "keydown" && event.code == "Space")
     ) {
       event.preventDefault();
-      Services.telemetry.recordEvent(
-        "firefoxview_next",
-        "search_show_all",
-        "showallbutton",
-        null,
-        {
-          section: "opentabs",
-        }
-      );
+      Glean.firefoxviewNext.searchShowAllShowallbutton.record({
+        section: "opentabs",
+      });
       this.showAll = true;
     }
   }
@@ -499,24 +492,17 @@ class OpenTabsInViewCard extends ViewPageContent {
     browserWindow.focus();
     browserWindow.gBrowser.selectedTab = tab;
 
-    Services.telemetry.recordEvent(
-      "firefoxview_next",
-      "open_tab",
-      "tabs",
-      null,
-      {
-        page: this.recentBrowsing ? "recentbrowsing" : "opentabs",
-        window: this.title || "Window 1 (Current)",
-      }
-    );
+    Glean.firefoxviewNext.openTabTabs.record({
+      page: this.recentBrowsing ? "recentbrowsing" : "opentabs",
+      window: this.title || "Window 1 (Current)",
+    });
     if (this.searchQuery) {
-      const searchesHistogram = Services.telemetry.getKeyedHistogramById(
-        "FIREFOX_VIEW_CUMULATIVE_SEARCHES"
-      );
-      searchesHistogram.add(
-        this.recentBrowsing ? "recentbrowsing" : "opentabs",
-        this.cumulativeSearches
-      );
+      Services.telemetry
+        .getKeyedHistogramById("FIREFOX_VIEW_CUMULATIVE_SEARCHES")
+        .add(
+          this.recentBrowsing ? "recentbrowsing" : "opentabs",
+          this.cumulativeSearches
+        );
       this.cumulativeSearches = 0;
     }
   }
@@ -525,12 +511,7 @@ class OpenTabsInViewCard extends ViewPageContent {
     const tab = event.originalTarget.tabElement;
     tab?.ownerGlobal.gBrowser.removeTab(tab);
 
-    Services.telemetry.recordEvent(
-      "firefoxview_next",
-      "close_open_tab",
-      "tabs",
-      null
-    );
+    Glean.firefoxviewNext.closeOpenTabTabs.record();
   }
 
   viewVisibleCallback() {
@@ -559,10 +540,11 @@ class OpenTabsInViewCard extends ViewPageContent {
       >
         ${when(
           this.recentBrowsing,
-          () => html`<h3
-            slot="header"
-            data-l10n-id="firefoxview-opentabs-header"
-          ></h3>`,
+          () =>
+            html`<h3
+              slot="header"
+              data-l10n-id="firefoxview-opentabs-header"
+            ></h3>`,
           () => html`<h3 slot="header">${this.title}</h3>`
         )}
         <div class="fxview-tab-list-container" slot="main">
@@ -584,15 +566,16 @@ class OpenTabsInViewCard extends ViewPageContent {
         </div>
         ${when(
           this.recentBrowsing,
-          () => html` <div
-            @click=${this.enableShowAll}
-            @keydown=${this.enableShowAll}
-            data-l10n-id="firefoxview-show-all"
-            ?hidden=${!this.isShowAllLinkVisible()}
-            slot="footer"
-            tabindex="0"
-            role="link"
-          ></div>`,
+          () =>
+            html` <div
+              @click=${this.enableShowAll}
+              @keydown=${this.enableShowAll}
+              data-l10n-id="firefoxview-show-all"
+              ?hidden=${!this.isShowAllLinkVisible()}
+              slot="footer"
+              tabindex="0"
+              role="link"
+            ></div>`,
           () =>
             html` <div
               @click=${this.toggleShowMore}

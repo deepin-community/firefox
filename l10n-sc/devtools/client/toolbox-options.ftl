@@ -18,7 +18,11 @@ options-select-dev-tools-theme-label = Temas
 
 options-default-color-unit-label = Unidade predefinida de is colores
 options-default-color-unit-authored = comente s'originale
+options-default-color-unit-hex = Esadetzimale
 options-default-color-unit-name = Nòmines de colores
+
+## Web Console section
+
 
 ## Style Editor section
 
@@ -29,7 +33,6 @@ options-styleeditor-label = Editore de istiles
 
 # The heading
 options-screenshot-label = Cumportamentu de sa catura de ischermu
-
 # Label for the checkbox that toggles screenshot to clipboard feature
 options-screenshot-clipboard-only-label = Sarva sa catura in punta de billete isceti
 options-screenshot-clipboard-tooltip2 =
@@ -39,7 +42,6 @@ options-screenshot-clipboard-tooltip2 =
 
 # The heading
 options-sourceeditor-label = Preferèntzias de s'editore
-
 options-sourceeditor-autoclosebrackets-tooltip =
     .title = Inserta in automàticu is parèntesis de serrada
 options-sourceeditor-autoclosebrackets-label = Serra is parèntesis in automàticu
@@ -52,7 +54,7 @@ options-sourceeditor-keybinding-default-label = Predefinidu
 
 # The heading (this item is also used in perftools.ftl)
 options-context-advanced-settings = Cunfiguratziones avantzadas
-
+# The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label = Disativa JavaScript *
 # The label for checkbox that toggles remote debugging, i.e. the devtools.debugger.remote-enabled preference
 options-enable-remote-label = Ativa sa curretzione de faddinas in remotu
-

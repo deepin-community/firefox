@@ -226,7 +226,7 @@ fox-doodle-pin-secondary = Ne tagad
 
 ## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
 
-set-default-pdf-handler-headline = <strong>Jūsu PDF datnes tagad tiek atvērtas ar { -brand-short-name }.</strong> Rediģējiet vai parakstiet veidlapas savā pārlūkā. Lai mainītu, iestatījumos meklējiet “PDF”.
+set-default-pdf-handler-headline = <strong>PDF datnes tagad tiek atvērtas ar { -brand-short-name }.</strong> Rediģējiet vai parakstiet veidlapas savā pārlūkā. Lai mainītu, iestatījumos jāmeklē “PDF”.
 set-default-pdf-handler-primary = Sapratu
 
 ## FxA sync CFR
@@ -285,3 +285,15 @@ tail-fox-spotlight-title = Neļaujiet kaitinošajiem izsekotājiem sēdēt jums 
 tail-fox-spotlight-subtitle = Sakiet ardievas kaitinošajiem reklāmu izsekotājiem un izbaudiet drošāku un ātrāku internetu.
 tail-fox-spotlight-primary-button = Atvērt manas saites ar { -brand-short-name }
 tail-fox-spotlight-secondary-button = Ne tagad
+
+## Root Certificate Succession Infobar
+
+
+## Root Certificate Succession Windows Background Notification
+
+
+## FxA Menu Message variants
+
+
+## Multi-CTA Fox Doodle Spotlight
+

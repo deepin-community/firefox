@@ -10,6 +10,7 @@ autofill-manage-addresses-list-header = ලිපින
 autofill-manage-credit-cards-title = සුරැකි ණය පත්
 autofill-manage-credit-cards-list-header = ණය පත්
 autofill-manage-payment-methods-title = සුරැකි ගෙවීම් ක්‍රම
+autofill-manage-cards-list-header = පත්
 autofill-manage-dialog =
     .style = min-width: 560px
 autofill-manage-remove-button = ඉවත් කරන්න
@@ -18,6 +19,7 @@ autofill-manage-edit-button = සංස්කරණය…
 
 ## The address capture doorhanger
 
+address-capture-save-doorhanger-description = { -brand-short-name } වෙත තොරතුරු සුරකින්න එවිට ඉක්මනින් ආකෘතිපත්‍ර පිරවීමට හැකිය.
 address-capture-save-button =
     .label = සුරකින්න
     .accessKey = S
@@ -111,6 +113,7 @@ autofill-edit-card-password-prompt =
         [windows] { -brand-short-name } ගබඩා කළ ණයපත් තොරතුරු පෙන්වීමට උත්සාහ කරයි. මෙම වින්ඩෝස් ගිණුමට ප්‍රවේශය පහතින් තහවුරු කරන්න.
        *[other] { -brand-short-name } ණය පතෙහි තොරතුරු පෙන්වීමට උත්සාහ කරයි.
     }
+autofill-message-tooltip = ස්වයං පිරවීම පිළිබඳ පණිවිඩය බලන්න
 autofill-card-number = ණයපත් අංකය
 autofill-card-invalid-number = වලංගු ණයපත් අංකයක් යොදන්න
 autofill-card-name-on-card = ණයපත මත නම

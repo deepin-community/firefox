@@ -4,7 +4,7 @@
 
 const path = require("path");
 const webpack = require("webpack");
-const { ResourceUriPlugin } = require("./tools/resourceUriPlugin");
+const { ResourceUriPlugin } = require("../../tools/resourceUriPlugin");
 
 const PATHS = {
   // Where is the entry point for the unit tests?
@@ -96,12 +96,6 @@ module.exports = function (config) {
               lines: 98,
               functions: 100,
               branches: 100,
-            },
-            "lib/ActivityStreamStorage.sys.mjs": {
-              statements: 100,
-              lines: 100,
-              functions: 100,
-              branches: 83,
             },
             "lib/DownloadsManager.sys.mjs": {
               statements: 100,
@@ -195,7 +189,25 @@ module.exports = function (config) {
                 statements: 98.25,
                 lines: 98.2,
                 functions: 100,
-                branches: 74.63,
+                branches: 72.95,
+              },
+            "content-src/components/DiscoveryStreamComponents/CardSections/CardSections.jsx":
+              {
+                statements: 93.62,
+                lines: 93.48,
+                functions: 92.31,
+                branches: 60,
+              },
+            "content-src/components/DiscoveryStreamComponents/SectionContextMenu/SectionContextMenu.jsx":
+              {
+                statements: 0,
+                lines: 0,
+                functions: 0,
+                branches: 0,
+              },
+            "content-src/components/DiscoveryStreamComponents/AdBanner/AdBanner.jsx":
+              {
+                branches: 62.5,
               },
             "content-src/components/DiscoveryStreamComponents/**/*.jsx": {
               statements: 90.48,
@@ -254,6 +266,9 @@ module.exports = function (config) {
               functions: 96,
               branches: 70,
             },
+            "content-src/lib/hooks.jsx": {
+              branches: 60,
+            },
             "content-src/components/**/*.jsx": {
               statements: 51.1,
               lines: 52.38,
@@ -282,6 +297,25 @@ module.exports = function (config) {
             [
               new RegExp("^resource://activity-stream/"),
               path.join(__dirname, "./"),
+            ],
+            [
+              new RegExp("^resource:///modules/asrouter/"),
+              path.join(__dirname, "../asrouter/modules/"),
+            ],
+            [
+              new RegExp("^resource:///modules/topsites/"),
+              path.join(__dirname, "../topsites/"),
+            ],
+            [
+              new RegExp("^resource://gre/modules/SearchShortcuts.sys.mjs"),
+              path.join(
+                __dirname,
+                "../../../toolkit/components/search/SearchShortcuts.sys.mjs"
+              ),
+            ],
+            [
+              new RegExp("^resource:///modules/Dedupe.sys.mjs"),
+              path.join(__dirname, "../../modules/Dedupe.sys.mjs"),
             ],
           ],
         }),

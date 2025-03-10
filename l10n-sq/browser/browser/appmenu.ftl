@@ -108,8 +108,11 @@ appmenu-fxa-sync-and-save-data2 = Njëkohësoni dhe ruani të dhëna
 appmenu-fxa-signed-in-label = Hyni
 appmenu-fxa-setup-sync =
     .label = Aktivizoni Sync-un…
+appmenu-fxa-setup-sync-new = Aktivizoje
 appmenuitem-save-page =
     .label = Ruajeni Faqen Si…
+appmenuitem-fxa-sync-off-title = Njëkohësimi është i çaktivizuar
+appmenuitem-fxa-sync-off-description = Mbroni dhe përdorni faqerojtësit, fjalëkalimet tuaja dhe të tjera gjëra, prej ngado.
 
 ## What's New panel in App menu.
 
@@ -230,7 +233,7 @@ appmenu-get-help =
     .label = Merrni ndihmë
     .accesskey = M
 appmenu-help-more-troubleshooting-info =
-    .label = Më Tepër të Dhëna Diagnostikimi
+    .label = Më tepër hollësi diagnostikimi
     .accesskey = D
 appmenu-help-report-site-issue =
     .label = Njoftoni Problem Sajti…
@@ -277,5 +280,21 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Merrni sinjalizime cenimesh të dhënash
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Maskoni email-in dhe telefonin tuaj të njëmendtë
+appmenuitem-services-relay-description = Hap pultin e maskave të email-eve
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Mbroni veprimtari tuaj internetore
+appmenu-services-header = Shërbimet e mia
+appmenu-other-protection-header = Provoni mjete të tjera mbrojtjeje nga { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-profiles = Profile
+appmenu-other-profiles = Profile të tjerë
+appmenu-manage-profiles =
+    .label = Administroni profile
+appmenu-create-profile =
+    .label = Profil i ri
+appmenu-edit-profile =
+    .aria-label = Përpunoni profil
+appmenu-profiles-2 =
+    .label = Profile

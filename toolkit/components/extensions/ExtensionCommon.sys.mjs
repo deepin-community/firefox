@@ -490,6 +490,7 @@ export class BaseContext {
     this.messageManager = null;
     this.contentWindow = null;
     this.innerWindowID = 0;
+    this.browserId = 0;
 
     // These two properties are assigned in ContentScriptContextChild subclass
     // to keep a copy of the content script sandbox Error and Promise globals
@@ -578,6 +579,7 @@ export class BaseContext {
       );
     }
 
+    this.browserId = contentWindow.browsingContext?.browserId;
     this.innerWindowID = getInnerWindowID(contentWindow);
     this.messageManager = contentWindow.docShell.messageManager;
 
@@ -744,22 +746,42 @@ export class BaseContext {
         // TODO(Bug 1810582): change the error associated to the innerWindowID to also
         // include a full stack from the original error.
         if (!this.isProxyContextParent && this.contentWindow) {
-          Services.console.logMessage(
-            new ScriptError(
-              message,
-              fileName,
-              lineNumber,
-              columnNumber,
-              Ci.nsIScriptError.errorFlag,
-              "content javascript",
-              this.innerWindowID
-            )
-          );
+          this.logConsoleScriptError({
+            message,
+            fileName,
+            lineNumber,
+            columnNumber,
+          });
         }
         // Also report the original error object (because it also includes
         // the full error stack).
         Cu.reportError(e);
       }
+    }
+  }
+
+  logConsoleScriptError({
+    message,
+    fileName,
+    lineNumber,
+    columnNumber,
+    flags = Ci.nsIScriptError.errorFlag,
+    innerWindowID = this.innerWindowID,
+  }) {
+    if (innerWindowID) {
+      Services.console.logMessage(
+        new ScriptError(
+          message,
+          fileName,
+          lineNumber,
+          columnNumber,
+          flags,
+          "content javascript",
+          innerWindowID
+        )
+      );
+    } else {
+      Cu.reportError(new Error(message));
     }
   }
 

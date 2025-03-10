@@ -18,6 +18,26 @@ export class ReportBrokenSiteParent extends JSWindowActorParent {
   }
 
   #getAntitrackingInfo(browsingContext) {
+    // Ask BounceTrackingProtection whether it has recently purged state for the
+    // site in the current top level context.
+    let btpHasPurgedSite = false;
+    if (
+      Services.prefs.getIntPref("privacy.bounceTrackingProtection.mode") !=
+      Ci.nsIBounceTrackingProtection.MODE_DISABLED
+    ) {
+      let bounceTrackingProtection = Cc[
+        "@mozilla.org/bounce-tracking-protection;1"
+      ].getService(Ci.nsIBounceTrackingProtection);
+
+      let { currentWindowGlobal } = browsingContext;
+      if (currentWindowGlobal) {
+        let { documentPrincipal } = currentWindowGlobal;
+        let { baseDomain } = documentPrincipal;
+        btpHasPurgedSite =
+          bounceTrackingProtection.hasRecentlyPurgedSite(baseDomain);
+      }
+    }
+
     return {
       blockList: this.#getAntitrackingBlockList(),
       isPrivateBrowsing: browsingContext.usePrivateBrowsing,
@@ -33,6 +53,7 @@ export class ReportBrokenSiteParent extends JSWindowActorParent {
         browsingContext.secureBrowserUI.state &
         Ci.nsIWebProgressListener.STATE_BLOCKED_MIXED_DISPLAY_CONTENT
       ),
+      btpHasPurgedSite,
     };
   }
 
@@ -168,6 +189,8 @@ export class ReportBrokenSiteParent extends JSWindowActorParent {
       "extensions.InstallTrigger.enabled",
       "privacy.resistFingerprinting",
       "privacy.globalprivacycontrol.enabled",
+      "network.cookie.cookieBehavior.optInPartitioning",
+      "network.cookie.cookieBehavior.optInPartitioning.pbmode",
     ]) {
       prefs[name] = Services.prefs.getBoolPref(name, undefined);
     }

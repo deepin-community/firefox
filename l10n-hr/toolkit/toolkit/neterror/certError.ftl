@@ -18,6 +18,9 @@ cert-error-trust-signature-algorithm-disabled = Certifikat nije pouzdan, jer je 
 cert-error-trust-expired-issuer = Certifikat nije pouzdan jer je certifikat izdavača istekao.
 cert-error-trust-self-signed = Certifikat nije pouzdan jer je samo-potpisan.
 cert-error-trust-symantec = Certifikati koje izdaju GeoTrust, RapidSSL, Symantec, Thawte i VeriSign više se ne smatraju sigurnima, jer ta certifikacijska tijela u prošlosti nisu slijedile sigurnosne prakse.
+# Variables:
+#   $hostname (string) - Hostname of the website with cert error.
+cert-error-trust-certificate-transparency = { -brand-short-name } ne vjeruje računalu { $hostname } jer nije mogao dokazati da ispunjava zahtjeve transparentnosti javnih certifikata.
 cert-error-untrusted-default = Certifikat ne dolazi iz pouzdanog izvora.
 # Variables:
 #   $hostname (string) - Hostname of the website with cert error.
@@ -68,6 +71,29 @@ open-in-new-window-for-csp-or-xfo-error = Otvori stranicu u novom prozoru
 # Variables:
 #   $hostname (string) - Hostname of the website blocked by csp or xfo error.
 csp-xfo-blocked-long-desc = Iz sigurnosnih razloga, { $hostname } ne dopušta da { -brand-short-name } prikaže stranicu, ako je ugrađena u drugu web-stranicu. Za prikaz ove stranice, otvori je u novom prozoru.
+fp-certerror-view-certificate-link = Pogledaj certifikat web stranice
+fp-certerror-return-to-previous-page-recommended-button = Idi natrag (preporučeno)
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate expiration date.
+fp-certerror-expired-why-dangerous-body = Web stranice koriste certifikate koje je izdalo certifikacijsko tijelo kako bi dokazale da su stvarno ono za što se predstavljaju. { -brand-short-name } ne vjeruje ovoj web stranici jer izgleda da je certifikat istekao { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate start date.
+fp-certerror-not-yet-valid-why-dangerous-body = Web stranice koriste certifikate koje je izdalo certifikacijsko tijelo kako bi dokazale da su stvarno ono za što se predstavljaju. { -brand-short-name } ne vjeruje ovoj web stranici jer izgleda da certifikat neće vrijediti do { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+# Variables:
+#   $date (Date) - Clock date.
+fp-certerror-expired-what-can-you-do-body = Sat tvog uređaja je postavljen na { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }. Ako je to točno, vjerojatno je web stranica uzrok za sigurnosni problem. Ako je krivo, možeš ga promijeniti u postavkama sustava tvog uređaja.
+# Variables:
+#   $error (string) - NSS error code string that specifies type of cert error. e.g. unknown issuer, invalid cert, etc.
+fp-cert-error-code = Kȏd greške: { $error }
+# Variables:
+#   $datetime (Date) - Current datetime.
+fp-datetime = { DATETIME($datetime, month: "short", year: "numeric", day: "numeric") } { DATETIME($datetime, timeStyle: "long") }
+fp-learn-more-about-secure-connection-failures = Saznaj više o kvarovima sigurne veze
+fp-learn-more-about-cert-issues = Saznaj više o ovim vrstama problema sa certifikatima
+fp-learn-more-about-time-related-errors = Saznaj više o rješavanju grešaka u vezi s vremenom
 
 ## Messages used for certificate error titles
 
@@ -92,6 +118,7 @@ contentEncodingError-title = Greška kodiranja sadržaja
 unsafeContentType-title = Nesiguran tip datoteke
 netReset-title = Veza je prekinuta
 netTimeout-title = Vezi je isteklo vrijeme
+serverError-title = Čini se da postoji problem s ovom web stranicom
 unknownProtocolFound-title = Nepoznata vrsta adrese
 proxyConnectFailure-title = Proxy server odbija veze
 proxyResolveFailure-title = Proxy server nije pronađen
@@ -108,3 +135,18 @@ networkProtocolError-title = Greška mrežnog protokola
 nssBadCert-title = Upozorenje: potencijalni sigurnosni rizik
 nssBadCert-sts-title = Neuspjelo povezivanje: potencijalni sigurnosni problem
 certerror-mitm-title = Program spriječava { -brand-short-name } da se sigurno poveže s ovom stranicom
+
+## Felt Privacy V1 Strings
+
+fp-certerror-page-title = Upozorenje: sigurnosni rizik
+fp-certerror-body-title = Oprez. Nešto nije u redu.
+fp-certerror-why-site-dangerous = Zašto web stranica izgleda opasno?
+fp-certerror-what-can-you-do = Što možeš učiniti po tom pitanju?
+fp-certerror-advanced-title = Napredno
+fp-certerror-advanced-button = Napredno
+fp-certerror-hide-advanced-button = Sakrij napredno
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-certerror-override-exception-button = Nastavi na { $hostname } (riskantno)

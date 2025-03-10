@@ -216,7 +216,7 @@ july-jam-set-default-primary = Embojuruja juajuha { -brand-short-name } ndive
 fox-doodle-pin-headline = Eg̃uahẽporãjey
 # “indie” is short for the term “independent”.
 # In this instance, free from outside influence or control.
-fox-doodle-pin-body = Peteĩ ñemomandu’a ikautha eguereko ne kundahára ijeheguíva namombyryiete ndehegui.
+fox-doodle-pin-body = Peteĩ ñemomandu’a ikatuha eguereko ne kundahára ijeheguíva namombyryiete ndehegui.
 fox-doodle-pin-primary = Embojuruja juajuha { -brand-short-name } ndive
 fox-doodle-pin-secondary = Ani ko’ág̃a
 
@@ -245,6 +245,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Emoheñói mba’et
 device-migration-fxa-spotlight-getting-new-device-header-2 = ¿Eikesépa mba’e’oka pyahúpe?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Ejapo koichaite eguerekokuaa hag̃ua techaukaha, tembiasakue ha ñe’ẽñemi eiporu ñepyrũ vove mba’e’oka pyahu.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Mba’éichapa añongatúta che mba’ekuaarã
+device-migration-fxa-spotlight-sync-header = Eikundaha eheja’ỹre mba’eve
+device-migration-fxa-spotlight-sync-body = Embojuehe opaite marandu ipapapýva, ha’ekuaáva techaukaha ha ñe’ẽñemi. Erekokuaapaite tendakuéra eiporuhápe { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = Eñepyrũ
 
 ## Set as Default PDF Reader Infobar
 
@@ -281,3 +284,55 @@ tail-fox-spotlight-title = Eguereko mombyrymi umi tapykuehoha
 tail-fox-spotlight-subtitle = Emboyke umi marandu tapykuehoha ha eike ñanduti hekorosã ha ipya’evévape.
 tail-fox-spotlight-primary-button = Embojuruja juajuha { -brand-short-name } ndive
 tail-fox-spotlight-secondary-button = Ani ko’ág̃a
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Apopyre itujavéva { -brand-short-name } rehegua iñapañuaikuaa 14 jasyteĩ ary 2025 guive.</strong>
+root-certificate-succession-infobar-march-message = <strong>Embohekopyahu eiporu hag̃ua { -brand-short-name } ohasa rire 14 jasyapy 2025.</strong>
+root-certificate-succession-infobar-link = ¿Mba’ére ambohekopyahuva’erã?
+root-certificate-succession-infobar-primary-button =
+    .label = Embohekopyahu ko’ág̃a
+    .accesskey = U
+root-certificate-succession-infobar-secondary-button =
+    .label = Upéi
+    .accesskey = L
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Noĩri gueteri { -brand-short-name } ñembohekopyahu
+root-certificate-windows-background-notification-subtitle = Kundahára vore ndoikoporãmo’ãi ag̃aite noñembohekopyahúirõ. Ko’ág̃a iporã eguereko rome’ẽva ñemo’ã ha tembiapoite ipyahuvéva.
+root-certificate-windows-background-notification-learn-more-button = Eikuaave
+root-certificate-windows-background-notification-update-button = Embohekopyahu { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Mboty
+    .aria-label = Mboty
+fxa-menu-message-sign-up-button = Eñemboheraguapy
+fxa-menu-message-sync-devices-primary-text = Embojuehe opavave mba’e’oka
+fxa-menu-message-sync-devices-secondary-text = Eñemomarandu pya’e — ikatúva techaukaha ha ñe’ẽñemi — tenda eiporuhápe { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = Embojuehe opavave mba’e’oka
+fxa-menu-message-backup-data-primary-text = Eykeko kundahára mba’ekuaarã
+fxa-menu-message-backup-data-secondary-text = Ñemo’ã ijeheguíva techaukaha, ñe’ẽñemi ha ambue marandu opaite ne mba’e’okápe.
+fxa-menu-message-backup-data-collapsed-text = Eykeko kundahára mba’ekuaarã
+fxa-menu-message-backup-sync-primary-text = Ereko mba’ekuaarã tekorosã ha ñembojuehépe
+fxa-menu-message-backup-sync-secondary-text = Sync oñongatu heta mba’ekuaarã eikekuaa jey hag̃ua oimeha guive eiporukuaahápe { -brand-short-name }.
+fxa-menu-message-backup-sync-collapsed-text = Embojuehe ha eykeko mba’ekuaarã
+fxa-menu-message-mobile-primary-text = Emondo tendayke ne pumbyrýpe
+fxa-menu-message-mobile-secondary-text = Eku’e jey ehejahaguetégui embojuehévo umi tendayke peteĩ pumbyry ndive.
+fxa-menu-message-mobile-collapsed-text = Embojuehe pumbyry ndive
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Eg̃uahẽporãjeýna
+multi-cta-fox-doodle-set-default-checkbox = Ejapo { -brand-short-name }-gui ne kundahára ypyguáva
+multi-cta-fox-doodle-pin-startmenu-checkbox = Emboja { -brand-short-name } poravoha Ñepyrũháre
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Emboja { -brand-short-name } tembiaporã rendáre
+       *[other] Embjuaju { -brand-short-name } tembiaporã rendáre
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Eñepyrũ eikundaha
+multi-cta-fox-doodle-main-browser-primary-button-label = Ajapo { -brand-short-name }-gui che kundahára aipuruvéva
+multi-cta-fox-doodle-quick-reminder-subtitle = Peteĩ ñemomandu’a ikatuha ereko ne kundahára, oma’ẽva tekoñemi, erohoryvéva namombyryiete ndehegui.

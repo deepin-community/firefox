@@ -223,7 +223,7 @@ const COMMON_PREFERENCES = new Map([
   ["dom.max_script_run_time", 0],
 
   // Disable location change rate limitation
-  ["dom.navigation.locationChangeRateLimit.count", 0],
+  ["dom.navigation.navigationRateLimit.count", 0],
 
   // DOM Push
   ["dom.push.connection.enabled", false],
@@ -335,6 +335,9 @@ const COMMON_PREFERENCES = new Map([
 
   // Do not download intermediate certificates
   ["security.remote_settings.intermediates.enabled", false],
+
+  // Disable logging for remote settings
+  ["services.settings.loglevel", "off"],
 
   // Ensure remote settings do not hit the network
   ["services.settings.server", "data:,#remote-settings-dummy/v1"],

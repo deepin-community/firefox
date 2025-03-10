@@ -10,7 +10,7 @@
 
 extern crate wgpu_hal as hal;
 
-#[cfg(not(any(windows, target_arch = "wasm32", target_os = "ios")))]
+#[cfg(not(any(target_arch = "wasm32", target_os = "ios", target_os = "visionos")))]
 fn main() {
     use std::{ffi::CString, num::NonZeroU32};
 
@@ -255,18 +255,18 @@ fn main() {
 }
 
 #[cfg(any(
-    windows,
     all(target_arch = "wasm32", not(target_os = "emscripten")),
-    target_os = "ios"
+    target_os = "ios",
+    target_os = "visionos"
 ))]
 fn main() {
     eprintln!("This example is not supported on Windows and non-emscripten wasm32")
 }
 
 #[cfg(not(any(
-    windows,
     all(target_arch = "wasm32", not(target_os = "emscripten")),
-    target_os = "ios"
+    target_os = "ios",
+    target_os = "visionos"
 )))]
 fn fill_screen(exposed: &hal::ExposedAdapter<hal::api::Gles>, width: u32, height: u32) {
     use hal::{Adapter as _, CommandEncoder as _, Device as _, Queue as _};

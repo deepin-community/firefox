@@ -72,6 +72,16 @@ tabbrowser-unblock-tab-audio-tooltip =
            *[other] Toista { $tabCount } välilehden äänet
         }
 
+## Tooltips for tab audio control
+
+tabbrowser-unmute-tab-audio-aria-label =
+    .aria-label = Palauta ääni
+tabbrowser-mute-tab-audio-aria-label =
+    .aria-label = Vaimenna välilehti
+# Used to unblock a tab with audio from autoplaying
+tabbrowser-unblock-tab-audio-aria-label =
+    .aria-label = Toista välilehden äänet
+
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
@@ -80,6 +90,7 @@ tabbrowser-unblock-tab-audio-tooltip =
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-confirm-close-tabs-title = Suljetaanko { $tabCount } välilehteä?
 tabbrowser-confirm-close-tabs-button = Sulje välilehdet
+tabbrowser-ask-close-tabs-checkbox = Kysy ennen useiden välilehtien sulkemista
 tabbrowser-confirm-close-tabs-checkbox = Vahvista ennen kuin useat välilehdet suljetaan
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
@@ -102,7 +113,21 @@ tabbrowser-confirm-close-tabs-with-key-title = Suljetaanko ikkuna ja lopetetaank
 tabbrowser-confirm-close-tabs-with-key-button = Lopeta { -brand-short-name }
 # Variables:
 #   $quitKey (String): the text of the keyboard shortcut for quitting.
+tabbrowser-ask-close-tabs-with-key-checkbox = Kysy ennen pikanäppäimellä { $quitKey } lopettamista
+# Variables:
+#   $quitKey (String): the text of the keyboard shortcut for quitting.
 tabbrowser-confirm-close-tabs-with-key-checkbox = Vahvista ennen pikanäppäimellä { $quitKey } lopettamista
+
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
+
+tabbrowser-confirm-close-warn-shortcut-title = Lopetetaanko { -brand-short-name } vai suljetaanko nykyinen välilehti?
+tabbrowser-confirm-close-windows-warn-shortcut-button =
+    { PLATFORM() ->
+        [windows] Lopeta { -brand-short-name }
+       *[other] Lopeta { -brand-short-name }
+    }
+tabbrowser-confirm-close-tab-only-button = Sulje avoin välilehti
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
@@ -167,6 +192,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
     .label = Näytä kaikki { $tabCount } välilehteä
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = Vaimenna välilehti
@@ -174,3 +202,124 @@ tabbrowser-manager-unmute-tab =
     .tooltiptext = Palauta ääni
 tabbrowser-manager-close-tab =
     .tooltiptext = Sulje välilehti
+# This is for tab groups that have been "saved and closed" (see tab-group-editor-action-save). It does
+# not include "deleted" tab groups (see tab-group-editor-action-delete).
+tabbrowser-manager-closed-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } — Suljettu
+tabbrowser-manager-current-window-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } — Nykyinen ikkuna
+# "Show more" is for showing all open groups from other windows, as well as saved groups. Initially,
+# we only show up to six of these groups.
+tabbrowser-manager-tab-groups-show-more =
+    .label = Näytä lisää
+
+## Tab Groups
+
+tab-group-editor-title-create = Luo välilehtiryhmä
+tab-group-editor-title-edit = Hallinnoi välilehtiryhmää
+tab-group-editor-name-label = Nimi
+tab-group-editor-name-field =
+    .placeholder = Esimerkki: Ostokset
+tab-group-editor-cancel =
+    .label = Peruuta
+    .accesskey = P
+tab-group-editor-color-selector =
+    .aria-label = Välilehtiryhmän väri
+tab-group-editor-color-selector2-blue = Sininen
+    .title = Sininen
+tab-group-editor-color-selector2-purple = Violetti
+    .title = Violetti
+tab-group-editor-color-selector2-cyan = Syaani
+    .title = Syaani
+tab-group-editor-color-selector2-orange = Oranssi
+    .title = Oranssi
+tab-group-editor-color-selector2-yellow = Keltainen
+    .title = Keltainen
+tab-group-editor-color-selector2-pink = Pinkki
+    .title = Pinkki
+tab-group-editor-color-selector2-green = Vihreä
+    .title = Vihreä
+tab-group-editor-color-selector2-gray = Harmaa
+    .title = Harmaa
+tab-group-editor-color-selector2-red = Punainen
+    .title = Punainen
+# Variables:
+#  $tabGroupName (String): The name of the tab group. Defaults to the value
+#                          of tab-group-name-default.
+tab-group-description = { $tabGroupName } — Välilehtiryhmä
+tab-group-menu-header = Välilehtiryhmät
+tab-context-unnamed-group =
+    .label = Nimetön ryhmä
+tab-group-name-default = Nimetön ryhmä
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
+tab-context-move-tab-to-new-group =
+    .label =
+        { $tabCount ->
+            [1] Lisää välilehti uuteen ryhmään
+            [one] Lisää välilehti uuteen ryhmään
+           *[other] Lisää välilehdet uuteen ryhmään
+        }
+    .accesskey = u
+tab-context-move-tab-to-group =
+    .label =
+        { $tabCount ->
+            [1] Lisää välilehti ryhmään
+            [one] Lisää välilehti ryhmään
+           *[other] Lisää välilehdet ryhmään
+        }
+    .accesskey = ä
+tab-group-editor-action-new-tab =
+    .label = Uusi välilehti ryhmässä
+tab-group-editor-action-new-window =
+    .label = Siirrä ryhmä uuteen ikkunaan
+tab-group-editor-action-save =
+    .label = Tallenna ja sulje ryhmä
+tab-group-editor-action-ungroup =
+    .label = Pura välilehtien ryhmittely
+tab-group-editor-action-delete =
+    .label = Poista ryhmä
+tab-group-editor-done =
+    .label = Valmis
+    .accessKey = V
+tab-context-reopen-tab-group =
+    .label = Avaa välilehtiryhmä uudelleen
+# Variables:
+#  $groupCount (Number): the number of tab groups that are affected by the action.
+tab-context-ungroup-tab =
+    .label =
+        { $groupCount ->
+            [1] Poista ryhmästä
+            [one] Poista ryhmästä
+           *[other] Poista ryhmistä
+        }
+    .accesskey = r
+
+## Open/saved tab group context menu
+
+# For a tab group open in any window, clicking this will create a new
+# window and move this tab group to that new window.
+tab-group-context-move-to-new-window =
+    .label = Siirrä ryhmä uuteen ikkunaan
+# For a tab group open in a different window from the one that the
+# user is using to access the tab group menu, move that tab group into the
+# user's current window.
+tab-group-context-move-to-this-window =
+    .label = Siirrä ryhmä tähän ikkunaan
+# For a tab group that is open in any window, close the tab group and
+# do not save it. For a tab group that is closed but saved by the user, clicking
+# this will forget the saved tab group.
+tab-group-context-delete =
+    .label = Poista ryhmä
+# For a saved tab group that is not open in any window, open the tab group
+# in the user's current window.
+tab-group-context-open-saved-group-in-this-window =
+    .label = Avaa ryhmä tässä ikkunassa
+# For a saved tab group that is not open in any window, create a new window and
+# open the tab group in that window.
+tab-group-context-open-saved-group-in-new-window =
+    .label = Avaa ryhmä uudessa ikkunassa

@@ -301,6 +301,14 @@ find-more-themes = Find flere temaer
 # used for screen readers.
 addon-options-button =
     .aria-label = Flere indstillinger
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 =
+    Med udvidelser og temaer kan du tilpasse { -brand-product-name } for at beskytte dit privatliv bedre, 
+    få mere arbejde fra hånden, gøre det lettere at håndtere mediefiler, ændre hvordan 
+    { -brand-product-name } ser ud - og meget mere. Udvidelser er små software-programmer, som ofte 
+    er udviklet af tredjepart. Hér er et udvalg, som { -brand-product-name } <a data-l10n-name="learn-more-trigger">anbefaler</a> 
+    for at forbedre din sikkerhed, give dig bedre ydelse og flere nyttige funktioner.
 
 ## Add-on actions
 
@@ -387,6 +395,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Tilladt i private vinduer
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Tilladt i private vinduer
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -426,6 +438,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Denne udvidelse er blevet tjekket for, om den overholder vores standarder for sikkerhed og ydelse
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } anbefaler kun udvidelser, der overholder vores krav til sikkerhed og ydelse.
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Officiel udvidelse udviklet af Mozilla. Overholder standarder for sikkerhed og ydelse
+addon-badge-verified3 =
+    .title = Denne udvidelse er blevet tjekket for, om den overholder vores standarder for sikkerhed og ydelse
 
 ##
 
@@ -433,6 +453,7 @@ available-updates-heading = Tilgængelige opdateringer
 recent-updates-heading = Seneste opdateringer
 release-notes-loading = Indlæser…
 release-notes-error = Der opstod en fejl under indlæsning af udgivelsesnoterne.
+addon-permissions-empty2 = Denne udvidelse kræver ingen tilladelser.
 addon-permissions-empty = Denne udvidelse kræver ingen tilladelser
 addon-permissions-required = Påkrævede tilladelser for kerne-funktionalitet:
 addon-permissions-optional = Valgfrie tilladelser for yderligere funktionalitet:
@@ -482,10 +503,24 @@ details-notification-unsigned-and-disabled-link = Læs mere
 details-notification-unsigned = { $name } kunne ikke verificeres til brug i { -brand-short-name }. Fortsæt på eget ansvar.
 details-notification-unsigned2 =
     .message = { $name } kunne ikke verificeres til brug i { -brand-short-name }. Fortsæt på eget ansvar.
+details-notification-hard-blocked-extension =
+    .message = Denne udvidelse er blokeret for at overtræde Mozillas politikker og er blevet deaktiveret.
+details-notification-hard-blocked-other =
+    .message = Denne tilføjelse er blokeret for at overtræde Mozillas politikker og er blevet deaktiveret.
 details-notification-unsigned-link = Læs mere
 details-notification-blocked = { $name } er blevet deaktiveret af sikkerheds- eller stabilitetsgrunde.
 details-notification-blocked2 =
     .message = { $name } er blevet deaktiveret af sikkerheds- eller stabilitetsgrunde.
+details-notification-blocked-link2 = Vis detaljer
+details-notification-soft-blocked-extension-disabled =
+    .message = Denne udvidelse er begrænset, fordi den overtræder Mozillas politikker og derfor er blevet deaktiveret. Du kan aktivere den, men det kan være risikabelt.
+details-notification-soft-blocked-extension-enabled =
+    .message = Denne udvidelse overtræder Mozillas politikker. Det kan være risikabelt at bruge den.
+details-notification-soft-blocked-other-disabled =
+    .message = Denne tilføjelse er begrænset, fordi den overtræder Mozillas politikker og derfor er blevet deaktiveret. Du kan aktivere den, men det kan være risikabelt.
+details-notification-soft-blocked-other-enabled =
+    .message = Denne tilføjelse overtræder Mozillas politikker. Det kan være risikabelt at anvende den.
+details-notification-softblocked-link2 = Vis detaljer
 details-notification-blocked-link = Mere information
 details-notification-softblocked = { $name } har kendte sikkerheds- og/eller stabilitetsproblemer.
 details-notification-softblocked2 =

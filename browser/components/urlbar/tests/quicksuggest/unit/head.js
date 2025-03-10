@@ -22,129 +22,6 @@ add_setup(async function setUpQuickSuggestXpcshellTest() {
   UrlbarPrefs._testSkipTelemetryEnvironmentInit = true;
 });
 
-let gAddTasksWithRustSetup;
-
-/**
- * Adds two tasks: One with the Rust backend disabled and one with it enabled.
- * The names of the task functions will be the name of the passed-in task
- * function appended with "_rustDisabled" and "_rustEnabled". If the passed-in
- * task doesn't have a name, "anonymousTask" will be used.
- *
- * Call this with the usual `add_task()` arguments. Additionally, an object with
- * the following properties can be specified as any argument:
- *
- * {boolean} skip_if_rust_enabled
- *   If true, a "_rustEnabled" task won't be added. Useful when Rust is enabled
- *   by default but the task doesn't make sense with Rust and you still want to
- *   test some behavior when Rust is disabled.
- *
- * @param {...any} args
- *   The usual `add_task()` arguments.
- */
-function add_tasks_with_rust(...args) {
-  let skipIfRustEnabled = false;
-  let i = args.findIndex(a => a.skip_if_rust_enabled);
-  if (i >= 0) {
-    skipIfRustEnabled = true;
-    args.splice(i, 1);
-  }
-
-  let taskFnIndex = args.findIndex(a => typeof a == "function");
-  let taskFn = args[taskFnIndex];
-
-  for (let rustEnabled of [false, true]) {
-    let newTaskName =
-      (taskFn.name || "anonymousTask") +
-      (rustEnabled ? "_rustEnabled" : "_rustDisabled");
-
-    if (rustEnabled && skipIfRustEnabled) {
-      info(
-        "add_tasks_with_rust: Skipping due to skip_if_rust_enabled: " +
-          newTaskName
-      );
-      continue;
-    }
-
-    let newTaskFn = async (...taskFnArgs) => {
-      info("add_tasks_with_rust: Setting rustEnabled: " + rustEnabled);
-      UrlbarPrefs.set("quicksuggest.rustEnabled", rustEnabled);
-      info("add_tasks_with_rust: Done setting rustEnabled: " + rustEnabled);
-
-      // The current backend may now start syncing, so wait for it to finish.
-      info("add_tasks_with_rust: Forcing sync");
-      await QuickSuggestTestUtils.forceSync();
-      info("add_tasks_with_rust: Done forcing sync");
-
-      if (gAddTasksWithRustSetup) {
-        info("add_tasks_with_rust: Calling setup function");
-        await gAddTasksWithRustSetup();
-        info("add_tasks_with_rust: Done calling setup function");
-      }
-
-      let rv;
-      try {
-        info(
-          "add_tasks_with_rust: Calling original task function: " + taskFn.name
-        );
-        rv = await taskFn(...taskFnArgs);
-      } catch (e) {
-        // Clearly report any unusual errors to make them easier to spot and to
-        // make the flow of the test clearer. The harness throws NS_ERROR_ABORT
-        // when a normal assertion fails, so don't report that.
-        if (e.result != Cr.NS_ERROR_ABORT) {
-          Assert.ok(
-            false,
-            "add_tasks_with_rust: The original task function threw an error: " +
-              e
-          );
-        }
-        throw e;
-      } finally {
-        info(
-          "add_tasks_with_rust: Done calling original task function: " +
-            taskFn.name
-        );
-        info("add_tasks_with_rust: Clearing rustEnabled");
-        UrlbarPrefs.clear("quicksuggest.rustEnabled");
-        info("add_tasks_with_rust: Done clearing rustEnabled");
-
-        // The current backend may now start syncing, so wait for it to finish.
-        info("add_tasks_with_rust: Forcing sync");
-        await QuickSuggestTestUtils.forceSync();
-        info("add_tasks_with_rust: Done forcing sync");
-      }
-      return rv;
-    };
-
-    Object.defineProperty(newTaskFn, "name", { value: newTaskName });
-
-    let addTaskArgs = [];
-    for (let j = 0; j < args.length; j++) {
-      addTaskArgs[j] =
-        j == taskFnIndex
-          ? newTaskFn
-          : Cu.cloneInto(args[j], this, { cloneFunctions: true });
-    }
-    add_task(...addTaskArgs);
-  }
-}
-
-/**
- * Registers a setup function that `add_tasks_with_rust()` will await before
- * calling each of your original tasks. Call this at most once in your test file
- * (i.e., in `add_setup()`). This is useful when enabling/disabling Rust has
- * side effects related to your particular test that need to be handled or
- * awaited for each of your tasks. On the other hand, if only one or two of your
- * tasks need special setup, do it directly in those tasks instead of using
- * this.
- *
- * @param {Function} setupFn
- *   A function that will be awaited before your original tasks are called.
- */
-function registerAddTasksWithRustSetup(setupFn) {
-  gAddTasksWithRustSetup = setupFn;
-}
-
 /**
  * Tests quick suggest prefs migrations.
  *
@@ -625,8 +502,6 @@ async function doOneShowLessFrequentlyTest({
  *     The order doesn't matter.
  */
 async function doRustProvidersTests({ searchString, tests }) {
-  UrlbarPrefs.set("quicksuggest.rustEnabled", true);
-
   for (let { prefs, expectedUrls } of tests) {
     info(
       "Starting Rust providers test: " + JSON.stringify({ prefs, expectedUrls })
@@ -654,45 +529,76 @@ async function doRustProvidersTests({ searchString, tests }) {
     }
     await QuickSuggestTestUtils.forceSync();
   }
-
-  info("Clearing rustEnabled pref and forcing sync");
-  UrlbarPrefs.clear("quicksuggest.rustEnabled");
-  await QuickSuggestTestUtils.forceSync();
 }
 
 /**
- * Waits for `Weather` to start and finish a new fetch. Typically you call this
- * before you know a new fetch will start, save but don't await the promise, do
- * the thing that triggers the new fetch, and then await the promise to wait for
- * the fetch to finish.
+ * Simulates performing a command for a feature by calling its `onEngagement()`.
  *
- * If a fetch is currently ongoing, this will first wait for a new fetch to
- * start, which might not be what you want. If you only want to wait for any
- * ongoing fetch to finish, await `QuickSuggest.weather.fetchPromise` instead.
+ * @param {object} options
+ *   Options object.
+ * @param {SuggestFeature} options.feature
+ *   The feature whose command will be triggered.
+ * @param {string} options.command
+ *   The name of the command to trigger.
+ * @param {UrlbarResult} options.result
+ *   The result that the command will act on.
+ * @param {string} options.searchString
+ *   The search string to pass to `onEngagement()`.
+ * @param {object} options.expectedCountsByCall
+ *   If non-null, this should map controller and view method names to the number
+ *   of times they should be called in response to the command.
+ * @returns {Map}
+ *   A map from names of methods on the controller and view to the number of
+ *   times they were called.
  */
-async function waitForNewWeatherFetch() {
-  let { fetchPromise: oldFetchPromise } = QuickSuggest.weather;
+function triggerCommand({
+  feature,
+  command,
+  result,
+  searchString = "",
+  expectedCountsByCall = null,
+}) {
+  info(`Calling ${feature.name}.onEngagement() to trigger command: ${command}`);
 
-  // Wait for a new fetch to start.
-  let newFetchPromise;
-  await TestUtils.waitForCondition(() => {
-    let { fetchPromise } = QuickSuggest.weather;
-    if (
-      (oldFetchPromise && fetchPromise != oldFetchPromise) ||
-      (!oldFetchPromise && fetchPromise)
-    ) {
-      newFetchPromise = fetchPromise;
-      return true;
+  let countsByCall = new Map();
+  let addCall = name => {
+    if (!countsByCall.has(name)) {
+      countsByCall.set(name, 0);
     }
-    return false;
-  }, "Waiting for a new weather fetch to start");
+    countsByCall.set(name, countsByCall.get(name) + 1);
+  };
 
-  Assert.equal(
-    QuickSuggest.weather.fetchPromise,
-    newFetchPromise,
-    "Sanity check: fetchPromise hasn't changed since waitForCondition returned"
+  feature.onEngagement(
+    // query context
+    {},
+    // controller
+    {
+      removeResult() {
+        addCall("removeResult");
+      },
+      view: {
+        acknowledgeFeedback() {
+          addCall("acknowledgeFeedback");
+        },
+        invalidateResultMenuCommands() {
+          addCall("invalidateResultMenuCommands");
+        },
+      },
+    },
+    // details
+    { result, selType: command },
+    searchString
   );
 
-  // Wait for the new fetch to finish.
-  await newFetchPromise;
+  if (expectedCountsByCall) {
+    for (let [name, expectedCount] of Object.entries(expectedCountsByCall)) {
+      Assert.equal(
+        countsByCall.get(name) ?? 0,
+        expectedCount,
+        "Function should have been called the expected number of times: " + name
+      );
+    }
+  }
+
+  return countsByCall;
 }

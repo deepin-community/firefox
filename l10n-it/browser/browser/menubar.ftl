@@ -246,6 +246,15 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Segnalibri da dispositivi mobile
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profili
+menu-profiles-manage-profiles =
+    .label = Gestisci profili
+menu-profiles-new-profile =
+    .label = Nuovo profilo
+
 ## Tools Menu
 
 menu-tools =
@@ -343,4 +352,3 @@ menu-help-not-deceptive =
     .accesskey = e
 menu-report-broken-site =
     .label = Segnala problemi con il sito
-

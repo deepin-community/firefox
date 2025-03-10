@@ -225,7 +225,9 @@ mr2022-onboarding-set-default-subtitle = Выкарыстоўвайце браў
 mr2022-onboarding-get-started-primary-subtitle = Наша апошняя версія створана для вас, што дазваляе прасцей, чым калі-небудзь, перамяшчацца па сетцы. Яна багатая функцыямі, якія, як мы думаем, вам спадабаюцца.
 mr2022-onboarding-get-started-primary-button-label = Наладзіць за лічаныя секунды
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Вокамгненная налада
 mr2022-onboarding-import-subtitle = Наладзьце { -brand-short-name } як вам падабаецца. Дадайце свае закладкі, паролі і іншае са свайго старога браўзера.
@@ -356,6 +358,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Калі вы сін�
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } прыкрывае вас
 onboarding-gratitude-security-and-privacy-subtitle = Дзякуй за выкарыстанне { -brand-short-name }, які падтрымліваецца Mozilla Foundation. З вашай падтрымкай мы працуем над тым, каб зрабіць Інтэрнэт больш бяспечным і даступным для кожнага.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Сінхранізуйце свае звесткі паміж прыладамі
+onboarding-sign-up-description = Зарэгіструйце ўліковы запіс, і ўся ваша важная інфармацыя — паролі, закладкі і многае іншае — будзе надзейна захавана і даступная пры ўваходзе на любую прыладу.
+onboarding-sign-up-button = Зарэгістравацца або ўвайсці
+onboarding-sign-up-secondary-button = Пачаць агляданне
 
 ## New user time and familiarity survey strings
 
@@ -375,3 +382,90 @@ onboarding-new-user-survey-familiarity-based-option-1 = Я новенькі
 onboarding-new-user-survey-familiarity-based-option-2 = Карыстаўся пэўны час
 onboarding-new-user-survey-familiarity-based-option-3 = Мне гэта добра знаёма
 onboarding-new-user-survey-familiarity-based-option-4 = Я выкарыстаў яго ў мінулым, але гэта было даўно
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Скажыце нам, дзе вы хочаце размясціць свае карткі
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Пераключайце гэта, калі захочаце, у наладах бакавой панэлі.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Вашы карткі, ваш шлях
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Трымаеце шмат картак адкрытымі? Паспрабуйце карткі збоку для больш аптымізаванага прагляду. Або трымайцеся класікі з выступамі ўверсе. Пераключайцеся ў любы час.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Выберыце выклад картак
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Каб атрымаць рацыянальны выгляд, які дапаможа вам заставацца засяроджаным, паспрабуйце карткі збоку. Або трымайцеся класікі з выступамі ўверсе. Пераключайцеся ў любы час.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Карткі збоку
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Карткі ўверсе
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Вертыкальныя карткі ўжо тут
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Прадстаўляем вертыкальныя карткі
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Паспрабуйце карткі збоку. Уключыце іх, калі заўгодна, у наладах бакавой панэлі.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Паспрабуйце вертыкальныя карткі
+onboarding-flair-text = Навіна!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Трымаць карткі гарызантальна
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Акно браўзера, які паказвае карткі ўздоўж экрана як частку бакавой панэлі { -brand-shorter-name }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Акно браўзера, які паказвае карткі ўздоўж экрана як частку бакавой панэлі { -brand-shorter-name }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Акно браўзера з карткамі ўверсе.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Акно браўзера з карткамі ўверсе.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Паспрабуйце чат-бота ШІ на бакавой панэлі
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Рэзюмуйце вэб-кантэнт, абдумвайце ідэі, чарнавікі паведамленняў — усё ў часе аглядання. Выбірайце з некалькіх пастаўшчыкоў. Пераключайцеся ў любы час. <a data-l10n-name="learn-more">Падрабязней</a>
+onboarding-genai-sidebar-primary-button = Выберыце чат-бота
+onboarding-genai-sidebar-secondary-button = Пачаць агляданне
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Скончыць наладку { -brand-short-name }
+onboarding-checklist-subtitle = Выканайце гэтыя крокі, каб атрымаць максімальную аддачу ад вашага аглядання.
+onboarding-checklist-set-default = Усталюйце { -brand-short-name } як прадвызначаны браўзер
+onboarding-checklist-pin = Замацуйце { -brand-short-name } на панэлі заданняў
+onboarding-checklist-import = Імпартуйце з папярэдняга браўзера
+onboarding-checklist-extension = Дадайце пашырэнне
+onboarding-checklist-sign-up = Зарэгіструйцеся або ўвайдзіце ў свой уліковы запіс
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Паспрабуйце групы картак — менш мітусні, больш увагі
+tab-groups-onboarding-feature-callout-subtitle = Навядзіце парадак, перацягнуўшы адну картку на другую, каб стварыць сваю першую групу.
+tab-groups-onboarding-create-group-title = Знаходзьце свае адкрытыя групы на паліцы картак або з дапамогай пошуку ў адрасным радку.
+tab-groups-onboarding-saved-groups-title = Калі вы закрыеце групу картак, вы можаце зноў адкрыць яе тут у любы час.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title = У любы час знаходзьце свае адкрытыя або закрытыя групы картак з дапамогай пошуку ў адрасным радку.
+tab-groups-onboarding-dismiss = Добра
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Павітайцеся з профілямі { -brand-product-name }
+multi-profile-spotlight-body = Лёгка пераключайцеся паміж агляданнем для працы і для забавы. Профілі захоўваюць вашу інфармацыю аб агляданні, уключна з гісторыяй пошуку і паролямі, цалкам асобна, каб вы маглі заставацца арганізаванымі.
+multi-profile-spotlight-cta = Стварыць профіль
+multi-profile-callout-title = Стварыце розныя профілі для працы і забавы
+multi-profile-callout-subtitle = Профілі дазваляюць захоўваць вашу інфармацыю аб агляданні, напрыклад гісторыю пошуку і паролі, цалкам асобна.
+multi-profile-callout-cta = Стварыць профіль
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Сцягніце, сінхранізуйце і наперад!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Адскануйце QR-код, каб сцягнуць { -brand-product-name } для мабільнага апарата. Пасля ўсталявання абярыце «Сінхранізаваць з мабільным», каб атрымаць доступ да сваіх пароляў, закладак і іншага ў дарозе.
+dismiss-button-label = Адхіліць
+sync-to-mobile-button-label = Сінхранізаваць з мабільным
+desktop-to-mobile-qr-code-alt =
+    .aria-label = QR-код для сцягвання { -brand-product-name } для мабільных прылад

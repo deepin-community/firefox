@@ -18,6 +18,9 @@ cert-error-trust-signature-algorithm-disabled = Digitalno potrdilo ni vredno zau
 cert-error-trust-expired-issuer = Digitalno potrdilo ni vredno zaupanja, ker je njegov izdajatelj potekel.
 cert-error-trust-self-signed = Digitalno potrdilo ni vredno zaupanja, ker se je samo podpisalo.
 cert-error-trust-symantec = Digitalna potrdila, ki jih izdajajo GeoTrust, RapidSSL, Symantec, Thawte in VeriSign, ne veljajo več za varna, ker te organizacije v preteklosti niso sledile varnostnim praksam.
+# Variables:
+#   $hostname (string) - Hostname of the website with cert error.
+cert-error-trust-certificate-transparency = { -brand-short-name } ne zaupa spletnemu mestu { $hostname }, ker mu ni uspelo dokazati, da izpolnjuje zahteve glede preglednosti javnih potrdil.
 cert-error-untrusted-default = Digitalno potrdilo ne prihaja iz zaupanja vrednega vira.
 # Variables:
 #   $hostname (string) - Hostname of the website with cert error.
@@ -68,6 +71,45 @@ open-in-new-window-for-csp-or-xfo-error = Odpri stran v novem oknu
 # Variables:
 #   $hostname (string) - Hostname of the website blocked by csp or xfo error.
 csp-xfo-blocked-long-desc = Da bi zaščitil vašo varnost, { $hostname } { -brand-short-name(sklon: "dajalnik") } ne bo dovolil prikaza strani, ki je vdelana v drugo spletno mesto. Če si želite ogledati to stran, jo odprite v novem oknu.
+fp-certerror-view-certificate-link = Prikaži potrdilo spletnega mesta
+fp-certerror-return-to-previous-page-recommended-button = Pojdi nazaj (priporočeno)
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+#   $validHosts (String) - Valid hostnames.
+fp-certerror-bad-domain-why-dangerous-body = Stran je nastavljena tako, da dovoljuje samo varne povezave, vendar je prišlo do težave s potrdilom strani. Možno je, da to spletno mesto poskuša nekdo oponašati. Spletna mesta uporabljajo potrdila, ki jih izda overitelj potrdil, da dokažejo, da so resnično to, za kar se izdajo. { -brand-short-name } ne zaupa temu spletnemu mestu, ker njegovo potrdilo ni veljavno za { $hostname }. Potrdilo je veljavno samo za: { $validHosts }.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-bad-domain-what-can-you-do-body = Verjetno nič, saj je lahko težava v samem spletnem mestu. Spletna mesta uporabljajo potrdila, ki jih izda overitelj potrdil, da dokažejo, da so resnično to, za kar se izdajo. Če uporabljate omrežje podjetja, ima morda ekipa za podporo več podatkov. Če uporabljate protivirusno programsko opremo, poskusite z iskanjem morebitnih neskladij ali znanih težav.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-certerror-unknown-issuer-why-dangerous-body = Prišlo je do težave s potrdilom spletnega mesta. Možno je, da to spletno mesto poskuša nekdo oponašati. Spletna mesta uporabljajo potrdila, ki jih izda overitelj potrdil, da dokažejo, da so resnično to, za kar se izdajo. { -brand-short-name } ne zaupa temu spletnemu mestu, ker ne moremo ugotoviti, kdo je izdal potrdilo, ker je samopodpisano, ali mesto ne pošilja vmesnih potrdil, ki jim zaupamo.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-unknown-issuer-what-can-you-do-body = Verjetno nič, saj je lahko težava v samem spletnem mestu. Toda če uporabljate omrežje podjetja, ima morda ekipa za podporo več podatkov. Če uporabljate protivirusno programsko opremo, jo je morda potrebno nastaviti za delovanje s { -brand-short-name(sklon: "orodnik") }.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-certerror-self-signed-why-dangerous-body = Ker je prišlo do težave s potrdilom spletnega mesta. Spletna mesta uporabljajo potrdila, ki jih izda overitelj potrdil, da dokažejo, da so resnično to, za kar se izdajo. Potrdilo tega mesta je samopodpisano. Ni ga izdal priznan overitelj potrdil – zato mu privzeto ne zaupamo.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-self-signed-what-can-you-do-body = Ne veliko. Najverjetneje je težava v samem spletnem mestu.
+fp-certerror-self-signed-important-note = POMEMBNO OBVESTILO: Če poskušate to stran obiskati na intranetu podjetja, lahko vaše osebje za IT uporabi samopodpisana potrdila. Pomagajo vam lahko preveriti njihovo pristnost.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate expiration date.
+fp-certerror-expired-why-dangerous-body = Spletna mesta uporabljajo potrdila, ki jih izda overitelj potrdil, da dokažejo, da so resnično to, za kar se izdajo. { -brand-short-name } ne zaupa temu spletnemu mestu, ker je potrdilo poteklo dne { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate start date.
+fp-certerror-not-yet-valid-why-dangerous-body = Spletna mesta uporabljajo potrdila, ki jih izda overitelj potrdil, da dokažejo, da so resnično to, za kar se izdajo. { -brand-short-name } ne zaupa temu spletnemu mestu, ker potrdilo ne bo veljalo pred dnem { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+# Variables:
+#   $date (Date) - Clock date.
+fp-certerror-expired-what-can-you-do-body = Ura vaše naprave je nastavljena na { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }. Če je nastavitev pravilna, je težava verjetno v samem spletnem mestu. Če sta datum in ura napačna, ju lahko popravite v sistemskih nastavitvah naprave.
+# Variables:
+#   $error (string) - NSS error code string that specifies type of cert error. e.g. unknown issuer, invalid cert, etc.
+fp-cert-error-code = Koda napake: { $error }
+# Variables:
+#   $datetime (Date) - Current datetime.
+fp-datetime = { DATETIME($datetime, month: "short", year: "numeric", day: "numeric") } { DATETIME($datetime, timeStyle: "long") }
+fp-learn-more-about-secure-connection-failures = Več o neuspelih varnih povezavah
+fp-learn-more-about-cert-issues = Več o tovrstnih težavah z digitalnimi potrdili
+fp-learn-more-about-time-related-errors = Več o odpravljanju s časom povezanih napak
 
 ## Messages used for certificate error titles
 
@@ -92,6 +134,7 @@ contentEncodingError-title = Napaka pri kodiranju vsebine
 unsafeContentType-title = Nevarna vrsta datoteke
 netReset-title = Povezava je bila ponastavljena
 netTimeout-title = Dovoljeni čas pretekel
+httpErrorPage-title = Na tem spletnem mestu se je pojavila težava
 serverError-title = Na tem spletnem mestu se je pojavila težava
 unknownProtocolFound-title = Naslova ni bilo mogoče razumeti
 proxyConnectFailure-title = Posrednik zavrača povezave
@@ -109,3 +152,20 @@ networkProtocolError-title = Napaka omrežnega protokola
 nssBadCert-title = Pozor: možno varnostno tveganje
 nssBadCert-sts-title = Povezava ni bila vzpostavljena: morebitna varnostna težava
 certerror-mitm-title = Programska oprema { -brand-short-name }u preprečuje varno povezovanje s to stranjo
+
+## Felt Privacy V1 Strings
+
+fp-certerror-page-title = Opozorilo: Varnostno tveganje
+fp-certerror-body-title = Previdno. Nekaj ni videti v redu.
+fp-certerror-why-site-dangerous = Zaradi česa je spletno mesto videti nevarno?
+fp-certerror-what-can-you-do = Kaj lahko storite?
+fp-certerror-advanced-title = Napredno
+fp-certerror-advanced-button = Napredno
+fp-certerror-hide-advanced-button = Skrij napredno
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-certerror-override-exception-button = Nadaljuj na { $hostname } (tvegano)
+fp-certerror-intro = { -brand-short-name } je zaznal morebitno resno varnostno težavo s <strong>{ $hostname }</strong>. Obstaja možnost, da se nekdo izdaja za to spletno mesto in poskuša ukrasti vaše podatke.
+fp-certerror-expired-into = { -brand-short-name } je zaznal varnostno težavo s <strong>{ $hostname }</strong>. Bodisi spletno mesto ni pravilno nastavljeno, bodisi je ura na vašem računalniku nastavljena na napačen datum/čas.

@@ -83,8 +83,8 @@ class GeckoInstance(object):
         # No slow script dialogs
         "dom.max_chrome_script_run_time": 0,
         "dom.max_script_run_time": 0,
-        # Disable location change rate limitation
-        "dom.navigation.locationChangeRateLimit.count": 0,
+        # Disable navigation change rate limitation
+        "dom.navigation.navigationRateLimit.count": 0,
         # DOM Push
         "dom.push.connection.enabled": False,
         # Screen Orientation API
@@ -162,6 +162,8 @@ class GeckoInstance(object):
         "security.notification_enable_delay": 0,
         # Do not download intermediate certificates
         "security.remote_settings.intermediates.enabled": False,
+        # Disable logging for remote settings
+        "services.settings.loglevel": "off",
         # Ensure blocklist updates don't hit the network
         "services.settings.server": "data:,#remote-settings-dummy/v1",
         # Disable password capture, so that tests that include forms aren"t

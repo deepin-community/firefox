@@ -42,6 +42,7 @@ export const LinkMenuOptions = {
         advertiser_name: (site.label || site.hostname).toLocaleLowerCase(),
         position: site.sponsored_position,
         tile_id: site.sponsored_tile_id,
+        block_key: site.block_key,
       },
     }),
     userEvent: "TOPSITE_SPONSOR_INFO",
@@ -74,6 +75,13 @@ export const LinkMenuOptions = {
         typedBonus: site.typedBonus,
         url: site.url,
         sponsored_tile_id: site.sponsored_tile_id,
+        ...(site.section
+          ? {
+              section: site.section,
+              section_position: site.section_position,
+              is_secton_followed: site.is_secton_followed,
+            }
+          : {}),
       },
     }),
     userEvent: "OPEN_NEW_WINDOW",
@@ -96,8 +104,10 @@ export const LinkMenuOptions = {
         // pocket_id is only for pocket stories being in highlights, and then dismissed.
         pocket_id: site.pocket_id,
         tile_id: site.tile_id,
+        ...(site.block_key ? { block_key: site.block_key } : {}),
         recommendation_id: site.recommendation_id,
         scheduled_corpus_item_id: site.scheduled_corpus_item_id,
+        corpus_item_id: site.corpus_item_id,
         received_rank: site.received_rank,
         recommended_at: site.recommended_at,
         // used by PlacesFeed and TopSitesFeed for sponsored top sites blocking.
@@ -118,6 +128,15 @@ export const LinkMenuOptions = {
         position: pos,
         ...(site.sponsored_tile_id ? { tile_id: site.sponsored_tile_id } : {}),
         is_pocket_card: site.type === "CardGrid",
+        is_list_card: site.is_list_card,
+        ...(site.format ? { format: site.format } : {}),
+        ...(site.section
+          ? {
+              section: site.section,
+              section_position: site.section_position,
+              is_secton_followed: site.is_secton_followed,
+            }
+          : {}),
       })),
     }),
     impression: ac.ImpressionStats({
@@ -165,6 +184,11 @@ export const LinkMenuOptions = {
               siteInfo
             )
           ),
+          // Also broadcast that this url has been deleted so that
+          // the confirmation dialog knows it needs to disappear now.
+          ac.AlsoToMain({
+            type: at.DIALOG_CLOSE,
+          }),
         ],
         eventSource,
         body_string_id: [
@@ -376,6 +400,93 @@ export const LinkMenuOptions = {
     action: ac.OnlyToMain({
       type: at.OPEN_LINK,
       data: { url: site.url },
+    }),
+  }),
+  FakespotDismiss: () => ({
+    id: "newtab-menu-dismiss",
+    action: ac.OnlyToMain({
+      type: at.SET_PREF,
+      data: {
+        name: "discoverystream.contextualContent.fakespot.enabled",
+        value: false,
+      },
+    }),
+    impression: ac.OnlyToMain({
+      type: at.FAKESPOT_DISMISS,
+    }),
+  }),
+  AboutFakespot: site => ({
+    id: "newtab-menu-about-fakespot",
+    action: ac.OnlyToMain({
+      type: at.OPEN_LINK,
+      data: { url: site.url },
+    }),
+    impression: ac.OnlyToMain({
+      type: at.OPEN_ABOUT_FAKESPOT,
+    }),
+  }),
+  SectionBlock: ({ blockedSections, sectionKey, sectionPosition }) => ({
+    id: "newtab-menu-section-block",
+    icon: "delete",
+    action: {
+      // Open the confirmation dialog to block a section.
+      type: at.DIALOG_OPEN,
+      data: {
+        onConfirm: [
+          // Once the user confirmed their intention to block this section,
+          // update their preferences.
+          ac.AlsoToMain({
+            type: at.SET_PREF,
+            data: {
+              name: "discoverystream.sections.blocked",
+              value: [...blockedSections, sectionKey].join(", "),
+            },
+          }),
+          // Telemetry
+          ac.OnlyToMain({
+            type: at.BLOCK_SECTION,
+            data: {
+              section: sectionKey,
+              section_position: sectionPosition,
+              event_source: "CONTEXT_MENU",
+            },
+          }),
+          // Also broadcast that this section has been blocked so that
+          // the confirmation dialog knows it needs to disappear now.
+          ac.AlsoToMain({
+            type: at.DIALOG_CLOSE,
+          }),
+        ],
+        // Pass Fluent strings to ConfirmDialog component for the copy
+        // of the prompt to block sections.
+        body_string_id: [
+          "newtab-section-confirm-block-section-p1",
+          "newtab-section-confirm-block-section-p2",
+        ],
+        confirm_button_string_id: "newtab-section-block-section-button",
+        cancel_button_string_id: "newtab-section-cancel-button",
+      },
+    },
+    userEvent: "DIALOG_OPEN",
+  }),
+  SectionUnfollow: ({ followedSections, sectionKey, sectionPosition }) => ({
+    id: "newtab-menu-section-unfollow",
+    action: ac.AlsoToMain({
+      type: at.SET_PREF,
+      data: {
+        name: "discoverystream.sections.following",
+        value: [...followedSections.filter(item => item !== sectionKey)].join(
+          ", "
+        ),
+      },
+    }),
+    impression: ac.OnlyToMain({
+      type: at.UNFOLLOW_SECTION,
+      data: {
+        section: sectionKey,
+        section_position: sectionPosition,
+        event_source: "CONTEXT_MENU",
+      },
     }),
   }),
 };

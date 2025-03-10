@@ -212,6 +212,12 @@ containers-remove-cancel-button = No eliminis aquest contenidor
 settings-tabs-show-image-in-preview =
     .label = Mostra una vista prèvia de la imatge en passar el cursor per sobre d'una pestanya
     .accessKey = M
+browser-layout-horizontal-tabs =
+    .label = Pestanyes horitzontals
+browser-layout-vertical-tabs =
+    .label = Pestanyes verticals
+browser-layout-show-sidebar =
+    .label = Mostra la barra lateral
 
 ## General Section - Language & Appearance
 
@@ -568,8 +574,7 @@ home-prefs-shortcuts-description = Llocs que deseu o visiteu
 home-prefs-shortcuts-by-option-sponsored =
     .label = Dreceres patrocinades
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Recomanat per { $provider }

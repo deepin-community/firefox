@@ -1,4 +1,9 @@
-use std::{mem, ptr, sync::Arc, thread};
+use std::{
+    mem::{size_of, size_of_val},
+    ptr,
+    sync::Arc,
+    thread,
+};
 
 use parking_lot::Mutex;
 use windows::{
@@ -59,19 +64,9 @@ impl super::Adapter {
         // Create the device so that we can get the capabilities.
         let device = {
             profiling::scope!("ID3D12Device::create_device");
-            match library.create_device(&adapter, Direct3D::D3D_FEATURE_LEVEL_11_0) {
-                Ok(pair) => match pair {
-                    Ok(device) => device,
-                    Err(err) => {
-                        log::warn!("Device creation failed: {}", err);
-                        return None;
-                    }
-                },
-                Err(err) => {
-                    log::warn!("Device creation function is not found: {:?}", err);
-                    return None;
-                }
-            }
+            library
+                .create_device(&adapter, Direct3D::D3D_FEATURE_LEVEL_11_0)
+                .ok()??
         };
 
         profiling::scope!("feature queries");
@@ -92,7 +87,7 @@ impl super::Adapter {
             device.CheckFeatureSupport(
                 Direct3D12::D3D12_FEATURE_FEATURE_LEVELS,
                 <*mut _>::cast(&mut device_levels),
-                mem::size_of_val(&device_levels) as u32,
+                size_of_val(&device_levels) as u32,
             )
         }
         .unwrap();
@@ -100,7 +95,7 @@ impl super::Adapter {
 
         // We have found a possible adapter.
         // Acquire the device information.
-        let desc = unsafe { adapter.unwrap_adapter2().GetDesc2() }.unwrap();
+        let desc = unsafe { adapter.GetDesc2() }.unwrap();
 
         let device_name = auxil::dxgi::conv::map_adapter_name(desc.Description);
 
@@ -110,7 +105,7 @@ impl super::Adapter {
             device.CheckFeatureSupport(
                 Direct3D12::D3D12_FEATURE_ARCHITECTURE,
                 <*mut _>::cast(&mut features_architecture),
-                mem::size_of_val(&features_architecture) as u32,
+                size_of_val(&features_architecture) as u32,
             )
         }
         .unwrap();
@@ -154,7 +149,7 @@ impl super::Adapter {
             device.CheckFeatureSupport(
                 Direct3D12::D3D12_FEATURE_D3D12_OPTIONS,
                 <*mut _>::cast(&mut options),
-                mem::size_of_val(&options) as u32,
+                size_of_val(&options) as u32,
             )
         }
         .unwrap();
@@ -165,7 +160,7 @@ impl super::Adapter {
                 device.CheckFeatureSupport(
                     Direct3D12::D3D12_FEATURE_D3D12_OPTIONS2,
                     <*mut _>::cast(&mut features2),
-                    mem::size_of_val(&features2) as u32,
+                    size_of_val(&features2) as u32,
                 )
             }
             .is_ok()
@@ -178,7 +173,7 @@ impl super::Adapter {
                 device.CheckFeatureSupport(
                     Direct3D12::D3D12_FEATURE_D3D12_OPTIONS3,
                     <*mut _>::cast(&mut features3),
-                    mem::size_of_val(&features3) as u32,
+                    size_of_val(&features3) as u32,
                 )
             }
             .is_ok()
@@ -194,7 +189,7 @@ impl super::Adapter {
                 device.CheckFeatureSupport(
                     Direct3D12::D3D12_FEATURE_D3D12_OPTIONS7,
                     <*mut _>::cast(&mut features7),
-                    mem::size_of_val(&features7) as u32,
+                    size_of_val(&features7) as u32,
                 )
             }
             .is_ok()
@@ -212,10 +207,10 @@ impl super::Adapter {
                 Direct3D12::D3D_SHADER_MODEL_6_2,
                 Direct3D12::D3D_SHADER_MODEL_6_1,
                 Direct3D12::D3D_SHADER_MODEL_6_0,
-                Direct3D12::D3D_SHADER_MODEL_5_1,
             ]
             .iter();
-            match loop {
+
+            let highest_shader_model = loop {
                 if let Some(&sm) = versions.next() {
                     let mut sm = Direct3D12::D3D12_FEATURE_DATA_SHADER_MODEL {
                         HighestShaderModel: sm,
@@ -224,7 +219,7 @@ impl super::Adapter {
                         device.CheckFeatureSupport(
                             Direct3D12::D3D12_FEATURE_SHADER_MODEL,
                             <*mut _>::cast(&mut sm),
-                            mem::size_of_val(&sm) as u32,
+                            size_of_val(&sm) as u32,
                         )
                     }
                     .is_ok()
@@ -234,8 +229,10 @@ impl super::Adapter {
                 } else {
                     break Direct3D12::D3D_SHADER_MODEL_5_1;
                 }
-            } {
-                Direct3D12::D3D_SHADER_MODEL_5_1 => naga::back::hlsl::ShaderModel::V5_1,
+            };
+
+            match highest_shader_model {
+                Direct3D12::D3D_SHADER_MODEL_5_1 => return None, // don't expose this adapter if it doesn't support DXIL
                 Direct3D12::D3D_SHADER_MODEL_6_0 => naga::back::hlsl::ShaderModel::V6_0,
                 Direct3D12::D3D_SHADER_MODEL_6_1 => naga::back::hlsl::ShaderModel::V6_1,
                 Direct3D12::D3D_SHADER_MODEL_6_2 => naga::back::hlsl::ShaderModel::V6_2,
@@ -298,6 +295,7 @@ impl super::Adapter {
             }
         };
 
+        // these should always be available on d3d12
         let mut features = wgt::Features::empty()
             | wgt::Features::DEPTH_CLIP_CONTROL
             | wgt::Features::DEPTH32FLOAT_STENCIL8
@@ -320,7 +318,9 @@ impl super::Adapter {
             | wgt::Features::SHADER_PRIMITIVE_INDEX
             | wgt::Features::RG11B10UFLOAT_RENDERABLE
             | wgt::Features::DUAL_SOURCE_BLENDING
-            | wgt::Features::TEXTURE_FORMAT_NV12;
+            | wgt::Features::TEXTURE_FORMAT_NV12
+            | wgt::Features::FLOAT32_FILTERABLE
+            | wgt::Features::TEXTURE_ATOMIC;
 
         //TODO: in order to expose this, we need to run a compute shader
         // that extract the necessary statistics out of the D3D12 result.
@@ -345,6 +345,12 @@ impl super::Adapter {
             shader_model >= naga::back::hlsl::ShaderModel::V5_1,
         );
 
+        // See note below the table https://learn.microsoft.com/en-us/windows/win32/direct3d12/hardware-support
+        features.set(
+            wgt::Features::PARTIALLY_BOUND_BINDING_ARRAY,
+            options.ResourceBindingTier.0 >= Direct3D12::D3D12_RESOURCE_BINDING_TIER_3.0,
+        );
+
         let bgra8unorm_storage_supported = {
             let mut bgra8unorm_info = Direct3D12::D3D12_FEATURE_DATA_FORMAT_SUPPORT {
                 Format: Dxgi::Common::DXGI_FORMAT_B8G8R8A8_UNORM,
@@ -354,7 +360,7 @@ impl super::Adapter {
                 device.CheckFeatureSupport(
                     Direct3D12::D3D12_FEATURE_FORMAT_SUPPORT,
                     <*mut _>::cast(&mut bgra8unorm_info),
-                    mem::size_of_val(&bgra8unorm_info) as u32,
+                    size_of_val(&bgra8unorm_info) as u32,
                 )
             };
             hr.is_ok()
@@ -372,7 +378,7 @@ impl super::Adapter {
             device.CheckFeatureSupport(
                 Direct3D12::D3D12_FEATURE_D3D12_OPTIONS1,
                 <*mut _>::cast(&mut features1),
-                mem::size_of_val(&features1) as u32,
+                size_of_val(&features1) as u32,
             )
         };
 
@@ -396,7 +402,7 @@ impl super::Adapter {
                 device.CheckFeatureSupport(
                     Direct3D12::D3D12_FEATURE_D3D12_OPTIONS9,
                     <*mut _>::cast(&mut features9),
-                    mem::size_of_val(&features9) as u32,
+                    size_of_val(&features9) as u32,
                 )
             }
             .is_ok()
@@ -407,9 +413,6 @@ impl super::Adapter {
             wgt::Features::SHADER_INT64_ATOMIC_ALL_OPS | wgt::Features::SHADER_INT64_ATOMIC_MIN_MAX,
             atomic_int64_on_typed_resource_supported,
         );
-
-        // float32-filterable should always be available on d3d12
-        features.set(wgt::Features::FLOAT32_FILTERABLE, true);
 
         // TODO: Determine if IPresentationManager is supported
         let presentation_timer = auxil::dxgi::time::PresentationTimer::new_dxgi();
@@ -423,9 +426,8 @@ impl super::Adapter {
 
         // See https://learn.microsoft.com/en-us/windows/win32/direct3d12/hardware-feature-levels#feature-level-support
         let max_color_attachments = 8;
-        // TODO: determine this programmatically if possible.
-        // https://github.com/gpuweb/gpuweb/issues/2965#issuecomment-1361315447
-        let max_color_attachment_bytes_per_sample = 64;
+        let max_color_attachment_bytes_per_sample =
+            max_color_attachments * wgt::TextureFormat::MAX_TARGET_PIXEL_BYTE_COST;
 
         Some(crate::ExposedAdapter {
             adapter: super::Adapter {
@@ -524,6 +526,11 @@ impl super::Adapter {
                         Direct3D12::D3D12_TEXTURE_DATA_PITCH_ALIGNMENT as u64,
                     )
                     .unwrap(),
+                    // Direct3D correctly bounds-checks all array accesses:
+                    // https://microsoft.github.io/DirectX-Specs/d3d/archive/D3D11_3_FunctionalSpec.htm#18.6.8.2%20Device%20Memory%20Reads
+                    uniform_bounds_check_alignment: wgt::BufferSize::new(1).unwrap(),
+                    raw_tlas_instance_size: 0,
+                    ray_tracing_scratch_buffer_alignment: 0,
                 },
                 downlevel,
             },
@@ -604,7 +611,7 @@ impl crate::Adapter for super::Adapter {
             self.device.CheckFeatureSupport(
                 Direct3D12::D3D12_FEATURE_FORMAT_SUPPORT,
                 <*mut _>::cast(&mut data),
-                mem::size_of_val(&data) as u32,
+                size_of_val(&data) as u32,
             )
         }
         .unwrap();
@@ -622,7 +629,7 @@ impl crate::Adapter for super::Adapter {
                 self.device.CheckFeatureSupport(
                     Direct3D12::D3D12_FEATURE_FORMAT_SUPPORT,
                     ptr::addr_of_mut!(data_srv_uav).cast(),
-                    mem::size_of::<Direct3D12::D3D12_FEATURE_DATA_FORMAT_SUPPORT>() as u32,
+                    size_of::<Direct3D12::D3D12_FEATURE_DATA_FORMAT_SUPPORT>() as u32,
                 )
             }
             .unwrap();
@@ -671,16 +678,26 @@ impl crate::Adapter for super::Adapter {
         );
         // UAVs use srv_uav_format
         caps.set(
-            Tfc::STORAGE,
-            data_srv_uav
-                .Support1
-                .contains(Direct3D12::D3D12_FORMAT_SUPPORT1_TYPED_UNORDERED_ACCESS_VIEW),
-        );
-        caps.set(
-            Tfc::STORAGE_READ_WRITE,
+            Tfc::STORAGE_READ_ONLY,
             data_srv_uav
                 .Support2
                 .contains(Direct3D12::D3D12_FORMAT_SUPPORT2_UAV_TYPED_LOAD),
+        );
+        caps.set(
+            Tfc::STORAGE_ATOMIC,
+            data_srv_uav
+                .Support2
+                .contains(Direct3D12::D3D12_FORMAT_SUPPORT2_UAV_ATOMIC_UNSIGNED_MIN_OR_MAX),
+        );
+        caps.set(
+            Tfc::STORAGE_WRITE_ONLY,
+            data_srv_uav
+                .Support2
+                .contains(Direct3D12::D3D12_FORMAT_SUPPORT2_UAV_TYPED_STORE),
+        );
+        caps.set(
+            Tfc::STORAGE_READ_WRITE,
+            caps.contains(Tfc::STORAGE_READ_ONLY | Tfc::STORAGE_WRITE_ONLY),
         );
 
         // We load via UAV/SRV so use srv_uav_format
@@ -718,7 +735,7 @@ impl crate::Adapter for super::Adapter {
                 self.device.CheckFeatureSupport(
                     Direct3D12::D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS,
                     <*mut _>::cast(&mut ms_levels),
-                    mem::size_of_val(&ms_levels) as u32,
+                    size_of_val(&ms_levels) as u32,
                 )
             }
             .is_ok()

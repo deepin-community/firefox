@@ -20,16 +20,11 @@ UNSUPPORTED_FEATURES = set(
     [
         "tail-call-optimization",
         "Intl.Locale-info",  # Bug 1693576
-        "Intl.DurationFormat",  # Bug 1648139
         "Atomics.waitAsync",  # Bug 1467846
         "legacy-regexp",  # Bug 1306461
-        "set-methods",  # Bug 1805038
-        "explicit-resource-management",  # Bug 1569081
-        "promise-try",
         "source-phase-imports",
         "source-phase-imports-module-source",
-        "Math.sumPrecise",
-        "Atomics.pause",
+        "import-defer",
     ]
 )
 FEATURE_CHECK_NEEDED = {
@@ -41,11 +36,18 @@ FEATURE_CHECK_NEEDED = {
     "decorators": "!(this.hasOwnProperty('getBuildConfiguration')&&getBuildConfiguration('decorators'))",  # Bug 1435869
     "iterator-helpers": "!this.hasOwnProperty('Iterator')",  # Bug 1568906
     "Intl.Segmenter": "!Intl.Segmenter",  # Bug 1423593
+    "Intl.DurationFormat": "!Intl.hasOwnProperty('DurationFormat')",  # Bug 1648139
     "resizable-arraybuffer": "!ArrayBuffer.prototype.resize",  # Bug 1670026
     "uint8array-base64": "!Uint8Array.fromBase64",  # Bug 1862220
     "json-parse-with-source": "!JSON.hasOwnProperty('isRawJSON')",  # Bug 1658310
     "Float16Array": "!this.hasOwnProperty('Float16Array')",
     "RegExp.escape": "!RegExp.escape",
+    "promise-try": "!Promise.try",
+    "explicit-resource-management": "!(this.hasOwnProperty('getBuildConfiguration')&&getBuildConfiguration('explicit-resource-management'))",  # Bug 1569081
+    "Atomics.pause": "!this.hasOwnProperty('Atomics')||!Atomics.pause",
+    "Error.isError": "!Error.isError",
+    "iterator-sequencing": "!Iterator.concat",
+    "Math.sumPrecise": "!Math.sumPrecise",  # Bug 1918708
 }
 RELEASE_OR_BETA = set(
     [
@@ -54,7 +56,6 @@ RELEASE_OR_BETA = set(
     ]
 )
 SHELL_OPTIONS = {
-    "import-assertions": "--enable-import-assertions",
     "import-attributes": "--enable-import-attributes",
     "ShadowRealm": "--enable-shadow-realms",
     "iterator-helpers": "--enable-iterator-helpers",
@@ -66,6 +67,13 @@ SHELL_OPTIONS = {
     "regexp-duplicate-named-groups": "--enable-regexp-duplicate-named-groups",
     "RegExp.escape": "--enable-regexp-escape",
     "regexp-modifiers": "--enable-regexp-modifiers",
+    "promise-try": "--enable-promise-try",
+    "explicit-resource-management": "--enable-explicit-resource-management",
+    "Atomics.pause": "--enable-atomics-pause",
+    "Temporal": "--enable-temporal",
+    "Error.isError": "--enable-error-iserror",
+    "iterator-sequencing": "--enable-iterator-sequencing",
+    "Math.sumPrecise": "--enable-math-sumprecise",
 }
 
 INCLUDE_FEATURE_DETECTED_OPTIONAL_SHELL_OPTIONS = {
@@ -311,7 +319,7 @@ def convertTestFile(test262parser, testSource, testName, includeSet, strictTests
     # currently ignoring the error phase attribute.
     # testRec["negative"] == {type=<error name>, phase=parse|resolution|runtime}
     isNegative = "negative" in testRec
-    assert not isNegative or type(testRec["negative"]) == dict
+    assert not isNegative or type(testRec["negative"]) is dict
     errorType = testRec["negative"]["type"] if isNegative else None
 
     # Async tests are marked with the "async" attribute.
@@ -538,7 +546,10 @@ def process_test262(test262Dir, test262OutDir, strictTests, externManifests):
     explicitIncludes[os.path.join("built-ins", "TypedArrays")] = [
         "detachArrayBuffer.js"
     ]
-    explicitIncludes[os.path.join("built-ins", "Temporal")] = ["temporalHelpers.js"]
+
+    # We can't include "sm/non262.js", because it conflicts with our test harness,
+    # but some definitions from "sm/non262.js" are still needed.
+    localIncludesMap[os.path.join("staging", "sm")] = ["test262-non262.js"]
 
     # Process all test directories recursively.
     for dirPath, dirNames, fileNames in os.walk(testDir):
@@ -598,6 +609,10 @@ def process_test262(test262Dir, test262OutDir, strictTests, externManifests):
                             "reftest": externRefTest,
                         }
                     )
+
+        # Remove "sm/non262.js" because it overwrites our test harness with stub
+        # functions.
+        includeSet.discard("sm/non262.js")
 
         # Add shell.js and browers.js files for the current directory.
         writeShellAndBrowserFiles(

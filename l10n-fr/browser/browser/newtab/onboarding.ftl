@@ -226,7 +226,9 @@ mr2022-onboarding-set-default-subtitle = Utilisez un navigateur soutenu par une 
 mr2022-onboarding-get-started-primary-subtitle = Notre dernière version est conçue sur mesure pour vous, ce qui facilite plus que jamais la navigation sur le Web. Cette dernière version regorge de fonctionnalités que vous allez adorer.
 mr2022-onboarding-get-started-primary-button-label = Configurer en quelques secondes
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Configuration ultra-rapide
 mr2022-onboarding-import-subtitle = Configurez { -brand-short-name } à votre guise. Ajoutez vos marque-pages, mots de passe et plus encore depuis votre ancien navigateur.
@@ -357,6 +359,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Lorsque la synchronis
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } est toujours de votre côté
 onboarding-gratitude-security-and-privacy-subtitle = Merci d’utiliser { -brand-short-name }, soutenu par la Fondation Mozilla. Avec votre soutien, nous nous efforçons de rendre Internet plus sûr et accessible pour tout le monde.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Synchronisez vos données entre vos appareils
+onboarding-sign-up-description = Créez un compte et toutes vos informations importantes (mots de passe, marque-pages…) seront stockées en sécurité et disponibles lorsque vous vous connecterez sur n’importe quel appareil.
+onboarding-sign-up-button = Créer un compte ou se connecter
+onboarding-sign-up-secondary-button = Commencer la navigation
 
 ## New user time and familiarity survey strings
 
@@ -376,3 +383,90 @@ onboarding-new-user-survey-familiarity-based-option-1 = Je commence seulement
 onboarding-new-user-survey-familiarity-based-option-2 = Je l’ai utilisé un peu
 onboarding-new-user-survey-familiarity-based-option-3 = Je le connais bien
 onboarding-new-user-survey-familiarity-based-option-4 = Je l’ai utilisé autrefois, mais cela fait longtemps.
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Dites-nous où vous souhaitez placer vos onglets
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Changez de mode à tout moment depuis les paramètres du panneau latéral.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Vos onglets, à votre manière
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Vous gardez toujours un grand nombre d’onglets ouverts ? Essayez de placer vos onglets sur le côté pour une vue plus épurée. Ou optez pour le style classique avec les onglets en haut. Changez de mode à tout moment.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Choisissez la disposition de vos onglets
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Pour une vue épurée qui vous aide à garder votre concentration, essayez de placer vos onglets sur le côté. Ou conservez le style classique avec les onglets en haut. Changez de mode à tout moment.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Onglets sur le côté
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Onglets en haut de l’écran
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Les onglets verticaux sont là
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Les onglets verticaux sont là
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Essayez de placer vos onglets sur le côté. Changez de mode à tout moment depuis les paramètres du panneau latéral.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Essayer les onglets verticaux
+onboarding-flair-text = Nouveau !
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Conserver les onglets horizontaux
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Une fenêtre de navigateur affichant des onglets sur le côté de l’écran dans le panneau latéral de { -brand-shorter-name }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Une fenêtre de navigateur affichant des onglets sur le côté de l’écran dans le panneau latéral de { -brand-shorter-name }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Une fenêtre de navigateur affichant des onglets en haut de l’écran.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Une fenêtre de navigateur affichant des onglets en haut de l’écran.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Testez un chatbot IA dans le panneau latéral
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Résumez du contenu web, réfléchissez à des idées, rédigez des messages, tout en naviguant. Choisissez parmi plusieurs fournisseurs. Changez à tout moment. <a data-l10n-name="learn-more">En savoir plus</a>
+onboarding-genai-sidebar-primary-button = Choisir un chatbot
+onboarding-genai-sidebar-secondary-button = Commencer la navigation
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Terminer la configuration de { -brand-short-name }
+onboarding-checklist-subtitle = Effectuez ces étapes pour profiter au mieux de votre navigation.
+onboarding-checklist-set-default = Faire de { -brand-short-name } mon navigateur par défaut
+onboarding-checklist-pin = Épingler { -brand-short-name } à la barre des tâches
+onboarding-checklist-import = Importer depuis un ancien navigateur
+onboarding-checklist-extension = Installer une extension
+onboarding-checklist-sign-up = Créer un compte ou vous connecter
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Essayez les groupes d’onglets pour moins de distractions, plus de concentration
+tab-groups-onboarding-feature-callout-subtitle = Organisez vos onglets en faisant glisser un onglet au-dessus d’un autre pour créer votre premier groupe.
+tab-groups-onboarding-create-group-title = Retrouvez les groupes ouverts dans la barre d’onglets ou recherchez-les dans la barre d’adresse.
+tab-groups-onboarding-saved-groups-title = Si vous fermez un groupe d’onglets, vous pouvez le rouvrir ici à tout moment.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title = Retrouvez à tout moment vos groupes d’onglets ouverts ou fermés en les recherchant dans la barre d’adresse.
+tab-groups-onboarding-dismiss = OK
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Les profils { -brand-product-name } sont là !
+multi-profile-spotlight-body = Passez facilement de la navigation professionnelle à la navigation de divertissement. Les profils séparent totalement vos informations de navigation, dont l’historique des recherches et les mots de passe, pour vous aider à organiser vos activités en ligne.
+multi-profile-spotlight-cta = Créer un profil
+multi-profile-callout-title = Créez des profils distincts pour le travail et les loisirs
+multi-profile-callout-subtitle = Les profils vous permettent de séparer totalement vos informations de navigation, comme votre historique de recherche et vos mots de passe.
+multi-profile-callout-cta = Créer un profil
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Téléchargez, synchronisez et c’est parti !
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Scannez le code QR pour télécharger { -brand-product-name } pour mobile. Une fois l’installation terminée, sélectionnez « Synchroniser avec votre appareil mobile » pour accéder à vos mots de passe, marque-pages et bien plus encore lors de vos déplacements.
+dismiss-button-label = Ignorer
+sync-to-mobile-button-label = Synchroniser avec votre appareil mobile
+desktop-to-mobile-qr-code-alt =
+    .aria-label = Code QR pour télécharger { -brand-product-name } pour mobile

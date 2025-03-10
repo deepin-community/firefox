@@ -4,6 +4,10 @@
 
 menu-view-genai-chat =
     .label = AI-chatbot
+menu-view-review-checker =
+    .label = Vurderingskontrollør
+sidebar-options-menu-button =
+    .title = Åpne meny
 
 ## Labels for sidebar history panel
 
@@ -50,12 +54,14 @@ sidebar-horizontal-tabs =
     .label = Horisontale faner
 sidebar-customize-tabs-header =
     .label = Fane-innstillinger
-sidebar-customize-settings-header =
-    .label = Innstillinger for sidestolpe
-sidebar-visibility-always-show =
-    .label = Vis alltid
-sidebar-visibility-hide-sidebar =
-    .label = Skjul sidestolpe
+sidebar-customize-button-header =
+    .label = Sidestolpeknapp
+sidebar-customize-position-header =
+    .label = Sidestolpe-plassering
+sidebar-visibility-setting-always-show =
+    .label = Utvid og skjul sidestolpen
+sidebar-visibility-setting-hide-sidebar =
+    .label = Vis og skjul sidestolpen
 
 ## Labels for sidebar context menu items
 
@@ -95,6 +101,35 @@ sidebar-menu-bookmarks-label =
     .label = Bokmerker
 sidebar-menu-customize-label =
     .label = Tilpass sidestolpe
+sidebar-menu-review-checker-label =
+    .label = Vurderingskontrollør
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = Åpne historikk ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = Lukk historikk ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = Åpne bokmerker ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = Lukk bokmerker ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = Åpne AI-chatbot
+sidebar-menu-close-ai-chatbot-tooltip = Lukk AI-chatbot
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
 
 ## Headings for sidebar menu panels.
 
@@ -104,6 +139,14 @@ sidebar-menu-history-header =
     .heading = Historikk
 sidebar-menu-syncedtabs-header =
     .heading = Faner fra andre enheter
+sidebar-panel-header-close-button =
+    .tooltiptext = Lukk
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Tilpass sidestolpe
+sidebar-history-title = Historikk
+sidebar-syncedtabs-title = Faner fra andre enheter
 
 ## Context for closing synced tabs when hovering over the items
 
@@ -113,3 +156,29 @@ sidebar-menu-syncedtabs-header =
 #   $deviceName (String) - the name of the device the user is closing a tab for
 synced-tabs-context-close-tab-title =
     .title = Lukk fanen på { $deviceName }
+show-sidebars =
+    .tooltiptext = Vis sidestolper
+    .label = Sidestolper
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = Utvid sidestolpen ({ $shortcut })
+    .label = Sidestolper
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Skjul sidestolpen ({ $shortcut })
+    .label = Sidestolper
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Vis sidestolpe ({ $shortcut })
+    .label = Sidestolper
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Skjul sidestolpe ({ $shortcut })
+    .label = Sidestolper

@@ -7,38 +7,38 @@ const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   BrowserWindowTracker: "resource:///modules/BrowserWindowTracker.sys.mjs",
   NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
-  rawSuggestionUrlMatches: "resource://gre/modules/RustSuggest.sys.mjs",
   UrlbarPrefs: "resource:///modules/UrlbarPrefs.sys.mjs",
   UrlbarUtils: "resource:///modules/UrlbarUtils.sys.mjs",
 });
 
-// Quick suggest features. On init, QuickSuggest creates an instance of each and
-// keeps it in the `#features` map. See `BaseFeature`.
+// Suggest features classes. On init, `QuickSuggest` creates an instance of each
+// class and keeps it in the `#featuresByName` map. See `SuggestFeature`.
 const FEATURES = {
   AddonSuggestions:
     "resource:///modules/urlbar/private/AddonSuggestions.sys.mjs",
-  AdmWikipedia: "resource:///modules/urlbar/private/AdmWikipedia.sys.mjs",
+  AmpSuggestions: "resource:///modules/urlbar/private/AmpSuggestions.sys.mjs",
   BlockedSuggestions:
     "resource:///modules/urlbar/private/BlockedSuggestions.sys.mjs",
+  ExposureSuggestions:
+    "resource:///modules/urlbar/private/ExposureSuggestions.sys.mjs",
   FakespotSuggestions:
     "resource:///modules/urlbar/private/FakespotSuggestions.sys.mjs",
   ImpressionCaps: "resource:///modules/urlbar/private/ImpressionCaps.sys.mjs",
   MDNSuggestions: "resource:///modules/urlbar/private/MDNSuggestions.sys.mjs",
+  OfflineWikipediaSuggestions:
+    "resource:///modules/urlbar/private/OfflineWikipediaSuggestions.sys.mjs",
   PocketSuggestions:
     "resource:///modules/urlbar/private/PocketSuggestions.sys.mjs",
-  SuggestBackendJs:
-    "resource:///modules/urlbar/private/SuggestBackendJs.sys.mjs",
+  SuggestBackendMerino:
+    "resource:///modules/urlbar/private/SuggestBackendMerino.sys.mjs",
+  SuggestBackendMl:
+    "resource:///modules/urlbar/private/SuggestBackendMl.sys.mjs",
   SuggestBackendRust:
     "resource:///modules/urlbar/private/SuggestBackendRust.sys.mjs",
-  Weather: "resource:///modules/urlbar/private/Weather.sys.mjs",
+  WeatherSuggestions:
+    "resource:///modules/urlbar/private/WeatherSuggestions.sys.mjs",
   YelpSuggestions: "resource:///modules/urlbar/private/YelpSuggestions.sys.mjs",
 };
-
-const TIMESTAMP_TEMPLATE = "%YYYYMMDDHH%";
-const TIMESTAMP_LENGTH = 10;
-const TIMESTAMP_REGEXP = /^\d{10}$/;
-
-const TELEMETRY_EVENT_CATEGORY = "contextservices.quicksuggest";
 
 // Values returned by the onboarding dialog depending on the user's response.
 // These values are used in telemetry events, so be careful about changing them.
@@ -57,37 +57,12 @@ const ONBOARDING_URI =
   "chrome://browser/content/urlbar/quicksuggestOnboarding.html";
 
 /**
- * This class manages the quick suggest feature (a.k.a Firefox Suggest) and has
- * related helpers.
+ * This class manages Firefox Suggest and has related helpers.
  */
 class _QuickSuggest {
   /**
    * @returns {string}
-   *   The name of the quick suggest telemetry event category.
-   */
-  get TELEMETRY_EVENT_CATEGORY() {
-    return TELEMETRY_EVENT_CATEGORY;
-  }
-
-  /**
-   * @returns {string}
-   *   The timestamp template string used in quick suggest URLs.
-   */
-  get TIMESTAMP_TEMPLATE() {
-    return TIMESTAMP_TEMPLATE;
-  }
-
-  /**
-   * @returns {number}
-   *   The length of the timestamp in quick suggest URLs.
-   */
-  get TIMESTAMP_LENGTH() {
-    return TIMESTAMP_LENGTH;
-  }
-
-  /**
-   * @returns {string}
-   *   The help URL for the Quick Suggest feature.
+   *   The help URL for Suggest.
    */
   get HELP_URL() {
     return (
@@ -105,29 +80,35 @@ class _QuickSuggest {
   }
 
   /**
-   * @returns {SuggestBackendJs|SuggestBackendRust}
-   *   The currently active backend.
+   * @returns {Array}
+   *   Enabled Suggest backends.
    */
-  get backend() {
-    return lazy.UrlbarPrefs.get("quickSuggestRustEnabled")
-      ? this.rustBackend
-      : this.jsBackend;
+  get enabledBackends() {
+    // This getter may be accessed before `init()` is called, so the backends
+    // may not be registered yet. Don't assume they're non-null.
+    return [
+      this.rustBackend,
+      this.#featuresByName.get("SuggestBackendMerino"),
+      this.#featuresByName.get("SuggestBackendMl"),
+    ].filter(b => b?.isEnabled);
   }
 
   /**
    * @returns {SuggestBackendRust}
-   *   The Rust backend. Not used when the JS backend is enabled.
+   *   The Rust backend, which manages the Rust component.
    */
   get rustBackend() {
-    return this.#features.SuggestBackendRust;
+    return this.#featuresByName.get("SuggestBackendRust");
   }
 
   /**
-   * @returns {SuggestBackendJs}
-   *   The JS backend. Not used when the Rust backend is enabled.
+   * @returns {object}
+   *   Global Suggest configuration stored in remote settings and ingested by
+   *   the Rust component. See remote settings or the Rust component for the
+   *   latest schema.
    */
-  get jsBackend() {
-    return this.#features.SuggestBackendJs;
+  get config() {
+    return this.rustBackend?.config || {};
   }
 
   /**
@@ -135,7 +116,7 @@ class _QuickSuggest {
    *   The blocked suggestions feature.
    */
   get blockedSuggestions() {
-    return this.#features.BlockedSuggestions;
+    return this.#featuresByName.get("BlockedSuggestions");
   }
 
   /**
@@ -143,24 +124,25 @@ class _QuickSuggest {
    *   The impression caps feature.
    */
   get impressionCaps() {
-    return this.#features.ImpressionCaps;
-  }
-
-  /**
-   * @returns {Weather}
-   *   A feature that periodically fetches weather suggestions from Merino.
-   */
-  get weather() {
-    return this.#features.Weather;
+    return this.#featuresByName.get("ImpressionCaps");
   }
 
   /**
    * @returns {Set}
    *   The set of features that manage Rust suggestion types, as determined by
-   *   each feature's `rustSuggestionTypes`.
+   *   each feature's `rustSuggestionType`.
    */
   get rustFeatures() {
-    return this.#rustFeatures;
+    return new Set(this.#featuresByRustSuggestionType.values());
+  }
+
+  /**
+   * @returns {Set}
+   *   The set of features that manage ML suggestion types, as determined by
+   *   each feature's `mlIntent`.
+   */
+  get mlFeatures() {
+    return new Set(this.#featuresByMlIntent.values());
   }
 
   get logger() {
@@ -171,28 +153,30 @@ class _QuickSuggest {
   }
 
   /**
-   * Initializes the quick suggest feature. This must be called before using
-   * quick suggest. It's safe to call more than once.
+   * Initializes Suggest. It's safe to call more than once.
    */
   init() {
-    if (Object.keys(this.#features).length) {
+    if (this.#featuresByName.size) {
       // Already initialized.
       return;
     }
 
-    // Create an instance of each feature and keep it in `#features`.
+    // Create an instance of each feature and keep it in `#featuresByName`.
     for (let [name, uri] of Object.entries(FEATURES)) {
       let { [name]: ctor } = ChromeUtils.importESModule(uri);
       let feature = new ctor();
-      this.#features[name] = feature;
+      this.#featuresByName.set(name, feature);
       if (feature.merinoProvider) {
         this.#featuresByMerinoProvider.set(feature.merinoProvider, feature);
       }
-      for (let type of feature.rustSuggestionTypes) {
-        this.#featuresByRustSuggestionType.set(type, feature);
+      if (feature.rustSuggestionType) {
+        this.#featuresByRustSuggestionType.set(
+          feature.rustSuggestionType,
+          feature
+        );
       }
-      if (feature.rustSuggestionTypes.length) {
-        this.#rustFeatures.add(feature);
+      if (feature.mlIntent) {
+        this.#featuresByMlIntent.set(feature.mlIntent, feature);
       }
 
       // Update the map from enabling preferences to features.
@@ -215,27 +199,27 @@ class _QuickSuggest {
   }
 
   /**
-   * Returns a quick suggest feature by name.
+   * Returns a Suggest feature by name.
    *
    * @param {string} name
    *   The name of the feature's JS class.
-   * @returns {BaseFeature}
-   *   The feature object, an instance of a subclass of `BaseFeature`.
+   * @returns {SuggestFeature}
+   *   The feature object, an instance of a subclass of `SuggestFeature`.
    */
   getFeature(name) {
-    return this.#features[name];
+    return this.#featuresByName.get(name);
   }
 
   /**
-   * Returns a quick suggest feature by the name of the Merino provider that
-   * serves its suggestions (as defined by `feature.merinoProvider`). Not all
-   * features correspond to a Merino provider.
+   * Returns a Suggest feature by the name of the Merino provider that serves
+   * its suggestions (as defined by `feature.merinoProvider`). Not all features
+   * correspond to a Merino provider.
    *
    * @param {string} provider
    *   The name of a Merino provider.
-   * @returns {BaseFeature}
-   *   The feature object, an instance of a subclass of `BaseFeature`, or null
-   *   if no feature corresponds to the Merino provider.
+   * @returns {SuggestProvider}
+   *   The feature object, an instance of a subclass of `SuggestProvider`, or
+   *   null if no feature corresponds to the Merino provider.
    */
   getFeatureByMerinoProvider(provider) {
     return this.#featuresByMerinoProvider.get(provider);
@@ -243,17 +227,76 @@ class _QuickSuggest {
 
   /**
    * Returns a Suggest feature by the type of Rust suggestion it manages (as
-   * defined by `feature.rustSuggestionTypes`). Not all features correspond to a
+   * defined by `feature.rustSuggestionType`). Not all features correspond to a
    * Rust suggestion type.
    *
    * @param {string} type
    *   The name of a Rust suggestion type.
-   * @returns {BaseFeature}
-   *   The feature object, an instance of a subclass of `BaseFeature`, or null
-   *   if no feature corresponds to the type.
+   * @returns {SuggestProvider}
+   *   The feature object, an instance of a subclass of `SuggestProvider`, or
+   *   null if no feature corresponds to the type.
    */
   getFeatureByRustSuggestionType(type) {
     return this.#featuresByRustSuggestionType.get(type);
+  }
+
+  /**
+   * Returns a Suggest feature by the ML intent name (as defined by
+   * `feature.mlIntent` and `MLSuggest`). Not all features support ML.
+   *
+   * @param {string} intent
+   *   The name of an ML intent.
+   * @returns {SuggestProvider}
+   *   The feature object, an instance of a subclass of `SuggestProvider`, or
+   *   null if no feature corresponds to the intent.
+   */
+  getFeatureByMlIntent(intent) {
+    return this.#featuresByMlIntent.get(intent);
+  }
+
+  /**
+   * Gets the Suggest feature that manages suggestions for urlbar result.
+   *
+   * @param {UrlbarResult} result
+   *   The urlbar result.
+   * @returns {SuggestProvider}
+   *   The feature instance or null if none was found.
+   */
+  getFeatureByResult(result) {
+    return this.getFeatureBySource(result.payload);
+  }
+
+  /**
+   * Gets the Suggest feature that manages suggestions for a source and provider
+   * name. The source and provider name can be supplied from either a suggestion
+   * object or the payload of a `UrlbarResult` object.
+   *
+   * @param {object} options
+   *   Options object.
+   * @param {string} options.source
+   *   The suggestion source, one of: "merino", "ml", "rust"
+   * @param {string} options.provider
+   *   This value depends on `source`. The possible values per source are:
+   *
+   *   merino:
+   *     The name of the Merino provider that serves the suggestion type
+   *   ml:
+   *     The name of the intent as determined by `MLSuggest`
+   *   rust:
+   *     The name of the suggestion type as defined in Rust
+   * @returns {SuggestProvider}
+   *   The feature instance or null if none was found.
+   */
+  getFeatureBySource({ source, provider }) {
+    switch (source) {
+      case "merino":
+        return this.getFeatureByMerinoProvider(provider);
+      case "rust":
+        return this.getFeatureByRustSuggestionType(provider);
+      case "ml":
+        return this.getFeatureByMlIntent(provider);
+    }
+    return null;
   }
 
   /**
@@ -270,155 +313,41 @@ class _QuickSuggest {
         f.update();
       }
     }
-
-    switch (pref) {
-      case "quicksuggest.dataCollection.enabled":
-        if (!lazy.UrlbarPrefs.updatingFirefoxSuggestScenario) {
-          Services.telemetry.recordEvent(
-            TELEMETRY_EVENT_CATEGORY,
-            "data_collect_toggled",
-            lazy.UrlbarPrefs.get(pref) ? "enabled" : "disabled"
-          );
-        }
-        break;
-      case "suggest.quicksuggest.nonsponsored":
-        if (!lazy.UrlbarPrefs.updatingFirefoxSuggestScenario) {
-          Services.telemetry.recordEvent(
-            TELEMETRY_EVENT_CATEGORY,
-            "enable_toggled",
-            lazy.UrlbarPrefs.get(pref) ? "enabled" : "disabled"
-          );
-        }
-        break;
-      case "suggest.quicksuggest.sponsored":
-        if (!lazy.UrlbarPrefs.updatingFirefoxSuggestScenario) {
-          Services.telemetry.recordEvent(
-            TELEMETRY_EVENT_CATEGORY,
-            "sponsored_toggled",
-            lazy.UrlbarPrefs.get(pref) ? "enabled" : "disabled"
-          );
-        }
-        break;
-    }
   }
 
   /**
-   * Returns whether a given URL and quick suggest's URL are equivalent. URLs
-   * are equivalent if they are identical except for substrings that replaced
-   * templates in the original suggestion URL.
+   * Returns whether a given URL and result URL map back to the same original
+   * suggestion URL.
    *
-   * For example, a suggestion URL from the backing suggestions source might
-   * include a timestamp template "%YYYYMMDDHH%" like this:
-   *
-   *   http://example.com/foo?bar=%YYYYMMDDHH%
-   *
-   * When a quick suggest result is created from this suggestion URL, it's
-   * created with a URL that is a copy of the suggestion URL but with the
-   * template replaced with a real timestamp value, like this:
-   *
-   *   http://example.com/foo?bar=2021111610
-   *
-   * All URLs created from this single suggestion URL are considered equivalent
-   * regardless of their real timestamp values.
+   * Some features may create result URLs that are potentially unique per query.
+   * Typically this is done by modifying an original suggestion URL at query
+   * time, for example by adding timestamps or query-specific search params. In
+   * that case, a single original suggestion URL will map to many result URLs.
+   * This function returns whether the given URL and result URL are equal
+   * excluding any such modifications.
    *
    * @param {string} url
-   *   The URL to check.
+   *   The URL to check, typically from the user's history.
    * @param {UrlbarResult} result
-   *   The quick suggest result. Will compare {@link url} to `result.payload.url`
+   *   The Suggest result.
    * @returns {boolean}
-   *   Whether `url` is equivalent to `result.payload.url`.
+   *   Whether `url` is equivalent to the result's URL.
    */
-  isURLEquivalentToResultURL(url, result) {
-    // If the URLs aren't the same length, they can't be equivalent.
-    let resultURL = result.payload.url;
-    if (resultURL.length != url.length) {
-      return false;
-    }
-
-    if (result.payload.source == "rust") {
-      // The Rust implementation has its own equivalence function.
-      return lazy.rawSuggestionUrlMatches(result.payload.originalUrl, url);
-    }
-
-    // If the result URL doesn't have a timestamp, then do a straight string
-    // comparison.
-    let { urlTimestampIndex } = result.payload;
-    if (typeof urlTimestampIndex != "number" || urlTimestampIndex < 0) {
-      return resultURL == url;
-    }
-
-    // Compare the first parts of the strings before the timestamps.
-    if (
-      resultURL.substring(0, urlTimestampIndex) !=
-      url.substring(0, urlTimestampIndex)
-    ) {
-      return false;
-    }
-
-    // Compare the second parts of the strings after the timestamps.
-    let remainderIndex = urlTimestampIndex + TIMESTAMP_LENGTH;
-    if (resultURL.substring(remainderIndex) != url.substring(remainderIndex)) {
-      return false;
-    }
-
-    // Test the timestamp against the regexp.
-    let maybeTimestamp = url.substring(
-      urlTimestampIndex,
-      urlTimestampIndex + TIMESTAMP_LENGTH
-    );
-    return TIMESTAMP_REGEXP.test(maybeTimestamp);
-  }
-
-  /**
-   * Some suggestion properties like `url` and `click_url` include template
-   * substrings that must be replaced with real values. This method replaces
-   * templates with appropriate values in place.
-   *
-   * @param {object} suggestion
-   *   A suggestion object fetched from remote settings or Merino.
-   */
-  replaceSuggestionTemplates(suggestion) {
-    let now = new Date();
-    let timestampParts = [
-      now.getFullYear(),
-      now.getMonth() + 1,
-      now.getDate(),
-      now.getHours(),
-    ];
-    let timestamp = timestampParts
-      .map(n => n.toString().padStart(2, "0"))
-      .join("");
-    for (let key of ["url", "click_url"]) {
-      let value = suggestion[key];
-      if (!value) {
-        continue;
-      }
-
-      let timestampIndex = value.indexOf(TIMESTAMP_TEMPLATE);
-      if (timestampIndex >= 0) {
-        if (key == "url") {
-          suggestion.urlTimestampIndex = timestampIndex;
-        }
-        // We could use replace() here but we need the timestamp index for
-        // `suggestion.urlTimestampIndex`, and since we already have that, avoid
-        // another O(n) substring search and manually replace the template with
-        // the timestamp.
-        suggestion[key] =
-          value.substring(0, timestampIndex) +
-          timestamp +
-          value.substring(timestampIndex + TIMESTAMP_TEMPLATE.length);
-      }
-    }
+  isUrlEquivalentToResultUrl(url, result) {
+    let feature = this.getFeatureByResult(result);
+    return feature
+      ? feature.isUrlEquivalentToResultUrl(url, result)
+      : url == result.payload.url;
   }
 
   /**
    * An onboarding dialog can be shown to the users who are enrolled into
-   * the QuickSuggest experiments or rollouts. This behavior is controlled
+   * the Suggest experiments or rollouts. This behavior is controlled
    * by the pref `browser.urlbar.quicksuggest.shouldShowOnboardingDialog`
    * which can be remotely configured by Nimbus.
    *
    * Given that the release may overlap with another onboarding dialog, we may
-   * wait for a few restarts before showing the QuickSuggest dialog. This can
+   * wait for a few restarts before showing the Suggest dialog. This can
    * be remotely configured by Nimbus through
    * `quickSuggestShowOnboardingDialogAfterNRestarts`, the default is 0.
    *
@@ -508,17 +437,11 @@ class _QuickSuggest {
 
     lazy.UrlbarPrefs.set("quicksuggest.onboardingDialogChoice", params.choice);
 
-    Services.telemetry.recordEvent(
-      "contextservices.quicksuggest",
-      "opt_in_dialog",
-      params.choice
-    );
-
     return true;
   }
 
   /**
-   * Updates state based on whether quick suggest and its features are enabled.
+   * Updates all features.
    */
   #updateAll() {
     // IMPORTANT: This method is a `NimbusFeatures.urlbar.onUpdate()` callback,
@@ -526,20 +449,13 @@ class _QuickSuggest {
     // for a urlbar Nimbus variable.
 
     // Update features.
-    for (let feature of Object.values(this.#features)) {
+    for (let feature of this.#featuresByName.values()) {
       feature.update();
     }
-
-    // Update state related to quick suggest as a whole.
-    let enabled = lazy.UrlbarPrefs.get("quickSuggestEnabled");
-    Services.telemetry.setEventRecordingEnabled(
-      TELEMETRY_EVENT_CATEGORY,
-      enabled
-    );
   }
 
   // Maps from Suggest feature class names to feature instances.
-  #features = {};
+  #featuresByName = new Map();
 
   // Maps from Merino provider names to Suggest feature instances.
   #featuresByMerinoProvider = new Map();
@@ -547,8 +463,8 @@ class _QuickSuggest {
   // Maps from Rust suggestion types to Suggest feature instances.
   #featuresByRustSuggestionType = new Map();
 
-  // Set of feature instances that manage Rust suggestion types.
-  #rustFeatures = new Set();
+  // Maps from ML intent strings to Suggest feature instances.
+  #featuresByMlIntent = new Map();
 
   // Maps from preference names to the `Set` of feature instances they enable.
   #featuresByEnablingPrefs = new Map();

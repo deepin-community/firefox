@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = Отклонить
     .secondarybuttonaccesskey = л
 appmenu-update-restart-message2 = Загрузите последнюю версию { -brand-shorter-name }. Открытые вкладки и окна будут восстановлены.
+appmenu-theme-installed =
+    .secondarybuttonlabel = Отменить
+    .secondarybuttonaccesskey = Г
 appmenu-update-other-instance =
     .label = { -brand-shorter-name } не может автоматически обновиться до последней версии.
     .buttonlabel = Всё равно обновить { -brand-shorter-name }
@@ -37,7 +40,6 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = Не сейчас
     .secondarybuttonaccesskey = е
 appmenu-update-other-instance-message = Доступно новое обновление { -brand-shorter-name }, но его нельзя установить, так как запущена другая копия { -brand-shorter-name }. Закройте её, чтобы продолжить обновление, или выберите обновление в любом случае (другая копия может работать неправильно, пока вы её не перезапустите).
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = Хорошо
     .buttonaccesskey = ш
@@ -45,7 +47,6 @@ appmenu-addon-post-install-message3 = Управляйте своими допо
 appmenu-addon-post-install-incognito-checkbox =
     .label = Разрешить этому расширению работать в приватных окнах
     .accesskey = ш
-
 appmenu-new-tab-controlled-changes =
     .label = Ваша страница «Новая вкладка» была изменена.
     .buttonlabel = Сохранить изменения

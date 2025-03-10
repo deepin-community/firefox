@@ -135,7 +135,7 @@ spotlight-peace-mind-header = 저희가 사용자를 보호합니다
 spotlight-peace-mind-body = 매달 { -brand-short-name }는 사용자당 평균 3,000개 이상의 추적기를 차단합니다. 특히 추적기와 같은 개인 정보를 침해하는 요소가 사용자와 좋은 인터넷 사이에 있어서는 안 되기 때문입니다.
 spotlight-pin-primary-button =
     { PLATFORM() ->
-        [macos] Dock에 넣기
+        [macos] 독에 넣기
        *[other] 작업 표시줄에 고정
     }
 spotlight-pin-secondary-button = 나중에
@@ -243,6 +243,9 @@ device-migration-fxa-spotlight-older-device-primary-button = 계정 만들기
 device-migration-fxa-spotlight-getting-new-device-header-2 = 미래의 새 기기?
 device-migration-fxa-spotlight-getting-new-device-body-2 = 새 기기를 시작할 때 몇 가지 간단한 단계를 따르면 북마크, 기록, 비밀번호를 가져올 수 있습니다.
 device-migration-fxa-spotlight-getting-new-device-primary-button = 내 데이터를 백업하는 방법
+device-migration-fxa-spotlight-sync-header = 빠짐없이 탐색하기
+device-migration-fxa-spotlight-sync-body = 북마크 및 비밀번호와 같은 모든 중요한 정보를 암호화하여 동기화하세요. { -brand-product-name }를 사용하는 곳이면 어디에서나 모든 것을 가져올 수 있습니다.
+device-migration-fxa-spotlight-sync-primary-button = 시작하기
 
 ## Set as Default PDF Reader Infobar
 
@@ -279,3 +282,61 @@ tail-fox-spotlight-title = 성가신 추적기로부터 벗어나세요
 tail-fox-spotlight-subtitle = 귀찮은 광고 추적기와 작별하고 더 안전하고 빠른 인터넷 경험을 누리세요.
 tail-fox-spotlight-primary-button = { -brand-short-name }로 내 링크 열기
 tail-fox-spotlight-secondary-button = 나중에
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>구 버전의 { -brand-short-name }는 2025년 1월 14일에 문제가 생기기 시작할 수 있습니다.</strong>
+root-certificate-succession-infobar-march-message = <strong>2025년 3월 14일 이후에 { -brand-short-name }를 계속 사용하기 위한 업데이트</strong>
+root-certificate-succession-infobar-link = 업데이트가 필요한 이유?
+root-certificate-succession-infobar-primary-button =
+    .label = 지금 업데이트
+    .accesskey = U
+root-certificate-succession-infobar-secondary-button =
+    .label = 나중에
+    .accesskey = L
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = 중요한 { -brand-short-name } 업데이트를 놓치셨습니다
+root-certificate-windows-background-notification-subtitle = 업데이트를 하지 않으면 브라우저의 일부가 작동을 멈춥니다. 지금이 최신 보호 기능과 기능을 사용하기에 좋은 때입니다.
+root-certificate-windows-background-notification-learn-more-button = 더 알아보기
+root-certificate-windows-background-notification-update-button = { -brand-short-name } 업데이트
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = 닫기
+    .aria-label = 닫기
+fxa-menu-message-sign-up-button = 가입
+fxa-menu-message-sync-devices-primary-text = 모든 기기 동기화
+fxa-menu-message-sync-devices-secondary-text = { -brand-short-name }를 사용하는 모든 곳에서 북마크나 비밀번호와 같은 정보를 즉시 얻으세요.
+fxa-menu-message-sync-devices-collapsed-text = 모든 기기 동기화
+fxa-menu-message-backup-data-primary-text = 브라우저 데이터 백업
+fxa-menu-message-backup-data-secondary-text = 모든 기기의 북마크, 비밀번호 및 기타 정보를 자동으로 보호합니다.
+fxa-menu-message-backup-data-collapsed-text = 브라우저 데이터 백업
+fxa-menu-message-backup-sync-primary-text = 데이터를 안전하게 동기화된 상태로 유지하세요
+fxa-menu-message-backup-sync-secondary-text = Sync는 대부분의 데이터를 백업하므로 { -brand-short-name }를 사용하는 모든 곳에서 접근할 수 있습니다.
+fxa-menu-message-backup-sync-collapsed-text = 데이터 동기화 및 백업
+fxa-menu-message-mobile-primary-text = 탭을 휴대폰에 보내기
+fxa-menu-message-mobile-secondary-text = 모바일 기기와 탭을 동기화할 때 중단한 부분부터 즉시 다시 시작할 수 있습니다.
+fxa-menu-message-mobile-collapsed-text = 휴대폰과 동기화
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = 환영합니다
+multi-cta-fox-doodle-set-default-checkbox = { -brand-short-name }를 기본 브라우저로 설정
+multi-cta-fox-doodle-pin-startmenu-checkbox = { -brand-short-name }를 시작 메뉴에 고정
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] { -brand-short-name }를 독에 넣기
+       *[other] { -brand-short-name }를 작업 표시줄에 고정
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = 탐색 시작
+multi-cta-fox-doodle-main-browser-primary-button-label = { -brand-short-name }를 기본 브라우저로 설정
+multi-cta-fox-doodle-quick-reminder-subtitle = 개인 정보 보호에 중점을 두는 브라우저를 클릭 한 번으로 계속 사용할 수 있습니다.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] 개인 정보 보호에 중점을 두는 브라우저를 단 한 번의 클릭으로 사용하세요. 링크를 여는 기본 브라우저를 { -brand-short-name }로 설정하고 독에 넣으세요.
+       *[other] 개인 정보 보호에 중점을 두는 브라우저를 단 한 번의 클릭으로 사용하세요. 링크를 여는 기본 브라우저를 { -brand-short-name }로 설정하고 작업 표시줄에 고정하세요.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = 개인 정보 보호에 중점을 두는 브라우저를 단 한 번의 클릭으로 사용하세요. 링크를 여는 기본 브라우저를 { -brand-short-name }로 설정하고 작업 표시줄과 시작 메뉴에 고정하세요.

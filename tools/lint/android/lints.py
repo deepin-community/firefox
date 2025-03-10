@@ -280,13 +280,16 @@ def report_gradlew(config, fix, subdir, **lintargs):
     except FileNotFoundError:
         pass
 
+    ktlint_file = "ktlint.json"
+    if fix:
+        ktlint_file = "ktlintFormat.json"
     try:
         issues = json.load(
             open(
                 os.path.join(
                     reports,
                     "ktlint",
-                    "ktlint.json",
+                    ktlint_file,
                 ),
                 "rt",
             )
@@ -410,9 +413,6 @@ def lint(config, **lintargs):
         extra_args=lintargs.get("extra_args") or [],
     )
 
-    # It's surprising that this is the App variant name, but this is "withoutGeckoBinariesDebug"
-    # right now and the GeckoView variant name is "withGeckoBinariesDebug".  This will be addressed
-    # as we unify variants.
     path = os.path.join(
         lintargs["topobjdir"],
         "gradle/build/mobile/android/geckoview/reports",

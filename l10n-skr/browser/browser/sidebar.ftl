@@ -4,6 +4,10 @@
 
 menu-view-genai-chat =
     .label = اے آئی چیٹ بوٹ
+menu-view-review-checker =
+    .label = نظرثانی پڑتالݨ آلا
+sidebar-options-menu-button =
+    .title = مینیو کھولو
 
 ## Labels for sidebar history panel
 
@@ -50,12 +54,14 @@ sidebar-horizontal-tabs =
     .label = افقی ٹیباں
 sidebar-customize-tabs-header =
     .label = ٹیب ترتیباں
-sidebar-customize-settings-header =
-    .label = سائیڈ بار ترتیباں
-sidebar-visibility-always-show =
-    .label = ہمیشاں ݙکھاؤ
-sidebar-visibility-hide-sidebar =
-    .label = سائیڈ بار لکاؤ
+sidebar-customize-button-header =
+    .label = سائیڈ بار بٹݨ
+sidebar-customize-position-header =
+    .label = سائیڈ بار مقام
+sidebar-visibility-setting-always-show =
+    .label = سائیڈ بار کھنڈاؤ تے ولھیٹو
+sidebar-visibility-setting-hide-sidebar =
+    .label = سائیڈ بار ݙکھاؤ تے لُکاؤ
 
 ## Labels for sidebar context menu items
 
@@ -95,6 +101,17 @@ sidebar-menu-bookmarks-label =
     .label = نشانیاں
 sidebar-menu-customize-label =
     .label = سائیڈ بار مرضی مطابق بݨاؤ
+sidebar-menu-review-checker-label =
+    .label = نظرثانی پڑتالݨ آلا
+
+## Tooltips for sidebar menu items.
+
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
 
 ## Headings for sidebar menu panels.
 
@@ -104,6 +121,14 @@ sidebar-menu-history-header =
     .heading = تاریخ
 sidebar-menu-syncedtabs-header =
     .heading = ٻیاں ڈیوائساں کنوں ٹیباں
+sidebar-panel-header-close-button =
+    .tooltiptext = بند کرو
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = سائیڈ بار مرضی مطابق بݨاؤ
+sidebar-history-title = تاریخ
+sidebar-syncedtabs-title = ٻیاں ڈیوائساں کنوں ٹیباں
 
 ## Context for closing synced tabs when hovering over the items
 
@@ -113,3 +138,29 @@ sidebar-menu-syncedtabs-header =
 #   $deviceName (String) - the name of the device the user is closing a tab for
 synced-tabs-context-close-tab-title =
     .title = { $deviceName } تے ٹیب بند کرو
+show-sidebars =
+    .tooltiptext = سائیڈ باراں ݙکھاؤ
+    .label = بغلی بار
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = سائیڈ بار کھنڈاؤ ({ $shortcut })
+    .label = بغلی بار
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = سائیڈ بار ولھیٹو ({ $shortcut })
+    .label = بغلی بار
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = سائیڈ بار ݙکھاؤ ({ $shortcut })
+    .label = بغلی بار
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = سائیڈ بار لکاؤ ({ $shortcut })
+    .label = بغلی بار

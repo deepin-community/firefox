@@ -108,8 +108,11 @@ appmenu-fxa-sync-and-save-data2 = Sinhronizēt un saglabāt datus
 appmenu-fxa-signed-in-label = Pierakstīties
 appmenu-fxa-setup-sync =
     .label = Ieslēgt sinhronizāciju…
+appmenu-fxa-setup-sync-new = Ieslēgt
 appmenuitem-save-page =
     .label = Saglabāt lapu kā…
+appmenuitem-fxa-sync-off-title = Sinhronizācija ir izslēgta
+appmenuitem-fxa-sync-off-description = Aizsargājiet un piekļūstiet savām grāmatzīmēm, parolēm un vēl no jebkuras vietas.
 
 ## What's New panel in App menu.
 
@@ -277,5 +280,21 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Saņemt brīdinājumus par datu noplūdēm
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Maskējiet savu īsto e-pastu un tālruni
+appmenuitem-services-relay-description = Atvērt e-pasta masku informācijas paneli
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Aizsargājiet savas tiešsaistes aktivitātes
+appmenu-services-header = Mani pakalpojumi
+appmenu-other-protection-header = Izmēģiniet citus aizsardzības rīkus no { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-profiles = Profili
+appmenu-other-profiles = Citi profili
+appmenu-manage-profiles =
+    .label = Pārvaldīt profilus
+appmenu-create-profile =
+    .label = Jauns profils
+appmenu-edit-profile =
+    .aria-label = Rediģēt profilu
+appmenu-profiles-2 =
+    .label = Profili

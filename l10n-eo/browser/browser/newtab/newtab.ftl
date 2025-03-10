@@ -8,11 +8,18 @@
 newtab-page-title = Nova langeto
 newtab-settings-button =
     .title = Personecigi la paĝon por novaj langetoj
+newtab-personalize-settings-icon-label =
+    .title = Personecigi la paĝon por novaj langetoj
+    .aria-label = Agordoj
+newtab-settings-dialog-label =
+    .aria-label = Agordoj
 newtab-personalize-icon-label =
     .title = Personecigi novan langeton
     .aria-label = Personecigi novan langeton
 newtab-personalize-dialog-label =
     .aria-label = Personcecigi
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Konservi en { -pocket-brand-name }
 newtab-menu-delete-pocket = Forigi el { -pocket-brand-name }
 newtab-menu-archive-pocket = Arĥivi en { -pocket-brand-name }
 newtab-menu-show-privacy-info = Niaj patronoj kaj via privateco
+newtab-menu-about-fakespot = Pri { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Bloki
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Ne plu sekvi temon
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -229,6 +243,8 @@ newtab-pocket-cta-button = Instali { -pocket-brand-name }
 newtab-pocket-cta-text = Konservu viajn ŝatatajn artikolojn en { -pocket-brand-name }, kaj stimulu vian menson per ravaj legaĵoj.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } estas parto de la familio { -brand-product-name }
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Konservi
 newtab-pocket-saved = Konservitaj
 
@@ -240,6 +256,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Tio ne interesas min
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Dankon, viaj komentoj helpos nin plibonigi vian informan fonton.
 newtab-toast-thumbs-up-or-down = Dankon, viaj komentoj helpos nin plibonigi vian informan fonton.
 newtab-toast-dismiss-button =
     .title = Ignori
@@ -293,6 +312,12 @@ newtab-custom-settings = Administri aliajn agordojn
 
 newtab-wallpaper-title = Ekranfonoj
 newtab-wallpaper-reset = Reŝargi normajn valorojn
+newtab-wallpaper-upload-image = Alŝuti bildon
+newtab-wallpaper-custom-color = Elekti koloron
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = La grando de la bildo superas la maksimuman grandon de dosiero, kiu estas { $file_size }MO. Bonvolu provi alŝuti pli etan dosieron.
+newtab-wallpaper-error-file-type = Ni ne povis alŝuti vian dosieron. Bonvolu provi denove per alia tipo de dosiero.
 newtab-wallpaper-light-red-panda = Ruĝa pando
 newtab-wallpaper-light-mountain = Blanka monto
 newtab-wallpaper-light-sky = Ĉielo kun purpuraj kaj rozkoloraj nuboj
@@ -305,6 +330,8 @@ newtab-wallpaper-dark-panda = Ruĝa pando kaŝita en arbaro
 newtab-wallpaper-dark-sky = Pejzaĝo urba kun nokta ĉielo
 newtab-wallpaper-dark-mountain = Pejzaĝo monta
 newtab-wallpaper-dark-city = Purpura pejzaĝo urba
+newtab-wallpaper-dark-fox-anniversary = Vulpo sur pavimo proksime de arbaro
+newtab-wallpaper-light-fox-anniversary = Vulpo sur herbejo kun nebula pejzaĝo monta
 
 ## Solid Colors
 
@@ -334,8 +361,12 @@ newtab-wallpaper-abstract-purple = Purpuraj formoj
 newtab-wallpaper-abstract-orange = Oranĝaj formoj
 newtab-wallpaper-gradient-orange = Gamo oranĝa kaj roza
 newtab-wallpaper-abstract-blue-purple = Bluaj kaj purpuraj formoj
+newtab-wallpaper-abstract-white-curves = Blanka kun ombritaj kurboj
+newtab-wallpaper-abstract-purple-green = Gradiento luma purpura kaj verda
+newtab-wallpaper-abstract-blue-purple-waves = Bluaj kaj purpuraj ondaj formoj
+newtab-wallpaper-abstract-black-waves = Nigraj ondaj formoj
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Fotoj
 newtab-wallpaper-beach-at-sunrise = Strando dum suneliro
@@ -344,6 +375,12 @@ newtab-wallpaper-storm-sky = Ŝtorma ĉielo
 newtab-wallpaper-sky-with-pink-clouds = Ĉielo kun rozkoloraj nuboj
 newtab-wallpaper-red-panda-yawns-in-a-tree = Ruĝa pando oscedas sur arbo
 newtab-wallpaper-white-mountains = Blankaj montoj
+newtab-wallpaper-hot-air-balloons = Plurkoloraj balonoj dum tago
+newtab-wallpaper-starry-canyon = Blua steloplena nokto
+newtab-wallpaper-suspension-bridge = Griza foto de pendponto dum tago
+newtab-wallpaper-sand-dunes = Blankaj sablomontetoj
+newtab-wallpaper-palm-trees = Konturo de kokosaj palmarboj dum sunsubiro
+newtab-wallpaper-forest-trees = Arboj kovritaj de nebulo
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -359,6 +396,19 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Ĉiela
+newtab-wallpaper-celestial-lunar-eclipse = Luneklipso
+newtab-wallpaper-celestial-earth-night = Nokta foto el malalta Tera orbito
+newtab-wallpaper-celestial-starry-sky = Steloplena ĉielo
+newtab-wallpaper-celestial-eclipse-time-lapse = Tempopasa filmado de luneklipso
+newtab-wallpaper-celestial-black-hole = Ilustraĵo de galaksio kun nigra truo
+newtab-wallpaper-celestial-river = Satelita bildo de rivero
+
 ## New Tab Weather
 
 # Variables:
@@ -369,6 +419,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Patronita
 newtab-weather-menu-change-location = Ŝanĝi lokon
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Serĉi lokon
+    .aria-label = Serĉi lokon
 newtab-weather-change-location-search-input = Serĉi lokon
 newtab-weather-menu-weather-display = Montro de vetero
 # Display options are:
@@ -427,3 +480,45 @@ newtab-topic-selection-button-maybe-later = Eble poste
 newtab-topic-selection-privacy-link = Pli da informo pri kiel ni protektas kaj administras datumojn
 newtab-topic-selection-button-update-interests = Ĝisdatigi viajn interesojn
 newtab-topic-selection-button-pick-interests = Elekti viajn interesojn
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Sekvi
+newtab-section-following-button = Sekvata
+newtab-section-unfollow-button = Ne plu sekvi
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Bloki
+newtab-section-blocked-button = Blokita
+newtab-section-unblock-button = Malbloki
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = Ĉu vi certe volas bloki tiun ĉi sekcion?
+newtab-section-confirm-block-section-p2 = Blokitaj sekcioj ne plu aperos en via informa fonto
+newtab-section-block-section-button = Bloki tiun ĉi sekcion
+newtab-section-cancel-button = Ne nun
+newtab-section-confirm-block-topic-p1 = Ĉu vi certe volas bloki tiun ĉi temon?
+newtab-section-confirm-block-topic-p2 = Blokitaj temoj ne plu aperos en via informa fonto
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = Bloki { $topic }
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = Temoj
+newtab-section-manage-topics-button-v2 =
+    .label = Administri temojn
+newtab-section-mangage-topics-followed-topics = Sekvataj
+newtab-section-mangage-topics-button =
+    .label = Sekvataj kaj blokitaj temoj
+newtab-section-mangage-topics-followed-topics-subtitle = Sekvataj temoj
+newtab-section-mangage-topics-followed-topics-empty-state = Vi ankoraŭ sekvas neniun temon.
+newtab-section-mangage-topics-blocked-topics = Blokitaj
+newtab-section-mangage-topics-blocked-topics-subtitle = Blokitaj temoj
+newtab-section-mangage-topics-blocked-topics-empty-state = Vi ankoraŭ blokas neniun temon.

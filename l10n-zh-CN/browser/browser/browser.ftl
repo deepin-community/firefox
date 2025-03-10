@@ -51,6 +51,70 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = { -brand-shortcut-name } 隐私浏览
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } 隐私浏览
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } 隐私浏览
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — { -brand-full-name } 隐私浏览
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — { -brand-full-name } 隐私浏览
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — 隐私浏览
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } 隐私浏览
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — 隐私浏览
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — 隐私浏览
+# This gets set as the initial title, and is overridden as soon as we start
+# updating the titlebar based on loaded tabs or private browsing state.
+# This should match the `data-title-default` attribute in both
+# `browser-main-window` and `browser-main-window-mac`.
+browser-main-window-default-title = { -brand-full-name }
 
 ##
 
@@ -309,6 +373,10 @@ quickactions-cmd-viewsource = 查看源代码, 源代码, view source, source
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = 详细了解“快捷操作”
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = 按 Tab 键选择：
 
 ## Bookmark Panel
 
@@ -545,8 +613,6 @@ urlbar-page-action-button =
     .tooltiptext = 页面操作
 urlbar-revert-button =
     .tooltiptext = 在地址栏中显示网址
-urlbar-show-page-actions-button =
-    .tooltiptext = 显示所有页面操作
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -601,12 +667,61 @@ urlbar-result-action-copy-to-clipboard = 复制
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+# The string returned for an undefined calculator result such as when dividing by 0
+urlbar-result-action-undefined-calculator-result = 未定义
+# Shows the result of a formula expression being calculated, to a maximum of 9 significant
+# digits. The last = sign will be shown as part of the result (e.g. "= 2").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-2 = = { NUMBER($result, maximumSignificantDigits: 9) }
+# Shows the result of a formula expression being calculated, in scientific notation.
+# The last = sign will be shown as part of the result (e.g. "= 1.0e17").
+# Variables
+#  $result (String): the string representation for a result in scientific notation
+#  (e.g. "1.0e17").
+urlbar-result-action-calculator-result-scientific-notation = = { $result }
 
 ## Strings used for buttons in the urlbar
 
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = 使用 { $engine } 搜索
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - 搜索{ $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - 使用 { $engine } 搜索
+urlbar-searchmode-dropmarker =
+    .tooltiptext = 选取搜索引擎
+urlbar-searchmode-bookmarks =
+    .label = 书签
+urlbar-searchmode-tabs =
+    .label = 标签页
+urlbar-searchmode-history =
+    .label = 历史记录
+urlbar-searchmode-actions =
+    .label = 操作
+urlbar-searchmode-exit-button =
+    .tooltiptext = 关闭
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = 本次搜索使用：
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = 搜索设置
+urlbar-searchmode-popup-search-settings = 搜索设置
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }，选取搜索引擎
+    .tooltiptext = { $engine }，选取搜索引擎
+urlbar-searchmode-button-no-engine =
+    .label = 未选择快捷方式，请选择
+    .tooltiptext = 未选择快捷方式，请选择
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -616,6 +731,12 @@ urlbar-result-action-search-bookmarks = 搜索书签
 urlbar-result-action-search-history = 搜索历史记录
 urlbar-result-action-search-tabs = 搜索标签页
 urlbar-result-action-search-actions = 搜索操作
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = 切换到“{ $group }”
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = 打开“{ $group }”
 
 ## Labels shown above groups of urlbar results
 
@@ -929,6 +1050,9 @@ data-reporting-notification-button =
     .accesskey = C
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = 隐私浏览
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = 隐私浏览
 # Tooltip for the indicator shown in the window titlebar when content analysis is active.
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
@@ -937,7 +1061,7 @@ content-analysis-indicator-tooltip =
 content-analysis-panel-title = 数据保护
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
-content-analysis-panel-text = 您的组织使用“{ $agentName }”进行数据泄露防护。<a data-l10n-name="info">详细了解</a>
+content-analysis-panel-text-styled = 您的组织使用 <b>{ $agentName }</b> 进行数据泄露防护。<a data-l10n-name="info">详细了解</a>
 
 ## Unified extensions (toolbar) button
 
@@ -960,6 +1084,15 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         扩展
         已禁用部分扩展
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = 扩展
+    .tooltiptext =
+        扩展
+        部分扩展已被禁用
 
 ## Private browsing reset button
 
@@ -1000,6 +1133,7 @@ firefox-relay-offer-legal-notice = 点击“使用马甲邮箱”，即表示您
 popup-notification-addon-install-unsigned =
     .value = （未验证）
 popup-notification-xpinstall-prompt-learn-more = 详细了解如何安全地安装附加组件
+popup-notification-xpinstall-prompt-block-url = 查阅详情
 # Note: Access key is set to P to match "Private" in the corresponding localized label.
 popup-notification-addon-privatebrowsing-checkbox =
     .label = 在隐私窗口中运行

@@ -24,6 +24,7 @@
 #include "nsStreamUtils.h"
 #include "nsStringStream.h"
 #include "nsProxyRelease.h"
+#include "ThirdPartyUtil.h"
 
 #include "mozilla/ErrorResult.h"
 #include "mozilla/dom/BindingDeclarations.h"
@@ -42,7 +43,7 @@
 #include "mozilla/dom/Response.h"
 #include "mozilla/dom/ScriptSettings.h"
 #include "mozilla/dom/URLSearchParams.h"
-#include "mozilla/glean/GleanMetrics.h"
+#include "mozilla/glean/NetwerkMetrics.h"
 #include "mozilla/net/CookieJarSettings.h"
 
 #include "BodyExtractor.h"
@@ -667,7 +668,18 @@ already_AddRefed<Promise> FetchRequest(nsIGlobalObject* aGlobal,
       }
       principal = doc->NodePrincipal();
       cookieJarSettings = doc->CookieJarSettings();
+      // fetch the thirdparty context from the document
 
+      ThirdPartyUtil* thirdPartyUtil = ThirdPartyUtil::GetInstance();
+      if (!thirdPartyUtil) {
+        return nullptr;
+      }
+      if (thirdPartyUtil) {
+        bool thirdParty = false;
+        Unused << thirdPartyUtil->IsThirdPartyWindow(window->GetOuterWindow(),
+                                                     nullptr, &thirdParty);
+        ipcArgs.isThirdPartyContext() = thirdParty;
+      }
     } else {
       principal = aGlobal->PrincipalOrNull();
       if (NS_WARN_IF(!principal)) {
@@ -706,6 +718,22 @@ already_AddRefed<Promise> FetchRequest(nsIGlobalObject* aGlobal,
     // Dispatch fetch to the parent process main thread directly for that case.
     // For child process, dispatch fetch op to the parent.
     if (StaticPrefs::dom_workers_pFetch_enabled() && !XRE_IsParentProcess()) {
+      if (internalRequest->GetKeepalive()) {
+        uint64_t bodyLength = internalRequest->BodyLength() > 0
+                                  ? internalRequest->BodyLength()
+                                  : 0;
+
+        // We differ from the fetch spec and main thread fetch here.
+        // We do not limit the keepalive size per loadgroup(but instead per
+        // request). This is due to the fact that loadgroup is not accessible on
+        // the worker thread and we dont want to introduce async to introduce
+        // this check.
+        if (bodyLength > FETCH_KEEPALIVE_MAX_SIZE) {
+          p->MaybeRejectWithTypeError<MSG_FETCH_FAILED>();
+          return p.forget();
+        }
+      }
+
       RefPtr<FetchChild> actor =
           FetchChild::CreateForWorker(worker, p, signalImpl, observer);
       if (!actor) {
@@ -758,6 +786,8 @@ already_AddRefed<Promise> FetchRequest(nsIGlobalObject* aGlobal,
       }
 
       ipcArgs.isThirdPartyContext() = worker->IsThirdPartyContext();
+
+      ipcArgs.isOn3PCBExceptionList() = worker->IsOn3PCBExceptionList();
 
       ipcArgs.isWorkerRequest() = true;
 

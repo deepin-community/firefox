@@ -129,7 +129,7 @@ shopping-review-reliability-label =
 
 shopping-analysis-explainer-label =
     .label = Πώς προσδιορίζουμε την ποιότητα των κριτικών
-shopping-analysis-explainer-intro2 = Χρησιμοποιούμε τεχνολογία AI από το { -fakespot-brand-full-name } για να ελέγξουμε την αξιοπιστία των κριτικών προϊόντων. Αυτό θα σας βοηθήσει να αξιολογήσετε μόνο την ποιότητα των κριτικών, όχι την ποιότητα των προϊόντων.
+shopping-analysis-explainer-intro2 = Χρησιμοποιούμε τεχνολογία τεχνητής νοημοσύνης από το { -fakespot-brand-full-name } για να ελέγξουμε την αξιοπιστία των κριτικών προϊόντων. Αυτό θα σας βοηθήσει να αξιολογήσετε μόνο την ποιότητα των κριτικών, όχι την ποιότητα των προϊόντων.
 shopping-analysis-explainer-grades-intro = Αναθέτουμε στις κριτικές κάθε προϊόντος έναν <strong>βαθμό</strong>, από A έως F.
 shopping-analysis-explainer-adjusted-rating-description = Η <strong>αναπροσαρμοσμένη βαθμολογία</strong> βασίζεται μόνο στις κριτικές που πιστεύουμε ότι είναι αξιόπιστες.
 shopping-analysis-explainer-learn-more2 = Μάθετε περισσότερα σχετικά με το <a data-l10n-name="review-quality-url">πώς το { -fakespot-brand-name } προσδιορίζει την ποιότητα των κριτικών</a>.
@@ -187,6 +187,18 @@ shopping-survey-terms-link = Όροι χρήσης
 shopping-survey-thanks =
     .heading = Ευχαριστούμε για τα σχόλιά σας!
 
+## Shopping opted-out survey strings
+## Opt-out survey options are displayed as checkboxes and the user can select one or many.
+
+shopping-survey-opted-out-multiselect-label = Πείτε μας γιατί απενεργοποιήσατε τον έλεγχο κριτικών. Επιλέξτε πολλαπλούς λόγους εάν χρειάζεται.
+shopping-survey-thanks-title = Ευχαριστούμε για τα σχόλιά σας!
+shopping-survey-opted-out-hard-to-understand = Είναι δύσκολο στην κατανόηση
+shopping-survey-opted-out-too-slow = Είναι πολύ αργό
+shopping-survey-opted-out-not-accurate = Δεν είναι ακριβές
+shopping-survey-opted-out-not-helpful = Δεν μου είναι χρήσιμο
+shopping-survey-opted-out-check-myself = Προτιμώ να ελέγχω τις κριτικές μόνος/-η μου
+shopping-survey-opted-out-other = Άλλο
+
 ## Shopping Feature Callout strings.
 ## "price tag" refers to the price tag icon displayed in the address bar to
 ## access the feature.
@@ -226,7 +238,7 @@ shopping-onboarding-dynamic-subtitle-1 = Δείτε πόσο αξιόπιστε�
 # Variables:
 #   $currentSite (str) - The current shopping page name
 shopping-onboarding-single-subtitle = Δείτε πόσο αξιόπιστες είναι οι κριτικές των προϊόντων στο <b>{ $currentSite }</b> πριν αγοράσετε. Ο έλεγχος κριτικών, μια πειραματική δυνατότητα από τo { -brand-product-name }, ενσωματώνεται στο πρόγραμμα περιήγησης.
-shopping-onboarding-body = Με την υποστήριξη του { -fakespot-brand-full-name }, σας βοηθάμε να αποφύγετε τις μεροληπτικές και ψευδείς κριτικές. Το μοντέλο AI μας βελτιώνεται συνεχώς για να σας προστατεύει όσο κάνετε τις αγορές σας. <a data-l10n-name="learn_more">Μάθετε περισσότερα</a>
+shopping-onboarding-body = Με την υποστήριξη του { -fakespot-brand-full-name }, σας βοηθάμε να αποφύγετε τις μεροληπτικές και ψευδείς κριτικές. Το μοντέλο τεχνητής νοημοσύνης μας βελτιώνεται συνεχώς για να σας προστατεύει όσο κάνετε τις αγορές σας. <a data-l10n-name="learn_more">Μάθετε περισσότερα</a>
 shopping-onboarding-opt-in-privacy-policy-and-terms-of-use3 = Επιλέγοντας «{ shopping-onboarding-opt-in-button }», αποδέχεστε την <a data-l10n-name="privacy_policy">πολιτική απορρήτου</a> του { -brand-product-name } και τους <a data-l10n-name="terms_of_use">όρους χρήσης</a> του { -fakespot-brand-name }.
 shopping-onboarding-opt-in-button = Έναρξη δοκιμής
 shopping-onboarding-not-now-button = Όχι τώρα

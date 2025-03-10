@@ -245,6 +245,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Luo tili
 device-migration-fxa-spotlight-getting-new-device-header-2 = Uusi laite tulevaisuudessa?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Noudata muutamia yksinkertaisia ohjeita tuodaksesi kirjanmerkkisi, historiasi ja salasanasi, kun aloitat uuden laitteen käytön.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Kuinka varmuuskopioida omat tiedot
+device-migration-fxa-spotlight-sync-header = Selaa jäämättä mistään paitsi
+device-migration-fxa-spotlight-sync-body = Synkronoi kaikki tärkeät tietosi salauksella, kuten kirjanmerkit ja salasanat. Voit käyttää tietojasi kaikkialla missä käytät { -brand-product-name }ia.
+device-migration-fxa-spotlight-sync-primary-button = Aloita
 
 ## Set as Default PDF Reader Infobar
 
@@ -281,3 +284,61 @@ tail-fox-spotlight-title = Pidä ärsyttävät seuraimet kaukana
 tail-fox-spotlight-subtitle = Sano hyvästit ärsyttäville mainosseuraimille ja asetu turvallisempaan, nopeampaan Internet-kokemukseen.
 tail-fox-spotlight-primary-button = Avaa linkit { -brand-short-name }illa
 tail-fox-spotlight-secondary-button = Ei nyt
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Vanhemmissa { -brand-short-name }in versioissa saattaa ilmetä ongelmia 14. tammikuuta 2025.</strong>
+root-certificate-succession-infobar-march-message = <strong>Päivitä jatkaaksesi { -brand-short-name }in käyttöä 14. maaliskuuta 2025 jälkeen.</strong>
+root-certificate-succession-infobar-link = Miksi minun tarvitsee päivittää?
+root-certificate-succession-infobar-primary-button =
+    .label = Päivitä nyt
+    .accesskey = P
+root-certificate-succession-infobar-secondary-button =
+    .label = Myöhemmin
+    .accesskey = M
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Sinulta jäi väliin tärkeä { -brand-short-name }-päivitys
+root-certificate-windows-background-notification-subtitle = Jotkin selaimen osat lakkaavat toimimasta pian, jos et päivitä. Nyt on hyvä aika hankkia uusimmat suojauksemme ja ominaisuudet.
+root-certificate-windows-background-notification-learn-more-button = Lue lisää
+root-certificate-windows-background-notification-update-button = Päivitä { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Sulje
+    .aria-label = Sulje
+fxa-menu-message-sign-up-button = Rekisteröidy
+fxa-menu-message-sync-devices-primary-text = Synkronoi kaikki laitteesi
+fxa-menu-message-sync-devices-secondary-text = Hyödynnä tietojasi, kuten kirjanmerkkejä ja salasanoja, kaikkialla missä käytät { -brand-short-name }ia.
+fxa-menu-message-sync-devices-collapsed-text = Synkronoi kaikki laitteesi
+fxa-menu-message-backup-data-primary-text = Varmuuskopioi selaimesi tiedot
+fxa-menu-message-backup-data-secondary-text = Suojaa automaattisesti kirjanmerkit, salasanat ja muut tiedot kaikilla laitteillasi.
+fxa-menu-message-backup-data-collapsed-text = Varmuuskopioi selaimen tiedot
+fxa-menu-message-backup-sync-primary-text = Pidä tietosi turvassa ja synkronoituna
+fxa-menu-message-backup-sync-secondary-text = Synkronointi varmuuskopioi suurimman osan tiedoistasi, jotta voit käyttää niitä kaikkialla, missä käytät { -brand-short-name }ia.
+fxa-menu-message-backup-sync-collapsed-text = Synkronoi ja varmuuskopioi tiedot
+fxa-menu-message-mobile-primary-text = Lähetä välilehdet puhelimeesi
+fxa-menu-message-mobile-secondary-text = Jatka heti siitä, mihin jäit, kun synkronoit välilehdet mobiililaitteen kanssa.
+fxa-menu-message-mobile-collapsed-text = Synkronoi puhelimesi kanssa
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Tervetuloa takaisin
+multi-cta-fox-doodle-set-default-checkbox = Aseta { -brand-short-name } oletukseksi
+multi-cta-fox-doodle-pin-startmenu-checkbox = Kiinnitä { -brand-short-name } Käynnistä-valikkoon
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Pidä { -brand-short-name } Dockissa
+       *[other] Kiinnitä { -brand-short-name } tehtäväpalkkiin
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Aloita selaaminen
+multi-cta-fox-doodle-main-browser-primary-button-label = Aseta { -brand-short-name } oletusselaimeksi
+multi-cta-fox-doodle-quick-reminder-subtitle = Tässä on pieni muistutus siitä, että voit pitää suosikkiselaimesi vain yhden napsautuksen päässä.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Pidä yksityisyyteen keskittyvä suosikkiselaimesi vain yhden napsautuksen päässä. Aseta { -brand-short-name } oletusselaimeksi linkkien avaamiseen ja pidä se Dockissa.
+       *[other] Pidä yksityisyyteen keskittyvä suosikkiselaimesi vain yhden napsautuksen päässä. Aseta { -brand-short-name } oletusselaimeksi linkkien avaamiseen ja kiinnitä se tehtäväpalkkiin.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Pidä yksityisyyteen keskittyvä suosikkiselaimesi vain yhden napsautuksen päässä. Aseta { -brand-short-name } oletusselaimeksi linkkien avaamiseen ja kiinnitä se tehtäväpalkkiin sekä Käynnistä-valikkoon.

@@ -83,7 +83,7 @@ cfr-whatsnew-release-notes-link-text = リリースノートをご確認くだ�
 #   $blockedCount (Number) - The total count of blocked trackers. This number will always be greater than 1.
 #   $date (Datetime) - The date we began recording the count of blocked trackers
 cfr-doorhanger-milestone-heading2 =
-    { NUMBER($blockedCount) ->
+    { $blockedCount ->
        *[other] { DATETIME($date, month: "long", year: "numeric") } 以降、{ -brand-short-name } は <b>{ $blockedCount } 個</b>以上のトラッカーをブロックしました！
     }
 cfr-doorhanger-milestone-ok-button = 確認
@@ -237,6 +237,9 @@ device-migration-fxa-spotlight-older-device-primary-button = アカウントを�
 device-migration-fxa-spotlight-getting-new-device-header-2 = 新しい端末に換えようとしていますか？
 device-migration-fxa-spotlight-getting-new-device-body-2 = いくつかの簡単なステップに従って、ブックマークや履歴、パスワードを新しい端末ですぐに使えるようにしましょう。
 device-migration-fxa-spotlight-getting-new-device-primary-button = データをバックアップする手順
+device-migration-fxa-spotlight-sync-header = シームレスにブラウジング
+device-migration-fxa-spotlight-sync-body = 重要なもの (ブックマークやパスワードなど) は暗号化して同期しましょう。{ -brand-product-name } を使っている場所ならどこからでも、すべてにアクセスできます。
+device-migration-fxa-spotlight-sync-primary-button = 開始
 
 ## Set as Default PDF Reader Infobar
 
@@ -273,3 +276,61 @@ tail-fox-spotlight-title = 迷惑なトラッカーを尻尾で振り払いま�
 tail-fox-spotlight-subtitle = 迷惑な広告トラッカーに別れを告げて、安全で高速なインターネットを体験しましょう。
 tail-fox-spotlight-primary-button = { -brand-short-name } でリンクを開く
 tail-fox-spotlight-secondary-button = 後で
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>{ -brand-short-name } の古いバージョンでは 2025 年 1 月 14 日以降に問題が起こる可能性があります。</strong>
+root-certificate-succession-infobar-march-message = <strong>2025 年 3 月 14 日以降も使い続けるには { -brand-short-name } を更新してください。</strong>
+root-certificate-succession-infobar-link = 更新する必要があるのはなぜですか？
+root-certificate-succession-infobar-primary-button =
+    .label = 今すぐ更新
+    .accesskey = U
+root-certificate-succession-infobar-secondary-button =
+    .label = 後で
+    .accesskey = L
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = { -brand-short-name } の重要な更新が適用されていません
+root-certificate-windows-background-notification-subtitle = 更新しない場合、まもなくブラウザーの一部が機能しなくなります。この機会にユーザーを保護する最新機能を手に入れましょう。
+root-certificate-windows-background-notification-learn-more-button = 詳細情報
+root-certificate-windows-background-notification-update-button = { -brand-short-name } を更新
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = 閉じる
+    .aria-label = 閉じる
+fxa-menu-message-sign-up-button = ログイン
+fxa-menu-message-sync-devices-primary-text = すべての端末を同期しましょう
+fxa-menu-message-sync-devices-secondary-text = { -brand-short-name } を使用しているどこからでもあなたの情報 — ブックマークやパスワードなど — へ即座にアクセスできます。
+fxa-menu-message-sync-devices-collapsed-text = すべての端末を同期しましょう
+fxa-menu-message-backup-data-primary-text = ブラウジングデータをバックアップしましょう
+fxa-menu-message-backup-data-secondary-text = すべての端末にあるブックマークやパスワードなどの情報を、自動的に保護します。
+fxa-menu-message-backup-data-collapsed-text = ブラウジングデータをバックアップしましょう
+fxa-menu-message-backup-sync-primary-text = データを安全に同期しましょう
+fxa-menu-message-backup-sync-secondary-text = ほとんどのデータのバックアップを同期して、{ -brand-short-name } を使用しているどこからでもアクセスできるようにしませんか？
+fxa-menu-message-backup-sync-collapsed-text = データの同期とバックアップをしましょう
+fxa-menu-message-mobile-primary-text = タブを携帯端末に送信しましょう
+fxa-menu-message-mobile-secondary-text = タブを携帯端末と同期すれば、中断したところからすぐに再開できます。
+fxa-menu-message-mobile-collapsed-text = 携帯端末と同期しましょう
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = おかえりなさい
+multi-cta-fox-doodle-set-default-checkbox = { -brand-short-name } を既定のブラウザーに設定する
+multi-cta-fox-doodle-pin-startmenu-checkbox = { -brand-short-name } をスタートメニューにピン留めする
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] { -brand-short-name } を Dock に追加する
+       *[other] { -brand-short-name } をタスクバーにピン留めする
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = ブラウジングを開始
+multi-cta-fox-doodle-main-browser-primary-button-label = { -brand-short-name } をメインのブラウザーにする
+multi-cta-fox-doodle-quick-reminder-subtitle = 実は、たったのクリック 1 回でプライバシーを重視するお気に入りのブラウザーを使い続けられるんです。
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] クリック 1 回でプライバシーを重視するお気に入りのブラウザーを使い続けましょう。{ -brand-short-name } をリンクを開く既定のブラウザーに設定したり、Dock に追加したりしませんか。
+       *[other] クリック 1 回でプライバシーを重視するお気に入りのブラウザーを使い続けましょう。{ -brand-short-name } をリンクを開く既定のブラウザーに設定したり、タスクバーにピン留めしたりしませんか。
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = クリック 1 回でプライバシーを重視するお気に入りのブラウザーを使い続けましょう。{ -brand-short-name } をリンクを開く既定のブラウザーに設定したり、タスクバーやスタートメニューにピン留めしたりしませんか。

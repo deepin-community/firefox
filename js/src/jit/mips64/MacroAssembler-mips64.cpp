@@ -765,7 +765,7 @@ void MacroAssemblerMIPS64::ma_push(Register r) {
     r = ScratchRegister;
   }
 
-  as_daddiu(StackPointer, StackPointer, (int32_t) - sizeof(intptr_t));
+  as_daddiu(StackPointer, StackPointer, (int32_t)-sizeof(intptr_t));
   as_sd(r, StackPointer, 0);
 }
 
@@ -1082,7 +1082,7 @@ void MacroAssemblerMIPS64::ma_pop(FloatRegister f) {
 }
 
 void MacroAssemblerMIPS64::ma_push(FloatRegister f) {
-  as_daddiu(StackPointer, StackPointer, (int32_t) - sizeof(double));
+  as_daddiu(StackPointer, StackPointer, (int32_t)-sizeof(double));
   as_sdc1(f, StackPointer, 0);
 }
 
@@ -2187,30 +2187,6 @@ void MacroAssembler::callWithABINoProfiler(const Address& fun, ABIType result) {
 // ===============================================================
 // Move
 
-void MacroAssembler::moveValue(const TypedOrValueRegister& src,
-                               const ValueOperand& dest) {
-  if (src.hasValue()) {
-    moveValue(src.valueReg(), dest);
-    return;
-  }
-
-  MIRType type = src.type();
-  AnyRegister reg = src.typedReg();
-
-  if (!IsFloatingPointType(type)) {
-    boxNonDouble(ValueTypeFromMIRType(type), reg.gpr(), dest);
-    return;
-  }
-
-  FloatRegister scratch = ScratchDoubleReg;
-  FloatRegister freg = reg.fpu();
-  if (type == MIRType::Float32) {
-    convertFloat32ToDouble(freg, scratch);
-    freg = scratch;
-  }
-  boxDouble(freg, dest, scratch);
-}
-
 void MacroAssembler::moveValue(const ValueOperand& src,
                                const ValueOperand& dest) {
   if (src == dest) {
@@ -2522,12 +2498,12 @@ void MacroAssemblerMIPS64Compat::wasmLoadI64Impl(
   }
 
   asMasm().memoryBarrierBefore(access.sync());
+  FaultingCodeOffset fco = asMasm().ma_load(
+      output.reg, address, static_cast<LoadStoreSize>(8 * byteSize),
+      isSigned ? SignExtend : ZeroExtend);
   asMasm().append(access,
                   wasm::TrapMachineInsnForLoad(Scalar::byteSize(access.type())),
-                  FaultingCodeOffset(currentOffset()));
-  asMasm().ma_load(output.reg, address,
-                   static_cast<LoadStoreSize>(8 * byteSize),
-                   isSigned ? SignExtend : ZeroExtend);
+                  fco);
   asMasm().memoryBarrierAfter(access.sync());
 }
 
@@ -2558,12 +2534,12 @@ void MacroAssemblerMIPS64Compat::wasmStoreI64Impl(
   }
 
   asMasm().memoryBarrierBefore(access.sync());
+  FaultingCodeOffset fco = asMasm().ma_store(
+      value.reg, address, static_cast<LoadStoreSize>(8 * byteSize),
+      isSigned ? SignExtend : ZeroExtend);
   asMasm().append(
       access, wasm::TrapMachineInsnForStore(Scalar::byteSize(access.type())),
-      FaultingCodeOffset(currentOffset()));
-  asMasm().ma_store(value.reg, address,
-                    static_cast<LoadStoreSize>(8 * byteSize),
-                    isSigned ? SignExtend : ZeroExtend);
+      fco);
   asMasm().memoryBarrierAfter(access.sync());
 }
 
@@ -2821,7 +2797,18 @@ void MacroAssembler::convertUInt64ToFloat32(Register64 src_, FloatRegister dest,
   bind(&done);
 }
 
-#ifdef ENABLE_WASM_TAIL_CALLS
+void MacroAssembler::flexibleQuotientPtr(
+    Register rhs, Register srcDest, bool isUnsigned,
+    const LiveRegisterSet& volatileLiveRegs) {
+  quotient64(rhs, srcDest, isUnsigned);
+}
+
+void MacroAssembler::flexibleRemainderPtr(
+    Register rhs, Register srcDest, bool isUnsigned,
+    const LiveRegisterSet& volatileLiveRegs) {
+  remainder64(rhs, srcDest, isUnsigned);
+}
+
 void MacroAssembler::wasmMarkCallAsSlow() { mov(ra, ra); }
 
 const int32_t SlowCallMarker = 0x37ff0000;  // ori ra, ra, 0
@@ -2839,6 +2826,5 @@ CodeOffset MacroAssembler::wasmMarkedSlowCall(const wasm::CallSiteDesc& desc,
   wasmMarkCallAsSlow();
   return offset;
 }
-#endif  // ENABLE_WASM_TAIL_CALLS
 
 //}}} check_macroassembler_style

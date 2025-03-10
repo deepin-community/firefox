@@ -89,6 +89,9 @@ shopping-show-less-button = แสดงน้อยลง
 
 shopping-settings-label =
     .label = การตั้งค่า
+shopping-settings-recommendations-toggle2 =
+    .label = แสดงคำแนะนำและเนื้อหาที่ได้รับการสนับสนุน
+shopping-settings-recommendations-learn-more3 = { -brand-product-name } จะไม่แบ่งปันข้อมูลส่วนตัวของคุณ ดังนั้นคำแนะนำเหล่านี้จะไม่ติดตามคุณไปบนโลกอินเทอร์เน็ต <a data-l10n-name="review-quality-url">เรียนรู้เพิ่มเติม</a>
 shopping-settings-recommendations-toggle =
     .label = แสดงโฆษณาในเครื่องมือตรวจสอบบทวิจารณ์
 shopping-settings-recommendations-learn-more2 = คุณจะเห็นโฆษณาสำหรับผลิตภัณฑ์ที่เกี่ยวข้องเป็นครั้งคราว เราจะโฆษณาเฉพาะผลิตภัณฑ์ที่มีบทวิจารณ์ที่เชื่อถือได้เท่านั้น <a data-l10n-name="review-quality-url">เรียนรู้เพิ่มเติม</a>
@@ -183,6 +186,18 @@ shopping-survey-submit-button-label = ส่ง
 shopping-survey-terms-link = เงื่อนไขการใช้งาน
 shopping-survey-thanks =
     .heading = ขอบคุณสำหรับข้อคิดเห็นของคุณ!
+
+## Shopping opted-out survey strings
+## Opt-out survey options are displayed as checkboxes and the user can select one or many.
+
+shopping-survey-opted-out-multiselect-label = โปรดแจ้งให้เราทราบว่าทำไมคุณจึงปิดเครื่องมือตรวจสอบบทวิจารณ์ ให้เลือกหลายข้อถ้าต้องการ
+shopping-survey-thanks-title = ขอบคุณสำหรับข้อคิดเห็นของคุณ!
+shopping-survey-opted-out-hard-to-understand = มันเข้าใจยาก
+shopping-survey-opted-out-too-slow = มันช้าเกินไป
+shopping-survey-opted-out-not-accurate = มันไม่แม่นยำ
+shopping-survey-opted-out-not-helpful = มันไม่มีประโยชน์กับฉัน
+shopping-survey-opted-out-check-myself = ฉันอยากตรวจสอบบทวิจารณ์ด้วยตัวเองมากกว่า
+shopping-survey-opted-out-other = อื่นๆ
 
 ## Shopping Feature Callout strings.
 ## "price tag" refers to the price tag icon displayed in the address bar to

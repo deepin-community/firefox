@@ -293,6 +293,15 @@ find-more-themes = Shihni më tepër tema
 # used for screen readers.
 addon-options-button =
     .aria-label = Më tepër Mundësi
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 =
+    Zgjerimet dhe temat ju lejojnë të përshtatni { -brand-product-name }-in. Ato mund
+    të përforcojnë privatësinë, të zgjerojnë prodhimtarinë, të përmirësojnë media,
+    të ndryshojnë pamjen e { -brand-product-name }-it dhe shumë të tjera. Këto programe
+    të veckël software-i shpesh zhvillohen nga një palë e tretë. Ja një përzgjedhje që
+    { -brand-product-name } <a data-l10n-name="learn-more-trigger">rekomandon</a> për siguri,
+    funksionim dhe funksione jashtë të zakonshmes.
 
 ## Add-on actions
 
@@ -379,10 +388,14 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = E lejuar në dritare private
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = E lejuar në dritare private
     .aria-label = { addon-badge-private-browsing-allowed2.title }
-addon-detail-private-browsing-help = Nën lejim, zgjerimi do të mund të shohë veprimtaritë tuaja në linjë, teksa shfletoni privatisht. <a data-l10n-name="learn-more">Mësoni më tepër</a>
+addon-detail-private-browsing-help = Po të lejohet, zgjerimi do të mund të shohë veprimtaritë tuaja në internet, teksa shfletoni privatisht. <a data-l10n-name="learn-more">Mësoni më tepër</a>
 addon-detail-private-browsing-allow = Lejoje
 addon-detail-private-browsing-disallow = Mos e Lejo
 # aria-label associated to the private browsing row to help screen readers to announce the group
@@ -418,6 +431,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Ky zgjerim është shqyrtuar për të qenë në pajtim me standardet tona për sigurinë dhe punimin.
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } rekomandon vetëm zgjerime që pajohen me standadet tona mbi sigurinë dhe funksionimin
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Zgjerim zyrtar i ndërtuar nga Mozilla. Plotëson standarde sigurie dhe funksionimi.
+addon-badge-verified3 =
+    .title = Ky zgjerim është shqyrtuar për të qenë në pajtim me standardet tona për sigurinë dhe punimin.
 
 ##
 
@@ -425,6 +446,7 @@ available-updates-heading = Përditësime të Gatshme
 recent-updates-heading = Përditësime Së Fundi
 release-notes-loading = Po ngarkohet…
 release-notes-error = Na ndjeni, por pati një gabim gjatë ngarkimit të shënimeve të versionit.
+addon-permissions-empty2 = Ky zgjerim nuk lyp ndonjë leje.
 addon-permissions-empty = Ky zgjerim nuk lyp ndonjë leje
 addon-permissions-required = Leje të domosdoshme për funksione bazë:
 addon-permissions-optional = Leje opsionale për më tepër funksione:
@@ -474,10 +496,24 @@ details-notification-unsigned-and-disabled-link = Më Tepër Hollësi
 details-notification-unsigned = { $name } s’u verifikua dot për përdorim te { -brand-short-name }. Vazhdoni, por me kujdes.
 details-notification-unsigned2 =
     .message = { $name } s’u verifikua dot për përdorim te { -brand-short-name }. Vazhdoni, por me kujdes.
+details-notification-hard-blocked-extension =
+    .message = Ky zgjerim është bllokuar ngaqë cenon rregullat e Mozilla-s dhe është çaktivizuar.
+details-notification-hard-blocked-other =
+    .message = Kjo shtesë është bllokuar ngaqë cenon rregullat e Mozilla-s dhe është çaktivizuar.
 details-notification-unsigned-link = Më Tepër Hollësi
 details-notification-blocked = { $name } është çaktivizuar për shkak problemesh sigurie ose qëndrueshmërie.
 details-notification-blocked2 =
     .message = { $name } është çaktivizuar për shkak problemesh sigurie ose qëndrueshmërie.
+details-notification-blocked-link2 = Shihni Hollësitë
+details-notification-soft-blocked-extension-disabled =
+    .message = Ky zgjerim është kufizuar ngaqë cenon rregullat e Mozilla-s dhe është çaktivizuar. Mund ta aktivizoni, por kjo mund të jetë e rrezikshme.
+details-notification-soft-blocked-extension-enabled =
+    .message = Ky zgjerim cenon rregullat e Mozilla-s. Përdorimi i tij mund të jetë me rrezik.
+details-notification-soft-blocked-other-disabled =
+    .message = Kjo shtesë është kufizuar ngaqë cenon rregullat e Mozilla-s dhe është çaktivizuar. Mund ta aktivizoni, por kjo mund të jetë e rrezikshme.
+details-notification-soft-blocked-other-enabled =
+    .message = Kjo shtesë cenon rregullat e Mozilla-s. Përdorimi i saj mund të jetë me rrezik.
+details-notification-softblocked-link2 = Shihni Hollësitë
 details-notification-blocked-link = Më Tepër Hollësi
 details-notification-softblocked = { $name } njihet si shkaktare problemesh sigurie ose qëndrueshmërie.
 details-notification-softblocked2 =
@@ -489,9 +525,9 @@ details-notification-gmp-pending2 =
 
 ## Gecko Media Plugins (GMPs)
 
-plugins-gmp-license-info = Të dhëna licence
+plugins-gmp-license-info = Hollësi licence
 plugins-gmp-privacy-info = Informacion Mbi Privatësinë
 plugins-openh264-name = Kodek Videosh OpenH264, i ofruar nga Cisco Systems, Inc.
 plugins-openh264-description = Kjo shtojcë është instaluar automatikisht nga Mozilla për përputhje me specifikimet WebRTC dhe për të bërë të mundur thirrje WebRTC me pajisje që lypin kodekun H.264 për video. Vizitoni http://www.openh264.org/ që të shihni kodin burim të kodekut dhe për të mësuar më tepër rreth sendërtimit të tij.
 plugins-widevine-name = Widevine Content Decryption Module ofruar nga Google Inc.
-plugins-widevine-description = Kjo shtojcë bën të mundur luajtje mediash të fshehtëzuara në përputhje me specifikimet Encrypted Media Extensions. Mediat e fshehtëzuara zakonisht përdoren nga sajtet për t’i mbrojtur kundër kopjimesh lënde media me pagesë. Vizitoni https://www.w3.org/TR/encrypted-media/ për më tepër të dhëna mbi Encrypted Media Extensions.
+plugins-widevine-description = Kjo shtojcë bën të mundur luajtje mediash të fshehtëzuara në përputhje me specifikimet Encrypted Media Extensions. Mediat e fshehtëzuara zakonisht përdoren nga sajtet për t’i mbrojtur kundër kopjimesh lënde media me pagesë. Vizitoni https://www.w3.org/TR/encrypted-media/ për më tepër hollësi mbi Encrypted Media Extensions.

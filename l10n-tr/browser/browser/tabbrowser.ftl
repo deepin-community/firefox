@@ -72,6 +72,16 @@ tabbrowser-unblock-tab-audio-tooltip =
            *[other] { $tabCount } sekmeyi oynat
         }
 
+## Tooltips for tab audio control
+
+tabbrowser-unmute-tab-audio-aria-label =
+    .aria-label = Sekmenin sesini aç
+tabbrowser-mute-tab-audio-aria-label =
+    .aria-label = Sekmenin sesini kapat
+# Used to unblock a tab with audio from autoplaying
+tabbrowser-unblock-tab-audio-aria-label =
+    .aria-label = Sekmeyi oynat
+
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
@@ -84,6 +94,7 @@ tabbrowser-confirm-close-tabs-title =
        *[other] { $tabCount } sekme kapatılsın mı?
     }
 tabbrowser-confirm-close-tabs-button = Sekmeleri kapat
+tabbrowser-ask-close-tabs-checkbox = Birden fazla sekmeyi kapatırken bana sor
 tabbrowser-confirm-close-tabs-checkbox = Birden fazla sekmeyi kapatırken onay iste
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
@@ -110,7 +121,21 @@ tabbrowser-confirm-close-tabs-with-key-title = Pencere kapatılıp { -brand-shor
 tabbrowser-confirm-close-tabs-with-key-button = { -brand-short-name } uygulamasından çık
 # Variables:
 #   $quitKey (String): the text of the keyboard shortcut for quitting.
+tabbrowser-ask-close-tabs-with-key-checkbox = { $quitKey } ile çıkış yaparken bana sor
+# Variables:
+#   $quitKey (String): the text of the keyboard shortcut for quitting.
 tabbrowser-confirm-close-tabs-with-key-checkbox = { $quitKey } ile çıkış yaparken onay iste
+
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
+
+tabbrowser-confirm-close-warn-shortcut-title = { -brand-short-name } uygulamasından çıkılsın mı yoksa sekme mi kapatılsın?
+tabbrowser-confirm-close-windows-warn-shortcut-button =
+    { PLATFORM() ->
+        [windows] { -brand-short-name } uygulamasından çık
+       *[other] { -brand-short-name } uygulamasından çık
+    }
+tabbrowser-confirm-close-tab-only-button = Geçerli sekmeyi kapat
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
@@ -175,6 +200,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
     .label = { $tabCount } sekmenin tümünü listele
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = Sekmenin sesini kapat
@@ -182,3 +210,124 @@ tabbrowser-manager-unmute-tab =
     .tooltiptext = Sekmenin sesini aç
 tabbrowser-manager-close-tab =
     .tooltiptext = Sekmeyi kapat
+# This is for tab groups that have been "saved and closed" (see tab-group-editor-action-save). It does
+# not include "deleted" tab groups (see tab-group-editor-action-delete).
+tabbrowser-manager-closed-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } — Kapalı
+tabbrowser-manager-current-window-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } — Geçerli pencere
+# "Show more" is for showing all open groups from other windows, as well as saved groups. Initially,
+# we only show up to six of these groups.
+tabbrowser-manager-tab-groups-show-more =
+    .label = Daha fazla göster
+
+## Tab Groups
+
+tab-group-editor-title-create = Sekme grubu oluştur
+tab-group-editor-title-edit = Sekme grubunu yönet
+tab-group-editor-name-label = Ad
+tab-group-editor-name-field =
+    .placeholder = Örnek: Alışveriş
+tab-group-editor-cancel =
+    .label = Vazgeç
+    .accesskey = V
+tab-group-editor-color-selector =
+    .aria-label = Sekme grubu rengi
+tab-group-editor-color-selector2-blue = Mavi
+    .title = Mavi
+tab-group-editor-color-selector2-purple = Mor
+    .title = Mor
+tab-group-editor-color-selector2-cyan = Açık mavi
+    .title = Açık mavi
+tab-group-editor-color-selector2-orange = Turuncu
+    .title = Turuncu
+tab-group-editor-color-selector2-yellow = Sarı
+    .title = Sarı
+tab-group-editor-color-selector2-pink = Pembe
+    .title = Pembe
+tab-group-editor-color-selector2-green = Yeşil
+    .title = Yeşil
+tab-group-editor-color-selector2-gray = Gri
+    .title = Gri
+tab-group-editor-color-selector2-red = Kırmızı
+    .title = Kırmızı
+# Variables:
+#  $tabGroupName (String): The name of the tab group. Defaults to the value
+#                          of tab-group-name-default.
+tab-group-description = { $tabGroupName } — Sekme grubu
+tab-group-menu-header = Sekme grupları
+tab-context-unnamed-group =
+    .label = Adsız grup
+tab-group-name-default = Adsız Grup
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
+tab-context-move-tab-to-new-group =
+    .label =
+        { $tabCount ->
+            [1] Sekmeyi yeni gruba ekle
+            [one] Sekmeyi yeni gruba ekle
+           *[other] Sekmeleri yeni gruba ekle
+        }
+    .accesskey = u
+tab-context-move-tab-to-group =
+    .label =
+        { $tabCount ->
+            [1] Sekmeyi gruba ekle
+            [one] Sekmeyi gruba ekle
+           *[other] Sekmeleri gruba ekle
+        }
+    .accesskey = S
+tab-group-editor-action-new-tab =
+    .label = Grupta yeni sekme
+tab-group-editor-action-new-window =
+    .label = Grubu yeni pencereye taşı
+tab-group-editor-action-save =
+    .label = Grubu kaydet ve kapat
+tab-group-editor-action-ungroup =
+    .label = Sekmeleri gruptan çıkar
+tab-group-editor-action-delete =
+    .label = Grubu sil
+tab-group-editor-done =
+    .label = Tamam
+    .accessKey = T
+tab-context-reopen-tab-group =
+    .label = Sekme grubunu yeniden aç
+# Variables:
+#  $groupCount (Number): the number of tab groups that are affected by the action.
+tab-context-ungroup-tab =
+    .label =
+        { $groupCount ->
+            [1] Gruptan kaldır
+            [one] Gruptan kaldır
+           *[other] Gruplardan kaldır
+        }
+    .accesskey = G
+
+## Open/saved tab group context menu
+
+# For a tab group open in any window, clicking this will create a new
+# window and move this tab group to that new window.
+tab-group-context-move-to-new-window =
+    .label = Grubu yeni pencereye taşı
+# For a tab group open in a different window from the one that the
+# user is using to access the tab group menu, move that tab group into the
+# user's current window.
+tab-group-context-move-to-this-window =
+    .label = Grubu bu pencereye taşı
+# For a tab group that is open in any window, close the tab group and
+# do not save it. For a tab group that is closed but saved by the user, clicking
+# this will forget the saved tab group.
+tab-group-context-delete =
+    .label = Grubu sil
+# For a saved tab group that is not open in any window, open the tab group
+# in the user's current window.
+tab-group-context-open-saved-group-in-this-window =
+    .label = Grubu bu pencerede aç
+# For a saved tab group that is not open in any window, create a new window and
+# open the tab group in that window.
+tab-group-context-open-saved-group-in-new-window =
+    .label = Grubu yeni pencerede aç

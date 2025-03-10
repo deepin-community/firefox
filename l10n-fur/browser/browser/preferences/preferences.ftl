@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Mande ai sîts web un segnâl “Do Not Track” che al indiche che no tu vuelis vignî spiât
+do-not-track-removal = No supuartìn plui il segnâl “Do Not Track”
 do-not-track-description2 =
     .label = Mande ai sîts web une richieste “Do Not Track” (no sta spiâ)
     .accesskey = d
@@ -137,6 +138,7 @@ windows-launch-on-login =
     .label = Vierç in automatic { -brand-short-name } cuant che il computer si invie
     .accesskey = V
 windows-launch-on-login-disabled = Cheste opzion e je stade disativade in Windows. Par cambiâle, visite <a data-l10n-name="startup-link">Aplicazions di inviament</a> tes impostazions di sisteme.
+windows-launch-on-login-profile-disabled = Ative cheste preference selezionant “{ profile-manager-use-selected.label }” tal barcon “Sielte dal profîl utent”.
 startup-restore-warn-on-quit =
     .label = Vise cuant che tu jessis dal navigadôr
 disable-extension =
@@ -152,6 +154,17 @@ ctrl-tab-recently-used-order =
     .accesskey = T
 open-new-link-as-tabs =
     .label = Vierç i colegaments in schedin invezit che in gnûfs barcons
+    .accesskey = b
+ask-on-close-multiple-tabs =
+    .label = Domande prime di sierâ plui schedis
+    .accesskey = m
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = Domande prime di jessî cun { $quitKey }
     .accesskey = b
 confirm-on-close-multiple-tabs =
     .label = Conferme prime di sierâ plui schedis
@@ -212,6 +225,16 @@ containers-remove-cancel-button = No sta gjavâ chest contignidôr
 settings-tabs-show-image-in-preview =
     .label = Mostre une imagjin di anteprime cuant che tu passis cul pontadôr sore di une schede
     .accessKey = h
+browser-layout-header = Disposizion dal navigadôr
+browser-layout-horizontal-tabs =
+    .label = Schedis orizontâls
+browser-layout-horizontal-tabs-desc = Visualize te part superiôr dal navigadôr
+browser-layout-vertical-tabs =
+    .label = Schedis verticâls
+browser-layout-vertical-tabs-desc = Visualize in bande, te sbare laterâl
+browser-layout-show-sidebar =
+    .label = Mostre la sbare laterâl
+browser-layout-show-sidebar-desc = Rive intun lamp a segnelibris, schedis dal to telefon, chatbots AI e tant altri cence lâ fûr de videade principâl.
 
 ## General Section - Language & Appearance
 
@@ -568,8 +591,7 @@ home-prefs-shortcuts-description = Sîts che tu salvis o visitis
 home-prefs-shortcuts-by-option-sponsored =
     .label = Scurtis sponsorizadis
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Conseât di { $provider }
@@ -640,6 +662,10 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Mostre i sugjeriments di ricercje tai risultâts de sbare de direzion
     .accesskey = M
+# With this option enabled, on the search results page
+# the URL will be replaced by the search terms in the address bar.
+search-show-search-term-option-2 =
+    .label = Mostre i tiermins di ricercje te sbare de direzion su la pagjine dai risultâts
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -783,6 +809,9 @@ sync-currently-syncing-creditcards = Cjartis di credit
 sync-currently-syncing-payment-methods = Metodis di paiament
 sync-currently-syncing-addons = Components adizionâi
 sync-currently-syncing-settings = Impostazions
+sync-manage-options =
+    .label = Gjestìs sincronizazion…
+    .accesskey = G
 sync-change-options =
     .label = Cambie…
     .accesskey = C
@@ -835,6 +864,13 @@ sync-engine-settings =
     .label = Impostazions
     .tooltiptext = Lis impostazions gjenerâls, di riservatece e sigurece che tu âs cambiât
     .accesskey = s
+sync-choose-what-to-sync-dialog4 =
+    .title = Gjestìs ce sincronizâ sui dispositîfs colegâts
+    .style = min-width: 36em;
+    .buttonlabelaccept = Salve
+    .buttonaccesskeyaccept = S
+    .buttonlabelextra2 = Disconet…
+    .buttonaccesskeyextra2 = D
 
 ## The device name controls.
 
@@ -1281,17 +1317,40 @@ permissions-addon-exceptions =
 collection-header = Racuelte e ûs dai dâts di { -brand-short-name }
 collection-header2 = Racuelte e utilizazion dâts di { -brand-short-name }
     .searchkeywords = telemetrie
+preferences-collection-description = O combatìn par dâti la pussibilitât di sielzi e i tirìn dongje dome i minims dâts necessaris par miorâ { -brand-product-name } par ducj.
+preferences-collection-privacy-notice = Viôt la informative su la riservatece
 collection-description = O cirìn di dâ ai utents la pussibilitât si sielzi e tirâ dongje dome i dâts necessaris par realizâ e miorâ { -brand-short-name } par ducj. O domandìn simpri il permès prime di ricevi informazions personâls.
 collection-privacy-notice = Informative su la riservatece
 collection-health-report-telemetry-disabled = No tu stâs plui permetint a { -vendor-short-name } di caturâ dâts tecnics e di interazion. Ducj i dâts esistents a vignaran eliminâts chi di 30 dîs.
 collection-health-report-telemetry-disabled-link = Plui informazions
+collection-usage-ping =
+    .label = Mande ping di utilizazion zornaliere a { -vendor-short-name }
+    .accesskey = u
+collection-usage-ping-description = Chest al permet a { -vendor-short-name } di stimâ il numar di utents atîfs.
+collection-health-report2 =
+    .label = Mande dâts tecnics e di interazion a { -vendor-short-name }
+    .accesskey = r
 collection-health-report =
     .label = Permet a { -brand-short-name } di inviâ dâts tecnics e di interazion a { -vendor-short-name }
     .accesskey = r
 collection-health-report-link = Plui informazions
+collection-health-report-description = Chest nus jude a miorâ funzionalitâts, prestazions e stabilitât di { -brand-product-name }
+collection-studies2 =
+    .label = Instale e fâs studis
+collection-studies-description = Prove lis funzionalitâts e lis ideis prime che a vegnin publicadis par ducj.
 collection-studies =
     .label = Permet a { -brand-short-name } di instalâ e puartâ indenant studis
 collection-studies-link = Visualize i studis di { -brand-short-name }
+addon-recommendations2 =
+    .label = Permet racomandazions personalizadis su lis estensions
+addon-recommendations-description = Ricêf conseis su estensions che ti permetin di miorâ la tô esperience di navigazion.
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = Te configurazion di cheste version e al è stât disativât l'inviament dai dâts.
+collection-backlogged-crash-reports2 =
+    .label = Mande in automatic lis segnalazions sui colàs
+    .accesskey = c
+collection-backlogged-crash-reports-description = Chest al jude { -vendor-short-name } a diagnosticâ e risolvi problemis cul navigadôr. Lis segnalazions a puedin includi dâts personâi e sensibii.
 addon-recommendations =
     .label = Permet a { -brand-short-name } di rindi personalizâts i conseis di estensions
 addon-recommendations-link = Plui informazions
@@ -1359,6 +1418,8 @@ space-alert-under-5gb-message2 = <strong>{ -brand-short-name } al sta finint il 
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = Modalitât Dome-HTTPS
+httpsonly-description3 = Permet dome conessions siguris ai sîts web. { -brand-short-name } al domandarà prime di stabilî une conession che no je sigure.
+httpsonly-learn-more2 = Cemût che e funzione la modalitât dome-HTTPS
 httpsonly-description = HTTPS al da une conession sigure e cifrade tra { -brand-short-name } e i sîts web che tu visitis. La plui part dai sîts web e supuarte HTTPS e se la modalitât Dome-HTTPS e je ative, alore { -brand-short-name } al doprarà HTTPS in dutis lis conessions.
 httpsonly-description2 = { -brand-short-name } al cree conessions siguris e cifradis ai sîts che tu visitis. Se la modalitât dome-HTTPS e je ative, { -brand-short-name } ti visarà se une conession no je sigure.
 httpsonly-learn-more = Plui informazions
@@ -1368,6 +1429,9 @@ httpsonly-radio-enabled2 =
     .label = Dopre nome HTTPS in ducj i barcons
 httpsonly-radio-enabled-pbm =
     .label = Abilite la modalitât Dome-HTTPS dome intai barcons privâts
+httpsonly-radio-disabled3 =
+    .label = No sta ativâ la modalitât dome-HTTPS
+    .description = Al è pussibil che { -brand-short-name } al inzorni distès cualchi conession
 httpsonly-radio-enabled-pbm2 =
     .label = Dopre dome HTTPS tai barcons privâts
 httpsonly-radio-disabled =

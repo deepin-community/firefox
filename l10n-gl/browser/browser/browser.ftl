@@ -51,6 +51,11 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = Navegación privada de { -brand-shortcut-name }
+# This gets set as the initial title, and is overridden as soon as we start
+# updating the titlebar based on loaded tabs or private browsing state.
+# This should match the `data-title-default` attribute in both
+# `browser-main-window` and `browser-main-window-mac`.
+browser-main-window-default-title = { -brand-full-name }
 
 ##
 
@@ -309,6 +314,10 @@ quickactions-cmd-viewsource = ver o código, código
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = Máis información sobre as accións rápidas
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = Preme o tabulador para seleccionar:
 
 ## Bookmark Panel
 
@@ -550,8 +559,8 @@ urlbar-go-button =
     .tooltiptext = Ir ao enderezo da barra de localización
 urlbar-page-action-button =
     .tooltiptext = Accións da páxina
-urlbar-show-page-actions-button =
-    .tooltiptext = Mostrar todas as accións da páxina
+urlbar-revert-button =
+    .tooltiptext = Mostrar o enderezo da barra de localización
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -572,6 +581,11 @@ urlbar-result-action-search-w-engine = Buscar con { $engine }
 urlbar-result-action-sponsored = Patrocinado
 urlbar-result-action-switch-tab = Cambiar á lapela
 urlbar-result-action-visit = Visitar
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = Cambiar á lapela · <span>{ $container }</span>
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Visitar desde o portapapeis
 # Directs a user to press the Tab key to perform a search with the specified
@@ -601,12 +615,56 @@ urlbar-result-action-copy-to-clipboard = Copiar
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+# The string returned for an undefined calculator result such as when dividing by 0
+urlbar-result-action-undefined-calculator-result = indefinido
+# Shows the result of a formula expression being calculated, in scientific notation.
+# The last = sign will be shown as part of the result (e.g. "= 1.0e17").
+# Variables
+#  $result (String): the string representation for a result in scientific notation
+#  (e.g. "1.0e17").
+urlbar-result-action-calculator-result-scientific-notation = = { $result }
 
 ## Strings used for buttons in the urlbar
 
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = Buscar con { $engine }
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - Buscar { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - Buscar con { $engine }
+urlbar-searchmode-dropmarker =
+    .tooltiptext = Escolle un buscador
+urlbar-searchmode-bookmarks =
+    .label = Marcadores
+urlbar-searchmode-tabs =
+    .label = Lapelas
+urlbar-searchmode-history =
+    .label = Historial
+urlbar-searchmode-actions =
+    .label = Accións
+urlbar-searchmode-exit-button =
+    .tooltiptext = Pechar
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = Esta vez busca con:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = Axustes da busca
+urlbar-searchmode-popup-search-settings = Axustes da busca
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, selecciona un buscador
+    .tooltiptext = { $engine }, selecciona un buscador
+urlbar-searchmode-button-no-engine =
+    .label = Non seleccionaches ningún atallo, escolle un atallo
+    .tooltiptext = Non seleccionaches ningún atallo, escolle un atallo
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -616,6 +674,12 @@ urlbar-result-action-search-bookmarks = Buscar nos marcadores
 urlbar-result-action-search-history = Buscar no historial
 urlbar-result-action-search-tabs = Buscar nas lapelas
 urlbar-result-action-search-actions = Accións de busca
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = Cambiar a { $group }
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = Abrir { $group }
 
 ## Labels shown above groups of urlbar results
 
@@ -642,6 +706,16 @@ urlbar-group-recent-searches =
 #  $engine (String): the name of the search engine providing the trending suggestions
 urlbar-group-trending =
     .label = Tendencia en { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = Non mostrar tendencias de busca
+    .accesskey = N
+urlbar-result-menu-trending-why =
+    .label = Por que estou vendo isto?
+    .accesskey = P
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Grazas polos teus comentarios. Xa non volverás a ver as buscas máis populares.
 
 ## Reader View toolbar buttons
 
@@ -909,6 +983,7 @@ restore-session-startup-suggestion-button = Móstreme como.
 
 ## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
 
+filepicker-blocked-infobar = A túa organización bloqueou o acceso aos ficheiros locais deste ordenador
 
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
@@ -918,6 +993,14 @@ data-reporting-notification-button =
     .accesskey = c
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Navegación privada
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = Navegación privada
+# Tooltip for the indicator shown in the window titlebar when content analysis is active.
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-indicator-tooltip =
+    .tooltiptext = Prevención da perda de datos (DLP) por { $agentName }. Fai clic para obter máis información.
 content-analysis-panel-title = Protección de datos
 
 ## Unified extensions (toolbar) button
@@ -943,6 +1026,15 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Extensións
         Non se permiten algunhas extensións
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = Extensións
+    .tooltiptext =
+        Extensións
+        Algunhas extensións están deshabilitadas
 
 ## Private browsing reset button
 
@@ -983,6 +1075,7 @@ firefox-relay-offer-legal-notice = Ao premer en “Usar máscara de correo”, v
 popup-notification-addon-install-unsigned =
     .value = (Sen comprobar)
 popup-notification-xpinstall-prompt-learn-more = Aprenda máis sobre a instalación de complementos de forma segura
+popup-notification-xpinstall-prompt-block-url = Ver detalles
 
 ## Pop-up warning
 
@@ -1015,6 +1108,7 @@ popup-show-popup-menuitem =
 
 ## File-picker crash notification ("FilePickerCrashed.sys.mjs")
 
+file-picker-failed-open = Non se puido abrir o diálogo de ficheiros de Windows. Non se puido seleccionar ningún ficheiro nin cartafol.
 
 # Button used with file-picker-crashed-save-default. Opens the folder in Windows
 # Explorer, with the saved file selected and in focus.
@@ -1022,3 +1116,6 @@ popup-show-popup-menuitem =
 # The wording here should be consistent with the Windows variant of
 # `downloads-cmd-show-menuitem-2` and similar messages.
 
+file-picker-crashed-show-in-folder =
+    .label = Mostrar no cartafol
+    .accessKey = C

@@ -15,6 +15,14 @@ const { RemoteSettings } = ChromeUtils.importESModule(
   "resource://services-settings/remote-settings.sys.mjs"
 );
 
+const { OSKeyStoreTestUtils } = ChromeUtils.importESModule(
+  "resource://testing-common/OSKeyStoreTestUtils.sys.mjs"
+);
+
+const { OSKeyStore } = ChromeUtils.importESModule(
+  "resource://gre/modules/OSKeyStore.sys.mjs"
+);
+
 const nsLoginInfo = new Components.Constructor(
   "@mozilla.org/login-manager/loginInfo;1",
   Ci.nsILoginInfo,
@@ -137,4 +145,68 @@ async function checkAllLoginsRendered(megalist) {
   }, "Password cards failed to render");
 
   ok(true, `${logins.length} password cards are rendered.`);
+}
+
+async function addLocalOriginLogin() {
+  LoginTestUtils.addLogin({
+    username: "john",
+    password: "pass4",
+    origin: "about:preferences#privacy",
+  });
+}
+
+function waitForNotification(megalist, notificationId) {
+  info(`Wait for notification with id ${notificationId}.`);
+  const notifcationPromise = BrowserTestUtils.waitForCondition(() => {
+    const notifMsgBars = Array.from(
+      megalist.querySelectorAll("notification-message-bar")
+    );
+    return notifMsgBars?.find(
+      notifMsgBar => notifMsgBar.notification.id === notificationId
+    );
+  }, `Notification with id ${notificationId} did not render.`);
+  return notifcationPromise;
+}
+
+function setInputValue(loginForm, fieldElement, value) {
+  info(`Filling ${fieldElement} with value '${value}'.`);
+  const field = loginForm.shadowRoot.querySelector(fieldElement);
+  field.input.value = value;
+  field.input.dispatchEvent(
+    new InputEvent("input", {
+      composed: true,
+      bubbles: true,
+    })
+  );
+}
+
+function getMegalistParent() {
+  const megalistChromeWindow = gBrowser.ownerGlobal[0];
+  return megalistChromeWindow.browsingContext.currentWindowGlobal.getActor(
+    "Megalist"
+  );
+}
+
+async function waitForReauth(callBackFn) {
+  const authExpirationTime = getMegalistParent().authExpirationTime();
+  let reauthObserved = Promise.resolve();
+
+  if (OSKeyStore.canReauth() && Date.now() > authExpirationTime) {
+    reauthObserved = OSKeyStoreTestUtils.waitForOSKeyStoreLogin(true);
+  }
+  await callBackFn();
+  return reauthObserved;
+}
+
+function waitForPasswordReveal(passwordLine) {
+  const revealBtnPromise = BrowserTestUtils.waitForMutationCondition(
+    passwordLine.loginLine,
+    {
+      attributeFilter: ["inputtype"],
+    },
+    () => passwordLine.loginLine.getAttribute("inputtype") === "text"
+  );
+  info("click on reveal button");
+  passwordLine.revealBtn.click();
+  return revealBtnPromise;
 }

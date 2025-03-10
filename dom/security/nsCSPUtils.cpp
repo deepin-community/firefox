@@ -29,6 +29,7 @@
 #include "mozilla/dom/CSPDictionariesBinding.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/SRIMetadata.h"
+#include "mozilla/dom/TrustedTypesConstants.h"
 #include "mozilla/StaticPrefs_security.h"
 
 using namespace mozilla;
@@ -148,6 +149,17 @@ void CSP_ApplyMetaCSPToDoc(mozilla::dom::Document& aDoc,
     return;
   }
 
+  // Make the <meta> policy in browser.xhtml toggleable.
+  if (nsIURI* uri = aDoc.GetDocumentURI();
+      uri->SchemeIs("chrome") &&
+      !StaticPrefs::security_browser_xhtml_csp_enabled()) {
+    nsAutoCString spec;
+    uri->GetSpec(spec);
+    if (spec.EqualsLiteral("chrome://browser/content/browser.xhtml")) {
+      return;
+    }
+  }
+
   // Multiple CSPs (delivered through either header of meta tag) need to
   // be joined together, see:
   // https://w3c.github.io/webappsec/specs/content-security-policy/#delivery-html-meta-element
@@ -178,7 +190,12 @@ void CSP_GetLocalizedStr(const char* aName, const nsTArray<nsString>& aParams,
   if (!keyStringBundle) {
     return;
   }
-  keyStringBundle->FormatStringFromName(aName, aParams, outResult);
+
+  if (aParams.IsEmpty()) {
+    keyStringBundle->GetStringFromName(aName, outResult);
+  } else {
+    keyStringBundle->FormatStringFromName(aName, aParams, outResult);
+  }
 }
 
 void CSP_LogStrMessage(const nsAString& aMsg) {
@@ -286,6 +303,7 @@ CSPDirective CSP_ContentTypeToDirective(nsContentPolicyType aType) {
     case nsIContentPolicy::TYPE_INTERNAL_IMAGE:
     case nsIContentPolicy::TYPE_INTERNAL_IMAGE_PRELOAD:
     case nsIContentPolicy::TYPE_INTERNAL_IMAGE_FAVICON:
+    case nsIContentPolicy::TYPE_INTERNAL_EXTERNAL_RESOURCE:
       return nsIContentSecurityPolicy::IMG_SRC_DIRECTIVE;
 
     // BLock XSLT as script, see bug 910139
@@ -346,6 +364,8 @@ CSPDirective CSP_ContentTypeToDirective(nsContentPolicyType aType) {
     case nsIContentPolicy::TYPE_INTERNAL_FETCH_PRELOAD:
     case nsIContentPolicy::TYPE_WEB_IDENTITY:
     case nsIContentPolicy::TYPE_WEB_TRANSPORT:
+    case nsIContentPolicy::TYPE_JSON:
+    case nsIContentPolicy::TYPE_INTERNAL_JSON_PRELOAD:
       return nsIContentSecurityPolicy::CONNECT_SRC_DIRECTIVE;
 
     case nsIContentPolicy::TYPE_OBJECT:
@@ -1856,6 +1876,12 @@ bool nsCSPPolicy::ShouldCreateViolationForNewTrustedTypesPolicy(
   return false;
 }
 
+bool nsCSPPolicy::AreTrustedTypesForSinkGroupRequired(
+    const nsAString& aSinkGroup) const {
+  MOZ_ASSERT(aSinkGroup == dom::kTrustedTypesOnlySinkGroup);
+  return mHasRequireTrustedTypesForDirective;
+}
+
 /*
  * Use this function only after ::allows() returned 'false' or if ensured by
  * other means that the directive is violated. First and foremost it's used to
@@ -1921,6 +1947,14 @@ void nsCSPPolicy::getReportGroup(nsAString& outReportGroup) const {
       mDirectives[i]->getReportGroup(outReportGroup);
       return;
     }
+  }
+}
+
+void nsCSPPolicy::getDirectiveNames(nsTArray<nsString>& outDirectives) const {
+  for (uint32_t i = 0; i < mDirectives.Length(); i++) {
+    nsAutoString name;
+    mDirectives[i]->getDirName(name);
+    outDirectives.AppendElement(name);
   }
 }
 

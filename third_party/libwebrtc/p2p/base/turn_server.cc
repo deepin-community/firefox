@@ -30,6 +30,7 @@
 #include "rtc_base/message_digest.h"
 #include "rtc_base/socket_adapters.h"
 #include "rtc_base/strings/string_builder.h"
+#include "rtc_base/time_utils.h"
 
 namespace cricket {
 namespace {
@@ -41,9 +42,6 @@ constexpr TimeDelta kNonceTimeout = TimeDelta::Minutes(60);
 constexpr TimeDelta kDefaultAllocationTimeout = TimeDelta::Minutes(10);
 constexpr TimeDelta kPermissionTimeout = TimeDelta::Minutes(5);
 constexpr TimeDelta kChannelTimeout = TimeDelta::Minutes(10);
-
-constexpr int kMinChannelNumber = 0x4000;
-constexpr int kMaxChannelNumber = 0x7FFF;
 
 constexpr size_t kNonceKeySize = 16;
 constexpr size_t kNonceSize = 48;
@@ -721,7 +719,8 @@ void TurnServerAllocation::HandleChannelBindRequest(const TurnMessage* msg) {
 
   // Check that channel id is valid.
   int channel_id = channel_attr->value() >> 16;
-  if (channel_id < kMinChannelNumber || channel_id > kMaxChannelNumber) {
+  if (channel_id < kMinTurnChannelNumber ||
+      channel_id > kMaxTurnChannelNumber) {
     SendBadRequestResponse(msg);
     return;
   }

@@ -12,6 +12,11 @@ glean-debug-ping-viewer-brand-name = Visualizadôr ping pal debug di { -glean-br
 about-glean-page-title2 = Informazions su { -glean-brand-name }
 about-glean-header = Informazions su { -glean-brand-name }
 about-glean-interface-description = <a data-l10n-name="glean-sdk-doc-link">{ glean-sdk-brand-name }</a> e je une librarie pe racuelte di dâts, doprade tai progjets di { -vendor-short-name }. Cheste interface e je progjetade par permeti ai svilupadôrs e tester di <a data-l10n-name="fog-link">fâ provis manuâls de strumentazion</a>.
+about-glean-category-about-glean = Informazions su { -glean-brand-name }
+about-glean-category-manual-testing = Prove manuâl
+about-glean-category-adhoc-testing = Prove ad hoc
+about-glean-category-profiler = Utilizazion dal Profiladôr
+about-glean-category-about-data = Informazions sui dâts
 about-glean-upload-enabled = Il cjariament in rêt dai dâts al è atîf.
 about-glean-upload-disabled = Il cjariament in rêt dai dâts al è disativât.
 about-glean-upload-enabled-local = Il cjariament in rêt dai dâts al è atîf dome par mandâ suntun servidôr locâl.
@@ -39,6 +44,9 @@ about-glean-glean-android = <code>MOZ_GLEAN_ANDROID</code>: { $glean-android-def
 #   $moz-official-define-value (Boolean): the value of the MOZILLA_OFFICIAL define.
 # Do not translate strings between <code> </code> tags.
 about-glean-moz-official = <code>MOZILLA_OFFICIAL</code>: { $moz-official-define-value }
+about-glean-additional-links =
+    Par vê une spiegazion dai diviers mûts par regjistrâ e cjatâ dâts, fâs riferiment ae
+    schede <strong>Informazions sui dâts</strong>.
 about-glean-about-testing-header = Informazions su lis provis
 # This message is followed by a numbered list.
 about-glean-manual-testing =
@@ -93,8 +101,39 @@ about-glean-adhoc-note =
     Glean par JavaScript. Chest al significhe che i nons e lis categoriis des metrichis
     a son formatâts in <code>camelCase</code> a diference des APIs par Rust e
     C++.
+about-glean-profiler-explanation =
+    Par visualizâ une viodude complete des metrichis regjistradis, tu puedis doprâ { -profiler-brand-name }.
+    Prime tu scugnis <a data-l10n-name="firefox-profiler-link">tirâ dongje un profîl des prestazions</a>.
+    Une volte cuistât il profîl, selezione <q>Grafic a marcadôrs</q> e osserve i indicadôrs in <q>Telemetrie</q>.
+about-glean-profiler-explanation-profiler =
+    Tal profîl des prestazions tu puedis viodi dutis lis metrichis dadis dongje, cuant che a son stadis
+    racueltis e i valôrs precîs. Passant parsore cul mouse sui singui indicadôrs,
+    tu puedis verificâ che al sedi stât cjapât sù il valôr just e che la racuelte e sedi stade fate tal moment just.
 controls-button-label-verbose = Aplice impostazions e invie ping
+about-glean-feedback-settings-only =
+    .message = Impostazions aplicadis!
+about-glean-feedback-settings-and-ping =
+    .message = Impostazions aplicadis e ping inviât!
 about-glean-about-data-header = Informazions sui dâts
+about-glean-about-data-description =
+    A esistin varis struments che tu puedis doprâ par visualizâ i tiei dâts, daûr di ce
+    che tu stâs cirint.
+about-glean-about-data-description-list-intro =
+    Fâs riferiment ae liste chi sot par specifics câs
+    di ûs par ogni strument:
+about-glean-about-data-list-item-dictionary =
+    Par esplorâ la liste dai dâts cjapâts sù di { -glean-brand-name } par aplicazion, fâs riferiment al
+    <a data-l10n-name="glean-dictionary-link">{ -glean-brand-name } Dizionari</a>.
+about-glean-about-data-list-item-about-telemetry =
+    Par esplorâ i dâts che a son stâts cjapâts sù de vecje telemetrie, fâs riferiment a
+    <a data-l10n-name="about-telemetry-link">about:telemetry</a>.
+about-glean-about-data-list-item-debug-ping-viewer =
+    Par esplorâ lis etichetis di debug, viodi i pings complets, viodi in direte il flus or esaminâ lis visualizazions
+    des metrichis, fâs riferiment al
+    <a data-l10n-name="glean-debug-ping-viewer">{ glean-debug-ping-viewer-brand-name }</a>.
+about-glean-about-data-list-item-firefox-profiler =
+    Par regjistrâ un profîl des prestazions e viodi dutis lis metrichis regjistradis, dopre
+    <a data-l10n-name="about-glean-firefox-profiler">{ -profiler-brand-name }</a>.
 about-glean-about-data-explanation =
     Par sgarfâ te liste dai dâts racuelts, consulte il
     <a data-l10n-name="glean-dictionary-link">Dizionari di { -glean-brand-name }</a>.

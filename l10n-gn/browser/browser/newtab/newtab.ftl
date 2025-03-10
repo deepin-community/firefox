@@ -8,11 +8,18 @@
 newtab-page-title = Tendayke Pyahu
 newtab-settings-button =
     .title = Eñemomba’e ne Tendayke Pyahu roguére
+newtab-personalize-settings-icon-label =
+    .title = Eñemomba’e tendayke pyahúre
+    .aria-label = Ñemboheko
+newtab-settings-dialog-label =
+    .aria-label = Ñemboheko
 newtab-personalize-icon-label =
     .title = Eñemomba’e tendayke pyahúre
     .aria-label = Eñemomba’e tendayke pyahúre
 newtab-personalize-dialog-label =
     .aria-label = Ñemomba’e
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Eñongatu { -pocket-brand-name }-pe
 newtab-menu-delete-pocket = Embogue { -pocket-brand-name }-pe
 newtab-menu-archive-pocket = Eñongatu { -pocket-brand-name }-pe
 newtab-menu-show-privacy-info = Ore pytyvõhára ha iñemigua
+newtab-menu-about-fakespot = { -fakespot-brand-name } rehegua
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Joko
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Anive ehapykueho téma
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -232,6 +246,8 @@ newtab-pocket-cta-button = Eguereko { -pocket-brand-name }
 newtab-pocket-cta-text = Eñongatu umi eipotáva tembiasakue { -pocket-brand-name }-pe ha emombarete ne akã ñemoñe’ẽ ha’evévape.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } ha’e { -brand-product-name } pehẽngue
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Ñongatu
 newtab-pocket-saved = Ñongatupyre
 
@@ -243,6 +259,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Ndacheveg̃uarãi
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Aguyje. Nde jehai ore pytyvõta iporãve hag̃ua ne marandurã.
 newtab-toast-thumbs-up-or-down = Aguyje. Nde jehai ore pytyvõta iporãve hag̃ua ne marandurã.
 newtab-toast-dismiss-button =
     .title = Emboyke
@@ -296,6 +315,8 @@ newtab-custom-settings = Eñangareko hetave ñembohekóre
 
 newtab-wallpaper-title = Mba’erechaha rugua
 newtab-wallpaper-reset = Emoñerũjey ypyguáramo
+newtab-wallpaper-upload-image = Ehupi peteĩ ta’ãnga
+newtab-wallpaper-custom-color = Eiporavo peteĩ sa’y
 newtab-wallpaper-light-red-panda = Panda pytã
 newtab-wallpaper-light-mountain = Yvyty morotĩ
 newtab-wallpaper-light-sky = Ára taijarai pytãũ ha pytãngy
@@ -308,6 +329,8 @@ newtab-wallpaper-dark-panda = Pánda pytã okañýva ñañandýpe
 newtab-wallpaper-dark-sky = Táva jehecha ára pytũmby ndive
 newtab-wallpaper-dark-mountain = Yvyty jehecha
 newtab-wallpaper-dark-city = Táva jehecha pytãũva
+newtab-wallpaper-dark-fox-anniversary = Peteĩ aguara ka’aguy mboypýri
+newtab-wallpaper-light-fox-anniversary = Aguara ñu mbyte ikapi’ipéva ojehechahápe yvyty hatatĩnáva
 
 ## Solid Colors
 
@@ -337,8 +360,9 @@ newtab-wallpaper-abstract-purple = Pytãũva rehegua
 newtab-wallpaper-abstract-orange = Ñarã rehegua
 newtab-wallpaper-gradient-orange = Oguejýva narãgui pytãngýpe
 newtab-wallpaper-abstract-blue-purple = Hovy ha pytãũva rehegua
+newtab-wallpaper-abstract-white-curves = Morotĩ mba’ekarẽ hi’ãva ndive
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Ta’ãnga
 newtab-wallpaper-beach-at-sunrise = Jejahuha ko’ẽmbotávo
@@ -347,6 +371,9 @@ newtab-wallpaper-storm-sky = Ára vai
 newtab-wallpaper-sky-with-pink-clouds = Ára arai pytãngy ndive
 newtab-wallpaper-red-panda-yawns-in-a-tree = Pánda pytã hopehýi yvyráre
 newtab-wallpaper-white-mountains = Yvytysyry morotĩ
+newtab-wallpaper-starry-canyon = Pyhare mbyjaita hovývareve
+newtab-wallpaper-sand-dunes = Yvyku’i morotĩ atýra
+newtab-wallpaper-forest-trees = Yvyramáta ojaho’íva arai
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -362,6 +389,16 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Araregua
+newtab-wallpaper-celestial-lunar-eclipse = Jasy ñemo’ã
+newtab-wallpaper-celestial-starry-sky = Ára imbyjapáva
+newtab-wallpaper-celestial-eclipse-time-lapse = Aravo jasy ñemo’ã aja
+
 ## New Tab Weather
 
 # Variables:
@@ -372,6 +409,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Oykekóva
 newtab-weather-menu-change-location = Emoambue tendatee
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Eheka tendatee
+    .aria-label = Eheka tendatee
 newtab-weather-change-location-search-input = Eheka tendatee
 newtab-weather-menu-weather-display = Ára jehechaha
 # Display options are:
@@ -421,9 +461,51 @@ newtab-topic-label-home = Óga ha yvotyty
 # “fine-tune” refers to the process of making small adjustments to something to get
 # the best or desired experience or performance.
 newtab-topic-selection-title = Eiporavo téma emoporãve hag̃ua ne canal
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = Eiporavo mokõi térã hetave téma. Ore irũ katupyry omotenonde tembiasakue ojokupytyýva eipotavéva rehe. Embohekopyahu ejapose vove.
 newtab-topic-selection-save-button = Ñongatu
 newtab-topic-selection-cancel-button = Heja
 newtab-topic-selection-button-maybe-later = Ikatu ag̃amieve
 newtab-topic-selection-privacy-link = Ehecha mba’éichapa romo’ã ha romboguata ne mba’ekuaarã
 newtab-topic-selection-button-update-interests = Embohekopyahu eipotáva
 newtab-topic-selection-button-pick-interests = Eiporavo eipotáva
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Tapykueho
+newtab-section-following-button = Ahapykueho
+newtab-section-unfollow-button = Ndahapykuehovéima
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Joko
+newtab-section-blocked-button = Jokopyre
+newtab-section-unblock-button = Mbojera
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = ¿Ejokose añetehápepa ko tenda’i?
+newtab-section-block-section-button = Ejoko ko tenda’i
+newtab-section-cancel-button = Ani ko’ág̃a
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = Ejoko { $topic }
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = Téma
+newtab-section-manage-topics-button-v2 =
+    .label = Eñangareko témare
+newtab-section-mangage-topics-followed-topics = Tapykueho
+newtab-section-mangage-topics-button =
+    .label = Téma jehapykueho ha jokopyre
+newtab-section-mangage-topics-followed-topics-subtitle = Téma jehapykuehopyre
+newtab-section-mangage-topics-followed-topics-empty-state = Ndohapykuehói gueteri téma.
+newtab-section-mangage-topics-blocked-topics = Bloqueado
+newtab-section-mangage-topics-blocked-topics-subtitle = Téma jokopyre
+newtab-section-mangage-topics-blocked-topics-empty-state = Ndojokói gueteri mba’evéichagua téma.

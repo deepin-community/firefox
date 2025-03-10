@@ -76,6 +76,7 @@ describe("<DSTextPromo>", () => {
         tile_id: undefined,
         recommendation_id: undefined,
         scheduled_corpus_item_id: undefined,
+        corpus_item_id: undefined,
         recommended_at: undefined,
         received_rank: undefined,
         isSponsoredTopSite: undefined,
@@ -83,6 +84,7 @@ describe("<DSTextPromo>", () => {
         card_type: undefined,
         position: 0,
         is_pocket_card: false,
+        is_list_card: undefined,
       },
     ]);
 

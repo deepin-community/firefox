@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = Odmietnuť
     .secondarybuttonaccesskey = O
 appmenu-update-restart-message2 = Získajte najnovšiu verziu prehliadača { -brand-shorter-name }. Otvorené karty a okná budú po inštalácii obnovené.
+appmenu-theme-installed =
+    .secondarybuttonlabel = Späť
+    .secondarybuttonaccesskey = S
 appmenu-update-other-instance =
     .label = Aplikácia { -brand-shorter-name } nemôže automaticky nainštalovať najnovšiu verziu.
     .buttonlabel = Napriek tomu { -brand-shorter-name } aktualizovať
@@ -37,7 +40,6 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = Teraz nie
     .secondarybuttonaccesskey = n
 appmenu-update-other-instance-message = K dispozícii je nová aktualizácia aplikácie { -brand-shorter-name }, ale nemôže byť nainštalovaná, pretože je spustená ďalšia kópia aplikácie { -brand-shorter-name }. Pre spustenie aktualizácie túto kópiu ukončite alebo spustenie aktualizácie vynúťte (spustená aplikácia môže prestať správne fungovať, dokým ju nereštartujete).
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = OK
     .buttonaccesskey = O
@@ -45,7 +47,6 @@ appmenu-addon-post-install-message3 = Spravujte svoje doplnky a témy prostredn�
 appmenu-addon-post-install-incognito-checkbox =
     .label = Povoliť toto rozšírenie v súkromných oknách
     .accesskey = P
-
 appmenu-new-tab-controlled-changes =
     .label = Vaša stránka novej karty bola zmenená.
     .buttonlabel = Ponechať zmeny

@@ -8,11 +8,18 @@
 newtab-page-title = ਨਵੀਂ ਟੈਬ
 newtab-settings-button =
     .title = ਆਪਣੇ ਨਵੀਂ ਟੈਬ ਸਫ਼ੇ ਨੂੰ ਆਪਣੇ ਮੁਤਾਬਕ ਢਾਲੋ
+newtab-personalize-settings-icon-label =
+    .title = ਨਵੀਂ ਟੈਬ ਨੂੰ ਨਿੱਜੀ ਬਣਾਓ
+    .aria-label = ਸੈਟਿੰਗਾਂ
+newtab-settings-dialog-label =
+    .aria-label = ਸੈਟਿੰਗਾਂ
 newtab-personalize-icon-label =
     .title = ਨਵੀਂ ਟੈਬ ਨਿੱਜੀ ਬਣਾਓ
     .aria-label = ਨਵੀਂ ਟੈਬ ਨਿੱਜੀ ਬਣਾਓ
 newtab-personalize-dialog-label =
     .aria-label = ਆਪਣਾ ਬਣਾਓ
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = { -pocket-brand-name } ਵਿੱਚ ਸੰਭਾਲ
 newtab-menu-delete-pocket = { -pocket-brand-name } ਤੋਂ ਹਟਾਓ
 newtab-menu-archive-pocket = { -pocket-brand-name } ਵਿੱਚ ਪੁਰਾਲੇਖਬੱਧ ਕਰੋ
 newtab-menu-show-privacy-info = ਸਾਡੇ ਸਪਾਂਸਰ ਅਤੇ ਤੁਹਾਡੀ ਪਰਦੇਦਾਰੀ
+newtab-menu-about-fakespot = { -fakespot-brand-name } ਬਾਰੇ
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = ਪਾਬੰਦੀ
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = ਵਿਸ਼ੇ ਨੂੰ ਅਣ-ਫ਼ਾਲੋ ਕਰੋ
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -232,6 +246,8 @@ newtab-pocket-cta-button = { -pocket-brand-name } ਲਵੋ
 newtab-pocket-cta-text = { -pocket-brand-name } ਵਿਚ ਆਪਣੀਆਂ ਕਹਾਣੀਆਂ ਨੂੰ ਸੁਰੱਖਿਅਤ ਕਰੋ, ਅਤੇ ਆਪਣੇ ਮਨ ਨੂੰ ਦਿਲਚਸਪ ਪੜ੍ਹ ਕੇ ਮਜਬੂਰ ਕਰੋ।
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } { -brand-product-name } ਗਰੁੱਪ ਦਾ ਭਾਗ ਹੈ
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = ਸੰਭਾਲੋ
 newtab-pocket-saved = ਸੰਭਾਲਿਆ
 
@@ -243,6 +259,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = ਮੇਰੇ ਲਈ ਨਹੀਂ
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = ਧੰਨਵਾਦ! ਤੁਹਾਡਾ ਸੁਝਾਅ ਸਾਡੀ ਫੀਡ ਸੁਧਾਰਨ ਲਈ ਮਦਦਗਾਰ ਹੋਵੇਗਾ।
 newtab-toast-thumbs-up-or-down = ਧੰਨਵਾਦ! ਤੁਹਾਡਾ ਸੁਝਾਅ ਸਾਡੀ ਫੀਡ ਸੁਧਾਰਨ ਲਈ ਮਦਦਗਾਰ ਹੋਵੇਗਾ।
 newtab-toast-dismiss-button =
     .title = ਖ਼ਾਰਜ ਕਰੋ
@@ -296,6 +315,12 @@ newtab-custom-settings = ਹੋਰ ਸੈਟਿੰਗਾਂ ਦਾ ਇੰਤਜ਼�
 
 newtab-wallpaper-title = ਵਾਲਪੇਪਰ
 newtab-wallpaper-reset = ਮੂਲ ਲਈ ਮੁੜ-ਸੈੱਟ ਕਰੋ
+newtab-wallpaper-upload-image = ਚਿੱਤਰ ਨੂੰ ਅੱਪਲੋਡ ਕਰੋ
+newtab-wallpaper-custom-color = ਰੰਗ ਨੂੰ ਚੁਣੋ
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = ਚਿੱਤਰ ਫ਼ਾਇਲ ਦਾ ਆਕਾਰ { $file_size } MB ਤੋਂ ਵੱਧ ਗਿਆ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਛੋਟੇ ਆਕਾਰ ਦੀ ਫਾਇਲ ਅੱਪਲੋਡ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰੋ।
+newtab-wallpaper-error-file-type = ਅਸੀਂ ਤੁਹਾਡੀ ਫ਼ਾਇਲ ਨੂੰ ਅੱਪਲੋਡ ਨਹੀਂ ਕਰ ਸਕੇ ਹਾਂ। ਵੱਖਰੀ ਫ਼ਾਇਲ ਕਿਸਮ ਨਾਲ ਫੇਰ ਕੋਸ਼ਿਸ਼ ਕਰਕੇ ਵੇਖੋ।
 newtab-wallpaper-light-red-panda = ਲਾਲ ਪਾਂਡਾ
 newtab-wallpaper-light-mountain = ਚਿੱਟਾ ਪਹਾੜ
 newtab-wallpaper-light-sky = ਜਾਮਨੀ ਅਤੇ ਗੁਲਾਬੀ ਬੱਦਲਾਂ ਨਾਲ ਅਸਮਾਨ
@@ -308,6 +333,8 @@ newtab-wallpaper-dark-panda = ਜੰਗਲ ਵਿੱਚ ਲੁਕਿਆ ਫਿ�
 newtab-wallpaper-dark-sky = ਨੀਲੇ ਅੰਬਰ ਨਾਲ ਸ਼ਹਿਰ ਦਾ ਦ੍ਰਿਸ਼
 newtab-wallpaper-dark-mountain = ਲੈਂਡਸਕੇਪ ਪਹਾੜ
 newtab-wallpaper-dark-city = ਜਾਮਨੀ ਸ਼ਹਿਰੀ ਦ੍ਰਿਸ਼
+newtab-wallpaper-dark-fox-anniversary = ਜੰਗਲ ਨੇੜਲੇ ਰਾਹ ਉੱਤੇ ਲੂੰਬੜੀ
+newtab-wallpaper-light-fox-anniversary = ਧੁੰਦ ਵਿੱਚ ਲੁਕੇ ਪਹਾੜ ਦੇ ਕੋਲ ਘਾਹ ਦੇ ਖੇਤ ਵਿੱਚ ਲੂੰਬੜੀ
 
 ## Solid Colors
 
@@ -337,8 +364,11 @@ newtab-wallpaper-abstract-purple = ਜਾਮਨੀ ਸ਼ਕਲਾਂ
 newtab-wallpaper-abstract-orange = ਸੰਤਰੀ ਸ਼ਕਲਾਂ
 newtab-wallpaper-gradient-orange = ਗਰੇਡੀਐਂਟ ਸੰਤਰੀ ਤੇ ਗੁਲਾਬੀ
 newtab-wallpaper-abstract-blue-purple = ਨੀਲੀਆਂ ਤੇ ਜਾਮਨੀ ਸ਼ਕਲਾਂ
+newtab-wallpaper-abstract-purple-green = ਜਾਮਨੀ ਅਤੇ ਹਰਾ ਫਿੱਕਾ ਗਰੇਡੀਐਂਟ
+newtab-wallpaper-abstract-blue-purple-waves = ਨੀਲੀਆਂ ਤੇ ਜਾਮਨੀ ਲਹਿਰਦਾਰ ਸ਼ਕਲਾਂ
+newtab-wallpaper-abstract-black-waves = ਕਾਲੀਆਂ ਲਹਿਰਦਾਰ ਸ਼ਕਲਾਂ
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = ਫ਼ੋਟੋਗਰਾਫ਼
 newtab-wallpaper-beach-at-sunrise = ਬੀਚ ਉੱਤੇ ਚੜ੍ਹਦਾ ਸੂਰਜ
@@ -347,6 +377,11 @@ newtab-wallpaper-storm-sky = ਤੂਫ਼ਾਨੀ ਅੰਬਰ
 newtab-wallpaper-sky-with-pink-clouds = ਗੁਲਾਬੀ ਬੱਦਲਾਂ ਨਾਲ ਅੰਬਰ
 newtab-wallpaper-red-panda-yawns-in-a-tree = ਲਾਲ ਪਾਂਡਾ ਰੁੱਖ ਹੇਠ ਉਬਾਸੀਆਂ ਲੈਂਦਾ ਹੋਇਆ
 newtab-wallpaper-white-mountains = ਚਿੱਟੇ ਪਹਾੜ
+newtab-wallpaper-hot-air-balloons = ਦਿਨ ਵੇਲੇ ਗਰਮ ਹਵਾ ਦੇ ਗੁਬਾਰਿਆਂ ਦੇ ਵੱਖ-ਵੱਖ ਰੰਗ
+newtab-wallpaper-starry-canyon = ਨੀਲੀ ਤਾਰਿਆਂ ਵਾਲੀ ਰਾਤ
+newtab-wallpaper-suspension-bridge = ਦਿਨ ਵੇਲੇ ਸਲੇਟੀ ਪੂਰੇ ਲਟਕਦੇ ਪੁਲ ਦੀ ਫੋਟੋਗਰਾਫ਼ੀ
+newtab-wallpaper-sand-dunes = ਚਿੱਟੇ ਰੇਤ ਦੇ ਟਿੱਬੇ
+newtab-wallpaper-forest-trees = ਧੁੰਦ ਵਿੱਚ ਢੱਕੇ ਹੋਏ ਦਰਖ਼ਤ
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -362,6 +397,19 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = ਅੰਬਰ
+newtab-wallpaper-celestial-lunar-eclipse = ਚੰਦ ਗ੍ਰਹਿਣ
+newtab-wallpaper-celestial-earth-night = ਧਰਤੀ ਦੇ ਹੇਠਲੇ ਪੰਧ ਤੋਂ ਰਾਤ ਦੀ ਫ਼ੋਟੋ
+newtab-wallpaper-celestial-starry-sky = ਤਾਰਿਆਂ ਵਾਲਾ ਅਸਮਾਨ
+newtab-wallpaper-celestial-eclipse-time-lapse = ਸਮੇਂ ਦੇ ਪਰਿਪੇਖ ਵਿੱਚ ਚੰਦ ਗ੍ਰਹਿਣ
+newtab-wallpaper-celestial-black-hole = ਬਲੈਕ ਹੋਲ ਗੈਲਕਸੀ ਦਾ ਚਿੱਤਰ
+newtab-wallpaper-celestial-river = ਦਰਿਆ ਦਾ ਉਪ-ਗ੍ਰਹਿ ਰਾਹੀਂ ਤਸਵੀਰ
+
 ## New Tab Weather
 
 # Variables:
@@ -372,6 +420,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ ਸਪਾਂਸਰ
 newtab-weather-menu-change-location = ਟਿਕਾਣੇ ਨੂੰ ਬਦਲੋ
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = ਟਿਕਾਣੇ ਨੂੰ ਖੋਜੋ
+    .aria-label = ਟਿਕਾਣੇ ਨੂੰ ਖੋਜੋ
 newtab-weather-change-location-search-input = ਟਿਕਾਣੇ ਨੂੰ ਖੋਜੋ
 newtab-weather-menu-weather-display = ਮੌਸਮ ਦੀ ਝਲਕ
 # Display options are:
@@ -430,3 +481,45 @@ newtab-topic-selection-button-maybe-later = ਫੇਰ ਕਦੇ
 newtab-topic-selection-privacy-link = ਜਾਣੋ ਕਿ ਅਸੀਂ ਡਾਟੇ ਨੂੰ ਕਿਵੇਂ ਸੁਰੱਖਿਅਤ ਰੱਖਦੇ ਅਤੇ ਇਸ ਦਾ ਇੰਤਜ਼ਾਮ ਕਰਦੇ ਹਾਂ
 newtab-topic-selection-button-update-interests = ਆਪਣੀਆਂ ਦਿਲਚਸਪੀਆਂ ਨੂੰ ਅੱਪਡੇਟ ਕਰੋ
 newtab-topic-selection-button-pick-interests = ਆਪਣੀਆਂ ਦਿਲਚਸਪੀਆਂ ਨੂੰ ਚੁਣੋ
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = ਫ਼ਾਲੋ ਕਰੋ
+newtab-section-following-button = ਫ਼ਾਲੋ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ
+newtab-section-unfollow-button = ਅਣ-ਫ਼ਾਲੋ ਕਰੋ
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = ਪਾਬੰਦੀ ਲਾਓ
+newtab-section-blocked-button = ਪਾਬੰਦੀ ਲਗਾਈ
+newtab-section-unblock-button = ਪਾਬੰਦੀ ਹਟਾਓ
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = ਕੀ ਤੁਸੀਂ ਇਸ ਭਾਗ ਉੱਤੇ ਪਾਬੰਦੀ ਲਾਉਣਾ ਚਾਹੁੰਦੇ ਹੋ?
+newtab-section-confirm-block-section-p2 = ਪਾਬੰਦੀ ਲਗਾਇਆ ਭਾਗ ਤੁਹਾਡੀ ਫੀਡ ਵਿੱਚ ਦਿਕਾਈ ਨਹੀਂ ਦੇਵੇਗਾ।
+newtab-section-block-section-button = ਇਸ ਭਾਗ ਉੱਤੇ ਪਾਬੰਦੀ ਲਾਓ
+newtab-section-cancel-button = ਹੁਣੇ ਨਹੀਂ
+newtab-section-confirm-block-topic-p1 = ਕੀ ਤੁਸੀਂ ਇਸ ਵਿਸ਼ੇ ਉੱਤੇ ਪਾਬੰਦੀ ਲਾਉਣਾ ਚਾਹੁੰਦੇ ਹੋ?
+newtab-section-confirm-block-topic-p2 = ਪਾਬੰਦੀ ਲਾਏ ਵਿਸ਼ੇ ਤੁਹਾਡੀ ਫੀਡ ਵਿੱਚ ਦਿਖਾਈ ਨਹੀਂ ਦੇਣਗੇ।
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = { $topic } ਉੱਤੇ ਪਾਬੰਦੀ ਲਾਓ
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = ਵਿਸ਼ੇ:
+newtab-section-manage-topics-button-v2 =
+    .label = ਵਿਸ਼ਿਆਂ ਦਾ ਇੰਤਜ਼ਾਮ
+newtab-section-mangage-topics-followed-topics = ਫ਼ਾਲੋ ਕੀਤੇ
+newtab-section-mangage-topics-button =
+    .label = ਫ਼ਾਲੋ ਅਤੇ ਪਾਬੰਦੀ ਲਾਏ ਵਿਸ਼ੇ
+newtab-section-mangage-topics-followed-topics-subtitle = ਫ਼ਾਲੋ ਕੀਤੇ ਵਿਸ਼ੇ
+newtab-section-mangage-topics-followed-topics-empty-state = ਤੁਸੀਂ ਹਾਲੇ ਕਿਸੇ ਵੀ ਵਿਸ਼ੇ ਨੂੰ ਫ਼ਾਲੋ ਨਹੀਂ ਕੀਤਾ ਹੈ।
+newtab-section-mangage-topics-blocked-topics = ਪਾਬੰਦੀ ਲਗਾਏ
+newtab-section-mangage-topics-blocked-topics-subtitle = ਪਾਬੰਦੀ ਲਾਏ ਵਿਸ਼ੇ
+newtab-section-mangage-topics-blocked-topics-empty-state = ਤੁਸੀਂ ਹਾਲੇ ਕਿਸੇ ਵੀ ਵਿਸ਼ੇ ਉੱਤੇ ਪਾਬੰਦੀ ਨਹੀਂ ਲਾਈ ਹੈ।

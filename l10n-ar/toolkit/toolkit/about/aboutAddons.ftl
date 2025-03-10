@@ -40,6 +40,8 @@ detail-version =
     .label = النسخة
 detail-last-updated =
     .label = آخر تحديث
+addon-detail-description-expand = أظهر المزيد
+addon-detail-description-collapse = أظهر أقل
 detail-contributions-description = يطلب منك مطوّر هذه الإضافة مساعدته بدعم استمرار تطوير هذا العمل من خلال تبرع صغير منك.
 detail-contributions-button = ساهِم
     .title = ساهِم بتطويل هذه الإضافة
@@ -213,6 +215,9 @@ shortcuts-no-addons = ليس لديك أيّ امتدادات مفعّلة.
 shortcuts-no-commands = لا اختصارات للامتدادات الآتية:
 shortcuts-input =
     .placeholder = اكتب اختصارًا
+# Accessible name for a trashcan icon button that removes an existent shortcut
+shortcuts-remove-button =
+    .aria-label = أزِل الاختصار
 shortcuts-browserAction2 = تفعيل زر شريط الأدوات
 shortcuts-pageAction = تفعيل إجراء على الصفحة
 shortcuts-sidebarAction = عرض/إخفاء الشريط الجانبي
@@ -253,6 +258,12 @@ header-back-button =
 
 ## Recommended add-ons page
 
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro =
+    الامتدادات والسمات هي كالتطبيقات لمتصفحك، وهي ستدعك:
+    تحمي كلمات السر، تُنزل مقاطع الفيديو، تجد العروض، تحجب الإعلانات المزعجة، تغيّر كيف يبدو متصفحك، وغيرها الكثير.
+    هذه البرمجيات الصغيرة غالبا ما تطور من قِبل جهة ثالثة. ها هي مختارات <a data-l10n-name="learn-more-trigger">انتقاها</a> { -brand-product-name } لأمن وأداء وتوظيف استثنائي.
 # Notice to make user aware that the recommendations are personalized.
 discopane-notice-recommendations = بعض هذه المُقترحات مخصّصة لك، إذ تعتمد على الامتدادات التي ثبّتها وتفضيلات الملف الشخصي وإحصاءات الاستخدام.
 # Notice to make user aware that the recommendations are personalized.
@@ -279,6 +290,9 @@ find-more-themes = ابحث عن المزيد من السمات
 # used for screen readers.
 addon-options-button =
     .aria-label = خيارات أكثر
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 = تتيح لك الامتدادت والسمات تخصيص { -brand-product-name }. ويمكنها تعزيز الخصوصية، وتعزيز الإنتاجية، وتحسين الوسائط، وتغيير مظهر { -brand-product-name }، وغير ذلك الكثير. غالبًا ما يتم تطوير هذه البرامج الصغيرة بواسطة طرف ثالث. ها هي مختارات<a data-l10n-name="learn-more-trigger">انتقاها</a> { -brand-product-name } لأمن وأداء وتوظيف استثنائي.
 
 ## Add-on actions
 
@@ -369,6 +383,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = مسموح بها في النوافذ الخاصة
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = مسموح بها في النوافذ الخاصة
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -400,6 +418,22 @@ addon-detail-group-label-quarantined-domains =
 addon-badge-recommended2 =
     .title = يوصي { -brand-product-name } ويقترح فقط الامتدادات التي تلبي معاييرنا للأمان والأداء.
     .aria-label = { addon-badge-recommended2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line3 =
+    .title = الامتدادات الرسمية التي أنشأتها موزيلا. يستوفي معايير الأمن والأداء
+    .aria-label = { addon-badge-line3.title }
+addon-badge-verified2 =
+    .title = جرت مراجعة هذا الامتداد ليفي بمعاييرنا للأمن والأداء
+    .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = يوصي { -brand-product-name } ويقترح فقط الامتدادات التي تلبي معاييرنا للأمان والأداء.
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = الامتدادات الرسمية التي أنشأتها موزيلا. يستوفي معايير الأمن والأداء
+addon-badge-verified3 =
+    .title = جرت مراجعة هذا الامتداد ليفي بمعاييرنا للأمن والأداء
 
 ##
 
@@ -407,7 +441,11 @@ available-updates-heading = التحديثات المتاحة
 recent-updates-heading = التحديثات الأخيرة
 release-notes-loading = يحمّل…
 release-notes-error = المعذرة، ولكن حصل خطأ أثناء تحميل ملاحظات الإصدار.
+addon-permissions-empty2 = لا يطلب هذا الامتداد أيّ صلاحيات.
 addon-permissions-empty = لا يطلب هذا الامتداد أيّ صلاحيات
+addon-permissions-required = الصلاحيات المطلوبة للوظيفة الجوهرية:
+addon-permissions-optional = صلاحيات اختيارية للوظائف المضافة:
+addon-permissions-learnmore = اطّلع على المزيد عن التصاريح
 recommended-extensions-heading = الامتدادات المقترحة
 recommended-themes-heading = السمات المقترحة
 # Variables:
@@ -453,10 +491,24 @@ details-notification-unsigned-and-disabled-link = المزيد من المعلو
 details-notification-unsigned = تعذّر التحقق من { $name } للاستخدام مع { -brand-short-name }. واصل بحذر.
 details-notification-unsigned2 =
     .message = تعذّر التحقق من { $name } للاستخدام مع { -brand-short-name }. واصل بحذر.
+details-notification-hard-blocked-extension =
+    .message = حُظر هذا الامتداد بسبب انتهاكه لسياسات Mozilla وعُطّل.
+details-notification-hard-blocked-other =
+    .message = حُظرت هذه الإضافة بسبب انتهاكه لسياسات Mozilla وعُطّلت.
 details-notification-unsigned-link = المزيد من المعلومات
 details-notification-blocked = عُطّلت { $name } لأسباب تتعلق بالأمن أو الثبات.
 details-notification-blocked2 =
     .message = عُطّلت { $name } لأسباب تتعلق بالأمن أو الثبات.
+details-notification-blocked-link2 = اعرض التفاصيل
+details-notification-soft-blocked-extension-disabled =
+    .message = حُظر هذا الامتداد بسبب انتهاكه لسياسات Mozilla وعُطّل. يمكنك تفعيله، ولكن هذا قد يكون محفوفًا بالمخاطر.
+details-notification-soft-blocked-extension-enabled =
+    .message = ينتهك هذا الامتداد سياسات Mozilla. قد يكون استخدامه محفوفًا بالمخاطر.
+details-notification-soft-blocked-other-disabled =
+    .message = حُظرت هذه الإضافة بسبب انتهاكها لسياسات Mozilla وعُطّلت. يمكنك تفعيلها، ولكن هذا قد يكون محفوفًا بالمخاطر.
+details-notification-soft-blocked-other-enabled =
+    .message = تنتهك هذه الإضافة سياسات Mozilla. قد يكون استخدامها محفوفًا بالمخاطر.
+details-notification-softblocked-link2 = اعرض التفاصيل
 details-notification-blocked-link = مزيد من المعلومات
 details-notification-softblocked = { $name } معروفة بتسببها لمشاكل في الأمن أو الثبات.
 details-notification-softblocked2 =

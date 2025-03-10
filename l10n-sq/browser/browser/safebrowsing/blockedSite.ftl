@@ -7,9 +7,11 @@ safeb-blocked-malware-page-title = Vizita në këtë sajt mund të dëmtojë kom
 safeb-blocked-unwanted-page-title = Sajti ku po shkoni mund të përmbajë programe të dëmshëm
 safeb-blocked-harmful-page-title = Sajti ku po shkoni mund të përmbajë malware
 safeb-blocked-phishing-page-short-desc = { -brand-short-name }-i e bllokoi këtë faqe, ngaqë mund t’jua hedhë dhe të bëni diçka të rrezikshme, të tillë si instalim software-i pse nxjerrje sheshit të dhënash personale, të tilla si fjalëkalime ose karta krediti.
-safeb-blocked-malware-page-short-desc = { -brand-short-name } e bllokoi këtë faqe, ngaqë mund të rreket të instalojë software dashakeq që mund të vjedhë ose fshijë të dhëna personale në kompjuterin tuaj.
+safeb-blocked-malware-page-short-desc = { -brand-short-name } e bllokoi këtë faqe, ngaqë mund të rreket të instalojë program dashakeq që mund të vjedhë ose fshijë të dhëna personale në kompjuterin tuaj.
 safeb-blocked-unwanted-page-short-desc = { -brand-short-name }-i e bllokoi këtë faqe ngaqë, mund të provojë t’ju mashtrojë dhe të instaloni programe që dëmtojnë shfletimin tuaj (për shembull, duke ndryshuar faqen tuaj hyrëse ose duke shfaqur reklama shtesë në sajte që vizitoni).
 safeb-blocked-harmful-page-short-desc = { -brand-short-name }-i e bllokoi këtë faqe, ngaqë mund të përpiqet të instalojë aplikacione të rrezikshme që vjedhin ose fshijnë të dhëna tuajat (për shembull, foto, fjalëkalime, mesazhe dhe karta kreditit).
+# Variables:
+#   $advisoryname (string) - Name of the advisory entity
 safeb-palm-advisory-desc = Këshillimi u dha nga <a data-l10n-name='advisory_provider'>{ $advisoryname }</a>.
 safeb-palm-accept-label = Kthehu mbrapsht
 safeb-palm-see-details-label = Shihni hollësitë
@@ -27,7 +29,7 @@ safeb-blocked-phishing-page-learn-more = Mësoni më tepër rreth sajtesh të rr
 ## Variables
 ##  $sitename (string) - Domain name for the blocked page
 
-safeb-blocked-malware-page-error-desc-override-sumo = <span data-l10n-name='sitename'>{ $sitename }</span> është <a data-l10n-name='error_desc_link'>raportuar se përmban software dashakeq</a>. Mund <a data-l10n-name='ignore_warning_link'>ta shpërfillni rrezikun</a> dhe të shkoni te ky sajt i pasigurt.
+safeb-blocked-malware-page-error-desc-override-sumo = <span data-l10n-name='sitename'>{ $sitename }</span> është <a data-l10n-name='error_desc_link'>raportuar se përmban software dashakeq</a>. Mund <a data-l10n-name='ignore_warning_link'>ta shpërfillni rrezikun</a> dhe të shkoni te ky sajt i pasiguruar.
 safeb-blocked-malware-page-error-desc-no-override-sumo = <span data-l10n-name='sitename'>{ $sitename }</span> është <a data-l10n-name='error_desc_link'>raportuar se përmban software dashakeq</a>.
 
 ##
@@ -37,7 +39,7 @@ safeb-blocked-malware-page-learn-more-sumo = Mësoni më tepër rreth Mbrojtjes 
 ## Variables
 ##  $sitename (string) - Domain name for the blocked page
 
-safeb-blocked-unwanted-page-error-desc-override = <span data-l10n-name='sitename'>{ $sitename }</span> është <a data-l10n-name='error_desc_link'>raportuar se përmban software të dëmshëm</a>. Mund <a data-l10n-name='ignore_warning_link'>ta shpërfillni rrezikun</a> dhe të shkoni te ky sajt i pasigurt.
+safeb-blocked-unwanted-page-error-desc-override = <span data-l10n-name='sitename'>{ $sitename }</span> është <a data-l10n-name='error_desc_link'>raportuar se përmban software të dëmshëm</a>. Mund <a data-l10n-name='ignore_warning_link'>ta shpërfillni rrezikun</a> dhe të shkoni te ky sajt i pasiguruar.
 safeb-blocked-unwanted-page-error-desc-no-override = <span data-l10n-name='sitename'>{ $sitename }</span> është <a data-l10n-name='error_desc_link'>raportuar se përmban software të dëmshëm</a>.
 
 ##

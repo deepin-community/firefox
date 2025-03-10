@@ -13,6 +13,8 @@ newtab-personalize-icon-label =
     .aria-label = Приспособяване на новите раздели
 newtab-personalize-dialog-label =
     .aria-label = Приспособяване
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -45,6 +47,7 @@ newtab-topsites-add-search-engine-header = Добавяне на търсеща 
 newtab-topsites-add-shortcut-header = Нова клавишна комбинация
 newtab-topsites-edit-topsites-header = Променяне на често посещавана страница
 newtab-topsites-edit-shortcut-header = Промяна на икона
+newtab-topsites-add-shortcut-label = Добавяне на пряк път
 newtab-topsites-title-label = Заглавие
 newtab-topsites-title-input =
     .placeholder = Въведете заглавие
@@ -232,6 +235,8 @@ newtab-pocket-learn-more = Научете повече
 newtab-pocket-cta-button = Вземете { -pocket-brand-name }
 newtab-pocket-cta-text = Запазете статиите, които харесвате в { -pocket-brand-name } и заредете ума си с увлекателни четива.
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Запазване
 newtab-pocket-saved = Запазено
 
@@ -243,6 +248,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Не и за мен
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Благодаря! Вашата обратна връзка ще ни помогне в подбора за новини.
 newtab-toast-thumbs-up-or-down = Благодаря! Вашата обратна връзка ще ни помогне в подбора за новини.
 newtab-toast-dismiss-button =
     .title = Отхвърляне
@@ -336,7 +344,7 @@ newtab-wallpaper-abstract-orange = Оранжеви фигури
 newtab-wallpaper-gradient-orange = Преливащо се оранжево и розово
 newtab-wallpaper-abstract-blue-purple = Сини и лилави фигури
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Снимки
 newtab-wallpaper-beach-at-sunrise = Плаж при изгрев
@@ -346,6 +354,12 @@ newtab-wallpaper-sky-with-pink-clouds = Небе с розови облаци
 newtab-wallpaper-red-panda-yawns-in-a-tree = Червена панда се прозява на дърво
 newtab-wallpaper-white-mountains = Бели планини
 newtab-wallpaper-feature-highlight-button = Разбрах
+feature-highlight-wallpaper =
+    .title = { -newtab-wallpaper-feature-highlight-header }
+    .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## Celestial
+
 
 ## New Tab Weather
 
@@ -366,6 +380,8 @@ newtab-weather-menu-temperature-option-celsius = Целзий
 newtab-weather-menu-change-temperature-units-fahrenheit = Превключване към Фаренхайт
 newtab-weather-menu-change-temperature-units-celsius = Превключване към Целзий
 newtab-weather-menu-learn-more = Научете повече
+# This message is shown if user is working offline
+newtab-weather-error-not-available = В момента няма данни за времето.
 
 ## Topic Labels
 
@@ -390,7 +406,25 @@ newtab-topic-label-society = Лайфхакове
 newtab-topic-label-sports = Спорт
 newtab-topic-label-tech = Технологии
 newtab-topic-label-travel = Пътуване
+newtab-topic-label-home = Дом и градина
 
 ## Topic Selection Modal
 
 newtab-topic-selection-button-maybe-later = Може би по-късно
+newtab-topic-selection-button-pick-interests = Изберете вашите интереси
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+
+## Confirmation modal for blocking a section
+
+
+## Panel in the Customize menu section to manage followed and blocked topics
+

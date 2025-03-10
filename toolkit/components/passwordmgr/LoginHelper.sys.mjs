@@ -10,12 +10,13 @@
  * of nsILoginManager and nsILoginManagerStorage.
  */
 
-import { Logic } from "resource://gre/modules/LoginManager.shared.mjs";
+import { Logic } from "resource://gre/modules/LoginManager.shared.sys.mjs";
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   OSKeyStore: "resource://gre/modules/OSKeyStore.sys.mjs",
+  BrowserWindowTracker: "resource:///modules/BrowserWindowTracker.sys.mjs",
 });
 
 XPCOMUtils.defineLazyServiceGetter(
@@ -407,8 +408,6 @@ export const LoginHelper = {
     // Watch for pref changes to update cached pref values.
     Services.prefs.addObserver("signon.", () => this.updateSignonPrefs());
     this.updateSignonPrefs();
-    Services.telemetry.setEventRecordingEnabled("pwmgr", true);
-    Services.telemetry.setEventRecordingEnabled("form_autocomplete", true);
 
     // Watch for FXA Logout to reset signon.firefoxRelay to 'available'
     // Using hard-coded value for FxAccountsCommon.ONLOGOUT_NOTIFICATION because
@@ -440,9 +439,6 @@ export const LoginHelper = {
     );
     this.generationAvailable = Services.prefs.getBoolPref(
       "signon.generation.available"
-    );
-    this.generationConfidenceThreshold = parseFloat(
-      Services.prefs.getStringPref("signon.generation.confidenceThreshold")
     );
     this.generationEnabled = Services.prefs.getBoolPref(
       "signon.generation.enabled"
@@ -1243,7 +1239,8 @@ export const LoginHelper = {
 
     const paramsPart = params.toString() ? `?${params}` : "";
 
-    const browser = window.gBrowser ?? window.opener?.gBrowser;
+    let browserWindow = lazy.BrowserWindowTracker.getTopWindow();
+    const browser = browserWindow.gBrowser ?? browserWindow.opener?.gBrowser;
 
     const tab = browser.addTrustedTab(`about:logins${paramsPart}`, {
       inBackground: false,
@@ -1342,7 +1339,7 @@ export const LoginHelper = {
    * @returns {boolean} True if any of the rules matches
    */
   isInferredNonUsernameField(element) {
-    const expr = /search|code|add/i;
+    const expr = /\b(search|code|add)\b/i;
 
     if (
       Logic.elementAttrsMatchRegex(element, expr) ||
@@ -1604,13 +1601,15 @@ export const LoginHelper = {
    * @param expirationTime Optional timestamp indicating next required re-authentication
    * @param messageText Formatted and localized string to be displayed when the OS auth dialog is used.
    * @param captionText Formatted and localized string to be displayed when the OS auth dialog is used.
+   * @param reason The reason for requesting reauthentication, used for telemetry.
    */
   async requestReauth(
     browser,
     OSReauthEnabled,
     expirationTime,
     messageText,
-    captionText
+    captionText,
+    reason
   ) {
     let isAuthorized = false;
     let telemetryEvent;
@@ -1625,8 +1624,8 @@ export const LoginHelper = {
     if (expirationTime && Date.now() < expirationTime) {
       isAuthorized = true;
       telemetryEvent = {
-        object: token.hasPassword ? "master_password" : "os_auth",
-        method: "reauthenticate",
+        name:
+          "reauthenticate" + (token.hasPassword ? "MasterPassword" : "OsAuth"),
         value: "success_no_prompt",
       };
       return {
@@ -1639,8 +1638,7 @@ export const LoginHelper = {
     if (!token.hasPassword && !OSReauthEnabled) {
       isAuthorized = true;
       telemetryEvent = {
-        object: "os_auth",
-        method: "reauthenticate",
+        name: "reauthenticateOsAuth",
         value: "success_disabled",
       };
       return {
@@ -1650,20 +1648,31 @@ export const LoginHelper = {
     }
     // Use the OS auth dialog if there is no primary password
     if (!token.hasPassword && OSReauthEnabled) {
-      let isAuthorized = await this.verifyUserOSAuth(
-        OS_AUTH_FOR_PASSWORDS_PREF,
-        messageText,
-        captionText,
-        browser.ownerGlobal,
-        false
-      );
+      let result;
+      try {
+        isAuthorized = await this.verifyUserOSAuth(
+          OS_AUTH_FOR_PASSWORDS_PREF,
+          messageText,
+          captionText,
+          browser.ownerGlobal,
+          false
+        );
+        result = isAuthorized ? "success" : "fail_user_canceled";
+      } catch (ex) {
+        result = "fail_error";
+        throw ex;
+      } finally {
+        Glean.pwmgr.promptShownOsReauth.record({
+          trigger: reason,
+          result,
+        });
+      }
       let value = lazy.OSKeyStore.canReauth()
         ? "success"
         : "success_unsupported_platform";
 
       telemetryEvent = {
-        object: "os_auth",
-        method: "reauthenticate",
+        name: "reauthenticateOsAuth",
         value: isAuthorized ? value : "fail",
       };
       return {
@@ -1695,8 +1704,7 @@ export const LoginHelper = {
     }
     isAuthorized = token.isLoggedIn();
     telemetryEvent = {
-      object: "master_password",
-      method: "reauthenticate",
+      name: "reauthenticateMasterPassword",
       value: isAuthorized ? "success" : "fail",
     };
     return {

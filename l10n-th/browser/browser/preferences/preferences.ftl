@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = ส่งสัญญาณ “Do Not Track” ให้กับเว็บไซต์ว่าคุณไม่ต้องการถูกติดตาม
+do-not-track-removal = เราไม่รองรับสัญญาณ “Do Not Track” อีกต่อไป
 do-not-track-description2 =
     .label = ส่งคำขอ “Do Not Track” ให้กับเว็บไซต์
     .accesskey = ม
@@ -14,7 +15,7 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = บอกเว็บไซต์ไม่ให้ขายหรือแบ่งปันข้อมูลของฉัน
     .accesskey = บ
-non-technical-privacy-header = การกำหนดลักษณะความเป็นส่วนตัวของเว็บ
+non-technical-privacy-header = ค่าปรับแต่งความเป็นส่วนตัวของเว็บ
 # Do not translate.
 # "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
 # included to facilitate power-user search of the about:preferences page.
@@ -136,7 +137,8 @@ startup-restore-windows-and-tabs =
 windows-launch-on-login =
     .label = เปิด { -brand-short-name } โดยอัตโนมัติตอนเปิดเครื่องคอมพิวเตอร์
     .accesskey = ป
-windows-launch-on-login-disabled = การกำหนดลักษณะนี้ถูกปิดใช้งานใน Windows เมื่อต้องการเปลี่ยน ให้ไปที่ <a data-l10n-name="startup-link">แอปเริ่มต้น</a> ในการตั้งค่าระบบ
+windows-launch-on-login-disabled = ค่าปรับแต่งนี้ถูกปิดใช้งานใน Windows เมื่อต้องการเปลี่ยน ให้ไปที่ <a data-l10n-name="startup-link">แอปเริ่มต้น</a> ในการตั้งค่าระบบ
+windows-launch-on-login-profile-disabled = เปิดใช้งานค่าปรับแต่งนี้โดยทำเครื่องหมายที่ “{ profile-manager-use-selected.label }” ในหน้าต่าง “เลือกโปรไฟล์ผู้ใช้”
 startup-restore-warn-on-quit =
     .label = เตือนคุณเมื่อออกจากเบราว์เซอร์
 disable-extension =
@@ -153,6 +155,17 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = เปิดลิงก์ในแท็บแทนที่จะเป็นหน้าต่างใหม่
     .accesskey = ป
+ask-on-close-multiple-tabs =
+    .label = ถามก่อนที่จะปิดหลายแท็บ
+    .accesskey = ห
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = ถามก่อนที่จะออกด้วย { $quitKey }
+    .accesskey = ก
 confirm-on-close-multiple-tabs =
     .label = ยืนยันก่อนปิดหลายแท็บ
     .accesskey = ย
@@ -180,32 +193,42 @@ browser-containers-learn-more = เรียนรู้เพิ่มเติ
 browser-containers-settings =
     .label = การตั้งค่า…
     .accesskey = ต
-containers-disable-alert-title = ปิดแท็บแยกข้อมูลทั้งหมด?
+containers-disable-alert-title = ปิดแท็บแยกข้อมูลทั้งหมดหรือไม่?
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
 
-containers-disable-alert-desc = ถ้าคุณปิดใช้งานแท็บแยกข้อมูลตอนนี้ { $tabCount } แท็บแยกข้อมูลจะถูกปิด คุณแน่ใจหรือไม่ว่าต้องการปิดใช้งานแท็บแยกข้อมูล?
+containers-disable-alert-desc = ถ้าคุณปิดใช้งานแท็บแยกข้อมูลตอนนี้ ก็จะปิดแท็บแยกข้อมูล { $tabCount } แท็บ คุณแน่ใจหรือไม่ว่าต้องการปิดใช้งานแท็บแยกข้อมูล?
 containers-disable-alert-ok-button = ปิด { $tabCount } แท็บแยกข้อมูล
 
 ##
 
 containers-disable-alert-cancel-button = เปิดใช้งานต่อไป
-containers-remove-alert-title = เอาการแยกข้อมูลนี้ออก?
+containers-remove-alert-title = เอาที่แยกข้อมูลนี้ออกหรือไม่?
 # Variables:
 #   $count (number) - Number of tabs that will be closed.
-containers-remove-alert-msg = ถ้าคุณเอาการแยกข้อมูลนี้ออกตอนนี้ { $count } แท็บแยกข้อมูลจะถูกปิด คุณแน่ใจหรือไม่ว่าต้องการเอาการแยกข้อมูลนี้ออก?
-containers-remove-ok-button = เอาการแยกข้อมูลนี้ออก
-containers-remove-cancel-button = ไม่เอาการแยกข้อมูลนี้ออก
+containers-remove-alert-msg = ถ้าคุณเอาที่แยกข้อมูลนี้ออกตอนนี้ ก็จะปิดแท็บแยกข้อมูล { $count } แท็บ คุณแน่ใจหรือไม่ว่าต้องการเอาที่แยกข้อมูลนี้ออก?
+containers-remove-ok-button = เอาที่แยกข้อมูลนี้ออก
+containers-remove-cancel-button = ไม่เอาที่แยกข้อมูลนี้ออก
 settings-tabs-show-image-in-preview =
     .label = แสดงตัวอย่างภาพเมื่อคุณวางเมาส์เหนือแท็บ
     .accessKey = แ
+browser-layout-header = เค้าโครงของเบราว์เซอร์
+browser-layout-horizontal-tabs =
+    .label = แท็บแนวนอน
+browser-layout-horizontal-tabs-desc = แสดงที่ด้านบนของเบราว์เซอร์
+browser-layout-vertical-tabs =
+    .label = แท็บแนวตั้ง
+browser-layout-vertical-tabs-desc = แสดงที่ด้านข้าง ในแถบข้าง
+browser-layout-show-sidebar =
+    .label = แสดงแถบข้าง
+browser-layout-show-sidebar-desc = เข้าถึงที่คั่นหน้า แท็บต่างๆ ได้อย่างรวดเร็วจากโทรศัพท์ บอตสนทนา AI และอื่นๆ ของคุณได้โดยไม่ต้องออกจากมุมมองหลัก
 
 ## General Section - Language & Appearance
 
 language-and-appearance-header = ภาษาและรูปลักษณ์
 preferences-web-appearance-header = รูปลักษณ์ของเว็บไซต์
-preferences-web-appearance-description = บางเว็บไซต์ปรับโทนสีตามการกำหนดลักษณะของคุณ เลือกชุดสีที่คุณต้องการใช้สำหรับไซต์เหล่านั้น
+preferences-web-appearance-description = บางเว็บไซต์ปรับโทนสีตามค่าปรับแต่งของคุณ เลือกชุดสีที่คุณต้องการใช้สำหรับไซต์เหล่านั้น
 preferences-web-appearance-choice-auto = อัตโนมัติ
 preferences-web-appearance-choice-light = สว่าง
 preferences-web-appearance-choice-dark = มืด
@@ -556,8 +579,7 @@ home-prefs-shortcuts-description = ไซต์ที่คุณบันทึ
 home-prefs-shortcuts-by-option-sponsored =
     .label = ทางลัดที่ได้รับการสนับสนุน
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = แนะนำโดย { $provider }
@@ -625,6 +647,10 @@ search-show-suggestions-url-bar-option =
     .label = แสดงข้อเสนอแนะการค้นหาในผลลัพธ์ของแถบที่อยู่
     .accesskey = ส
 # With this option enabled, on the search results page
+# the URL will be replaced by the search terms in the address bar.
+search-show-search-term-option-2 =
+    .label = แสดงคำค้นหาในแถบที่อยู่บนหน้าผลลัพธ์
+# With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
 search-show-search-term-option =
@@ -670,10 +696,10 @@ containers-back-button2 =
     .aria-label = กลับไปที่การตั้งค่า
 containers-header = แท็บแยกข้อมูล
 containers-add-button =
-    .label = เพิ่มการแยกข้อมูลใหม่
+    .label = เพิ่มที่แยกข้อมูลใหม่
     .accesskey = พ
 containers-new-tab-check =
-    .label = เลือกการแยกข้อมูลสำหรับแต่ละแท็บใหม่
+    .label = เลือกที่แยกข้อมูลสำหรับแต่ละแท็บใหม่
     .accesskey = ล
 containers-settings-button =
     .label = การตั้งค่า
@@ -767,6 +793,9 @@ sync-currently-syncing-creditcards = บัตรเครดิต
 sync-currently-syncing-payment-methods = วิธีการชำระเงิน
 sync-currently-syncing-addons = ส่วนเสริม
 sync-currently-syncing-settings = การตั้งค่า
+sync-manage-options =
+    .label = จัดการการซิงค์…
+    .accesskey = จ
 sync-change-options =
     .label = เปลี่ยน…
     .accesskey = ป
@@ -819,6 +848,13 @@ sync-engine-settings =
     .label = การตั้งค่า
     .tooltiptext = การตั้งค่าทั่วไป ความเป็นส่วนตัว และความปลอดภัยที่คุณเปลี่ยน
     .accesskey = ต
+sync-choose-what-to-sync-dialog4 =
+    .title = จัดการสิ่งที่จะซิงค์บนอุปกรณ์ที่เชื่อมต่อทั้งหมดของคุณ
+    .style = min-width: 36em;
+    .buttonlabelaccept = บันทึก
+    .buttonaccesskeyaccept = บ
+    .buttonlabelextra2 = ตัดการเชื่อมต่อ…
+    .buttonaccesskeyextra2 = ต
 
 ## The device name controls.
 
@@ -1095,7 +1131,7 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = คำสั่งด่วน
     .accesskey = ด
-addressbar-suggestions-settings = เปลี่ยนการกำหนดลักษณะสำหรับข้อเสนอแนะของเครื่องมือค้นหา
+addressbar-suggestions-settings = เปลี่ยนค่าปรับแต่งสำหรับข้อเสนอแนะของเครื่องมือค้นหา
 addressbar-locbar-showrecentsearches-option =
     .label = แสดงการค้นหาล่าสุด
     .accesskey = ล
@@ -1265,17 +1301,40 @@ permissions-addon-exceptions =
 collection-header = การเก็บรวบรวมและใช้ข้อมูลของ { -brand-short-name }
 collection-header2 = การเก็บรวบรวมและใช้ข้อมูลของ { -brand-short-name }
     .searchkeywords = การวัดและส่งข้อมูลทางไกล
+preferences-collection-description = เราพยายามที่จะมอบทางเลือกให้กับคุณและรวบรวมข้อมูลอย่างน้อยที่สุดเท่าที่จำเป็นเพื่อปรับปรุง { -brand-product-name } ให้กับทุกคน
+preferences-collection-privacy-notice = ดูประกาศความเป็นส่วนตัว
 collection-description = เรามุ่งมั่นที่จะให้ทางเลือกกับคุณและเก็บรวบรวมเฉพาะสิ่งที่เราจำเป็นต้องให้บริการและปรับปรุง { -brand-short-name } สำหรับทุกคน เราขออนุญาตก่อนที่จะรับข้อมูลส่วนบุคคลเสมอ
 collection-privacy-notice = ข้อกำหนดความเป็นส่วนตัว
 collection-health-report-telemetry-disabled = คุณจะไม่อนุญาตให้ { -vendor-short-name } เก็บข้อมูลทางเทคนิคและการโต้ตอบอีกต่อไป ข้อมูลที่ผ่านมาทั้งหมดจะถูกลบภายใน 30 วัน
 collection-health-report-telemetry-disabled-link = เรียนรู้เพิ่มเติม
+collection-usage-ping =
+    .label = ส่งพิงการใช้งานรายวันไปยัง { -vendor-short-name }
+    .accesskey = ช
+collection-usage-ping-description = ตัวเลือกนี้จะช่วยให้ { -vendor-short-name } ประเมินจำนวนผู้ใช้ที่มีความเคลื่อนไหวได้
+collection-health-report2 =
+    .label = ส่งข้อมูลทางเทคนิคและการโต้ตอบไปยัง { -vendor-short-name }
+    .accesskey = ต
 collection-health-report =
     .label = อนุญาตให้ { -brand-short-name } ส่งข้อมูลทางเทคนิคและการโต้ตอบไปยัง { -vendor-short-name }
     .accesskey = อ
 collection-health-report-link = เรียนรู้เพิ่มเติม
+collection-health-report-description = ตัวเลือกนี้จะช่วยเราปรับปรุงคุณลักษณะ ประสิทธิภาพ และความเสถียรของ { -brand-product-name }
+collection-studies2 =
+    .label = ติดตั้งและเรียกใช้การศึกษา
+collection-studies-description = ทดลองใช้คุณสมบัติและไอเดียต่างๆ ก่อนที่จะเผยแพร่ให้ทุกคนได้ใช้งานจริง
 collection-studies =
     .label = อนุญาตให้ { -brand-short-name } ติดตั้งและเรียกใช้การศึกษา
 collection-studies-link = ดูการศึกษาของ { -brand-short-name }
+addon-recommendations2 =
+    .label = อนุญาตคำแนะนำส่วนขยายแบบส่วนตัว
+addon-recommendations-description = รับคำแนะนำส่วนขยายเพื่อปรับปรุงประสบการณ์การเรียกดูของคุณ
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = การรายงานข้อมูลถูกปิดใช้งานสำหรับการกำหนดค่าบิลด์นี้
+collection-backlogged-crash-reports2 =
+    .label = ส่งรายงานข้อขัดข้องโดยอัตโนมัติ
+    .accesskey = ข
+collection-backlogged-crash-reports-description = ข้อมูลนี้จะช่วยให้ { -vendor-short-name } สามารถวินิจฉัยและแก้ไขปัญหาเกี่ยวกับเบราว์เซอร์ได้ รายงานอาจรวมถึงข้อมูลส่วนตัวหรือข้อมูลละเอียดอ่อน
 addon-recommendations =
     .label = อนุญาตให้ { -brand-short-name } สร้างคำแนะนำส่วนขยายส่วนบุคคล
 addon-recommendations-link = เรียนรู้เพิ่มเติม
@@ -1295,7 +1354,7 @@ privacy-segmentation-radio-on =
 
 ## Privacy Section - Website Advertising Preferences
 
-website-advertising-header = การกำหนดลักษณะการโฆษณาในเว็บไซต์
+website-advertising-header = ค่าปรับแต่งการโฆษณาในเว็บไซต์
 website-advertising-private-attribution =
     .label = เปิดให้เว็บไซต์ทำการวัดผลโฆษณาได้โดยปกป้องความเป็นส่วนตัว
     .accesskey = ป
@@ -1343,7 +1402,10 @@ space-alert-under-5gb-message2 = <strong>พื้นที่ดิสก์ข
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = โหมด HTTPS-Only
+httpsonly-description3 = อนุญาตเฉพาะการเชื่อมต่อที่ปลอดภัยกับเว็บไซต์เท่านั้น { -brand-short-name } จะถามก่อนเชื่อมต่อแบบไม่ปลอดภัย
+httpsonly-learn-more2 = HTTPS-Only ทำงานอย่างไร
 httpsonly-description = HTTPS จะจัดให้มีการเชื่อมต่อแบบเข้ารหัสที่ปลอดภัยระหว่าง { -brand-short-name } และเว็บไซต์ที่คุณเยี่ยมชม เว็บไซต์ส่วนใหญ่จะรองรับ HTTPS และถ้าเปิดใช้งานโหมด HTTPS-Only แล้ว { -brand-short-name } จะอัปเกรดการเชื่อมต่อทั้งหมดเป็น HTTPS
+httpsonly-description2 = { -brand-short-name } จะสร้างการเชื่อมต่อที่ปลอดภัยและผ่านการเข้ารหัสลับไปยังไซต์ที่คุณเยี่ยมชม { -brand-short-name } จะแจ้งเตือนคุณหากการเชื่อมต่อไม่มีความปลอดภัยเมื่อเปิดใช้งาน HTTPS-Only
 httpsonly-learn-more = เรียนรู้เพิ่มเติม
 httpsonly-radio-enabled =
     .label = เปิดใช้งานโหมด HTTPS-Only ในหน้าต่างทั้งหมด
@@ -1351,6 +1413,9 @@ httpsonly-radio-enabled2 =
     .label = ใช้ HTTPS ในทุกหน้าต่างเท่านั้น
 httpsonly-radio-enabled-pbm =
     .label = เปิดใช้งานโหมด HTTPS-Only ในหน้าต่างส่วนตัวเท่านั้น
+httpsonly-radio-disabled3 =
+    .label = ไม่ต้องเปิดใช้งานโหมด HTTPS-Only
+    .description = { -brand-short-name } อาจจะยังคงอัปเกรดการเชื่อมต่อบางอย่าง
 httpsonly-radio-enabled-pbm2 =
     .label = ใช้ HTTPS ในหน้าต่างส่วนตัวเท่านั้น
 httpsonly-radio-disabled =

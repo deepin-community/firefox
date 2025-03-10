@@ -8,11 +8,18 @@
 newtab-page-title = Nueva pestaña
 newtab-settings-button =
     .title = Personaliza tu página de nueva pestaña
+newtab-personalize-settings-icon-label =
+    .title = Personalizar nueva pestaña
+    .aria-label = Ajustes
+newtab-settings-dialog-label =
+    .aria-label = Ajustes
 newtab-personalize-icon-label =
     .title = Personalizar la nueva pestaña
     .aria-label = Personalizar la nueva pestaña
 newtab-personalize-dialog-label =
     .aria-label = Personalizar
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Guardar en { -pocket-brand-name }
 newtab-menu-delete-pocket = Eliminar de { -pocket-brand-name }
 newtab-menu-archive-pocket = Archivar en { -pocket-brand-name }
 newtab-menu-show-privacy-info = Nuestros patrocinadores y tu privacidad
+newtab-menu-about-fakespot = Acerca de { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Bloquear
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Dejar de seguir tema
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -229,6 +243,8 @@ newtab-pocket-cta-button = Obtener { -pocket-brand-name }
 newtab-pocket-cta-text = Guarda las historias que quieras en { -pocket-brand-name } y llena tu mente con fascinantes lecturas.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } es parte de la familia { -brand-product-name }
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Guardar
 newtab-pocket-saved = Guardado
 
@@ -240,6 +256,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = No es para mi
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Gracias. Tus comentarios nos ayudarán a mejorar tu feed.
 newtab-toast-thumbs-up-or-down = Gracias. Tus comentarios nos ayudarán a mejorar tu feed.
 newtab-toast-dismiss-button =
     .title = Ignorar
@@ -305,6 +324,8 @@ newtab-wallpaper-dark-panda = Panda rojo escondido en el bosque
 newtab-wallpaper-dark-sky = Paisaje citadino con un cielo nocturno
 newtab-wallpaper-dark-mountain = Paisaje montañoso
 newtab-wallpaper-dark-city = Paisaje de ciudad púrpura
+newtab-wallpaper-dark-fox-anniversary = Un zorro en la acera cerca de un bosque
+newtab-wallpaper-light-fox-anniversary = Un zorro en un campo de hierba con un paisaje montañoso brumoso
 
 ## Solid Colors
 
@@ -335,7 +356,7 @@ newtab-wallpaper-abstract-orange = Formas naranjas
 newtab-wallpaper-gradient-orange = Naranja degradado y rosa
 newtab-wallpaper-abstract-blue-purple = Formas azules y moradas
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Fotografías
 newtab-wallpaper-beach-at-sunrise = Playa al amanecer
@@ -359,6 +380,9 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+
 ## New Tab Weather
 
 # Variables:
@@ -369,6 +393,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Patrocinador
 newtab-weather-menu-change-location = Cambiar ubicación
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Buscar ubicación
+    .aria-label = Buscar ubicación
 newtab-weather-change-location-search-input = Buscar ubicación
 newtab-weather-menu-weather-display = Mostrar el clima
 # Display options are:
@@ -427,3 +454,26 @@ newtab-topic-selection-button-maybe-later = Quizá más tarde
 newtab-topic-selection-privacy-link = Conoce cómo protegemos y administramos los datos
 newtab-topic-selection-button-update-interests = Actualiza tus intereses
 newtab-topic-selection-button-pick-interests = Elige tus intereses
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Seguir
+newtab-section-following-button = Siguiendo
+newtab-section-unfollow-button = Dejar de seguir
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = ¿Realmente deseas bloquear esta sección?
+newtab-section-confirm-block-section-p2 = Sección bloqueada, ya no se mostrará más.
+newtab-section-block-section-button = Bloquear esta sección
+newtab-section-cancel-button = Ahora no
+
+## Panel in the Customize menu section to manage followed and blocked topics
+

@@ -4,6 +4,12 @@
 
 menu-view-genai-chat =
     .label = MI csevegőbot
+menu-view-review-checker =
+    .label = Értékelés-ellenőrző
+menu-view-contextual-password-manager =
+    .label = Jelszavak
+sidebar-options-menu-button =
+    .title = Menü megnyitása
 
 ## Labels for sidebar history panel
 
@@ -46,16 +52,30 @@ sidebar-position-right =
     .label = Megjelenítés a jobb oldalon
 sidebar-vertical-tabs =
     .label = Függőleges lapok
+sidebar-settings =
+    .label = Oldalsáv-beállítások
+sidebar-hide-tabs-and-sidebar =
+    .label = Lapok és oldalsáv elrejtése
+sidebar-show-on-the-right =
+    .label = Oldalsáv áthelyezése jobbra
+sidebar-show-on-the-left =
+    .label = Oldalsáv áthelyezése balra
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = Oldalsáv kibontása rámutatáskor
 sidebar-horizontal-tabs =
     .label = Vízszintes lapok
 sidebar-customize-tabs-header =
     .label = Lapbeállítások
-sidebar-customize-settings-header =
-    .label = Oldalsáv-beállítások
-sidebar-visibility-always-show =
-    .label = Megjelenítés mindig
-sidebar-visibility-hide-sidebar =
-    .label = Oldalsáv elrejtése
+sidebar-customize-button-header =
+    .label = Oldalsávgomb
+sidebar-customize-position-header =
+    .label = Oldalsáv-pozíció
+sidebar-visibility-setting-always-show =
+    .label = Oldalsáv kibontása és összecsukása
+sidebar-visibility-setting-hide-sidebar =
+    .label = Oldalsáv megjelenítése és elrejtése
 
 ## Labels for sidebar context menu items
 
@@ -95,6 +115,41 @@ sidebar-menu-bookmarks-label =
     .label = Könyvjelzők
 sidebar-menu-customize-label =
     .label = Oldalsáv testreszabása
+sidebar-menu-review-checker-label =
+    .label = Értékelés-ellenőrző
+sidebar-menu-contextual-password-manager-label =
+    .label = Jelszavak
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = Előzmények megnyitása ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = Előzmények bezárása ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = Könyvjelzők megnyitása ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = Könyvjelzők bezárása ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = MI csevegőbot megnyitása
+sidebar-menu-close-ai-chatbot-tooltip = MI csevegőbot bezárása
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = MI csevegőbot megnyitása ({ $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = { $provider } megnyitása ({ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip-generic = MI csevegőbot bezárása ({ $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = A(z) { $provider } bezárása ({ $shortcut })
 
 ## Headings for sidebar menu panels.
 
@@ -104,6 +159,18 @@ sidebar-menu-history-header =
     .heading = Előzmények
 sidebar-menu-syncedtabs-header =
     .heading = Lapok más eszközökről
+sidebar-menu-bookmarks-header =
+    .heading = Könyvjelzők
+sidebar-menu-cpm-header =
+    .heading = Jelszavak
+sidebar-panel-header-close-button =
+    .tooltiptext = Bezárás
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Oldalsáv testreszabása
+sidebar-history-title = Előzmények
+sidebar-syncedtabs-title = Lapok más eszközökről
 
 ## Context for closing synced tabs when hovering over the items
 
@@ -113,3 +180,29 @@ sidebar-menu-syncedtabs-header =
 #   $deviceName (String) - the name of the device the user is closing a tab for
 synced-tabs-context-close-tab-title =
     .title = Lap bezárása itt: { $deviceName }
+show-sidebars =
+    .tooltiptext = Oldalsávok megjelenítése
+    .label = Oldalsávok
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = Oldalsáv kibontása ({ $shortcut })
+    .label = Oldalsávok
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Oldalsáv összecsukása ({ $shortcut })
+    .label = Oldalsávok
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Oldalsáv megjelenítése ({ $shortcut })
+    .label = Oldalsávok
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Oldalsáv elrejtése ({ $shortcut })
+    .label = Oldalsávok

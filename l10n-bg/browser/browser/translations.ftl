@@ -58,7 +58,7 @@ translations-panel-settings-never-translate-unknown-language =
     .label = Никога да не се превежда от този език
 # Text displayed for the option to never translate this website
 translations-panel-settings-never-translate-site =
-    .label = Никога да не се превежда този сайт
+    .label = Без превод на този сайт
 
 ## The translation panel appears from the url bar, and this view is the default
 ## translation view.
@@ -193,8 +193,8 @@ main-context-menu-translate-link-text =
 # Variables:
 #   $language (string) - The localized display name of the target language
 main-context-menu-translate-link-text-to-language =
-    .label = Превеждане текста на връзката на { $language }
-    .accesskey = ж
+    .label = Превод на текста на препратката на { $language }
+    .accesskey = д
 # Text displayed in the select translations panel header.
 select-translations-panel-header = Превеждане
 # Text displayed above the from-language dropdown menu.

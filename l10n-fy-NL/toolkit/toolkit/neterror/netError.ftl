@@ -12,6 +12,7 @@ neterror-blocked-by-policy-page-title = Blokkearre side
 neterror-captive-portal-page-title = Oanmelde by netwurk
 neterror-dns-not-found-title = Server net fûn
 neterror-malformed-uri-page-title = Unjildige URL
+general-body-title = Wês foarsichtich. Eatwat sjocht der net goed út.
 
 ## Error page actions
 
@@ -41,6 +42,9 @@ neterror-generic-error = { -brand-short-name } kin om ien oft oare reden dizze s
 neterror-load-error-try-again = Miskien is de website tydlik net beskikber. Probearje it letter nochris.
 neterror-load-error-connection = As jo gjin inkelde side lade kinne, kontrolearje dan de netwurkferbining fan jo kompjûter.
 neterror-load-error-firewall = As jo kompjûter of netwurk befeilige wurdt troch in firewall of proxy, soargje der dan foar dat { -brand-short-name } tagong hat ta it web.
+# This warning is only shown on macOS Sequoia and later (see bug 1929377)
+neterror-load-osx-permission = As jo in lokale netwurkside probearje te laden, kontrolearje dan yn de privacy- en befeiligingsynstellingen fan macOS of { -brand-short-name } tastimming hat foar in Lokaal netwurk.
+neterror-http-error-page = Kontrolearje oft jo it websiteadres krekt ynfierd hawwe.
 neterror-captive-portal = Jo moatte jo oanmelde by dit netwurk eardat jo tagong krije ta it ynternet.
 # Variables:
 # $hostAndPath (String) - a suggested site (e.g. "www.example.com") that the user may have meant instead.
@@ -96,6 +100,9 @@ neterror-proxy-connect-failure-settings = Kontrolearje oft jo proxy-ynstellingen
 neterror-proxy-connect-failure-contact-admin = Nim kontakt op mei jo netwurkbehearder om te kontrolearjen oft de proxyserver wurket.
 neterror-content-encoding-error = Nim kontakt op mei de website-eigeners om se oer dit probleem te ynformearjen.
 neterror-unsafe-content-type = Nim kontakt op mei de website-eigeners om se oer dit probleem te ynformearjen.
+# Variables:
+# $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-basic-http-auth = { -brand-short-name } fertrout { $hostname } net, omdat de ferbining net befeilige is. Probearje de URL nei HTTPS te wizigjen.
 neterror-nss-failure-not-verified = De side dy’t jo besjen wolle kin net toand wurde, omdat de echtheid fan de ûntfongen gegevens net ferifiearre wurde kin.
 neterror-nss-failure-contact-website = Nim kontakt op mei de website-eigeners om se oer dit probleem te ynformearjen.
 # Variables:
@@ -148,3 +155,11 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = As jo net bekend binne mei 
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = <b>{ $hostname }</b> hat in befeiligingsbelied mei de namme HTTP Strict Transport Security (HSTS), wat betsjut dat { -brand-short-name } allinnich in befeilige ferbining dêrmei meitsje kin. Jo kinne gjin útsûndering tafoegje om dizze website te besykjen.
+cert-error-trust-certificate-transparency-what-can-you-do-about-it = Wierskynlik neat, omdat der wierskynlik in probleem mei de website sels is.
+certerror-blocked-by-corp-headers-description = Somtiden stelle websites beskerming foar harsels en minsken lykas jo tsjin net-winske ynteraksjes mei oare websites.
+certerror-coop-learn-more = Mear ynfo oer Cross Origin Opener-belied (COOP)
+certerror-coep-learn-more = Mear ynfo oer Cross Origin Embedder-belied (COEP)
+# Variables:
+#   $responsestatus (string) - HTTP response status code (e.g., 500).
+#   $responsestatustext (string) - HTTP response status text (e.g., "Internal Server Error").
+neterror-response-status-code = Flaterkoade: { $responsestatus } { $responsestatustext }

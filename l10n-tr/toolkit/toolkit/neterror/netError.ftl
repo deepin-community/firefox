@@ -12,6 +12,7 @@ neterror-blocked-by-policy-page-title = Engellenmiş sayfa
 neterror-captive-portal-page-title = Ağa giriş yap
 neterror-dns-not-found-title = Sunucu bulunamadı
 neterror-malformed-uri-page-title = Geçersiz URL
+general-body-title = Dikkatli olun. Doğru görünmeyen bir şeyler var.
 
 ## Error page actions
 
@@ -41,6 +42,9 @@ neterror-generic-error = { -brand-short-name } bilinmeyen bir nedenden dolayı b
 neterror-load-error-try-again = Site geçici olarak kapalı veya çok meşgul olabilir. Biraz bekleyip yeniden deneyin.
 neterror-load-error-connection = Hiçbir sayfayı açamıyorsanız bilgisayarınızın ağ bağlantısını kontrol edin.
 neterror-load-error-firewall = Bilgisayarınız veya ağınız güvenlik duvarı veya vekil sunucu ile korunuyorsa { -brand-short-name } uygulamasının web’e erişim izni olduğundan emin olun.
+# This warning is only shown on macOS Sequoia and later (see bug 1929377)
+neterror-load-osx-permission = Bir yerel ağ sayfasını yüklemeye çalışıyorsanız lütfen macOS Gizlilik ve Güvenlik ayarlarından { -brand-short-name } uygulamasına Yerel Ağ izinlerinin verildiğini kontrol edin.
+neterror-http-error-page = Sitenin adresini doğru yazdığınızı kontrol edin.
 neterror-captive-portal = İnternete erişebilmek için önce bu ağa giriş yapmalısınız.
 # Variables:
 # $hostAndPath (String) - a suggested site (e.g. "www.example.com") that the user may have meant instead.
@@ -96,6 +100,9 @@ neterror-proxy-connect-failure-settings = Vekil sunucu ayarlarınızın doğru o
 neterror-proxy-connect-failure-contact-admin = Vekil sunucunun çalıştığından emin olmak için ağ yöneticinizden bilgi alabilirsiniz.
 neterror-content-encoding-error = Site sahipleriyle iletişim kurarak bu sorunu onlara bildirmeyi düşünebilirsiniz.
 neterror-unsafe-content-type = Site sahipleriyle iletişim kurarak bu sorunu onlara bildirmeyi düşünebilirsiniz.
+# Variables:
+# $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-basic-http-auth = Bağlantı güvenli olmadığı için { -brand-short-name } { $hostname } sitesine güvenmiyor. URL’yi HTTPS olarak değiştirmeyi deneyin.
 neterror-nss-failure-not-verified = Görüntülemeye çalıştığınız sayfa, alınan verilerin yetkinliği doğrulanamadığı için gösterilemiyor.
 neterror-nss-failure-contact-website = Sitenin sahibiyle iletişime geçerek bu sorunu bildirmeyi deneyebilirsiniz.
 # Variables:
@@ -148,3 +155,11 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = <b>{ $mitm }</b> size tanı
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = <b>{ $hostname }</b>, HTTP Sıkı Aktarım Güvenliği (HSTS) denilen bir güvenlik ilkesi uyguluyor. Bu nedenle { -brand-short-name } bu siteye yalnızca güvenli bir şekilde bağlanabilir. Bu siteye ayrıcalık tanıyarak siteyi ziyaret edemezsiniz.
+cert-error-trust-certificate-transparency-what-can-you-do-about-it = Sorun büyük ihtimalle sitenin kendisinden kaynaklandığı için sizin yapabileceğiniz bir şey yok.
+certerror-blocked-by-corp-headers-description = Bazen web siteleri, hem sitenin hem de insanların başka sitelerle istenmeyen etkileşimlere girmesini önleyen korumalar kurar.
+certerror-coop-learn-more = Cross Origin Opener İlkeleri (COOP) hakkında daha fazla bilgi alın
+certerror-coep-learn-more = Cross Origin Embedder İlkeleri (COEP) hakkında daha fazla bilgi alın
+# Variables:
+#   $responsestatus (string) - HTTP response status code (e.g., 500).
+#   $responsestatustext (string) - HTTP response status text (e.g., "Internal Server Error").
+neterror-response-status-code = Hata kodu: { $responsestatus } { $responsestatustext }

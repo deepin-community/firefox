@@ -8,11 +8,18 @@
 newtab-page-title = Nyt faneblad
 newtab-settings-button =
     .title = Tilpas siden Nyt faneblad
+newtab-personalize-settings-icon-label =
+    .title = Tilpas nyt faneblad
+    .aria-label = Indstillinger
+newtab-settings-dialog-label =
+    .aria-label = Indstillinger
 newtab-personalize-icon-label =
     .title = Tilpas nyt faneblad
     .aria-label = Tilpas nyt faneblad
 newtab-personalize-dialog-label =
     .aria-label = Tilpas
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Gem til { -pocket-brand-name }
 newtab-menu-delete-pocket = Slet fra { -pocket-brand-name }
 newtab-menu-archive-pocket = Arkiver i { -pocket-brand-name }
 newtab-menu-show-privacy-info = Vores sponsorer og dit privatliv
+newtab-menu-about-fakespot = Om { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Bloker
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Stop med at følge emne
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -234,6 +248,8 @@ newtab-pocket-cta-button = Hent { -pocket-brand-name }
 newtab-pocket-cta-text = Gem dine yndlingshistorier i { -pocket-brand-name } og hav dem altid ved hånden.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } er en del af { -brand-product-name }-familien
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Gem
 newtab-pocket-saved = Gemt
 
@@ -245,6 +261,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Ikke noget for mig
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Tak. Din tilbagemelding hjælper os med at forbedre dit feed.
 newtab-toast-thumbs-up-or-down = Tak. Din tilbagemelding hjælper os med at forbedre dit feed.
 newtab-toast-dismiss-button =
     .title = Afvis
@@ -298,6 +317,12 @@ newtab-custom-settings = Håndter flere indstillinger
 
 newtab-wallpaper-title = Baggrunde
 newtab-wallpaper-reset = Nulstil til standard
+newtab-wallpaper-upload-image = Upload et billede
+newtab-wallpaper-custom-color = Vælg en farve
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = Billedet overskrider grænsen for filstørrelse på { $file_size } MB. Prøv at uploade en mindre fil.
+newtab-wallpaper-error-file-type = Vi kunne ikke uploade din fil. Prøv igen med en anden filtype.
 newtab-wallpaper-light-red-panda = Rød panda
 newtab-wallpaper-light-mountain = Hvidt bjerg
 newtab-wallpaper-light-sky = Himmel med lilla og lyserøde skyer
@@ -310,6 +335,8 @@ newtab-wallpaper-dark-panda = Rød panda skjult i en skov
 newtab-wallpaper-dark-sky = Udsigt over by med nattehimmel
 newtab-wallpaper-dark-mountain = Bjerglandskab
 newtab-wallpaper-dark-city = Lilla bylandskab
+newtab-wallpaper-dark-fox-anniversary = En ræv på fortovet i nærheden af en skov
+newtab-wallpaper-light-fox-anniversary = En ræv på en græsmark i et tåget bjerglandskab
 
 ## Solid Colors
 
@@ -339,8 +366,12 @@ newtab-wallpaper-abstract-purple = Lilla former
 newtab-wallpaper-abstract-orange = Orange former
 newtab-wallpaper-gradient-orange = Farveforløb i orange og pink
 newtab-wallpaper-abstract-blue-purple = Blå og lilla former
+newtab-wallpaper-abstract-white-curves = Hvid med skraverede kurver
+newtab-wallpaper-abstract-purple-green = Gradient med lilla og grønt lys
+newtab-wallpaper-abstract-blue-purple-waves = Blå og lilla bølgeformer
+newtab-wallpaper-abstract-black-waves = Sorte bølgeformer
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Fotografier
 newtab-wallpaper-beach-at-sunrise = Strand ved solopgang
@@ -349,6 +380,12 @@ newtab-wallpaper-storm-sky = Stormfuld himmel
 newtab-wallpaper-sky-with-pink-clouds = Himmel med lyserøde skyer
 newtab-wallpaper-red-panda-yawns-in-a-tree = Rød panda gaber i et træ
 newtab-wallpaper-white-mountains = Hvide bjerge
+newtab-wallpaper-hot-air-balloons = Luftballoner i forskellige farver om dagen
+newtab-wallpaper-starry-canyon = Blå stjernehimmel
+newtab-wallpaper-suspension-bridge = Fotografi af grå hængebro om dagen
+newtab-wallpaper-sand-dunes = Hvide klitter
+newtab-wallpaper-palm-trees = Silhuet med kokospalmer i den gyldne time
+newtab-wallpaper-forest-trees = Træer indhyllet i tåge
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -364,6 +401,19 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Rummet
+newtab-wallpaper-celestial-lunar-eclipse = Måneformørkelse
+newtab-wallpaper-celestial-earth-night = Nattefotografi fra lavt kredsløb om Jorden
+newtab-wallpaper-celestial-starry-sky = Stjernehimmel
+newtab-wallpaper-celestial-eclipse-time-lapse = Tidsforløb måneformørkelse
+newtab-wallpaper-celestial-black-hole = Illustration af galakse med sort hul
+newtab-wallpaper-celestial-river = Satellitfotografi af flod
+
 ## New Tab Weather
 
 # Variables:
@@ -374,6 +424,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Sponsoreret
 newtab-weather-menu-change-location = Skift sted
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Søg efter sted
+    .aria-label = Søg efter sted
 newtab-weather-change-location-search-input = Søg efter sted
 newtab-weather-menu-weather-display = Visning af vejr
 # Display options are:
@@ -432,3 +485,45 @@ newtab-topic-selection-button-maybe-later = Måske senere
 newtab-topic-selection-privacy-link = Lær, hvordan vi beskytter og håndterer data
 newtab-topic-selection-button-update-interests = Opdater dine interesser
 newtab-topic-selection-button-pick-interests = Vælg dine interesser
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Følg
+newtab-section-following-button = Følger
+newtab-section-unfollow-button = Stop med at følge
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Bloker
+newtab-section-blocked-button = Blokeret
+newtab-section-unblock-button = Fjern blokering
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = Er du sikker på, at du vil blokere dette afsnit?
+newtab-section-confirm-block-section-p2 = Det blokerede afsnit vil ikke længere blive vist i dit feed.
+newtab-section-block-section-button = Bloker dette afsnit
+newtab-section-cancel-button = Ikke nu
+newtab-section-confirm-block-topic-p1 = Er du sikker på, at du vil blokere dette emne?
+newtab-section-confirm-block-topic-p2 = Det blokerede emner vil ikke længere blive vist i dit feed.
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = Bloker { $topic }
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = Emner
+newtab-section-manage-topics-button-v2 =
+    .label = Håndter emner
+newtab-section-mangage-topics-followed-topics = Fulgt
+newtab-section-mangage-topics-button =
+    .label = Fulgte og blokerede emner
+newtab-section-mangage-topics-followed-topics-subtitle = Fulgte emner
+newtab-section-mangage-topics-followed-topics-empty-state = Du har ikke fulgt nogle emner endnu.
+newtab-section-mangage-topics-blocked-topics = Blokeret
+newtab-section-mangage-topics-blocked-topics-subtitle = Blokerede emner
+newtab-section-mangage-topics-blocked-topics-empty-state = Du har ikke blokeret nogen emner endnu.

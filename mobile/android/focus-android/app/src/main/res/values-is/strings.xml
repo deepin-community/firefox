@@ -89,8 +89,6 @@
 
     <string name="notification_erase_title_android_14">Eyða vafurferli?</string>
 
-    <string name="notification_erase_text_android_14" moz:RemovedIn="124" tools:ignore="UnusedResources">Ýttu á eða hreinsaðu þessa tilkynningu til að eyða vafurferli þínum á öruggan hátt.</string>
-
     <!-- Text shown in the notification description that pops up to remind the user that a browsing session is active
     for Android 14+. -->
     <string name="notification_erase_text_android_14_1">Ýttu á eða strjúktu út þessa tilkynningu til að eyða vafurferli þínum á öruggan hátt.</string>
@@ -357,6 +355,11 @@
     <!-- %1$s will be replaced with the name of the app (e.g. Firefox Focus) -->
     <string name="preference_mozilla_telemetry_summary2">Mozilla safnar eingöngu því sem nauðsynlegt er til að betrumbæta %1$s fyrir alla.</string>
 
+    <!-- Preference switch for daily usage ping data collection -->
+    <string name="preference_daily_usage_ping_title">Ping um daglega notkun</string>
+    <string name="preference_daily_usage_ping_description">Þetta hjálpar Mozilla að áætla virka notendur.</string>
+    <string name="preference_daily_usage_ping_learn_more">Kanna nánar</string>
+
     <!-- In-app link (in settings) to Focus privacy notice. -->
     <string name="preference_privacy_notice">Upplýsingar um meðferð persónuupplýsinga</string>
 
@@ -365,6 +368,9 @@
 
     <!-- Link to Focus licensing information from other libraries that we use. -->
     <string name="preference_libraries_we_use">Aðgerðasöfn sem við notum</string>
+
+    <!-- Link to Focus Crash reports list. -->
+    <string name="preference_crashes">Hrun</string>
 
     <!-- Open Source Licenses page title. The first parameter is the app name -->
     <string name="open_source_licenses_title">%s | OSS-aðgerðasöfn</string>
@@ -495,9 +501,6 @@
     <string name="snackbar_added_to_shortcuts">Bætt við flýtileiðir!</string>
 
     <string name="error_hostLookup_title">Netþjónn fannst ekki</string>
-
-    <!-- Content description (not visible, for screen readers etc.): This is the description for the close button from the new onboarding flow screen one and two -->
-    <string name="onboarding_close_button_content_description">Loka</string>
 
     <!-- New Onboarding flow first screen title -->
     <!-- %1$s will be replaced by the app name and build variant(e.g. Firefox Focus, Firefox Klar Nightly) -->
@@ -814,7 +817,7 @@
     <string name="studies_learn_more">Fræðast meira</string>
 
     <!-- Dialog message shown when some changes are made on studies -->
-    <string name="studies_restart_app">Forritið hættir til að virkja breytingar</string>
+    <string name="studies_restart_app" moz:removedIn="135">Forritið hættir til að virkja breytingar</string>
 
     <!-- Title of the remove studies button -->
     <string name="studies_remove">Fjarlægja</string>
@@ -909,9 +912,6 @@
 
     <!-- Label for the button in the snackbar that switches to the newly opened tab -->
     <string name="open_new_tab_snackbar">Skipta</string>
-
-    <!-- Text displayed in a notification when the user enters full screen mode -->
-    <string name="full_screen_notification" moz:removedIn="130" tools:ignore="UnusedResources">Fara í fullan skjá</string>
 
     <!-- Preference for switching to a new tab immediately after opening -->
     <string name="preference_open_new_tab">Skipta strax yfir í tengil í nýjum flipa</string>
@@ -1093,8 +1093,10 @@ Ef þú hefur getað tengst þessum netþjóni án vandamála áður, gæti veri
     <string name="promote_search_widget_snackbar_message">Viðmótshluta bætt á upphafsskjá</string>
 
     <!-- Messages explaining how to exit fullscreen mode -->
-    <!-- Message shown to explain how to exit fullscreen mode when gesture navigation is enabled -->
-    <string name="exit_fullscreen_with_gesture">Til að hætta í fylltum skjá, skaltu draga niður að ofan og nota bakbendingu</string>
-    <!-- Message shown to explain how to exit fullscreen mode when using back button navigation -->
-    <string name="exit_fullscreen_with_back_button">Til að hætta í fylltum skjá, skaltu draga niður að ofan og ýta á til-baka hnappinn</string>
+    <!-- Message shown to explain how to exit fullscreen mode when gesture navigation is enabled. -->
+    <!-- Localisation note: this text should be as short as possible, max 68 chars -->
+    <string name="exit_fullscreen_with_gesture_short">Dragðu að ofan og notaðu aftur-bendingu til að hætta</string>
+    <!-- Message shown to explain how to exit fullscreen mode when using back button navigation. -->
+    <!-- Localisation note: this text should be as short as possible, max 68 chars -->
+    <string name="exit_fullscreen_with_back_button_short">Dragðu að ofan og ýttu á til baka til að hætta</string>
 </resources>

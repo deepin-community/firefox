@@ -226,7 +226,9 @@ mr2022-onboarding-set-default-subtitle = Wužywajśo wobglědowak, kótaryž se 
 mr2022-onboarding-get-started-primary-subtitle = Naša nejnowša wersija jo wokoło was natwarjona, kótaraž wam lažčejše ako do togo cyni, web pśeglědowaś. Jo połny funkcijow, wó kótarychž se myslimy, až se wam spódobaju.
 mr2022-onboarding-get-started-primary-button-label = Instalacija za sekundy
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Spěšnučka instalacija
 mr2022-onboarding-import-subtitle = Zarědujśo { -brand-short-name }, kak se wam spódoba. Pśidajśo swóje cytańske znamjenja, gronidła a wěcej ze swójogo starego wobglědowaka.
@@ -357,6 +359,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Gaž sćo synchroniz�
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } za wami stoj
 onboarding-gratitude-security-and-privacy-subtitle = Wjeliki źěk, až { -brand-short-name } wužywaśo, kótaryž se wót załožby Mozilla Foundation spěchujo. Z wašeju pomocu źěłamy na tom, internet wěsćejšy a pśistupnjejšy za kuždego cyniś.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Daty pśez rědy synchronizěrowaś
+onboarding-sign-up-description = Registrěrujśo se za konto a wšykne waše wažne informacije – gronidła, cytańske znamjenja a wěcej – se wěsće składuju a su k dispoziciji, gaž se w někakem rěźe pśizjawjaśo.
+onboarding-sign-up-button = Registrěrowaś abo pśizjawiś
+onboarding-sign-up-secondary-button = Pśeglědowanje zachopiś
 
 ## New user time and familiarity survey strings
 
@@ -376,3 +383,90 @@ onboarding-new-user-survey-familiarity-based-option-1 = Som cele nowy
 onboarding-new-user-survey-familiarity-based-option-2 = Som jen wužywał južo někotare raze
 onboarding-new-user-survey-familiarity-based-option-3 = Znajom jen wjelgin derje
 onboarding-new-user-survey-familiarity-based-option-4 = Som jen wužywał w zajźonosći, ale jo južo chyla
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Dajśo nam k wěsći, źož cośo swóje rejtariki měś
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Pśešaltujśo  w nastajenjach bocnicy, gažkuli cośo.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Waše rejtariki, waša móžnosć
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Maśo wjele rejtarikow wócynjone? Rědujśo swóje rejtariki na boku za racionelnjejšy naglěd. Abo wužywajśo klasiski naglěd z rejtarikami górjejce. Pśeměńśo kuždy cas.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Wubjeŕśo swójo wugótowanje rejtarikow
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Za racionelny naglěd, kótaryž móžo wam pomagaś koncentrěrowany wóstaś, wopytajśo swóje rejtariki na boku. Abo wužywajśo klasiski naglěd z rejtarikami górjejce. Pśeměńśo kuždy cas.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Rejtariki na boku
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Rejtariki górjejce
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Wertikalne rejtariki su how
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Wertikalne rejtariki pśedstajiś
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Wopytajśo swóje rejtariki na boku. Pśešaltujśo w nastajenjach bocnicy, gažkuli cośo.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Wopytajśo wertikalne rejtariki
+onboarding-flair-text = Nowy!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Horicontalne rejtariki wobchowaś
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Wokno wobglědowaka, kótarež rejtariki spóromje boka wobrazowki ako źěl bocnice { -brand-shorter-name } pokazujo.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Wokno wobglědowaka, kótarež rejtariki spóromje boka wobrazowki ako źěl bocnice { -brand-shorter-name } pokazujo.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Wokno wobglědowaka, kótarež rejtariki górjejce pokazujo.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Wokno wobglědowaka, kótarež rejtariki górjejce pokazujo.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Wopytajśo chatowy bot KI w bocnicy.
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Zespominajśo webwopśimjeśe, ideje namakanja idejow, nacerjenja powěsćow – wšykno, gaž pśeglědujośo. Wubjeŕśo z někotarych póbitowarjow. Móžośo jogo kuždy raz změniś. <a data-l10n-name="learn-more">Dalšne informacije</a>
+onboarding-genai-sidebar-primary-button = Wubjeŕśo chatowy bot
+onboarding-genai-sidebar-secondary-button = Pśeglědowanje zachopiś
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Konfiguraciju { -brand-short-name } skóńcyś
+onboarding-checklist-subtitle = Dokóńcćo toś te kšace, aby nejwěcej ze swójogo dožywjenja pśeglědowanja wuwónoźeł.
+onboarding-checklist-set-default = Nastajśo { -brand-short-name } ako standardny wobglědowak
+onboarding-checklist-pin = Pśipějśo { -brand-short-name } k nadawkowej rědce
+onboarding-checklist-import = Z pjerwjejšnego wobglědowaka importěrowaś
+onboarding-checklist-extension = Rozšyrjenje pśidaś
+onboarding-checklist-sign-up = Registrěrujśo se abo pśizjawśo se pla swójogo konta
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Wopytajśo kupki rejtarikow za mjenjej njepórěda a wěcej fokusa
+tab-groups-onboarding-feature-callout-subtitle = Organizěrujśo se, śěgniśo jaden rejtarik górjejce na drugi, aby wašu prědnu kupku napórał.
+tab-groups-onboarding-create-group-title = Pytajśo swóje wócynjone kupli na rědce rejtarikow abo pytajśo je w adresowem pólu.
+tab-groups-onboarding-saved-groups-title = Jolic kupku rejtarikow zacynjaśo, móžośo ju how kuždy cas zasej wócyniś.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title = Pytajśo kuždy cas w adresowem pólu za wócynjonymi abo zacynjonymi kupkami rejtarikow.
+tab-groups-onboarding-dismiss = W pórěźe
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Witajśo profile { -brand-product-name }
+multi-profile-spotlight-body = Pśeměńśo lažko mjazy pśeglědowanim za źěło a wjasele. Profile waše pśeglědowańske informacije, mjazy nimi pytańsku historiju a gronidła, dopołnje separatne wobchowaju, aby organizěrowany wóstał.
+multi-profile-spotlight-cta = Profil załožyś
+multi-profile-callout-title = Załožćo rozdźělne profile za źěło a wjasele
+multi-profile-callout-subtitle = Profile wam zmóžnjaju, waše pśeglědowańske informacije ako pytańsku historiju a gronidła dopołnje separatnje wobchowaś.
+multi-profile-callout-cta = Profil załožyś
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Ześěgniśo, synchronizěrujśo, start!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Scannujśo QR-kod, aby { -brand-product-name } za mobilne rědy ześěgnuł. Gaž sćo jen instalěrował, wubjeŕśo „Z mobilnym rědom synchronizěrowaś“, aby ducy pśistup k swójim gronidłam, cytańskim znamjenjam a wěcej dostał.
+dismiss-button-label = Zachyśiś
+sync-to-mobile-button-label = Z mobilnym rědom synchronizěrowaś
+desktop-to-mobile-qr-code-alt =
+    .aria-label = QR-kod za ześěgnjenje { -brand-product-name } za mobilne rědy

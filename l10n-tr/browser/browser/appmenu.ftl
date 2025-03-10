@@ -108,8 +108,11 @@ appmenu-fxa-sync-and-save-data2 = Verileri eşitle ve kaydet
 appmenu-fxa-signed-in-label = Giriş yap
 appmenu-fxa-setup-sync =
     .label = Eşitlemeyi aç…
+appmenu-fxa-setup-sync-new = Aç
 appmenuitem-save-page =
     .label = Sayfayı farklı kaydet…
+appmenuitem-fxa-sync-off-title = Eşitleme kapalı
+appmenuitem-fxa-sync-off-description = Yer imlerinizi, parolalarınızı ve diğer verilerinizi koruyun ve onlara her yerden erişin.
 
 ## What's New panel in App menu.
 
@@ -148,7 +151,7 @@ profiler-popup-edit-settings-button =
     .label = Ayarları düzenle…
 profiler-popup-recording-screen = Kaydediliyor…
 profiler-popup-start-recording-button =
-    .label = Kaydetmeye başla
+    .label = Kaydı başlatın
 profiler-popup-discard-button =
     .label = Sil
 profiler-popup-capture-button =
@@ -196,6 +199,7 @@ profiler-popup-presets-power-description = { -brand-shorter-name } tarayıcısı
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Güç
+profiler-popup-presets-debug-description = { -brand-shorter-name } tarayıcısında hata ayıklama ayarı. Yüksek ek yük nedeniyle performans çalışması için uygun değildir, tarayıcı davranışını anlamaya odaklanmak için kullanın.
 profiler-popup-presets-debug-label =
     .label = Hata ayıklama
 profiler-popup-presets-custom-label =
@@ -276,5 +280,21 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Veri ihlali uyarıları alın
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Gerçek e-posta adresinizi ve telefon numaranızı maskeleyin
+appmenuitem-services-relay-description = E-posta maskeleri panosunu aç
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Çevrimiçi etkinliklerinizi koruyun
+appmenu-services-header = Servislerim
+appmenu-other-protection-header = Diğer { -vendor-short-name } koruma araçlarını deneyin:
+
+## Profiles panel
+
+appmenu-profiles = Profiller
+appmenu-other-profiles = Diğer profiller
+appmenu-manage-profiles =
+    .label = Profilleri yönet
+appmenu-create-profile =
+    .label = Yeni profil
+appmenu-edit-profile =
+    .aria-label = Profili düzenle
+appmenu-profiles-2 =
+    .label = Profiller

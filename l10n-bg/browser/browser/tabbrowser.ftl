@@ -72,6 +72,9 @@ tabbrowser-unblock-tab-audio-tooltip =
            *[other] Включване звука на { $tabCount } раздела
         }
 
+## Tooltips for tab audio control
+
+
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
@@ -79,14 +82,25 @@ tabbrowser-unblock-tab-audio-tooltip =
 # Variables:
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-confirm-close-tabs-title =
-    { NUMBER($tabCount) ->
+    { $tabCount ->
         [one] Да се затвори ли { $tabCount } раздел?
        *[other] Да се затворят ли { $tabCount } раздела?
     }
 tabbrowser-confirm-close-tabs-button = Затваряне на разделите
+tabbrowser-ask-close-tabs-checkbox = Потвърждаване при затваряне на няколко раздела
+tabbrowser-confirm-close-tabs-checkbox = Потвърждаване при затваряне на няколко раздела
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
 
+# The forms for 0 or 1 items are not considered since this string is used only for
+# multiple windows.
+# Variables:
+#   $windowCount (Number): The number of windows that will be closed.
+tabbrowser-confirm-close-windows-title =
+    { $windowCount ->
+        [one] Затваряне на { $windowCount } прозорец?
+       *[other] Затваряне на { $windowCount } прозореца?
+    }
 tabbrowser-confirm-close-windows-button =
     { PLATFORM() ->
         [windows] Затваряне и излизане
@@ -96,7 +110,25 @@ tabbrowser-confirm-close-windows-button =
 ## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
 ## Windows does not show a prompt on quit when using the keyboard shortcut by default.
 
+tabbrowser-confirm-close-tabs-with-key-title = Затваряне на прозореца и изход от { -brand-short-name }?
 tabbrowser-confirm-close-tabs-with-key-button = Изход от { -brand-short-name }
+# Variables:
+#   $quitKey (String): the text of the keyboard shortcut for quitting.
+tabbrowser-ask-close-tabs-with-key-checkbox = Потвърждаване при изход с { $quitKey }
+# Variables:
+#   $quitKey (String): the text of the keyboard shortcut for quitting.
+tabbrowser-confirm-close-tabs-with-key-checkbox = Потвърждаване при изход с { $quitKey }
+
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
+
+tabbrowser-confirm-close-warn-shortcut-title = Изход от { -brand-short-name } или затваряне на текущия раздел?
+tabbrowser-confirm-close-windows-warn-shortcut-button =
+    { PLATFORM() ->
+        [windows] Изход от { -brand-short-name }
+       *[other] Изход от { -brand-short-name }
+    }
+tabbrowser-confirm-close-tab-only-button = Затваряне на раздела
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
@@ -120,11 +152,16 @@ tabbrowser-confirm-caretbrowsing-checkbox = Да не се показва тоз
 
 tabbrowser-confirm-close-duplicate-tabs-title = Внимание!
 tabbrowser-confirm-close-duplicate-tabs-text = Ще държим отворен последния активен раздел
-tabbrowser-confirm-close-all-duplicate-tabs-title = Да се затварят ли дублиращите се раздели?
+tabbrowser-confirm-close-all-duplicate-tabs-title = Да бъдат ли затворени дублиращите се раздели?
+tabbrowser-confirm-close-all-duplicate-tabs-text = Дублиращите се раздели в прозореца ще бъдат затворени. Ще бъде оставен последният използван раздел
 tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Затваряне на разделите
 
 ##
 
+# Variables:
+#   $domain (String): URL of the page that is trying to steal focus.
+tabbrowser-allow-dialogs-to-get-focus =
+    .label = Позволяване на известия като това от { $domain } да отваря техния раздел
 tabbrowser-customizemode-tab-title = Приспособяване на { -brand-short-name }
 
 ## Context menu buttons, of which only one will be visible at a time
@@ -143,6 +180,8 @@ tabbrowser-context-mute-selected-tabs =
 tabbrowser-context-unmute-selected-tabs =
     .label = Включване на звука на разделите
     .accesskey = в
+# This string is used as an additional tooltip and accessibility description for tabs playing audio
+tabbrowser-tab-audio-playing-description = Възпроизвеждане на аудио
 
 ## Ctrl-Tab dialog
 
@@ -152,4 +191,71 @@ tabbrowser-ctrl-tab-list-all-tabs =
     .label = Показване на всички { $tabCount } раздела
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
+
+tabbrowser-manager-mute-tab =
+    .tooltiptext = Заглушаване на раздела
+tabbrowser-manager-unmute-tab =
+    .tooltiptext = Включване на звука на раздела
+tabbrowser-manager-close-tab =
+    .tooltiptext = Затваряне на раздела
+
+## Tab Groups
+
+tab-group-editor-title-create = Създаване на група от раздели
+tab-group-editor-title-edit = Управление на група от раздели
+tab-group-editor-name-label = Име
+tab-group-editor-name-field =
+    .placeholder = Пример: Благотворителност
+tab-group-editor-cancel =
+    .label = Отказ
+    .accesskey = о
+tab-context-unnamed-group =
+    .label = Неименувана група
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
+tab-context-move-tab-to-new-group =
+    .label =
+        { $tabCount ->
+            [one] Добавяне на раздели към нова група
+           *[other] Добавяне на раздели към нова група
+        }
+    .accesskey = г
+tab-context-move-tab-to-group =
+    .label =
+        { $tabCount ->
+            [one] Добавяне на раздели към група
+           *[other] Добавяне на раздели към група
+        }
+    .accesskey = г
+tab-group-editor-action-new-tab =
+    .label = Нов раздел в групата
+tab-group-editor-action-new-window =
+    .label = Преместване в нов прозорец
+tab-group-editor-action-save =
+    .label = Запазване и затваряне на групата
+tab-group-editor-action-ungroup =
+    .label = Изваждане на разделите от групата
+tab-group-editor-action-delete =
+    .label = Премахване на групата
+tab-group-editor-done =
+    .label = Готово
+    .accessKey = о
+tab-context-reopen-tab-group =
+    .label = Възстановяване на група от раздели
+# Variables:
+#  $groupCount (Number): the number of tab groups that are affected by the action.
+tab-context-ungroup-tab =
+    .label =
+        { $groupCount ->
+            [one] Премахване от група
+           *[other] Премахване от групи
+        }
+    .accesskey = г
+
+## Open/saved tab group context menu
 

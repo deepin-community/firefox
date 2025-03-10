@@ -16,3 +16,10 @@ all-tabs-menu-close-duplicate-tabs =
     .label = Κλείσιμο διπλών καρτελών
 all-tabs-menu-close-all-duplicate-tabs =
     .label = Κλείσιμο όλων των διπλών καρτελών
+all-tabs-menu-synced-tabs =
+    .label = Καρτέλες από άλλες συσκευές
+all-tabs-menu-current-window-header = Τρέχον παράθυρο
+# "Show all" is for showing all open groups as well as saved groups. Initially,
+# we only show up to five of these groups.
+all-tabs-menu-tab-groups-show-all =
+    .label = Εμφάνιση όλων

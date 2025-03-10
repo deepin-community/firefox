@@ -62,8 +62,8 @@ detail-private-browsing-label = Աշխատեցնել գաղտնի պատուհա
 detail-private-disallowed-label = Թույլատրված չէ գաղտնի պատուհաններում
 detail-private-disallowed-description2 = Այս ընդլայնումը չի գործում գաղտնի դիտարկման ժամանակ։ <a data-l10n-name="learn-more">Իմանալ ավելին</a>
 # Some special add-ons are privileged, run in private windows automatically, and this permission can't be revoked
-detail-private-required-label = Պահանջվում է մուտք դեպի անձնական պատուհան
-detail-private-required-description2 = Այս ընդլայնումը հասանելի է ձեր առցանց գործունության՝ անձնական զննարկման ժամանակ։ <a data-l10n-name="learn-more">Իմանալ ավելին</a>
+detail-private-required-label = Պահանջվում է հասանելիություն դեպի գաղտնի պատուհան
+detail-private-required-description2 = Այս ընդլայնումը հասանելիություն ունի գաղտնի դիտարկման ժամանակ Ձեր առցանց գործունությանը։ <a data-l10n-name="learn-more">Իմանալ ավելին</a>
 detail-private-browsing-on =
     .label = Թույլատրել
     .tooltiptext = Միացնել գաղտնի դիտարկումում
@@ -237,7 +237,7 @@ shortcuts-duplicate-warning-message2 =
 # String displayed when a keyboard shortcut is already used by another add-on
 # Variables:
 #   $addon (string) - Name of the add-on
-shortcuts-exists = Արդեն օգտագործվում է{ $addon }
+shortcuts-exists = Արդեն օգտագործվում է { $addon }-ի կողմից
 # Variables:
 #   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
@@ -274,7 +274,7 @@ created-by-author = <a data-l10n-name="author">{ $author }</a>-ի կողմից
 # Shows the number of daily users of the add-on.
 # Variables:
 #   $dailyUsers (number) - The number of daily users.
-user-count = Օգտագործողներ { $dailyUsers }
+user-count = Օգտագործողներ՝ { $dailyUsers }
 install-extension-button = Հավելել { -brand-product-name }-ին
 install-theme-button = Տեղադրել ոճ
 # The label of the button that appears after installing an add-on. Upon click,
@@ -331,7 +331,7 @@ install-postponed-message = Այս ընդլայնումը կթարմացվի, ե
 # Message for add-ons with a staged pending update.
 install-postponed-message2 =
     .message = Այս ընդլայնումը կթարմացվի, երբ { -brand-short-name }-ը վերամեկնարկի:
-install-postponed-button = Թարմացնել հիմա
+install-postponed-button = Արդիացնել
 # The average rating that the add-on has received.
 # Variables:
 #   $rating (number) - A number between 0 and 5. The translation should show at most one digit after the comma.
@@ -372,10 +372,14 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Թույլատրված է գաղտնի պատուհաններում
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Թույլատրված է գաղտնի պատուհաններում
     .aria-label = { addon-badge-private-browsing-allowed2.title }
-addon-detail-private-browsing-help = Երբ թույլատրված է, գաղտնի զննարկելիս ընդլայնումը կունենա ձեր առցանց գործունեության մատչում։ <a data-l10n-name="learn-more">Իմանալ ավելին</a>
+addon-detail-private-browsing-help = Երբ թույլատրված է, ընդլայնումը գաղտնի դիտարկման ժամանակ կունենա հասանելիություն Ձեր առցանց գործունեությանը: <a data-l10n-name="learn-more">Իմանալ ավելին</a>
 addon-detail-private-browsing-allow = Թույլատրել
 addon-detail-private-browsing-disallow = Չթույլատրել
 # aria-label associated to the private browsing row to help screen readers to announce the group
@@ -396,7 +400,7 @@ addon-detail-quarantined-domains-disallow = Չթույլատրել
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
 
 addon-badge-recommended2 =
-    .title = { -brand-product-name }-ը միայն խորհուրդ է տալիս ընդլայնումներ, որոնք համապատասխանում են մեր անվտանգության և արդյունավետության չափօրինակներին
+    .title = { -brand-product-name }-ը միայն խորհուրդ է տալիս ընդլայնումներ, որոնք համապատասխանում են անվտանգության և արտադրողականության մեր չափանիշներին
     .aria-label = { addon-badge-recommended2.title }
 # We hard code "Mozilla" in the string below because the extensions are built
 # by Mozilla and we don't want forks to display "by Fork".
@@ -406,6 +410,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Այս ընդլայնումը գնահատվել է՝ անվտանգության և արտադրողականության մեր չափանիշներին համապատասխանելու համար
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name }-ը միայն խորհուրդ է տալիս ընդլայնումներ, որոնք համապատասխանում են անվտանգության և արտադրողականության մեր չափանիշներին
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Պաշտոնական ընդլայնում, հավաքված Mozilla-ի կողմից: Համապատասխանում է անվտանգության և արտադրողականության չափանիշներին
+addon-badge-verified3 =
+    .title = Այս ընդլայնումը գնահատվել է՝ անվտանգության և արտադրողականության մեր չափանիշներին համապատասխանելու համար
 
 ##
 

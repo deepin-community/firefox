@@ -6,6 +6,7 @@
 #include "CanvasRenderingContext2D.h"
 
 #include "mozilla/gfx/Helpers.h"
+#include "nsCSSValue.h"
 #include "nsXULElement.h"
 
 #include "nsMathUtils.h"
@@ -891,12 +892,17 @@ NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(CanvasRenderingContext2D)
     ImplCycleCollectionUnlink(
         tmp->mStyleStack[i].gradientStyles[Style::STROKE]);
     ImplCycleCollectionUnlink(tmp->mStyleStack[i].gradientStyles[Style::FILL]);
-    auto autoSVGFiltersObserver =
-        tmp->mStyleStack[i].autoSVGFiltersObserver.get();
-    if (autoSVGFiltersObserver) {
-      // XXXjwatt: I don't think this call achieves anything.  See the comment
-      // that documents this function.
-      SVGObserverUtils::DetachFromCanvasContext(autoSVGFiltersObserver);
+    if (auto* autoSVGFiltersObserver =
+            tmp->mStyleStack[i].autoSVGFiltersObserver.get()) {
+      /*
+       * XXXjwatt: I don't think this is doing anything useful.  All we do under
+       * this function is clear a raw C-style (i.e. not strong) pointer.  That's
+       * clearly not helping in breaking any cycles.  The fact that we MOZ_CRASH
+       * in OnRenderingChange if that pointer is null indicates that this isn't
+       * even doing anything useful in terms of preventing further invalidation
+       * from any observed filters.
+       */
+      autoSVGFiltersObserver->Detach();
     }
     ImplCycleCollectionUnlink(tmp->mStyleStack[i].autoSVGFiltersObserver);
   }
@@ -1125,6 +1131,29 @@ void CanvasRenderingContext2D::GetContextAttributes(
 
   // We don't support the 'desynchronized' and 'colorSpace' attributes, so
   // those just keep their default values.
+}
+
+void CanvasRenderingContext2D::GetDebugInfo(
+    bool aEnsureTarget, CanvasRenderingContext2DDebugInfo& aDebugInfo,
+    ErrorResult& aError) {
+  if (aEnsureTarget && !EnsureTarget(aError)) {
+    return;
+  }
+
+  if (!mBufferProvider) {
+    aError.ThrowInvalidStateError("No buffer provider available");
+    return;
+  }
+
+  if (!mTarget) {
+    aError.ThrowInvalidStateError("No target available");
+    return;
+  }
+
+  aDebugInfo.mIsAccelerated = mBufferProvider->IsAccelerated();
+  aDebugInfo.mIsShared = mBufferProvider->IsShared();
+  aDebugInfo.mBackendType = static_cast<int8_t>(mTarget->GetBackendType());
+  aDebugInfo.mDrawTargetType = static_cast<int8_t>(mTarget->GetType());
 }
 
 CanvasRenderingContext2D::ColorStyleCacheEntry
@@ -2075,10 +2104,25 @@ UniquePtr<uint8_t[]> CanvasRenderingContext2D::GetImageBuffer(
   mBufferProvider->ReturnSnapshot(snapshot.forget());
 
   if (ret && ShouldResistFingerprinting(RFPTarget::CanvasRandomization)) {
-    nsRFPService::RandomizePixels(
-        GetCookieJarSettings(), ret.get(), out_imageSize->width,
-        out_imageSize->height, out_imageSize->width * out_imageSize->height * 4,
-        SurfaceFormat::A8R8G8B8_UINT32);
+    bool randomize = true;
+    // Skip randomization if we are doing user characteristics data collection.
+    // During data collection, we'll 1) set the pref to true 2) be in the main
+    // thread and 3) be in chrome code (JS Window Actor).
+    if (StaticPrefs::
+            privacy_resistFingerprinting_randomization_canvas_disable_for_chrome()) {
+      bool isCallerChrome =
+          NS_IsMainThread() && nsContentUtils::IsCallerChrome();
+      if (isCallerChrome) {
+        randomize = false;
+      }
+    }
+    if (randomize) {
+      nsRFPService::RandomizePixels(
+          GetCookieJarSettings(), ret.get(), out_imageSize->width,
+          out_imageSize->height,
+          out_imageSize->width * out_imageSize->height * 4,
+          SurfaceFormat::A8R8G8B8_UINT32);
+    }
   }
 
   return ret;
@@ -2602,14 +2646,8 @@ static already_AddRefed<StyleLockedDeclarationBlock> CreateDeclarationForServo(
     return nullptr;
   }
 
-  // From canvas spec, force to set line-height property to 'normal' font
-  // property.
   if (aProperty == eCSSProperty_font) {
-    const nsCString normalString = "normal"_ns;
-    Servo_DeclarationBlock_SetPropertyById(
-        servoDeclarations, eCSSProperty_line_height, &normalString, false,
-        env.mUrlExtraData, StyleParsingMode::DEFAULT, env.mCompatMode,
-        env.mLoader, env.mRuleType, {});
+    Servo_DeclarationBlock_SanitizeForCanvas(servoDeclarations);
   }
 
   return servoDeclarations.forget();
@@ -2674,12 +2712,9 @@ static already_AddRefed<const ComputedStyle> GetFontStyleForServo(
   // The font-size component must be converted to CSS px for reserialization,
   // so we update the declarations with the value from the computed style.
   if (!sc->StyleFont()->mFont.family.is_system_font) {
-    nsAutoCString computedFontSize;
-    sc->GetComputedPropertyValue(eCSSProperty_font_size, computedFontSize);
-    Servo_DeclarationBlock_SetPropertyById(
-        declarations, eCSSProperty_font_size, &computedFontSize, false, nullptr,
-        StyleParsingMode::DEFAULT, eCompatibility_FullStandards, nullptr,
-        StyleCssRuleType::Style, {});
+    float px = sc->StyleFont()->mFont.size.ToCSSPixels();
+    Servo_DeclarationBlock_SetLengthValue(declarations, eCSSProperty_font_size,
+                                          px, eCSSUnit_Pixel);
   }
 
   // The font getter is required to be reserialized based on what we
@@ -2893,12 +2928,17 @@ void CanvasRenderingContext2D::ParseSpacing(const nsACString& aSpacing,
     if (!GetPresShell()) {
       return;
     }
+    // This will parse aSpacing as a <length-percentage>...
     RefPtr<const ComputedStyle> style =
         ResolveStyleForProperty(eCSSProperty_letter_spacing, aSpacing);
     if (!style) {
       return;
     }
-    value = style->StyleText()->mLetterSpacing.ToCSSPixels();
+    // ...but only <length> is allowed according to the canvas spec.
+    if (!style->StyleText()->mLetterSpacing.IsLength()) {
+      return;
+    }
+    value = style->StyleText()->mLetterSpacing.AsLength().ToCSSPixels();
   }
   aNormalized = normalized;
   *aValue = value;
@@ -3877,7 +3917,7 @@ bool CanvasRenderingContext2D::EnsureWritablePath() {
   if (!mPath) {
     mPathBuilder = mTarget->CreatePathBuilder(fillRule);
   } else {
-    mPathBuilder = mPath->CopyToBuilder(fillRule);
+    mPathBuilder = Path::ToBuilder(mPath.forget(), fillRule);
   }
   return true;
 }
@@ -3909,9 +3949,7 @@ void CanvasRenderingContext2D::EnsureUserSpacePath(
   }
 
   if (mPath && mPath->GetFillRule() != fillRule) {
-    mPathBuilder = mPath->CopyToBuilder(fillRule);
-    mPath = mPathBuilder->Finish();
-    mPathBuilder = nullptr;
+    Path::SetFillRule(mPath, fillRule);
   }
 
   NS_ASSERTION(mPath, "mPath should exist");
@@ -3924,11 +3962,9 @@ void CanvasRenderingContext2D::TransformCurrentPath(const Matrix& aTransform) {
   }
 
   if (mPathBuilder) {
-    RefPtr<Path> path = mPathBuilder->Finish();
-    mPathBuilder = path->TransformedCopyToBuilder(aTransform);
+    mPathBuilder = Path::ToBuilder(mPathBuilder->Finish(), aTransform);
   } else if (mPath) {
-    mPathBuilder = mPath->TransformedCopyToBuilder(aTransform);
-    mPath = nullptr;
+    mPathBuilder = Path::ToBuilder(mPath.forget(), aTransform);
   }
 }
 
@@ -4094,6 +4130,9 @@ bool CanvasRenderingContext2D::SetFontInternal(const nsACString& aFont,
   params.explicitLanguage = fontStyle->mExplicitLanguage;
   params.userFontSet = c->GetUserFontSet();
   params.textPerf = c->GetTextPerfMetrics();
+#ifdef XP_WIN
+  params.allowForceGDIClassic = false;
+#endif
   RefPtr<nsFontMetrics> metrics = c->GetMetricsFor(resizedFont, params);
 
   gfxFontGroup* newFontGroup = metrics->GetThebesFontGroup();
@@ -4193,6 +4232,9 @@ bool CanvasRenderingContext2D::SetFontInternalDisconnected(
   }
 
   fontStyle.size = QuantizeFontSize(size);
+#ifdef XP_WIN
+  fontStyle.allowForceGDIClassic = false;
+#endif
 
   switch (CurrentState().fontStretch) {
     case CanvasFontStretch::Normal:
@@ -4491,7 +4533,6 @@ struct MOZ_STACK_CLASS CanvasBidiProcessor final
     mSetTextCount++;
     auto* pfl = gfxPlatformFontList::PlatformFontList();
     pfl->Lock();
-    mFontgrp->CheckForUpdatedPlatformList();
     mFontgrp->UpdateUserFonts();  // ensure user font generation is current
     // adjust flags for current direction run
     gfx::ShapedTextFlags flags = mTextRunFlags;
@@ -5125,9 +5166,6 @@ gfxFontGroup* CanvasRenderingContext2D::GetCurrentFontStyle() {
         NS_ERROR("Default canvas font is invalid");
       }
     }
-  } else {
-    // The fontgroup needs to check if its cached families/faces are valid.
-    fontGroup->CheckForUpdatedPlatformList();
   }
 
   return fontGroup;
@@ -5882,6 +5920,23 @@ void CanvasRenderingContext2D::DrawDirectlyToCanvas(
   CSSIntSize sz(scaledImageSize.width, scaledImageSize.height);
   SVGImageContext svgContext(Some(sz));
 
+  if (mContextProperties != CanvasContextProperties::None &&
+      aImage.mImgContainer->GetType() == imgIContainer::TYPE_VECTOR) {
+    SVGEmbeddingContextPaint* contextPaint =
+        svgContext.GetOrCreateContextPaint();
+    const ContextState& state = CurrentState();
+
+    if (mContextProperties != CanvasContextProperties::Fill &&
+        state.StyleIsColor(Style::STROKE)) {
+      contextPaint->SetStroke(state.colorStyles[Style::STROKE]);
+    }
+
+    if (mContextProperties != CanvasContextProperties::Stroke &&
+        state.StyleIsColor(Style::FILL)) {
+      contextPaint->SetFill(state.colorStyles[Style::FILL]);
+    }
+  }
+
   auto result = aImage.mImgContainer->Draw(
       &context, scaledImageSize,
       ImageRegion::Create(gfxRect(aSrc.x, aSrc.y, aSrc.width, aSrc.height)),
@@ -6360,8 +6415,7 @@ void CanvasRenderingContext2D::EnsureErrorTarget() {
 
 void CanvasRenderingContext2D::FillRuleChanged() {
   if (mPath) {
-    mPathBuilder = mPath->CopyToBuilder(CurrentState().fillRule);
-    mPath = nullptr;
+    mPathBuilder = Path::ToBuilder(mPath.forget(), CurrentState().fillRule);
   }
 }
 
@@ -7005,9 +7059,7 @@ void CanvasPath::AddPath(CanvasPath& aCanvasPath, const DOMMatrix2DInit& aInit,
   }
 
   if (!transform.IsIdentity()) {
-    RefPtr<PathBuilder> tempBuilder =
-        tempPath->TransformedCopyToBuilder(transform, FillRule::FILL_WINDING);
-    tempPath = tempBuilder->Finish();
+    Path::TransformAndSetFillRule(tempPath, transform, FillRule::FILL_WINDING);
   }
 
   EnsurePathBuilder();  // in case a path is added to itself
@@ -7047,8 +7099,7 @@ already_AddRefed<gfx::Path> CanvasPath::GetPath(
     mPath->StreamToSink(tmpPathBuilder);
     mPath = tmpPathBuilder->Finish();
   } else if (mPath->GetFillRule() != fillRule) {
-    RefPtr<PathBuilder> tmpPathBuilder = mPath->CopyToBuilder(fillRule);
-    mPath = tmpPathBuilder->Finish();
+    Path::SetFillRule(mPath, fillRule);
   }
 
   RefPtr<gfx::Path> path(mPath);
@@ -7062,8 +7113,7 @@ void CanvasPath::EnsurePathBuilder() const {
 
   // if there is not pathbuilder, there must be a path
   MOZ_ASSERT(mPath);
-  mPathBuilder = mPath->CopyToBuilder();
-  mPath = nullptr;
+  mPathBuilder = Path::ToBuilder(mPath.forget());
 }
 
 size_t BindingJSObjectMallocBytes(CanvasRenderingContext2D* aContext) {

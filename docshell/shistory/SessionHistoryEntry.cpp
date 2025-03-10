@@ -52,7 +52,6 @@ SessionHistoryInfo::SessionHistoryInfo(nsDocShellLoadState* aLoadState,
                       : Some(aLoadState->SrcdocData())),
       mBaseURI(aLoadState->BaseURI()),
       mLoadReplace(aLoadState->LoadReplace()),
-      mHasUserInteraction(aLoadState->HasValidUserGestureActivation()),
       mHasUserActivation(aLoadState->HasValidUserGestureActivation()),
       mSharedState(SharedState::Create(
           aLoadState->TriggeringPrincipal(), aLoadState->PrincipalToInherit(),
@@ -98,7 +97,10 @@ SessionHistoryInfo::SessionHistoryInfo(
     nsIChannel* aChannel, uint32_t aLoadType,
     nsIPrincipal* aPartitionedPrincipalToInherit,
     nsIContentSecurityPolicy* aCsp) {
-  aChannel->GetURI(getter_AddRefs(mURI));
+  if (NS_FAILED(NS_GetFinalChannelURI(aChannel, getter_AddRefs(mURI)))) {
+    NS_WARNING("NS_GetFinalChannelURI somehow failed in SessionHistoryInfo?");
+    aChannel->GetURI(getter_AddRefs(mURI));
+  }
   mLoadType = aLoadType;
 
   nsCOMPtr<nsILoadInfo> loadInfo;
@@ -1494,11 +1496,9 @@ void SessionHistoryEntry::SetFrameLoader(nsFrameLoader* aFrameLoader) {
   SharedInfo()->SetFrameLoader(aFrameLoader);
   if (aFrameLoader) {
     if (BrowsingContext* bc = aFrameLoader->GetMaybePendingBrowsingContext()) {
-      bc->PreOrderWalk([&](BrowsingContext* aContext) {
-        if (BrowserParent* bp = aContext->Canonical()->GetBrowserParent()) {
-          bp->Deactivated();
-        }
-      });
+      if (BrowserParent* bp = bc->Canonical()->GetBrowserParent()) {
+        bp->VisitAll([&](BrowserParent* aBp) { aBp->Deactivated(); });
+      }
     }
 
     // When a new frameloader is stored, try to evict some older

@@ -352,7 +352,7 @@ void MobileViewportManager::UpdateResolutionForViewportSizeChange(
   //    viewport tag is added or removed)
   // 4. neither screen size nor CSS viewport changes
 
-  if (!aDisplayWidthChangeRatio) {
+  if (!aDisplayWidthChangeRatio || mContext->IsDocumentFullscreen()) {
     UpdateVisualViewportSize(zoom);
     return;
   }
@@ -413,7 +413,7 @@ void MobileViewportManager::UpdateResolutionForViewportSizeChange(
   //     +---+
 
   // Conveniently, the denominator is c clamped to a..b.
-  float denominator = clamped(c, a, b);
+  float denominator = std::clamp(c, a, b);
 
   float adjustedRatio = d / denominator;
   CSSToScreenScale adjustedZoom = ScaleZoomWithDisplayWidth(
@@ -648,6 +648,12 @@ void MobileViewportManager::RefreshViewportSize(bool aForceAdjustResolution) {
     return;
   }
 
+  // Now it's time to update the keyboard height
+  if (mPendingKeyboardHeight) {
+    mKeyboardHeight = *mPendingKeyboardHeight;
+    mPendingKeyboardHeight.reset();
+  }
+
   nsViewportInfo viewportInfo =
       mContext->GetViewportInfo(GetLayoutDisplaySize());
   MVM_LOG("%p: viewport info has zooms min=%f max=%f default=%f,valid=%d\n",
@@ -760,10 +766,11 @@ ParentLayerSize MobileViewportManager::GetCompositionSizeWithoutDynamicToolbar()
 
 void MobileViewportManager::UpdateKeyboardHeight(
     ScreenIntCoord aKeyboardHeight) {
-  if (aKeyboardHeight == mKeyboardHeight) {
+  if (mPendingKeyboardHeight == Some(aKeyboardHeight)) {
     return;
   }
-  mKeyboardHeight = aKeyboardHeight;
+
+  mPendingKeyboardHeight = Some(aKeyboardHeight);
   mInvalidViewport = true;
 }
 
@@ -793,4 +800,14 @@ ScreenIntSize MobileViewportManager::GetDisplaySizeForVisualViewport() const {
       break;
   }
   return displaySize;
+}
+
+nsRect MobileViewportManager::InitialVisibleArea() {
+  UpdateSizesBeforeReflow();
+
+  // Basically mMobileViewportSize should not be empty, but we somehow create
+  // a MobileViewportManager for the transient about blank document of each
+  // window actor, in such cases the document viewer size is empty, thus we
+  // return an empty rectangle here.
+  return nsRect(nsPoint(), CSSSize::ToAppUnits(mMobileViewportSize));
 }

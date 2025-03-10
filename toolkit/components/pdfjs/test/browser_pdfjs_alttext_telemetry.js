@@ -327,7 +327,7 @@ add_task(async function test_telemetry_new_alt_text_dialog() {
       );
       await userEditPromise;
       await testTelemetryEventExtra(Glean.pdfjsImageAltText.userEdit, [
-        { total_words: 2, words_removed: 2, words_added: 3 },
+        { total_words: 2, words_removed: 2, words_added: 4 },
       ]);
 
       // Edit again in order to delete the alt text.
@@ -473,7 +473,7 @@ add_task(async function test_telemetry_new_alt_text_count() {
         await clickOn(browser, `#newAltTextSave`);
       }
 
-      await clickOn(browser, "#print");
+      await clickOn(browser, "#printButton");
 
       await waitForPreviewVisible();
       await hitKey(browser, "VK_ESCAPE");

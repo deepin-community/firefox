@@ -176,6 +176,10 @@ add_setup(async function () {
   );
 
   consoleAllowList.push("Failed to load");
+
+  registerCleanupFunction(async () => {
+    sinon.restore();
+  });
 });
 
 /**
@@ -391,7 +395,7 @@ async function assertCorrectlySwitchedWhenExtended(
   let engine;
   if (testOpenSearch) {
     engine = await SearchTestUtils.installOpenSearchEngine({
-      url: `${gDataUrl}engineMaker.sjs?${JSON.stringify({
+      url: `${gHttpURL}/sjs/engineMaker.sjs?${JSON.stringify({
         baseURL: SEARCH_URL_BASE,
         queryString: SEARCH_URL_PARAMS,
         name: ENGINE_NAME,

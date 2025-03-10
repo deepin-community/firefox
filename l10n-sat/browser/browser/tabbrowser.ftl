@@ -79,6 +79,9 @@ tabbrowser-unblock-tab-audio-tooltip =
            *[other] { $tabCount } ᱴᱮᱵᱽ ᱠᱚ ᱮᱱᱮᱡ ᱪᱷᱚᱭ ᱢᱮ
         }
 
+## Tooltips for tab audio control
+
+
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
@@ -120,6 +123,10 @@ tabbrowser-confirm-close-tabs-with-key-button = { -brand-short-name } ᱵᱟᱹ�
 # Variables:
 #   $quitKey (String): the text of the keyboard shortcut for quitting.
 tabbrowser-confirm-close-tabs-with-key-checkbox = { $quitKey } ᱥᱟᱞᱟᱜ ᱵᱚᱸᱫ ᱢᱟᱲᱟᱝ ᱨᱮ ᱴᱷᱟᱹᱣᱠᱟᱹᱜ ᱢᱮ
+
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
+
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
@@ -179,6 +186,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
     .label = ᱡᱷᱚᱛᱚ ᱥᱩᱪᱤ  { $tabCount } ᱴᱮᱵᱽ ᱠᱚ
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = ᱴᱮᱵᱽ ᱢᱭᱩᱴ ᱢᱮ
@@ -186,3 +196,13 @@ tabbrowser-manager-unmute-tab =
     .tooltiptext = ᱴᱮᱵᱽ ᱟᱹᱱᱢᱭᱩᱴ ᱢᱮ
 tabbrowser-manager-close-tab =
     .tooltiptext = ᱴᱮᱵᱽ ᱵᱚᱸᱫᱚᱭ ᱢᱮ
+
+## Tab Groups
+
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
+
+## Open/saved tab group context menu
+

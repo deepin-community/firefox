@@ -43,3 +43,54 @@ callout-pdfjs-draw-body-a = PDFs ᱪᱤᱱᱦᱟ ᱦᱟᱜ ᱢᱮ, ᱤᱱᱟᱹ 
 # “Mark up” refers to the process of “annotating” or adding free hand text or diagramming to the document.
 callout-pdfjs-draw-body-b = ᱟᱨ ᱪᱷᱟᱯᱟ ᱟᱨ ᱥᱠᱟᱱᱤᱝ ᱦᱤᱲᱤᱧ ᱯᱮ ᱾ PDFs ᱪᱤᱱᱦᱟᱹᱭ ᱢᱮ, ᱤᱱᱟᱹ ᱛᱟᱭᱚᱢ ᱟᱢᱟᱜ ᱵᱚᱫᱚᱞ ᱠᱚ ᱥᱟᱧᱪᱟᱣ ᱛᱟᱢ ᱾
 callout-pdfjs-draw-button = ᱵᱩᱡᱷᱟᱹᱣ ᱠᱮᱫᱟᱹᱧ!
+
+## Firefox View Discoverability Strings
+
+fx-view-discoverability-title = ᱚᱱᱟ ᱴᱮᱵᱽ ᱵᱟᱝ ᱵᱚᱸᱫ ᱥᱟᱱᱟᱢ ᱠᱟᱱ ᱛᱟᱦᱮᱸᱡ ?
+fx-view-discoverability-subtitle = ᱱᱚᱸᱰᱮ ᱞᱚᱜᱚᱱ ᱯᱟᱱᱛᱮ ᱢᱮ ᱟᱨ ᱫᱚᱦᱲᱟ ᱡᱷᱤᱡᱽ ᱢᱮ ᱾ ᱟᱞᱮ ᱟᱢ ᱞᱟᱹᱜᱤᱫ ᱟᱢᱟᱜ ᱱᱮᱛᱟᱨ ᱵᱚᱱᱫᱚ ᱟᱠᱟᱱ ᱴᱮᱵᱽ ᱨᱮᱭᱟᱜ ᱱᱟᱜᱟᱢ ᱞᱮ ᱫᱚᱦᱚ ᱟᱠᱟᱫᱟ ᱾
+fx-view-discoverability-primary-button-label = { -firefoxview-brand-name } ᱡᱷᱤᱡᱽ ᱢᱮ
+fx-view-discoverability-secondary-button-label = ᱵᱚᱸᱫ
+
+## Split Dismiss Button Labels
+
+# Blocks the message from showing again
+split-dismiss-button-dont-show-option-label = ᱱᱚᱶᱟ ᱵᱟᱛᱟᱣᱟᱜ ᱟᱨ ᱫᱩᱦᱲᱟᱹ ᱟᱞᱚᱢ ᱫᱮᱠᱷᱟᱣᱟ
+# Dismisses message and reduces frequency of message
+split-dismiss-button-show-fewer-option-label = ᱠᱚᱢ ᱥᱮ ᱠᱚᱢ ᱵᱟᱛᱟᱣᱟᱜ ᱫᱮᱠᱷᱟᱣ ᱢᱮ
+# Opens about:preferences#general-cfrfeatures
+split-dismiss-button-manage-settings-option-label = ᱥᱟᱡᱟᱣ ᱠᱚ ᱢᱮᱱᱮᱡᱽ ᱢᱮ
+
+## Sidebar Strings
+
+sidebar-button-callout-title = ᱥᱟᱭᱤᱰᱵᱟᱨ ᱨᱮ ᱴᱮᱵᱽ ᱴᱟᱭᱤᱴᱟᱞ ᱩᱫᱩᱜ ᱢᱮ
+sidebar-button-callout-subtitle = ᱥᱟᱭᱤᱰᱵᱟᱨ ᱯᱟᱥᱱᱟᱣ ᱞᱟᱹᱜᱤᱫ ᱥᱟᱭᱤᱰᱵᱟᱨ ᱵᱩᱛᱟᱢ ᱵᱮᱵᱷᱟᱨ ᱢᱮ, ᱡᱮᱢᱚᱱ ᱟᱢ ᱴᱮᱵᱽ ᱴᱟᱭᱤᱴᱟᱞ ᱠᱚᱢ ᱧᱮᱞ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱾
+
+## Sidebar Callout Survey Strings
+
+sidebar-callout-survey-title = { -brand-short-name } ᱥᱩᱫᱷᱨᱟᱹᱣ ᱞᱟᱹᱜᱤᱫ ᱜᱚᱲᱚ ᱮᱢᱚᱜ ᱢᱮ
+sidebar-callout-survey-satisfaction-question = { -brand-short-name } ᱨᱮ ᱥᱟᱭᱤᱰᱵᱟᱨ ᱟᱹᱱᱟᱹᱭᱠᱟᱹᱣ ᱛᱮ ᱟᱢ ᱛᱤᱱᱟᱹᱜ ᱫᱷᱤᱨᱯᱩᱨ ᱢᱮᱱᱟᱢᱟ?
+sidebar-callout-survey-privacy-notice-link = ᱫᱟᱱᱟᱝ ᱠᱷᱚᱵᱚᱨ
+sidebar-callout-survey-very-satisfied = ᱟᱹᱰᱤ ᱨᱟᱹᱥᱠᱟᱹ
+sidebar-callout-survey-satisfied = ᱨᱟᱹᱥᱠᱟᱹ
+sidebar-callout-survey-neutral = ᱱᱤᱣᱴᱨᱟᱞ
+sidebar-callout-survey-dissatisfied-2 = ᱵᱟᱱᱴᱷᱤᱠ
+sidebar-callout-survey-very-dissatisfied-2 = ᱟᱹᱰᱤ ᱵᱟᱱᱴᱷᱤᱠ
+sidebar-callout-survey-dont-use-it = ᱤᱧ ᱚᱱᱟ ᱵᱟᱹᱧ ᱵᱮᱣᱦᱟᱨ ᱮᱫᱟ
+sidebar-callout-survey-productive-question =
+    ᱟᱢ ᱱᱚᱣᱟ ᱠᱟᱛᱷᱟ ᱥᱟᱶ ᱛᱤᱱᱟᱹᱜ ᱦᱟᱵᱤᱡ ᱨᱮᱵᱮᱱ ᱥᱮ ᱵᱟᱝ ᱨᱮᱵᱮᱱ ᱢᱮᱱᱟᱢᱟ:<br/>
+    “{ -brand-short-name } ᱥᱟᱭᱤᱰᱵᱟᱨ ᱤᱧ ᱵᱟᱹᱲᱛᱤ ᱞᱟᱵᱷᱟᱱ ᱦᱩᱭᱩᱜ ᱞᱟᱹᱜᱤᱫ ᱜᱚᱲᱚ ᱟᱹᱧᱟᱭ” ?
+sidebar-callout-survey-strongly-agree = ᱠᱮᱴᱮᱡ ᱛᱮ ᱨᱮᱵᱮᱱ ᱢᱤᱱᱟᱹᱧᱟ
+sidebar-callout-survey-agree = ᱨᱮᱵᱮᱱ ᱢᱮ
+sidebar-callout-survey-disagree = ᱵᱟᱝ ᱨᱮᱵᱮᱱ
+sidebar-callout-survey-strongly-disagree = ᱟᱹᱰᱤ ᱠᱮᱴᱮᱡ ᱛᱮ ᱵᱟᱹᱧ ᱨᱮᱵᱮᱱ ᱟ
+sidebar-callout-survey-features-question = ᱞᱟᱛᱟᱨ ᱨᱮ ᱥᱚᱢᱵᱷᱚᱵᱚᱱ ᱥᱟᱭᱤᱰᱵᱟᱨ ᱨᱮᱭᱟᱜ ᱜᱩᱱ ᱠᱚ ᱢᱮᱱᱟᱜᱼᱟ ᱾  ᱚᱠᱟᱴᱟᱜ ᱟᱢᱟᱜ ᱯᱨᱚᱰᱟᱠᱴᱤᱵᱷᱤᱴᱤ { -brand-short-name } ᱨᱮ ᱡᱚᱛᱚ ᱠᱷᱚᱱ ᱵᱟᱹᱲᱛᱤ ᱥᱩᱫᱷᱨᱟᱹᱣ ᱫᱟᱲᱮᱭᱟᱜᱼᱟᱭ?
+sidebar-callout-survey-split-view = ᱢᱤᱫ ᱫᱷᱟᱣ ᱛᱮ ᱡᱟᱦᱟᱱ ᱵᱟᱨ ᱣᱮᱵᱽᱥᱟᱭᱤᱴ ᱧᱮᱞ ᱢᱮ, ᱢᱤᱫ ᱯᱟᱦᱴᱟ ᱛᱮ ᱯᱟᱦᱴᱟ ᱦᱟᱹᱴᱤᱧ ᱧᱮᱞ ᱢᱮ
+sidebar-callout-survey-keep-website-open = ᱢᱤᱫ ᱣᱮᱵᱽᱥᱟᱭᱤᱴ ᱫᱚᱦᱚᱭ ᱢᱮ, ᱡᱮᱞᱠᱟ ᱤᱢᱮᱞ ᱵᱟᱝᱠᱷᱟᱱ ᱠᱮᱞᱮᱱᱰᱟᱨ, ᱵᱽᱨᱟᱣᱩᱡᱽ ᱥᱟᱶ ᱥᱟᱶᱛᱮ ᱥᱟᱭᱤᱰᱵᱟᱨ ᱨᱮ ᱡᱷᱤᱡᱽ ᱢᱮ
+sidebar-callout-survey-saved-websites-2 = ᱟᱢᱟᱜ ᱵᱩᱠᱢᱟᱨᱠ ᱨᱮ ᱩᱥᱟᱹᱨᱟ ᱟᱫᱮᱨ
+sidebar-callout-survey-none-of-above = ᱪᱮᱛᱟᱱ ᱨᱮ ᱚᱠᱟ ᱦᱚᱸ ᱵᱟᱝ
+sidebar-callout-survey-submit = ᱡᱚᱢᱟᱭ ᱢᱮ
+sidebar-callout-survey-thank-you = ᱟᱢᱟᱜ ᱴᱤᱯᱚᱬᱤ ᱞᱟᱹᱜᱤᱫ ᱥᱟᱨᱦᱟᱣ!
+sidebar-genai-survey-satisfaction-question = ᱥᱟᱭᱤᱰᱵᱟᱨ ᱨᱮ AI ᱪᱟᱴᱵᱚᱴ ᱟᱫᱮᱨ ᱧᱟᱢ ᱠᱟᱛᱮ ᱟᱢ ᱛᱤᱱᱟᱹᱜ ᱫᱷᱤᱨᱯᱩᱨ ᱢᱮᱱᱟᱜ ᱢᱮᱭᱟ ?
+sidebar-genai-survey-productive-question =
+    ᱟᱢ ᱱᱚᱣᱟ ᱠᱟᱛᱷᱟ ᱥᱟᱶ ᱛᱤᱱᱟᱹᱜ ᱦᱟᱵᱤᱡ ᱨᱮᱵᱮᱱ ᱥᱮ ᱵᱟᱝ ᱨᱮᱵᱮᱱ ᱢᱮᱱᱟᱢᱟ:<br/>
+    “AI ᱪᱟᱴᱵᱚᱴ ᱥᱟᱭᱤᱰᱵᱟᱨ ᱨᱮ ᱤᱧ ᱵᱟᱹᱲᱛᱤ ᱞᱟᱵᱷᱟᱱ ᱦᱩᱭᱩᱜ ᱞᱟᱹᱜᱤᱫ ᱜᱚᱲᱚ ᱟᱹᱧᱟᱭ” ?

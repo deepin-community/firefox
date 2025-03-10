@@ -74,7 +74,7 @@ cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
 ## Protections panel
 
 cfr-protections-panel-header = Pregledaj web bez da te se prati
-cfr-protections-panel-body = Zadrži svoje podatke privatnima. { -brand-short-name } štiti od mnogih uobičajenih programa za praćenje, koji prate tvoje radnje na mreži.
+cfr-protections-panel-body = Zadrži svoje podatke privatnima. { -brand-short-name } te štiti od mnogih uobičajenih programa za praćenje, koji prate tvoje radnje na internetu.
 cfr-protections-panel-link-text = Saznaj više
 
 ## What's New toolbar button and panel
@@ -141,7 +141,7 @@ spotlight-peace-mind-header = Sve što trebaš
 spotlight-peace-mind-body = Svaki mjesec { -brand-short-name } blokira u prosjeku više od 3000 sustava za praćenje po korisniku, jer ništa – a posebno problematika privatnosti zbog sustava za praćenje – ne bi smjeli stajati između tebe i dobrog interneta.
 spotlight-pin-primary-button =
     { PLATFORM() ->
-        [macos] Zadrži u Doku
+        [macos] Dodaj u Dock
        *[other] Prikvači na programsku traku
     }
 spotlight-pin-secondary-button = Ne sada
@@ -220,7 +220,7 @@ july-jam-set-default-primary = Koristi { -brand-short-name } za otvaranje mojih 
 fox-doodle-pin-headline = Dobro došao, dobro došla natrag
 # “indie” is short for the term “independent”.
 # In this instance, free from outside influence or control.
-fox-doodle-pin-body = Ovo je kratki podsjetnik da svom omiljenom neovisnom pregledniku možeš pristupiti jednim klikom.
+fox-doodle-pin-body = Ovo je kratki podsjetnik da svom omiljenom pregledniku za privatno pregledavanje možeš pristupiti jednim klikom.
 fox-doodle-pin-primary = Koristi { -brand-short-name } za otvaranje mojih poveznica
 fox-doodle-pin-secondary = Ne sada
 
@@ -249,6 +249,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Otvori račun
 device-migration-fxa-spotlight-getting-new-device-header-2 = Novi uređaj u tvojoj budućnosti?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Slijedi nekoliko jednostavnih koraka da poneseš svoje zabilješke, povijest i lozinke sa sobom kada počneš koristiti novi uređaj.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Kako spremiti sigurnosnu kopiju mojih podataka
+device-migration-fxa-spotlight-sync-header = Pregledavaj bez da išta propustiš
+device-migration-fxa-spotlight-sync-body = Sinkroniziraj sve važne podatke, kao što su oznake i lozinke, pomoću šifriranja. Sve takve podatke možeš doseći gdje god koristiš { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = Započni
 
 ## Set as Default PDF Reader Infobar
 
@@ -285,3 +288,61 @@ tail-fox-spotlight-title = Onemogući dosadne sustave za praćenje
 tail-fox-spotlight-subtitle = Reci zbogom dosadnim oglasima za praćenje i uživaj u sigurnijem i bržem internetskom iskustvu.
 tail-fox-spotlight-primary-button = Koristi { -brand-short-name } za otvaranje mojih poveznica
 tail-fox-spotlight-secondary-button = Ne sada
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Starije verzije { -brand-short-name }a bi 14. siječnja 2025 mogle imati probleme.</strong>
+root-certificate-succession-infobar-march-message = <strong>Aktualiziraj za daljnje korištenje { -brand-short-name }a nakon 14. ožujka 2025.</strong>
+root-certificate-succession-infobar-link = Zašto moram aktualizirati?
+root-certificate-succession-infobar-primary-button =
+    .label = Aktualiziraj sada
+    .accesskey = A
+root-certificate-succession-infobar-secondary-button =
+    .label = Kasnije
+    .accesskey = K
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Propustio/la si važno aktualiziranje { -brand-short-name(case: "gen") }
+root-certificate-windows-background-notification-subtitle = Dijelovi preglednika će uskoro prestati raditi ako ga ne aktualiziraš. Nabavi naše najnovije zaštite i funkcije.
+root-certificate-windows-background-notification-learn-more-button = Saznaj više
+root-certificate-windows-background-notification-update-button = Aktualiziraj { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Zatvori
+    .aria-label = Zatvori
+fxa-menu-message-sign-up-button = Registriraj se
+fxa-menu-message-sync-devices-primary-text = Sinkroniziraj sve svoje uređaje
+fxa-menu-message-sync-devices-secondary-text = Dobij tvoje podatke, kao što su oznake i lozinke, odmah gdje god koristiš { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = Sinkroniziraj sve svoje uređaje
+fxa-menu-message-backup-data-primary-text = Sigurnosno kopiraj podatke preglednika
+fxa-menu-message-backup-data-secondary-text = Automatski zaštiti oznake, lozinke i druge podatke na svim tvojim uređajima.
+fxa-menu-message-backup-data-collapsed-text = Sigurnosno kopiraj podatke preglednika
+fxa-menu-message-backup-sync-primary-text = Čuvajte svoje podatke sigurno i sinkronizirano
+fxa-menu-message-backup-sync-secondary-text = Sinkronizacija sigurnosno kopira većinu tvojih podataka tako da im možeš pristupiti svugdje gdje koristiš { -brand-short-name }.
+fxa-menu-message-backup-sync-collapsed-text = Sinkronizacija i sigurnosno kopiranje podataka
+fxa-menu-message-mobile-primary-text = Pošalji kartice na svoj telefon
+fxa-menu-message-mobile-secondary-text = Nastavi na istom mjestu kada sinkroniziraš svoje kartice s mobilnim uređajem.
+fxa-menu-message-mobile-collapsed-text = Sinkroniziraj sa svojim telefonom
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Dobro došli natrag
+multi-cta-fox-doodle-set-default-checkbox = Postavi { -brand-short-name } kao standardni preglednik
+multi-cta-fox-doodle-pin-startmenu-checkbox = Prikvači { -brand-short-name } na izbornik Start
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Zadrži { -brand-short-name } u Docku
+       *[other] Prikvači { -brand-short-name } na programsku traku
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Počni pregledavati
+multi-cta-fox-doodle-main-browser-primary-button-label = Postavi { -brand-short-name } kao glavni preglednik
+multi-cta-fox-doodle-quick-reminder-subtitle = Ovo je kratki podsjetnik da svom omiljenom pregledniku za privatno pregledavanje možeš pristupiti jednim klikom.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Pristupi svom omiljenom pregledniku za privatno pregledavanje jednim klikom. Postavi { -brand-short-name } kao standardni preglednik za otvaranje poveznica i drži ga u Docku.
+       *[other] Pristupi svom omiljenom pregledniku za privatno pregledavanje jednim klikom. Postavi { -brand-short-name } kao standardni preglednik za otvaranje poveznica i prikvači ga u programsku traku.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Pristupi svom omiljenom pregledniku za privatno pregledavanje jednim klikom. Postavi { -brand-short-name } kao standardni preglednik za otvaranje poveznica i prikvači ga u izbornik Start.

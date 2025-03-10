@@ -12,11 +12,18 @@ $default-icon-offset: 6px;
 $half-base-gutter: math.div($base-gutter, 2);
 $hover-transition-duration: 150ms;
 $letter-fallback-color: $white;
+$calculated-max-width-medium: $break-point-medium + $card-width;
+$calculated-max-width-large: $break-point-large + $card-width;
+$calculated-max-width-twice-large: $break-point-large + 2 * $card-width;
+$calculated-max-width-widest: $break-point-widest + $card-width;
+$calculated-max-width-twice-widest: $break-point-widest + 2 * $card-width;
 
 .top-sites-list {
   list-style: none;
   margin: 0 (-$half-base-gutter);
   padding: 0;
+  display: flex;
+  flex-wrap: wrap;
 
   .layout-variant-a &,
   .layout-variant-b & {
@@ -31,6 +38,10 @@ $letter-fallback-color: $white;
     @media (min-width: $break-point-widest) {
       grid-template-columns: repeat(8, 1fr);
     }
+  }
+
+  .shortcuts-refresh & {
+    row-gap: var(--space-small);
   }
 
   a {
@@ -72,33 +83,33 @@ $letter-fallback-color: $white;
     }
   }
 
-  @media (min-width: $break-point-medium) and (max-width: $break-point-medium + $card-width) {
+  @media (min-width: $break-point-medium) and (max-width: $calculated-max-width-medium) {
     :nth-child(4n+3) {
       @include context-menu-open-left;
     }
   }
 
   // Six columns
-  @media (min-width: $break-point-large) and (max-width: $break-point-large + 2 * $card-width) {
+  @media (min-width: $break-point-large) and (max-width: $calculated-max-width-twice-large) {
     :nth-child(6n) {
       @include context-menu-open-left;
     }
   }
 
-  @media (min-width: $break-point-large) and (max-width: $break-point-large + $card-width) {
+  @media (min-width: $break-point-large) and (max-width: $calculated-max-width-large) {
     :nth-child(6n+5) {
       @include context-menu-open-left;
     }
   }
 
   // Eight columns
-  @media (min-width: $break-point-widest) and (max-width: $break-point-widest + 2 * $card-width) {
+  @media (min-width: $break-point-widest) and (max-width: $calculated-max-width-twice-widest) {
     :nth-child(8n) {
       @include context-menu-open-left;
     }
   }
 
-  @media (min-width: $break-point-widest) and (max-width: $break-point-widest + $card-width) {
+  @media (min-width: $break-point-widest) and (max-width: $calculated-max-width-widest) {
     :nth-child(8n+7) {
       @include context-menu-open-left;
     }
@@ -356,20 +367,13 @@ $letter-fallback-color: $white;
       fill: currentColor;
     }
 
-    span {
-      display: block;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
     .sponsored-label {
       color: var(--newtab-contextual-text-secondary-color);
       font-size: 0.9em;
     }
 
     &:not(.sponsored) .sponsored-label {
-      visibility: hidden;
+      display: none;
     }
   }
 
@@ -394,6 +398,120 @@ $letter-fallback-color: $white;
 
     .title {
       visibility: hidden;
+    }
+  }
+
+  .shortcuts-refresh & {
+    width: 120px;
+    margin-block-end: 0;
+
+    &:hover {
+      background: var(--newtab-background-card);
+
+      .context-menu-button {
+        // The normal position for the context menu button is outside of the container,
+        // and thus has the wallpaper-contrast-fix mixin.
+        // We need to revert that because we're moving it into the shortcut's container.
+        color-scheme: light;
+
+        @include dark-theme-only {
+          color-scheme: dark;
+        }
+      }
+
+      .tile {
+        background-color: var(--newtab-background-color-secondary);
+      }
+    }
+
+    .top-site-button {
+      padding: 12px 16px 6px;
+
+      &:focus + div .context-menu-button {
+        opacity: 1;
+      }
+    }
+
+    .tile {
+      background: var(--newtab-background-card);
+      border-radius: var(--border-radius-large);
+
+      .icon-wrapper {
+        width: 40px;
+        height: 40px;
+      }
+
+      .top-site-icon {
+        // Remove the white background colors on icons,
+        // fully rely on the icon itself to make the decision on the background.
+        background-color: transparent;
+        border-radius: var(--border-radius-medium);
+      }
+
+      .icon-wrapper.letter-fallback {
+        border-radius: var(--border-radius-circle);
+
+        &::before {
+          transform: none;
+          position: static;
+          font-size: var(--font-size-xlarge);
+        }
+      }
+    }
+
+    .title {
+      .search-topsite {
+        margin-inline-end: 2px;
+        fill: currentColor;
+        background-size: 12px;
+        height: 12px;
+        width: 12px;
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-color: transparent;
+        position: static;
+        display: inline-block;
+        color: var(--icon-color);
+      }
+    }
+
+    .context-menu-button {
+      inset-inline-end: 0;
+      inset-block-start: 12px;
+      height: 24px;
+      width: 24px;
+      background-color: unset;
+    }
+
+    .context-menu {
+      inset-block-start: 40px;
+    }
+
+    .icon-pin-small {
+      // The icon's colour is based on currentColor, which is a ligh/dark colour.
+      // We don't want it to change on hover based on the wallpaper-contrast-fix mixin,
+      // as it's inside the icon container now which is always the same colour
+      // regardless of wallpaper or hover state.
+      color-scheme: light;
+
+      @include dark-theme-only {
+        color-scheme: dark;
+      }
+
+      position: absolute;
+      inset-block-start: var(--space-xsmall);
+      inset-inline-start: var(--space-xsmall);
+    }
+  }
+}
+
+.shortcuts-refresh {
+  .discovery-stream.ds-layout.ds-layout-topsites {
+    display: flex;
+    justify-content: center;
+
+    .top-sites {
+      padding-block-start: 0;
     }
   }
 }
@@ -699,6 +817,45 @@ $letter-fallback-color: $white;
   [type='checkbox']:checked:focus + label::before,
   [type='checkbox']:not(:checked):focus + label::before {
     border: 1px dotted var(--newtab-primary-action-background);
+  }
+}
+
+.top-sites-list {
+  .top-site-outer {
+    .top-site-button {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .title {
+      .title-label {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        line-height: 1.3;
+        min-height: 2lh;
+        width: 100px;
+        padding: 0 var(--space-xsmall);
+      }
+
+      &.sponsored .title-label {
+        min-height: 1lh;
+      }
+    }
+
+    &:hover,
+    &:focus-within {
+      .title:not(.sponsored) {
+        .title-label {
+          -webkit-line-clamp: 2;
+          white-space: wrap;
+          word-break: break-word;
+        }
+      }
+    }
   }
 }
 

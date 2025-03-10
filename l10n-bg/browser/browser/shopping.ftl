@@ -3,6 +3,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 shopping-page-title = { -brand-product-name } Пазаруване
+# Title for page showing where a user can check the
+# review quality of online shopping product reviews
+shopping-main-container-title = Проверка на отзиви
+# This string is for ensuring that screen reader technology
+# can read out the "Beta" part of the shopping sidebar header.
+# Any changes to shopping-main-container-title and
+# shopping-beta-marker should also be reflected here.
+shopping-a11y-header =
+    .aria-label = Проверка на отзиви – бета
 
 ## Strings for the letter grade component.
 ## For now, we only support letter grades A, B, C, D and F.
@@ -19,6 +28,9 @@ shopping-letter-grade-tooltip =
 
 ## Strings for the shopping message-bar
 
+shopping-message-bar-keep-closed-header =
+    .heading = Да остане ли затворено?
+    .message = Можете да промените настройките, за да оставите Проверка на отзиви затворено по подразбиране. В момента се отваря автоматично.
 
 ## Strings for the product review snippets card
 
@@ -28,6 +40,13 @@ shopping-letter-grade-tooltip =
 
 ## Strings for the settings card
 
+shopping-settings-recommendations-toggle =
+    .label = Показване на реклами при проверка на отзиви
+shopping-settings-opt-out-button = Изключване на проверката на отзиви
+powered-by-fakespot = Проверка на отзиви се осигурява от <a data-l10n-name="fakespot-link">{ -fakespot-brand-full-name }</a>
+shopping-settings-auto-open-toggle =
+    .label = Автоматично отваряне на Проверка на отзиви
+shopping-settings-sidebar-enabled-state = Проверка на отзивите е <strong>включена</strong>
 
 ## Strings for the adjusted rating component
 
@@ -49,7 +68,9 @@ shopping-analysis-explainer-review-grading-scale-unreliable = Ненадеждн
 ## Strings for UrlBar button
 
 shopping-sidebar-open-button2 =
-    .tooltiptext = Проверка на отзивите
+    .tooltiptext = Проверка на отзиви
+shopping-sidebar-close-button2 =
+    .tooltiptext = Затваряне на Проверка на отзиви
 
 ## Strings for the unanalyzed product card.
 ## The word 'analyzer' when used here reflects what this tool is called on
@@ -66,14 +87,32 @@ ad-by-fakespot = Реклама от { -fakespot-brand-name }
 ## Shopping survey strings.
 
 shopping-survey-headline = Помогнете ни да подобрим { -brand-product-name }
+shopping-survey-question-one = Доколко сте доволни от работата на Проверката на отзиви в { -brand-product-name }?
+
+## Shopping opted-out survey strings
+## Opt-out survey options are displayed as checkboxes and the user can select one or many.
+
 
 ## Shopping Feature Callout strings.
 ## "price tag" refers to the price tag icon displayed in the address bar to
 ## access the feature.
 
+shopping-callout-not-opted-in-reminder-open-button = Отваряне на Проверка на отзиви
+shopping-callout-opted-out-title = Проверката на отзиви е изключена
 
 ## Onboarding message strings.
 
+# Dynamic subtitle. Sites are limited to Amazon, Walmart or Best Buy.
+# Variables:
+#   $currentSite (str) - The current shopping page name
+#   $secondSite (str) - A second shopping page name
+#   $thirdSite (str) - A third shopping page name
+shopping-onboarding-dynamic-subtitle-1 = Вижте колко надеждни са отзивите за продукта в <b>{ $currentSite }</b>, преди да купите. Проверка на отзиви, експериментално от { -brand-product-name }, е възможност вградена директно в четеца. Освен това работи на <b>{ $secondSite }</b>, а също и на <b>{ $thirdSite }</b>.
+# Subtitle for countries where we only support one shopping website (e.g. currently used in FR/DE with Amazon)
+# Variables:
+#   $currentSite (str) - The current shopping page name
+shopping-onboarding-single-subtitle = Вижте колко надеждни са отзивите за продукта в <b>{ $currentSite }</b>, преди да купите. Проверка на отзиви, експериментално от { -brand-product-name }, е възможност вградена директно в четеца.
+shopping-onboarding-not-now-button = Не сега
 # Aria-label to make the "steps" of the shopping onboarding container visible to screen readers.
 # Variables:
 #   $current (Int) - Number of the current page

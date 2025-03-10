@@ -43,6 +43,10 @@ genai-prompts-quiz =
 genai-prompts-explain =
     .label = Explicar isto
     .value = Explica os conceitos-chave desta seleção, utilizando palavras simples. Utiliza também exemplos.
+# Prompt purpose: writing tool that helps users with spelling and grammar mistakes and produce a response that identifies errors and rewrites the inputted text correctly
+genai-prompts-proofread =
+    .label = Leitura de revisão
+    .value = Revê a seleção relativamente a erros ortográficos e gramaticais. Identifica eventuais erros e fornece uma versão corrigida do texto. Mantém o sentido e a exatidão factual e começa por apresentar primeiro a lista de correções propostas, seguida da versão final do texto corrigido.
 # This prompt is added to the beginning of selection prompts sent to a chatbot.
 # $tabTitle (string) - title of the webpage
 # $selection (string) - selected text
@@ -55,8 +59,109 @@ genai-menu-ask-generic =
 # $provider (string) - name of the provider
 genai-menu-ask-provider =
     .label = Pedir ao { $provider }
+genai-menu-remove-generic =
+    .label = Remover chatbot de IA
+# $provider (string) - name of the provider
+genai-menu-remove-provider =
+    .label = Remover { $provider }
 genai-input-ask-generic =
     .placeholder = Perguntar ao chatbot de IA…
 # $provider (string) - name of the provider
 genai-input-ask-provider =
     .placeholder = Pedir ao { $provider }…
+# $selectionLength (number) - selected text length
+# $maxLength (number) - max length of what can be selected
+genai-shortcuts-selected-warning-generic =
+    .heading = O chatbot de IA não irá obter a sua seleção completa
+    .message =
+        { $selectionLength ->
+            [one] Selecionou cerca de { $selectionLength } caractere. O número de caracteres que podemos enviar para o chatbot AI é cerca de { $maxLength }.
+           *[other] Selecionou cerca de { $selectionLength } caracteres. O número de caracteres que podemos enviar para o chatbot AI é cerca de { $maxLength }.
+        }
+# $provider (string) - name of the provider
+# $selectionLength (number) - selected text length
+# $maxLength (number) - max length of what can be selected
+genai-shortcuts-selected-warning =
+    .heading = { $provider } não irá obter a sua seleção completa
+    .message =
+        { $selectionLength ->
+            [one] Selecionou cerca de { $selectionLength } caractere. O número de caracteres que podemos enviar para { $provider } é cerca de { $maxLength }.
+           *[other] Selecionou cerca de { $selectionLength } caracteres. O número de caracteres que podemos enviar para { $provider } é cerca de { $maxLength }.
+        }
+genai-shortcuts-hide =
+    .label = Ocultar atalho do chatbot
+
+## Chatbot header
+
+genai-chatbot-title = Chatbot de IA
+genai-header-provider-menu =
+    .title = Escolher um chatbot
+genai-header-options-button =
+    .title = Abrir menu
+genai-header-close-button =
+    .title = Fechar
+genai-provider-view-details =
+    .label = Ver detalhes do chatbot
+genai-provider-about-chatbots =
+    .label = Sobre estes chatbots
+genai-options-reload-generic =
+    .label = Recarregar chatbot de IA
+# $provider (string) - name of the provider
+genai-options-reload-provider =
+    .label = Recarregar { $provider }
+genai-options-show-shortcut =
+    .label = Mostrar atalho ao selecionar texto
+genai-options-hide-shortcut =
+    .label = Ocultar atalho ao selecionar texto
+genai-options-about-chatbot =
+    .label = Sobre os chatbots de IA no { -brand-short-name }
+
+## Chatbot onboarding
+
+genai-onboarding-header = Faça resumos, brainstorming e muito mais, enquanto navega
+# "Switch anytime" refers to allowing the user to switch to a different chatbot.
+genai-onboarding-description = Escolha um chatbot de IA para utilizar na barra lateral do { -brand-short-name }. Iremos mostrar detalhes sobre cada chatbot quando o selecionar. Mude a qualquer momento. <a data-l10n-name="learn-more">Saber mais</a>
+genai-onboarding-primary = Continuar
+genai-onboarding-secondary = Fechar
+genai-onboarding-claude-tooltip =
+    .title = Anthropic Claude
+genai-onboarding-claude-learn = Saber mais sobre o Claude
+genai-onboarding-chatgpt-tooltip =
+    .title = ChatGPT
+genai-onboarding-chatgpt-learn = Saber mais sobre o ChatGPT
+genai-onboarding-copilot-tooltip =
+    .title = Copilot
+genai-onboarding-copilot-learn = Saber mais sobre o Copilot
+genai-onboarding-gemini-tooltip =
+    .title = Google Gemini
+genai-onboarding-gemini-learn = Saber mais sobre o Gemini
+genai-onboarding-huggingchat-tooltip =
+    .title = HuggingChat
+genai-onboarding-huggingchat-learn = Saber mais sobre o HuggingChat
+genai-onboarding-lechat-tooltip =
+    .title = Le Chat Mistral
+genai-onboarding-lechat-learn = Saber mais sobre o Le Chat
+genai-onboarding-select-header = Selecione o texto para ver sugestões
+genai-onboarding-select-description = Quando seleciona texto, iremos sugerir mensagens que pode enviar para o chatbot. Pode também escrever as suas próprias mensagens.
+genai-onboarding-select-primary = Começar a conversar
+
+## Chatbot onboarding choices
+## These describe features/capabilities of chatbot providers. These are not buttons/actions.
+
+genai-onboarding-claude-generate = Gerar texto e código
+genai-onboarding-claude-analyze = Analisar documentos e imagens
+genai-onboarding-claude-price = Opções gratuitas e pagas; é necessária uma conta
+genai-onboarding-chatgpt-generate = Gerar texto, imagens e código
+genai-onboarding-chatgpt-analyze = Analisar documentos e imagens
+genai-onboarding-chatgpt-price = Opções gratuitas e pagas; é necessária uma conta para alguns países e tarefas
+genai-onboarding-copilot-generate = Gerar texto, imagens e código
+genai-onboarding-copilot-analyze = Analisar imagens
+genai-onboarding-copilot-price = Opções gratuitas e pagas; é necessária uma conta para algumas tarefas
+genai-onboarding-gemini-generate = Gerar texto, imagens e código
+genai-onboarding-gemini-analyze = Analisar imagens (grátis) e documentos (pago)
+genai-onboarding-gemini-price = Opções gratuitas e pagas; é necessária uma conta
+genai-onboarding-huggingchat-generate = Gerar texto e código
+genai-onboarding-huggingchat-switch = Alternar entre um conjunto diverso de modelos abertos
+genai-onboarding-huggingchat-price-2 = Gratuito; é necessária uma conta após um determinado número de pedidos
+genai-onboarding-lechat-generate = Gerar texto e código
+genai-onboarding-lechat-price = Gratuito; é necessária uma conta

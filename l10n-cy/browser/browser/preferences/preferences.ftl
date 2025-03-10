@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Anfon neges “Dim Tracio” at wefannau nad ydych am gael eich tracio
+do-not-track-removal = Nid ydym bellach yn cefnogi'r signal “Peidiwch â Thracio”.
 do-not-track-description2 =
     .label = Anfon  cais “Peidio Tracio” i wefannau
     .accesskey = P
@@ -137,6 +138,7 @@ windows-launch-on-login =
     .label = Agor { -brand-short-name } yn awtomatig pan fydd eich cyfrifiadur yn cychwyn
     .accesskey = A
 windows-launch-on-login-disabled = Mae'r dewis hwn wedi'i analluogi yn Windows. I'w newid, ewch i <a data-l10n-name="startup-link">Startup Apps</a> yng ngosodiadau System.
+windows-launch-on-login-profile-disabled = Galluogwch y dewis hwn trwy dicio “{ profile-manager-use-selected.label }” yn y ffenestr “Dewis Proffil Defnyddiwr”.
 startup-restore-warn-on-quit =
     .label = Rhybuddio wrth adael y porwr
 disable-extension =
@@ -146,6 +148,11 @@ preferences-data-migration-description = Mewnforio nodau tudalen, cyfrineiriau, 
 preferences-data-migration-button =
     .label = Mewnforio Data
     .accesskey = M
+preferences-profiles-header = Proffiliau
+preferences-manage-profiles-description = Mae gan bob proffil ddata pori a gosodiadau ar wahân, gan gynnwys hanes, cyfrineiriau, a mwy.
+preferences-manage-profiles-learn-more = Darllen rhagor
+preferences-manage-profiles-button =
+    .label = Rheoli Proffiliau
 tabs-group-header = Tabiau
 ctrl-tab-recently-used-order =
     .label = Mae Ctrl+Tab yn cylchdroi drwy dabiau yn y drefn y'u defnyddiwyd yn ddiweddar
@@ -153,6 +160,17 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Agor dolenni mewn tabiau ac nid mewn ffenestri newydd
     .accesskey = f
+ask-on-close-multiple-tabs =
+    .label = Gofyn cyn cau tabiau niferus
+    .accesskey = G
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = Gofyn cyn gadael gyda { $quitKey }
+    .accesskey = n
 confirm-on-close-multiple-tabs =
     .label = Cadarnhau cyn cau tabiau lluosog
     .accesskey = l
@@ -224,6 +242,16 @@ containers-remove-cancel-button = Peidio Tynnu'r Cynhwysydd Hwn
 settings-tabs-show-image-in-preview =
     .label = Dangos ragolwg delwedd pan fyddwch chi'n hofran ar dab
     .accessKey = h
+browser-layout-header = Cynllun Porwr
+browser-layout-horizontal-tabs =
+    .label = Tabiau llorweddol
+browser-layout-horizontal-tabs-desc = Dangos ar frig y porwr
+browser-layout-vertical-tabs =
+    .label = Tabiau fertigol
+browser-layout-vertical-tabs-desc = Dangos ar yr ochr, yn y bar ochr
+browser-layout-show-sidebar =
+    .label = Dangos y bar ochr
+browser-layout-show-sidebar-desc = Cael mynediad cyflym at nodau tudalen, tabiau o'ch ffôn, sgwrsfotiau AI a mwy yn gyflym heb adael eich prif olwg.
 
 ## General Section - Language & Appearance
 
@@ -305,7 +333,7 @@ translate-exceptions =
 # Variables:
 #    $localeName (string) - Localized name of the locale to be used.
 use-system-locale =
-    .label = Defnyddiwch osodiadau eich system weithredu ar gyfer “{ $localeName }” i fformatio dyddiadau, amseroedd, rhifau a mesuriadau.
+    .label = Defnyddio gosodiadau eich system weithredu ar gyfer “{ $localeName }” i fformatio dyddiadau, amseroedd, rhifau a mesuriadau.
 check-user-spelling =
     .label = Gwirio'r sillafu wrth deipio
     .accesskey = G
@@ -580,8 +608,7 @@ home-prefs-shortcuts-description = Gwefannau rydych yn eu cadw neu'n ymweld â n
 home-prefs-shortcuts-by-option-sponsored =
     .label = Llwybrau byr wedi'u noddi
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Argymhellwyd gan { $provider }
@@ -618,7 +645,7 @@ home-prefs-snippets-description-new = Awgrymiadau a newyddion gan { -vendor-shor
 home-prefs-weather-header =
     .label = Y Tywydd
 home-prefs-weather-description = Cipolwg ar ragolygon tywydd heddiw
-home-prefs-weather-learn-more-link = Dysgu rhagor
+home-prefs-weather-learn-more-link = Rhagor
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -656,6 +683,10 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Dangos awgrymiadau chwilio yng nghanlyniadau'r bar lleoliad
     .accesskey = D
+# With this option enabled, on the search results page
+# the URL will be replaced by the search terms in the address bar.
+search-show-search-term-option-2 =
+    .label = Dangos termau chwilio yn y bar cyfeiriad ar dudalennau canlyniadau
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -799,6 +830,9 @@ sync-currently-syncing-creditcards = Cardiau Credyd
 sync-currently-syncing-payment-methods = Dulliau talu
 sync-currently-syncing-addons = Ychwanegion
 sync-currently-syncing-settings = Gosodiadau
+sync-manage-options =
+    .label = Rheoli cydweddu…
+    .accesskey = R
 sync-change-options =
     .label = Newid…
     .accesskey = N
@@ -851,6 +885,13 @@ sync-engine-settings =
     .label = Gosodiadau
     .tooltiptext = Gosodiadau Cyffredinol, Preifatrwydd a Diogelwch rydych wedi'u newid
     .accesskey = G
+sync-choose-what-to-sync-dialog4 =
+    .title = Rheoli'r hyn sy'n cydweddu ar eich holl ddyfeisiau cysylltiedig
+    .style = min-width: 36em;
+    .buttonlabelaccept = Cadw
+    .buttonaccesskeyaccept = C
+    .buttonlabelextra2 = Datgysylltu…
+    .buttonaccesskeyextra2 = D
 
 ## The device name controls.
 
@@ -1297,17 +1338,40 @@ permissions-addon-exceptions =
 collection-header = Casglu Data a'r Defnydd o { -brand-short-name }
 collection-header2 = Casglu Data a'r Defnydd o { -brand-short-name }
     .searchkeywords = telemetreg
+preferences-collection-description = Rydym yn ymdrechu i roi i chi ddewisiadau a chasglu dim ond y lleiafswm data sydd ei angen i wella { -brand-product-name } i bawb.
+preferences-collection-privacy-notice = Gweld yr Hysbysiad Preifatrwydd
 collection-description = Rydym yn ceisio darparu dewisiadau i chi a chasglu dim ond beth sydd ei angen arnom i ddarparu a gwella { -brand-short-name } ar gyfer pawb. Rydym yn gofyn caniatâd bob tro cyn derbyn manylion personol.
 collection-privacy-notice = Hysbysiad Preifatrwydd
 collection-health-report-telemetry-disabled = Nid ydych bellach yn caniatáu i { -vendor-short-name } ddal data technegol a rhyngweithiol. Bydd holl ddata'r gorffennol yn cael ei ddileu cyn pen 30 diwrnod.
 collection-health-report-telemetry-disabled-link = Darllen rhagor
+collection-usage-ping =
+    .label = Anfon ping defnydd dyddiol at { -vendor-short-name }
+    .accesskey = A
+collection-usage-ping-description = Mae hyn yn helpu { -vendor-short-name } i amcangyfrif defnyddwyr gweithredol.
+collection-health-report2 =
+    .label = Anfon data technegol a rhyngweithio at { -vendor-short-name }
+    .accesskey = d
 collection-health-report =
     .label = Caniatáu i { -brand-short-name } anfon data technegol a rhyngweithio i { -vendor-short-name }
     .accesskey = r
 collection-health-report-link = Darllen rhagor
+collection-health-report-description = Mae hyn yn ein helpu i wella nodweddion, perfformiad a sefydlogrwydd { -brand-product-name }.
+collection-studies2 =
+    .label = Gosod a rhedeg astudiaethau
+collection-studies-description = Rhowch gynnig ar nodweddion a syniadau cyn iddyn nhw gael eu rhyddhau i bawb.
 collection-studies =
     .label = Caniatáu i { -brand-short-name } osod a rhedeg astudiaethau
 collection-studies-link = Gweld astudiaethau { -brand-short-name }
+addon-recommendations2 =
+    .label = Caniatáu argymhellion estyniadau personoledig
+addon-recommendations-description = Cael argymhellion estyniadau i wella'ch profiad pori.
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = Mae adrodd ar ddata wedi'i analluogi ar gyfer y ffurfweddiad adeiladu hwn.
+collection-backlogged-crash-reports2 =
+    .label = Anfon adroddiadau chwalu'n awtomatig
+    .accesskey = c
+collection-backlogged-crash-reports-description = Mae hyn yn helpu { -vendor-short-name } i wneud diagnosis a thrwsio problemau gyda'r porwr. Gall adroddiadau gynnwys data personol neu sensitif.
 addon-recommendations =
     .label = Caniatáu i { -brand-short-name } wneud argymhellion personol am estyniadau
 addon-recommendations-link = Darllen rhagor
@@ -1375,6 +1439,8 @@ space-alert-under-5gb-message2 = <strong>Mae { -brand-short-name } yn brin o le 
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = Modd HTTPS-yn-Unig
+httpsonly-description3 = Dim ond yn caniatáu cysylltiadau diogel â gwefannau. Bydd { -brand-short-name } yn gofyn cyn cysylltu'n anniogel.
+httpsonly-learn-more2 = Sut mae HTTPS-yn Unig yn gweithio
 httpsonly-description = Mae HTTPS yn darparu cysylltiad diogel, wedi'i amgryptio rhwng  { -brand-short-name } a'r gwefannau rydych chi'n ymweld â nhw. Mae'r mwyafrif o wefannau yn cefnogi HTTPS, ac os yw Modd HTTPS-yn-Unig wedi'i alluogi, yna bydd { -brand-short-name } yn uwchraddio'r holl gysylltiadau â HTTPS.
 httpsonly-description2 = Mae { -brand-short-name } yn creu cysylltiadau diogel ac wedi'u hamgryptio i wefannau rydych yn ymweld â nhw. Bydd { -brand-short-name } yn eich rhybuddio os nad yw cysylltiad yn ddiogel pan fydd Dim-ond-HTTPS ymlaen.
 httpsonly-learn-more = Darllen rhagor
@@ -1384,6 +1450,9 @@ httpsonly-radio-enabled2 =
     .label = Defnyddio dim ond HTTPS ym mhob ffenestr
 httpsonly-radio-enabled-pbm =
     .label = Galluogi Modd HTTPS-yn-Unig mewn ffenestri preifat yn unig
+httpsonly-radio-disabled3 =
+    .label = Peidio â galluogi'r Modd HTTPS yn Unig
+    .description = Gall { -brand-short-name } uwchraddio rhai cysylltiadau
 httpsonly-radio-enabled-pbm2 =
     .label = Defnyddio dim ond HTTPS ym mhob ffenestr breifat
 httpsonly-radio-disabled =

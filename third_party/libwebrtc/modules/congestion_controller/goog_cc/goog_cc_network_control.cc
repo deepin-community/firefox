@@ -16,11 +16,11 @@
 #include <cstdint>
 #include <memory>
 #include <numeric>
+#include <optional>
 #include <utility>
 #include <vector>
 
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "api/environment/environment.h"
 #include "api/field_trials_view.h"
 #include "api/transport/bandwidth_usage.h"
@@ -163,7 +163,7 @@ NetworkControlUpdate GoogCcNetworkController::OnNetworkAvailability(
 NetworkControlUpdate GoogCcNetworkController::OnNetworkRouteChange(
     NetworkRouteChange msg) {
   if (safe_reset_on_route_change_) {
-    absl::optional<DataRate> estimated_bitrate;
+    std::optional<DataRate> estimated_bitrate;
     if (safe_reset_acknowledged_rate_) {
       estimated_bitrate = acknowledged_bitrate_estimator_->bitrate();
       if (!estimated_bitrate)
@@ -213,7 +213,7 @@ NetworkControlUpdate GoogCcNetworkController::OnProcessInterval(
           *initial_config_->stream_based_config
                .enable_repeated_initial_probing);
     }
-    absl::optional<DataRate> total_bitrate =
+    std::optional<DataRate> total_bitrate =
         initial_config_->stream_based_config.max_total_allocated_bitrate;
     if (total_bitrate) {
       auto probes = probe_controller_->OnMaxTotalAllocatedBitrate(
@@ -228,7 +228,7 @@ NetworkControlUpdate GoogCcNetworkController::OnProcessInterval(
         msg.pacer_queue->bytes());
   }
   bandwidth_estimation_->UpdateEstimate(msg.at_time);
-  absl::optional<int64_t> start_time_ms =
+  std::optional<int64_t> start_time_ms =
       alr_detector_->GetApplicationLimitedRegionStartTime();
   probe_controller_->SetAlrStartTimeMs(start_time_ms);
 
@@ -300,7 +300,7 @@ NetworkControlUpdate GoogCcNetworkController::OnSentPacket(
 }
 
 NetworkControlUpdate GoogCcNetworkController::OnReceivedPacket(
-    ReceivedPacket received_packet) {
+    ReceivedPacket /* received_packet */) {
   return NetworkControlUpdate();
 }
 
@@ -494,7 +494,7 @@ NetworkControlUpdate GoogCcNetworkController::OnTransportPacketsFeedback(
       lost_packets_since_last_loss_update_ = 0;
     }
   }
-  absl::optional<int64_t> alr_start_time =
+  std::optional<int64_t> alr_start_time =
       alr_detector_->GetApplicationLimitedRegionStartTime();
 
   if (previously_in_alr_ && !alr_start_time.has_value()) {
@@ -517,18 +517,9 @@ NetworkControlUpdate GoogCcNetworkController::OnTransportPacketsFeedback(
 
   if (network_estimator_) {
     network_estimator_->OnTransportPacketsFeedback(report);
-    auto prev_estimate = estimate_;
-    estimate_ = network_estimator_->GetCurrentEstimate();
-    // TODO(srte): Make OnTransportPacketsFeedback signal whether the state
-    // changed to avoid the need for this check.
-    if (estimate_ && (!prev_estimate || estimate_->last_feed_time !=
-                                            prev_estimate->last_feed_time)) {
-      env_.event_log().Log(std::make_unique<RtcEventRemoteEstimate>(
-          estimate_->link_capacity_lower, estimate_->link_capacity_upper));
-      probe_controller_->SetNetworkStateEstimate(*estimate_);
-    }
+    SetNetworkStateEstimate(network_estimator_->GetCurrentEstimate());
   }
-  absl::optional<DataRate> probe_bitrate =
+  std::optional<DataRate> probe_bitrate =
       probe_bitrate_estimator_->FetchAndResetLastEstimatedBitrate();
   if (ignore_probes_lower_than_network_estimate_ && probe_bitrate &&
       estimate_ && *probe_bitrate < delay_based_bwe_->last_estimate() &&
@@ -603,8 +594,22 @@ NetworkControlUpdate GoogCcNetworkController::OnTransportPacketsFeedback(
 
 NetworkControlUpdate GoogCcNetworkController::OnNetworkStateEstimate(
     NetworkStateEstimate msg) {
-  estimate_ = msg;
+  if (!network_estimator_) {
+    SetNetworkStateEstimate(msg);
+  }
   return NetworkControlUpdate();
+}
+
+void GoogCcNetworkController::SetNetworkStateEstimate(
+    std::optional<NetworkStateEstimate> estimate) {
+  auto prev_estimate = estimate_;
+  estimate_ = estimate;
+  if (estimate_ && (!prev_estimate ||
+                    estimate_->update_time != prev_estimate->update_time)) {
+    env_.event_log().Log(std::make_unique<RtcEventRemoteEstimate>(
+        estimate_->link_capacity_lower, estimate_->link_capacity_upper));
+    probe_controller_->SetNetworkStateEstimate(*estimate_);
+  }
 }
 
 NetworkControlUpdate GoogCcNetworkController::GetNetworkState(

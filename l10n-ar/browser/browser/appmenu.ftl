@@ -77,6 +77,10 @@ appmenu-remote-tabs-turn-on-sync =
 appmenu-remote-tabs-showmore =
     .label = أظهِر ألسنة أكثر
     .tooltiptext = اعرض المزيد من الألسنة من هذا الجهاز
+# This is shown as the label for an element to show inactive tabs from this device.
+appmenu-remote-tabs-show-inactive-tabs =
+    .label = الألسنة غير النشطة
+    .tooltiptext = أظهِر الألسنة غير النشطة على هذا الجهاز
 # This is shown beneath the name of a device when that device has no open tabs
 appmenu-remote-tabs-notabs = لا ألسنة مفتوحة
 # This is shown when Sync is configured but syncing tabs is disabled.
@@ -104,8 +108,11 @@ appmenu-fxa-sync-and-save-data2 = زامِن واحفظ البيانات
 appmenu-fxa-signed-in-label = لِج
 appmenu-fxa-setup-sync =
     .label = فعّل المزامنة…
+appmenu-fxa-setup-sync-new = فعّل
 appmenuitem-save-page =
     .label = احفظ الصفحة باسم…
+appmenuitem-fxa-sync-off-title = التزامن متوقف
+appmenuitem-fxa-sync-off-description = احمِ و اطلع على علاماتك وكلمات سرك والمزيد في أي مكان.
 
 ## What's New panel in App menu.
 
@@ -268,4 +275,26 @@ appmenuitem-report-broken-site =
 
 ## Panel for privacy and security products
 
+appmenuitem-sign-in-account = لِج إلى حسابك
+appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = احصل على تنبيهات تسريب البيانات
+appmenuitem-relay-title = { -relay-brand-short-name }
+appmenuitem-relay-description = أخفِ بريدك الإلكتروني ورقم هاتفك الحقيقي
+appmenuitem-services-relay-description = إطلاق لوحة معلومات أقنعة البريد الإلكتروني
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description = احمِ نشاطك على الإنترنت
+appmenu-services-header = خدماتي
+appmenu-other-protection-header = جرّب أدوات حماية أخرى من { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-profiles = ملفات تعريف
+appmenu-other-profiles = ملفات تعريف أخرى
+appmenu-manage-profiles =
+    .label = أدِر ملفات التعريف
+appmenu-create-profile =
+    .label = ملف شخصي جديد
+appmenu-edit-profile =
+    .aria-label = حرّر الملف الشخصي
+appmenu-profiles-2 =
+    .label = ملفات تعريف

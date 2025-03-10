@@ -29,7 +29,7 @@ return-to-amo-add-theme-label = ਥੀਮ ਜੋੜੋ
 ##  Variables: $addon-name (String) - Name of the add-on to be installed
 
 mr1-return-to-amo-subtitle = { -brand-short-name } ਨੂੰ ਮਿਲੋ
-mr1-return-to-amo-addon-title = ਤੇਜ਼, ਨਿੱਜੀ ਬਰਾਊਜ਼ਰ ਤੁਹਾਡੇ ਹੱਥਾਂ ਵਿੱਚ ਹੈ। ਹੁਣ ਤੁਸੀਂ <b>{ $addon-name }</b> ਜੋੜ ਸਕਦੇ ਹੋ ਅਤੇ { -brand-short-name } ਨਾਲ ਵੱਧ ਕੰਮ ਕਰ ਸਕਦੇ ਹੋ।
+mr1-return-to-amo-addon-title = ਤੇਜ਼, ਪ੍ਰਾਈਵੇਟ ਬਰਾਊਜ਼ਰ ਤੁਹਾਡੇ ਹੱਥਾਂ ਵਿੱਚ ਹੈ। ਹੁਣ ਤੁਸੀਂ <b>{ $addon-name }</b> ਜੋੜ ਸਕਦੇ ਹੋ ਅਤੇ { -brand-short-name } ਨਾਲ ਵੱਧ ਕੰਮ ਕਰ ਸਕਦੇ ਹੋ।
 mr1-return-to-amo-add-extension-label = { $addon-name } ਜੋੜੋ
 
 ## Multistage onboarding strings (about:welcome pages)
@@ -115,7 +115,7 @@ mr2-onboarding-default-theme-label = ਮੂਲ ਥੀਮਾਂ ਬਾਰੇ ਜ�
 ## Strings for Thank You page
 
 mr2-onboarding-thank-you-header = ਸਾਨੂੰ ਚੁਣਨ ਲਈ ਤੁਹਾਡਾ ਧੰਨਵਾਦ ਹੈ
-mr2-onboarding-thank-you-text = { -brand-short-name } ਗ਼ੈਰ-ਫਾਇਦਾ ਸੰਗਠਨ ਵਲੋਂ ਤਿਆਰ ਕੀਤਾ ਆਜ਼ਾਦ ਬਰਾਊਜ਼ਰ ਹੈ। ਮਿਲ ਕੇ ਅਸੀਂ ਵੈੱਬ ਨੂੰ ਵੱਧ ਸੁਰੱਖਿਅਤ, ਮਜ਼ਬੂਤ ਅਤੇ ਵੱਧ ਨਿੱਜੀ ਬਣਾ ਰਹੇ ਹਾਂ।
+mr2-onboarding-thank-you-text = { -brand-short-name } ਗ਼ੈਰ-ਫਾਇਦਾ ਸੰਗਠਨ ਵਲੋਂ ਤਿਆਰ ਕੀਤਾ ਆਜ਼ਾਦ ਬਰਾਊਜ਼ਰ ਹੈ। ਮਿਲ ਕੇ ਅਸੀਂ ਵੈੱਬ ਨੂੰ ਵੱਧ ਸੁਰੱਖਿਅਤ, ਮਜ਼ਬੂਤ ਅਤੇ ਵੱਧ ਪ੍ਰਾਈਵੇਟ ਬਣਾ ਰਹੇ ਹਾਂ।
 mr2-onboarding-start-browsing-button-label = ਬਰਾਊਜ਼ ਕਰਨਾ ਸ਼ੁਰੂ ਕਰੋ
 
 ## Multistage live language reloading onboarding strings (about:welcome pages)
@@ -226,7 +226,9 @@ mr2022-onboarding-set-default-subtitle = ਗ਼ੈਰ-ਫਾਇਦੇ ਵਲੋ�
 mr2022-onboarding-get-started-primary-subtitle = ਸਾਡਾ ਨਵਾਂ ਵਰਜ਼ਨ ਤੁਹਾਡੇ ਵਾਸਤੇ ਬਣਾਇਆ ਹੈ, ਜਿਸ ਨਾਲ ਤੁਹਾਨੂੰ ਵੈੱਬ ਉੱਤੇ ਭੌਣਾ ਪਹਿਲਾਂ ਤੋਂ ਸੁਖਾਲਾ ਹੋਇਆ ਹੈ। ਇਸ ਵਿੱਚ ਫ਼ੀਚਰ ਭਰੇ ਹਨ, ਸਾਨੂੰ ਆਸ ਹੈ ਕਿ ਜਿਹਨਾਂ ਦੀ ਤੁਸੀਂ ਪ੍ਰਸੰਸਾ ਕਰੋਗੇ।
 mr2022-onboarding-get-started-primary-button-label = ਸਕਿੰਟਾਂ ਵਿੱਚ ਸੈਟਅੱਪ ਕਰੋ
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = ਹਨ੍ਹੇਰੀ ਵਰਗਾ ਤੇਜ਼ ਸੈਟਅੱਪ
 mr2022-onboarding-import-subtitle = { -brand-short-name } ਨੂੰ ਜਿਵੇਂ ਤੁਸੀਂ ਚਾਹੋ, ਉਵੇਂ ਸੈਟਅੱਪ ਕਰੋ। ਆਪਣੇ ਪੁਰਾਣੇ ਬਰਾਊਜ਼ਰ ਤੋਂ ਆਪਣੇ ਬੁੱਕਮਾਰਕ, ਪਾਸਵਰਡ ਅਤੇ ਕਈ ਕੁਝ ਜੋੜੋ।
@@ -357,6 +359,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = ਜਦੋਂ ਤੱ�
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } ਤੁਹਾਡੇ ਨਾਲ ਖੜ੍ਹਾ ਹੈ
 onboarding-gratitude-security-and-privacy-subtitle = { -brand-short-name }, ਜਿਸ ਨੂੰ Mozilla Foundation ਵਲੋਂ ਸਹਿਯੋਗ ਮਿਲਦਾ ਹੈ, ਵਰਤਣ ਲਈ ਤੁਹਾਡਾ ਧੰਨਵਾਦ ਹੈ। ਤੁਹਾਡੀ ਮਦਦ ਨਾਲ ਅਸੀਂ ਇੰਟਰਨੈੱਟ ਨੂੰ ਹਰ ਕਿਸੇ ਲਈ ਵੱਧ ਸੁਰੱਖਿਅਤ ਅਤੇ ਵੱਧ ਪਹੁੰਚ ਵਿੱਚ ਲਿਆਉਣ ਲਈ ਕੰਮ ਕਰ ਰਹੇ ਹਾਂ।
+# Sign up or Sign in screen
+onboarding-sign-up-title = ਡਿਵਾਈਸਾਂ ਵਿਚਾਲੇ ਆਪਣੇ ਡਾਟੇ ਨੂੰ ਸਿੰਕ ਕਰੋ
+onboarding-sign-up-description = ਇੱਕ ਖਾਤਾ ਬਣਾਓ ਅਤੇ ਤੁਹਾਡੀ ਸਾਰੀ ਜ਼ਰੂਰੀ ਜਾਣਕਾਰੀ — ਪਾਸਵਰਡ, ਬੁੱਕਮਾਰਕ, ਅਤੇ ਹੋਰ ਕਈ ਕੁਝ — ਨੂੰ ਸੁਰੱਖਿਅਤ ਢੰਗ ਵਿੱਚ ਸੰਭਾਲਿਆ ਜਾਵੇਗਾ ਅਤੇ ਇਹ ਸਭ ਤੁਹਾਡੇ ਵਲੋਂ ਸਾਈਨ ਇਨ ਕੀਤੇ ਕਿਸੇ ਵੀ ਡਿਵਾਈਸ ਉੱਤੇ ਮੌਜੂਦ ਹੋਵੇਗਾ।
+onboarding-sign-up-button = ਸਾਈਨ ਅੱਪ ਜਾਂ ਸਾਈਨ ਇਨ ਕਰੋ
+onboarding-sign-up-secondary-button = ਬਰਾਊਜ਼ ਕਰਨਾ ਸ਼ੁਰੂ ਕਰੋ
 
 ## New user time and familiarity survey strings
 
@@ -376,3 +383,90 @@ onboarding-new-user-survey-familiarity-based-option-1 = ਮੈਂ ਬਿਲਕ�
 onboarding-new-user-survey-familiarity-based-option-2 = ਮੈਂ ਇਸ ਨੂੰ ਵਰਤਦਾ/ਵਰਤਦੀ ਹਾਂ ਕੁਝ
 onboarding-new-user-survey-familiarity-based-option-3 = ਮੈਂ ਇਸ ਨਾਲ ਚੰਗੀ ਤਰ੍ਹਾਂ ਜਾਣੂ ਹਾਂ
 onboarding-new-user-survey-familiarity-based-option-4 = ਮੈ ਪਹਿਲਾਂ ਵਰਤਿਆ ਸੀ, ਪਰ ਇਸ ਨੂੰ ਚਿਰ ਹੋ ਗਿਆ ਹੈ
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = ਸਾਨੂੰ ਦੱਸੋ ਕਿ ਤੁਸੀਂ ਆਪਣੀਆਂ ਟੈਬਾਂ ਕਿੱਥੇ ਚਾਹੁੰਦੇ ਹੋ
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = ਜਦੋਂ ਵੀ ਤੁਸੀਂ ਚਾਹੋ, ਬਾਹੀ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਇਸ ਨੂੰ ਬਦਲ ਸਕਦੇ ਹੋ।
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = ਤੁਹਾਡੀਆਂ ਟੈਬਾਂ ਤੁਹਾਡੇ ਮੁਤਾਬਕ
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = ਕੀ ਬਹੁਤ ਸਾਰੀਆਂ ਟੈਬਾਂ ਨੂੰ ਖੁੱਲ੍ਹੀਆਂ ਰੱਖਦੇ ਹੋ? ਆਪਣੀਆਂ ਟੈਬਾਂ ਨੂੰ ਵੱਧ ਸੁਚੱਜੇ ਢੰਗ ਲਈ ਬਾਹੀ ਵਿੱਚ ਸਜਾਓ। ਜਾਂ ਆਮ ਦੀ ਤਰ੍ਹਾਂ ਟੈਬਾਂ ਨੂੰ ਸਿਖਰ ਉੱਤੇ ਰੱਖੋ। ਜਦ ਵੀ ਚਾਹੋ ਬਦਲ ਲਵੋ।
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = ਆਪਣੇ ਟੈਬ ਖਾਕੇ ਨੂੰ ਚੁਣੋ
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = ਸੁਚੱਜੀ ਝਲਕ, ਜੋ ਤੁਹਾਨੂੰ ਫੋਕਸ ਰਹਿਣ ਲਈ ਮਦਦ ਕਰ ਸਕਦੀ ਹੈ, ਲਈ ਬਾਹੀ ਵਿੱਚ ਆਪਣੀਆਂ ਟੈਬਾਂ ਨੂੰ ਸਜਾ ਕੇ ਵੇਖੋ। ਜਾਂ ਆਮ ਦੀ ਤਰ੍ਹਾਂ ਟੈਬਾਂ ਨੂੰ ਸਿਖਰ ਉੱਤੇ ਰੱਖੋ। ਜਦ ਵੀ ਚਾਹੋ ਬਦਲ ਲਵੋ।
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = ਬਾਹੀ ਉੱਤੇ ਟੈਬ
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = ਟੈਬਾਂ ਉੱਤੇ
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = ਖੜ੍ਹਵੀਆਂ ਟੈਬਾਂ ਇੱਥੇ
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = ਖੜ੍ਹਵੀਆਂ ਟੈਬਾਂ ਪੇਸ਼ ਹਨ
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = ਆਪਣੀਆਂ ਟੈਬਾਂ ਨੂੰ ਪਾਸੇ ਉੱਤੇ ਰੱਖੋ। ਜਦੋਂ ਵੀ ਤੁਸੀਂ ਚਾਹੋ, ਬਾਹੀ ਸੈਟਿੰਗਾਂ ਨੂੰ ਬਦਲ ਸਕਦੇ ਹੋ।
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = ਖੜ੍ਹਵੀਆਂ ਟੈਬਾਂ ਨੂੰ ਅਜ਼ਮਾਓ
+onboarding-flair-text = ਨਵਾਂ!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = ਲੇਟਵੀਆਂ ਟੈਬਾਂ ਰੱਖੋ
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = ਬਰਾਊਜ਼ਰ ਵਿੰਡੋ { -brand-shorter-name } ਬਾਹੀ ਦੇ ਨਾਲ ਸਕਰੀਨ ਦੇ ਪਾਸੇ ਟੈਬਾਂ ਨੂੰ ਦਿਖਾਉਂਦੀ ਹੈ।
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = ਬਰਾਊਜ਼ਰ ਵਿੰਡੋ { -brand-shorter-name } ਬਾਹੀ ਦੇ ਨਾਲ ਸਕਰੀਨ ਦੇ ਪਾਸੇ ਟੈਬਾਂ ਨੂੰ ਦਿਖਾਉਂਦੀ ਹੈ।
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = ਬਰਾਊਜ਼ਰ ਵਿੰਡੋ ਸਿਖਰ ਦੇ ਨਾਲ ਟੈਬਾਂ ਨੂੰ ਦਿਖਾਉਂਦੀ ਹੈ।
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = ਬਰਾਊਜ਼ਰ ਵਿੰਡੋ ਸਿਖਰ ਦੇ ਨਾਲ ਟੈਬਾਂ ਨੂੰ ਦਿਖਾਉਂਦੀ ਹੈ।
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = ਬਾਹੀ ਵਿੱਚ AI ਚੈਟ-ਬੋਟ ਅਜ਼ਮਾਓ
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = ਵੈੱਬ ਸਮੱਗਰੀ ਦਾ ਸਾਰ ਵੇਖੋ, ਦਿਮਾਗ ਲੜਾਓ, ਸੁਨੇਹਿਆਂ ਦਾ ਖਰੜਾ ਤਿਆਰ ਕਰੋ — ਸਭ ਬਰਾਊਜ਼ਰ ਵਿੱਚ ਹੀ। ਕਈ ਪੂਰਕਾਂ ਤੋਂ ਚੁਣੋ। ਕਿਸੇ ਵੇਲੇ ਵੀ ਬਦਲੋ। <a data-l10n-name="learn-more">ਹੋਰ ਜਾਣੋ</a>
+onboarding-genai-sidebar-primary-button = ਕੋਈ ਚੈਟ-ਬੋਟ ਚੁਣੋ
+onboarding-genai-sidebar-secondary-button = ਬਰਾਊਜ਼ ਕਰਨਾ ਸ਼ੁਰੂ ਕਰੋ
+
+## New user onboarding checklist
+
+onboarding-checklist-title = { -brand-short-name } ਦੇ ਸੈਟਅੱਪ ਨੂੰ ਮੁਕੰਮਲ ਕਰੋ
+onboarding-checklist-subtitle = ਆਪਣੇ ਬਰਾਊਜ਼ਰ ਤਜਰਬੇ ਦਾ ਪੂਰਾ ਆਨੰਦ ਮਾਣਨ ਲਈ ਇਹ ਪੜਾਆਵਾਂ ਨੂੰ ਪੂਰਾ ਕਰਨਾ ਕਰੋ।
+onboarding-checklist-set-default = { -brand-short-name } ਨੂੰ ਮੂਲ ਬਰਾਊਜ਼ਰ ਬਣਾਓ
+onboarding-checklist-pin = { -brand-short-name } ਨੂੰ ਟਾਸਕਬਾਰ ਵਿੱਚ ਟੰਗੋ
+onboarding-checklist-import = ਪਿਛਲੇ ਬਰਾਊਜ਼ਰ ਤੋਂ ਦਰਾਮਦ ਕਰੋ
+onboarding-checklist-extension = ਇਕਸਟੈਨਸ਼ਨ ਨੂੰ ਜੋੜੋ
+onboarding-checklist-sign-up = ਸਾਈਨ ਅੱਪ ਕਰੋ ਜਾਂ ਆਪਣੇ ਖਾਤੇ ਵਿੱਚ ਸਾਈਨ ਇਨ ਕਰੋ
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = ਘੱਟ ਗਾਹ ਅਤੇ ਵੱਧ ਫੋਕਸ ਵਾਸਤੇ ਟੈਬ ਗਰੁੱਪਾਂ ਨੂੰ ਅਜ਼ਮਾ ਕੇ ਵੇਖੋ
+tab-groups-onboarding-feature-callout-subtitle = ਸੁਚੱਜੇ ਢੰਗ ਨਾਲ ਇੰਤਜ਼ਾਮ ਵਾਸਤੇ ਇੱਕ ਟੈਬ ਨੂੰ ਦੂਜੀ ਟੈਬ ਉੱਤੇ ਰੱਖ ਕੇ ਆਪਣਾ ਪਹਿਲਾਂ ਗਰੁੱਪ ਬਣਾਓ।
+tab-groups-onboarding-create-group-title = ਆਪੇ ਖੁੱਲ੍ਹੇ ਗਰੁੱਪਾਂ ਨੂੰ ਟੈਬ ਗਰੁੱਪ ਵਿੱਚ ਜਾਂ ਸਿਰਨਾਵਾਂ ਪੱਟੀ ਵਿੱਚ ਉਹਨਾਂ ਨੂੰ ਖੋਜ ਕਰਕੇ ਲੱਭੋ।
+tab-groups-onboarding-saved-groups-title = ਜੇ ਤੁਸੀਂ ਟੈਬ ਗਰੁੱਪ ਨੂੁੰ ਬੰਦ ਕਰਦੇ ਹੋ ਤਾਂ ਤੁਸੀਂ ਇਸ ਨੂੰ ਕਿਸੇ ਵੀ ਵੇਲੇ ਖੋਲ੍ਹ ਸਕਦੇ ਹੋ।
+tab-groups-onboarding-saved-groups-no-alltabs-button-title = ਆਪਣੇ ਖੁੱਲ੍ਹੇ ਜਾਂ ਬੰਦ ਕੀਤੇ ਟੈਬ ਗਰੁੱਪਾਂ ਨੂੰ ਕਿਸੇ ਵੀ ਵੇਲੇ ਸਿਰਨਾਵਾਂ ਪੱਟੀ ਵਿੱਚ ਖੋਜ ਕਰਕੇ ਲੱਭੋ।
+tab-groups-onboarding-dismiss = ਠੀਕ ਹੈ
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = { -brand-product-name } ਪਰੋਫ਼ਾਈਲਾਂ ਨੂੰ ਮਿਲੋ
+multi-profile-spotlight-body = ਕੰਮ ਅਤੇ ਮੌਜ ਮਸਤੀ ਲਈ ਬਰਾਊਜ਼ ਕਰਨ ਨੂੰ ਬਦਲਣਾ ਹੋਇਆ ਸੌਖਾ। ਪਰੋਫ਼ਾਈਲ ਤੁਹਾਡੀ ਬਰਾਊਜ਼ਰ ਜਾਣਕਾਰੀ, ਜਿਸ ਵਿੱਚ ਖੋਜ ਅਤੀਤ ਅਤੇ ਪਾਸਵਰਡ ਹੁੰਦੇ ਹਨ, ਨੂੰ ਬਿਲਕੁਲ ਅਲਹਿਦਾ ਰੱਖੋ ਤਾਂ ਕਿ ਤੁਸੀਂ ਸੁਚੱਜੇ ਢੰਗ ਨਾਲ ਪਰਬੰਧ ਕਰ ਸਕੋ।
+multi-profile-spotlight-cta = ਪਰੋਫਾਈਲ ਬਣਾਓ
+multi-profile-callout-title = ਕੰਮ ਅਤੇ ਮੌਜ ਮਸਤੀ ਲਈ ਅਲਹਿਦਾ ਪਰੋਫ਼ਾਈਲ ਬਣਾਓ
+multi-profile-callout-subtitle = ਪਰੋਫ਼ਾਈਲ ਤੁਹਾਡੀ ਬਰਾਊਜ਼ਰ ਜਾਣਕਾਰੀ, ਜਿਸ ਵਿੱਚ ਖੋਜ ਅਤੀਤ ਅਤੇ ਪਾਸਵਰਡ ਹੁੰਦੇ ਹਨ, ਨੂੰ ਬਿਲਕੁਲ ਵੱਖੋ-ਵੱਖਰਾ ਰੱਖਦੇ ਹਨ।
+multi-profile-callout-cta = ਪਰੋਫਾਈਲ ਬਣਾਓ
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = ਡਾਊਨਲੋਡ, ਸਿੰਕ ਕਰੋ ਅਤੇ ਤਿਆਰ!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = ਮੋਬਾਈਲ ਉੱਤੇ { -brand-product-name } ਨੂੰ ਡਾਊਨਲੋਡ ਕਰਨ ਲਈ QR ਕੋਡ ਨੂੰ ਸਕੈਨ ਕਰੋ। ਇੱਕ ਵਾਰ ਇੰਸਟਾਲ ਹੋਣ ਦੇ ਬਾਅਦ ਆਪਣੇ ਪਾਸਵਰਡਾਂ, ਬੁੱਕਮਾਰਕਾਂ ਤੇ ਹੋਰ ਚੀਜ਼ਾਂ ਨੂੰ ਲੈਣ ਲਈ “ਮੋਬਾਈਲ ਨਾਲ ਸਿੰਕ ਕਰੋ” ਨੂੰ ਚੁਣੋ।
+dismiss-button-label = ਖ਼ਾਰਜ ਕਰੋ
+sync-to-mobile-button-label = ਮੋਬਾਈਲ ਨਾਲ ਸਿੰਕ ਕਰੋ
+desktop-to-mobile-qr-code-alt =
+    .aria-label = ਮੋਬਾਈਲ ਵਾਸਤੇ { -brand-product-name } ਡਾਊਨਲੋਡ ਕਰਨ ਲਈ QR ਕੋਡ

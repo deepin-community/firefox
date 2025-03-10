@@ -88,6 +88,14 @@
     inset-block-start: 40px;
     margin-block-start: 0;
 
+    @media (min-width: $break-point-layout-variant) {
+      inset-inline-end: 20px;
+    }
+
+    @media (min-width: $break-point-large) {
+      inset-inline-end: 40px;
+    }
+
     .weatherSponsorText {
       float: inline-end;
 
@@ -104,6 +112,23 @@
   }
 }
 
+.no-search.layout-variant-b {
+  .weather {
+    inset-inline-end: 20px;
+
+    @media (min-width: $break-point-small) {
+      inset-inline-end: 40px;
+    }
+
+    @media (min-width: $break-point-layout-variant) {
+      inset-inline-end: 20px;
+    }
+
+    @media (min-width: $break-point-large) {
+      inset-inline-end: 40px;
+    }
+  }
+}
 
 // Edge case: users with weather enabled/search enabled
 .has-weather.has-search {
@@ -117,7 +142,19 @@
 
   // Edge case: medium screens where we hide the weather icon and
   // detail info row for overlap issues
-  .weatherIconCol, .weatherDetailedSummaryRow {
+  .weatherDetailedSummaryRow {
+    display: block;
+
+    @media (min-width: $break-point-medium) {
+      display: none;
+    }
+
+    @media (min-width: $break-point-large) {
+      display: block;
+    }
+  }
+
+  .weatherIconCol {
     display: flex;
 
     @media (min-width: $break-point-medium) {
@@ -146,6 +183,23 @@
   border-radius: var(--border-radius-medium);
   height: 52px;
   max-width: 205px;
+
+  // Bug 1915727 - Layout experiment: hide error message on smallest breakpoint
+  .layout-variant-a & {
+    display: none;
+
+    @media (min-width: $break-point-medium) {
+      display: flex
+    }
+  }
+
+  .layout-variant-b & {
+    display: none;
+
+    @media (min-width: $break-point-large) {
+      display: flex
+    }
+  }
 
   &:hover {
     background-color: var(--button-background-color-ghost-hover);
@@ -201,7 +255,6 @@
 
   &:hover {
     box-shadow: var(--box-shadow-10);
-    background: var(--background-color-box);
   }
 
   a {
@@ -231,7 +284,7 @@
   cursor: pointer;
 
   &:hover {
-    background-color: var(--button-background-color-ghost-hover);
+    background-color: var(--newtab-background-color-secondary);
 
     &::after {
       background-color: transparent
@@ -392,13 +445,15 @@
 }
 
 .weatherHighLowTemps {
-  display: flex;
+  display: inline-flex;
   gap: var(--space-xxsmall);
   text-transform: uppercase;
   word-spacing: var(--space-xxsmall);
+  margin-inline-end: var(--space-small);
 }
 
 .weatherTextSummary {
+  display: inline;
   text-align: center;
   max-width: 90px;
 }
@@ -562,7 +617,7 @@
   .search-icon {
     content: url('chrome://global/skin/icons/search-glass.svg');
     -moz-context-properties: fill;
-    fill: light-dark(var(--color-gray-70), var(--color-gray-05));
+    fill: var(--icon-color);
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
@@ -570,20 +625,13 @@
   }
 
   .close-icon {
-    background-image: url('chrome://global/skin/icons/close.svg');
-    -moz-context-properties: fill;
-    fill: light-dark(var(--color-gray-70), var(--color-gray-05));
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    inset-inline-end: 18px;
-    width: var(--size-item-small);
-    height: var(--size-item-small);
-    appearance: none;
-    border: none;
+    inset-inline-end: var(--space-medium);
 
     &:focus-visible {
-      outline: 1px solid var(--focus-outline-color);
+      outline: var(--focus-outline);
     }
   }
 
@@ -615,14 +663,23 @@
     }
   }
 
-  // Edge case: Show weather icon, detailed view at a later breakpoint
+  // Edge case: Show weather icon at a later breakpoint
   // then the temperature and city name
-  .weatherIconCol,
-  .weatherDetailedSummaryRow {
+  .weatherIconCol {
     display: none;
 
     @media(min-width: $break-point-widest) {
       display: flex;
+    }
+  }
+
+  // Edge case: Show detailed view at a later breakpoint
+  // then the temperature and city name
+  .weatherDetailedSummaryRow {
+    display: none;
+
+    @media(min-width: $break-point-widest) {
+      display: block;
     }
   }
 

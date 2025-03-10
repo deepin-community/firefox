@@ -3,10 +3,6 @@
 
 "use strict";
 
-const { MockRegistrar } = ChromeUtils.importESModule(
-  "resource://testing-common/MockRegistrar.sys.mjs"
-);
-
 // Wraps the given object in an XPConnect wrapper and, if an interface
 // is passed, queries the result to that interface.
 function xpcWrap(obj, iface) {
@@ -45,6 +41,9 @@ function mockService(serviceNames, contractId, interfaceObj, mockService) {
     QueryInterface: ChromeUtils.generateQI(serviceNames),
   };
   let o = xpcWrap(newService, interfaceObj);
+  const { MockRegistrar } = ChromeUtils.importESModule(
+    "resource://testing-common/MockRegistrar.sys.mjs"
+  );
   let cid = MockRegistrar.register(contractId, o);
   registerCleanupFunction(() => {
     MockRegistrar.unregister(cid);
@@ -55,17 +54,33 @@ function mockService(serviceNames, contractId, interfaceObj, mockService) {
 /**
  * Mock the nsIContentAnalysis service with the object mockCAService.
  *
- * @param {object}    mockCAService
- *                    the service to mock for nsIContentAnalysis
- * @returns {object}  The newly-mocked service
+ * @param {object}    mockCAServiceTemplate
+ *                    the mock nsIContentAnalysis template object
+ * @returns {object}  The newly-mocked service that integrates the template
  */
-function mockContentAnalysisService(mockCAService) {
-  return mockService(
+async function mockContentAnalysisService(mockCAServiceTemplate) {
+  // Some of the C++ code that tests if CA is active checks this
+  // pref (even though it would perhaps be better to just ask
+  // nsIContentAnalysis)
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.contentanalysis.enabled", true]],
+  });
+  registerCleanupFunction(async function () {
+    SpecialPowers.popPrefEnv();
+  });
+  let realCAService = SpecialPowers.Cc[
+    "@mozilla.org/contentanalysis;1"
+  ].getService(SpecialPowers.Ci.nsIContentAnalysis);
+  let mockCAService = mockService(
     ["nsIContentAnalysis"],
     "@mozilla.org/contentanalysis;1",
     Ci.nsIContentAnalysis,
-    mockCAService
+    mockCAServiceTemplate
   );
+  if (mockCAService) {
+    mockCAService.realCAService = realCAService;
+  }
+  return mockCAService;
 }
 
 /**
@@ -118,20 +133,35 @@ function makeMockContentAnalysis() {
     isActive: true,
     mightBeActive: true,
     errorValue: undefined,
+    waitForEventToFinish: false,
+    // This is a dummy event target that uses custom events for bidirectional
+    // communication between the individual test and the mock CA object.
+    // Events are:
+    //   inAnalyzeContentRequest:
+    //     If waitForEvent was true, this is sent by mock CA when its
+    //     AnalyzeContentRequest is ready to issue a response.  It will wait
+    //     for returnContentAnalysisResponse to be received before issuing
+    //     the response.
+    //  returnContentAnalysisResponse:
+    //     If waitForEvent was true, this must be sent by the test to tell
+    //     AnalyzeContentRequest to issue its response.
+    eventTarget: new EventTarget(),
 
-    setupForTest(shouldAllowRequest) {
+    setupForTest(shouldAllowRequest, waitForEvent) {
       this.shouldAllowRequest = shouldAllowRequest;
       this.errorValue = undefined;
-      this.calls = [];
+      this.waitForEvent = !!waitForEvent;
+      this.clearCalls();
     },
 
     setupForTestWithError(errorValue) {
       this.errorValue = errorValue;
-      this.calls = [];
+      this.clearCalls();
     },
 
     clearCalls() {
       this.calls = [];
+      this.browsingContextsForURIs = [];
     },
 
     getAction() {
@@ -157,6 +187,21 @@ function makeMockContentAnalysis() {
       }
       // Use setTimeout to simulate an async activity
       await new Promise(res => setTimeout(res, 0));
+      if (this.waitForEvent) {
+        let waitPromise = new Promise(res => {
+          this.eventTarget.addEventListener(
+            "returnContentAnalysisResponse",
+            () => {
+              res();
+            },
+            { once: true }
+          );
+        });
+        this.eventTarget.dispatchEvent(
+          new CustomEvent("inAnalyzeContentRequest")
+        );
+        await waitPromise;
+      }
       return makeContentAnalysisResponse(
         this.getAction(),
         request.requestToken
@@ -168,24 +213,89 @@ function makeMockContentAnalysis() {
         "Mock ContentAnalysis service: analyzeContentRequestCallback, this.shouldAllowRequest=" +
           this.shouldAllowRequest +
           ", this.errorValue=" +
-          this.errorValue
+          this.errorValue +
+          ", this.waitForEvent=" +
+          this.waitForEvent
       );
       this.calls.push(request);
       if (this.errorValue) {
         throw this.errorValue;
       }
-      let response = makeContentAnalysisResponse(
-        this.getAction(),
-        request.requestToken
-      );
-      // Use setTimeout to simulate an async activity
-      setTimeout(() => {
+
+      // Use setTimeout to simulate an async activity (and because IOUtils.stat
+      // is async).
+      setTimeout(async () => {
+        if (this.waitForEvent) {
+          let waitPromise = new Promise(res => {
+            this.eventTarget.addEventListener(
+              "returnContentAnalysisResponse",
+              () => {
+                res();
+              },
+              { once: true }
+            );
+          });
+          this.eventTarget.dispatchEvent(
+            new CustomEvent("inAnalyzeContentRequest")
+          );
+          await waitPromise;
+        }
+        let isDir = false;
+        try {
+          isDir = (await IOUtils.stat(request.filePath)).type == "directory";
+        } catch {}
+        if (isDir) {
+          // Folder requests are re-issued as file requests for each file in the
+          // folder. Allow the real CA service to do this.  New requests will be
+          // sent to the mock CA.
+          this.realCAService.analyzeContentRequestCallback(
+            request,
+            autoAcknowledge,
+            callback
+          );
+          return;
+        }
+
+        let response = makeContentAnalysisResponse(
+          this.getAction(),
+          request.requestToken
+        );
         callback.contentResult(response);
       }, 0);
     },
 
     cancelAllRequests() {
       // This is called on exit, no need to do anything
+    },
+
+    getURIForBrowsingContext(aBrowsingContext) {
+      this.browsingContextsForURIs.push(aBrowsingContext);
+      return this.realCAService.getURIForBrowsingContext(aBrowsingContext);
+    },
+
+    setCachedResponse(aURI, aClipboardSequenceNumber, aFlavors, aAction) {
+      return this.realCAService.setCachedResponse(
+        aURI,
+        aClipboardSequenceNumber,
+        aFlavors,
+        aAction
+      );
+    },
+
+    getCachedResponse(
+      aURI,
+      aClipboardSequenceNumber,
+      aFlavors,
+      aAction,
+      aIsValid
+    ) {
+      return this.realCAService.getCachedResponse(
+        aURI,
+        aClipboardSequenceNumber,
+        aFlavors,
+        aAction,
+        aIsValid
+      );
     },
   };
 }

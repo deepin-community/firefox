@@ -102,7 +102,7 @@ cfr-doorhanger-milestone-close-button = Mbylle
 ## DOH Message
 
 cfr-doorhanger-doh-body = Privatësia juaj ka rëndësi. { -brand-short-name }-i tani e tutje ia kalon në mënyrë të siguruar kërkesat tuaja DNS, kurdo që është e mundur, një shërbimi partner, për t’ju mbrojtur teksa shfletoni.
-cfr-doorhanger-doh-header = Kërkesa DNS të fshehtëzuara, më të sigurta
+cfr-doorhanger-doh-header = Kërkesa DNS të fshehtëzuara, më të siguruara
 cfr-doorhanger-doh-primary-button-2 = OK
     .accesskey = O
 cfr-doorhanger-doh-secondary-button = Çaktivizoje
@@ -245,6 +245,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Krijoni një llogar
 device-migration-fxa-spotlight-getting-new-device-header-2 = Pajisje e re e juaj në të ardhmen?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Ndiqni pak hapa të thjeshtë për të sjellë faqerojtësit tuaj, historikun dhe fjalëkalimet, kur filloni në një pajisje të re.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Si të kopjeruaj të dhënat e mia
+device-migration-fxa-spotlight-sync-header = Shfletoni pa humbur një grimë
+device-migration-fxa-spotlight-sync-body = Njëkohësoni me fshehtëzim krejt të dhënat tuaja të rëndësishme — bie fjala, faqerojtës dhe fjalëkalime. Mund të merrni më pas ç’të doni, kudo që përdorni { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = Fillojani
 
 ## Set as Default PDF Reader Infobar
 
@@ -281,3 +284,61 @@ tail-fox-spotlight-title = Mbajini larg vetes gjurmuesit e bezdisshëm
 tail-fox-spotlight-subtitle = U thoni lamtumirë gjurmuesve të bezdisshëm në reklama dhe hidhni bazat e një punimi më të parrezik, të shpejtë të internetit.
 tail-fox-spotlight-primary-button = Hapi lidhjet e mia me { -brand-short-name }
 tail-fox-spotlight-secondary-button = Jo tani
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Versione më të vjetër të { -brand-short-name }-it mund të zënë e të kenë probleme më 14 janar 2025.</strong>
+root-certificate-succession-infobar-march-message = <strong>Përditësojeni, që të vazhdoni ta përdorni { -brand-short-name }-in pas 14 marsit 2025.</strong>
+root-certificate-succession-infobar-link = Pse më duhet ta përditësoj?
+root-certificate-succession-infobar-primary-button =
+    .label = Përditësojeni tani
+    .accesskey = P
+root-certificate-succession-infobar-secondary-button =
+    .label = Më vonë
+    .accesskey = v
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Humbët një përditësim të rëndësishëm për { -brand-short-name }
+root-certificate-windows-background-notification-subtitle = Pjesë të shfletuesit do të reshtin së funksionuari së shpejti, nëse s’e përditësoni. Tani është kohë e përshtatshme të merrni mbrojtjet dhe veçoritë tona më të reja.
+root-certificate-windows-background-notification-learn-more-button = Mësoni më tepër
+root-certificate-windows-background-notification-update-button = Përditësoni { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Mbylle
+    .aria-label = Mbylleni
+fxa-menu-message-sign-up-button = Regjistrohuni
+fxa-menu-message-sync-devices-primary-text = Njëkohësoni krejt pajisjet tuaja
+fxa-menu-message-sync-devices-secondary-text = Merrni në çast informacion tuajin — fjala vjen, faqerojtës dhe fjalëkalime — kudo që përdorni { -brand-short-name }-in.
+fxa-menu-message-sync-devices-collapsed-text = Njëkohësoni krejt pajisjet tuaja
+fxa-menu-message-backup-data-primary-text = Kopjeruani të dhënat e shfetuesit tuaj
+fxa-menu-message-backup-data-secondary-text = Mbroni në mënyrë të automatizuar faqerojtësit, fjalëkalimet dhe të tjera hollësi në krejt pajisjet tuaja.
+fxa-menu-message-backup-data-collapsed-text = Kopjeruani të dhëna shfletuesi
+fxa-menu-message-backup-sync-primary-text = Mbajini të dhënat tuaja të parrezik dhe të njëkohësuara
+fxa-menu-message-backup-sync-secondary-text = Sync-u kopjeruan shumicën e të dhënave tuaja, që të mund t’i përdorni kudo që përdorni { -brand-short-name }-in.
+fxa-menu-message-backup-sync-collapsed-text = Njëkohësoni dhe kopjeruani të dhëna
+fxa-menu-message-mobile-primary-text = Dërgoni skeda te telefoni juaj
+fxa-menu-message-mobile-secondary-text = Vazhdoni menjëherë ku e latë, kur njëkohësoni skedat tuaja me një pajisje celulare.
+fxa-menu-message-mobile-collapsed-text = Njëkohësojini me telefonin tuaj
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Mirë se u kthyet
+multi-cta-fox-doodle-set-default-checkbox = Vëreni { -brand-short-name }-in si parazgjedhje
+multi-cta-fox-doodle-pin-startmenu-checkbox = Fiksoje { -brand-short-name }-in te menuja e Nisjes
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Mbaje { -brand-short-name }-in te Paneli
+       *[other] Fiksoje { -brand-short-name }-in te paneli i punëve
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Nisni shfletimin
+multi-cta-fox-doodle-main-browser-primary-button-label = Bëje { -brand-short-name }-in shfletuesin tim kryesor
+multi-cta-fox-doodle-quick-reminder-subtitle = Ja një kujtues i shpejtë se shfletuesin tuaj të parapëlqyer, të përqendruar te privatësia mund ta mbani vetëm një klikim larg.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Mbajeni shfletuesin tuaj të parapëlqyer, të përqendruar te privatësia, vetëm një klikim larg. Vëren { -brand-short-name }-in si shfletuesin tuaj parazgjedhje për hapje lidhjesh dhe mbajeni te Paneli juaj.
+       *[other] Mbajeni shfletuesin tuaj të parapëlqyer, të përqendruar te privatësia, vetëm një klikim larg. Vëren { -brand-short-name }-in si shfletuesin tuaj parazgjedhje për hapje lidhjesh dhe fiksojeni te shtylla juaj e punëve.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Mbajeni shfletuesin tuaj të parapëlqyer, të përqendruar te privatësia, vetëm një klikim larg. Vëren { -brand-short-name }-in si shfletuesin tuaj parazgjedhje për hapje lidhjesh dhe fiksojeni te shtylla juaj e punëve dhe menuja e Nisjes.

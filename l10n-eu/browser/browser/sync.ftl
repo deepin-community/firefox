@@ -34,3 +34,26 @@ fxa-menu-send-tab-to-device-description = Bidali fitxa bat berehala saioa hasita
 fxa-menu-sign-out =
     .label = Amaitu saioa…
 fxa-menu-sync-title = Sync
+fxa-menu-sync-description = Izan zure weberako sarbidea edonon
+sync-setup-verify-continue = Jarraitu
+sync-setup-verify-title = Elkartzeko abisua
+sync-setup-verify-heading = Ziur zaude sinkronizatzeko saioa hasi nahi duzula?
+# The user was previously signed into sync. This dialog confirms to the user
+# that they will be merging the data from the previously signed in into the newly signed in one
+# Variables:
+#   $email - Email address of a user previously signed into sync.
+sync-setup-verify-description = Beste erabiltzaile batek sinkronizatzeko saioa hasita zeukan ordenagailu honetan. Saioa hasiz gero, nabigatzaile honen laster-markak, pasahitzak eta bestelako ezarpenak { $email } kontuarekin elkartuko dira
+
+## Sync warning strings that support the browser profiles feature, these will be shown when the user might be merging data
+
+# Dialog 1 - different account signing in without option to merge
+sync-profile-different-account-title = Kontuaren mugara heldu da profil honetarako
+sync-profile-different-account-header = Kontu hau aurretik beste kontu batera sinkronizatu da
+# Variables:
+#   $profileName (String) - Name of the profile to switch to
+sync-button-switch-profile = Aldatu "{ $profileName }" profilera
+sync-button-create-profile = Sortu profil berri bat
+sync-button-sync-and-merge = Sinkronizatu eta elkartu datuak
+# Variables:
+#   $profileName (String) - Name of the profile to switch to
+sync-button-sync-profile = Sinkronizatu "{ $profileName }"

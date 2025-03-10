@@ -186,6 +186,17 @@ shopping-survey-terms-link = Jeporurã reko
 shopping-survey-thanks =
     .heading = ¡Aguyje nde jehaipyrére!
 
+## Shopping opted-out survey strings
+## Opt-out survey options are displayed as checkboxes and the user can select one or many.
+
+shopping-survey-thanks-title = ¡Aguyje ne remiandu rehe!
+shopping-survey-opted-out-hard-to-understand = Hasyeterei iñeikumby
+shopping-survey-opted-out-too-slow = Embegueterei
+shopping-survey-opted-out-not-accurate = Noĩporãi
+shopping-survey-opted-out-not-helpful = Ndoikói chéve g̃uarã
+shopping-survey-opted-out-check-myself = Ahechase chete marandu’ikuéra
+shopping-survey-opted-out-other = Ambue
+
 ## Shopping Feature Callout strings.
 ## "price tag" refers to the price tag icon displayed in the address bar to
 ## access the feature.

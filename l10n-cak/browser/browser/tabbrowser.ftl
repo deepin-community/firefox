@@ -72,6 +72,9 @@ tabbrowser-unblock-tab-audio-tooltip =
            *[other] Ketzij { $tabCount } ruwi'
         }
 
+## Tooltips for tab audio control
+
+
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
@@ -111,6 +114,10 @@ tabbrowser-confirm-close-tabs-with-key-button = Titz'apïx { -brand-short-name }
 # Variables:
 #   $quitKey (String): the text of the keyboard shortcut for quitting.
 tabbrowser-confirm-close-tabs-with-key-checkbox = Nab'ey tijikib'äx richin nel rik'in { $quitKey }
+
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
+
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
@@ -166,4 +173,17 @@ tabbrowser-ctrl-tab-list-all-tabs =
     .label = Kecholajïx konojel ri { $tabCount } taq ruwi'
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
+
+
+## Tab Groups
+
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
+
+## Open/saved tab group context menu
 

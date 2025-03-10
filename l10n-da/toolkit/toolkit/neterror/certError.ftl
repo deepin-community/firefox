@@ -18,6 +18,9 @@ cert-error-trust-signature-algorithm-disabled = Der stoles ikke på certifikatet
 cert-error-trust-expired-issuer = Der stoles ikke på certifikatet, fordi udstederens certifikat er udløbet.
 cert-error-trust-self-signed = Der stoles ikke på certifikatet, da det er underskrevet af indehaveren selv.
 cert-error-trust-symantec = Sikkerhedscertifikater udstedt af GeoTrust, RapidSSL, Symantec, Thawte, og VeriSign bliver ikke længere opdattet som sikre, fordi disse certifikat-udstedere tidligere ikke har fulgt gængse sikkerheds-praksisser.
+# Variables:
+#   $hostname (string) - Hostname of the website with cert error.
+cert-error-trust-certificate-transparency = { -brand-short-name } stoler ikke på { $hostname }, fordi den ikke kan bevise at den overholder kravene til gennemsigtighed for offentlige certifikater.
 cert-error-untrusted-default = Certifikatet stammer ikke fra en kilde, der er tillid til.
 # Variables:
 #   $hostname (string) - Hostname of the website with cert error.
@@ -68,6 +71,45 @@ open-in-new-window-for-csp-or-xfo-error = Åbn websted i et nyt vindue
 # Variables:
 #   $hostname (string) - Hostname of the website blocked by csp or xfo error.
 csp-xfo-blocked-long-desc = For at beskytte din sikkerhed vil { $hostname } ikke tillade, at { -brand-short-name } viser siden, hvis et andet websted har indlejret den. Du skal åbne siden i et nyt vindue for at se den.
+fp-certerror-view-certificate-link = Vis webstedets certifikat
+fp-certerror-return-to-previous-page-recommended-button = Gå tilbage (anbefalet)
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+#   $validHosts (String) - Valid hostnames.
+fp-certerror-bad-domain-why-dangerous-body = Dette websted er konfigureret til udelukkende at tillade sikre forbindelser, men der er et problem med webstedets certifikat. En aktør med slette hensigter forsøger muligvis at udgive sig for at være webstedet. Websteder anvender certifikater udstedt af en certifikatautoritet til at bevise, at de virkeligt er hvem de udgiver sig for at være. { -brand-short-name } stoler ikke på dette websted, fordi certifikatet ikke er gyldigt for { $hostname }. Certifikatet er kun gyldigt for { $validHosts }.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-bad-domain-what-can-you-do-body = Sandsynligvis ingenting, eftersom det tilsyneladende skyldes et problem med selve webstedet. Websteder bruger certifikater udsted af en certifikatautoritet for at bevise, at de virkeligt er hvem de påstår at de er. Men hvis du befinder dig på et virksomheds-netværker kan det være, at jeres IT-afdeling har flere oplysninger. Hvis du anvender antivirus-software, kan du prøve at søge efter mulige konflikter eller kendte problemer.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-certerror-unknown-issuer-why-dangerous-body = Der er et problem med webstedets certifikat. En aktør med slette hensigter forsøger muligvis at udgive sig for at være webstedet. Websteder anvender certifikater udstedt af en certifikatautoritet til at bevise, at de virkeligt er hvem de udgiver sig for at være. { -brand-short-name } stoler ikke på dette websted, fordi vi ikke kan se, hvem der har udstedt certifikatet, det er underskrevet af indehaveren selv, eller webstedet sender ikke mellemliggende certifikater, vi har tillid til.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-unknown-issuer-what-can-you-do-body = Sandsynligvis ingenting, eftersom det tilsyneladende skyldes et problem med selve webstedet. Men hvis du befinder dig på et virksomheds-netværker kan det være, at jeres IT-afdeling har flere oplysninger. Hvis du anvender antivirus-software, skal det muligvis konfigureres til at fungere med { -brand-short-name }.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-certerror-self-signed-why-dangerous-body = Fordi der er et problem med webstedets certifikat. Websteder anvender certifikater udstedt af en certifikatautoritet til at bevise, at de virkeligt er hvem de udgiver sig for at være. Dette websteds certifikat er underskrevet af indehaveren selv. Det er ikke blevet udstedt af en kendt certifikatautoritet – så vi stoler ikke på det som standard.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-self-signed-what-can-you-do-body = Ikke ret meget. Det ser ud til, at der er et problem med dette websted.
+fp-certerror-self-signed-important-note = VIGTIGT: Hvis du forsøger at besøge dette websted på et virksomheds-intranet, kan det være at jeres IT-afdeling anvender certifikater, der underskrevet af virksomheden selv. IT-afdelingen kan hjælpe dig med at tjekke certifikaternes gyldighed.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate expiration date.
+fp-certerror-expired-why-dangerous-body = Websteder anvender certifikater udstedt af en certifikatautoritet til at bevise, at de virkeligt er hvem de udgiver sig for at være. { -brand-short-name } stoler ikke på dette websted, fordi det ser ud til, at certifikatet udløb den { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate start date.
+fp-certerror-not-yet-valid-why-dangerous-body = Websteder anvender certifikater udstedt af en certifikatautoritet til at bevise, at de virkeligt er hvem de udgiver sig for at være. { -brand-short-name } stoler ikke på dette websted, fordi det ser ud til, at certifikatet ikke er gyldigt før { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+# Variables:
+#   $date (Date) - Clock date.
+fp-certerror-expired-what-can-you-do-body = Uret i din enhed er indstillet til { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }. Hvis dette er rigtigt, så skyldes sikkerhedsproblemet et problem på webstedet. Hvis tidspunktet ikke er rigtigt, kan du ændre det i systemindstillingerne på din enhed.
+# Variables:
+#   $error (string) - NSS error code string that specifies type of cert error. e.g. unknown issuer, invalid cert, etc.
+fp-cert-error-code = Fejlkode: { $error }
+# Variables:
+#   $datetime (Date) - Current datetime.
+fp-datetime = { DATETIME($datetime, month: "short", year: "numeric", day: "numeric") } { DATETIME($datetime, timeStyle: "long") }
+fp-learn-more-about-secure-connection-failures = Læs mere om fejl med at oprette en sikker forbindelse
+fp-learn-more-about-cert-issues = Læs mere om denne slags certifikat-problemer
+fp-learn-more-about-time-related-errors = Læs mere om at fejlsøge tids-relaterede problemer
 
 ## Messages used for certificate error titles
 
@@ -92,6 +134,7 @@ contentEncodingError-title = Indholdskodningsfejl
 unsafeContentType-title = Usikker filtype
 netReset-title = Forbindelsen blev nulstillet
 netTimeout-title = Forbindelsens tidsfrist udløb
+httpErrorPage-title = Det ser ud til, at der er et problem med dette websted
 serverError-title = Det ser ud til, at der er et problem med dette websted
 unknownProtocolFound-title = Adressen kunne ikke forstås
 proxyConnectFailure-title = Proxyserveren afviser forbindelser
@@ -109,3 +152,20 @@ networkProtocolError-title = Fejl i netværksprotokol
 nssBadCert-title = Advarsel: Mulig sikkerhedsrisiko
 nssBadCert-sts-title = Oprettede ikke forbindelse: Muligt sikkerhedsproblem
 certerror-mitm-title = Et program forhindrer { -brand-short-name } i at oprette en sikker forbindelse til dette websted.
+
+## Felt Privacy V1 Strings
+
+fp-certerror-page-title = Advarsel: Sikkerhedsrisiko
+fp-certerror-body-title = Vær forsigtig. Noget ser ikke rigtigt ud.
+fp-certerror-why-site-dangerous = Hvad får webstedet til at fremstå som farligt?
+fp-certerror-what-can-you-do = Hvad kan du gøre?
+fp-certerror-advanced-title = Avanceret
+fp-certerror-advanced-button = Avanceret
+fp-certerror-hide-advanced-button = Skjul avanceret
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-certerror-override-exception-button = Fortsæt til { $hostname } (Risikabelt)
+fp-certerror-intro = { -brand-short-name } opdagede et potentielt alvorligt sikkerhedsproblem med <strong>{ $hostname }</strong>. Nogen som udgiver sig for at være webstedet kan forsøge at stjæle ting som oplysninger om betalingskort, adgangskoder eller mails.
+fp-certerror-expired-into = { -brand-short-name } opdagede et sikkerhedsproblem med <strong>{ $hostname }</strong>. Enten er webstedet opsat forkert eller også er din enheds ur indstillet til det forkert tidspunkt eller den forkert dato.

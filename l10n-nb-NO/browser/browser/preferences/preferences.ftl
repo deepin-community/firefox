@@ -137,6 +137,7 @@ windows-launch-on-login =
     .label = Åpne { -brand-short-name } automatisk når datamaskinen din starter opp
     .accesskey = p
 windows-launch-on-login-disabled = Denne innstillingen er deaktivert i Windows. For å endre, gå til <a data-l10n-name="startup-link">Oppstartsapper</a> i Systeminnstillinger.
+windows-launch-on-login-profile-disabled = Aktiver denne innstillingen ved å merke av for «{ profile-manager-use-selected.label }» i «Velg brukerprofil»-vinduet.
 startup-restore-warn-on-quit =
     .label = Advarer når du avslutter nettleseren
 disable-extension =
@@ -568,8 +569,7 @@ home-prefs-shortcuts-description = Nettsteder du lagrer eller besøker
 home-prefs-shortcuts-by-option-sponsored =
     .label = Sponsede snarveier
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Anbefalt av { $provider }
@@ -640,6 +640,10 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Vis søkeforslag i adresselinjens resultater
     .accesskey = l
+# With this option enabled, on the search results page
+# the URL will be replaced by the search terms in the address bar.
+search-show-search-term-option-2 =
+    .label = Vis søkeord i adressefeltet på resultatsidene
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.

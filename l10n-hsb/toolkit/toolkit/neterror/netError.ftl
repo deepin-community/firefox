@@ -12,6 +12,7 @@ neterror-blocked-by-policy-page-title = Zablokowana strona
 neterror-captive-portal-page-title = So pola syće přizjewić
 neterror-dns-not-found-title = Serwer njeje so namakał
 neterror-malformed-uri-page-title = Njepłaćiwy URL
+general-body-title = Budźće kedźbliwy. Něšto w porjadku njeje.
 
 ## Error page actions
 
@@ -41,6 +42,9 @@ neterror-generic-error = { -brand-short-name } njemóže tutu stronu z někajkej
 neterror-load-error-try-again = Sydło móhło nachwilu k dispoziciji njestać abo přećežene być. Spytajcé za mało wokomikow hišće raz.
 neterror-load-error-connection = Jeli njemóžeće někotre strony začitać, přepruwujće zwisk wašeje ličakoweje syće.
 neterror-load-error-firewall = Jeli waš ličak abo syć so z wohnjowej murju abo proksy škita, zawěsćće, zo { -brand-short-name } smě na Web přistup měć.
+# This warning is only shown on macOS Sequoia and later (see bug 1929377)
+neterror-load-osx-permission = Jeli pospytujeće, stronu lokalneje syće začitać, přepruwujće prošu, hač je { -brand-short-name } prawa lokalneje syće w nastajenjach priwatnosće a wěstoty dóstał.
+neterror-http-error-page = Přepruwujće, hač sće adresu websydła korektnje zapodał.
 neterror-captive-portal = Dyrbiće so pola tuteje syće přizjewić, prjedy hač móžeće přistup k internetej měć.
 # Variables:
 # $hostAndPath (String) - a suggested site (e.g. "www.example.com") that the user may have meant instead.
@@ -96,6 +100,9 @@ neterror-proxy-connect-failure-settings = Přepruwujće proksynastajenja, zo by 
 neterror-proxy-connect-failure-contact-admin = Skontaktujće swojeho syćoweho administratora, zo by so zawěsćiło, zo proksyserwer dźěła.
 neterror-content-encoding-error = Prošu stajće so z wobsedźerjemi websydła do zwiska, zo byšće jich wo tutym problemje informował.
 neterror-unsafe-content-type = Prošu stajće so z wobsedźerjemi websydła do zwiska, zo byšće jich wo tutym problemje informował.
+# Variables:
+# $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-basic-http-auth = { -brand-short-name } { $hostname } njedowěrja, dokelž zwisk wěsty njeje. Spytajće URL do HTTPS změnić.
 neterror-nss-failure-not-verified = Strona, kotruž chceće sej wobhladać, njeda so pokazać, dokelž awtentiskosć přijatych datow njeda so přepruwować.
 neterror-nss-failure-contact-website = Prošu stajće so z wobsedźerjemi websydła do zwiska, zo byšće jich wo tutym problemje informował.
 # Variables:
@@ -148,3 +155,11 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = Jeli so z <b>{ $mitm }</b> 
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = <b>{ $hostname }</b> ma wěstotne prawidło z mjenom HTTP Strict Transport Security (HSTS), kotrež woznamjenja, zo { -brand-short-name } móže so jenož wěsće zwjazać. Njemóžeće wuwzaće přidać, zo byšće tute sydło wopytał.
+cert-error-trust-certificate-transparency-what-can-you-do-about-it = Najskerje ničo, dokelž je prawdźepodobnje, zo problem je ze sydłom samym.
+certerror-blocked-by-corp-headers-description = Druhdy websydła same a ludźi kaž wy před njewitanymi interakcijemi z druhimi sydłami škitaja.
+certerror-coop-learn-more = Dalše informacije wo Cross Origin Opener Policies (COOP)
+certerror-coep-learn-more = Dalše informacije wo Cross Origin Embedder Policies (COEP)
+# Variables:
+#   $responsestatus (string) - HTTP response status code (e.g., 500).
+#   $responsestatustext (string) - HTTP response status text (e.g., "Internal Server Error").
+neterror-response-status-code = Zmylkowy kode: { $responsestatus } { $responsestatustext }

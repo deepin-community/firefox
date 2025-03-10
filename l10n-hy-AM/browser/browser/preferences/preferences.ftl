@@ -136,6 +136,9 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Հղումները բացել նոր ներդիրներում՝ նոր պատուհանների փոխարեն
     .accesskey = w
+ask-on-close-multiple-tabs =
+    .label = Հարցնել բազմակի ներդիրները փակելիս
+    .accesskey = m
 confirm-on-close-multiple-tabs =
     .label = Զգուշացնել բազմակի ներդիրները փակելիս
     .accesskey = m
@@ -452,7 +455,7 @@ browsing-media-control =
     .accesskey = v
 browsing-media-control-learn-more = Իմանալ ավելին
 browsing-cfr-recommendations =
-    .label = Զննարկելիս առաջարկել հավելումներ
+    .label = Դիտարկելիս առաջարկել ընդլայնումներ
     .accesskey = R
 browsing-cfr-features =
     .label = Զննարկելիս առաջարկել յուրահատկություններ
@@ -475,10 +478,10 @@ home-new-windows-tabs-description2 = Ընտրեք, թե ինչը տեսնել՝ 
 
 ## Home Section - Home Page Customization
 
-home-homepage-mode-label = Տուն էջ և նոր պատուհաններ
-home-newtabs-mode-label = Նոր Ներդիրներ
+home-homepage-mode-label = Տնէջ և նոր պատուհաններ
+home-newtabs-mode-label = Նոր ներդիրներ
 home-restore-defaults =
-    .label = Վերականգնել ծրագրայինը
+    .label = Վերականգնել սկզբնադիրը
     .accesskey = R
 home-mode-choice-default-fx =
     .label = { -firefox-home-brand-name } (սկզբնադիր)
@@ -505,7 +508,7 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header2 = { -firefox-home-brand-name } բովանդակություն
+home-prefs-content-header2 = { -firefox-home-brand-name }-ի բովանդակություն
 home-prefs-content-description2 = Ընտրեք, թե ինչ բովանդակություն պետք է ունենա { -firefox-home-brand-name }-ի էկրանը:
 home-prefs-search-header =
     .label = Վեբ որոնում
@@ -515,8 +518,7 @@ home-prefs-shortcuts-description = Ձեր պահպանած կամ այցելած
 home-prefs-shortcuts-by-option-sponsored =
     .label = Հովանավորված դյուրանցումներ
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Առաջարկվում է { $provider }
@@ -538,7 +540,7 @@ home-prefs-highlights-option-saved-to-pocket =
     .label = { -pocket-brand-name }-ում պահված էջեր
 home-prefs-recent-activity-header =
     .label = Վերջին ակտիվություն
-home-prefs-recent-activity-description = Վերջին կայքերի և բովանդակության ընտրում
+home-prefs-recent-activity-description = Վերջին կայքերի և բովանդակության ընտրանին
 # For the "Snippets" feature traditionally on about:home.
 # Alternative translation options: "Small Note" or something that
 # expresses the idea of "a small message, shortened from something else,
@@ -563,16 +565,16 @@ search-bar-hidden =
 search-bar-shown =
     .label = Ավելացնել որոնման գոտին գործիքագոտիում
 search-engine-default-header = Սկզբնադիր որոնիչ
-search-engine-default-desc-2 = Սա ձեր լռելյայն որոնման միջոցն է հասցեագոտում և որոնման գոտում։ Դուք կարող եք փոխել այն ցանկացած ժամանակ։
-search-engine-default-private-desc-2 = Ընտրեք այլ լռելյայն որոնման միջոց անձնական պատուհանների համար միայն
+search-engine-default-desc-2 = Սա Ձեր սկզբնադիր որոնիչն է հասցեագոտում և որոնման գոտում։ Դուք կարող եք փոխել այն ցանկացած ժամանակ։
+search-engine-default-private-desc-2 = Ընտրեք այլ որոնիչ՝ գաղտնի պատուհանների համար միայն
 search-separate-default-engine =
-    .label = Անձնական պատուհաններում օգտագործեք այս որոնիչը
-    .accesskey = U
+    .label = Օգտագործել այս որոնիչը գաղտնի պատուհաններում
+    .accesskey = Օ
 search-suggestions-header = Որոնել առաջարկություն
-search-suggestions-desc = Ընտրեք, թե ինչպես են որոնման առաջարկները երևում։
+search-suggestions-desc = Ընտրեք, թե ինչպես հայտնվեն որոնման առաջարկները։
 search-suggestions-option =
-    .label = Ցուցադրել որոնման հուշումներ
-    .accesskey = ո
+    .label = Տրամադրել որոնման առաջարկները
+    .accesskey = s
 search-show-suggestions-option =
     .label = Ցուցադրել որոնման առաջարկները
     .accesskey = S
@@ -590,7 +592,7 @@ search-show-search-term-option =
 # "ahead" refers to location (appearing most proximate to), not time
 # (appearing before).
 search-show-suggestions-above-history-option =
-    .label = Ցուցադրել որոնման առաջարկները հասցեի գոտու արդյունքների ամենավերևում
+    .label = Ցուցադրել որոնման առաջարկները հասցեագոտու արդյունքներում դիտարկման պատմության առջև
 search-show-suggestions-private-windows =
     .label = Ցուցադրել որոնման առաջարկները գաղտնի պատուհաններում
 suggestions-addressbar-settings-generic2 = Փոխել այլ հասցեագոտիների առաջարկությունների կարգավորումները
@@ -709,6 +711,7 @@ prefs-syncing-button =
 
 ## The list of things currently syncing.
 
+sync-syncing-across-devices-heading = Դուք համաժամեցնում եք այս միույթները կապակցված ձեր բոլոր սարքերի միջև.
 sync-currently-syncing-bookmarks = Էջանիշեր
 sync-currently-syncing-history = Պատմություն
 sync-currently-syncing-tabs = Բաց ներդիրներ
@@ -783,7 +786,7 @@ sync-device-name-cancel =
 sync-device-name-save =
     .label = Պահպանել
     .accesskey = պ
-sync-connect-another-device = Միացնել այլ սարքի
+sync-connect-another-device = Կապվել այլ սարքի
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -833,7 +836,7 @@ forms-breach-alerts =
     .accesskey = b
 forms-breach-alerts-learn-more-link = Իմանալ ավելին
 preferences-relay-integration-checkbox =
-    .label = Առաջարկեում է { -relay-brand-name } էլ. փոստի դիմակներ՝ պաշտպանելու ձեր էլ. փոստի հասցեն
+    .label = Առաջարկել { -relay-brand-name }-ին էլ. փոստի դիմակներ՝ Ձեր էլ. հասցեն պաշտպանելու համար
 preferences-relay-integration-checkbox2 =
     .label = Առաջարկել { -relay-brand-name }-ին էլ. փոստի դիմակներ՝ Ձեր էլ. հասցեն պաշտպանելու համար
     .accesskey = r
@@ -845,12 +848,19 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Պահված մուտքանուններ...
     .accesskey = մ
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Լրացնել օգտվողի անունները և գաղտնաբառերն ինքնաբերաբար
+    .accesskey = F
 forms-saved-passwords =
     .label = Պահված գաղտնաբառեր
     .accesskey = d
 forms-primary-pw-use =
     .label = Հիմնական գաղտնաբառի օգտագործում
     .accesskey = U
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Գաղտնաբառերը լրացնելու և կառավարելու համար պահանջել սարքի մուտք գործում
 forms-primary-pw-learn-more-link = Իմանալ ավելին
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -865,7 +875,7 @@ forms-primary-pw-change =
 # "Master Password" in your language. If you're editing the FTL file directly,
 # use { "" } as the value.
 forms-primary-pw-former-name = Նախկինում հայտնի էր որպես Հիմնական գաղտնաբառ
-forms-master-pw-fips-desc = Գաղտնաբառի Փոփոխությունը Չհաջողվեց
+forms-master-pw-fips-desc = Գաղտնաբառը չհաջողվեց փոխել
 forms-windows-sso =
     .label = Թույլատրել Windows եզակի գրանցում Microsoft-ում, աշխատանքային և դպրոցական հաշիվներում:
 forms-windows-sso-learn-more-link = Իմանալ ավելին
@@ -908,19 +918,19 @@ history-header = Պատմություն
 #   - Simply as "Firefox", moving the verb into each option.
 #     This will result in "Firefox" + "Will remember history", etc.
 #   - As a stand-alone message, for example "Firefox history settings:".
-history-remember-label = { -brand-short-name }-ը կսկսի`
-    .accesskey = կ
+history-remember-label = { -brand-short-name }-ը
+    .accesskey = ը
 history-remember-option-all =
-    .label = Հիշել պատմությունը
+    .label = կհիշի պատմությունը
 history-remember-option-never =
-    .label = Երբեք չհիշել այցելությունները
+    .label = երբեք չի հիշի պատմությունը
 history-remember-option-custom =
-    .label = Պատմության համար օգտագործել սեփական կարգավորումները
+    .label = կօգտվի պատմության համար հարմարեցված կարգավորումներից
 history-remember-description = { -brand-short-name }-ը կհիշի դիտարկումների, ներբեռնումների, ձևերի և որոնումների պատմությունը:
 history-dontremember-description = { -brand-short-name }ը կօգտագործի գաղտնի դիտարկման կարգավումները և չի հիշի համացանցում ձեր դիտարկումների պատմությունը:
 history-private-browsing-permanent =
-    .label = Միշտ օգտագործել Գաղտնի Դիտարկումը
-    .accesskey = Գ
+    .label = Միշտ օգտագործել գաղտնի դիտարկումը
+    .accesskey = p
 history-remember-browser-option =
     .label = Հիշել դիտարկումները և ներբեռնումների պատմությունը
     .accesskey = b
@@ -999,7 +1009,7 @@ addressbar-locbar-clipboard-option =
     .label = Սեղմատախտակ
     .accesskey = Ս
 addressbar-locbar-openpage-option =
-    .label = Բացել ներդիրները
+    .label = Բացել ներդիրներ
     .accesskey = Բ
 # Shortcuts refers to the shortcut tiles on the new tab page, previously known as top sites. Translation should be consistent.
 addressbar-locbar-shortcuts-option =
@@ -1010,7 +1020,7 @@ addressbar-locbar-topsites-option =
     .accesskey = T
 addressbar-locbar-engines-option =
     .label = Որոնիչներ
-    .accesskey = a
+    .accesskey = հ
 addressbar-locbar-quickactions-option =
     .label = Արագ գործողություններ
     .accesskey = Ա
@@ -1051,7 +1061,7 @@ content-blocking-cross-site-cookies-in-all-windows2 = Միջկայքային թ�
 content-blocking-cross-site-tracking-cookies = Միջակայքային հետևող նշոցիկներ
 content-blocking-all-cross-site-cookies-private-windows = Միջկայքային թխուկները գաղտնի պատուհաններում
 content-blocking-cross-site-tracking-cookies-plus-isolate = Խաչաձև կայքերի հետագծումների թխուկներ, և մեկուսացնում է մնացած թխուկները
-content-blocking-social-media-trackers = Սոցիալական մեդիայի հետագծումներ
+content-blocking-social-media-trackers = Սոցիալական մեդիայի հետևիչներ
 content-blocking-all-cookies = Բոլոր նշոցիկները
 content-blocking-unvisited-cookies = Նշոցիկներ չստուգված կայքերից
 content-blocking-all-windows-tracking-content = Հետևում են բովանդակությանը բոլոր պատուհաններում
@@ -1247,7 +1257,7 @@ preferences-doh-resolver = Մատակարար՝ { $name }
 # when the DoH URL is not a valid URL
 preferences-doh-bad-url = Անվավեր URL
 preferences-doh-steering-status = Օգտվելով տեղական մատակարարից
-preferences-doh-status-active = Ակտիվ
+preferences-doh-status-active = Գործող
 preferences-doh-status-disabled = Անջ.
 # Variables:
 #   $reason (string) - A string representation of the reason DoH is not active. For example NS_ERROR_UNKNOWN_HOST or TRR_RCODE_FAIL.
@@ -1281,7 +1291,7 @@ preferences-doh-strict-detailed-desc-3 = Եթե ապահով DNS հասանել�
 preferences-doh-setting-off =
     .label = Անջատել
     .accesskey = Ա
-preferences-doh-off-desc = Օգտագործել ձեր սկզբնադիր DNS լուծումը
+preferences-doh-off-desc = Օգտագործել Ձեր սկզբնադիր DNS լուծողը
 preferences-doh-checkbox-warn =
     .label = Զգուշացնել, եթե երրորդ կողմն ակտիվորեն կանխում է անվտանգ DNS-ը
     .accesskey = Զ

@@ -7,27 +7,40 @@
 
 autofill-manage-addresses-title = Сачуване адресе
 autofill-manage-addresses-list-header = Адресе
-
 autofill-manage-credit-cards-title = Сачуване кредитне картице
 autofill-manage-credit-cards-list-header = Кредитне картице
-
+autofill-manage-payment-methods-title = Сачувани начини плаћања
+autofill-manage-cards-list-header = Картице
 autofill-manage-dialog =
     .style = min-width: 560px
 autofill-manage-remove-button = Обриши
 autofill-manage-add-button = Додај...
 autofill-manage-edit-button = Измени...
 
-##
+## The address capture doorhanger
 
+address-capture-save-doorhanger-header = Сачувај адресу?
+address-capture-save-doorhanger-description = Сачувај податак у { -brand-short-name } за брзо попуњавање образаца.
+address-capture-update-doorhanger-header = Ажурирај адресу?
+address-capture-edit-doorhanger-header = Измени адресу
+address-capture-manage-address-button =
+    .label = Подешавања адресе
+address-capture-learn-more-button =
+    .label = Сазнајте више
+address-capture-open-menu-button =
+    .aria-label = Отвори мени
+address-capture-edit-address-button =
+    .aria-label = Измени адресу
 # The dialog title for creating addresses in browser preferences.
-autofill-add-new-address-title = Додај нову адресу
+autofill-add-address-title = Додај адресу
 # The dialog title for editing addresses in browser preferences.
 autofill-edit-address-title = Измени адресу
-
 autofill-address-given-name = Име
 autofill-address-additional-name = Средње име
 autofill-address-family-name = Презиме
+autofill-address-name = Име
 autofill-address-organization = Организација
+autofill-address-street-address = Адреса
 autofill-address-street = Адреса
 
 ## address-level-3 (Sublocality) names
@@ -81,19 +94,19 @@ autofill-address-eircode = Eircode
 
 ##
 
+# The dialog title for creating addresses in browser preferences.
+autofill-add-new-address-title = Додај нову адресу
 autofill-address-country = Држава или покрајна
+autofill-address-country-only = Држава
 autofill-address-tel = Телефон
-autofill-address-email = Имејл-адреса
-
+autofill-address-email = Е-пошта
 autofill-cancel-button = Откажи
 autofill-save-button = Сачувај
 autofill-country-warning-message = Аутоматско попуњавање форми тренутно није доступно само у одређеним државама.
-
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = Додај нову кредитну картицу
 # The dialog title for editing credit cards in browser preferences.
 autofill-edit-card-title = Измени кредитну картицу
-
 # In macOS, this string is preceded by the operating system with "Firefox is trying to ",
 # and has a period added to its end. Make sure to test in your locale.
 autofill-edit-card-password-prompt =
@@ -102,7 +115,11 @@ autofill-edit-card-password-prompt =
         [windows] { -brand-short-name } покушава да прикаже податке о кредитној картици. Потврдите приступ овом Windows налогу испод.
        *[other] { -brand-short-name } покушава да прикаже податке о кредитној картици.
     }
-
+autofill-message-tooltip = Погледајте поруку о аутоматском попуњавању
+# The dialog title for creating credit cards in browser preferences.
+autofill-add-card-title = Додај картицу
+# The dialog title for editing credit cards in browser preferences.
+autofill-edit-card-title2 = Уреди картицу
 autofill-card-number = Број картице
 autofill-card-invalid-number = Унесите исправан број картице
 autofill-card-name-on-card = Име на картици

@@ -4,6 +4,12 @@
 
 menu-view-genai-chat =
     .label = AI Chatbot
+menu-view-review-checker =
+    .label = Kontrola pógódnośenjow
+menu-view-contextual-password-manager =
+    .label = Gronidła
+sidebar-options-menu-button =
+    .title = Meni wócyniś
 
 ## Labels for sidebar history panel
 
@@ -46,16 +52,30 @@ sidebar-position-right =
     .label = Napšawo pokazaś
 sidebar-vertical-tabs =
     .label = Wertikalne rejtariki
+sidebar-settings =
+    .label = Nastajenja bocnice
+sidebar-hide-tabs-and-sidebar =
+    .label = Rejtariki a bocnicu schowaś
+sidebar-show-on-the-right =
+    .label = Bocnicu napšawo pśesunuś
+sidebar-show-on-the-left =
+    .label = Bocnicu nalěwo pśesunuś
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = Bocnicu pód kursorom pokazaś
 sidebar-horizontal-tabs =
     .label = Horicontalne rejtariki
 sidebar-customize-tabs-header =
     .label = Nastajenja rejtarikow
-sidebar-customize-settings-header =
-    .label = Nastajenja bocnice
-sidebar-visibility-always-show =
-    .label = Pśecej pokazaś
-sidebar-visibility-hide-sidebar =
-    .label = Bocnicu schowaś
+sidebar-customize-button-header =
+    .label = Tłocašk bocnice
+sidebar-customize-position-header =
+    .label = Pozicija bocnice
+sidebar-visibility-setting-always-show =
+    .label = Bocnicu wócyniś a złožyś
+sidebar-visibility-setting-hide-sidebar =
+    .label = Bocnicu pokazaś a schowaś
 
 ## Labels for sidebar context menu items
 
@@ -95,6 +115,41 @@ sidebar-menu-bookmarks-label =
     .label = Cytańske znamjenja
 sidebar-menu-customize-label =
     .label = Bocnicu pśiměriś
+sidebar-menu-review-checker-label =
+    .label = Kontrola pógódnośenjow
+sidebar-menu-contextual-password-manager-label =
+    .label = Gronidła
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = Historiju wócyniś ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = Historiju zacyniś ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = Cytańske znamjenja wócyniś ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = Cytańske znamjenja zacyniś ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = Chatbot KI wócyniś
+sidebar-menu-close-ai-chatbot-tooltip = Chatbot KI zacyniś
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = AI chatbot ({ $shortcut }) wócyniś
+sidebar-menu-open-ai-chatbot-provider-tooltip = { $provider } ({ $shortcut }) wócyniś
+sidebar-menu-close-ai-chatbot-tooltip-generic = AI chatbot ({ $shortcut }) zacyniś
+sidebar-menu-close-ai-chatbot-provider-tooltip = { $provider } ({ $shortcut }) zacyniś
 
 ## Headings for sidebar menu panels.
 
@@ -104,6 +159,18 @@ sidebar-menu-history-header =
     .heading = Historija
 sidebar-menu-syncedtabs-header =
     .heading = Rejtariki z drugich rědow
+sidebar-menu-bookmarks-header =
+    .heading = Cytańske znamjenja
+sidebar-menu-cpm-header =
+    .heading = Gronidła
+sidebar-panel-header-close-button =
+    .tooltiptext = Zacyniś
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Bocnicu pśiměriś
+sidebar-history-title = Historija
+sidebar-syncedtabs-title = Rejtariki z drugich rědow
 
 ## Context for closing synced tabs when hovering over the items
 
@@ -113,3 +180,29 @@ sidebar-menu-syncedtabs-header =
 #   $deviceName (String) - the name of the device the user is closing a tab for
 synced-tabs-context-close-tab-title =
     .title = Rejtarik na { $deviceName } zacyniś
+show-sidebars =
+    .tooltiptext = Bócnice pokazaś
+    .label = Bócnice
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = Bocnicu pokazaś ({ $shortcut })
+    .label = Bócnice
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Bocnicu schowaś ({ $shortcut })
+    .label = Bócnice
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Bocnicu pokazaś ({ $shortcut })
+    .label = Bócnice
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Bocnicu schowaś ({ $shortcut })
+    .label = Bócnice

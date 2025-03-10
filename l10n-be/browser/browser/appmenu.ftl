@@ -108,8 +108,11 @@ appmenu-fxa-sync-and-save-data2 = Сінхранізаваць і захавац
 appmenu-fxa-signed-in-label = Увайсці
 appmenu-fxa-setup-sync =
     .label = Уключыць сінхранізацыю…
+appmenu-fxa-setup-sync-new = Уключыць
 appmenuitem-save-page =
     .label = Захаваць старонку як…
+appmenuitem-fxa-sync-off-title = Сінхранізацыя выключана
+appmenuitem-fxa-sync-off-description = Абараняйце і атрымлівайце доступ да сваіх закладак, пароляў і іншага з любога месца.
 
 ## What's New panel in App menu.
 
@@ -277,5 +280,21 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Атрымлівайце абвесткі аб уцечках дадзеных
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Маскіруйце сваю сапраўдную электронную пошту і тэлефон
+appmenuitem-services-relay-description = Запусціць панэль масак электроннай пошты
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Абараніце сваю актыўнасць у інтэрнэце
+appmenu-services-header = Мае сэрвісы
+appmenu-other-protection-header = Паспрабуйце іншыя ахоўныя сродкі ад { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-profiles = Профілі
+appmenu-other-profiles = Іншыя профілі
+appmenu-manage-profiles =
+    .label = Кіраванне профілямі
+appmenu-create-profile =
+    .label = Новы профіль
+appmenu-edit-profile =
+    .aria-label = Рэдагаваць профіль
+appmenu-profiles-2 =
+    .label = Профілі

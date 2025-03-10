@@ -8,11 +8,18 @@
 newtab-page-title = לשונית חדשה
 newtab-settings-button =
     .title = התאמה אישית של דף הלשונית החדשה שלך
+newtab-personalize-settings-icon-label =
+    .title = התאמה אישית של דף הלשונית החדשה
+    .aria-label = הגדרות
+newtab-settings-dialog-label =
+    .aria-label = הגדרות
 newtab-personalize-icon-label =
     .title = התאמה אישית של דף הלשונית החדשה
     .aria-label = התאמה אישית של דף הלשונית החדשה
 newtab-personalize-dialog-label =
     .aria-label = התאמה אישית
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -108,6 +115,13 @@ newtab-menu-delete-history = מחיקה מההיסטוריה
 newtab-menu-save-to-pocket = שמירה אל { -pocket-brand-name }
 newtab-menu-delete-pocket = מחיקה מ־{ -pocket-brand-name }
 newtab-menu-archive-pocket = העברה לארכיון ב־{ -pocket-brand-name }
+newtab-menu-about-fakespot = על אודות { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = חסימה
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = ביטול המעקב אחרי הנושא
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -227,6 +241,8 @@ newtab-pocket-cta-button = קבלת { -pocket-brand-name }
 newtab-pocket-cta-text = שמירת הסיפורים שאהבת ב־{ -pocket-brand-name } על מנת למלא את מחשבתך בקריאה מרתקת.
 newtab-pocket-pocket-firefox-family = ‏{ -pocket-brand-name } הוא חלק ממשפחת { -brand-product-name }
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = שמירה
 newtab-pocket-saved = נשמר
 
@@ -238,6 +254,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = לא בשבילי
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = תודה. המשוב שלך יעזור לנו לשפר את הפיד שלך.
 newtab-toast-thumbs-up-or-down = תודה. המשוב שלך יעזור לנו לשפר את הפיד שלך.
 newtab-toast-dismiss-button =
     .title = סגירה
@@ -291,6 +310,12 @@ newtab-custom-settings = ניהול הגדרות נוספות
 
 newtab-wallpaper-title = תמונות רקע
 newtab-wallpaper-reset = איפוס לברירת מחדל
+newtab-wallpaper-upload-image = העלאת תמונה
+newtab-wallpaper-custom-color = בחירת צבע
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = התמונה חרגה ממגבלת גודל הקובץ של { $file_size } מ״ב. נא לנסות להעלות קובץ קטן יותר.
+newtab-wallpaper-error-file-type = לא הצלחנו להעלות את הקובץ שלך. נא לנסות שוב עם סוג קובץ אחר.
 newtab-wallpaper-light-red-panda = פנדה אדומה
 newtab-wallpaper-light-mountain = הר לבן
 newtab-wallpaper-light-sky = שמיים עם עננים סגולים וורודים
@@ -303,6 +328,8 @@ newtab-wallpaper-dark-panda = פנדה אדומה חבויה ביער
 newtab-wallpaper-dark-sky = נוף עיר עם שמי לילה
 newtab-wallpaper-dark-mountain = נוף הררי
 newtab-wallpaper-dark-city = נוף עירוני סגול
+newtab-wallpaper-dark-fox-anniversary = שועל על המדרכה ליד יער
+newtab-wallpaper-light-fox-anniversary = שועל בשדה עשב עם נוף הררי ערפילי
 
 ## Solid Colors
 
@@ -332,8 +359,12 @@ newtab-wallpaper-abstract-purple = צורות סגולות
 newtab-wallpaper-abstract-orange = צורות כתומות
 newtab-wallpaper-gradient-orange = מעברי צבע כתום וורוד
 newtab-wallpaper-abstract-blue-purple = צורות כחולות וסגולות
+newtab-wallpaper-abstract-white-curves = לבן עם קימורים מוצללים
+newtab-wallpaper-abstract-purple-green = שיפוע אור סגול וירוק
+newtab-wallpaper-abstract-blue-purple-waves = צורות גליות בצבע כחול וסגול
+newtab-wallpaper-abstract-black-waves = צורות גליות בצבע שחור
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = תצלומים
 newtab-wallpaper-beach-at-sunrise = זריחה בחוף הים
@@ -342,6 +373,12 @@ newtab-wallpaper-storm-sky = שמיים סוערים
 newtab-wallpaper-sky-with-pink-clouds = שמיים עם עננים ורודים
 newtab-wallpaper-red-panda-yawns-in-a-tree = פנדה אדומה מפהקת בעץ
 newtab-wallpaper-white-mountains = הרים לבנים
+newtab-wallpaper-hot-air-balloons = מגוון צבעים של בלוני אוויר חם במהלך שעות היום
+newtab-wallpaper-starry-canyon = ליל כוכבים כחול
+newtab-wallpaper-suspension-bridge = תצלום של גשר תלוי אפור במהלך שעות היום
+newtab-wallpaper-sand-dunes = דיונות חול לבן
+newtab-wallpaper-palm-trees = צללית של עצי דקל קוקוס במהלך שעת הזהב
+newtab-wallpaper-forest-trees = עצים מכוסים בערפל
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -357,6 +394,19 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = שמימי
+newtab-wallpaper-celestial-lunar-eclipse = ליקוי ירח
+newtab-wallpaper-celestial-earth-night = צילום לילה ממסלול לווייני נמוך של כדור הארץ
+newtab-wallpaper-celestial-starry-sky = שמי כוכבים
+newtab-wallpaper-celestial-eclipse-time-lapse = ליקוי ירח בהילוך מהיר
+newtab-wallpaper-celestial-black-hole = איור של גלקסיית חור שחור
+newtab-wallpaper-celestial-river = תמונת לוויין של נהר
+
 ## New Tab Weather
 
 # Variables:
@@ -367,6 +417,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = ‏{ $provider } ∙ ממומן
 newtab-weather-menu-change-location = שינוי מקום
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = חיפוש מקום
+    .aria-label = חיפוש מקום
 newtab-weather-change-location-search-input = חיפוש מקום
 newtab-weather-menu-weather-display = תצוגת מזג אוויר
 # Display options are:
@@ -425,3 +478,45 @@ newtab-topic-selection-button-maybe-later = אולי אחר כך
 newtab-topic-selection-privacy-link = כיצד אנו מגנים על נתונים ומנהלים אותם
 newtab-topic-selection-button-update-interests = עדכון תחומי העניין שלך
 newtab-topic-selection-button-pick-interests = בחירת תחומי העניין שלך
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = לעקוב
+newtab-section-following-button = במעקב
+newtab-section-unfollow-button = ביטול המעקב
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = חסימה
+newtab-section-blocked-button = חסום
+newtab-section-unblock-button = הסרת חסימה
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = האם ברצונך לחסום מקטע זה?
+newtab-section-confirm-block-section-p2 = המקטע החסום לא יופיע יותר בפיד שלך.
+newtab-section-block-section-button = חסימת מקטע זה
+newtab-section-cancel-button = לא כעת
+newtab-section-confirm-block-topic-p1 = האם ברצונך לחסום נושא זה?
+newtab-section-confirm-block-topic-p2 = נושאים חסומים לא יופיעו יותר בפיד שלך.
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = חסימת { $topic }
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = נושאים
+newtab-section-manage-topics-button-v2 =
+    .label = ניהול נושאים
+newtab-section-mangage-topics-followed-topics = במעקב
+newtab-section-mangage-topics-button =
+    .label = נושאים במעקב וחסומים
+newtab-section-mangage-topics-followed-topics-subtitle = נושאים במעקב
+newtab-section-mangage-topics-followed-topics-empty-state = עדיין לא עקבת אחר אף נושא.
+newtab-section-mangage-topics-blocked-topics = חסום
+newtab-section-mangage-topics-blocked-topics-subtitle = נושאים חסומים
+newtab-section-mangage-topics-blocked-topics-empty-state = עדיין לא חסמת אף נושא.

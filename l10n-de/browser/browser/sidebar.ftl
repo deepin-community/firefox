@@ -4,6 +4,12 @@
 
 menu-view-genai-chat =
     .label = KI-Chatbot
+menu-view-review-checker =
+    .label = Review Checker
+menu-view-contextual-password-manager =
+    .label = Passwörter
+sidebar-options-menu-button =
+    .title = Menü öffnen
 
 ## Labels for sidebar history panel
 
@@ -46,16 +52,30 @@ sidebar-position-right =
     .label = Rechts anzeigen
 sidebar-vertical-tabs =
     .label = Vertikale Tabs
+sidebar-settings =
+    .label = Sidebar-Einstellungen
+sidebar-hide-tabs-and-sidebar =
+    .label = Tabs und Sidebar ausblenden
+sidebar-show-on-the-right =
+    .label = Sidebar nach rechts verschieben
+sidebar-show-on-the-left =
+    .label = Sidebar nach links verschieben
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = Sidebar ausklappen, wenn der Mauszeiger darauf liegt
 sidebar-horizontal-tabs =
     .label = Horizontale Tabs
 sidebar-customize-tabs-header =
     .label = Tab-Einstellungen
-sidebar-customize-settings-header =
-    .label = Sidebar-Einstellungen
-sidebar-visibility-always-show =
-    .label = Immer anzeigen
-sidebar-visibility-hide-sidebar =
-    .label = Sidebar ausblenden
+sidebar-customize-button-header =
+    .label = Sidebar-Schaltfläche
+sidebar-customize-position-header =
+    .label = Sidebar-Position
+sidebar-visibility-setting-always-show =
+    .label = Sidebar aus- und einklappen
+sidebar-visibility-setting-hide-sidebar =
+    .label = Sidebar anzeigen und ausblenden
 
 ## Labels for sidebar context menu items
 
@@ -95,6 +115,41 @@ sidebar-menu-bookmarks-label =
     .label = Lesezeichen
 sidebar-menu-customize-label =
     .label = Sidebar anpassen
+sidebar-menu-review-checker-label =
+    .label = Review Checker
+sidebar-menu-contextual-password-manager-label =
+    .label = Passwörter
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = Chronik öffnen ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = Chronik schließen ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = Lesezeichen öffnen ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = Lesezeichen schließen ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = KI-Chatbot öffnen
+sidebar-menu-close-ai-chatbot-tooltip = KI-Chatbot schließen
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = KI-Chatbot öffnen ({ $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = { $provider } öffnen ({ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip-generic = KI-Chatbot schließen ({ $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = { $provider } schließen ({ $shortcut })
 
 ## Headings for sidebar menu panels.
 
@@ -104,6 +159,18 @@ sidebar-menu-history-header =
     .heading = Chronik
 sidebar-menu-syncedtabs-header =
     .heading = Tabs von anderen Geräten
+sidebar-menu-bookmarks-header =
+    .heading = Lesezeichen
+sidebar-menu-cpm-header =
+    .heading = Passwörter
+sidebar-panel-header-close-button =
+    .tooltiptext = Schließen
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Sidebar anpassen
+sidebar-history-title = Chronik
+sidebar-syncedtabs-title = Tabs von anderen Geräten
 
 ## Context for closing synced tabs when hovering over the items
 
@@ -113,3 +180,29 @@ sidebar-menu-syncedtabs-header =
 #   $deviceName (String) - the name of the device the user is closing a tab for
 synced-tabs-context-close-tab-title =
     .title = Tab auf { $deviceName } schließen
+show-sidebars =
+    .tooltiptext = Sidebars anzeigen
+    .label = Sidebars
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = Sidebar ausklappen ({ $shortcut })
+    .label = Sidebars
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Sidebar einklappen ({ $shortcut })
+    .label = Sidebars
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Sidebar anzeigen ({ $shortcut })
+    .label = Sidebars
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Sidebar ausblenden ({ $shortcut })
+    .label = Sidebars

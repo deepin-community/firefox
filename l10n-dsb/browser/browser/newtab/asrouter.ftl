@@ -252,6 +252,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Konto załožyś
 device-migration-fxa-spotlight-getting-new-device-header-2 = Nowy rěd we wašom pśichoźe?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Slědujśo mało jadnorym kšacam, aby swóje cytańske znamjenja, historiju a gronidła sobu wzeł, gaž na nowem rěźe zachopinaśo.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Kak mógu swóje daty zawěsćiś
+device-migration-fxa-spotlight-sync-header = Pśeglědujśo bźez wokomuźenja
+device-migration-fxa-spotlight-sync-body = Synchronizěrujśo wšykne waše wažne informacije z koděrowanim – na pśikład cytańske znamjenja a gronidła. Móžośo wykno tam śěgnuś, źož { -brand-product-name } wužywaśo.
+device-migration-fxa-spotlight-sync-primary-button = Prědne kšace
 
 ## Set as Default PDF Reader Infobar
 
@@ -288,3 +291,61 @@ tail-fox-spotlight-title = Wótźaržćo gramne pśeslědowaki
 tail-fox-spotlight-subtitle = Rozžognujśo se z gramnymi wabjeńskimi pśeslědowakami a zažywśo se do wěsćejšego, malsnego internetnego dožywjenja.
 tail-fox-spotlight-primary-button = Móje wótkaze z { -brand-short-name } wócyniś
 tail-fox-spotlight-secondary-button = Nic něnto
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Starše wersije { -brand-short-name } mógu snaź wót 14. januara 2025 problemy měá.</strong>
+root-certificate-succession-infobar-march-message = <strong>Aktualizěrujśo, aby { -brand-short-name } pó 14. měrca 2025 dalej wužywał.</strong>
+root-certificate-succession-infobar-link = Cogodla musym aktualizěrowaś?
+root-certificate-succession-infobar-primary-button =
+    .label = Něnto aktualizěrowaś
+    .accesskey = N
+root-certificate-succession-infobar-secondary-button =
+    .label = Pózdźej
+    .accesskey = P
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Sćo zapasł wažnu aktualizaciju { -brand-short-name }
+root-certificate-windows-background-notification-subtitle = Źěle wobglědowaka skóro wěcej njefunkcioněruju, jolic njeaktualizěrujośo. Něnto jo dobry cas, aby naše nejnowše a funkcije dostał.
+root-certificate-windows-background-notification-learn-more-button = Dalšne informacije
+root-certificate-windows-background-notification-update-button = { -brand-short-name } aktualizěrowaś
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Zacyniś
+    .aria-label = Zacyniś
+fxa-menu-message-sign-up-button = Registrěrowaś
+fxa-menu-message-sync-devices-primary-text = Synchronizěrujśo wšykne swóje rědy
+fxa-menu-message-sync-devices-secondary-text = Wobstarajśo se ned swóje informacije – na pśikład swóje cytańske znamjenja a gronidła – wšuźi, źož { -brand-short-name } wužywaśo.
+fxa-menu-message-sync-devices-collapsed-text = Synchronizěrujśo wšykne swóje rědy
+fxa-menu-message-backup-data-primary-text = Zawěsććo swóje daty wobglědowaka
+fxa-menu-message-backup-data-secondary-text = Šćitajśo awtomatiski cytańske znamjenja, gronidła a druge informacije na wšych swójich rědach.
+fxa-menu-message-backup-data-collapsed-text = Zawěsććo daty wobglědowaka
+fxa-menu-message-backup-sync-primary-text = Źaržćo swóje daty wěste a synchronizěrowane
+fxa-menu-message-backup-sync-secondary-text = Synchronizacija nejwěcej wašych datow zawěsćujo, aby wy k nim wšuźi pśistup měł, źož { -brand-short-name } wužywaśo.
+fxa-menu-message-backup-sync-collapsed-text = Daty synchronizěrowaś a zawěsćiś
+fxa-menu-message-mobile-primary-text = Sćelśo rejtariki na telefon
+fxa-menu-message-mobile-secondary-text = Cyńśo tam dalej, źož sćo ned zastał, gaž swóje rejtariki z mobilnym rědom synchronizěrujośo.
+fxa-menu-message-mobile-collapsed-text = Ze swójim telefonom synchronizěrowaś
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Witajśo slědk
+multi-cta-fox-doodle-set-default-checkbox = { -brand-short-name } k swójomu standardnemu wobglědowakoju cyniś
+multi-cta-fox-doodle-pin-startmenu-checkbox = Pśipějśo { -brand-short-name } k startowemu menijoju
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] { -brand-short-name } w doku wóstajiś
+       *[other] Pśipějśo { -brand-short-name } k nadawkowej rědce
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Pśeglědowanje zachopiś
+multi-cta-fox-doodle-main-browser-primary-button-label = { -brand-short-name } ku głownemu wobglědowakoju cyniś
+multi-cta-fox-doodle-quick-reminder-subtitle = How jo krotke dopomnjeśe, až móžośo swój nejlubšy wobglědowak z fokusom na priwatnosć jano kliknjenje pśec měś.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Źaržćo swój nejlubšy wobglědowak z fokusom na priwatnosć jano jedno kliknjenje pšec. Nastajśo { -brand-short-name } ako swój standardny wobglědowak za wócynjanje wótkazow a źaržćo jen w swójom doku.
+       *[other] Źaržćo swój nejlubšy wobglědowak z fokusom na priwatnosć jano jedno kliknjenje pšec. Nastajśo { -brand-short-name } ako swój standardny wobglědowak za wócynjanje wótkazow a pśipnějśo jen na swóju nadawkowu rědku.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Źaržćo swój nejlubšy wobglědowak z fokusom na priwatnosć jano jedno kliknjenje pšec. Nastajśo { -brand-short-name } ako swój standardny wobglědowak za wócynjanje wótkazow a pśipnějśo jen na swóju nadawkowu rědku a startowy meni.

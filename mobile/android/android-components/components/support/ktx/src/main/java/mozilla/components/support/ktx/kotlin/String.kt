@@ -152,7 +152,7 @@ fun String.isResourceUrl() = this.startsWith("resource://")
  * Appends `http` scheme if no scheme is present in this String.
  */
 fun String.toNormalizedUrl(): String {
-    val s = this.trim()
+    val s = this.sanitizeURL()
     // Most commonly we'll encounter http or https schemes.
     // For these, avoid running through toNormalizedURL as an optimization.
     return if (!s.startsWith("http://") &&
@@ -292,10 +292,10 @@ fun String.stripDefaultPort(): String {
 }
 
 /**
- * Remove any unwanted character in url like spaces at the beginning or end.
+ * Remove leading and trailing whitespace and eliminate newline characters.
  */
 fun String.sanitizeURL(): String {
-    return this.trim()
+    return this.trim().replace("\n", "")
 }
 
 /**
@@ -324,7 +324,9 @@ private fun String.replaceEscapedCharacters(): String {
 }
 
 /**
- * Replaces continuous spaces with a single space.
+ * Replaces continuous spaces with a single space. Here `\s` matches the ASCII whitespace
+ * characters and `\p{Z}` matches Unicode whitespace characters. For more information, refer to
+ * [Unicode Space Separator Category Docs](https://www.compart.com/en/unicode/category/Zs).
  */
 private fun String.replaceContinuousSpaces(): String {
     val escapedCharactersRegex = "[\\p{Z}\\s]+".toRegex()

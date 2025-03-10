@@ -246,11 +246,10 @@ class BrowsingContextModule extends RootBiDiModule {
     );
     const context = this.#getBrowsingContext(contextId);
 
-    if (context.parent) {
-      throw new lazy.error.InvalidArgumentError(
-        `Browsing Context with id ${contextId} is not top-level`
-      );
-    }
+    lazy.assert.topLevel(
+      context,
+      lazy.pprint`Browsing context with id ${contextId} is not top-level`
+    );
 
     const targetTab = lazy.TabManager.getTabForBrowsingContext(context);
     const targetWindow = lazy.TabManager.getWindowForTab(targetTab);
@@ -296,6 +295,18 @@ class BrowsingContextModule extends RootBiDiModule {
    */
 
   /**
+   * Used as an argument for the browsingContext.captureScreenshot command to
+   * represent the output image format.
+   *
+   * @typedef ImageFormat
+   *
+   * @property {string} type
+   *     The output screenshot format such as `image/png`.
+   * @property {number=} quality
+   *     A number between 0 and 1 representing the screenshot quality.
+   */
+
+  /**
    * Used as an argument for browsingContext.captureScreenshot command
    * to represent an element which is going to be a target of the command.
    *
@@ -315,6 +326,8 @@ class BrowsingContextModule extends RootBiDiModule {
    *     A box or an element of which a screenshot should be taken.
    *     If not present, take a screenshot of the whole viewport.
    * @param {OriginType=} options.origin
+   * @param {ImageFormat=} options.format
+   *    Configuration options for the output image.
    *
    * @throws {NoSuchFrameError}
    *     If the browsing context cannot be found.
@@ -324,6 +337,7 @@ class BrowsingContextModule extends RootBiDiModule {
       clip = null,
       context: contextId,
       origin = OriginType.viewport,
+      format = { type: "image/png", quality: undefined },
     } = options;
 
     lazy.assert.string(
@@ -339,14 +353,38 @@ class BrowsingContextModule extends RootBiDiModule {
         lazy.pprint`got ${origin}`
     )(origin);
 
+    lazy.assert.object(
+      format,
+      lazy.pprint`Expected "format" to be an object, got ${format}`
+    );
+
+    const { quality, type: formatType } = format;
+
+    lazy.assert.string(
+      formatType,
+      lazy.pprint`Expected "type" to be a string, got ${formatType}`
+    );
+
+    if (quality !== undefined) {
+      lazy.assert.number(
+        quality,
+        lazy.pprint`Expected "quality" to be a number, got ${quality}`
+      );
+
+      lazy.assert.that(
+        imageQuality => imageQuality >= 0 && imageQuality <= 1,
+        lazy.pprint`Expected "quality" to be in the range of 0 to 1, got ${quality}`
+      )(quality);
+    }
+
     if (clip !== null) {
       lazy.assert.object(
         clip,
         lazy.pprint`Expected "clip" to be an object, got ${clip}`
       );
 
-      const { type } = clip;
-      switch (type) {
+      const { type: clipType } = clip;
+      switch (clipType) {
         case ClipRectangleType.Box: {
           const { x, y, width, height } = clip;
 
@@ -385,7 +423,7 @@ class BrowsingContextModule extends RootBiDiModule {
           throw new lazy.error.InvalidArgumentError(
             `Expected "type" to be one of ${Object.values(
               ClipRectangleType
-            )}, ` + lazy.pprint`got ${type}`
+            )}, ` + lazy.pprint`got ${clipType}`
           );
       }
     }
@@ -420,7 +458,7 @@ class BrowsingContextModule extends RootBiDiModule {
     );
 
     return {
-      data: lazy.capture.toBase64(canvas),
+      data: lazy.capture.toBase64(canvas, formatType, quality),
     };
   }
 
@@ -459,11 +497,10 @@ class BrowsingContextModule extends RootBiDiModule {
       );
     }
 
-    if (context.parent) {
-      throw new lazy.error.InvalidArgumentError(
-        `Browsing Context with id ${contextId} is not top-level`
-      );
-    }
+    lazy.assert.topLevel(
+      context,
+      lazy.pprint`Browsing context with id ${contextId} is not top-level`
+    );
 
     if (lazy.TabManager.getTabCount() === 1) {
       // The behavior when closing the very last tab is currently unspecified.
@@ -1013,31 +1050,29 @@ class BrowsingContextModule extends RootBiDiModule {
       lazy.setDefaultAndAssertSerializationOptions(serializationOptions);
 
     if (startNodes != null) {
-      lazy.assert.that(startNodes => {
-        lazy.assert.array(
-          startNodes,
-          lazy.pprint`Expected "startNodes" to be an array, got ${startNodes}`
-        );
-        return !!startNodes.length;
-      }, lazy.pprint`Expected "startNodes" to have at least one element, got ${startNodes}`)(
-        startNodes
-      );
+      lazy.assert.that(
+        startNodes => {
+          lazy.assert.array(
+            startNodes,
+            lazy.pprint`Expected "startNodes" to be an array, got ${startNodes}`
+          );
+          return !!startNodes.length;
+        },
+        lazy.pprint`Expected "startNodes" to have at least one element, got ${startNodes}`
+      )(startNodes);
     }
 
-    const result = await this.messageHandler.forwardCommand({
-      moduleName: "browsingContext",
-      commandName: "_locateNodes",
-      destination: {
-        type: lazy.WindowGlobalMessageHandler.type,
-        id: context.id,
-      },
-      params: {
+    const result = await this._forwardToWindowGlobal(
+      "_locateNodes",
+      context.id,
+      {
         locator,
         maxNodeCount,
         serializationOptions: serializationOptionsWithDefaults,
         startNodes,
       },
-    });
+      { retryOnAbort: true }
+    );
 
     return {
       nodes: result.serializedNodes,
@@ -1126,9 +1161,12 @@ class BrowsingContextModule extends RootBiDiModule {
       () => {
         context.loadURI(targetURI, {
           loadFlags: Ci.nsIWebNavigation.LOAD_FLAGS_IS_LINK,
+          // Fake user activation.
+          hasValidUserGestureActivation: true,
+          // Prevent HTTPS-First upgrades.
+          schemelessInput: Ci.nsILoadInfo.SchemelessInputTypeSchemeful,
           triggeringPrincipal:
             Services.scriptSecurityManager.getSystemPrincipal(),
-          hasValidUserGestureActivation: true,
         });
       },
       {
@@ -1385,11 +1423,10 @@ class BrowsingContextModule extends RootBiDiModule {
     );
 
     const context = this.#getBrowsingContext(contextId);
-    if (context.parent) {
-      throw new lazy.error.InvalidArgumentError(
-        `Browsing Context with id ${contextId} is not top-level`
-      );
-    }
+    lazy.assert.topLevel(
+      context,
+      lazy.pprint`Browsing context with id ${contextId} is not top-level`
+    );
 
     const browser = context.embedderElement;
     const currentHeight = browser.clientHeight;
@@ -1452,19 +1489,23 @@ class BrowsingContextModule extends RootBiDiModule {
     }
 
     if (targetHeight !== currentHeight || targetWidth !== currentWidth) {
+      if (!context.isActive) {
+        // Force a synchronous update of the remote browser dimensions so that
+        // background tabs get resized.
+        browser.ownerDocument.synchronouslyUpdateRemoteBrowserDimensions(
+          /* aIncludeInactive = */ true
+        );
+      }
       // Wait until the viewport has been resized
-      await this.messageHandler.forwardCommand({
-        moduleName: "browsingContext",
-        commandName: "_awaitViewportDimensions",
-        destination: {
-          type: lazy.WindowGlobalMessageHandler.type,
-          id: context.id,
-        },
-        params: {
+      await this._forwardToWindowGlobal(
+        "_awaitViewportDimensions",
+        context.id,
+        {
           height: targetHeight,
           width: targetWidth,
         },
-      });
+        { retryOnAbort: true }
+      );
     }
   }
 
@@ -1493,6 +1534,11 @@ class BrowsingContextModule extends RootBiDiModule {
     );
 
     const context = this.#getBrowsingContext(contextId);
+
+    lazy.assert.topLevel(
+      context,
+      lazy.pprint`Browsing context with id ${contextId} is not top-level`
+    );
 
     lazy.assert.integer(
       delta,
@@ -1616,6 +1662,7 @@ class BrowsingContextModule extends RootBiDiModule {
       if (listener.isStarted) {
         listener.stop();
       }
+      listener.destroy();
 
       if (wait === WaitCondition.Interactive) {
         await this.messageHandler.eventsDispatcher.off(
@@ -1660,9 +1707,9 @@ class BrowsingContextModule extends RootBiDiModule {
    * @param {BrowsingContext} context
    *     The browsing context to get the information from.
    * @param {object=} options
-   * @param {boolean=} options.isRoot
-   *     Flag that indicates if this browsing context is the root of all the
-   *     browsing contexts to be returned. Defaults to true.
+   * @param {boolean=} options.includeParentId
+   *     Flag that indicates if the parent ID should be included.
+   *     Defaults to true.
    * @param {number=} options.maxDepth
    *     Depth of the browsing context tree to traverse. If not specified
    *     the whole tree is returned.
@@ -1670,14 +1717,14 @@ class BrowsingContextModule extends RootBiDiModule {
    *     The information about the browsing context.
    */
   #getBrowsingContextInfo(context, options = {}) {
-    const { isRoot = true, maxDepth = null } = options;
+    const { includeParentId = true, maxDepth = null } = options;
 
     let children = null;
     if (maxDepth === null || maxDepth > 0) {
       children = context.children.map(context =>
         this.#getBrowsingContextInfo(context, {
           maxDepth: maxDepth === null ? maxDepth : maxDepth - 1,
-          isRoot: false,
+          includeParentId: false,
         })
       );
     }
@@ -1699,7 +1746,7 @@ class BrowsingContextModule extends RootBiDiModule {
       userContext,
     };
 
-    if (isRoot) {
+    if (includeParentId) {
       // Only emit the parent id for the top-most browsing context.
       const parentId = lazy.TabManager.getIdForBrowsingContext(context.parent);
       contextInfo.parent = parentId;
@@ -1770,12 +1817,7 @@ class BrowsingContextModule extends RootBiDiModule {
         return;
       }
 
-      const browsingContextInfo = this.#getBrowsingContextInfo(
-        browsingContext,
-        {
-          maxDepth: 0,
-        }
-      );
+      const browsingContextInfo = this.#getBrowsingContextInfo(browsingContext);
 
       this._emitEventForBrowsingContext(
         browsingContext.id,
@@ -1993,18 +2035,12 @@ class BrowsingContextModule extends RootBiDiModule {
   }
 
   #waitForVisibilityChange(browsingContext) {
-    return this.messageHandler.forwardCommand({
-      moduleName: "browsingContext",
-      commandName: "_awaitVisibilityState",
-      destination: {
-        type: lazy.WindowGlobalMessageHandler.type,
-        id: browsingContext.id,
-      },
-      params: {
-        value: "hidden",
-      },
-      retryOnAbort: true,
-    });
+    return this._forwardToWindowGlobal(
+      "_awaitVisibilityState",
+      browsingContext.id,
+      { value: "hidden" },
+      { retryOnAbort: true }
+    );
   }
 
   /**

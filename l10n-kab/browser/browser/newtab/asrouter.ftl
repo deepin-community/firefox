@@ -205,6 +205,8 @@ cfr-cbh-confirm-button = Agi iɣarracen n yinagan n tuqqna
     .accesskey = A
 cfr-cbh-dismiss-button = Mačči tura
     .accesskey = M
+cookie-banner-blocker-onboarding-header = { -brand-short-name } yugi iɣerracen n yinagan n tuqqna
+cookie-banner-blocker-onboarding-body = Drus n usedhu d yinagan n tuqqna ara ak-iḍefren ɣef usmel-a.
 cookie-banner-blocker-onboarding-learn-more = Issin ugar
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
@@ -240,6 +242,8 @@ device-migration-fxa-spotlight-older-device-header = Lehna n uqerru, seg { -bran
 device-migration-fxa-spotlight-older-device-primary-button = Rnu amiḍan
 device-migration-fxa-spotlight-getting-new-device-header-2 = Ibenk amaynut ɣer sdat?
 device-migration-fxa-spotlight-getting-new-device-primary-button = Amek ara ḥerzeɣ isefka-w
+device-migration-fxa-spotlight-sync-header = Inig war ma iruḥ-ak kra
+device-migration-fxa-spotlight-sync-primary-button = Bdu
 
 ## Set as Default PDF Reader Infobar
 
@@ -271,3 +275,43 @@ launch-on-login-infobar-final-reject-button = Ala, tanemmirt
 tail-fox-spotlight-title = Eǧǧ yir ineḍfaṛen mbaεid
 tail-fox-spotlight-primary-button = Ldi iseɣwan-iw s { -brand-short-name }
 tail-fox-spotlight-secondary-button = Mačči tura
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Ileqman iqburen n { -brand-short-name } zemren ad bdun ad sεun uguren seg 14 deg yennayer 2025.</strong>
+root-certificate-succession-infobar-march-message = <strong>Leqqem i ukemmel n useqdec { -brand-short-name } send 14 deg meɣres 2025.</strong>
+root-certificate-succession-infobar-link = Ayɣer i sriɣ aleqqem?
+root-certificate-succession-infobar-primary-button =
+    .label = Leqqem tura
+    .accesskey = L
+root-certificate-succession-infobar-secondary-button =
+    .label = Ticki
+    .accesskey = T
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-learn-more-button = Issin ugar
+root-certificate-windows-background-notification-update-button = Leqqem { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Mdel
+    .aria-label = Mdel
+fxa-menu-message-sign-up-button = Jerred
+fxa-menu-message-sync-devices-primary-text = Mtawi akk ibenkan-ik
+fxa-menu-message-sync-devices-collapsed-text = Mtawi akk ibenkan-ik
+fxa-menu-message-backup-data-primary-text = Ḥrez isefka n tunigin
+fxa-menu-message-backup-data-collapsed-text = Ḥrez isefka n tunigin
+fxa-menu-message-backup-sync-primary-text = Eǧǧ isfka-k d iɣellsanen, mtawan
+fxa-menu-message-backup-sync-collapsed-text = Mtawi, tḥerzeḍ isefka
+fxa-menu-message-mobile-primary-text = Azen accaren ɣer tiliɣti-k
+fxa-menu-message-mobile-collapsed-text = Mtawi akked tiliɣri-k
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Ansuf tikkelt niḍen
+multi-cta-fox-doodle-set-default-checkbox = Sbadu { -brand-short-name } ɣer umezwer
+multi-cta-fox-doodle-pin-startmenu-checkbox = Senteḍ { -brand-short-name } ɣer wumuɣ n usenker
+multi-cta-fox-doodle-start-browsing-primary-button-label = Bdu tunigin
+multi-cta-fox-doodle-main-browser-primary-button-label = Err { -brand-short-name } d iminig-iw agejdan

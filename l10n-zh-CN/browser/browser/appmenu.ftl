@@ -108,8 +108,11 @@ appmenu-fxa-sync-and-save-data2 = 同步并保存数据
 appmenu-fxa-signed-in-label = 登录
 appmenu-fxa-setup-sync =
     .label = 开启同步...
+appmenu-fxa-setup-sync-new = 开启
 appmenuitem-save-page =
     .label = 另存页面为…
+appmenuitem-fxa-sync-off-title = 同步已关闭
+appmenuitem-fxa-sync-off-description = 保护书签、密码等数据，并可在所有设备上使用。
 
 ## What's New panel in App menu.
 
@@ -277,5 +280,21 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = 接收数据外泄警报
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = 掩藏真实邮箱地址和电话号码
+appmenuitem-services-relay-description = 打开马甲邮箱面板
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = 保护在线活动
+appmenu-services-header = 我的服务
+appmenu-other-protection-header = 试用 { -vendor-short-name } 提供的其他保护工具：
+
+## Profiles panel
+
+appmenu-profiles = 配置文件
+appmenu-other-profiles = 其他配置文件
+appmenu-manage-profiles =
+    .label = 管理配置文件
+appmenu-create-profile =
+    .label = 新建配置文件
+appmenu-edit-profile =
+    .aria-label = 编辑配置文件
+appmenu-profiles-2 =
+    .label = 配置文件

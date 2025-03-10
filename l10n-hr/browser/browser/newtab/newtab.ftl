@@ -8,11 +8,18 @@
 newtab-page-title = Nova kartica
 newtab-settings-button =
     .title = Prilagodi stranicu za nove kartice
+newtab-personalize-settings-icon-label =
+    .title = Personaliziraj novu karticu
+    .aria-label = Postavke
+newtab-settings-dialog-label =
+    .aria-label = Postavke
 newtab-personalize-icon-label =
     .title = Personaliziraj novu karticu
     .aria-label = Personaliziraj novu karticu
 newtab-personalize-dialog-label =
     .aria-label = Personaliziraj
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Spremi u { -pocket-brand-name }
 newtab-menu-delete-pocket = Izbriši iz { -pocket-brand-name(case: "gen") }
 newtab-menu-archive-pocket = Arhiviraj u { -pocket-brand-name }
 newtab-menu-show-privacy-info = Naši sponzori i tvoja privatnost
+newtab-menu-about-fakespot = O proširenju { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Blokiraj
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Prestani pratiti temu
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -233,6 +247,8 @@ newtab-pocket-cta-button = Nabavi { -pocket-brand-name }
 newtab-pocket-cta-text = Spremi priče koje ti se sviđaju u { -pocket-brand-name } i napuni si mozak vrhunskim štivom.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } je dio { -brand-product-name } obitelji
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Spremi
 newtab-pocket-saved = Spremljeno
 
@@ -244,6 +260,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Nije za mene
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Hvala. Vaše povratne informacije pomoći će nam da poboljšamo predlaganje tema.
 newtab-toast-thumbs-up-or-down = Hvala. Vaše povratne informacije pomoći će nam da poboljšamo predlaganje tema.
 newtab-toast-dismiss-button =
     .title = Odbaci
@@ -298,6 +317,12 @@ newtab-custom-settings = Upravljaj dodatnim postavkama
 
 newtab-wallpaper-title = Pozadine
 newtab-wallpaper-reset = Obnovi na standardno
+newtab-wallpaper-upload-image = Prenesi sliku
+newtab-wallpaper-custom-color = Odaberi boju
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = Slika premašuje ograničenje veličine datoteke od { $file_size } MB. Pokušaj prenijeti manju datoteku.
+newtab-wallpaper-error-file-type = Nismo mogli prenijeti tvoju datoteku. Pokušaj ponovo s jednom drugom vrstom datoteke.
 newtab-wallpaper-light-red-panda = Crvena panda
 newtab-wallpaper-light-mountain = Bijela planina
 newtab-wallpaper-light-sky = Nebo s ljubičastim i ružičastim oblacima
@@ -310,6 +335,8 @@ newtab-wallpaper-dark-panda = Crvena panda skrivena u šumi
 newtab-wallpaper-dark-sky = Gradski pejzaž s noćnim nebom
 newtab-wallpaper-dark-mountain = Planinski krajolik
 newtab-wallpaper-dark-city = Ljubičasti gradski pejzaž
+newtab-wallpaper-dark-fox-anniversary = Lisica na kolniku u blizini šume
+newtab-wallpaper-light-fox-anniversary = Lisica u travnatom polju s maglovitim planinskim krajolikom
 
 ## Solid Colors
 
@@ -340,7 +367,7 @@ newtab-wallpaper-abstract-orange = Narančasti oblici
 newtab-wallpaper-gradient-orange = Gradijent narančaste i ružičaste
 newtab-wallpaper-abstract-blue-purple = Plavi i ljubičasti oblici
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Fotografije
 newtab-wallpaper-beach-at-sunrise = Plaža pri izlasku sunca
@@ -349,6 +376,7 @@ newtab-wallpaper-storm-sky = Olujno nebo
 newtab-wallpaper-sky-with-pink-clouds = Nebo s ružičastim oblacima
 newtab-wallpaper-red-panda-yawns-in-a-tree = Crvena panda zijeva na drvetu
 newtab-wallpaper-white-mountains = Bijele planine
+newtab-wallpaper-forest-trees = Drveće prekriveno maglom
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -364,6 +392,11 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+newtab-wallpaper-celestial-lunar-eclipse = Pomrčina mjeseca
+newtab-wallpaper-celestial-starry-sky = Zvjezdano nebo
+
 ## New Tab Weather
 
 # Variables:
@@ -374,6 +407,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Sponzorirano
 newtab-weather-menu-change-location = Promijeni mjesto
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Traži mjesto
+    .aria-label = Traži mjesto
 newtab-weather-change-location-search-input = Traži mjesto
 newtab-weather-menu-weather-display = Prikaz vremena
 # Display options are:
@@ -432,3 +468,43 @@ newtab-topic-selection-button-maybe-later = Možda kasnije
 newtab-topic-selection-privacy-link = Saznaj kako štitimo i upravljamo podacima
 newtab-topic-selection-button-update-interests = Aktualiziraj tvoje interese
 newtab-topic-selection-button-pick-interests = Odaberi tvoje interese
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Prati
+newtab-section-following-button = Praćenje
+newtab-section-unfollow-button = Prestani pratiti
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Blokiraj
+newtab-section-blocked-button = Blokirano
+newtab-section-unblock-button = Odblokiraj
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = Stvarno želiš blokirati ovaj odjeljak?
+newtab-section-confirm-block-section-p2 = Blokirani odjeljak se više neće pojavljivati u tvom feedu.
+newtab-section-block-section-button = Blokiraj ovaj odjeljak
+newtab-section-cancel-button = Ne sada
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = Blokiraj temu „{ $topic }”
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = Teme
+newtab-section-manage-topics-button-v2 =
+    .label = Upravljaj temama
+newtab-section-mangage-topics-followed-topics = Praćene
+newtab-section-mangage-topics-button =
+    .label = Praćene i blokirane teme
+newtab-section-mangage-topics-followed-topics-subtitle = Praćene teme
+newtab-section-mangage-topics-followed-topics-empty-state = Još nisi pratio/la nijednu temu.
+newtab-section-mangage-topics-blocked-topics = Blokirane
+newtab-section-mangage-topics-blocked-topics-subtitle = Blokirane teme
+newtab-section-mangage-topics-blocked-topics-empty-state = Još nisi blokirao/la nijednu temu.

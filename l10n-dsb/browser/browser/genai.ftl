@@ -43,6 +43,10 @@ genai-prompts-quiz =
 genai-prompts-explain =
     .label = Wujasniśo to
     .value = Pšosym wujasniśo głowne koncepty w toś tom wuběrku z jadnorymi słowami. Wužywajśo teke pśikłady.
+# Prompt purpose: writing tool that helps users with spelling and grammar mistakes and produce a response that identifies errors and rewrites the inputted text correctly
+genai-prompts-proofread =
+    .label = Korigěrowaś
+    .value = Pšosym pśepytajśo wuběrk za pšawopisnymi a gramatiskimi zmólkami. Identificěrujśo zmólki a stajśo skorigěrowanu wersiju teksta k dispoziciji. Wobchowajśo wóznam a faktowu dokradnosć a wudajśo nejpjerwjej lisćinu narazonych korekturow, slědowanu pśez kóńcnu, skorigěrowanu wersiju teksta.
 # This prompt is added to the beginning of selection prompts sent to a chatbot.
 # $tabTitle (string) - title of the webpage
 # $selection (string) - selected text
@@ -55,8 +59,113 @@ genai-menu-ask-generic =
 # $provider (string) - name of the provider
 genai-menu-ask-provider =
     .label = { $provider } se pšašaś
+genai-menu-remove-generic =
+    .label = Chatbot KI wótwónoźeś
+# $provider (string) - name of the provider
+genai-menu-remove-provider =
+    .label = { $provider } wótwónoźeś
 genai-input-ask-generic =
     .placeholder = Pšašajśo se AI chatbot
 # $provider (string) - name of the provider
 genai-input-ask-provider =
     .placeholder = Pšašajśo se { $provider }…
+# $selectionLength (number) - selected text length
+# $maxLength (number) - max length of what can be selected
+genai-shortcuts-selected-warning-generic =
+    .heading = KI chatbot waš dopołny wuběrk njedostanjo
+    .message =
+        { $selectionLength ->
+            [one] Sćo wubrał něźi { $selectionLength } znamuško. Licba znamuškow, kótarež móžomy KI chatbot słaś, jo něźi { $maxLength }.
+            [two] Sćo wubrał něźi { $selectionLength } znamušce. Licba znamuškow, kótarež móžomy KI chatbot słaś, jo něźi { $maxLength }.
+            [few] Sćo wubrał něźi { $selectionLength } znamuška. Licba znamuškow, kótarež móžomy KI chatbot słaś, jo něźi { $maxLength }.
+           *[other] Sćo wubrał něźi { $selectionLength } znamuškow. Licba znamuškow, kótarež móžomy KI chatbot słaś, jo něźi { $maxLength }.
+        }
+# $provider (string) - name of the provider
+# $selectionLength (number) - selected text length
+# $maxLength (number) - max length of what can be selected
+genai-shortcuts-selected-warning =
+    .heading = { $provider } waš dopołny wuběrk njedostanjo
+    .message =
+        { $selectionLength ->
+            [one] Sćo wubrał něźi { $selectionLength } znamuško. Licba znamuškow, kótarež móžomy { $provider } słaś, jo něźi { $maxLength }.
+            [two] Sćo wubrał něźi { $selectionLength } znamušce. Licba znamuškow, kótarež móžomy { $provider } słaś, jo něźi { $maxLength }.
+            [few] Sćo wubrał něźi { $selectionLength } znamuška. Licba znamuškow, kótarež móžomy { $provider } słaś, jo něźi { $maxLength }.
+           *[other] Sćo wubrał něźi { $selectionLength } znamuškow. Licba znamuškow, kótarež móžomy { $provider } słaś, jo něźi { $maxLength }.
+        }
+genai-shortcuts-hide =
+    .label = Tastowu skrotconku chatowego bota schowaś
+
+## Chatbot header
+
+genai-chatbot-title = Chatbot KI
+genai-header-provider-menu =
+    .title = Wubjeŕśo chatbot
+genai-header-options-button =
+    .title = Meni wócyniś
+genai-header-close-button =
+    .title = Zacyniś
+genai-provider-view-details =
+    .label = Drobnostki chatowego bota pokazaś
+genai-provider-about-chatbots =
+    .label = Wó toś tych chatowych botach
+genai-options-reload-generic =
+    .label = Chatowy bot KI znowego zacytaś
+# $provider (string) - name of the provider
+genai-options-reload-provider =
+    .label = { $provider } znowego zacytaś
+genai-options-show-shortcut =
+    .label = Tastowu skrotconku pokazaś, gaž se tekst wuběra
+genai-options-hide-shortcut =
+    .label = Tastowu skrotconku schowaś, gaž se tekst wuběra
+genai-options-about-chatbot =
+    .label = Wó chatowych botach w { -brand-short-name }
+
+## Chatbot onboarding
+
+genai-onboarding-header = Zespominaś, namakanje idejow a wěcej, gaž pśeglědujośo
+# "Switch anytime" refers to allowing the user to switch to a different chatbot.
+genai-onboarding-description = Wubjeŕśo chatowy bot, aby jen w bocnicy { -brand-short-name } wužywał. Pokažomy drobnostki wó kuždem chatowem bośe, gaž jen wuběraśo. Móžośo jen kuždy cas změniś. <a data-l10n-name="learn-more">Dalšne informacije</a>
+genai-onboarding-primary = Dalej
+genai-onboarding-secondary = Zacyniś
+genai-onboarding-claude-tooltip =
+    .title = Anthropic Claude
+genai-onboarding-claude-learn = Zgóńśo wěcej wó Claude
+genai-onboarding-chatgpt-tooltip =
+    .title = ChatGPT
+genai-onboarding-chatgpt-learn = Zgóńśo wěcej wó ChatGPT
+genai-onboarding-copilot-tooltip =
+    .title = Copilot
+genai-onboarding-copilot-learn = Zgóńśo wěcej wó Copilot
+genai-onboarding-gemini-tooltip =
+    .title = Google Gemini
+genai-onboarding-gemini-learn = Zgóńśo wěcej wó Gemini
+genai-onboarding-huggingchat-tooltip =
+    .title = HuggingChat
+genai-onboarding-huggingchat-learn = Zgóńśo wěcej wó HuggingChat
+genai-onboarding-lechat-tooltip =
+    .title = Le Chat Mistral
+genai-onboarding-lechat-learn = Zgóńśo wěcej wó Le Chat
+genai-onboarding-select-header = Wubjeŕśo tekst, aby naraźenja wiźeł
+genai-onboarding-select-description = Gaž tekst wuběraśo, naraźujomy wam naspominanja, kótarež móžośo na chatowy bot pósłaś. Móžośo teke do swójskich naspominanjow pisaś.
+genai-onboarding-select-primary = Chattowaś zachopiś
+
+## Chatbot onboarding choices
+## These describe features/capabilities of chatbot providers. These are not buttons/actions.
+
+genai-onboarding-claude-generate = Tekst a kod generěrowaś
+genai-onboarding-claude-analyze = Dokumenty a wobraze analyzěrowaś
+genai-onboarding-claude-price = Dermotne a płaśobne móžnosći; konto jo trjebne
+genai-onboarding-chatgpt-generate = Tekst, wobraze a kod generěrowaś
+genai-onboarding-chatgpt-analyze = Dokumenty a wobraze analyzěrowaś
+genai-onboarding-chatgpt-price = Dermotne a płaśobne móžnosći; konto jo trjebne za někotare kraje a nadawki
+genai-onboarding-copilot-generate = Tekst, wobraze a kod generěrowaś
+genai-onboarding-copilot-analyze = Wobraze analyzěrowaś
+genai-onboarding-copilot-price = Dermotne a płaśobne móžnosći; konto jo trjebne za někotare nadawki
+genai-onboarding-gemini-generate = Tekst, wobraze a kod generěrowaś
+genai-onboarding-gemini-analyze = Wobraze analyzěrowaś (dermotny) a dokumenty analyzěrowaś (płaśobny)
+genai-onboarding-gemini-price = Dermotne a płaśobne móžnosći; konto jo trjebne
+genai-onboarding-huggingchat-generate = Tekst a kod generěrowaś
+genai-onboarding-huggingchat-switch = Pśešaltujśo mjazy rozdźělneju sajźbu wótwórjonych modelow
+genai-onboarding-huggingchat-price-2 = Dermotny; konto trjebne pó wěstej licbje napšašowanjow
+genai-onboarding-lechat-generate = Tekst a kod generěrowaś
+genai-onboarding-lechat-price = Dermotny; konto jo trjebne

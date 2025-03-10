@@ -226,7 +226,9 @@ mr2022-onboarding-set-default-subtitle = Brug en browser, der er støttet af en 
 mr2022-onboarding-get-started-primary-subtitle = Vores seneste version er bygget for at opfylde dine behov og gøre det nemmere at bevæge dig rundt på nettet. Den er fyldt med funktioner, vi tror du kommer til at elske.
 mr2022-onboarding-get-started-primary-button-label = Hurtig opsætning
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Lynhurtig opsætning
 mr2022-onboarding-import-subtitle = Opsæt { -brand-short-name } som du vil. Tilføj dine bogmærker, adgangskoder og mere fra din gamle browser.
@@ -357,6 +359,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Når du har aktiveret
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } passer på dig
 onboarding-gratitude-security-and-privacy-subtitle = Tak for at du bruger { -brand-short-name }, støttet af Mozilla Foundation. Med din hjælp arbejder vi på at gøre internettet sikrere og mere tilgængeligt for alle.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Synkroniser dine data på tværs af enheder
+onboarding-sign-up-description = Opret en konto for at have adgang til alle dine vigtige oplysninger - adgangskoder, bogmærker mv. - på alle de enheder, du er logget ind på. Dine data gemmes på en sikker måde.
+onboarding-sign-up-button = Tilmeld dig eller log ind
+onboarding-sign-up-secondary-button = Afslut rundvisningen
 
 ## New user time and familiarity survey strings
 
@@ -376,3 +383,90 @@ onboarding-new-user-survey-familiarity-based-option-1 = Jeg er helt ny
 onboarding-new-user-survey-familiarity-based-option-2 = Jeg har brugt den en del
 onboarding-new-user-survey-familiarity-based-option-3 = Jeg er kender den meget godt
 onboarding-new-user-survey-familiarity-based-option-4 = Jeg har brugt den før, men det er et stykke tid siden
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Fortæl os, hvor du vil have dine faneblade
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Du kan altid ændre det i indstillingerne for sidepanel.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Faneblade på dine præmisser
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Har du mange åbne faneblade? Prøv at have faneblade i siden af browseren for at få et bedre overblik. Eller hav dem i toppen som sædvanligt. Skift når som helst.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Vælg layout for faneblade
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Prøv at have faneblade i siden af browseren for at få et bedre overblik, der kan hjælpe dig med at fokusere. Eller hav faneblade i toppen som sædvanligt. Skift når som helst.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Faneblade til siden
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Faneblade i toppen
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Lodrette faneblade er her
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Nyt: Lodrette faneblade
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Prøv at have dine faneblade i siden af skærmen. Du kan altid ændre det igen i indstillinger for sidepaneler.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Prøv lodrette faneblade
+onboarding-flair-text = Nyt!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Behold vandrette faneblade
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Et browservindue, hvor fanebladene vises langs siden af skærmen som en del af sidepanelet i { -brand-shorter-name }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Et browservindue, hvor fanebladene vises langs siden af skærmen som en del af sidepanelet { -brand-shorter-name }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Et browservindue, hvor fanebladene vises langs toppen af skærmen.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Et browservindue, hvor fanebladene vises langs toppen af skærmen.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Prøv en AI-chatbot i sidepanelet
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Opsummer indhold på nettet, få nye ideer, skriv udkast - mens du browser. Vælg mellem forskellige udbydere. Skift når som helst. <a data-l10n-name="learn-more">Læs mere</a>
+onboarding-genai-sidebar-primary-button = Vælg en chatbot
+onboarding-genai-sidebar-secondary-button = Afslut rundvisningen
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Færdiggør opsætning af { -brand-short-name }
+onboarding-checklist-subtitle = Udfør disse trin for at få det meste ud af din oplevelse på nettet.
+onboarding-checklist-set-default = Gør { -brand-short-name } til min standard-browser
+onboarding-checklist-pin = Fastgør { -brand-short-name } til proceslinjen
+onboarding-checklist-import = Importer fra tidligere browser
+onboarding-checklist-extension = Tilføj en udvidelse
+onboarding-checklist-sign-up = Tilmeld dig eller log ind på din konto
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Prøv fanebladsgrupper for at skabe mere orden og fokus
+tab-groups-onboarding-feature-callout-subtitle = Organiser dine faneblade ved at trække et faneblad hen oven på et andet for at skabe din første gruppe.
+tab-groups-onboarding-create-group-title = Find dine åbne grupper i fanebladslinjen - eller ved at søge efter dem i adressefeltet.
+tab-groups-onboarding-saved-groups-title = Hvis du lukker en fanebladsgruppe, kan du når som helst genåbne den her.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title = Find dine åbne eller lukkede fanebladsgrupper ved at søge efter dem i adressefeltet.
+tab-groups-onboarding-dismiss = OK
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Sig hej til { -brand-product-name }-profiler
+multi-profile-spotlight-body = Skift nemt mellem at bruge browseren til dit arbejde og i din fritid. Profiler holder dine browsingdata som søgehistorik og adgangskoder helt adskilte, så du nemmere kan have være organiseret.
+multi-profile-spotlight-cta = Opret en profil
+multi-profile-callout-title = Opret forskellige profiler til arbejde og fritid
+multi-profile-callout-subtitle = Profiler holder dine browsingdata som søgehistorik og adgangskoder helt adskilte.
+multi-profile-callout-cta = Opret en profil
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Synkroniser med Firefox til mobilen
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Skan QR-koden for at hente { -brand-product-name } til mobilen. Vælg "Synkroniser til mobilen" når installationen er færdig for at få adgang til dine adgangskoder, bogmærker og mere, når du er på farten.
+dismiss-button-label = Afvis
+sync-to-mobile-button-label = Synkroniser til mobilen
+desktop-to-mobile-qr-code-alt =
+    .aria-label = QR-kode til at hente { -brand-product-name } til mobilen

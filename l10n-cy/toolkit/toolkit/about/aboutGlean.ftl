@@ -15,6 +15,11 @@ about-glean-interface-description =
     Mae <a data-l10n-name="glean-sdk-doc-link">{ glean-sdk-brand-name }</a>
     yn lyfrgell casglu data sy'n cael ei ddefnyddio mewn projectau { -vendor-short-name }.
     Mae'r rhyngwyneb hwn wedi'i gynllunio i'w ddefnyddio gan ddatblygwyr a phrofwyr <a data-l10n-name="fog-link">i brofi'r offeryniaeth</a> â llaw.
+about-glean-category-about-glean = Ynghylch { -glean-brand-name }
+about-glean-category-manual-testing = Profi â Llaw
+about-glean-category-adhoc-testing = Profion Ad Hoc
+about-glean-category-profiler = Defnyddio'r Proffiliwr
+about-glean-category-about-data = Ynghylch Data
 about-glean-upload-enabled = Mae llwytho data i fyny wedi'i alluogi.
 about-glean-upload-disabled = Mae llwytho data i fyny wedi'i analluogi.
 about-glean-upload-enabled-local = Dim ond ar gyfer anfon i weinydd lleol y mae llwytho data i fyny wedi'i alluogi.
@@ -42,6 +47,9 @@ about-glean-glean-android = <code>MOZ_GLEAN_ANDROID</code>: { $glean-android-def
 #   $moz-official-define-value (Boolean): the value of the MOZILLA_OFFICIAL define.
 # Do not translate strings between <code> </code> tags.
 about-glean-moz-official = <code>MOZILLA_OFFICIAL</code>: { $moz-official-define-value }
+about-glean-additional-links =
+    I gael esboniad o wahanol ffyrdd o gofnodi a dod o hyd i ddata, cyfeiriwch at y
+    tab <strong>Ynghylch Data</strong>.
 about-glean-about-testing-header = Ynghylch Profi
 # This message is followed by a numbered list.
 about-glean-manual-testing =
@@ -99,8 +107,39 @@ about-glean-adhoc-note =
     Sylwch eich bod yn defnyddio'r API Glean JS trwy ddefnyddio'r consol devtools.
     Mae hyn yn golygu bod y categori metrig a'r enw metrig wedi'u fformatio
     <code>camelCase</code> yn wahanol i'r APIs Rust a C++.
+about-glean-profiler-explanation =
+    I weld golwg lawn o'r holl fetrigau a recordiwyd, gallwch ddefnyddio'r { -profiler-brand-name }.
+    Yn gyntaf rhaid i chi <a data-l10n-name="firefox-profiler-link">gipio proffil perfformiad</a>.
+    Unwaith y byddwch yn dal y proffil, dewiswch <q>Siart Marciwr</q> ac edrychwch ar y marcwyr o dan <q>Telemetreg</q>.
+about-glean-profiler-explanation-profiler =
+    Yn y proffil perfformiad gallwch weld yr holl fetrigau a gasglwyd, pan gawson nhw
+    eu casglu, a pha werthoedd yn union a gasglwyd. Trwy hofran ar farcwyr unigol,
+    gallwch wirio bod y gwerth cywir wedi'i gasglu a bod y casgliad hwnnw wedi digwydd ar yr amser cywir.
 controls-button-label-verbose = Gosod y gosodiadau ac anfon ping
+about-glean-feedback-settings-only =
+    .message = Gosodiadau wedi'u gosod!
+about-glean-feedback-settings-and-ping =
+    .message = Gosodiadau wedi'u gosod a ping wedi'i anfon!
 about-glean-about-data-header = Ynghylch Data
+about-glean-about-data-description =
+    Mae yna ychydig o offer gwahanol y gallwch eu defnyddio i weld eich data, yn dibynnu ar
+    yr hyn rydych yn chwilio amdano.
+about-glean-about-data-description-list-intro =
+    Cyfeiriwch at y restr isod am ddefnydd penodol
+    ar gyfer yr offer unigol:
+about-glean-about-data-list-item-dictionary =
+    I bori drwy'r rhestr o ddata a gasglwyd, edrychwch ar y
+    <a data-l10n-name="glean-dictionary-link"> { -glean-brand-name } Dictionary</a>.
+about-glean-about-data-list-item-about-telemetry =
+    I bori'r data sy'n cael ei gasglu gan yr hen delemetreg, ewch i
+    <a data-l10n-name="about-telemetry-link">about:telemetry</a>.
+about-glean-about-data-list-item-debug-ping-viewer =
+    I bori tagiau dadfygio, edrychwch ar y  pingiau llawn, edrych ar ffrwd digwyddiad byw, neu weld metrig
+    delweddu, ymgynghorwch â'r
+    <a data-l10n-name="glean-debug-ping-viewer">{ glean-debug-ping-viewer-brand-name }</a>.
+about-glean-about-data-list-item-firefox-profiler =
+    I gofnodi proffil perfformiad a gweld yr holl fetrigau a gofnodwyd, defnyddiwch
+    <a data-l10n-name="about-glean-firefox-profiler">{ -profiler-brand-name }</a>.
 about-glean-about-data-explanation =
     I bori drwy'r rhestr o ddata a gasglwyd, edrychwch ar y
     <a data-l10n-name="glean-dictionary-link"> { -glean-brand-name } Geiriadur</a>.

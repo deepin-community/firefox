@@ -16,3 +16,10 @@ all-tabs-menu-close-duplicate-tabs =
     .label = Қайталама беттерді жабу
 all-tabs-menu-close-all-duplicate-tabs =
     .label = Барлық қайталанатын беттерді жабу
+all-tabs-menu-synced-tabs =
+    .label = Басқа құрылғылардан беттер
+all-tabs-menu-current-window-header = Ағымдағы терезе
+# "Show all" is for showing all open groups as well as saved groups. Initially,
+# we only show up to five of these groups.
+all-tabs-menu-tab-groups-show-all =
+    .label = Барлығын көрсету

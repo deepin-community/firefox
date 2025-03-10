@@ -4,6 +4,12 @@
 
 menu-view-genai-chat =
     .label = Чат-бот ШІ
+menu-view-review-checker =
+    .label = Праверка водгукаў
+menu-view-contextual-password-manager =
+    .label = Паролі
+sidebar-options-menu-button =
+    .title = Адкрыць меню
 
 ## Labels for sidebar history panel
 
@@ -46,16 +52,30 @@ sidebar-position-right =
     .label = Паказаць справа
 sidebar-vertical-tabs =
     .label = Вертыкальныя карткі
+sidebar-settings =
+    .label = Налады бакавой панэлі
+sidebar-hide-tabs-and-sidebar =
+    .label = Схаваць карткі і бакавую панэль
+sidebar-show-on-the-right =
+    .label = Перамясціць бакавую панэль управа
+sidebar-show-on-the-left =
+    .label = Перамясціць бакавую панэль улева
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = Разгарнуць бакавую панэль пры навядзенні
 sidebar-horizontal-tabs =
     .label = Гарызантальныя карткі
 sidebar-customize-tabs-header =
     .label = Налады картак
-sidebar-customize-settings-header =
-    .label = Налады бакавой панэлі
-sidebar-visibility-always-show =
-    .label = Заўсёды паказваць
-sidebar-visibility-hide-sidebar =
-    .label = Схаваць бакавую панэль
+sidebar-customize-button-header =
+    .label = Кнопка бакавой панэлі
+sidebar-customize-position-header =
+    .label = Становішча бакавой панэлі
+sidebar-visibility-setting-always-show =
+    .label = Разгарнуць і згарнуць бакавую панэль
+sidebar-visibility-setting-hide-sidebar =
+    .label = Паказаць і схаваць бакавую панэль
 
 ## Labels for sidebar context menu items
 
@@ -95,6 +115,41 @@ sidebar-menu-bookmarks-label =
     .label = Закладкі
 sidebar-menu-customize-label =
     .label = Уладкаванне бакавой панэлі
+sidebar-menu-review-checker-label =
+    .label = Праверка водгукаў
+sidebar-menu-contextual-password-manager-label =
+    .label = Паролі
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = Адкрыць гісторыю ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = Закрыць гісторыю ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = Адкрыць закладкі ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = Закрыць закладкі ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = Адкрыць чат-бот ШІ
+sidebar-menu-close-ai-chatbot-tooltip = Закрыць чат-бот ШІ
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = Адкрыць чат-бот ШІ ({ $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = Адкрыць { $provider } ({ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip-generic = Закрыць чат-бот ШІ ({ $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = Закрыць { $provider } ({ $shortcut })
 
 ## Headings for sidebar menu panels.
 
@@ -104,6 +159,18 @@ sidebar-menu-history-header =
     .heading = Гісторыя
 sidebar-menu-syncedtabs-header =
     .heading = Карткі з іншых прылад
+sidebar-menu-bookmarks-header =
+    .heading = Закладкі
+sidebar-menu-cpm-header =
+    .heading = Паролі
+sidebar-panel-header-close-button =
+    .tooltiptext = Закрыць
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Уладкаванне бакавой панэлі
+sidebar-history-title = Гісторыя
+sidebar-syncedtabs-title = Карткі з іншых прылад
 
 ## Context for closing synced tabs when hovering over the items
 
@@ -113,3 +180,29 @@ sidebar-menu-syncedtabs-header =
 #   $deviceName (String) - the name of the device the user is closing a tab for
 synced-tabs-context-close-tab-title =
     .title = Закрыць картку на { $deviceName }
+show-sidebars =
+    .tooltiptext = Паказаць бакавыя панэлі
+    .label = Бакавыя панэлі
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = Разгарнуць бакавую панэль ({ $shortcut })
+    .label = Бакавыя панэлі
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Згарнуць бакавую панэль ({ $shortcut })
+    .label = Бакавыя панэлі
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Паказаць бакавую панэль ({ $shortcut })
+    .label = Бакавыя панэлі
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Схаваць бакавую панэль ({ $shortcut })
+    .label = Бакавыя панэлі

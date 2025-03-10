@@ -85,6 +85,7 @@ about-logins-login-list-alerts-option = التنبيهات
 login-list-last-changed-option = آخر تعديل
 login-list-last-used-option = آخر استخدام
 login-list-intro-title = لا جلسات ولوج
+login-list-intro-title2 = لم يتم حفظ كلمات مرور
 login-list-intro-description = متى ما حفظت كلمة سر في { -brand-product-name } ستظهر هنا.
 about-logins-login-list-empty-search-title = لا جلسات ولوج
 about-logins-login-list-empty-search-title2 = لم يُعثر على كلمات السر
@@ -127,6 +128,11 @@ login-item-edit-button = حرِّر
 about-logins-login-item-remove-button = أزِل
 login-item-origin-label = عنوان الموقع
 login-item-tooltip-message = تأكّد من تطابق هذا العنوان مع عنوان الموقع الذي تريد الولوج إليه.
+about-logins-origin-tooltip2 = أدخل العنوان بالكامل وتأكد من أنه مطابق تمامًا للمكان الذي تسجل الدخول فيه.
+# Variables
+#   $webTitle (String) - Website title of the password being changed.
+about-logins-edit-password-tooltip = تأكد من حفظ كلمة السر الحالية لهذا الموقع. تغيير كلمة السر هنا لا يغيرها باستخدام { $webTitle }.
+about-logins-add-password-tooltip = تأكد من حفظ كلمة السر الحالية لهذا الموقع.
 login-item-origin =
     .placeholder = https://www.example.com
 login-item-username-label = اسم المستخدم
@@ -137,6 +143,8 @@ login-item-copied-username-button-text = نُسخ.
 login-item-password-label = كلمة السر
 login-item-password-reveal-checkbox =
     .aria-label = أظهِر كلمة السر
+login-item-password-conceal-checkbox =
+    .aria-label = أخفِ كلمة السر
 login-item-copy-password-button-text = انسخ
 login-item-copied-password-button-text = نُسخ.
 login-item-save-changes-button = احفظ التغييرات
@@ -168,6 +176,8 @@ about-logins-edit-login-os-auth-dialog-message-win = أدخِل معلومات �
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = تحرير جلسة الولوج المحفوظة
+# This message can be seen when attempting to edit a login in about:logins on Windows.
+about-logins-edit-login-os-auth-dialog-message2-win = لتحرير كلمة سرك، أدخل بيانات ولوجك بنظام ويندوز. يساعد هذا في حماية أمان حساباتك.
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message2-macosx = تحرير كلمة المرور المحفوظة
@@ -186,6 +196,11 @@ about-logins-export-password-os-auth-dialog-message-win = أدخِل معلوم�
 # This message can be seen when attempting to export a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-export-password-os-auth-dialog-message-macosx = صدّر جلسات الولوج وكلمات السر المحفوظة
+# This message can be seen when attempting to export a password in about:logins on Windows.
+about-logins-export-password-os-auth-dialog-message2-win = لتصدير كلمات سرك، أدخل بيانات ولوجك بنظام ويندوز. يساعد هذا في حماية أمان حساباتك.
+# This message can be seen when attempting to export a password in about:logins
+# On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
+about-logins-export-password-os-auth-dialog-message2-macosx = صدّر كلمات السر المحفوظة
 
 ## Primary Password notification
 
@@ -201,6 +216,10 @@ confirmation-dialog-dismiss-button =
     .title = ألغِ
 about-logins-confirm-remove-dialog-title = أنُزيل هذا الولوج؟
 confirm-delete-dialog-message = هذا إجراء لا عودة فيه.
+# Title for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-title = إزالة كلمة السر؟
+# Message for modal to confirm the removal of one saved password
+about-logins-confirm-delete-dialog-message = لا يمكنك التراجع عن هذا الإجراء.
 about-logins-confirm-remove-dialog-confirm-button = أزِل
 
 ## Variables
@@ -270,6 +289,11 @@ about-logins-confirm-remove-all-sync-dialog-message =
 about-logins-confirm-export-dialog-title = صدّر جلسات الولوج وكلمات السر
 about-logins-confirm-export-dialog-message = ستُحفظ جلسات الولوج على هيئة نص مقروء (مثلا 12345 أو BadP@ssw0rd) وبهذا يستطيع أيّ شخص معاينتها لو فتح الملف المصدّر.
 about-logins-confirm-export-dialog-confirm-button = صدّر…
+about-logins-confirm-export-dialog-title2 = ملاحظة حول تصدير كلمات السر
+about-logins-confirm-export-dialog-message2 =
+    عند التصدير، تُحفظ كلمات سرك في ملف نصي قابل للقراءة.
+    عند الانتهاء من استخدام الملف، نوصي بحذفه حتى لا يتمكن المستخدمون الأخرون لهذا الجهاز من رؤية كلمات سرك.
+about-logins-confirm-export-dialog-confirm-button2 = متابعة التصدير
 about-logins-alert-import-title = تمّ الاستيراد
 about-logins-alert-import-message = اعرض ملخص الاستيراد التفصيلي
 confirm-discard-changes-dialog-title = أتريد إهمال التغييرات غير المحفوظة؟
@@ -311,6 +335,11 @@ about-logins-export-file-picker-title = صدّر ملف جلسات الولوج
 # The default file name shown in the file picker when exporting saved logins.
 # This must end in .csv
 about-logins-export-file-picker-default-filename = جلسات_الولوج.csv
+# Title of the file picker dialog
+about-logins-export-file-picker-title2 = صدّر كلمات السر من { -brand-short-name }
+# The default file name shown in the file picker when exporting saved logins.
+# This must end in .csv
+about-logins-export-file-picker-default-filename2 = passwords.csv
 about-logins-export-file-picker-export-button = صدّر
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -324,6 +353,8 @@ about-logins-export-file-picker-csv-filter-title =
 
 # Title of the file picker dialog
 about-logins-import-file-picker-title = استورِد ملف جلسات الولوج
+# Title of the file picker dialog
+about-logins-import-file-picker-title2 = استورد كلمات السر إلى { -brand-short-name }
 about-logins-import-file-picker-import-button = استورِد
 # A description for the .csv file format that may be shown as the file type
 # filter by the operating system.
@@ -397,6 +428,7 @@ about-logins-import-dialog-error-try-import-again = حاوِل الاستيرا�
 about-logins-import-dialog-error-cancel = ألغِ
 about-logins-import-report-title = ملخص الاستيراد
 about-logins-import-report-description = استوردت جلسات الولوج وكلمات السر إلى { -brand-short-name }.
+about-logins-import-report-description2 = استوردت كلمات السر إلى { -brand-short-name }.
 #
 # Variables:
 #  $number (number) - The number of the row
@@ -404,6 +436,8 @@ about-logins-import-report-row-index = صف { $number }
 about-logins-import-report-row-description-no-change = متكرّر: مطابقة تامة لجلسة ولوج موجودة
 about-logins-import-report-row-description-modified = حُدّثت جلسة الولوج الموجودة
 about-logins-import-report-row-description-added = أُضيفت جلسة ولوج جديدة
+about-logins-import-report-row-description-no-change2 = متكرّر: مطابقة تامة للولوج الحالي
+about-logins-import-report-row-description-modified2 = حُدّثت الولوج الموجودة
 about-logins-import-report-row-description-error = خطأ: حقل مفقود
 
 ##

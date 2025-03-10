@@ -72,6 +72,19 @@ protections-panel-blocking-label = חסומים
 protections-panel-not-blocking-label = מורשים
 protections-panel-not-found-label = לא אותרו
 
+## Smartblock strings
+
+protections-panel-smartblock-desc-label = ‏{ -brand-short-name } חוסם תוכן מעקב בזמן הגלישה באתר זה אלא אם כן הוא יאופשר על ידך.
+# Variables
+#  $trackername (String): the name of the tracker that is currently being blocked.
+protections-panel-smartblock-blocking-toggle =
+    .label = לאפשר את { $trackername }
+#  $trackername (String): the name of the tracker that is currently being blocked.
+smartblock-placeholder-title = רכיבי מעקב ותוכן של { $trackername } חסומים
+smartblock-placeholder-desc = הגדרות ה־{ -brand-short-name } שלך מונעות מתוכן זה לעקוב אחריך באתרים או לשמש עבור פרסומות.
+#  $websitehost (String): host of website with blocked content.
+smartblock-placeholder-button-text = לאפשר ב־{ $websitehost }
+
 ##
 
 protections-panel-settings-label = הגדרות הגנה
@@ -93,7 +106,7 @@ protections-panel-site-not-working-view-send-report = שליחת דיווח
 
 ##
 
-protections-panel-cross-site-tracking-cookies = עוגיות אלו עוקבות אחריך מאתר לאתר כדי לאסוף נתונים על הפעילויות המקוונות שלך. הן נוצרות על־ידי גורמי צד־שלישי כמו מפרסמים וחברות אנליטיות.
+protections-panel-cross-site-tracking-cookies = עוגיות אלו עוקבות אחריך מאתר לאתר כדי לאסוף נתונים על הפעילויות המקוונות שלך. הן נוצרות על־ידי גורמי צד שלישי כמו מפרסמים וחברות אנליטיות.
 protections-panel-cryptominers = כורי מטבעות דיגיטליים משתמשים בכוח העיבוד של המערכת שלך כדי לכרות כסף דיגיטלי. תסריטי כריית מטבעות מרוקנים את הסוללה שלך, מאטים את המחשב שלך ומגדילים את חשבון החשמל שלך.
 protections-panel-fingerprinters = רכיבי זהות דיגיטלית אוספים הגדרות מהדפדפן והמחשב שלך כדי ליצור עליך פרופיל. באמצעות טביעת האצבע הדיגיטלית הזאת, הם יכולים לעקוב אחריך באתרי אינטרנט שונים.
 protections-panel-tracking-content = אתרים עשויים לטעון פרסומות חיצוניות, סרטונים ותכנים אחרים עם קוד מעקב. חסימת תוכן מעקב יכולה לסייע לאתרים להיטען מהר יותר, אך יתכן שמספר כפתורים, טפסים ושדות התחברות לא יעבדו.

@@ -32,6 +32,9 @@ firefoxview-tabpickup-progress-label = { $percentValue } % dovršeno
 firefoxview-tabpickup-step-signin-header = Prebaci se bez problema između uređaja
 firefoxview-tabpickup-step-signin-description = Za preuzimanje kartica sa svog mobitela ovdje, najprije se prijavi ili otvori račun.
 firefoxview-tabpickup-step-signin-primarybutton = Nastavi
+firefoxview-syncedtabs-signin-header-2 = Tvoj { -brand-product-name } na svim tvojim uređajima
+firefoxview-syncedtabs-signin-description-2 = Za prikaz otvorenih kartica na tvom telefonu i drugim uređajima, prijavi se ili se registriraj. S računom također možeš sinkronizirati tvoje lozinke, povijest i još više.
+firefoxview-syncedtabs-signin-primarybutton-2 = Prijavi se
 firefoxview-syncedtabs-signin-header = Ugrabi kartice od bilo kuda
 firefoxview-syncedtabs-signin-description = Za prikaz kartica s bilo kojeg uređaja na kojem koristiš { -brand-product-name } prijavi se na svoj račun. Ako nemaš račun, provest ćemo te kroz korake za registraciju.
 firefoxview-syncedtabs-signin-primarybutton = Prijavi se / Registriraj se
@@ -39,6 +42,8 @@ firefoxview-tabpickup-adddevice-header = Sinkroniziraj { -brand-product-name } n
 firefoxview-tabpickup-adddevice-description = Preuzmi { -brand-product-name } za moblni uređaj i tamo se prijavi.
 firefoxview-tabpickup-adddevice-learn-how = Saznaj kako
 firefoxview-tabpickup-adddevice-primarybutton = Nabavi { -brand-product-name } za mobilne uređaje
+firefoxview-syncedtabs-adddevice-header-2 = Ugrabi kartice od bilo kuda
+firefoxview-syncedtabs-adddevice-description-2 = Prijavi se na { -brand-product-name } na svom telefonu ili drugom računalu kako bi se ovdje prikazale kartice. Saznaj kako <a data-l10n-name="url">povezati dodatne uređaje</a>.
 firefoxview-syncedtabs-adddevice-header = Prijavi se na { -brand-product-name } na svojim drugim uređajima
 firefoxview-syncedtabs-adddevice-description = Za prikaz kartica s bilo kojeg uređaja na kojem koristiš { -brand-product-name } prijavi se na svim svojim uređajima. Saznaj kako <a data-l10n-name="url">povezati dodatne uređaje</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = Isprobaj { -brand-product-name } za mobitel
@@ -61,10 +66,10 @@ firefoxview-tabpickup-sync-error-header = Imamo problema sa sinkronizacijom
 firefoxview-tabpickup-generic-sync-error-description = { -brand-short-name } trenutačno ne može pristupiti usluzi sinkronizacije. Pokušaj ponovo za par trenutaka.
 firefoxview-tabpickup-sync-error-primarybutton = Pokušaj ponovo
 firefoxview-tabpickup-sync-disconnected-header = Za nastavljanje uključi sinkronizaciju
-firefoxview-tabpickup-sync-disconnected-description = Za preuzimanje tvojih kartica, morat ćeš dozvoliti sinkronizaciju u pregledniku { -brand-short-name }.
+firefoxview-tabpickup-sync-disconnected-description = Za preuzimanje tvojih kartica morat ćeš dozvoliti sinkronizaciju u { -brand-short-name(case: "loc") }.
 firefoxview-tabpickup-sync-disconnected-primarybutton = Uključi sinkronizaciju u postavkama
 firefoxview-tabpickup-password-locked-header = Upiši svoju primarnu lozinku za prikaz kartica
-firefoxview-tabpickup-password-locked-description = Za preuzimanje tvojih kartica, morat ćeš upisati primarnu lozinku za { -brand-short-name }.
+firefoxview-tabpickup-password-locked-description = Za preuzimanje tvojih kartica morat ćeš upisati primarnu lozinku za { -brand-short-name }.
 firefoxview-tabpickup-password-locked-link = Saznaj više
 firefoxview-tabpickup-password-locked-primarybutton = Upiši primarnu lozinku
 firefoxview-syncedtab-password-locked-link = <a data-l10n-name="syncedtab-password-locked-link">Saznaj više</a>
@@ -165,6 +170,9 @@ firefoxview-search-text-box-history =
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Pretraži nedavno zatvorene kartice
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-tabs =
+    .placeholder = Pretraži kartice
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
 firefoxview-search-text-box-syncedtabs =
     .placeholder = Pretraži sinkronizirane kartice
 # Placeholder for the input field to search in open tabs ("search" is a verb).
@@ -229,6 +237,8 @@ firefoxview-choose-browser-button = Odaberi preglednik
 firefoxview-dont-remember-history-empty-header = Ništa za pokazati
 firefoxview-dont-remember-history-empty-description = Zaštita tvoje privatnosti u središtu je onoga što radimo. Zato možeš kontrolirati aktivnost koju { -brand-short-name } pamti.
 firefoxview-dont-remember-history-empty-description-two = Na temelju tvojih trenutačnih postavki, { -brand-short-name } ne pamti tvoju aktivnost dok pregledavaš internet. <a data-l10n-name="history-settings-url-two">Promijeni postavke svoje povijesti ako želiš da se tvoja povijest pamti</a>.
+firefoxview-dont-remember-history-empty-header-2 = Ti kontroliraš što { -brand-short-name } pamti
+firefoxview-dont-remember-history-empty-description-one = Trenutačno { -brand-short-name } ne pamti tvoju aktivnost pregledavanja. Da bi to promijenio/la, <a data-l10n-name="history-settings-url-two">aktualiziraj svoje postavke povijesti</a>.
 
 ##
 

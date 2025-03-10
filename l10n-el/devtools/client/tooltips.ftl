@@ -47,6 +47,7 @@ inactive-css-property-is-impossible-to-override-in-visited = Είναι αδύν
 inactive-css-position-property-on-unpositioned-box = Το <strong>{ $property }</strong> δεν έχει επίδραση σε αυτό το στοιχείο, αφού δεν είναι τοποθετημένο στοιχείο.
 inactive-css-only-replaced-elements = Το <strong>{ $property }</strong> δεν έχει επίδραση σε αυτό το στοιχείο, αφού μπορεί να εφαρμοστεί μόνο σε στοιχεία που έχουν αντικατασταθεί.
 inactive-text-overflow-when-no-overflow = Το <strong>{ $property }</strong> δεν έχει επίδραση σε αυτό το στοιχείο αφού το  <strong>overflow:hidden</strong> δεν έχει οριστεί.
+inactive-css-no-size-containment = Το <strong>{ $property }</strong> δεν έχει επίδραση σε αυτό το στοιχείο, αφού δεν έχει περιορισμό μεγέθους.
 inactive-css-not-for-internal-table-elements = Το <strong>{ $property }</strong> δεν επηρεάζει τα εσωτερικά στοιχεία πίνακα.
 inactive-css-not-for-internal-table-elements-except-table-cells = Το <strong>{ $property }</strong> δεν επηρεάζει τα εσωτερικά στοιχεία πίνακα, εκτός από τα κελιά πίνακα.
 inactive-css-not-table = Το <strong>{ $property }</strong> δεν έχει επίδραση σε αυτό το στοιχείο, αφού δεν είναι πίνακας.
@@ -58,8 +59,13 @@ inactive-css-resize = Το <strong>{ $property }</strong> δεν έχει καμ
 inactive-css-ruby-element = Το <strong>{ $property }</strong> δεν έχει καμία επίδραση σε αυτό το στοιχείο, επειδή είναι στοιχείο ruby. Το μέγεθός του καθορίζεται από το μέγεθος γραμματοσειράς του κειμένου ruby.
 
 ## In the Rule View when a CSS property cannot be successfully applied we display
-## an icon. When this icon is hovered this message is displayed to explain how
-## the problem can be solved.
+## an icon. When this icon is hovered this message is displayed to explain why
+## the property is not applied.
+## The variables are all passed from the same place, in `InactiveCssTooltipHelper#getTemplate`
+## (devtools/client/shared/widgets/tooltip/inactive-css-tooltip-helper.js#95)
+## Variables:
+##   $property (string) - A CSS property name e.g. "color".
+##   $display (string) - A CSS display value e.g. "inline-block".
 
 inactive-css-highlight-pseudo-elements-not-supported = Το <strong>{ $property }</strong> δεν υποστηρίζεται στα ψευδοστοιχεία επισήμανσης.
 inactive-css-cue-pseudo-element-not-supported = Το <strong>{ $property }</strong> δεν υποστηρίζεται σε ψευδοστοιχεία ::cue.
@@ -98,6 +104,7 @@ inactive-css-not-floated-fix = Δοκιμάστε να προσθέσετε τη
 inactive-css-position-property-on-unpositioned-box-fix = Δοκιμάστε να ορίσετε την ιδιότητα <strong>position</strong> του σε κάτι άλλο εκτός από <strong>static</strong>. { learn-more }
 inactive-css-only-replaced-elements-fix = Βεβαιωθείτε ότι προσθέτετε την ιδιότητα σε ένα στοιχείο που έχει αντικατασταθεί. { learn-more }
 inactive-text-overflow-when-no-overflow-fix = Δοκιμάστε να προσθέσετε το <strong>overflow:hidden</strong>. { learn-more }
+inactive-css-no-size-containment-fix = Δοκιμάστε να ορίσετε την ιδιότητα <strong>display</strong> του σε κάτι άλλο, εκτός από <strong>none</strong>, <strong>contents</strong>, <strong>table</strong> ή <strong>inline-table</strong> και βεβαιωθείτε ότι δεν βρίσκεται εντός πίνακα ή ενότητας ruby. { learn-more }
 inactive-css-not-for-internal-table-elements-fix = Δοκιμάστε να ορίσετε την ιδιότητα <strong>display</strong> του σε κάτι άλλο εκτός από <strong>table-cell</strong>, <strong>table-column</strong>, <strong>table-row</strong>, <strong>table-column-group</strong>, <strong>table-row-group</strong>, ή <strong>table-footer-group</strong>. { learn-more }
 inactive-css-not-for-internal-table-elements-except-table-cells-fix = Δοκιμάστε να ορίσετε την ιδιότητα <strong>display</strong> του σε κάτι άλλο εκτός από <strong>table-column</strong>, <strong>table-row</strong>, <strong>table-column-group</strong>, <strong>table-row-group</strong>, ή <strong>table-footer-group</strong>. { learn-more }
 inactive-css-not-table-fix = Δοκιμάστε να προσθέσετε το <strong>display:table</strong> ή το <strong>display:inline-table</strong>. { learn-more }

@@ -54,7 +54,6 @@ struct ServiceWorkerNotificationEventOpArgs {
   nsString tag;
   nsString icon;
   nsString data;
-  nsString behavior;
   nsString scope;
   uint32_t disableOpenClickDelay;
 };
@@ -69,7 +68,7 @@ struct ServiceWorkerExtensionAPIEventOpArgs {
 };
 
 struct ServiceWorkerMessageEventOpArgs {
-  ClientInfoAndState clientInfoAndState;
+  PostMessageSource source;
   ClonedOrErrorMessageData clonedData;
 };
 
@@ -104,6 +103,10 @@ struct ParentToChildServiceWorkerFetchEventOpArgs {
   ResponseEndArgs? preloadResponseEndArgs;
 };
 
+struct ServiceWorkerUpdateIsOnContentBlockingAllowListOpArgs {
+  bool onContentBlockingAllowList;
+};
+
 union ServiceWorkerOpArgs {
   ServiceWorkerCheckScriptEvaluationOpArgs;
   ServiceWorkerUpdateStateOpArgs;
@@ -115,6 +118,7 @@ union ServiceWorkerOpArgs {
   ServiceWorkerMessageEventOpArgs;
   ServiceWorkerExtensionAPIEventOpArgs;
   ParentToChildServiceWorkerFetchEventOpArgs;
+  ServiceWorkerUpdateIsOnContentBlockingAllowListOpArgs;
 };
 
 /**

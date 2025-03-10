@@ -12,12 +12,12 @@
 
 permission-dialog-description = ნებას რთავთ ამ საიტს, გახსნას { $scheme }-ბმული?
 permission-dialog-description-file = ნებას რთავთ ამ ფაილს, გახსნას { $scheme }-ბმული?
-permission-dialog-description-host = ნებას რთავთ ამ { $host }-ს, გახსნას { $scheme }-ბმული?
-permission-dialog-description-extension = ნებას რთავთ გაფართოებას { $extension }, გახსნას { $scheme }-ბმული?
-permission-dialog-description-app = ნებას რთავთ ამ საიტს, გახსნას { $scheme }-ბმული პროგრამით { $appName }?
-permission-dialog-description-host-app = ნებას რთავთ ამ { $host }-ს, გახსნას { $scheme }-ბმული პროგრამით { $appName }?
-permission-dialog-description-file-app = ნებას რთავთ ამ ფაილს, გახსნას { $scheme }-ბმული პროგრამით { $appName }?
-permission-dialog-description-extension-app = ნებას რთავთ გაფართოებას { $extension }, გახსნას { $scheme }-ბმული { $appName }-პროგრამით?
+permission-dialog-description-host = ნებას რთავთ, რომ{ $host } შეძლებს გახსნას { $scheme }-ბმული?
+permission-dialog-description-extension = ნებას რთავთ, რომ { $extension } შეძლებს გახსნას { $scheme }-ბმული?
+permission-dialog-description-app = ნებას რთავთ ამ საიტს, { $appName } გამოიყენოს { $scheme }-ბმულისთვის?
+permission-dialog-description-host-app = ნებას რთავთ, რომ { $host } შეძლებს { $scheme }-ბმულისთვის გამოიყენოს { $appName }?
+permission-dialog-description-file-app = ნებას რთავთ ამ ფაილს, { $scheme }-ბმულისთვის გამოიყენოს { $appName }?
+permission-dialog-description-extension-app = ნებას რთავთ, რომ { $extension } შეძლებს { $scheme }-ბმულისთვის გამოიყენოს { $appName }?
 permission-dialog-description-system-app = გაიხსნას { $scheme }-ბმული პროგრამით { $appName }?
 permission-dialog-description-system-noapp = გაიხსნას { $scheme }-ბმული?
 

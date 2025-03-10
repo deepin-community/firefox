@@ -93,6 +93,8 @@ about-debugging-setup-this-firefox2 = <a>{ about-debugging-this-firefox-runtime-
 about-debugging-setup-connect-heading = ਡਿਵਾਈਸ ਕਨੈਕਟ ਕਰੋ
 # USB section of the Setup page
 about-debugging-setup-usb-title = USB
+# Explanatory text displayed in the Setup page when USB debugging is disabled
+about-debugging-setup-usb-disabled = ਇਸ ਨੂੰ ਸਮਰੱਥ ਕਰਨ ਨਾਲ ਲੋੜੀਂਦੇ Android USB ਡੀਬੱਗਿੰਗ ਭਾਗਾਂ ਨੂੰ { -brand-shorter-name } ਵਿੱਚ ਜੋੜਿਆ ਜਾਵੇਗਾ।
 # Text of the button displayed in the USB section of the setup page when USB debugging is disabled.
 # Clicking on it will download components needed to debug USB Devices remotely.
 about-debugging-setup-usb-enable-button = USB ਡਿਵਾਈਸ ਸਮਰੱਥ ਕਰੋ
@@ -109,6 +111,8 @@ about-debugging-setup-usb-status-updating = …ਅੱਪਡੇਟ ਕੀਤਾ �
 about-debugging-setup-usb-step-enable-dev-menu2 = ਆਪਣੇ ਐਂਡਰਾਇਡ ਡਿਵਾਈਸ ਤੇ ਡਿਵੈਲਪਰ ਮੀਨੂ ਨੂੰ ਸਮਰੱਥ ਬਣਾਓ।
 # USB section step by step guide
 about-debugging-setup-usb-step-enable-debug2 = ਐਂਡਰਾਇਡ ਡਿਵੈਲਪਰ ਮੀਨੂ ਵਿੱਚ USB ਡੀਬਗਿੰਗ ਨੂੰ ਸਮਰੱਥ ਬਣਾਓ।
+# USB section step by step guide
+about-debugging-setup-usb-step-enable-file-transfer = ਫਾਇਲ ਟਰਾਂਸਫਰ ਨੂੰ ਸਮਰੱਥ ਕਰੋ ਅਤੇ ਯਕੀਨੀ ਬਣਾਓ ਕਿ ਤੁਹਾਡਾ ਡਿਵਾਈਸ ਸਿਰਫ਼ ਚਾਰਜ ਹੋਣ ਵਾਲੇ ਮੋਡ ਵਿੱਚ ਨਹੀਂ ਹੈ।
 # USB section step by step guide
 about-debugging-setup-usb-step-enable-debug-firefox2 = Android ਡਿਵਾਈਸ ਉੱਤੇ Firefox ਵਿੱਚ USB ਡੀਬੱਗਿੰਗ ਨੂੰ ਸਮਰੱਥ ਬਣਾਓ।
 # USB section step by step guide
@@ -182,6 +186,14 @@ about-debugging-runtime-profile-button2 = ਪਰੋਫਾਈਲ ਕਾਰਗੁ�
 # target runtime is incompatible with service workers. "Learn more" points to:
 # https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/index.html#service-workers-not-compatible
 about-debugging-runtime-service-workers-not-compatible = ਤੁਹਾਡੀ ਬਰਾਊਜ਼ਰ ਸੰਰਚਨਾ ਸਰਵਿਸ ਵਰਕਰਾਂ ਨਾਲ ਅਨੁਕੂਲ ਨਹੀਂ ਹੈ। <a>ਹੋਰ ਜਾਣੋ</a>
+# This string is displayed in the runtime page if the remote browser version is too old.
+# "Troubleshooting" link points to https://firefox-source-docs.mozilla.org/devtools-user/about_colon_debugging/
+# { $runtimeVersion } is the version of the remote browser (for instance "67.0a1")
+# { $minVersion } is the minimum version that is compatible with the current Firefox instance (same format)
+about-debugging-browser-version-too-old = ਕਨੈਕਟ ਕੀਤਾ ਬਰਾਊਜ਼ਰ ਇੱਕ ਪੁਰਾਣਾ ਵਰਜ਼ਨ ({ $runtimeVersion }) ਹੈ। ਘੱਟੋ-ਘੱਟ ਸਹਿਯੋਗੀ ਵਰਜ਼ਨ ({ $minVersion }) ਹੈ। ਇਹ ਗ਼ੈਰ-ਸਹਾਇਕ ਸੈਟਅੱਪ ਹੈ ਅਤੇ DevTools ਅਸਫ਼ਲ ਹੋ ਸਕਦੇ ਹਨ। ਕਨੈਕਟ ਕੀਤੇ ਬਰਾਊਜ਼ਰ ਨੂੰ ਅੱਪਡੇਟ ਕਰੋ। <a>ਸਮੱਸਿਆ ਨੂੰ ਹੱਲ਼ ਕਰੋ</a>
+# Dedicated message for a backward compatibility issue that occurs when connecting:
+# from Fx 70+ to the old Firefox for Android (aka Fennec) which uses Fx 68.
+about-debugging-browser-version-too-old-fennec = Firefox ਦਾ ਇਹ ਵਰਜ਼ਨ Android ਲਈ Firefox (68) ਨੂੰ ਡੀਬੱਗ ਨਹੀਂ ਕਰ ਸਕਦਾ ਹੈ। ਅਸੀਂ ਟੈਸਟ ਕਰਨ ਲਈ ਤੁਹਾਡੇ ਫ਼ੋਨ ਉੱਤੇ Android ਲਈ Firefox ਇੰਸਟਾਲ ਕਰਨ ਦੀ ਸਿਫ਼ਾਰਸ਼ ਕਰਦੇ ਹਾਂ। <a>hੋਰ ਵੇਰਵੇ</a>
 # Displayed for runtime info in runtime pages.
 # { $name } is brand name such as "Firefox Nightly"
 # { $version } is version such as "64.0a1"

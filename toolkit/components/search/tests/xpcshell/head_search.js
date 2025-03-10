@@ -4,6 +4,8 @@
 ChromeUtils.defineESModuleGetters(this, {
   AddonTestUtils: "resource://testing-common/AddonTestUtils.sys.mjs",
   clearTimeout: "resource://gre/modules/Timer.sys.mjs",
+  EnterprisePolicyTesting:
+    "resource://testing-common/EnterprisePolicyTesting.sys.mjs",
   ExtensionTestUtils:
     "resource://testing-common/ExtensionXPCShellUtils.sys.mjs",
   FileUtils: "resource://gre/modules/FileUtils.sys.mjs",
@@ -224,24 +226,22 @@ function isSubObjectOf(expectedObj, actualObj, skipProp) {
 }
 
 /**
- * After useHttpServer() is called, this string contains the URL of the "data"
- * directory, including the final slash.
+ * After useHttpServer() is called, this string contains the URL test directory,
+ * excluding the final slash.
  */
-var gDataUrl;
+var gHttpURL;
 
 /**
  * Initializes the HTTP server and ensures that it is terminated when tests end.
  *
- * @param {string} dir
- *   The test sub-directory to use for the engines.
  * @returns {HttpServer}
  *   The HttpServer object in case further customization is needed.
  */
-function useHttpServer(dir = "data") {
+function useHttpServer() {
   let httpServer = new HttpServer();
   httpServer.start(-1);
   httpServer.registerDirectory("/", do_get_cwd());
-  gDataUrl = `http://localhost:${httpServer.identity.primaryPort}/${dir}/`;
+  gHttpURL = `http://localhost:${httpServer.identity.primaryPort}`;
   registerCleanupFunction(async function cleanup_httpServer() {
     await new Promise(resolve => {
       httpServer.stop(resolve);
@@ -279,25 +279,6 @@ function checkCountryResultTelemetry(aExpectedValue) {
 }
 
 /**
- * Provides a basic set of remote settings for use in tests.
- */
-async function setupRemoteSettings() {
-  const settings = await RemoteSettings("hijack-blocklists");
-  sinon.stub(settings, "get").returns([
-    {
-      id: "load-paths",
-      matches: ["[addon]searchignore@mozilla.com"],
-      _status: "synced",
-    },
-    {
-      id: "submission-urls",
-      matches: ["ignore=true"],
-      _status: "synced",
-    },
-  ]);
-}
-
-/**
  * Reads the specified file from the data directory and returns its contents as
  * an Uint8Array.
  *
@@ -307,7 +288,7 @@ async function setupRemoteSettings() {
  *   The contents of the file in an Uint8Array.
  */
 async function getFileDataBuffer(filename) {
-  return IOUtils.read(PathUtils.join(do_get_cwd().path, "data", filename));
+  return IOUtils.read(PathUtils.join(do_get_cwd().path, "icons", filename));
 }
 
 /**
@@ -490,6 +471,41 @@ async function assertGleanDefaultEngine(expected) {
       );
     }
   }
+}
+
+/**
+ * Loads a new enterprise policy, and re-initialise the search service
+ * with the new policy. Also waits for the search service to write the settings
+ * file to disk.
+ *
+ * @param {object} policy
+ *   The enterprise policy to use.
+ */
+async function setupPolicyEngineWithJson(policy) {
+  Services.search.wrappedJSObject.reset();
+
+  await this.EnterprisePolicyTesting.setupPolicyEngineWithJson(policy);
+
+  let settingsWritten = SearchTestUtils.promiseSearchNotification(
+    "write-settings-to-disk-complete"
+  );
+  await Services.search.init();
+  await settingsWritten;
+}
+
+/**
+ * Makes Services.policies.isEnterprise return true by loading an enterprise
+ * policy and re-initialise the search service with the new policy. Also waits
+ * for the search service to write the settings file to disk.
+ */
+async function enableEnterprise() {
+  await setupPolicyEngineWithJson({
+    // Use any policy.
+    policies: {
+      BlockAboutSupport: true,
+    },
+  });
+  Assert.ok(Services.policies.isEnterprise, "isEnterprise");
 }
 
 /**

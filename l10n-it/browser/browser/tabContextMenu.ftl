@@ -23,12 +23,22 @@ duplicate-tab =
 duplicate-tabs =
     .label = Duplica schede
     .accesskey = D
+# The following string is displayed on a menuitem that will close the tabs from the start of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
+# In left-to-right languages this should use "Left" and in right-to-left languages this should use "Right".
 close-tabs-to-the-start =
     .label = Chiudi le schede a sinistra
     .accesskey = s
+close-tabs-to-the-start-vertical =
+    .label = Chiudi le schede sopra
+    .accesskey = s
+# The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Chiudi le schede a destra
     .accesskey = d
+close-tabs-to-the-end-vertical =
+    .label = Chiudi le schede sotto
+    .accesskey = u
 close-other-tabs =
     .label = Chiudi le altre schede
     .accesskey = a
@@ -74,6 +84,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Condividi
     .accesskey = o
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Nuova scheda a destra
+    .accesskey = N
+tab-context-new-tab-open-vertical =
+    .label = Nuova scheda sotto
+    .accesskey = N
+tab-context-new-group =
+    .label = Nuovo gruppo
+    .accesskey = g
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -99,7 +119,6 @@ tab-context-move-tabs =
            *[other] Sposta schede
         }
     .accesskey = t
-
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->
@@ -107,4 +126,3 @@ tab-context-send-tabs-to-device =
            *[other] Invia { $tabCount } schede a dispositivo
         }
     .accesskey = n
-

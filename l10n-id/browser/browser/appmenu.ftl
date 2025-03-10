@@ -108,8 +108,11 @@ appmenu-fxa-sync-and-save-data2 = Sinkronkan dan Simpan Data
 appmenu-fxa-signed-in-label = Masuk
 appmenu-fxa-setup-sync =
     .label = Aktifkan Sinkronisasi…
+appmenu-fxa-setup-sync-new = Nyalakan
 appmenuitem-save-page =
     .label = Simpan Laman dengan Nama…
+appmenuitem-fxa-sync-off-title = Sinkronisasi nonaktif
+appmenuitem-fxa-sync-off-description = Lindungi dan akses markah, sandi, dan berbagai hal lainnya milik Anda di mana saja.
 
 ## What's New panel in App menu.
 
@@ -277,5 +280,21 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Dapatkan peringatan kebocoran data
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Tutupi surel dan telepon asli Anda
+appmenuitem-services-relay-description = Luncurkan dasbor masker surel
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Lindungi aktivitas daring Anda
+appmenu-services-header = Layanan saya
+appmenu-other-protection-header = Coba alat perlindungan lain dari { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-profiles = Profil
+appmenu-other-profiles = Profil lainnya
+appmenu-manage-profiles =
+    .label = Kelola profil
+appmenu-create-profile =
+    .label = Profil baru
+appmenu-edit-profile =
+    .aria-label = Sunting profil
+appmenu-profiles-2 =
+    .label = Profil

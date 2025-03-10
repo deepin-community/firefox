@@ -91,7 +91,7 @@ shopping-settings-label =
     .label = Postavke
 shopping-settings-recommendations-toggle2 =
     .label = Prikaži preporuke i sponzorirani sadržaj
-shopping-settings-recommendations-learn-more3 = { -brand-product-name } ne dijeli vaše osobne podatke, stoga vas ove preporuke neće pratiti na internetu. <a data-l10n-name="review-quality-url">Saznajte više</a>
+shopping-settings-recommendations-learn-more3 = { -brand-product-name } ne dijeli tvoje osobne podatke, stoga te ove preporuke neće pratiti na internetu. <a data-l10n-name="review-quality-url">Saznaj više</a>
 shopping-settings-recommendations-toggle =
     .label = Prikaži oglase u pregledniku recenzija
 shopping-settings-recommendations-learn-more2 = Povremeno ćete vidjeti oglase za relevantne proizvode. Oglašavamo samo proizvode s pouzdanim recenzijama. <a data-l10n-name="review-quality-url">Saznajte više</a>
@@ -170,8 +170,8 @@ ad-by-fakespot = Oglas od { -fakespot-brand-name }
 
 ## Shopping survey strings.
 
-shopping-survey-headline = Pomozite poboljšati { -brand-product-name }
-shopping-survey-question-one = Koliko ste zadovoljni iskustvom s provjerom recenzija za { -brand-product-name }?
+shopping-survey-headline = Pomogni poboljšati { -brand-product-name }
+shopping-survey-question-one = Koliko si zadovoljan/na s provjerom recenzija u { -brand-product-name }u?
 shopping-survey-q1-radio-1-label = Vrlo zadovoljan
 shopping-survey-q1-radio-2-label = Zadovoljan
 shopping-survey-q1-radio-3-label = Neutralan
@@ -185,7 +185,19 @@ shopping-survey-next-button-label = Dalje
 shopping-survey-submit-button-label = Pošalji
 shopping-survey-terms-link = Uvjeti korištenja
 shopping-survey-thanks =
-    .heading = Hvala Vam na Vašim povratnim informacijama!
+    .heading = Hvala ti na povratnim informacijama!
+
+## Shopping opted-out survey strings
+## Opt-out survey options are displayed as checkboxes and the user can select one or many.
+
+shopping-survey-opted-out-multiselect-label = Reci nam zašto si isključio/la provjeru recenzija. Ako trebaš, odaberi više odgovora.
+shopping-survey-thanks-title = Hvala ti na povratnim informacijama!
+shopping-survey-opted-out-hard-to-understand = Teško je razumjeti
+shopping-survey-opted-out-too-slow = Presporo je
+shopping-survey-opted-out-not-accurate = Nije točno
+shopping-survey-opted-out-not-helpful = Ne pomaže mi
+shopping-survey-opted-out-check-myself = Radije bih sam/a provjerio/la recenzije
+shopping-survey-opted-out-other = Drugo
 
 ## Shopping Feature Callout strings.
 ## "price tag" refers to the price tag icon displayed in the address bar to
@@ -200,7 +212,7 @@ shopping-callout-closed-not-opted-in-revised-title = Jednim klikom do pouzdanih 
 shopping-callout-closed-not-opted-in-revised-subtitle = Jednostavno klikni ikonu oznake cijene u adresnoj traci da bi se vratio/la na provjeru recenzija.
 shopping-callout-closed-not-opted-in-revised-button = Razumijem
 shopping-callout-not-opted-in-reminder-title = Kupuj s povjerenjem
-shopping-callout-not-opted-in-reminder-subtitle = Niste sigurni jesu li recenzije proizvoda stvarne ili lažne? Provjera recenzija tvrtke { -brand-product-name } može pomoći.
+shopping-callout-not-opted-in-reminder-subtitle = Nisi siguran/na jesu li recenzije proizvoda stvarne ili lažne? { -brand-product-name } provjera recenzija može pomoći.
 shopping-callout-not-opted-in-reminder-open-button = Otvorite provjeru recenzija
 shopping-callout-not-opted-in-reminder-close-button = Odbaci
 shopping-callout-not-opted-in-reminder-ignore-checkbox = Nemoj ponovo prikazati
@@ -210,7 +222,7 @@ shopping-callout-disabled-auto-open-title = Preglednik recenzija je sada standar
 shopping-callout-disabled-auto-open-subtitle = Klikni ikonu oznake cijene u adresnoj traci kad god želiš vidjeti je li možeš li vjerovati recenzijama proizvoda.
 shopping-callout-disabled-auto-open-button = Razumijem
 shopping-callout-opted-out-title = Provjera recenzija je isključena
-shopping-callout-opted-out-subtitle = Da biste ju uključili, kliknite ikonu oznake cijene u adresnoj traci i slijedite upute.
+shopping-callout-opted-out-subtitle = Za ponovno uključivanje, klikni ikonu oznake cijene u adresnoj traci i slijedi upute.
 shopping-callout-opted-out-button = Razumijem
 
 ## Onboarding message strings.

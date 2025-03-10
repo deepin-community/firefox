@@ -10,6 +10,7 @@
 #include "mozilla/Atomics.h"
 
 #include "wasm/WasmBinaryTypes.h"
+#include "wasm/WasmHeuristics.h"
 #include "wasm/WasmInstanceData.h"  // various of *InstanceData
 #include "wasm/WasmModuleTypes.h"
 #include "wasm/WasmProcess.h"  // IsHugeMemoryEnabled
@@ -57,6 +58,9 @@ struct CodeMetadata : public ShareableBase<CodeMetadata> {
   // This may be empty for internally constructed modules which don't care
   // about this information.
   BuiltinModuleFuncIdVector knownFuncImports;
+  // Treat imported wasm functions as if they were JS functions. This is used
+  // when compiling the module for new WebAssembly.Function.
+  bool funcImportsAreJS;
   // The number of imported globals in the module.
   uint32_t numGlobalImports;
 
@@ -113,12 +117,16 @@ struct CodeMetadata : public ShareableBase<CodeMetadata> {
   CustomSectionRangeVector customSectionRanges;
 
   // Bytecode range for the code section.
-  MaybeSectionRange codeSection;
+  MaybeBytecodeRange codeSectionRange;
+  // The bytes for the code section. Only available if we're using lazy
+  // tiering, and after we've decoded the whole module. This means
+  // it is not available while doing a 'tier-1' or 'once' compilation.
+  SharedBytes codeSectionBytecode;
 
   // The ranges of every function defined in this module. This is only
   // accessible after we've decoded the code section. This means it is not
   // available while doing a 'tier-1' or 'once' compilation.
-  FuncDefRangeVector funcDefRanges;
+  BytecodeRangeVector funcDefRanges;
 
   // The feature usage for every function defined in this module. This is only
   // accessible after we've decoded the code section. This means it is not
@@ -131,11 +139,10 @@ struct CodeMetadata : public ShareableBase<CodeMetadata> {
   // compilation.
   CallRefMetricsRangeVector funcDefCallRefs;
 
-  // The bytecode for this module. Only available for debuggable modules, or if
-  // doing lazy tiering. This is only accessible after we've decoded the whole
-  // module. This means it is not available while doing a 'tier-1' or 'once'
-  // compilation.
-  SharedBytes bytecode;
+  // The full bytecode for this module. Only available for debuggable modules.
+  // This is only accessible after we've decoded the whole module. This means
+  // it is not available while doing a 'tier-1' or 'once' compilation.
+  SharedBytes debugBytecode;
 
   // An array of hints to use when compiling a call_ref. This is only
   // accessible after we've decoded the code section. This means it is not
@@ -150,6 +157,49 @@ struct CodeMetadata : public ShareableBase<CodeMetadata> {
   // A SHA-1 hash of the module bytecode for use in display urls. Only
   // available if we're debugging.
   ModuleHash debugHash;
+
+  // Statistics collection for lazy tiering and inlining.
+  struct ProtectedOptimizationStats {
+    // ---- Stats for the complete tier ----
+    // number of funcs in the module
+    size_t completeNumFuncs = 0;
+    // total bytecode size for the module, excluding the body length fields
+    size_t completeBCSize = 0;
+    // ---- Stats for the partial tier ----
+    // number of funcs tiered up (that have completed tier-up)
+    size_t partialNumFuncs = 0;
+    // total bytecode size of tiered up funcs, excluding the body length fields
+    size_t partialBCSize = 0;
+    // number of direct-call / call-ref sites inlined
+    size_t partialNumFuncsInlinedDirect = 0;
+    size_t partialNumFuncsInlinedCallRef = 0;
+    // total extra bytecode size from direct-call / call-ref inlining
+    size_t partialBCInlinedSizeDirect = 0;
+    size_t partialBCInlinedSizeCallRef = 0;
+    // number of funcs for which inlining stopped due to budget overrun
+    size_t partialInlineBudgetOverruns = 0;
+    // total mapped addr space for p-tier code (a multiple of the page size)
+    size_t partialCodeBytesMapped = 0;
+    // total used space for p-tier code (will be less than the above)
+    size_t partialCodeBytesUsed = 0;
+    // The remaining inlining budget (in bytecode bytes) for the module as a
+    // whole.  Must be signed.  It will be negative if we have overrun the
+    // budget.
+    int64_t inliningBudget = 0;
+    WASM_CHECK_CACHEABLE_POD(completeNumFuncs, completeBCSize, partialNumFuncs,
+                             partialBCSize, partialNumFuncsInlinedDirect,
+                             partialNumFuncsInlinedCallRef,
+                             partialBCInlinedSizeDirect,
+                             partialBCInlinedSizeCallRef,
+                             partialInlineBudgetOverruns,
+                             partialCodeBytesMapped, partialCodeBytesUsed,
+                             inliningBudget);
+  };
+  using ReadGuard = RWExclusiveData<ProtectedOptimizationStats>::ReadGuard;
+  using WriteGuard = RWExclusiveData<ProtectedOptimizationStats>::WriteGuard;
+
+  // Statistics.  These are not thread-safe and require a lock for access.
+  RWExclusiveData<ProtectedOptimizationStats> stats;
 
   // ==== Instance layout fields
   //
@@ -185,10 +235,12 @@ struct CodeMetadata : public ShareableBase<CodeMetadata> {
       : kind(kind),
         compileArgs(compileArgs),
         numFuncImports(0),
+        funcImportsAreJS(false),
         numGlobalImports(0),
         callRefHints(nullptr),
         debugEnabled(false),
         debugHash(),
+        stats(mutexid::WasmCodeMetaStats),
         funcDefsOffsetStart(UINT32_MAX),
         funcImportsOffsetStart(UINT32_MAX),
         funcExportsOffsetStart(UINT32_MAX),
@@ -204,6 +256,9 @@ struct CodeMetadata : public ShareableBase<CodeMetadata> {
     types = js_new<TypeContext>();
     return types;
   }
+
+  void dumpStats() const;
+  ~CodeMetadata() { dumpStats(); }
 
   // Generates any new metadata necessary to compile this module. This must be
   // called after the 'module environment' (everything before the code section)
@@ -226,7 +281,7 @@ struct CodeMetadata : public ShareableBase<CodeMetadata> {
 
   bool hugeMemoryEnabled(uint32_t memoryIndex) const {
     return !isAsmJS() && memoryIndex < memories.length() &&
-           IsHugeMemoryEnabled(memories[memoryIndex].indexType());
+           IsHugeMemoryEnabled(memories[memoryIndex].addressType());
   }
   bool usesSharedMemory(uint32_t memoryIndex) const {
     return memoryIndex < memories.length() && memories[memoryIndex].isShared();
@@ -258,18 +313,26 @@ struct CodeMetadata : public ShareableBase<CodeMetadata> {
       return 0;
     }
     uint32_t funcDefIndex = funcIndex - numFuncImports;
-    return funcDefRanges[funcDefIndex].bytecodeOffset;
+    return funcDefRanges[funcDefIndex].start;
   }
-  const FuncDefRange& funcDefRange(uint32_t funcIndex) const {
+  const BytecodeRange& funcDefRange(uint32_t funcIndex) const {
     MOZ_ASSERT(funcIndex >= numFuncImports);
     uint32_t funcDefIndex = funcIndex - numFuncImports;
     return funcDefRanges[funcDefIndex];
+  }
+  BytecodeSpan funcDefBody(uint32_t funcIndex) const {
+    return funcDefRange(funcIndex)
+        .relativeTo(*codeSectionRange)
+        .toSpan(*codeSectionBytecode);
   }
   FeatureUsage funcDefFeatureUsage(uint32_t funcIndex) const {
     MOZ_ASSERT(funcIndex >= numFuncImports);
     uint32_t funcDefIndex = funcIndex - numFuncImports;
     return funcDefFeatureUsages[funcDefIndex];
   }
+  // Given a bytecode offset inside a function definition, find the function
+  // index.
+  uint32_t findFuncIndex(uint32_t bytecodeOffset) const;
 
   BuiltinModuleFuncId knownFuncImport(uint32_t funcIndex) const {
     MOZ_ASSERT(funcIndex < numFuncImports);
@@ -293,12 +356,19 @@ struct CodeMetadata : public ShareableBase<CodeMetadata> {
 
   CallRefHint getCallRefHint(uint32_t callRefIndex) const {
     if (!callRefHints) {
-      return CallRefHint::unknown();
+      return CallRefHint();
     }
     return CallRefHint::fromRepr(callRefHints[callRefIndex]);
   }
   void setCallRefHint(uint32_t callRefIndex, CallRefHint hint) const {
     callRefHints[callRefIndex] = hint.toRepr();
+  }
+
+  size_t codeSectionSize() const {
+    if (codeSectionRange) {
+      return codeSectionRange->size;
+    }
+    return 0;
   }
 
   // This gets names for wasm only.
@@ -366,6 +436,8 @@ struct CodeMetadata : public ShareableBase<CodeMetadata> {
 
 using MutableCodeMetadata = RefPtr<CodeMetadata>;
 using SharedCodeMetadata = RefPtr<const CodeMetadata>;
+
+WASM_DECLARE_CACHEABLE_POD(CodeMetadata::ProtectedOptimizationStats);
 
 // wasm::ModuleMetadata contains metadata whose lifetime ends at the same time
 // that the lifetime of wasm::Module ends.  In practice that means metadata

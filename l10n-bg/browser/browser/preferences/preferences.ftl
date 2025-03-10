@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Изпраща на сайтовете сигнал "Не проследявай" - указание, че не желаете да бъдете проследявани.
+do-not-track-removal = Вече не поддържаме сигнала „Без проследяване“.
 do-not-track-description2 =
     .label = Изпращане на сайтовете заявка „Без проследяване“.
     .accesskey = д
@@ -31,7 +32,7 @@ settings-page-title = Настройки
 search-input-box2 =
     .style = width: 15.4em
     .placeholder = Търсене в настройките
-managed-notice = Настройките на вашия браузър се управляват от вашата организация.
+managed-notice = Вашият браузър се управлява от вашата организация.
 managed-notice-info-icon =
     .alt = Информация
 category-list =
@@ -123,10 +124,10 @@ search-results-help-link = Имате нужда от помощ? Посетет
 
 startup-header = Стартиране
 always-check-default =
-    .label = Проверяване дали { -brand-short-name } е стандартният четец
-    .accesskey = ч
-is-default = { -brand-short-name } е вашият стандартен четец
-is-not-default = { -brand-short-name } не е вашият стандартен четец
+    .label = Винаги да се проверява дали { -brand-short-name } е браузър по подразбиране
+    .accesskey = В
+is-default = { -brand-short-name } е стандартния за системата четец
+is-not-default = { -brand-short-name } не е стандартния за системата четец
 set-as-my-default-browser =
     .label = Задаване като стандартен…
     .accesskey = с
@@ -137,11 +138,12 @@ windows-launch-on-login =
     .label = Автоматично отваряне на { -brand-short-name } при стартиране на компютъра
     .accesskey = А
 windows-launch-on-login-disabled = Тази настройка е изключена в Windows. За да я промените, посетете <a data-l10n-name="startup-link">Приложения > Стартиране</a> в Настройки на Windows.
+windows-launch-on-login-profile-disabled = Включете настройката като отметнете „{ profile-manager-use-selected.label }“ в прозореца „Избор на потребителски профил“.
 startup-restore-warn-on-quit =
     .label = Предупреждаване при затваряне на четеца
 disable-extension =
     .label = Изключване на разширението
-preferences-data-migration-header = Внасяне на данни от друг четец
+preferences-data-migration-header = Внасяне на данни от браузър
 preferences-data-migration-description = Внасяне на отметки, пароли, история и данни за автоматично попълване във { -brand-short-name }.
 preferences-data-migration-button =
     .label = Внасяне на данни
@@ -153,6 +155,17 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Отваряне на препратките в раздели вместо в нови прозорци
     .accesskey = р
+ask-on-close-multiple-tabs =
+    .label = Потвърждаване при затваряне на няколко раздела
+    .accesskey = з
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = Потвърждаване при изход с { $quitKey }
+    .accesskey = и
 confirm-on-close-multiple-tabs =
     .label = Потвърждаване при затваряне на няколко раздела
     .accesskey = д
@@ -308,12 +321,12 @@ download-choose-folder =
     .label =
         { PLATFORM() ->
             [macos] Избиране…
-           *[other] Разглеждане…
+           *[other] Промяна…
         }
     .accesskey =
         { PLATFORM() ->
             [macos] И
-           *[other] Р
+           *[other] П
         }
 download-always-ask-where =
     .label = Винаги да се пита къде да бъдат запазвани файловете
@@ -568,8 +581,7 @@ home-prefs-shortcuts-description = Страници за преглед по-к�
 home-prefs-shortcuts-by-option-sponsored =
     .label = Спонсорирани препратки
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Препоръчано от { $provider }
@@ -640,6 +652,10 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Показване на предложения при търсене в резултатите от адресната лента
     .accesskey = р
+# With this option enabled, on the search results page
+# the URL will be replaced by the search terms in the address bar.
+search-show-search-term-option-2 =
+    .label = Показване на думите на търсенето в адресната лента на страниците с резултати
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -783,6 +799,9 @@ sync-currently-syncing-creditcards = Банкови карти
 sync-currently-syncing-payment-methods = Начини на плащане
 sync-currently-syncing-addons = Добавки
 sync-currently-syncing-settings = Настройки
+sync-manage-options =
+    .label = Управление на синхронизиране…
+    .accesskey = с
 sync-change-options =
     .label = Променяне…
     .accesskey = П
@@ -835,6 +854,13 @@ sync-engine-settings =
     .label = Настройки
     .tooltiptext = Променени настройки
     .accesskey = с
+sync-choose-what-to-sync-dialog4 =
+    .title = Управлявайте какво се синхронизира на всички свързани устройства
+    .style = min-width: 36em;
+    .buttonlabelaccept = Запазване
+    .buttonaccesskeyaccept = з
+    .buttonlabelextra2 = Изключване…
+    .buttonaccesskeyextra2 = и
 
 ## The device name controls.
 
@@ -862,7 +888,7 @@ sync-verification-not-sent-body = Потвърждаващото съобщен�
 
 ## Privacy Section
 
-privacy-header = Поверителност на четеца
+privacy-header = Поверителност на браузъра
 
 ## Privacy Section - Logins and Passwords
 
@@ -898,9 +924,9 @@ forms-breach-alerts =
     .accesskey = и
 forms-breach-alerts-learn-more-link = Научете повече
 preferences-relay-integration-checkbox =
-    .label = Предложения за маскирани имейли от { -relay-brand-name }, с цел защита на вашия имейл адрес
+    .label = Предложения за маскирани имейли от { -relay-brand-name }, с цел защита адреса на ел. поща
 preferences-relay-integration-checkbox2 =
-    .label = Предложения за маскирани имейли от { -relay-brand-name }, с цел защита на вашия имейл адрес
+    .label = Предложения за маскирани имейли от { -relay-brand-name }, с цел защита адреса на ел. поща
     .accesskey = д
 relay-integration-learn-more-link = Научете повече
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
@@ -937,7 +963,7 @@ forms-primary-pw-change =
 # "Master Password" in your language. If you're editing the FTL file directly,
 # use { "" } as the value.
 forms-primary-pw-former-name = { "" }
-forms-primary-pw-fips-title = В момента сте в режим на FIPS. FIPS изисква главна парола.
+forms-primary-pw-fips-title = В момента сте в режим на FIPS. FIPS изисква непразна главна парола.
 forms-master-pw-fips-desc = Грешка при промяна на паролата
 forms-windows-sso =
     .label = Позволява еднократно вписване от Windows за профили в Microsoft, за работа и за училище
@@ -1031,7 +1057,7 @@ sitedata-total-size-calculating = Изчисляване на размера н�
 sitedata-total-size = Складът, бисквитките и данните от страници в момента заемат { $value } { $unit } дисково пространство.
 sitedata-learn-more = Научете повече
 sitedata-delete-on-close =
-    .label = Изтриване на бисквитки и данни на страници при затваряне на { -brand-short-name }
+    .label = Изтриване на бисквитки и данни на страници при изход от { -brand-short-name }
     .accesskey = д
 sitedata-delete-on-close-private-browsing = В постоянен режим на поверително разглеждане бисквитките и данните на страници винаги ще бъдат изчиствани при затваряне на { -brand-short-name }.
 sitedata-delete-on-close-private-browsing2 = Въз основа на вашите настройки за пазене на история { -brand-short-name } изтрива бисквитки и данни от сайтове от вашата сесията при затваряне на браузъра.

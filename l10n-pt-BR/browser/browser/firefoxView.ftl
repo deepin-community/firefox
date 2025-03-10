@@ -32,6 +32,9 @@ firefoxview-tabpickup-progress-label = { $percentValue }% concluído
 firefoxview-tabpickup-step-signin-header = Passe facilmente de um dispositivo para outro
 firefoxview-tabpickup-step-signin-description = Para abrir aqui as abas do seu celular, primeiro entre na sua conta ou crie uma.
 firefoxview-tabpickup-step-signin-primarybutton = Avançar
+firefoxview-syncedtabs-signin-header-2 = O { -brand-product-name } do seu jeito, em todos os seus dispositivos
+firefoxview-syncedtabs-signin-description-2 = Para ver abas abertas em seu celular e outros dispositivos, entre na sua conta ou crie uma. Com uma conta, você também pode sincronizar senhas, histórico e muito mais.
+firefoxview-syncedtabs-signin-primarybutton-2 = Entrar
 firefoxview-syncedtabs-signin-header = Recupere abas de qualquer dispositivo
 firefoxview-syncedtabs-signin-description = Para acessar suas abas de onde quer que use o { -brand-product-name }, entre na sua conta. Se ainda não tiver conta, nós te orientamos no processo de criar uma.
 firefoxview-syncedtabs-signin-primarybutton = Entrar ou criar conta
@@ -39,6 +42,8 @@ firefoxview-tabpickup-adddevice-header = Sincronize o { -brand-product-name } em
 firefoxview-tabpickup-adddevice-description = Instale o { -brand-product-name } para dispositivos móveis e entre na sua conta.
 firefoxview-tabpickup-adddevice-learn-how = Saiba como
 firefoxview-tabpickup-adddevice-primarybutton = Instale o { -brand-product-name } para dispositivos móveis
+firefoxview-syncedtabs-adddevice-header-2 = Recupere suas abas de qualquer dispositivo
+firefoxview-syncedtabs-adddevice-description-2 = Entre na sua conta no { -brand-product-name } no seu celular ou outro computador para ver abas aqui. Saiba como <a data-l10n-name="url">conectar dispositivos adicionais</a>.
 firefoxview-syncedtabs-adddevice-header = Entre na sua conta no { -brand-product-name } em seus outros dispositivos
 firefoxview-syncedtabs-adddevice-description = Para acessar suas abas de onde quer que use o { -brand-product-name }, entre na sua conta em todos os seus dispositivos. Saiba como <a data-l10n-name="url">conectar outros dispositivos</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = Experimente o { -brand-product-name } para celular
@@ -165,6 +170,9 @@ firefoxview-search-text-box-history =
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Pesquisar em abas fechadas recentemente
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-tabs =
+    .placeholder = Pesquisar nas abas
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
 firefoxview-search-text-box-syncedtabs =
     .placeholder = Pesquisar em abas sincronizadas
 # Placeholder for the input field to search in open tabs ("search" is a verb).
@@ -228,6 +236,8 @@ firefoxview-choose-browser-button = Escolher navegador
 firefoxview-dont-remember-history-empty-header = Nada a mostrar
 firefoxview-dont-remember-history-empty-description = Proteger sua privacidade está no cerne do que fazemos. É por isso que você pode controlar a atividade que o { -brand-short-name } memoriza.
 firefoxview-dont-remember-history-empty-description-two = Com base em suas configurações atuais, o { -brand-short-name } não memoriza sua atividade enquanto você navega. Para mudar isso, <a data-l10n-name="history-settings-url-two">altere as configurações de histórico para memorizar seu histórico</a>.
+firefoxview-dont-remember-history-empty-header-2 = Você tem controle sobre o que o { -brand-short-name } memoriza.
+firefoxview-dont-remember-history-empty-description-one = No momento, o { -brand-short-name } não memoriza sua atividade de navegação. Para mudar isto, <a data-l10n-name="history-settings-url-two">altere as configurações de histórico</a>.
 
 ##
 

@@ -220,6 +220,9 @@ shortcuts-no-addons = არცერთი გაფართოება ა�
 shortcuts-no-commands = სწრაფი ღილაკები არ აქვს შემდეგ გაფართოებებს:
 shortcuts-input =
     .placeholder = სწრაფი ღილაკის აკრეფა
+# Accessible name for a trashcan icon button that removes an existent shortcut
+shortcuts-remove-button =
+    .aria-label = მალსახმობის მოცილება
 shortcuts-browserAction2 = ხელსაწყოთა ზოლზე ღილაკის ამოქმედება
 shortcuts-pageAction = გვერდზე მოქმედების ჩართვა
 shortcuts-sidebarAction = გვერდითა ზოლის გამოჩენა/დამალვა
@@ -258,10 +261,10 @@ header-back-button =
 # Explanatory introduction to the list of recommended add-ons. The action word
 # ("recommends") in the final sentence is a link to external documentation.
 discopane-intro =
-    გაფართოებები ბრაუზერისთვის ერთგვარი პროგრამებია, რომლებიც საშუალებას გაძლევთ
-    დაიცვათ პაროლები, ჩამოტვირთოთ ვიდეოები, მოიძიოთ საყიდლები, შეზღუდოთ
-    მომაბეზრებელი რეკლამები, შეცვალოთ იერსახე და კიდევ უამრავი რამ.
-    ეს პატარა პროგრამული ნაწილები ხშირ შემთხვევაში შექმნილია გარეშე პირების მიერ.
+    გაფართოებები ერთგვარი პროგრამებია ბრაუზერისთვის, მათი მეშვეობით შესაძლებელია
+    პაროლების დაცვა, ვიდეოების ჩამოტვირთვა, საყიდლების მოძიება,
+    მომაბეზრებელი რეკლამების შეზღუდვა, იერსახის შეცვლა და კიდევ უამრავი რამ.
+    ეს პატარა პროგრამული ნაწილები უმეტესად შექმნილია გარეშე პირების მიერ.
     აქ მოცემულია ისინი, რომელთაც { -brand-product-name } <a data-l10n-name="learn-more-trigger">გირჩევთ</a>
     მეტი უსაფრთხოებისთვის, წარმადობისა და შესაძლებლობებისთვის.
 # Notice to make user aware that the recommendations are personalized.
@@ -294,6 +297,12 @@ find-more-themes = სხვა თემების მოძიება
 # used for screen readers.
 addon-options-button =
     .aria-label = დამატებითი პარამეტრები
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 =
+    გაფართოებებითა და გაფორმებებით შეგიძლიათ მეტად მოირგოთ { -brand-product-name }. საშუალებას გაძლევთ, გააუმჯობესოთ პირადულობა,
+    შედეგიანობა, ფაილებით სარგებლობა, შეამკოთ { -brand-product-name } სურვილისამებრ და გააკეთოთ უამრავი რამ. ეს მცირე პროგრამები უმეტესად გარეშე პირების შექმნილია. იხილეთ მათგან საუკეთესო, რომელთაც  <a data-l10n-name="learn-more-trigger">გთავაზობთ</a> { -brand-product-name }
+    მათი გამორჩეულობის გამო უსაფრთხოების, წარმადობისა და შესაძლებლობების კუთხით.
 
 ## Add-on actions
 
@@ -380,6 +389,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = დაშვებულია პირად ფანჯრებში
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = დაშვებულია პირად ფანჯრებში
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -419,6 +432,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = მოცემული გაფართოება შემოწმებულია და აკმაყოფილებს უსაფრთხოებისა და წარმადობის სათანადო მოთხოვნებს.
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } მხოლოდ იმ გაფართოებებს გირჩევთ, რომლებიც აკმაყოფილებს უსაფრთხოებისა და წარმადობის მაღალ მოთხოვნებს.
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Mozilla-ს მიერ შექმნილი ოფიციალური გაფართოება. სრულად აკმაყოფილებს უსაფრთხოებისა და წარმადობის მოთხოვნებს.
+addon-badge-verified3 =
+    .title = მოცემული გაფართოება შემოწმებულია და აკმაყოფილებს უსაფრთხოებისა და წარმადობის სათანადო მოთხოვნებს.
 
 ##
 
@@ -426,6 +447,7 @@ available-updates-heading = ხელმისწვდომი განახ
 recent-updates-heading = ბოლო განახლებები
 release-notes-loading = იტვირთება...
 release-notes-error = სამწუხაროდ, ვერსიის მონაცემების ჩვენებისას მოხდა შეცდომა.
+addon-permissions-empty2 = გაფართოება არ ითხოვს რამე ნებართვას.
 addon-permissions-empty = გაფართოება არ ითხოვს რამე ნებართვას
 addon-permissions-required = მოთხოვნილი ნებართვები ძირითადი შესაძლებლობებისთვის:
 addon-permissions-optional = მოთხოვნილი ნებართვები დამატებითი შესაძლებლობებისთვის:
@@ -475,10 +497,24 @@ details-notification-unsigned-and-disabled-link = ვრცლად
 details-notification-unsigned = ვერ დასტურდება, რომ { -brand-short-name } შეძლებს აამუშაოს { $name }. სიფრთხილით გამოიყენეთ.
 details-notification-unsigned2 =
     .message = ვერ დასტურდება, რომ { -brand-short-name } შეძლებს აამუშაოს { $name }. სიფრთხილით გამოიყენეთ.
+details-notification-hard-blocked-extension =
+    .message = გაფართოება შეიზღუდა Mozilla-ს დებულებების დარღვევის გამო და ამორთულია.
+details-notification-hard-blocked-other =
+    .message = დამატება შეიზღუდა Mozilla-ს დებულებების დარღვევის გამო და ამორთულია.
 details-notification-unsigned-link = ვრცლად
 details-notification-blocked = { $name } გამორთულია უსაფრთხოების მიზნით ან არამდგრადობის გამო.
 details-notification-blocked2 =
     .message = { $name } გამორთულია უსაფრთხოების მიზნით ან არამდგრადობის გამო.
+details-notification-blocked-link2 = ვრცლად
+details-notification-soft-blocked-extension-disabled =
+    .message = გაფართოება შეიზღუდა Mozilla-ს დებულებების დარღვევის გამო და ამორთულია. შეგიძლიათ ჩართოთ, მაგრამ სახიფათოა.
+details-notification-soft-blocked-extension-enabled =
+    .message = გაფართოება არღვევს Mozilla-ს დებულებებს. მისი გამოყენება შეიძლება სახიფათო იყოს.
+details-notification-soft-blocked-other-disabled =
+    .message = დამატება შეიზღუდა Mozilla-ს დებულებების დარღვევის გამო და ამორთულია. შეგიძლიათ ჩართოთ, მაგრამ სახიფათოა.
+details-notification-soft-blocked-other-enabled =
+    .message = დამატება არღვევს Mozilla-ს დებულებებს. მისი გამოყენება შეიძლება სახიფათო იყოს.
+details-notification-softblocked-link2 = ვრცლად
 details-notification-blocked-link = ვრცლად
 details-notification-softblocked = { $name } მიჩნეულია არამდგრადად და საფრთხის შემცველად.
 details-notification-softblocked2 =

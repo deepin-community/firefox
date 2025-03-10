@@ -153,8 +153,8 @@ fx100-thank-you-hero-text =
 fx100-thank-you-subtitle = Είναι η 100η μας έκδοση! Σας ευχαριστούμε για τη βοήθειά σας για ένα καλύτερο, υγιέστερο διαδίκτυο.
 fx100-thank-you-pin-primary-button-label =
     { PLATFORM() ->
-        [macos] Καρφίτσωμα { -brand-short-name } στο Dock
-       *[other] Καρφίτσωμα { -brand-short-name } στη γραμμή εργασιών
+        [macos] Διατήρηση του { -brand-short-name } στο Dock
+       *[other] Καρφίτσωμα του { -brand-short-name } στη γραμμή εργασιών
     }
 fx100-upgrade-thanks-header = 100 Ευχαριστώ
 # Message shown with a start-browsing button. Emphasis <em> should be for "you"
@@ -189,7 +189,7 @@ mr2022-onboarding-pin-primary-button-label =
        *[other] Καρφίτσωμα του { -brand-short-name } στη γραμμή εργασιών
     }
 # Primary button string used on welcome page for when Firefox is not pinned on MSIX
-mr2022-onboarding-pin-primary-button-label-msix = Καρφίτσωμα { -brand-short-name } στη γραμμή εργασιών και το μενού έναρξης
+mr2022-onboarding-pin-primary-button-label-msix = Καρφίτσωμα του { -brand-short-name } στη γραμμή εργασιών και το μενού έναρξης
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -225,7 +225,9 @@ mr2022-onboarding-set-default-subtitle = Χρησιμοποιήστε ένα π�
 mr2022-onboarding-get-started-primary-subtitle = Η πιο πρόσφατη έκδοσή μας έχει προσαρμοστεί στις ανάγκες σας, κάνοντας πιο εύκολη από ποτέ την περιήγησή σας στο διαδίκτυο. Είναι γεμάτη με λειτουργίες που πιστεύουμε ότι θα λατρέψετε.
 mr2022-onboarding-get-started-primary-button-label = Ρύθμιση σε δευτερόλεπτα
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Αστραπιαία ρύθμιση
 mr2022-onboarding-import-subtitle = Ρυθμίστε το { -brand-short-name } όπως σας αρέσει. Προσθέστε σελιδοδείκτες, κωδικούς πρόσβασης και πολλά άλλα από το παλιό σας πρόγραμμα περιήγησης.
@@ -356,6 +358,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Όταν κάνετε
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = Το { -brand-short-name } στο πλευρό σας
 onboarding-gratitude-security-and-privacy-subtitle = Σας ευχαριστούμε που χρησιμοποιείτε το { -brand-short-name }, που υποστηρίζεται από το Mozilla Foundation. Με την υποστήριξή σας, εργαζόμαστε για να κάνουμε το διαδίκτυο ασφαλέστερο και πιο προσβάσιμο για όλους.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Συγχρονισμός δεδομένων μεταξύ συσκευών
+onboarding-sign-up-description = Δημιουργήστε έναν λογαριασμό και όλες οι αποθηκευμένες πληροφορίες σας — κωδικοί πρόσβασης, σελιδοδείκτες και πολλά άλλα — θα αποθηκευτούν με ασφάλεια και θα είναι διαθέσιμες όταν κάνετε σύνδεση σε οποιαδήποτε συσκευή.
+onboarding-sign-up-button = Εγγραφή ή σύνδεση
+onboarding-sign-up-secondary-button = Έναρξη περιήγησης
 
 ## New user time and familiarity survey strings
 
@@ -375,3 +382,90 @@ onboarding-new-user-survey-familiarity-based-option-1 = Είμαι αρχάρι�
 onboarding-new-user-survey-familiarity-based-option-2 = Το έχω χρησιμοποιήσει λίγο
 onboarding-new-user-survey-familiarity-based-option-3 = Είμαι πολύ εξοικειωμένος με αυτό
 onboarding-new-user-survey-familiarity-based-option-4 = Το χρησιμοποιούσα στο παρελθόν, αλλά έχει περάσει καιρός
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Πείτε μας πού θα θέλετε τις καρτέλες σας
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Αλλάξτε την επιλογή ανά πάσα στιγμή από τις ρυθμίσεις της πλαϊνής γραμμής.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Οι καρτέλες σας, με τον δικό σας τρόπο
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Έχετε πολλές ανοικτές καρτέλες; Δοκιμάστε να τις τοποθετήσετε στο πλάι για μια πιο απλοποιημένη προβολή. Ή διατηρήστε τον κλασικό τρόπο εμφάνισης με τις καρτέλες στο πάνω μέρος. Κάντε εναλλαγή ανά πάσα στιγμή.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Επιλέξτε τη διάταξη καρτελών σας
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Για μια πιο απλοποιημένη προβολή που μπορεί να σας βοηθήσει να παραμείνετε συγκεντρωμένοι, δοκιμάστε τις καρτέλες σας στο πλάι. Ή διατηρήστε την κλασική προβολή με τις καρτέλες στο πάνω μέρος. Μπορείτε να κάνετε εναλλαγή ανά πάσα στιγμή.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Καρτέλες στο πλάι
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Καρτέλες στο πάνω μέρος
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Οι κάθετες καρτέλες είναι εδώ
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Παρουσίαση των κάθετων καρτελών
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Δοκιμάστε τις καρτέλες σας στο πλάι. Αλλάξτε την επιλογή ανά πάσα στιγμή από τις ρυθμίσεις της πλαϊνής γραμμής.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Δοκιμάστε τις κάθετες καρτέλες
+onboarding-flair-text = Νέο!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Διατήρηση οριζόντιων καρτελών
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Ένα παράθυρο του προγράμματος περιήγησης που εμφανίζει τις καρτέλες στα πλάγια της οθόνης ως μέρος της πλαϊνής γραμμής του { -brand-shorter-name }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Ένα παράθυρο του προγράμματος περιήγησης που εμφανίζει τις καρτέλες στα πλάγια της οθόνης ως μέρος της πλαϊνής γραμμής του { -brand-shorter-name }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Ένα παράθυρο του προγράμματος περιήγησης που εμφανίζει τις καρτέλες στο πάνω μέρος.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Ένα παράθυρο του προγράμματος περιήγησης που εμφανίζει τις καρτέλες στο πάνω μέρος.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Δοκιμάστε ένα chatbot ΤΝ στην πλαϊνή γραμμή
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Συνοψίστε διαδικτυακό περιεχόμενο, βρείτε νέες ιδέες, δημιουργήστε προσχέδια μηνυμάτων — όλα αυτά κατά την περιήγησή σας. Επιλέξτε ανάμεσα σε πολλαπλούς παρόχους. Αλλάξτε την επιλογή σας ανά πάσα στιγμή. <a data-l10n-name="learn-more">Μάθετε περισσότερα</a>
+onboarding-genai-sidebar-primary-button = Επιλογή chatbot
+onboarding-genai-sidebar-secondary-button = Έναρξη περιήγησης
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Ολοκλήρωση ρύθμισης του { -brand-short-name }
+onboarding-checklist-subtitle = Ολοκληρώστε αυτά τα βήματα για να αξιοποιήσετε στο έπακρο την εμπειρία περιήγησής σας.
+onboarding-checklist-set-default = Ορισμός του { -brand-short-name } ως προεπιλογής
+onboarding-checklist-pin = Καρφίτσωμα του { -brand-short-name } στη γραμμή εργασιών
+onboarding-checklist-import = Εισαγωγή από προηγούμενο πρόγραμμα περιήγησης
+onboarding-checklist-extension = Προσθήκη επέκτασης
+onboarding-checklist-sign-up = Εγγραφή ή σύνδεση σε λογαριασμό
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Δοκιμάστε τις ομάδες καρτελών για λιγότερη ακαταστασία, περισσότερη συγκέντρωση
+tab-groups-onboarding-feature-callout-subtitle = Οργανωθείτε σύροντας μια καρτέλα πάνω σε κάποια άλλη για να δημιουργήσετε την πρώτη σας ομάδα.
+tab-groups-onboarding-create-group-title = Βρείτε τις ανοικτές σας ομάδες στη γραμμή καρτελών ή κάνοντας αναζήτηση στη γραμμή διευθύνσεων.
+tab-groups-onboarding-saved-groups-title = Αν κλείσετε μια ομάδα καρτελών, μπορείτε να την ανοίξετε ξανά εδώ ανά πάσα στιγμή.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title = Βρείτε τις ανοικτές ή τις κλειστές ομάδες καρτελών σας ανά πάσα στιγμή κάνοντας αναζήτηση στη γραμμή διευθύνσεων.
+tab-groups-onboarding-dismiss = OK
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Πείτε «γεια» στα προφίλ του { -brand-product-name }
+multi-profile-spotlight-body = Κάντε εύκολα εναλλαγή μεταξύ περιήγησης για εργασία και για διασκέδαση. Τα προφίλ διαχωρίζουν τα δεδομένα σας, όπως το ιστορικό αναζήτησης και τους κωδικούς πρόσβασης, ώστε να παραμείνετε οργανωμένοι.
+multi-profile-spotlight-cta = Δημιουργία προφίλ
+multi-profile-callout-title = Δημιουργήστε διαφορετικά προφίλ για εργασία και διασκέδαση
+multi-profile-callout-subtitle = Τα προφίλ σάς επιτρέπουν να διαχωρίζετε τις πληροφορίες περιήγησής σας, όπως το ιστορικό αναζήτησης και τους κωδικούς πρόσβασής σας.
+multi-profile-callout-cta = Δημιουργία προφίλ
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Λήψη, συγχρονισμός και φύγαμε!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Σαρώστε τον κωδικό QR για να κάνετε λήψη του { -brand-product-name } για κινητές συσκευές. Μόλις ολοκληρωθεί η εγκατάσταση, επιλέξτε «Συγχρονισμός με κινητή συσκευή» για να αποκτήσετε πρόσβαση σε κωδικούς πρόσβασης, σελιδοδείκτες και πολλά άλλα, εν κινήσει.
+dismiss-button-label = Απόρριψη
+sync-to-mobile-button-label = Συγχρονισμός με κινητή συσκευή
+desktop-to-mobile-qr-code-alt =
+    .aria-label = Κωδικός QR για τη λήψη του { -brand-product-name } για κινητές συσκευές

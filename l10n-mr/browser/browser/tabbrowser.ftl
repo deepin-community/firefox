@@ -37,6 +37,9 @@ tabbrowser-close-tabs-tooltip =
 ##   $tabCount (Number): The number of tabs that will be affected.
 
 
+## Tooltips for tab audio control
+
+
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
@@ -47,6 +50,10 @@ tabbrowser-confirm-close-tabs-button = एकापेक्षा जास्�
 
 ## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
 ## Windows does not show a prompt on quit when using the keyboard shortcut by default.
+
+
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
 
 
 ## Confirmation dialog when opening multiple tabs simultaneously
@@ -96,4 +103,17 @@ tabbrowser-ctrl-tab-list-all-tabs =
     .label = सर्व { $tabCount } टॅब्स्ची सूची
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
+
+
+## Tab Groups
+
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
+
+## Open/saved tab group context menu
 

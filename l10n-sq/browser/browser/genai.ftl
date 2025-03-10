@@ -43,6 +43,10 @@ genai-prompts-quiz =
 genai-prompts-explain =
     .label = Shpjegojeni këtë
     .value = Ju lutemi, shpjegoni konceptet kyçe në këtë përzgjedhje, duke përdorur fjalë të thjeshta, Përdorni gjithashtu shembuj.
+# Prompt purpose: writing tool that helps users with spelling and grammar mistakes and produce a response that identifies errors and rewrites the inputted text correctly
+genai-prompts-proofread =
+    .label = Ndreqe
+    .value = Të lutem, ndreq përzgjedhjen për gabime shkrimi dhe gramatikore. Identifiko çfarëdo gabimesh dhe jep një version të ndrequr të tekstit. Ruaj kuptimin dhe përpikërinë faktike dhe, së pari, prodho një listë ndreqjesh të propozuara, ndjekur nga versioni përfundimtar, i ndrequr i tekstit.
 # This prompt is added to the beginning of selection prompts sent to a chatbot.
 # $tabTitle (string) - title of the webpage
 # $selection (string) - selected text
@@ -55,8 +59,105 @@ genai-menu-ask-generic =
 # $provider (string) - name of the provider
 genai-menu-ask-provider =
     .label = Pyetni { $provider }
+genai-menu-remove-generic =
+    .label = Hiq robot IA fjalosjesh
+# $provider (string) - name of the provider
+genai-menu-remove-provider =
+    .label = Hiqe { $provider }
 genai-input-ask-generic =
     .placeholder = Pyetni robot IA fjalosjesh…
 # $provider (string) - name of the provider
 genai-input-ask-provider =
     .placeholder = Pyetni { $provider }…
+# $selectionLength (number) - selected text length
+# $maxLength (number) - max length of what can be selected
+genai-shortcuts-selected-warning-generic =
+    .heading = Roboti IA i fjalosjes s’do të marrë përzgjedhjen tuaj të plotë
+    .message =
+        { $selectionLength ->
+           *[other] You’ve selected about { $selectionLength } characters. The number of characters we can send to the AI chatbot is about { $maxLength }.
+        }
+# $provider (string) - name of the provider
+# $selectionLength (number) - selected text length
+# $maxLength (number) - max length of what can be selected
+genai-shortcuts-selected-warning =
+    .heading = { $provider } s’do të marrë krejt përzgjedhjen tuaj
+    .message =
+        { $selectionLength ->
+           *[other] You’ve selected about { $selectionLength } characters. The number of characters we can send to { $provider } is about { $maxLength }.
+        }
+genai-shortcuts-hide =
+    .label = Fshihe shkurtoren e robotit të fjalosjeve
+
+## Chatbot header
+
+genai-chatbot-title = Robot IA fjalosjesh
+genai-header-provider-menu =
+    .title = Zgjidhni një robot fjalosjesh
+genai-header-options-button =
+    .title = Hape menunë
+genai-header-close-button =
+    .title = Mbylle
+genai-provider-view-details =
+    .label = Shihni hollësi roboti fjalosjesh
+genai-provider-about-chatbots =
+    .label = Rreth këtyre robotësh fjalosjeje
+genai-options-reload-generic =
+    .label = Ringarko robot IA fjalosjesh
+# $provider (string) - name of the provider
+genai-options-reload-provider =
+    .label = Ringarko { $provider }
+genai-options-show-shortcut =
+    .label = Shfaq shkurtore, kur përzgjidhet tekst
+genai-options-hide-shortcut =
+    .label = Fshihe shkurtoren, kur përzgjidhet tekst
+genai-options-about-chatbot =
+    .label = Rreth robotësh IA fjalosjeje në { -brand-short-name }
+
+## Chatbot onboarding
+
+genai-onboarding-header = Përmblidhni, reflektoni ide të reja, etj, teksa shfletoni
+# "Switch anytime" refers to allowing the user to switch to a different chatbot.
+genai-onboarding-description = Zgjidhni një robot IA fjalosjesh te anështylla { -brand-short-name }. Do t’ju shfaqim hollësi rreth secilit robot fjalosjesh, kur përzgjidhni një. Ndërrojeni kur të doni. <a data-l10n-name="learn-more">Mësoni më tepër</a>
+genai-onboarding-primary = Vazhdo
+genai-onboarding-secondary = Mbylle
+genai-onboarding-claude-tooltip =
+    .title = Anthropic Claude
+genai-onboarding-claude-learn = Mësoni më tepër rreth Claude-it
+genai-onboarding-chatgpt-tooltip =
+    .title = ChatGPT
+genai-onboarding-chatgpt-learn = Mësoni më tepër rreth ChatGPT-së
+genai-onboarding-copilot-learn = Mësoni më tepër rreth Copilot-it
+genai-onboarding-gemini-tooltip =
+    .title = Google Gemini
+genai-onboarding-gemini-learn = Mësoni më tepër rreth Gemini-t
+genai-onboarding-huggingchat-tooltip =
+    .title = HuggingChat
+genai-onboarding-huggingchat-learn = Mësoni më tepër rreth HiggingChat-it
+genai-onboarding-lechat-tooltip =
+    .title = Le Chat Mistral
+genai-onboarding-lechat-learn = Mësoni më tepër rreth Le Chat-it
+genai-onboarding-select-header = Përzgjidhni tekst që të shihni sugjerime
+genai-onboarding-select-description = Kur përzgjidhni tekst, do t’ju sugjerojmë urdhra që mund t’ia dërgoni robotit të fjalosjeve. Mundeni edhe të shkruani urdhrat tuaja.
+genai-onboarding-select-primary = Filloni të bisedoni
+
+## Chatbot onboarding choices
+## These describe features/capabilities of chatbot providers. These are not buttons/actions.
+
+genai-onboarding-claude-generate = Prodho tekst dhe kod
+genai-onboarding-claude-analyze = Analizo dokumente dhe figura
+genai-onboarding-claude-price = Mundësi falas dhe me pagesë; lypset llogari
+genai-onboarding-chatgpt-generate = Prodho tekst, figura dhe kod
+genai-onboarding-chatgpt-analyze = Analizo dokumente dhe figura
+genai-onboarding-chatgpt-price = Mundësi falas dhe me pagesë; për disa vende dhe gjëra lypset llogari
+genai-onboarding-copilot-generate = Prodho tekst, figura dhe kod
+genai-onboarding-copilot-analyze = Analizoni figura
+genai-onboarding-copilot-price = Mundësi falas dhe me pagesë; për disa punë lypset llogari
+genai-onboarding-gemini-generate = Prodho tekst, figura dhe kod
+genai-onboarding-gemini-analyze = Analizo figura (falas) dhe dokumente (me pagesë)
+genai-onboarding-gemini-price = Mundësi falas dhe me pagesë; lypset llogari
+genai-onboarding-huggingchat-generate = Prodho tekst dhe kod
+genai-onboarding-huggingchat-switch = Kaloni nga një grup modelesh të hapta në një tjetër
+genai-onboarding-huggingchat-price-2 = Falas, pas një numri kërkesash lypset llogari
+genai-onboarding-lechat-generate = Prodho tekst dhe kod
+genai-onboarding-lechat-price = Falas; lypset llogari

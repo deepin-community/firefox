@@ -72,6 +72,9 @@ tabbrowser-unblock-tab-audio-tooltip =
            *[other] նվագարկել { $tabCount } ներդիրները
         }
 
+## Tooltips for tab audio control
+
+
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
@@ -80,6 +83,7 @@ tabbrowser-unblock-tab-audio-tooltip =
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-confirm-close-tabs-title = Փակե՞լ { $tabCount } ներդիրները:
 tabbrowser-confirm-close-tabs-button = Փակել ներդիրները
+tabbrowser-ask-close-tabs-checkbox = Հարցնել բազմակի ներդիրները փակելիս
 tabbrowser-confirm-close-tabs-checkbox = Զգուշացնել բազմակի ներդիրները փակելիս
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
@@ -107,6 +111,10 @@ tabbrowser-confirm-close-tabs-with-key-button = Փակել { -brand-short-name }
 # Variables:
 #   $quitKey (String): the text of the keyboard shortcut for quitting.
 tabbrowser-confirm-close-tabs-with-key-checkbox = Հաստատեք նախքան { $quitKey }-ով լքելը
+
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
+
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
@@ -160,6 +168,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
     .label = Բոլոր { $tabCount } ներդիրները
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = Լռեցնել ներդիրը
@@ -167,3 +178,13 @@ tabbrowser-manager-unmute-tab =
     .tooltiptext = Միացնել ձայնը
 tabbrowser-manager-close-tab =
     .tooltiptext = Փակել ներդիրը
+
+## Tab Groups
+
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
+
+## Open/saved tab group context menu
+

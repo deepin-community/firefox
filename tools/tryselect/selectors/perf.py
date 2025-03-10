@@ -122,7 +122,8 @@ class PerfParser(CompareParser):
             {
                 "action": "store_true",
                 "default": False,
-                "help": "Show all available tasks.",
+                "dest": "full",
+                "help": "Show all available tasks. Alternatively, --full may be used.",
             },
         ],
         [
@@ -199,7 +200,7 @@ class PerfParser(CompareParser):
                 "type": str,
                 "default": None,
                 "help": "Query to run in either the perf-category selector, "
-                "or the fuzzy selector if --show-all is provided.",
+                "or the fuzzy selector if --show-all/--full is provided.",
             },
         ],
         [
@@ -228,7 +229,7 @@ class PerfParser(CompareParser):
                 "default": None,
                 "help": "See --browsertime-upload-apk. This option does the same "
                 "thing except it's for mozperftest tests such as the startup ones. "
-                "Note that those tests only exist through --show-all as they "
+                "Note that those tests only exist through --show-all/--full as they "
                 "aren't contained in any existing categories.",
             },
         ],
@@ -759,7 +760,14 @@ class PerfParser(CompareParser):
                 platform_queries = {
                     suite: (
                         category_info["query"][suite]
-                        + [PerfParser.platforms[platform.value]["query"]]
+                        + [
+                            PerfParser.platforms[platform.value]["query"].get(
+                                suite,
+                                PerfParser.platforms[platform.value]["query"][
+                                    "default"
+                                ],
+                            )
+                        ]
                     )
                     for suite in category_info["suites"]
                 }
@@ -1170,6 +1178,12 @@ class PerfParser(CompareParser):
             try_config["use-artifact-builds"] = False
             print("Disabling artifact mode due to android task selection")
 
+            if try_config.get("disable-pgo", False):
+                print(
+                    "WARNING: PGO builds are disabled as artifact mode is "
+                    "enabled by default from your mozconfig."
+                )
+
     def get_majority_framework(selected_tasks):
         suite_counts = {suite: 0 for suite in PerfParser.suites.keys()}
 
@@ -1271,6 +1285,7 @@ class PerfParser(CompareParser):
                         dry_run=dry_run,
                         closed_tree=False,
                         allow_log_capture=True,
+                        push_to_vcs=True,
                     )
 
                 PerfParser.push_info.base_revision = log_processor.revision
@@ -1299,6 +1314,7 @@ class PerfParser(CompareParser):
                     dry_run=dry_run,
                     closed_tree=False,
                     allow_log_capture=True,
+                    push_to_vcs=True,
                 )
 
             PerfParser.push_info.new_revision = log_processor.revision
@@ -1309,7 +1325,7 @@ class PerfParser(CompareParser):
 
     def run(
         update=False,
-        show_all=False,
+        full=False,
         parameters=None,
         try_config_params=None,
         dry_run=False,
@@ -1380,7 +1396,7 @@ class PerfParser(CompareParser):
                     "\nAll the tasks of the Alert Summary couldn't be found in the taskgraph.\n"
                     f"Not exist tasks: {alert_tasks - set(all_tasks)}\n"
                 )
-        elif not show_all:
+        elif not full:
             # Expand the categories first
             categories = PerfParser.get_categories(**kwargs)
             PerfParser.build_category_description(base_cmd, categories)
@@ -1520,7 +1536,7 @@ class PerfParser(CompareParser):
             "\nAPK is setup for uploading. Please commit the changes, "
             "and re-run this command. \nEnsure you supply the --android, "
             "and select the correct tasks (fenix, geckoview) or use "
-            "--show-all for mozperftest task selection. \nFor Fenix, ensure "
+            "--show-all/--full for mozperftest task selection. \nFor Fenix, ensure "
             "you also provide the --fenix flag."
         )
 

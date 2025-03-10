@@ -15,10 +15,6 @@ If an out of bounds access occurs, the built-in function returns one of:
  * A vector (0,0,0,0) or (0,0,0,1) of the appropriate type for non-depth textures
  * 0.0 for depth textures
 
-TODO: Test textureLoad with depth textures as texture_2d, etc...
-TODO: Test textureLoad with multisampled stencil8 format
-TODO: Test un-encodable formats.
-TODO: Test stencil8 format.
 `;
 
 import { makeTestGroup } from '../../../../../../common/framework/test_group.js';
@@ -26,16 +22,14 @@ import {
   canUseAsRenderTarget,
   isCompressedFloatTextureFormat,
   isDepthTextureFormat,
-  isEncodableTextureFormat,
   isMultisampledTextureFormat,
   isStencilTextureFormat,
-  kCompressedTextureFormats,
   kDepthStencilFormats,
-  kEncodableTextureFormats,
+  kAllTextureFormats,
   kTextureFormatInfo,
   textureDimensionAndFormatCompatible,
 } from '../../../../../format_info.js';
-import { GPUTest } from '../../../../../gpu_test.js';
+import { GPUTest, MaxLimitsTestMixin } from '../../../../../gpu_test.js';
 import { maxMipLevelCount, virtualMipSize } from '../../../../../util/texture/base.js';
 import { TexelFormats } from '../../../../types.js';
 
@@ -50,14 +44,15 @@ import {
   vec2,
   vec3,
   kSamplePointMethods,
+  kShortShaderStages,
   generateTextureBuiltinInputs1D,
   generateTextureBuiltinInputs2D,
   generateTextureBuiltinInputs3D,
   Dimensionality,
   createVideoFrameWithRandomDataAndGetTexels,
+  ShortShaderStage,
+  isFillable,
 } from './texture_utils.js';
-
-const kTestableColorFormats = [...kEncodableTextureFormats, ...kCompressedTextureFormats] as const;
 
 export function normalizedCoordToTexelLoadTestCoord<T extends Dimensionality>(
   descriptor: GPUTextureDescriptor,
@@ -72,7 +67,20 @@ export function normalizedCoordToTexelLoadTestCoord<T extends Dimensionality>(
   }) as T;
 }
 
-export const g = makeTestGroup(GPUTest);
+function skipIfStorageTexturesNotSupportedInStage(t: GPUTest, stage: ShortShaderStage) {
+  if (t.isCompatibility) {
+    t.skipIf(
+      stage === 'f' && !(t.device.limits.maxStorageTexturesInFragmentStage! > 0),
+      'device does not support storage textures in fragment shaders'
+    );
+    t.skipIf(
+      stage === 'v' && !(t.device.limits.maxStorageTexturesInVertexStage! > 0),
+      'device does not support storage textures in vertex shaders'
+    );
+  }
+}
+
+export const g = makeTestGroup(MaxLimitsTestMixin(GPUTest));
 
 g.test('sampled_1d')
   .specURL('https://www.w3.org/TR/WGSL/#textureload')
@@ -90,7 +98,8 @@ Parameters:
   )
   .params(u =>
     u
-      .combine('format', kTestableColorFormats)
+      .combine('stage', kShortShaderStages)
+      .combine('format', kAllTextureFormats)
       .filter(t => textureDimensionAndFormatCompatible('1d', t.format))
       // 1d textures can't have a height !== 1
       .filter(t => kTextureFormatInfo[t.format].blockHeight === 1)
@@ -105,7 +114,7 @@ Parameters:
     t.selectDeviceForTextureFormatOrSkipTestCase(t.params.format);
   })
   .fn(async t => {
-    const { format, C, L, samplePoints } = t.params;
+    const { format, stage, C, L, samplePoints } = t.params;
 
     // We want at least 4 blocks or something wide enough for 3 mip levels.
     const [width] = chooseTextureSize({ minSize: 8, minBlocks: 4, format });
@@ -123,7 +132,7 @@ Parameters:
       method: samplePoints,
       descriptor,
       mipLevel: { num: texture.mipLevelCount, type: L },
-      hashInputs: [format, samplePoints, C, L],
+      hashInputs: [stage, format, samplePoints, C, L],
     }).map(({ coords, mipLevel }, i) => {
       return {
         builtin: 'textureLoad',
@@ -137,14 +146,24 @@ Parameters:
     const textureType = appendComponentTypeForFormatToTextureType('texture_1d', texture.format);
     const viewDescriptor = {};
     const sampler = undefined;
-    const results = await doTextureCalls(t, texture, viewDescriptor, textureType, sampler, calls);
+    const results = await doTextureCalls(
+      t,
+      texture,
+      viewDescriptor,
+      textureType,
+      sampler,
+      calls,
+      stage
+    );
     const res = await checkCallResults(
       t,
       { texels, descriptor, viewDescriptor },
       textureType,
       sampler,
       calls,
-      results
+      results,
+      stage,
+      texture
     );
     t.expectOK(res);
   });
@@ -166,7 +185,8 @@ Parameters:
   )
   .params(u =>
     u
-      .combine('format', kTestableColorFormats)
+      .combine('stage', kShortShaderStages)
+      .combine('format', kAllTextureFormats)
       .filter(t => !isCompressedFloatTextureFormat(t.format))
       .beginSubcases()
       .combine('samplePoints', kSamplePointMethods)
@@ -179,7 +199,7 @@ Parameters:
     t.selectDeviceForTextureFormatOrSkipTestCase(t.params.format);
   })
   .fn(async t => {
-    const { format, samplePoints, C, L } = t.params;
+    const { format, stage, samplePoints, C, L } = t.params;
 
     // We want at least 4 blocks or something wide enough for 3 mip levels.
     const size = chooseTextureSize({ minSize: 8, minBlocks: 4, format });
@@ -195,7 +215,7 @@ Parameters:
     const calls: TextureCall<vec2>[] = generateTextureBuiltinInputs2D(50, {
       method: samplePoints,
       descriptor,
-      hashInputs: [format, samplePoints, C, L],
+      hashInputs: [stage, format, samplePoints, C, L],
     }).map(({ coords, mipLevel }) => {
       return {
         builtin: 'textureLoad',
@@ -209,14 +229,24 @@ Parameters:
     const textureType = appendComponentTypeForFormatToTextureType('texture_2d', texture.format);
     const viewDescriptor = {};
     const sampler = undefined;
-    const results = await doTextureCalls(t, texture, viewDescriptor, textureType, sampler, calls);
+    const results = await doTextureCalls(
+      t,
+      texture,
+      viewDescriptor,
+      textureType,
+      sampler,
+      calls,
+      stage
+    );
     const res = await checkCallResults(
       t,
       { texels, descriptor, viewDescriptor },
       textureType,
       sampler,
       calls,
-      results
+      results,
+      stage,
+      texture
     );
     t.expectOK(res);
   });
@@ -237,7 +267,8 @@ Parameters:
   )
   .params(u =>
     u
-      .combine('format', kTestableColorFormats)
+      .combine('stage', kShortShaderStages)
+      .combine('format', kAllTextureFormats)
       .filter(t => textureDimensionAndFormatCompatible('3d', t.format))
       .beginSubcases()
       .combine('samplePoints', kSamplePointMethods)
@@ -250,7 +281,7 @@ Parameters:
     t.selectDeviceForTextureFormatOrSkipTestCase(t.params.format);
   })
   .fn(async t => {
-    const { format, samplePoints, C, L } = t.params;
+    const { format, stage, samplePoints, C, L } = t.params;
 
     // We want at least 4 blocks or something wide enough for 3 mip levels.
     const size = chooseTextureSize({ minSize: 8, minBlocks: 4, format, viewDimension: '3d' });
@@ -268,7 +299,7 @@ Parameters:
       method: samplePoints,
       descriptor,
       mipLevel: { num: texture.mipLevelCount, type: L },
-      hashInputs: [format, samplePoints, C, L],
+      hashInputs: [stage, format, samplePoints, C, L],
     }).map(({ coords, mipLevel }) => {
       return {
         builtin: 'textureLoad',
@@ -282,14 +313,24 @@ Parameters:
     const textureType = appendComponentTypeForFormatToTextureType('texture_3d', texture.format);
     const viewDescriptor = {};
     const sampler = undefined;
-    const results = await doTextureCalls(t, texture, viewDescriptor, textureType, sampler, calls);
+    const results = await doTextureCalls(
+      t,
+      texture,
+      viewDescriptor,
+      textureType,
+      sampler,
+      calls,
+      stage
+    );
     const res = await checkCallResults(
       t,
       { texels, descriptor, viewDescriptor },
       textureType,
       sampler,
       calls,
-      results
+      results,
+      stage,
+      texture
     );
     t.expectOK(res);
   });
@@ -312,11 +353,12 @@ Parameters:
   )
   .params(u =>
     u
+      .combine('stage', kShortShaderStages)
       .combine('texture_type', [
         'texture_multisampled_2d',
         'texture_depth_multisampled_2d',
       ] as const)
-      .combine('format', kTestableColorFormats)
+      .combine('format', kAllTextureFormats)
       .filter(t => isMultisampledTextureFormat(t.format))
       .filter(t => !isStencilTextureFormat(t.format))
       // Filter out texture_depth_multisampled_2d with non-depth formats
@@ -336,7 +378,7 @@ Parameters:
     t.selectDeviceForTextureFormatOrSkipTestCase(t.params.format);
   })
   .fn(async t => {
-    const { texture_type, format, samplePoints, C, S } = t.params;
+    const { texture_type, format, stage, samplePoints, C, S } = t.params;
 
     const sampleCount = 4;
     const descriptor: GPUTextureDescriptor = {
@@ -354,7 +396,7 @@ Parameters:
       method: samplePoints,
       descriptor,
       sampleIndex: { num: texture.sampleCount, type: S },
-      hashInputs: [format, samplePoints, C, S],
+      hashInputs: [stage, format, samplePoints, C, S],
     }).map(({ coords, sampleIndex }) => {
       return {
         builtin: 'textureLoad',
@@ -368,14 +410,24 @@ Parameters:
     const textureType = appendComponentTypeForFormatToTextureType(texture_type, texture.format);
     const viewDescriptor = {};
     const sampler = undefined;
-    const results = await doTextureCalls(t, texture, viewDescriptor, textureType, sampler, calls);
+    const results = await doTextureCalls(
+      t,
+      texture,
+      viewDescriptor,
+      textureType,
+      sampler,
+      calls,
+      stage
+    );
     const res = await checkCallResults(
       t,
       { texels, descriptor, viewDescriptor },
       textureType,
       sampler,
       calls,
-      results
+      results,
+      stage,
+      texture
     );
     t.expectOK(res);
   });
@@ -396,11 +448,10 @@ Parameters:
   )
   .params(u =>
     u
+      .combine('stage', kShortShaderStages)
       .combine('format', kDepthStencilFormats)
       // filter out stencil only formats
       .filter(t => isDepthTextureFormat(t.format))
-      // MAINTENANCE_TODO: Remove when support for depth24plus, depth24plus-stencil8, and depth32float-stencil8 is added.
-      .filter(t => isEncodableTextureFormat(t.format))
       .beginSubcases()
       .combine('samplePoints', kSamplePointMethods)
       .combine('C', ['i32', 'u32'] as const)
@@ -408,9 +459,10 @@ Parameters:
   )
   .beforeAllSubcases(t => {
     t.skipIfTextureLoadNotSupportedForTextureType('texture_depth_2d');
+    t.selectDeviceForTextureFormatOrSkipTestCase(t.params.format);
   })
   .fn(async t => {
-    const { format, samplePoints, C, L } = t.params;
+    const { format, stage, samplePoints, C, L } = t.params;
 
     // We want at least 4 blocks or something wide enough for 3 mip levels.
     const size = chooseTextureSize({ minSize: 8, minBlocks: 4, format });
@@ -427,7 +479,7 @@ Parameters:
       method: samplePoints,
       descriptor,
       mipLevel: { num: texture.mipLevelCount, type: L },
-      hashInputs: [format, samplePoints, C, L],
+      hashInputs: [stage, format, samplePoints, C, L],
     }).map(({ coords, mipLevel }) => {
       return {
         builtin: 'textureLoad',
@@ -440,14 +492,24 @@ Parameters:
     const textureType = 'texture_depth_2d';
     const viewDescriptor = {};
     const sampler = undefined;
-    const results = await doTextureCalls(t, texture, viewDescriptor, textureType, sampler, calls);
+    const results = await doTextureCalls(
+      t,
+      texture,
+      viewDescriptor,
+      textureType,
+      sampler,
+      calls,
+      stage
+    );
     const res = await checkCallResults(
       t,
       { texels, descriptor, viewDescriptor },
       textureType,
       sampler,
       calls,
-      results
+      results,
+      stage,
+      texture
     );
     t.expectOK(res);
   });
@@ -465,8 +527,10 @@ Parameters:
  * coords: The 0-based texel coordinate.
 `
   )
-  .paramsSubcasesOnly(u =>
+  .params(u =>
     u
+      .combine('stage', kShortShaderStages)
+      .beginSubcases()
       .combine('samplePoints', kSamplePointMethods)
       .combine('C', ['i32', 'u32'] as const)
       .combine('L', ['i32', 'u32'] as const)
@@ -475,7 +539,7 @@ Parameters:
     t.skipIf(typeof VideoFrame === 'undefined', 'VideoFrames are not supported')
   )
   .fn(async t => {
-    const { samplePoints, C, L } = t.params;
+    const { stage, samplePoints, C, L } = t.params;
 
     const size = [8, 8, 1];
 
@@ -505,14 +569,23 @@ Parameters:
     const textureType = 'texture_external';
     const viewDescriptor = {};
     const sampler = undefined;
-    const results = await doTextureCalls(t, texture, viewDescriptor, textureType, sampler, calls);
+    const results = await doTextureCalls(
+      t,
+      texture,
+      viewDescriptor,
+      textureType,
+      sampler,
+      calls,
+      stage
+    );
     const res = await checkCallResults(
       t,
       { texels, descriptor, viewDescriptor },
       textureType,
       sampler,
       calls,
-      results
+      results,
+      stage
     );
     t.expectOK(res);
     videoFrame.close();
@@ -536,9 +609,9 @@ Parameters:
   )
   .params(u =>
     u
-      .combine('format', kTestableColorFormats)
-      // MAINTENANCE_TODO: Update createTextureFromTexelViews to support stencil8 and remove this filter.
-      .filter(t => t.format !== 'stencil8' && !isCompressedFloatTextureFormat(t.format))
+      .combine('stage', kShortShaderStages)
+      .combine('format', kAllTextureFormats)
+      .filter(t => isFillable(t.format))
       .combine('texture_type', ['texture_2d_array', 'texture_depth_2d_array'] as const)
       .filter(
         t => !(t.texture_type === 'texture_depth_2d_array' && !isDepthTextureFormat(t.format))
@@ -559,11 +632,10 @@ Parameters:
     t.selectDeviceForTextureFormatOrSkipTestCase(t.params.format);
   })
   .fn(async t => {
-    const { texture_type, format, samplePoints, C, A, L } = t.params;
+    const { texture_type, format, stage, samplePoints, C, A, L } = t.params;
 
     // We want at least 4 blocks or something wide enough for 3 mip levels.
     const size = chooseTextureSize({ minSize: 8, minBlocks: 4, format, viewDimension: '3d' });
-
     const descriptor: GPUTextureDescriptor = {
       format,
       size,
@@ -580,7 +652,7 @@ Parameters:
       descriptor,
       mipLevel: { num: texture.mipLevelCount, type: L },
       arrayIndex: { num: texture.depthOrArrayLayers, type: A },
-      hashInputs: [format, samplePoints, C, L, A],
+      hashInputs: [stage, format, samplePoints, C, L, A],
     }).map(({ coords, mipLevel, arrayIndex }) => {
       return {
         builtin: 'textureLoad',
@@ -595,14 +667,24 @@ Parameters:
     const textureType = appendComponentTypeForFormatToTextureType(texture_type, texture.format);
     const viewDescriptor = {};
     const sampler = undefined;
-    const results = await doTextureCalls(t, texture, viewDescriptor, textureType, sampler, calls);
+    const results = await doTextureCalls(
+      t,
+      texture,
+      viewDescriptor,
+      textureType,
+      sampler,
+      calls,
+      stage
+    );
     const res = await checkCallResults(
       t,
       { texels, descriptor, viewDescriptor },
       textureType,
       sampler,
       calls,
-      results
+      results,
+      stage,
+      texture
     );
     t.expectOK(res);
   });
@@ -622,6 +704,7 @@ Parameters:
   )
   .params(u =>
     u
+      .combine('stage', kShortShaderStages)
       .combineWithParams([...TexelFormats, { format: 'bgra8unorm' }] as const)
       .beginSubcases()
       .combine('samplePoints', kSamplePointMethods)
@@ -636,7 +719,9 @@ Parameters:
     }
   })
   .fn(async t => {
-    const { format, samplePoints, C } = t.params;
+    const { format, stage, samplePoints, C } = t.params;
+
+    skipIfStorageTexturesNotSupportedInStage(t, stage);
 
     // We want at least 3 blocks or something wide enough for 3 mip levels.
     const [width] = chooseTextureSize({ minSize: 8, minBlocks: 4, format });
@@ -652,7 +737,7 @@ Parameters:
     const calls: TextureCall<vec1>[] = generateTextureBuiltinInputs1D(50, {
       method: samplePoints,
       descriptor,
-      hashInputs: [format, samplePoints, C],
+      hashInputs: [stage, format, samplePoints, C],
     }).map(({ coords }) => {
       return {
         builtin: 'textureLoad',
@@ -663,14 +748,24 @@ Parameters:
     const textureType = `texture_storage_1d<${format}, read>`;
     const viewDescriptor = {};
     const sampler = undefined;
-    const results = await doTextureCalls(t, texture, viewDescriptor, textureType, sampler, calls);
+    const results = await doTextureCalls(
+      t,
+      texture,
+      viewDescriptor,
+      textureType,
+      sampler,
+      calls,
+      stage
+    );
     const res = await checkCallResults(
       t,
       { texels, descriptor, viewDescriptor },
       textureType,
       sampler,
       calls,
-      results
+      results,
+      stage,
+      texture
     );
     t.expectOK(res);
   });
@@ -690,6 +785,7 @@ Parameters:
   )
   .params(u =>
     u
+      .combine('stage', kShortShaderStages)
       .combineWithParams([...TexelFormats, { format: 'bgra8unorm' }] as const)
       .beginSubcases()
       .combine('samplePoints', kSamplePointMethods)
@@ -704,7 +800,9 @@ Parameters:
     }
   })
   .fn(async t => {
-    const { format, samplePoints, C } = t.params;
+    const { format, stage, samplePoints, C } = t.params;
+
+    skipIfStorageTexturesNotSupportedInStage(t, stage);
 
     // We want at least 3 blocks or something wide enough for 3 mip levels.
     const size = chooseTextureSize({ minSize: 8, minBlocks: 3, format });
@@ -718,7 +816,7 @@ Parameters:
     const calls: TextureCall<vec2>[] = generateTextureBuiltinInputs2D(50, {
       method: samplePoints,
       descriptor,
-      hashInputs: [format, samplePoints, C],
+      hashInputs: [stage, format, samplePoints, C],
     }).map(({ coords }) => {
       return {
         builtin: 'textureLoad',
@@ -729,14 +827,24 @@ Parameters:
     const textureType = `texture_storage_2d<${format}, read>`;
     const viewDescriptor = {};
     const sampler = undefined;
-    const results = await doTextureCalls(t, texture, viewDescriptor, textureType, sampler, calls);
+    const results = await doTextureCalls(
+      t,
+      texture,
+      viewDescriptor,
+      textureType,
+      sampler,
+      calls,
+      stage
+    );
     const res = await checkCallResults(
       t,
       { texels, descriptor, viewDescriptor },
       textureType,
       sampler,
       calls,
-      results
+      results,
+      stage,
+      texture
     );
     t.expectOK(res);
   });
@@ -758,6 +866,7 @@ Parameters:
   )
   .params(u =>
     u
+      .combine('stage', kShortShaderStages)
       .combineWithParams([...TexelFormats, { format: 'bgra8unorm' }] as const)
       .beginSubcases()
       .combine('samplePoints', kSamplePointMethods)
@@ -773,7 +882,9 @@ Parameters:
     }
   })
   .fn(async t => {
-    const { format, samplePoints, C, A } = t.params;
+    const { format, stage, samplePoints, C, A } = t.params;
+
+    skipIfStorageTexturesNotSupportedInStage(t, stage);
 
     // We want at least 3 blocks or something wide enough for 3 mip levels.
     const size = chooseTextureSize({ minSize: 8, minBlocks: 4, format, viewDimension: '3d' });
@@ -788,7 +899,7 @@ Parameters:
       method: samplePoints,
       descriptor,
       arrayIndex: { num: texture.depthOrArrayLayers, type: A },
-      hashInputs: [format, samplePoints, C, A],
+      hashInputs: [stage, format, samplePoints, C, A],
     }).map(({ coords, arrayIndex }) => {
       return {
         builtin: 'textureLoad',
@@ -803,14 +914,24 @@ Parameters:
       dimension: '2d-array',
     };
     const sampler = undefined;
-    const results = await doTextureCalls(t, texture, viewDescriptor, textureType, sampler, calls);
+    const results = await doTextureCalls(
+      t,
+      texture,
+      viewDescriptor,
+      textureType,
+      sampler,
+      calls,
+      stage
+    );
     const res = await checkCallResults(
       t,
       { texels, descriptor, viewDescriptor },
       textureType,
       sampler,
       calls,
-      results
+      results,
+      stage,
+      texture
     );
     t.expectOK(res);
   });
@@ -830,6 +951,7 @@ Parameters:
   )
   .params(u =>
     u
+      .combine('stage', kShortShaderStages)
       .combineWithParams([...TexelFormats, { format: 'bgra8unorm' }] as const)
       .beginSubcases()
       .combine('samplePoints', kSamplePointMethods)
@@ -844,7 +966,9 @@ Parameters:
     }
   })
   .fn(async t => {
-    const { format, samplePoints, C } = t.params;
+    const { format, stage, samplePoints, C } = t.params;
+
+    skipIfStorageTexturesNotSupportedInStage(t, stage);
 
     // We want at least 3 blocks or something wide enough for 3 mip levels.
     const size = chooseTextureSize({ minSize: 8, minBlocks: 4, format, viewDimension: '3d' });
@@ -859,7 +983,7 @@ Parameters:
     const calls: TextureCall<vec3>[] = generateTextureBuiltinInputs3D(50, {
       method: samplePoints,
       descriptor,
-      hashInputs: [format, samplePoints, C],
+      hashInputs: [stage, format, samplePoints, C],
     }).map(({ coords }) => {
       return {
         builtin: 'textureLoad',
@@ -870,14 +994,24 @@ Parameters:
     const textureType = `texture_storage_3d<${format}, read>`;
     const viewDescriptor = {};
     const sampler = undefined;
-    const results = await doTextureCalls(t, texture, viewDescriptor, textureType, sampler, calls);
+    const results = await doTextureCalls(
+      t,
+      texture,
+      viewDescriptor,
+      textureType,
+      sampler,
+      calls,
+      stage
+    );
     const res = await checkCallResults(
       t,
       { texels, descriptor, viewDescriptor },
       textureType,
       sampler,
       calls,
-      results
+      results,
+      stage,
+      texture
     );
     t.expectOK(res);
   });

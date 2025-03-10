@@ -18,6 +18,9 @@ cert-error-trust-signature-algorithm-disabled = Nid oes ymddiriedaeth i'r dystys
 cert-error-trust-expired-issuer = Nid oes modd ymddiried yn y dystysgrif oherwydd bod y dystysgrif ryddhau wedi dod i ben.
 cert-error-trust-self-signed = Nid oes modd ymddiried yn y dystysgrif am ei fod wedi ei hunanlofnodi.
 cert-error-trust-symantec = Nid yw tystysgrifau a gyhoeddwyd gan GeoTrust, RapidSSL, Symantec, Thawte, a VeriSign bellach yn cael eu hystyried yn ddiogel oherwydd nad oedd yr awdurdodau tystysgrif hyn yn dilyn arferion diogelwch yn y gorffennol.
+# Variables:
+#   $hostname (string) - Hostname of the website with cert error.
+cert-error-trust-certificate-transparency = Nid yw { -brand-short-name } yn ymddiried yn { $hostname } oherwydd nid yw'n gallu profi ei fod yn bodloni gofynion tryloywder tystysgrif gyhoeddus.
 cert-error-untrusted-default = Nid yw'r dystysgrif yn dod o fan gellir ymddiried ynddo.
 # Variables:
 #   $hostname (string) - Hostname of the website with cert error.
@@ -68,6 +71,45 @@ open-in-new-window-for-csp-or-xfo-error = Agor Gwefan mewn Ffenestr Newydd
 # Variables:
 #   $hostname (string) - Hostname of the website blocked by csp or xfo error.
 csp-xfo-blocked-long-desc = Er mwyn amddiffyn eich diogelwch, ni fydd { $hostname } yn caniatáu i { -brand-short-name } ddangos y dudalen os yw gwefan arall wedi'i mewnblannu ynddi. I weld y dudalen hon, bydd angen i chi ei hagor mewn ffenestr newydd.
+fp-certerror-view-certificate-link = Gweld tystysgrif y wefan
+fp-certerror-return-to-previous-page-recommended-button = Mynd Nôl (Argymell)
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+#   $validHosts (String) - Valid hostnames.
+fp-certerror-bad-domain-why-dangerous-body = Mae'r wefan wedi'i gosod i ganiatáu cysylltiadau diogel yn unig, ond mae problem gyda thystysgrif y wefan. Mae'n bosibl bod endid drwg yn ceisio dynwared y wefan. Mae gwefannau'n defnyddio tystysgrifau sy'n cael eu cyhoeddi gan awdurdod tystysgrifau i brofi eu bod yn dweud y gwir am pwy ydyn nhw. Nid yw { -brand-short-name } yn ymddiried yn y wefan hon oherwydd nid yw ei thystysgrif yn ddilys ar gyfer { $hostname }. Dim ond ar gyfer : { $validHosts } mae'r dystysgrif yn ddilys.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-bad-domain-what-can-you-do-body = Dim byd yn ôl pob tebyg, gan ei bod hi'n debygol bod problem gyda'r wefan ei hun. Mae gwefannau'n defnyddio tystysgrifau sy'n cael eu cyhoeddi gan awdurdod tystysgrifau i brofi eu bod yn dweud y gwir am pwy ydyn nhw. Ond os ydych chi ar rwydwaith corfforaethol, efallai y bydd gan eich tîm cymorth fwy o wybodaeth. Os ydych chi'n defnyddio meddalwedd gwrthfeirws, ceisiwch chwilio am wrthdaro posibl neu faterion hysbys.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-certerror-unknown-issuer-why-dangerous-body = Mae problem gyda thystysgrif y wefan. Mae'n bosibl bod endid drwg yn ceisio dynwared y wefan. Mae gwefannau'n defnyddio tystysgrifau wedi'u cyhoeddi gan awdurdod tystysgrifau i brofi eu bod yn dweud y gwir am pwy ydyn nhw. Nid yw { -brand-short-name } yn ymddiried yn y wefan hon oherwydd ni allwn ddweud pwy gyhoeddodd y dystysgrif, mae wedi'i hunan-lofnodi, neu nid yw'r wefan yn anfon tystysgrifau canolradd rydym yn ymddiried ynddyn nhw.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-unknown-issuer-what-can-you-do-body = Dim byd yn ôl pob tebyg, gan ei bod hi'n debygol bod problem gyda'r wefan ei hun. Ond os ydych chi ar rwydwaith corfforaethol, efallai y bydd gan eich tîm cymorth fwy o wybodaeth. Os ydych yn defnyddio meddalwedd gwrthfeirws, efallai y bydd angen ei ffurfweddu i weithio gyda { -brand-short-name }.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-certerror-self-signed-why-dangerous-body = Oherwydd bod problem gyda thystysgrif y wefan. Mae gwefannau'n defnyddio tystysgrifau wedi'u cyhoeddi gan awdurdod tystysgrifau i brofi eu bod yn dweud y gwir am pwy ydyn nhw. Mae tystysgrif y wefan hon wedi'i hunan-lofnodi. Nid yw wedi ei gyhoeddi gan awdurdod tystysgrif cydnabyddedig - felly nid ydym yn ymddiried ynddo fel rhagosodiad.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-self-signed-what-can-you-do-body = Dim llawer. Mae’n debygol bod problem gyda’r wefan ei hun.
+fp-certerror-self-signed-important-note = NODYN PWYSIG: Os ydych yn ceisio ymweld â'r wefan hon ar fewnrwyd gorfforaethol, gall eich staff TG ddefnyddio tystysgrifau hunan-lofnodedig. Gallant eich helpu i wirio eu dilysrwydd.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate expiration date.
+fp-certerror-expired-why-dangerous-body = Mae gwefannau'n defnyddio tystysgrifau wedi'u cyhoeddi gan awdurdod tystysgrifau i brofi eu bod yn dweud y gwir am pwy ydyn nhw. Nid yw { -brand-short-name } yn ymddiried yn y wefan hon oherwydd mae'n edrych fel bod y dystysgrif wedi dod i ben ar { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate start date.
+fp-certerror-not-yet-valid-why-dangerous-body = Mae gwefannau'n defnyddio tystysgrifau wedi'u cyhoeddi gan awdurdod tystysgrifau i brofi eu bod yn dweud y gwir am pwy ydyn nhw. Nid yw { -brand-short-name } yn ymddiried yn y wefan hon oherwydd mae'n edrych fel bod y dystysgrif wedi dod i ben ar { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+# Variables:
+#   $date (Date) - Clock date.
+fp-certerror-expired-what-can-you-do-body = Mae cloc eich dyfais wedi'i osod i { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }. Os yw hyn yn gywir, mae'n debyg mai'r safle ei hun yw'r broblem diogelwch. Os yw'n anghywir, gallwch ei newid yng ngosodiadau system eich dyfais.
+# Variables:
+#   $error (string) - NSS error code string that specifies type of cert error. e.g. unknown issuer, invalid cert, etc.
+fp-cert-error-code = Cod Gwall: { $error }
+# Variables:
+#   $datetime (Date) - Current datetime.
+fp-datetime = { DATETIME($datetime, month: "short", year: "numeric", day: "numeric") } { DATETIME($datetime, timeStyle: "long") }
+fp-learn-more-about-secure-connection-failures = Dysgu rhagor am fethiannau cysylltiadau diogel
+fp-learn-more-about-cert-issues = Dysgu rhagor am y mathau hyn o faterion tystysgrifau
+fp-learn-more-about-time-related-errors = Dysgu rhagor am ddatrys gwallau sy'n gysylltiedig ag amser
 
 ## Messages used for certificate error titles
 
@@ -92,6 +134,7 @@ contentEncodingError-title = Gwall Amgodio Cynnwys
 unsafeContentType-title = Math Anniogel o Ffeil
 netReset-title = Cafodd y cysylltiad ei ailosod
 netTimeout-title = Mae'r cyfnod cyswllt wedi dod i ben
+httpErrorPage-title = Mae'n ymddangos bod problem gyda'r wefan hon
 serverError-title = Mae'n ymddangos bod problem gyda'r wefan hon
 unknownProtocolFound-title = Heb ddeall y cyfeiriad
 proxyConnectFailure-title = Mae'r gweinydd dirprwy yn gwrthod cysylltiadau
@@ -109,3 +152,20 @@ networkProtocolError-title = Gwall Protocol Rhwydwaith
 nssBadCert-title = Rhybudd: Risg Diogelwch Posibl o'ch Blaen
 nssBadCert-sts-title = Peidiwch â Chysylltu: Mater Diogelwch Posib
 certerror-mitm-title = Mae Meddalwedd yn Rhwystro { -brand-short-name } Rhag Cysylltu'n Ddiogel i'r Wefan Hon
+
+## Felt Privacy V1 Strings
+
+fp-certerror-page-title = Rhybudd: Risg Diogelwch
+fp-certerror-body-title = Byddwch yn ofalus. Mae rhywbeth i weld yn anghywir.
+fp-certerror-why-site-dangerous = Beth sy'n gwneud i'r wefan edrych yn beryglus?
+fp-certerror-what-can-you-do = Beth allwch chi wneud am hyn?
+fp-certerror-advanced-title = Uwch
+fp-certerror-advanced-button = Uwch
+fp-certerror-hide-advanced-button = Cuddio uwch
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-certerror-override-exception-button = Ewch ymlaen i { $hostname } ( Peryglus )
+fp-certerror-intro = Mae { -brand-short-name } wedi sylwi ar fater diogelwch a allai fod yn ddifrifol gyda <strong>{ $hostname }</strong>. Gall rhywun sy'n smalio fod y wefan geisio dwyn pethau fel manylion cerdyn credyd, cyfrineiriau neu e-byst.
+fp-certerror-expired-into = Mae { -brand-short-name } wedi sylwi ar broblem diogelwch gyda <strong>{ $hostname }</strong>. Naill ai nid yw'r wefan wedi'i gosod yn iawn neu mae cloc eich dyfais wedi'i osod i'r dyddiad/amser anghywir.

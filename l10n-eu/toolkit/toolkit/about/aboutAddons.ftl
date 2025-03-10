@@ -283,6 +283,14 @@ find-more-themes = Aurkitu itxura gehiago
 # used for screen readers.
 addon-options-button =
     .aria-label = Aukera gehiago
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 =
+    Hedapen eta itxurekin { -brand-product-name } pertsonaliza dezakezu. Pribatutasunari bultzada eman,
+    produktibitatea areagotu, multimedia hobetu, { -brand-product-name }(r)en itxura aldatu eta
+    gehiago egin dezakete. Software programa txiki hauek hirugarren batzuek eginak dira askotan.
+    Hona hemen { -brand-product-name }(e)k <a data-l10n-name="learn-more-trigger">gomendatzen</a>
+    dituen hautapen bat, aparteko segurtasun, errendimendu eta funtzionaltasunerako.
 
 ## Add-on actions
 
@@ -369,6 +377,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Leiho pribatuetan baimenduta
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Leiho pribatuetan baimenduta
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -408,6 +420,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Gehigarri hau berrikusi egin da gure segurtasun- eta errendimendu-estandarrak betetzeko
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = Segurtasun eta errendimendurako gure estandarrak betetzen dituzten hedapenak gomendatzen ditu { -brand-product-name }(e)k
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Mozillak sortutako hedapen ofiziala. Segurtasun- eta errendimendu-estandarrak betetzen ditu
+addon-badge-verified3 =
+    .title = Gehigarri hau berrikusi egin da gure segurtasun- eta errendimendu-estandarrak betetzeko
 
 ##
 
@@ -415,6 +435,7 @@ available-updates-heading = Eguneraketa erabilgarriak
 recent-updates-heading = Azken eguneraketak
 release-notes-loading = Kargatzen…
 release-notes-error = Errorea gertatu da bertsio-oharrak kargatzean.
+addon-permissions-empty2 = Hedapen honek ez du baimenik behar.
 addon-permissions-empty = Hedapen honek ez du baimenik behar
 addon-permissions-required = Oinarrizko funtzionaltasunerako beharrezko baimenak:
 addon-permissions-optional = Funtzionaltasun gehigarrirako aukerazko baimenak:
@@ -464,10 +485,24 @@ details-notification-unsigned-and-disabled-link = Informazio gehiago
 details-notification-unsigned = Ezin da { $name } gehigarria { -brand-short-name }(r)en erabiltzeko egiaztatu. Kontuz jarraitu.
 details-notification-unsigned2 =
     .message = Ezin da { $name } gehigarria { -brand-short-name }(r)en erabiltzeko egiaztatu. Kontuz jarraitu.
+details-notification-hard-blocked-extension =
+    .message = Hedapen hau blokeatuta dago Mozillaren politikak bortxatzeagatik eta desgaitu egin da.
+details-notification-hard-blocked-other =
+    .message = Gehigarri hau blokeatuta dago Mozillaren politikak bortxatzeagatik eta desgaitu egin da.
 details-notification-unsigned-link = Informazio gehiago
 details-notification-blocked = { $name } desgaitu egin da segurtasun- edo egonkortasun-arazoengatik.
 details-notification-blocked2 =
     .message = { $name } desgaitu egin da segurtasun- edo egonkortasun-arazoengatik.
+details-notification-blocked-link2 = Ikusi xehetasunak
+details-notification-soft-blocked-extension-disabled =
+    .message = Hedapen hau mugatuta dago Mozillaren politikak bortxatzeagatik eta desgaitu egin da. Gaitzeko aukera daukazu baina arriskutsua izan liteke.
+details-notification-soft-blocked-extension-enabled =
+    .message = Hedapen honek Mozillaren politikak bortxatzen ditu. Arriskutsua izan liteke hau erabiltzea.
+details-notification-soft-blocked-other-disabled =
+    .message = Gehigarri hau mugatuta dago Mozillaren politikak bortxatzeagatik eta desgaitu egin da. Gaitzeko aukera daukazu baina arriskutsua izan liteke.
+details-notification-soft-blocked-other-enabled =
+    .message = Gehigarri honek Mozillaren politikak bortxatzen ditu. Arriskutsua izan liteke hau erabiltzea.
+details-notification-softblocked-link2 = Ikusi xehetasunak
 details-notification-blocked-link = Informazio gehiago
 details-notification-softblocked = { $name } gehigarriak segurtasun- edo egonkortasun-arazoak eragiten dituela jakina da.
 details-notification-softblocked2 =

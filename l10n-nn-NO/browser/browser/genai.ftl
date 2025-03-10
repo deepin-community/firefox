@@ -52,8 +52,81 @@ genai-menu-ask-generic =
 # $provider (string) - name of the provider
 genai-menu-ask-provider =
     .label = Spør { $provider }
+genai-menu-remove-generic =
+    .label = Fjern AI chatbot
+# $provider (string) - name of the provider
+genai-menu-remove-provider =
+    .label = Fjern { $provider }
 genai-input-ask-generic =
     .placeholder = Spør AI chatbot…
 # $provider (string) - name of the provider
 genai-input-ask-provider =
     .placeholder = Spør { $provider }…
+genai-shortcuts-hide =
+    .label = Skjul samtalerobot-snarveg
+
+## Chatbot header
+
+genai-chatbot-title = AI chatbot
+genai-header-provider-menu =
+    .title = Vel ein samtalerobot
+genai-header-options-button =
+    .title = Opne meny
+genai-header-close-button =
+    .title = Lat att
+genai-provider-view-details =
+    .label = Vis samtalerobot-detaljar
+genai-provider-about-chatbots =
+    .label = Om desse samtalerobotane
+genai-options-reload-generic =
+    .label = Oppdater AI chatbot
+# $provider (string) - name of the provider
+genai-options-reload-provider =
+    .label = Oppdater { $provider }
+genai-options-show-shortcut =
+    .label = Vis snarveg når du vel tekst
+genai-options-hide-shortcut =
+    .label = Skjul snarveg når du vel tekst
+genai-options-about-chatbot =
+    .label = Om AI-samtalerobotar i { -brand-short-name }
+
+## Chatbot onboarding
+
+# "Switch anytime" refers to allowing the user to switch to a different chatbot.
+genai-onboarding-description = Vel ein AI-samtalerobot du vil bruke i sidestopen { -brand-short-name }. Vi viser detaljar om kvar samtalerobot når du vel han. Byt når som helst. <a data-l10n-name="learn-more">Les meir</a>
+genai-onboarding-primary = Hald fram
+genai-onboarding-secondary = Lat att
+genai-onboarding-claude-tooltip =
+    .title = Anthropic Claude
+genai-onboarding-claude-learn = Les meir om Claude
+genai-onboarding-chatgpt-tooltip =
+    .title = ChatGPT
+genai-onboarding-chatgpt-learn = Les meir om ChatGPT
+genai-onboarding-copilot-tooltip =
+    .title = Copilot
+genai-onboarding-copilot-learn = Les meir om Copilot
+genai-onboarding-gemini-tooltip =
+    .title = Google Gemini
+genai-onboarding-gemini-learn = Les meir om Gemini
+genai-onboarding-huggingchat-tooltip =
+    .title = HuggingChat
+genai-onboarding-huggingchat-learn = Les meir om HuggingChat
+genai-onboarding-lechat-tooltip =
+    .title = Le Chat Mistral
+genai-onboarding-lechat-learn = Les meir om Le Chat
+genai-onboarding-select-header = Marker tekst for å sjå forslag
+genai-onboarding-select-description = Når du vel tekst føreslår vi spørsmål du kan sende til samtaleroboten. Du kan òg skrive eigne spørsmål.
+genai-onboarding-select-primary = Begynn å chatte
+
+## Chatbot onboarding choices
+## These describe features/capabilities of chatbot providers. These are not buttons/actions.
+
+genai-onboarding-claude-generate = Lag tekst og kode
+genai-onboarding-claude-analyze = Analyser dokument og bilde
+genai-onboarding-chatgpt-analyze = Analyser dokument og bilde
+genai-onboarding-copilot-analyze = Analyser bilde
+genai-onboarding-copilot-price = Gratis og betalte alternativ; konto er påkravd for enkelte oppgåver
+genai-onboarding-gemini-generate = Generer tekst, bilde og kode
+genai-onboarding-huggingchat-generate = Lag tekst og kode
+genai-onboarding-lechat-generate = Lag tekst og kode
+genai-onboarding-lechat-price = Gratis; konto påkravd

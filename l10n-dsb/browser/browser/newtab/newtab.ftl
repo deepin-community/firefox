@@ -8,11 +8,18 @@
 newtab-page-title = Nowy rejtarik
 newtab-settings-button =
     .title = Bok wašogo nowego rejtarika pśiměriś
+newtab-personalize-settings-icon-label =
+    .title = Nowy rejtarik personalizěrowaś
+    .aria-label = Nastajenja
+newtab-settings-dialog-label =
+    .aria-label = Nastajenja
 newtab-personalize-icon-label =
     .title = Nowy rejtarik personalizěrowaś
     .aria-label = Nowy rejtarik personalizěrowaś
 newtab-personalize-dialog-label =
     .aria-label = Personalizěrowaś
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Pla { -pocket-brand-name } składowaś
 newtab-menu-delete-pocket = Z { -pocket-brand-name } wulašowaś
 newtab-menu-archive-pocket = W { -pocket-brand-name } archiwěrowaś
 newtab-menu-show-privacy-info = Naše sponsory a waša priwatnosć
+newtab-menu-about-fakespot = Wó { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Blokěrowaś
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Temje wěcej njeslědowaś
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -233,6 +247,8 @@ newtab-pocket-cta-button = { -pocket-brand-name } wobstaraś
 newtab-pocket-cta-text = Składujśo tšojeńka, kótarež se wam spódobuju, w { -pocket-brand-name } a žywśo swój duch z fasciněrujucymi cytańkami.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } jo źěl swójźby { -brand-product-name }
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Składowaś
 newtab-pocket-saved = Skłaźony
 
@@ -244,6 +260,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Nic za mnjo
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Źěkujomy se. Wašo měnjenje buźo nam pomagaś, waš kanal pólěpšyś.
 newtab-toast-thumbs-up-or-down = Źěkujomy se. Wašo měnjenje buźo nam pomagaś, waš kanal pólěpšyś.
 newtab-toast-dismiss-button =
     .title = Zachyśiś
@@ -299,6 +318,12 @@ newtab-custom-settings = Dalšne nastajenja zastojaś
 
 newtab-wallpaper-title = Slězynowe wobraze
 newtab-wallpaper-reset = Na standard slědk stajiś
+newtab-wallpaper-upload-image = Wobraz nagraś
+newtab-wallpaper-custom-color = Barwu wubraś
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = Wobraz jo pśekšocył limit datajoweje wjelikosći { $file_size }. Nagrajśo pšosym mjeńšu dataju.
+newtab-wallpaper-error-file-type = Njejsmy mógli wašu dataju nagraś. Wopytajśo pšosym z drugim datajowym typom hyšći raz.
 newtab-wallpaper-light-red-panda = Cerwjeny panda
 newtab-wallpaper-light-mountain = Běła góra
 newtab-wallpaper-light-sky = Njebjo z wioletnymi a rožowymi mrokawami
@@ -311,6 +336,8 @@ newtab-wallpaper-dark-panda = Cerwjeny panda w lěsu schowany
 newtab-wallpaper-dark-sky = Měsćańska krajina z nocnym njebjom
 newtab-wallpaper-dark-mountain = Górinowa krajina
 newtab-wallpaper-dark-city = Wioletna měsćańska krajina
+newtab-wallpaper-dark-fox-anniversary = Liška na flastarju blisko lěsa
+newtab-wallpaper-light-fox-anniversary = Liška w tšawowem pólu z kurjawkateju górinoweju krajinu
 
 ## Solid Colors
 
@@ -340,8 +367,12 @@ newtab-wallpaper-abstract-purple = Wioletne formy
 newtab-wallpaper-abstract-orange = Oranžowe formy
 newtab-wallpaper-gradient-orange = Woběžk oranžowy a pink
 newtab-wallpaper-abstract-blue-purple = Módre a wioletne formy
+newtab-wallpaper-abstract-white-curves = Běły z wósenjonymi wukulowaśenjami
+newtab-wallpaper-abstract-purple-green = Wioletny a zeleny swětłowy pśeběg
+newtab-wallpaper-abstract-blue-purple-waves = Módre a wioletne žwałkate formy
+newtab-wallpaper-abstract-black-waves = Carne žwałkate formy
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Fota
 newtab-wallpaper-beach-at-sunrise = Pśibrjog pśi zejźenju słyńca
@@ -350,6 +381,12 @@ newtab-wallpaper-storm-sky = Wichorowe njebjo
 newtab-wallpaper-sky-with-pink-clouds = Njebjo z rožowymi mrokami
 newtab-wallpaper-red-panda-yawns-in-a-tree = Cerwjeny panda w bomje zewa
 newtab-wallpaper-white-mountains = Běłe góry
+newtab-wallpaper-hot-air-balloons = Rozdźělna barwa górucopówětšowych balonow wódnjo
+newtab-wallpaper-starry-canyon = Módra gwězdna noc
+newtab-wallpaper-suspension-bridge = Šera fotografija wisatego mosta wódnjo
+newtab-wallpaper-sand-dunes = Běłe změty pěska
+newtab-wallpaper-palm-trees = Silueta bomow kokosowych palmow w złotej góźinje
+newtab-wallpaper-forest-trees = Z kurjawu pókšyte bomy
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -365,6 +402,19 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Njebjaski
+newtab-wallpaper-celestial-lunar-eclipse = Zajśmiśe mjaseca
+newtab-wallpaper-celestial-earth-night = Nocne foto z dolnego orbita zemje
+newtab-wallpaper-celestial-starry-sky = Gwězdne njebjo
+newtab-wallpaper-celestial-eclipse-time-lapse = Casowy wótběg zajśmiśa mjaseca
+newtab-wallpaper-celestial-black-hole = Zwobraznjenje galaksije z carneju źěru
+newtab-wallpaper-celestial-river = Satelitowy wobraz rěki
+
 ## New Tab Weather
 
 # Variables:
@@ -375,6 +425,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ sponserowany
 newtab-weather-menu-change-location = Městno změniś
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Městno pytaś
+    .aria-label = Městno pytaś
 newtab-weather-change-location-search-input = Městno pytaś
 newtab-weather-menu-weather-display = Wjedrowe pokazanje
 # Display options are:
@@ -433,3 +486,45 @@ newtab-topic-selection-button-maybe-later = Snaź pózdźej
 newtab-topic-selection-privacy-link = Zgóńśo, kak daty šćitamy a zastojmy
 newtab-topic-selection-button-update-interests = Zaktualizěrujśo swóje zajmy
 newtab-topic-selection-button-pick-interests = Wubjeŕśo swóje zajmy
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Slědowaś
+newtab-section-following-button = Slědujucy
+newtab-section-unfollow-button = Wěcej njeslědowaś
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Blokěrowaś
+newtab-section-blocked-button = Blokěrowany
+newtab-section-unblock-button = Wěcej njeblokěrowaś
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = Cośo napšawdu toś ten wótrězk blokěrowaś?
+newtab-section-confirm-block-section-p2 = Blokěrowany wótrězk se wěcej we wašom kanalu njezjawijo.
+newtab-section-block-section-button = Toś ten wótrězk blokěrowaś
+newtab-section-cancel-button = Nic něnto
+newtab-section-confirm-block-topic-p1 = Cośo napšawdu toś tu temu blokěrowaś?
+newtab-section-confirm-block-topic-p2 = Blokěrowane temy se wěcej we wašom kanalu njezjawiju.
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = { $topic } blokěrowaś
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = Temy
+newtab-section-manage-topics-button-v2 =
+    .label = Temy zastojaś
+newtab-section-mangage-topics-followed-topics = Slědowany
+newtab-section-mangage-topics-button =
+    .label = Slědowane a blokěrowane temy
+newtab-section-mangage-topics-followed-topics-subtitle = Slědowane temy
+newtab-section-mangage-topics-followed-topics-empty-state = Hyšći žednym temam njeslědujośo.
+newtab-section-mangage-topics-blocked-topics = Blokěrowany
+newtab-section-mangage-topics-blocked-topics-subtitle = Blokěrowane temy
+newtab-section-mangage-topics-blocked-topics-empty-state = Hyšći njejsćo blokěrował temy.

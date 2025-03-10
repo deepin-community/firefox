@@ -610,6 +610,33 @@ urlbar-result-action-calculator-result = = { $result }
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = Nadi s { $engine }
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - Nadi { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - Nadi s { $engine }
+urlbar-searchmode-dropmarker =
+    .tooltiptext = Fren amsedday n unadi
+urlbar-searchmode-bookmarks =
+    .label = Ticraḍ n isebtar
+urlbar-searchmode-tabs =
+    .label = Tibzimin
+urlbar-searchmode-history =
+    .label = Azray
+urlbar-searchmode-actions =
+    .label = Tigawin
+urlbar-searchmode-exit-button =
+    .tooltiptext = Mdel
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = Tikkelt-a, nadi s:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = Iɣewwaren n unadi
+urlbar-searchmode-popup-search-settings = Iɣewwaren n unadi
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -930,6 +957,9 @@ data-reporting-notification-button =
     .accesskey = F
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Tunigin tusligt
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = Tunigin tusligt
 content-analysis-panel-title = Ammesten n ysefka
 
 ## Unified extensions (toolbar) button
@@ -951,6 +981,10 @@ unified-extensions-button-permissions-needed =
 unified-extensions-button-quarantined =
     .label = Isiɣzaf
     .tooltiptext = Asiɣzef
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
 
 ## Private browsing reset button
 
@@ -986,6 +1020,7 @@ refresh-blocked-allow =
 popup-notification-addon-install-unsigned =
     .value = (Ur ittusenqed ara)
 popup-notification-xpinstall-prompt-learn-more = Issin ugar ɣef usbeddi n yizegrar s tɣellist
+popup-notification-xpinstall-prompt-block-url = Wali talqayt
 # Note: Access key is set to P to match "Private" in the corresponding localized label.
 popup-notification-addon-privatebrowsing-checkbox =
     .label = Sker deg usfaylu uslig

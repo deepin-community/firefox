@@ -246,6 +246,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Crear in conto
 device-migration-fxa-spotlight-getting-new-device-header-2 = In nov apparat en tes futur?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Suonda in pèr simpels pass per prender cun tai tes segnapaginas, la cronologia ed ils pleds-clav sche ti has in nov apparat.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Co far copias da segirezza da mias datas
+device-migration-fxa-spotlight-sync-header = Navighescha senza perder il fil
+device-migration-fxa-spotlight-sync-body = Sincronisescha tut tias infurmaziuns impurtantas – sco segnapaginas e pleds-clav – a moda criptada. Ti pos acceder a tut las datas dapertut là nua che ti utiliseschas { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = Cumenzar
 
 ## Set as Default PDF Reader Infobar
 
@@ -282,3 +285,61 @@ tail-fox-spotlight-title = Ta liberescha da fastizaders stentus
 tail-fox-spotlight-subtitle = Piglia cumià da fastizaders da reclama stentus e giauda l’internet a moda pli segira e svelta.
 tail-fox-spotlight-primary-button = Avrir mias colliaziuns cun { -brand-short-name }
 tail-fox-spotlight-secondary-button = Betg ussa
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Versiuns pli veglias da { -brand-short-name } pon chaschunar problems a partir dals 14 da schaner 2025.</strong>
+root-certificate-succession-infobar-march-message = <strong>Actualisescha il program per vinavant pudair utilisar { -brand-short-name } suenter ils 14 da mars 2025.</strong>
+root-certificate-succession-infobar-link = Pertge actualisar?
+root-certificate-succession-infobar-primary-button =
+    .label = Actualisar ussa
+    .accesskey = u
+root-certificate-succession-infobar-secondary-button =
+    .label = Pli tard
+    .accesskey = l
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Ti has manchentà in’actualisaziun impurtanta da { -brand-short-name }
+root-certificate-windows-background-notification-subtitle = Tschertas parts dal navigatur na vegnan prest betg pli a funcziunar sche ti n’actualiseschas betg. Ussa è in bun mument per ir per nossas protecziuns e funcziuns las pli novas.
+root-certificate-windows-background-notification-learn-more-button = Ulteriuras infurmaziuns
+root-certificate-windows-background-notification-update-button = Actualisar { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Serrar
+    .aria-label = Serrar
+fxa-menu-message-sign-up-button = Sa registrar
+fxa-menu-message-sync-devices-primary-text = Sincronisescha tut tes apparats
+fxa-menu-message-sync-devices-secondary-text = Acceda immediatamain a tias datas – sco segnapaginas e pleds-clav – dapertut là nua che ti utiliseschas { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = Sincronisescha tut tes apparats
+fxa-menu-message-backup-data-primary-text = Fa copias da segirezza da tias datas dal navigatur
+fxa-menu-message-backup-data-secondary-text = Protegia automaticamain segnapaginas, pleds-clav ed autras infurmaziuns sin tut tes apparats.
+fxa-menu-message-backup-data-collapsed-text = Far copias da segirezza da las datas dal navigatur
+fxa-menu-message-backup-sync-primary-text = Guarda che tias datas restian segiradas e sincronisadas
+fxa-menu-message-backup-sync-secondary-text = La sincronisaziun creescha copias da segirezza da la gronda part da tias datas, uschia che ti pos acceder ad ellas dapertut là nua che ti utiliseschas { -brand-short-name }.
+fxa-menu-message-backup-sync-collapsed-text = Sincronisar ed arcunar las datas
+fxa-menu-message-mobile-primary-text = Trametta tabs a tes telefonin
+fxa-menu-message-mobile-secondary-text = Cuntinuescha directamain là nua che ti has chalà, grazia a la sincronisaziun da tes tabs cun in apparat mobil.
+fxa-menu-message-mobile-collapsed-text = Sincronisaziun cun tes telefonin
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Bel da ta vesair puspè!
+multi-cta-fox-doodle-set-default-checkbox = Definir { -brand-short-name } sco standard
+multi-cta-fox-doodle-pin-startmenu-checkbox = Fixar { -brand-short-name } en il menu «Start»
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Fixar { -brand-short-name } en il dock
+       *[other] Fixar { -brand-short-name } en la taskbar
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Cumenzar a navigar
+multi-cta-fox-doodle-main-browser-primary-button-label = Definir { -brand-short-name } sco mes navigatur principal
+multi-cta-fox-doodle-quick-reminder-subtitle = Nus vulain ta regurdar che ti pos endrizzar tes navigatur preferì e spezialisà en la protecziun da datas uschia ch’el è accessibel cun mo in clic.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Endrizza tes navigatur preferì e spezialisà en la protecziun da datas uschia ch’el è accessibel cun mo in clic. Definescha { -brand-short-name } sco tes navigatur standard per avrir colliaziuns ed al fixescha en tes dock.
+       *[other] Endrizza tes navigatur preferì e spezialisà en la protecziun da datas uschia ch’el è accessibel cun mo in clic. Definescha { -brand-short-name } sco tes navigatur standard per avrir colliaziuns ed al fixescha en tia taskbar.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Endrizza tes navigatur preferì e spezialisà en la protecziun da datas uschia ch’el è accessibel cun mo in clic. Definescha { -brand-short-name } sco tes navigatur standard per avrir colliaziuns ed al fixescha en tia taskbar ed en il menu «Start».

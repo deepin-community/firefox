@@ -72,6 +72,19 @@ protections-panel-blocking-label = Jokopyre
 protections-panel-not-blocking-label = Moneĩmbyre
 protections-panel-not-found-label = Ndaipóri juhupyre
 
+## Smartblock strings
+
+protections-panel-smartblock-desc-label = { -brand-short-name } ojoko tetepy tapykuehoha rehegua eime aja ko tendápe, neremoneĩriramo.
+# Variables
+#  $trackername (String): the name of the tracker that is currently being blocked.
+protections-panel-smartblock-blocking-toggle =
+    .label = Emoneĩ { $trackername }
+#  $trackername (String): the name of the tracker that is currently being blocked.
+smartblock-placeholder-title = Tapykuehoha ha tetepy { $trackername } ombotypyre
+smartblock-placeholder-desc = Ne ñemoĩporã { -brand-short-name } rehegua omboyke ko tetepy nde rapykuehóvo heta tendápe térã ojeporúvo mba’eñemurã.
+#  $websitehost (String): host of website with blocked content.
+smartblock-placeholder-button-text = Emoneĩ { $websitehost }-pe
+
 ##
 
 protections-panel-settings-label = Ñemo’ã ñemboheko

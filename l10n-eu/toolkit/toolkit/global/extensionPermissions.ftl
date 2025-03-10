@@ -30,4 +30,13 @@ webext-perms-description-sessions = Itxitako azken fitxak atzitzea
 webext-perms-description-tabs = Nabigatzailearen fitxak atzitzea
 webext-perms-description-tabHide = Nabigatzaileko fitxak ezkutatu eta erakustea
 webext-perms-description-topSites = Nabigatze-historia atzitzea
+webext-perms-description-trialML = Deskargatu eta exekutatu AA modeloak zure gailuan
+webext-perms-description-userScripts = Baimendu egiaztatu gabeko hirugarrenen scriptei zure datuetarako sarbidea
 webext-perms-description-webNavigation = Nabigatu ahala nabigazio-jarduera atzitzea
+
+## The userScripts permission includes an additional explanation that is
+## displayed prominently near the usual permission description.
+
+webext-perms-extra-warning-userScripts-long = Egiaztatu gabeko scriptek segurtasun eta pribatutasun arriskuak eragin litzakete, hala nola kode kaltegarria exekutatzea edo webguneetako jardueraren jarraipena egitea. Soilik exekutatu hedapenetako edo fidagarritzat dituzun iturburuetako scriptak.
+# A shorter warning is displayed in UI surfaces with little room, such as a permission prompt.
+webext-perms-extra-warning-userScripts-short = Egiaztatu gabeko scriptek segurtasun eta pribatutasun arriskuak eragin litzakete. Soilik exekutatu hedapenetako edo fidagarritzat dituzun iturburuetako scriptak.

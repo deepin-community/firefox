@@ -29,7 +29,7 @@
 #include "mozilla/SyncRunnable.h"
 #include "mozilla/TimeStamp.h"
 #include "mozilla/Unused.h"
-#include "mozilla/glean/GleanMetrics.h"
+#include "mozilla/glean/SecurityCertverifierMetrics.h"
 #include "mozpkix/Result.h"
 #include "mozpkix/pkix.h"
 #include "mozpkix/pkixcheck.h"
@@ -68,7 +68,8 @@ namespace psm {
 
 NSSCertDBTrustDomain::NSSCertDBTrustDomain(
     SECTrustType certDBTrustType, OCSPFetching ocspFetching,
-    OCSPCache& ocspCache,
+    OCSPCache& ocspCache, SignatureCache* signatureCache,
+    TrustCache* trustCache,
     /*optional but shouldn't be*/ void* pinArg, TimeDuration ocspTimeoutSoft,
     TimeDuration ocspTimeoutHard, uint32_t certShortLifetimeInDays,
     unsigned int minRSABits, ValidityCheckingMode validityCheckingMode,
@@ -83,6 +84,8 @@ NSSCertDBTrustDomain::NSSCertDBTrustDomain(
     : mCertDBTrustType(certDBTrustType),
       mOCSPFetching(ocspFetching),
       mOCSPCache(ocspCache),
+      mSignatureCache(signatureCache),
+      mTrustCache(trustCache),
       mPinArg(pinArg),
       mOCSPTimeoutSoft(ocspTimeoutSoft),
       mOCSPTimeoutHard(ocspTimeoutHard),
@@ -397,6 +400,40 @@ Result NSSCertDBTrustDomain::FindIssuer(Input encodedIssuerName,
                          keepGoing);
 }
 
+void HashTrustParams(EndEntityOrCA endEntityOrCA, const CertPolicyId& policy,
+                     Input certDER, SECTrustType trustType,
+                     /*out*/ Maybe<nsTArray<uint8_t>>& sha512Hash) {
+  sha512Hash.reset();
+  Digest digest;
+  if (NS_FAILED(digest.Begin(SEC_OID_SHA512))) {
+    return;
+  }
+  if (NS_FAILED(digest.Update(reinterpret_cast<const uint8_t*>(&endEntityOrCA),
+                              sizeof(endEntityOrCA)))) {
+    return;
+  }
+  if (NS_FAILED(
+          digest.Update(reinterpret_cast<const uint8_t*>(&policy.numBytes),
+                        sizeof(policy.numBytes)))) {
+    return;
+  }
+  if (NS_FAILED(digest.Update(policy.bytes, policy.numBytes))) {
+    return;
+  }
+  if (NS_FAILED(digest.Update(certDER.UnsafeGetData(), certDER.GetLength()))) {
+    return;
+  }
+  if (NS_FAILED(digest.Update(reinterpret_cast<const uint8_t*>(&trustType),
+                              sizeof(trustType)))) {
+    return;
+  }
+  nsTArray<uint8_t> result;
+  if (NS_FAILED(digest.End(result))) {
+    return;
+  }
+  sha512Hash.emplace(std::move(result));
+}
+
 Result NSSCertDBTrustDomain::GetCertTrust(EndEntityOrCA endEntityOrCA,
                                           const CertPolicyId& policy,
                                           Input candidateCertDER,
@@ -453,6 +490,18 @@ Result NSSCertDBTrustDomain::GetCertTrust(EndEntityOrCA endEntityOrCA,
       trustLevel = TrustLevel::InheritsTrust;
       return Success;
     }
+  }
+
+  mozilla::glean::cert_trust_cache::total.Add(1);
+  Maybe<nsTArray<uint8_t>> sha512Hash;
+  HashTrustParams(endEntityOrCA, policy, candidateCertDER, mCertDBTrustType,
+                  sha512Hash);
+  uint8_t cachedTrust = 0;
+  if (sha512Hash.isSome() &&
+      trust_cache_get(mTrustCache, sha512Hash.ref().Elements(), &cachedTrust)) {
+    mozilla::glean::cert_trust_cache::hits.AddToNumerator(1);
+    trustLevel = static_cast<TrustLevel>(cachedTrust);
+    return Success;
   }
 
   // Synchronously dispatch a task to the socket thread to construct a
@@ -538,6 +587,10 @@ Result NSSCertDBTrustDomain::GetCertTrust(EndEntityOrCA endEntityOrCA,
   nsresult rv = SyncRunnable::DispatchToThread(socketThread, getTrustTask);
   if (NS_FAILED(rv)) {
     return Result::FATAL_ERROR_LIBRARY_FAILURE;
+  }
+  if (result == Success && sha512Hash.isSome()) {
+    uint8_t trust = static_cast<uint8_t>(trustLevel);
+    trust_cache_insert(mTrustCache, sha512Hash.ref().Elements(), trust);
   }
   return result;
 }
@@ -1397,7 +1450,7 @@ Result NSSCertDBTrustDomain::IsChainValid(const DERArray& reversedDERArray,
         MOZ_LOG(
             gCertVerifierLog, LogLevel::Debug,
             ("certificate has notBefore after distrust after value for root"));
-        return Result::ERROR_UNTRUSTED_ISSUER;
+        return Result::ERROR_ISSUER_NO_LONGER_TRUSTED;
       }
       MOZ_LOG(gCertVerifierLog, LogLevel::Debug,
               ("ignoring built-in distrust after for third-party root"));
@@ -1470,15 +1523,21 @@ Result NSSCertDBTrustDomain::CheckRSAPublicKeyModulusSizeInBits(
 Result NSSCertDBTrustDomain::VerifyRSAPKCS1SignedData(
     Input data, DigestAlgorithm digestAlgorithm, Input signature,
     Input subjectPublicKeyInfo) {
-  return VerifyRSAPKCS1SignedDataNSS(data, digestAlgorithm, signature,
-                                     subjectPublicKeyInfo, mPinArg);
+  return VerifySignedDataWithCache(
+      der::PublicKeyAlgorithm::RSA_PKCS1,
+      mozilla::glean::cert_signature_cache::total,
+      mozilla::glean::cert_signature_cache::hits, data, digestAlgorithm,
+      signature, subjectPublicKeyInfo, mSignatureCache, mPinArg);
 }
 
 Result NSSCertDBTrustDomain::VerifyRSAPSSSignedData(
     Input data, DigestAlgorithm digestAlgorithm, Input signature,
     Input subjectPublicKeyInfo) {
-  return VerifyRSAPSSSignedDataNSS(data, digestAlgorithm, signature,
-                                   subjectPublicKeyInfo, mPinArg);
+  return VerifySignedDataWithCache(
+      der::PublicKeyAlgorithm::RSA_PSS,
+      mozilla::glean::cert_signature_cache::total,
+      mozilla::glean::cert_signature_cache::hits, data, digestAlgorithm,
+      signature, subjectPublicKeyInfo, mSignatureCache, mPinArg);
 }
 
 Result NSSCertDBTrustDomain::CheckECDSACurveIsAcceptable(
@@ -1496,8 +1555,11 @@ Result NSSCertDBTrustDomain::CheckECDSACurveIsAcceptable(
 Result NSSCertDBTrustDomain::VerifyECDSASignedData(
     Input data, DigestAlgorithm digestAlgorithm, Input signature,
     Input subjectPublicKeyInfo) {
-  return VerifyECDSASignedDataNSS(data, digestAlgorithm, signature,
-                                  subjectPublicKeyInfo, mPinArg);
+  return VerifySignedDataWithCache(
+      der::PublicKeyAlgorithm::ECDSA,
+      mozilla::glean::cert_signature_cache::total,
+      mozilla::glean::cert_signature_cache::hits, data, digestAlgorithm,
+      signature, subjectPublicKeyInfo, mSignatureCache, mPinArg);
 }
 
 Result NSSCertDBTrustDomain::CheckValidityIsAcceptable(
@@ -1727,6 +1789,27 @@ bool LoadUserModuleAt(const char* moduleName, const char* libraryName,
   return true;
 }
 
+bool LoadUserModuleFromXul(const char* moduleName,
+                           CK_C_GetFunctionList fentry) {
+  // If a module exists with the same name, make a best effort attempt to delete
+  // it. Note that it isn't possible to delete the internal module, so checking
+  // the return value would be detrimental in that case.
+  int unusedModType;
+  Unused << SECMOD_DeleteModule(moduleName, &unusedModType);
+
+  UniqueSECMODModule userModule(
+      SECMOD_LoadUserModuleWithFunction(moduleName, fentry));
+  if (!userModule) {
+    return false;
+  }
+
+  if (!userModule->loaded) {
+    return false;
+  }
+
+  return true;
+}
+
 bool LoadIPCClientCertsModule(const nsCString& dir) {
   // The IPC client certs module needs to be able to call back into gecko to be
   // able to communicate with the parent process over IPC. This is achieved by
@@ -1750,13 +1833,24 @@ bool LoadIPCClientCertsModule(const nsCString& dir) {
   return true;
 }
 
-bool LoadOSClientCertsModule(const nsCString& dir) {
-  nsLiteralCString params =
-      StaticPrefs::security_osclientcerts_assume_rsa_pss_support()
-          ? "RSA-PSS"_ns
-          : ""_ns;
-  return LoadUserModuleAt(kOSClientCertsModuleName.get(), "osclientcerts", dir,
-                          params.get());
+extern "C" {
+// Extern function to call osclientcerts module C_GetFunctionList.
+// NSS calls it to obtain the list of functions comprising this module.
+// ppFunctionList must be a valid pointer.
+CK_RV OSClientCerts_C_GetFunctionList(CK_FUNCTION_LIST_PTR_PTR ppFunctionList);
+}  // extern "C"
+
+bool LoadOSClientCertsModule() {
+// Corresponds to Rust cfg(any(
+//  target_os = "macos",
+//  target_os = "ios",
+//  all(target_os = "windows", not(target_arch = "aarch64"))))]
+#if defined(__APPLE__) || (defined WIN32 && !defined(__aarch64__))
+  return LoadUserModuleFromXul(kOSClientCertsModuleName.get(),
+                               OSClientCerts_C_GetFunctionList);
+#else
+  return false;
+#endif
 }
 
 bool LoadLoadableRoots(const nsCString& dir) {

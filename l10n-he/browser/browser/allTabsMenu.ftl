@@ -16,3 +16,10 @@ all-tabs-menu-close-duplicate-tabs =
     .label = סגירת לשוניות כפולות
 all-tabs-menu-close-all-duplicate-tabs =
     .label = סגירת כל הלשוניות הכפולות
+all-tabs-menu-synced-tabs =
+    .label = לשוניות ממכשירים אחרים
+all-tabs-menu-current-window-header = החלון הנוכחי
+# "Show all" is for showing all open groups as well as saved groups. Initially,
+# we only show up to five of these groups.
+all-tabs-menu-tab-groups-show-all =
+    .label = הצגת הכול

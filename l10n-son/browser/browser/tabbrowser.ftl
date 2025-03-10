@@ -3,12 +3,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 tabbrowser-empty-tab-title = Kanji taaga
-
 tabbrowser-menuitem-close-tab =
     .label = Kanjoo daabu
 tabbrowser-menuitem-close =
     .label = Daabu
-
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
@@ -18,6 +16,9 @@ tabbrowser-container-tab-title = { $title } - { $containerName }
 ## Tooltips for tab audio control
 ## Variables:
 ##   $tabCount (Number): The number of tabs that will be affected.
+
+
+## Tooltips for tab audio control
 
 
 ## Confirmation dialog when closing a window with more than one tab open,
@@ -32,10 +33,17 @@ tabbrowser-confirm-close-tabs-button = Kanjey daabu
 ## Windows does not show a prompt on quit when using the keyboard shortcut by default.
 
 
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
+
+
 ## Confirmation dialog when opening multiple tabs simultaneously
 
 
 ## Confirmation dialog for enabling caret browsing
+
+
+## Confirmation dialog for closing all duplicate tabs
 
 
 ##
@@ -59,4 +67,17 @@ tabbrowser-ctrl-tab-list-all-tabs =
     .label = Kanji { $tabCount } kul maaɲey dam
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
+
+
+## Tab Groups
+
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
+
+## Open/saved tab group context menu
 

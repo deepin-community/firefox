@@ -50,27 +50,10 @@ const TEST_DEFAULT_CONTENT = [
 ];
 
 const TEST_DEFAULT_JSON = JSON.stringify(TEST_DEFAULT_CONTENT);
-async function openAboutWelcome() {
-  await setAboutWelcomePref(true);
-  await setAboutWelcomeMultiStage(TEST_DEFAULT_JSON);
-
-  let tab = await BrowserTestUtils.openNewForegroundTab(
-    gBrowser,
-    "about:welcome",
-    true
-  );
-  registerCleanupFunction(() => {
-    BrowserTestUtils.removeTab(tab);
-  });
-  return tab.linkedBrowser;
-}
 
 add_task(async function second_screen_filtered_by_targeting() {
   const sandbox = sinon.createSandbox();
-  let browser = await openAboutWelcome();
-  let aboutWelcomeActor = await getAboutWelcomeParent(browser);
-  // Stub AboutWelcomeParent Content Message Handler
-  sandbox.spy(aboutWelcomeActor, "onContentMessage");
+  let browser = await openAboutWelcome(TEST_DEFAULT_JSON);
 
   await test_screen_content(
     browser,
@@ -191,6 +174,7 @@ add_task(
       ["messaging-system-action.showEmbeddedImport", false]
     );
     sandbox.stub(ShellService, "doesAppNeedPin").returns(false);
+    sandbox.stub(ShellService, "doesAppNeedStartMenuPin").returns(false);
     sandbox.stub(ShellService, "isDefaultBrowser").returns(false);
 
     await clearHistoryAndBookmarks();
@@ -238,6 +222,7 @@ add_task(async function test_aboutwelcome_mr_template_easy_setup_only_import() {
     ["messaging-system-action.showEmbeddedImport", false]
   );
   sandbox.stub(ShellService, "doesAppNeedPin").returns(false);
+  sandbox.stub(ShellService, "doesAppNeedStartMenuPin").returns(false);
   sandbox.stub(ShellService, "isDefaultBrowser").returns(true);
 
   await clearHistoryAndBookmarks();

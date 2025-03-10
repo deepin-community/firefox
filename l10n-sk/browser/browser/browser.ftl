@@ -51,6 +51,70 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = Súkromné prehliadanie { -brand-shortcut-name(case: "gen") }
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = Súkromné prehliadanie { -brand-full-name(case: "gen") }
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — Súkromné prehliadanie { -brand-full-name(case: "gen") }
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — Súkromné prehliadanie { -brand-full-name(case: "gen") }
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Súkromné prehliadanie { -brand-full-name(case: "gen") }
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — Súkromné prehliadanie
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — Súkromné prehliadanie { -brand-full-name(case: "gen") }
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — Súkromné prehliadanie
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Súkromné prehliadanie
+# This gets set as the initial title, and is overridden as soon as we start
+# updating the titlebar based on loaded tabs or private browsing state.
+# This should match the `data-title-default` attribute in both
+# `browser-main-window` and `browser-main-window-mac`.
+browser-main-window-default-title = { -brand-full-name }
 
 ##
 
@@ -309,6 +373,10 @@ quickactions-cmd-viewsource = zobraziť zdrojový kód, zdrojový kód
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = Ďalšie informácie o Rýchlych akciách
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = Stlačením klávesu Tab vyberte:
 
 ## Bookmark Panel
 
@@ -556,8 +624,6 @@ urlbar-page-action-button =
     .tooltiptext = Akcie stránky
 urlbar-revert-button =
     .tooltiptext = Zobraziť adresu v paneli s adresou
-urlbar-show-page-actions-button =
-    .tooltiptext = Zobraziť všetky akcie stránky
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -612,12 +678,61 @@ urlbar-result-action-copy-to-clipboard = Kopírovať
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+# The string returned for an undefined calculator result such as when dividing by 0
+urlbar-result-action-undefined-calculator-result = nedefinované
+# Shows the result of a formula expression being calculated, to a maximum of 9 significant
+# digits. The last = sign will be shown as part of the result (e.g. "= 2").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-2 = = { NUMBER($result, maximumSignificantDigits: 9) }
+# Shows the result of a formula expression being calculated, in scientific notation.
+# The last = sign will be shown as part of the result (e.g. "= 1.0e17").
+# Variables
+#  $result (String): the string representation for a result in scientific notation
+#  (e.g. "1.0e17").
+urlbar-result-action-calculator-result-scientific-notation = = { $result }
 
 ## Strings used for buttons in the urlbar
 
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = Hľadať pomocou vyhľadávača { $engine }
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - Hľadať ({ $localSearchMode })
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } – Hľadať pomocou { $engine }
+urlbar-searchmode-dropmarker =
+    .tooltiptext = Vyberte vyhľadávací modul
+urlbar-searchmode-bookmarks =
+    .label = Záložky
+urlbar-searchmode-tabs =
+    .label = Karty
+urlbar-searchmode-history =
+    .label = História
+urlbar-searchmode-actions =
+    .label = Akcie
+urlbar-searchmode-exit-button =
+    .tooltiptext = Zavrieť
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = Tentoraz vyhľadať pomocou:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = Nastavenia vyhľadávania
+urlbar-searchmode-popup-search-settings = Nastavenia vyhľadávania
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, vyberte vyhľadávací modul
+    .tooltiptext = { $engine }, vyberte vyhľadávací modul
+urlbar-searchmode-button-no-engine =
+    .label = Nie je vybratá žiadna skratka, vyberte skratku
+    .tooltiptext = Nie je vybratá žiadna skratka, vyberte skratku
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -627,6 +742,12 @@ urlbar-result-action-search-bookmarks = Hľadať v záložkách
 urlbar-result-action-search-history = Hľadať v histórii
 urlbar-result-action-search-tabs = Hľadať v otvorených kartách
 urlbar-result-action-search-actions = Akcie vyhľadávania
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = Prepnúť na { $group }
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = Otvoriť { $group }
 
 ## Labels shown above groups of urlbar results
 
@@ -940,6 +1061,9 @@ data-reporting-notification-button =
     .accesskey = v
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Súkromné prehliadanie
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = Súkromné prehliadanie
 # Tooltip for the indicator shown in the window titlebar when content analysis is active.
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
@@ -948,7 +1072,7 @@ content-analysis-indicator-tooltip =
 content-analysis-panel-title = Ochrana údajov
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
-content-analysis-panel-text = Vaša organizácia používa { $agentName } na ochranu pred stratou údajov. <a data-l10n-name="info">Ďalšie informácie</a>
+content-analysis-panel-text-styled = Vaša organizácia používa <b>{ $agentName }</b> na ochranu pred stratou údajov. <a data-l10n-name="info">Ďalšie informácie</a>
 
 ## Unified extensions (toolbar) button
 
@@ -973,6 +1097,15 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Rozšírenia
         Niektoré rozšírenia nie sú povolené
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = Rozšírenia
+    .tooltiptext =
+        Rozšírenia
+        Niektoré rozšírenia sú zakázané
 
 ## Private browsing reset button
 
@@ -1006,13 +1139,14 @@ firefox-relay-offer-why-to-use-relay = Naše bezpečné, ľahko použiteľné ma
 # Variables:
 #  $useremail (String): user email that will receive messages
 firefox-relay-offer-what-relay-provides = Všetky e‑maily odoslané na vaše e‑mailové masky budú preposielané na adresu <strong>{ $useremail }</strong> (pokiaľ sa ich nerozhodnete zablokovať).
-firefox-relay-offer-legal-notice = Kliknutím na „Použiť e‑mailovú masku“ súhlasíte so <label data-l10n-name="tos-url">Zmluvnými podmienkami</label> a <label data-l10n-name="privacy-url">Oznámením o ochrane osobných údajov</label>.
+firefox-relay-offer-legal-notice = Kliknutím na “Použiť e‑mailovú masku” súhlasíte so <label data-l10n-name="tos-url">Zmluvnými podmienkami</label> a <label data-l10n-name="privacy-url">Oznámením o ochrane osobných údajov</label>.
 
 ## Add-on Pop-up Notifications
 
 popup-notification-addon-install-unsigned =
     .value = (neoverený)
 popup-notification-xpinstall-prompt-learn-more = Ďalšie informácie o bezpečnej inštalácii doplnkov
+popup-notification-xpinstall-prompt-block-url = Podrobnosti
 # Note: Access key is set to P to match "Private" in the corresponding localized label.
 popup-notification-addon-privatebrowsing-checkbox =
     .label = Povoliť v súkromných oknách

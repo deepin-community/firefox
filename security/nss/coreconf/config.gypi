@@ -125,6 +125,7 @@
     'fuzz%': 0,
     'fuzz_tls%': 0,
     'fuzz_oss%': 0,
+    'gtests_corpus%': 0,
     'sign_libs%': 1,
     'use_pprof%': 0,
     'ct_verif%': 0,
@@ -200,7 +201,7 @@
       }],
       [ 'fuzz==1', {
         'variables': {
-          'debug_optimization_level%': '1',
+          'debug_optimization_level%': '3',
         },
       }],
       [ 'target_arch=="ia32" or target_arch=="x64"', {

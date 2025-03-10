@@ -12,6 +12,7 @@ neterror-blocked-by-policy-page-title = Pagina bloccada
 neterror-captive-portal-page-title = S'annunziar tar la rait
 neterror-dns-not-found-title = Betg chattà il server
 neterror-malformed-uri-page-title = URL nunvalid
+general-body-title = Sajas precaut. I para da dar in problem.
 
 ## Error page actions
 
@@ -41,6 +42,9 @@ neterror-generic-error = { -brand-short-name } na po betg chargiar questa pagina
 neterror-load-error-try-again = Eventualmain n'è la website temporarmain betg cuntanschibla. Emprova per plaschair pli tard anc ina giada.
 neterror-load-error-connection = Sche ti na pos era betg chargiar in'autra website, controllescha per plaschair la connexiun a l'internet / a la rait.
 neterror-load-error-firewall = Sche tes computer u tia rait èn protegids d'ina firewall u d'in proxy, controllescha per plaschair schebain { -brand-short-name } dastga acceder a l'internet.
+# This warning is only shown on macOS Sequoia and later (see bug 1929377)
+neterror-load-osx-permission = Sche ti emprovas da chargiar ina pagina da la rait locala, controllescha per plaschair che { -brand-short-name } haja las permissiuns necessarias per la rait locala en ils parameters da protecziun da datas e da segirezza da macOS.
+neterror-http-error-page = Verifitgescha che ti has tippà endretg l’adressa da la website.
 neterror-captive-portal = Ti stos t'annunziar en questa rait avant che ti pos acceder a l'internet.
 # Variables:
 # $hostAndPath (String) - a suggested site (e.g. "www.example.com") that the user may have meant instead.
@@ -104,6 +108,9 @@ neterror-proxy-connect-failure-settings = Controllescha ch'ils parameters dal pr
 neterror-proxy-connect-failure-contact-admin = Contactescha l'administratur da tia rait per far la segira ch'il proxy server è en funcziun.
 neterror-content-encoding-error = Contactescha per plaschair l'administratur da la website per infurmar el davart quest problem.
 neterror-unsafe-content-type = Contactescha per plaschair ils administraturs da la website per infurmar els davart quest problem.
+# Variables:
+# $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-basic-http-auth = { -brand-short-name } na sa fida betg da { $hostname } perquai che la connexiun n’è betg segirada. Emprova da midar l’URL en HTTPS.
 neterror-nss-failure-not-verified = La pagina dumandada na po betg vegnir mussada, perquai che l'autenticitad da las datas na po betg vegnir verifitgada.
 neterror-nss-failure-contact-website = Contactescha per plaschair ils administraturs da la website per infurmar els davart quest problem.
 # Variables:
@@ -156,3 +163,11 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = Sche ti n'enconuschas betg 
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = <b>{ $hostname }</b> ha ina directiva da segirezza che sa numna HTTP Strict Transport Security (HSTS). Quai munta che { -brand-short-name } po mo connectar a moda segirada. Igl è impussibel dad agiuntar ina excepziun per visitar questa website.
+cert-error-trust-certificate-transparency-what-can-you-do-about-it = Probablamain nagut cunquai ch’i sa tracta pli probabel dad in problem cun la website sezza.
+certerror-blocked-by-corp-headers-description = Mintgatant protegian websites sasezzas ed autras persunas sco tai dad interacziuns nungiavischadas cun autras websites.
+certerror-coop-learn-more = Ulteriuras infurmaziuns davart directivas COOP (Cross Origin Opener Policies)
+certerror-coep-learn-more = Ulteriuras infurmaziuns davart directivas COEP (Cross Origin Embedder Policies)
+# Variables:
+#   $responsestatus (string) - HTTP response status code (e.g., 500).
+#   $responsestatustext (string) - HTTP response status text (e.g., "Internal Server Error").
+neterror-response-status-code = Code d’errur: { $responsestatus } { $responsestatustext }

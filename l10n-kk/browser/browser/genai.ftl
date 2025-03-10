@@ -60,3 +60,80 @@ genai-input-ask-generic =
 # $provider (string) - name of the provider
 genai-input-ask-provider =
     .placeholder = { $provider } сұрау…
+genai-shortcuts-hide =
+    .label = Чат-бот жарлығын жасыру
+
+## Chatbot header
+
+genai-chatbot-title = ЖИ чат-боты
+genai-header-provider-menu =
+    .title = Чат-ботты таңдау
+genai-header-options-button =
+    .title = Мәзірді ашу
+genai-header-close-button =
+    .title = Жабу
+genai-provider-view-details =
+    .label = Чат-бот мәліметтерін қарау
+genai-provider-about-chatbots =
+    .label = Бұл чат-боттар туралы
+genai-options-reload-generic =
+    .label = ЖИ чат-ботын қайта жүктеу
+# $provider (string) - name of the provider
+genai-options-reload-provider =
+    .label = { $provider } қайта жүктеу
+genai-options-show-shortcut =
+    .label = Мәтінді таңдаған кезде жарлықты көрсету
+genai-options-hide-shortcut =
+    .label = Мәтінді таңдаған кезде жарлықты жасыру
+genai-options-about-chatbot =
+    .label = { -brand-short-name } ішіндегі ЖИ чат-боттары туралы
+
+## Chatbot onboarding
+
+genai-onboarding-header = Шолу кезінде қорытындылау, ми шабуылын жасау және т.б
+# "Switch anytime" refers to allowing the user to switch to a different chatbot.
+genai-onboarding-description = { -brand-short-name } бүйір панелінде пайдалану үшін ЖИ чат-ботын таңдаңыз. Сіз таңдаған кезде біз әрбір чат-бот туралы мәліметтерді көрсетеміз. Кез келген уақытта ауысуға болады. <a data-l10n-name="learn-more">Көбірек білу</a>
+genai-onboarding-primary = Жалғастыру
+genai-onboarding-secondary = Жабу
+genai-onboarding-claude-tooltip =
+    .title = Anthropic Claude
+genai-onboarding-claude-learn = Claude туралы көбірек білу
+genai-onboarding-chatgpt-tooltip =
+    .title = ChatGPT
+genai-onboarding-chatgpt-learn = ChatGPT туралы көбірек білу
+genai-onboarding-copilot-tooltip =
+    .title = Copilot
+genai-onboarding-copilot-learn = Copilot туралы көбірек білу
+genai-onboarding-gemini-tooltip =
+    .title = Google Gemini
+genai-onboarding-gemini-learn = Gemini туралы көбірек білу
+genai-onboarding-huggingchat-tooltip =
+    .title = HuggingChat
+genai-onboarding-huggingchat-learn = HuggingChat туралы көбірек білу
+genai-onboarding-lechat-tooltip =
+    .title = Le Chat Mistral
+genai-onboarding-lechat-learn = Le Chat туралы көбірек білу
+genai-onboarding-select-header = Ұсыныстарды көру үшін мәтінді таңдаңыз
+genai-onboarding-select-description = Мәтінді таңдаған кезде чат-ботқа жіберуге болатын ескертулерді ұсынамыз. Сіз өзіңіздің сұрауларыңызды да жаза аласыз.
+genai-onboarding-select-primary = Чатты бастау
+
+## Chatbot onboarding choices
+## These describe features/capabilities of chatbot providers. These are not buttons/actions.
+
+genai-onboarding-claude-generate = Мәтін мен кодты генерациялау
+genai-onboarding-claude-analyze = Құжаттар мен суреттерді талдау
+genai-onboarding-claude-price = Тегін және ақылы опциялар; тіркелгі қажет
+genai-onboarding-chatgpt-generate = Мәтінді, суреттерді және кодты генерациялау
+genai-onboarding-chatgpt-analyze = Құжаттар мен суреттерді талдау
+genai-onboarding-chatgpt-price = Тегін және ақылы опциялар; кейбір елдер мен тапсырмалар үшін тіркелгі қажет
+genai-onboarding-copilot-generate = Мәтінді, суреттерді және кодты генерациялау
+genai-onboarding-copilot-analyze = Суреттерді талдау
+genai-onboarding-copilot-price = Тегін және ақылы опциялар; кейбір тапсырмалар үшін тіркелгі қажет
+genai-onboarding-gemini-generate = Мәтінді, суреттерді және кодты генерациялау
+genai-onboarding-gemini-analyze = Суреттерді (тегін) және құжаттарды (ақылы) талдау
+genai-onboarding-gemini-price = Тегін және ақылы опциялар; тіркелгі қажет
+genai-onboarding-huggingchat-generate = Мәтін мен кодты генерациялау
+genai-onboarding-huggingchat-switch = Ашық үлгілердің әртүрлі жиынтығы арасында ауысыңыз
+genai-onboarding-huggingchat-price-2 = Тегін; тіркелгі сұраулардың белгілі бір санынан кейін керек болады
+genai-onboarding-lechat-generate = Мәтін мен кодты генерациялау
+genai-onboarding-lechat-price = Тегін; тіркелгі қажет

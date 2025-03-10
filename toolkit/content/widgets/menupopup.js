@@ -130,6 +130,7 @@
         }
         :host(.in-menulist) arrowscrollbox::part(scrollbox) {
           overflow: auto;
+          overscroll-behavior: none;
           margin: 0;
           padding: 0;
         }
@@ -267,7 +268,7 @@
       // further to stay clear of the buttons.
       if (
         this.parentNode?.localName == "menulist" ||
-        !this.scrollBox.hasAttribute("overflowing")
+        !this.scrollBox.overflowing
       ) {
         return;
       }

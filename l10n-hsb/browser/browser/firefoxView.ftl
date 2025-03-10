@@ -32,6 +32,9 @@ firefoxview-tabpickup-progress-label = { $percentValue } % dokónčene
 firefoxview-tabpickup-step-signin-header = Přeńdźće bjezposrědnje mjez gratami
 firefoxview-tabpickup-step-signin-description = Zo byšće tu rajtarki swojeho šmóratka dóstał, přizjewće so najprjedy abo załožće konto.
 firefoxview-tabpickup-step-signin-primarybutton = Dale
+firefoxview-syncedtabs-signin-header-2 = Waš { -brand-product-name } na wšěch wašich gratach
+firefoxview-syncedtabs-signin-description-2 = Zo byšće swoje wočinjene rajtarki na swojim telefonje a druhich gratach widźał, přizjewće so abo registrujće so za konto. Z kontom móžeće tež swoje hesła, swoju historiju a wjace synchronizować.
+firefoxview-syncedtabs-signin-primarybutton-2 = Přizjewić
 firefoxview-syncedtabs-signin-header = Wobstarajće sej rajtarki wot wšudźe
 firefoxview-syncedtabs-signin-description = Zo byšće swoje rajtarki wšudźe widźał, hdźež { -brand-product-name } wužiwaće, přizjewće so pola swojeho konta. Jeli konto nimaće, přewodźimy was přez kroki registracije.
 firefoxview-syncedtabs-signin-primarybutton = Přizjewić abo registrować
@@ -39,6 +42,8 @@ firefoxview-tabpickup-adddevice-header = Synchronizujće { -brand-product-name }
 firefoxview-tabpickup-adddevice-description = Sćehńće { -brand-product-name } za mobilne graty a přizjewće so tam.
 firefoxview-tabpickup-adddevice-learn-how = Zhońće kak
 firefoxview-tabpickup-adddevice-primarybutton = { -brand-product-name } za mobilny grat wobstarać
+firefoxview-syncedtabs-adddevice-header-2 = Wobstarajće sej rajtarki wot wšudźe
+firefoxview-syncedtabs-adddevice-description-2 = Přizjewće pola { -brand-product-name } na swojim telefonje abo druhim ličaku, zo byšće rajtarki tu widźał. Zhońće, kak móžeće <a data-l10n-name="url">přidatne graty zwjazać</a>.
 firefoxview-syncedtabs-adddevice-header = Přizjewće so pola { -brand-product-name } na swojich druhich gratach
 firefoxview-syncedtabs-adddevice-description = Zo byšće swoje rajtarki wšudźe widźał, hdźež { -brand-product-name } wužiwaće, přizjewće so na wšěch swojich gratach. Zhońće, kak móžeće z <a data-l10n-name="url">přidatnymi gratami zwjazać</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = Wupruwujće { -brand-product-name } za mobilny grat
@@ -165,6 +170,9 @@ firefoxview-search-text-box-history =
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Njedawno začinjene rajtarki pytać
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-tabs =
+    .placeholder = Rajtarki přepytać
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
 firefoxview-search-text-box-syncedtabs =
     .placeholder = Synchronizowane rajtarki pytać
 # Placeholder for the input field to search in open tabs ("search" is a verb).
@@ -230,6 +238,8 @@ firefoxview-choose-browser-button = Wubjerće wobhladowak
 firefoxview-dont-remember-history-empty-header = Njeje ničo, zo hodźi so pokazać
 firefoxview-dont-remember-history-empty-description = Škit wašeje priwatnosće je naša dušina naležnosć. Tohodla móžeće aktiwitu wodźić,  na kotruž so { -brand-short-name } dopomina.
 firefoxview-dont-remember-history-empty-description-two = Na zakładźe wašich aktualnych nastajenjow so { -brand-short-name } na wašu aktiwitu njedopomina, hdyž přehladujeće. Zo byšće to změnił, <a data-l10n-name="history-settings-url-two">změńće swoje nastajenja historije, zo by sej waša historija spomjatkowała</a>.
+firefoxview-dont-remember-history-empty-header-2 = Maće kontrolu wo tym, štož sej { -brand-short-name } spomjatkuje
+firefoxview-dont-remember-history-empty-description-one = Tuchwilu sej { -brand-short-name } wašu přehladowansku aktiwitu njespomjatkuje. Zo byšće to změnił, <a data-l10n-name="history-settings-url-two">aktualizujće nastajenja swojeje historije</a>.
 
 ##
 

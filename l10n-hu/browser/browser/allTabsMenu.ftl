@@ -16,3 +16,10 @@ all-tabs-menu-close-duplicate-tabs =
     .label = Ismétlődő lapok bezárása
 all-tabs-menu-close-all-duplicate-tabs =
     .label = Összes ismétlődő lap bezárása
+all-tabs-menu-synced-tabs =
+    .label = Lapok más eszközökről
+all-tabs-menu-current-window-header = Jelenlegi ablak
+# "Show all" is for showing all open groups as well as saved groups. Initially,
+# we only show up to five of these groups.
+all-tabs-menu-tab-groups-show-all =
+    .label = Összes megjelenítése

@@ -32,13 +32,18 @@ firefoxview-tabpickup-progress-label = { $percentValue }% finita
 firefoxview-tabpickup-step-signin-header = Senĝene iru de unu aparato al la alia
 firefoxview-tabpickup-step-signin-description = Antaŭ ol povi malfermi ĉi tie la langetojn de via portebla, bonvolu komenci seancon aŭ krei konton.
 firefoxview-tabpickup-step-signin-primarybutton = Daŭrigi
+firefoxview-syncedtabs-signin-header-2 = Via { -brand-product-name } en ĉiuj viaj aparatoj
+firefoxview-syncedtabs-signin-description-2 = Por vidi langetojn malfermitaj en via telefono kaj aliaj aparatoj, komencu seancon aŭ kreu konton. Per konto vi povas ankaŭ speguli viajn pasvortojn, historion, kaj pli.
+firefoxview-syncedtabs-signin-primarybutton-2 = Komenci seancon
 firefoxview-syncedtabs-signin-header = Reprenu viajn langetojn kie ajn vi estas
 firefoxview-syncedtabs-signin-description = Por vidi viajn langetojn, kie ajn vi uzas { -brand-product-name }, komencu seancon en via konto. Se vi ne havas konton, ni akompanos vin tra la registriĝo.
-firefoxview-syncedtabs-signin-primarybutton = Komenci seancon aŭ registriĝi
+firefoxview-syncedtabs-signin-primarybutton = Komenci seancon aŭ krei konton
 firefoxview-tabpickup-adddevice-header = Speguli { -brand-product-name } en via telefono aŭ tabulkomputilo
 firefoxview-tabpickup-adddevice-description = Elŝutu { -brand-product-name } por poŝaparatoj kaj komencu seancon tie.
 firefoxview-tabpickup-adddevice-learn-how = Lernu kiel fari
 firefoxview-tabpickup-adddevice-primarybutton = Elŝutu { -brand-product-name } por poŝaparatoj
+firefoxview-syncedtabs-adddevice-header-2 = Reprenu viajn langetojn kie ajn vi estas
+firefoxview-syncedtabs-adddevice-description-2 = Komencu seancon de { -brand-product-name } en via telefono aŭ alia komputilo por vidi la ĉi tieajn langetojn. Jen pli da informo pri <a data-l10n-name="url">konekto de aldonaj aparatoj</a>.
 firefoxview-syncedtabs-adddevice-header = Komencu seancon de { -brand-product-name } en viaj aliaj aparatoj
 firefoxview-syncedtabs-adddevice-description = Por vidi viajn langetojn kie ajn vi uzas { -brand-product-name }, komencu seancon en ĉiuj viaj aparatoj. Pli da informo pri kiel <a data-l10n-name="url">konekti aldonajn aparatojn</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = Provu { -brand-product-name } por poŝaparatoj
@@ -165,6 +170,9 @@ firefoxview-search-text-box-history =
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Serĉi en ĵuse fermitaj langetoj
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-tabs =
+    .placeholder = Serĉi langetojn
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
 firefoxview-search-text-box-syncedtabs =
     .placeholder = Serĉi spegulitajn langetojn
 # Placeholder for the input field to search in open tabs ("search" is a verb).
@@ -228,6 +236,8 @@ firefoxview-choose-browser-button = Elekti retumilon
 firefoxview-dont-remember-history-empty-header = Nenio montrebla
 firefoxview-dont-remember-history-empty-description = Protekto de via privateco estas kerna afero por ni. Tial vi povas regi kion { -brand-short-name } memoras.
 firefoxview-dont-remember-history-empty-description-two = Laŭ viaj nunaj agordoj { -brand-short-name } ne memoras kion vi faras dum via retumo. Vi povas tamen <a data-l10n-name="history-settings-url-two">ŝanĝi viajn agordojn de historio por memori vian retumon</a>.
+firefoxview-dont-remember-history-empty-header-2 = Vi decidas, kion { -brand-short-name } memoros
+firefoxview-dont-remember-history-empty-description-one = Nun { -brand-short-name } ne memoras vian retumon. Por ŝanĝi tion, <a data-l10n-name="history-settings-url-two">modifu viajn agordojn pri historio</a>.
 
 ##
 

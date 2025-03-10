@@ -4,7 +4,7 @@ ifeq (,$(TESTDIR))
 include debian/make.mk
 # Use dpkg-buildflags to get build flags, but exclude -g, that is dealt with
 # via configure options.
-dpkg_buildflags = $(and $(1),$(shell DEB_CFLAGS_MAINT_STRIP="-g -mlsx" dpkg-buildflags --get $(1)))
+dpkg_buildflags = $(and $(1),$(shell DEB_CFLAGS_MAINT_STRIP="-g" DEB_CXXFLAGS_MAINT_STRIP="-g" dpkg-buildflags --get $(1)))
 $(call lazy,CFLAGS,$$(call dpkg_buildflags,CFLAGS))
 $(call lazy,CXXFLAGS,$$(call dpkg_buildflags,CXXFLAGS))
 $(call lazy,CPPFLAGS,$$(call dpkg_buildflags,CPPFLAGS))
@@ -114,27 +114,46 @@ ifneq (,$(filter mips%,$(DEB_HOST_ARCH)))
 endif
 
 ifeq (default,$(origin CC))
+ifneq (,$(filter-out bullseye bookworm,$(DIST)))
 CC := clang
-endif
-ifeq (default,$(origin CXX))
-CXX := clang++
-endif
-
+else
 ifeq ($(DIST),bookworm)
 CC := gcc-11
-CXX := g++-11
+else
+CC := gcc
 endif
+endif
+endif
+ifeq (default,$(origin CXX))
+ifneq (,$(filter-out bullseye bookworm,$(DIST)))
+CXX := clang++
+else
+ifeq ($(DIST),bookworm)
+CXX := g++-11
+else
+CXX := g++
+endif
+endif
+endif
+
+# When using clang, the build system uses ld.lld instead of BFD ld.
+ifeq (,$(findstring clang,$(CC)))
+# Reduce memory usage of the linker at the expense of processing time
+# This should help on lower-end architectures like arm and mips, which
+# spend an immense amount of time swapping.
+LDFLAGS += -Wl,--reduce-memory-overheads
+# Work around https://sourceware.org/bugzilla/show_bug.cgi?id=30566
+ifeq (,$(filter i386 amd64 ppc64%,$(DEB_HOST_ARCH)))
+LDFLAGS += -Wl,--no-keep-memory
+endif
+endif
+# Also add execution time and memory usage stats in the logs
+LDFLAGS += -Wl,--stats
 
 ifneq (,$(filter mips mipsel,$(DEB_HOST_ARCH)))
 CONFIGURE_FLAGS += --disable-jit
 endif
 
-# Work around https://sourceware.org/bugzilla/show_bug.cgi?id=30578
-ifneq (,$(filter trixie,$(DIST)))
-ifneq (,$(filter amd64,$(DEB_HOST_ARCH)))
-CFLAGS += -DFFMPEG_DISABLE_INLINE_ASM
-endif
-endif
 RUSTFLAGS = --remap-path-prefix=$(CURDIR)=.
 
 EXPORTS := CC CXX CFLAGS CXXFLAGS CPPFLAGS LDFLAGS MOZILLA_OFFICIAL RUSTFLAGS

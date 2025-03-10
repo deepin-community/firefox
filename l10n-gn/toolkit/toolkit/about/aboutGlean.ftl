@@ -16,6 +16,11 @@ about-glean-interface-description =
     ha’e mba’ekuaarã ñembyatyha arandukarenda ojeporúva { -vendor-short-name } apopyrépe.
     Ko jehechaha ojejapo mboguatahára ha ta’ãhára
     <a data-l10n-name="fog-link">oha’ã hag̃ua ipoite rupi jeporupyrã</a>.
+about-glean-category-about-glean = { -glean-brand-name } rehegua
+about-glean-category-manual-testing = Po Rupivegua
+about-glean-category-adhoc-testing = Jeporu Reigua
+about-glean-category-profiler = Perfilador jeporu rehegua
+about-glean-category-about-data = Mba’ekuaarã rehegua
 about-glean-upload-enabled = Mba’ekuaarã ñemyanyhẽ hendýma.
 about-glean-upload-disabled = Mba’ekuaarã ñemyanyhẽ oguéma.
 about-glean-upload-enabled-local = Mba’ekuaarã myanyhẽ hendýta emondo hag̃ua mohendahavusu ag̃uiguápe.
@@ -99,7 +104,15 @@ about-glean-adhoc-note =
     Kóva he’ise pe métrica ha pe métrica réra oguerekoha ysaja
     <code>camelCase</code> ojuavýva umi APIs de Rust y C++ reheguágui.
 controls-button-label-verbose = Emboheko ha emondo ping
+about-glean-feedback-settings-only =
+    .message = ¡Ñemboheko jejapopyre!
+about-glean-feedback-settings-and-ping =
+    .message = ¡Ñemboheko jejapopyre ha ping mondopyre!
 about-glean-about-data-header = Mba’ekuaarã rehegua
+about-glean-about-data-description = Oĩ heta tembiporu eiporukuaáva ehecha hag̃ua ne mba’ekuaarãnguéra, eikuaa rire mba’etépa pe rehekáva.
+about-glean-about-data-description-list-intro =
+    Eporandu pe tysýi eku’evévo eikuaa hag̃ua mba’épepa ojeporu
+    peteĩteĩva tembiporu:
 about-glean-about-data-explanation =
     Eikundaha hag̃ua mba’ekuaarã mbyatypyre rysýire, eporandu pe
     <a data-l10n-name="glean-dictionary-link">{ -glean-brand-name } Ñe’ẽryru</a>.

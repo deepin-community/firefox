@@ -32,6 +32,7 @@ firefoxview-tabpickup-progress-label = { $percentValue }% completado
 firefoxview-tabpickup-step-signin-header = Cambiar sen problemas entre dispositivos
 firefoxview-tabpickup-step-signin-description = Para ver as lapelas do seu teléfono aquí, primeiro inicie sesión ou cree unha conta.
 firefoxview-tabpickup-step-signin-primarybutton = Continuar
+firefoxview-syncedtabs-signin-primarybutton-2 = Identificarse
 firefoxview-syncedtabs-signin-header = Colla pestanas desde calquera lugar
 firefoxview-syncedtabs-signin-primarybutton = Acceder ou rexistrarse
 firefoxview-tabpickup-adddevice-header = Sincronice { -brand-product-name } no seu teléfono ou tableta
@@ -161,11 +162,25 @@ firefoxview-search-text-box-history =
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Busca nas lapelas pechadas recentemente
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-tabs =
+    .placeholder = Buscar nas lapelas
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
 firefoxview-search-text-box-syncedtabs =
     .placeholder = Buscar nas lapelas sincronizadas
 # Placeholder for the input field to search in open tabs ("search" is a verb).
 firefoxview-search-text-box-opentabs =
     .placeholder = Buscar nas lapelas abertas
+# "Search" is a noun (as in "Results of the search for")
+# Variables:
+#   $query (String) - The search query used for searching through browser history.
+firefoxview-search-results-header = Resultados da busca para «{ $query }»
+# Variables:
+#   $count (Number) - The number of visits matching the search query.
+firefoxview-search-results-count =
+    { $count ->
+        [one] { $count } sitio
+       *[other] { $count } sitios
+    }
 # Message displayed when a search is performed and no matching results were found.
 # Variables:
 #   $query (String) - The search query.
@@ -173,6 +188,7 @@ firefoxview-search-results-empty = Non hai resultados para «{ $query }»
 firefoxview-sort-history-by-date-label = Ordenar pola data
 firefoxview-sort-history-by-site-label = Ordenar polo sitio
 firefoxview-sort-open-tabs-by-recency-label = Ordenar por actividade recente
+firefoxview-sort-open-tabs-by-order-label = Ordenar por orde das tabulacións
 # Variables:
 #   $url (string) - URL that will be opened in the new tab
 firefoxview-opentabs-tab-row =
@@ -198,6 +214,7 @@ firefoxview-view-more-browsing-history = Ver máis historial de navegación
 ## Message displayed in Firefox View when the user has no history data
 
 firefoxview-history-empty-header = Volva a onde estivo
+firefoxview-history-empty-description = A medida que navegues, as páxinas que visites listaranse aquí.
 
 ##
 

@@ -194,6 +194,7 @@ class Selection;
 enum class ShadowRootMode : uint8_t;
 class ShadowRoot;
 struct StructuredSerializeOptions;
+class TrustedHTMLOrString;
 class WorkerPrivate;
 enum class ElementCallbackType;
 enum class ReferrerPolicy : uint8_t;
@@ -228,6 +229,7 @@ enum EventNameType {
   EventNameType_SVGSVG = 0x0008,      // the svg element
   EventNameType_SMIL = 0x0010,        // smil elements
   EventNameType_HTMLBodyOrFramesetOnly = 0x0020,
+  EventNameType_HTMLMedia = 0x0040,
 
   EventNameType_HTMLXUL = 0x0003,
   EventNameType_All = 0xFFFF
@@ -246,13 +248,9 @@ struct EventNameMapping {
   mozilla::EventClassID mEventClassID;
 };
 
-namespace mozilla {
-enum class PreventDefaultResult : uint8_t { No, ByContent, ByChrome };
-
-namespace dom {
+namespace mozilla::dom {
 enum JSONBehavior { UndefinedIsNullStringLiteral, UndefinedIsVoidString };
-}
-}  // namespace mozilla
+}  // namespace mozilla::dom
 
 class nsContentUtils {
   friend class nsAutoScriptBlockerSuppressNodeRemoved;
@@ -397,6 +395,12 @@ class nsContentUtils {
    */
   static bool ShouldResistFingerprinting(const char* aJustification,
                                          RFPTarget aTarget);
+
+  static bool ETPSaysShouldNotResistFingerprinting(
+      nsICookieJarSettings* aCookieJarSettings, bool aIsPBM);
+
+  static bool ETPSaysShouldNotResistFingerprinting(nsIChannel* aChannel,
+                                                   nsILoadInfo* aLoadInfo);
 
   // A helper function to calculate the rounded window size for fingerprinting
   // resistance. The rounded size is based on the chrome UI size and available
@@ -874,17 +878,6 @@ class nsContentUtils {
 
  public:
   /**
-   * Parse a margin string of format 'top, right, bottom, left' into
-   * an nsIntMargin.
-   *
-   * @param aString the string to parse
-   * @param aResult the resulting integer
-   * @return whether the value could be parsed
-   */
-  static bool ParseIntMarginValue(const nsAString& aString,
-                                  nsIntMargin& aResult);
-
-  /**
    * Parse the value of the <font size=""> attribute according to the HTML5
    * spec as of April 16, 2012.
    *
@@ -1093,28 +1086,6 @@ class nsContentUtils {
   static mozilla::PresShell* GetPresShellForContent(const nsIContent* aContent);
 
   /**
-   * Method to do security and content policy checks on the image URI
-   *
-   * @param aURI uri of the image to be loaded
-   * @param aNode, the context the image is loaded in (eg an element)
-   * @param aLoadingDocument the document we belong to
-   * @param aLoadingPrincipal the principal doing the load
-   * @param [aContentPolicyType=nsIContentPolicy::TYPE_INTERNAL_IMAGE]
-   * (Optional) The CP content type to use
-   * @param aImageBlockingStatus the nsIContentPolicy blocking status for this
-   *        image.  This will be set even if a security check fails for the
-   *        image, to some reasonable REJECT_* value.  This out param will only
-   *        be set if it's non-null.
-   * @return true if the load can proceed, or false if it is blocked.
-   *         Note that aImageBlockingStatus, if set will always be an ACCEPT
-   *         status if true is returned and always be a REJECT_* status if
-   *         false is returned.
-   */
-  static bool CanLoadImage(nsIURI* aURI, nsINode* aNode,
-                           Document* aLoadingDocument,
-                           nsIPrincipal* aLoadingPrincipal);
-
-  /**
    * Returns true if objects in aDocument shouldn't initiate image loads.
    */
   static bool DocumentInactiveForImageLoads(Document* aDocument);
@@ -1218,11 +1189,6 @@ class nsContentUtils {
   static void GetEventArgNames(int32_t aNameSpaceID, nsAtom* aEventName,
                                bool aIsForWindow, uint32_t* aArgCount,
                                const char*** aArgNames);
-
-  /**
-   * Returns true if this document is in a Private Browsing window.
-   */
-  static bool IsInPrivateBrowsing(const Document* aDoc);
 
   /**
    * Returns true if this loadGroup uses Private Browsing.
@@ -1341,6 +1307,7 @@ class nsContentUtils {
   static void LogMessageToConsole(const char* aMsg);
 
   static bool SpoofLocaleEnglish();
+  static bool SpoofLocaleEnglish(const Document* aDocument);
 
   /**
    * Get the localized string named |aKey| in properties file |aFile|.
@@ -1906,7 +1873,9 @@ class nsContentUtils {
 
   MOZ_CAN_RUN_SCRIPT
   static void SetHTMLUnsafe(mozilla::dom::FragmentOrElement* aTarget,
-                            Element* aContext, const nsAString& aSource);
+                            Element* aContext,
+                            const mozilla::dom::TrustedHTMLOrString& aSource,
+                            bool aIsShadowRoot, mozilla::ErrorResult& aError);
   /**
    * Invoke the fragment parsing algorithm (innerHTML) using the HTML parser.
    *
@@ -2161,12 +2130,9 @@ class nsContentUtils {
    * @param aTargetSpec the target (like target=, may be empty).
    * @param aClick whether this was a click or not (if false, this method
    *               assumes you just hovered over the link).
-   * @param aIsTrusted If false, JS Context will be pushed to stack
-   *                   when the link is triggered.
    */
   static void TriggerLink(nsIContent* aContent, nsIURI* aLinkURI,
-                          const nsString& aTargetSpec, bool aClick,
-                          bool aIsTrusted);
+                          const nsString& aTargetSpec, bool aClick);
 
   /**
    * Get the link location.
@@ -2569,12 +2535,6 @@ class nsContentUtils {
   static void GetModifierSeparatorText(nsAString& text);
 
   /**
-   * Returns if aContent has the 'scrollgrab' property.
-   * aContent may be null (in this case false is returned).
-   */
-  static bool HasScrollgrab(nsIContent* aContent);
-
-  /**
    * Flushes the layout tree (recursively)
    *
    * @param aWindow the window the flush should start at
@@ -2748,6 +2708,12 @@ class nsContentUtils {
   static bool IsJavascriptMIMEType(const nsAString& aMIMEType);
   static bool IsJavascriptMIMEType(const nsACString& aMIMEType);
 
+  /**
+   * Returns true if the given MIME type string is a valid JSON MIME type,
+   * otherwise false.
+   */
+  static bool IsJsonMimeType(const nsAString& aMimeType);
+
   static void SplitMimeType(const nsAString& aValue, nsString& aType,
                             nsString& aParams);
 
@@ -2828,7 +2794,7 @@ class nsContentUtils {
    * Note that this method returns `nullptr` if `TextEditor` for the
    * `aAnonymousContent` hasn't been created yet.
    */
-  static mozilla::TextEditor* GetTextEditorFromAnonymousNodeWithoutCreation(
+  static mozilla::TextEditor* GetExtantTextEditorFromAnonymousNode(
       const nsIContent* aAnonymousContent);
 
   /**
@@ -3054,8 +3020,8 @@ class nsContentUtils {
       float aY, int32_t aButton, int32_t aButtons, int32_t aClickCount,
       int32_t aModifiers, bool aIgnoreRootScrollFrame, float aPressure,
       unsigned short aInputSourceArg, uint32_t aIdentifier, bool aToWindow,
-      mozilla::PreventDefaultResult* aPreventDefault,
-      bool aIsDOMEventSynthesized, bool aIsWidgetEventSynthesized);
+      bool* aPreventDefault, bool aIsDOMEventSynthesized,
+      bool aIsWidgetEventSynthesized);
 
   static void FirePageShowEventForFrameLoaderSwap(
       nsIDocShellTreeItem* aItem,
@@ -3277,8 +3243,10 @@ class nsContentUtils {
    * take that into account.
    *
    * @param aMIMEType  The MIME type of the document being loaded.
+   * @param aIsSandboxed  If the document is loaded in an iframe sandbox.
    */
-  static uint32_t HtmlObjectContentTypeForMIMEType(const nsCString& aMIMEType);
+  static uint32_t HtmlObjectContentTypeForMIMEType(const nsCString& aMIMEType,
+                                                   bool aIsSandboxed);
 
   /**
    * Detect whether a string is a local-url.
@@ -3442,8 +3410,8 @@ class nsContentUtils {
    * Return safe area insets of window that defines as
    * https://drafts.csswg.org/css-env-1/#safe-area-insets.
    */
-  static mozilla::ScreenIntMargin GetWindowSafeAreaInsets(
-      nsIScreen* aScreen, const mozilla::ScreenIntMargin& aSafeareaInsets,
+  static mozilla::LayoutDeviceIntMargin GetWindowSafeAreaInsets(
+      nsIScreen* aScreen, const mozilla::LayoutDeviceIntMargin& aSafeareaInsets,
       const mozilla::LayoutDeviceIntRect& aWindowRect);
 
   struct SubresourceCacheValidationInfo {
@@ -3605,8 +3573,6 @@ class nsContentUtils {
           aCallback);
 
   static nsINode* GetCommonAncestorHelper(nsINode* aNode1, nsINode* aNode2);
-  static nsINode* GetCommonShadowIncludingAncestorHelper(nsINode* aNode1,
-                                                         nsINode* aNode2);
   static nsIContent* GetCommonFlattenedTreeAncestorHelper(
       nsIContent* aContent1, nsIContent* aContent2);
 
@@ -3731,6 +3697,12 @@ nsContentUtils::InternalContentPolicyTypeToExternal(nsContentPolicyType aType) {
     case nsIContentPolicy::TYPE_INTERNAL_FETCH_PRELOAD:
       return ExtContentPolicy::TYPE_FETCH;
 
+    case nsIContentPolicy::TYPE_INTERNAL_EXTERNAL_RESOURCE:
+      return ExtContentPolicy::TYPE_OTHER;
+
+    case nsIContentPolicy::TYPE_INTERNAL_JSON_PRELOAD:
+      return ExtContentPolicy::TYPE_JSON;
+
     case nsIContentPolicy::TYPE_INVALID:
     case nsIContentPolicy::TYPE_OTHER:
     case nsIContentPolicy::TYPE_SCRIPT:
@@ -3758,6 +3730,7 @@ nsContentUtils::InternalContentPolicyTypeToExternal(nsContentPolicyType aType) {
     case nsIContentPolicy::TYPE_PROXIED_WEBRTC_MEDIA:
     case nsIContentPolicy::TYPE_WEB_IDENTITY:
     case nsIContentPolicy::TYPE_WEB_TRANSPORT:
+    case nsIContentPolicy::TYPE_JSON:
       // NOTE: When adding something here make sure the enumerator is defined!
       return static_cast<ExtContentPolicyType>(aType);
 
@@ -3769,12 +3742,6 @@ nsContentUtils::InternalContentPolicyTypeToExternal(nsContentPolicyType aType) {
   MOZ_ASSERT(false, "Unhandled nsContentPolicyType value");
   return ExtContentPolicy::TYPE_INVALID;
 }
-
-namespace mozilla {
-std::ostream& operator<<(
-    std::ostream& aOut,
-    const mozilla::PreventDefaultResult aPreventDefaultResult);
-}  // namespace mozilla
 
 class MOZ_RAII nsAutoScriptBlocker {
  public:

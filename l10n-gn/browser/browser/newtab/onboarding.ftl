@@ -226,7 +226,9 @@ mr2022-onboarding-set-default-subtitle = Eiporu peteĩ kundahára atyguasu viru�
 mr2022-onboarding-get-started-primary-subtitle = Ore rembiapo ipyahuvéva rojapo ndéve g̃uarã, eikundaha hag̃ua apañuai’ỹre. Oreko heta tembiapoite ro’éva ehayhutaha.
 mr2022-onboarding-get-started-primary-button-label = Emboheko sapy’aitépe
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Emboheko pya’eterei
 mr2022-onboarding-import-subtitle = Emboheko { -brand-short-name } eipotaháicha. Embojuaju techaukaha, ñe’ẽñemi ha hetave ne kundahára itujavéva guive.
@@ -356,6 +358,10 @@ onboarding-mobile-download-security-and-privacy-subtitle = Embojuehepaite vove, 
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } oĩ tapiaite nendive
 onboarding-gratitude-security-and-privacy-subtitle = Aguyje eiporu haguére { -brand-short-name }, oykekóva Fundación Mozilla. Nepytyvõ rupive, romba’apo Ñanduti hekorosã ha ijuruja hag̃ua opavavetépe g̃uarã.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Embojuehe opavave mba’e’oka ndive
+onboarding-sign-up-button = Emoinge térã eñemboheraguapy
+onboarding-sign-up-secondary-button = Eñepyrũ eikundaha
 
 ## New user time and familiarity survey strings
 
@@ -375,3 +381,76 @@ onboarding-new-user-survey-familiarity-based-option-1 = Che pyahu ápe
 onboarding-new-user-survey-familiarity-based-option-2 = Aiporu’imíkuri
 onboarding-new-user-survey-familiarity-based-option-3 = Aikuaaporã mba’épa
 onboarding-new-user-survey-familiarity-based-option-4 = Aiporuva’kue yma, aréma upehague
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Eremi moõpa eipota umi tendayke
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Emoambue ejapose vove tenda yke ñembohekópe.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Ne rendayke, ha’eháicha
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Eiporavo tendayke ra’ãngarã
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Tendayke yke gotyo
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Tendayke yvate gotyo
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Ko’ápe oĩ umi tendayke oñembo’ýva
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Ehechauka tendayke oñembo’ýva
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Eiporu umi tendayke yke gotyo oĩva. Emoambue reipotáramo tenda yke ñembohekópe.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Eiporu tendayke oñembo’ýva
+onboarding-flair-text = ¡Pyahu!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Ereko Tendayke ñenohápe
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Peteĩ kundahára rovetã ohechaukáva tendayke mba’erechaha tenda yke gotyo { -brand-shorter-name }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Peteĩ kundahára rovetã ohechaukáva tendayke mba’erechaha tenda yke gotyo { -brand-shorter-name }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Kundahára rovetã ohechaukáva tendayke yvate gotyo.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Kundahára rovetã ohechaukáva tendayke yvate gotyo.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Eiporu peteĩ chatbot IA tenda yképe
+onboarding-genai-sidebar-primary-button = Eiporavo chatbot
+onboarding-genai-sidebar-secondary-button = Eñepyrũ eikundaha
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Embohekopákatu { -brand-short-name }
+onboarding-checklist-subtitle = Emoĩmba ko’ã mba’e eiporu porãve hag̃ua kundahára.
+onboarding-checklist-set-default = Ajapo { -brand-short-name }-gui kundahára ypyguáva
+onboarding-checklist-pin = Emboja { -brand-short-name } tembiaporã rendápe
+onboarding-checklist-import = Emba’egueru kundahára itujavévagui
+onboarding-checklist-extension = Embojuaju jepysokue
+onboarding-checklist-sign-up = Eike térã eñemboheraguapy ne mba’etépe
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Eiporu tendayke aty eime porãve ha epayve hag̃ua
+tab-groups-onboarding-feature-callout-subtitle = Eñeorganisa emoĩvo peteĩ tendayke ambuéva ári emoheñói hag̃ua aty peteĩha.
+tab-groups-onboarding-dismiss = MONEĨ
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Emomaitei { -brand-product-name } mba’etekuéra
+multi-profile-spotlight-cta = Emoheñói mba’ete
+multi-profile-callout-cta = Emoheñói mba’ete
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = ¡Emboguejy, embojuehe ha oĩma!
+dismiss-button-label = Mboyke
+sync-to-mobile-button-label = Ñembojuehe pumbyry ndive
+desktop-to-mobile-qr-code-alt =
+    .aria-label = QR ayvu emboguejy hag̃ua { -brand-product-name } pumbyrýpe

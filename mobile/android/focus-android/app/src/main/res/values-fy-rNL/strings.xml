@@ -84,7 +84,6 @@
     <string name="share_dialog_title">Diele fia</string>
 
     <string name="notification_erase_title_android_14">Navigaasjeskiednis wiskje?</string>
-    <string name="notification_erase_text_android_14" moz:RemovedIn="124" tools:ignore="UnusedResources">Tik op dizze notifikaasje of slút him om jo navigaasjeskiednis feilich te wiskje.</string>
 
     <!-- Text shown in the notification description that pops up to remind the user that a browsing session is active
     for Android 14+. -->
@@ -352,6 +351,11 @@
     <!-- %1$s will be replaced with the name of the app (e.g. Firefox Focus) -->
     <string name="preference_mozilla_telemetry_summary2">Mozilla stribbet dernei allinnich te sammeljen wat nedich is om %1$s foar elkenien oan te bieden en te ferbetterjen.</string>
 
+    <!-- Preference switch for daily usage ping data collection -->
+    <string name="preference_daily_usage_ping_title">Ping foar deistich gebrûk</string>
+    <string name="preference_daily_usage_ping_description">Dit helpt Mozilla om aktive brûkers te skatten.</string>
+    <string name="preference_daily_usage_ping_learn_more">Mear ynfo</string>
+
     <!-- In-app link (in settings) to Focus privacy notice. -->
     <string name="preference_privacy_notice">Privacyferklearring</string>
 
@@ -360,6 +364,9 @@
 
     <!-- Link to Focus licensing information from other libraries that we use. -->
     <string name="preference_libraries_we_use">Brûkte biblioteken</string>
+
+    <!-- Link to Focus Crash reports list. -->
+    <string name="preference_crashes">Ungelokken</string>
 
     <!-- Open Source Licenses page title. The first parameter is the app name -->
     <string name="open_source_licenses_title">%s | OSS-biblioteken</string>
@@ -516,10 +523,7 @@
 
 
 
-  <!-- Content description (not visible, for screen readers etc.): This is the description for the close button from the new onboarding flow screen one and two -->
-    <string name="onboarding_close_button_content_description">Slute</string>
-
-    <!-- New Onboarding flow first screen title -->
+  <!-- New Onboarding flow first screen title -->
     <!-- %1$s will be replaced by the app name and build variant(e.g. Firefox Focus, Firefox Klar Nightly) -->
     <string name="onboarding_first_screen_title">Wolkom bij %1$s</string>
 
@@ -841,7 +845,7 @@
     <string name="studies_learn_more">Mear ynfo</string>
 
     <!-- Dialog message shown when some changes are made on studies -->
-    <string name="studies_restart_app">De tapassing wurdt ôfsluten om wizigingen ta te passen</string>
+    <string name="studies_restart_app" moz:removedIn="135">De tapassing wurdt ôfsluten om wizigingen ta te passen</string>
 
     <!-- Title of the remove studies button -->
     <string name="studies_remove">Fuortsmite</string>
@@ -929,9 +933,6 @@
 
     <!-- Label for the button in the snackbar that switches to the newly opened tab -->
     <string name="open_new_tab_snackbar">Wikselje</string>
-
-    <!-- Text displayed in a notification when the user enters full screen mode -->
-    <string name="full_screen_notification" moz:removedIn="130" tools:ignore="UnusedResources">Folslein skerm wurdt iepene</string>
 
     <!-- Preference for switching to a new tab immediately after opening -->
     <string name="preference_open_new_tab">Wikselje daliks nei keppeling yn nij ljepblêd</string>
@@ -1123,8 +1124,10 @@ As jo earder al mei súkses ferbining hân hawwe mei dizze server, kin de flater
     <string name="promote_search_widget_snackbar_message">Widget oan startskerm tafoege</string>
 
     <!-- Messages explaining how to exit fullscreen mode -->
-    <!-- Message shown to explain how to exit fullscreen mode when gesture navigation is enabled -->
-    <string name="exit_fullscreen_with_gesture">Sleep fan de boppekant ôf en brûk it tebek-gebear om it folslein skerm ôf te sluten</string>
-    <!-- Message shown to explain how to exit fullscreen mode when using back button navigation -->
-    <string name="exit_fullscreen_with_back_button">Sleep fan de boppekant ôf en druk op tebek om it folslein skerm ôf te sluten</string>
+    <!-- Message shown to explain how to exit fullscreen mode when gesture navigation is enabled. -->
+    <!-- Localisation note: this text should be as short as possible, max 68 chars -->
+    <string name="exit_fullscreen_with_gesture_short">Sleep fan de boppekant ôf &amp; brûk it gebear werom om ôf te sluten</string>
+    <!-- Message shown to explain how to exit fullscreen mode when using back button navigation. -->
+    <!-- Localisation note: this text should be as short as possible, max 68 chars -->
+    <string name="exit_fullscreen_with_back_button_short">Sleep fan de boppekant ôf &amp; druk it gebear werom om ôf te sluten</string>
 </resources>

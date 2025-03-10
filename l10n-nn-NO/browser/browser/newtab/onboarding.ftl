@@ -225,7 +225,9 @@ mr2022-onboarding-set-default-subtitle = Bruk ein nettlesar støtta av ein ideel
 mr2022-onboarding-get-started-primary-subtitle = Den nyaste versjonen vår er laga for å møte dine behov og gjere det enklare å navigere på nettet. Han er fullpakka med funksjonar vi trur du kjem til like.
 mr2022-onboarding-get-started-primary-button-label = Snøgg konfigurering
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Lynrask konfigurering
 mr2022-onboarding-import-subtitle = Konfiguer { -brand-short-name } slik du likar han. Legg til bokmerke, passord, og meir, frå den gamle nettlesaren din.
@@ -356,6 +358,10 @@ onboarding-mobile-download-security-and-privacy-subtitle = Når du er synkronise
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } passar på deg
 onboarding-gratitude-security-and-privacy-subtitle = Takk for at du brukar { -brand-short-name }, støtta av Mozilla Foundation. Med di støtte jobbar vi for å gjere internett tryggare og meir tilgjengelig for alle.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Synkroniser data på tvers av einingar
+onboarding-sign-up-button = Registrer deg eller logg inn
+onboarding-sign-up-secondary-button = Begynn å surfe
 
 ## New user time and familiarity survey strings
 
@@ -375,3 +381,58 @@ onboarding-new-user-survey-familiarity-based-option-1 = Eg er heilt ny
 onboarding-new-user-survey-familiarity-based-option-2 = Eg har brukt det ein del
 onboarding-new-user-survey-familiarity-based-option-3 = Eg kjenner veldig godt til det
 onboarding-new-user-survey-familiarity-based-option-4 = Eg brukte den tidlegare, men det er en stund sidan
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Fortel oss kvar du vil ha fanene dine
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Dine faner, på din måte
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Vel faneoppsett
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = For ei straumlinjeforma vising som kan hjelpe deg med å halde fokus, prøv faner på sida. Eller behald det klassiske med faner på toppen. Byt når som helst.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Faner på sida
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Faner på toppen
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Vertikale faner er her
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Introduserer vertikale faner
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Prøv vertikale faner
+onboarding-flair-text = Nytt!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Behald horisontale faner
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Prøv ein samtalerobot i sidefeltet
+onboarding-genai-sidebar-primary-button = Vel ein samtalerobot
+onboarding-genai-sidebar-secondary-button = Start nettlesinga
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Fullfør konfigureringa av { -brand-short-name }
+onboarding-checklist-set-default = Bruk { -brand-short-name } som standardnettlesar
+onboarding-checklist-pin = Fest { -brand-short-name } til oppgåvelinja
+onboarding-checklist-import = Importer frå tidlegare nettlesar
+onboarding-checklist-extension = Legg til ei utviding
+onboarding-checklist-sign-up = Registrer deg eller logg inn på kontoen din
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Prøv fanegrupper for mindre rot, og meir fokus
+tab-groups-onboarding-feature-callout-subtitle = Bli organisert ved å dra ei fane oppå ei anna for å opprette den første gruppa di.
+tab-groups-onboarding-saved-groups-title = Dersom du lèt att ei fanegruppe, kan du når som helst opne henne på nytt her.
+tab-groups-onboarding-dismiss = OK
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Sei hei til { -brand-product-name }-profilar
+multi-profile-spotlight-cta = Opprett ein profil
+multi-profile-callout-cta = Opprett ein profil
+
+## Desktop to Mobile Adoption feature callout strings
+
+dismiss-button-label = Ignorer
+sync-to-mobile-button-label = Synkronisder til mobil

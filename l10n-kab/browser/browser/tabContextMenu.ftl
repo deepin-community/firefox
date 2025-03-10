@@ -28,11 +28,17 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Mdel accaren n uzelmaḍ
     .accesskey = d
+close-tabs-to-the-start-vertical =
+    .label = Mdel iccaren n daw-a
+    .accesskey = l
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Mdel accaren n uyeffus
     .accesskey = M
+close-tabs-to-the-end-vertical =
+    .label = Mdel iccaren n daw-a
+    .accesskey = i
 close-other-tabs =
     .label = Mdel accaren-nniḍen
     .accesskey = M
@@ -78,6 +84,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Bḍu
     .accesskey = B
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Iccer Amaynut ɣer yeffus
+    .accesskey = m
+tab-context-new-tab-open-vertical =
+    .label = Iccer amaynut addaw
+    .accesskey = m
+tab-context-new-group =
+    .label = Agraw amaynut
+    .accesskey = A
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.

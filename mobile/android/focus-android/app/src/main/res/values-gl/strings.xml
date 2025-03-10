@@ -85,7 +85,6 @@
     <string name="share_dialog_title">Compartir por</string>
 
     <string name="notification_erase_title_android_14">Quere borrar o historial de navegación?</string>
-    <string name="notification_erase_text_android_14" moz:RemovedIn="124" tools:ignore="UnusedResources">Tocar ou borrar esta notificación para borrar de forma segura o seu historial de navegación.</string>
 
     <!-- Text shown in the notification description that pops up to remind the user that a browsing session is active
     for Android 14+. -->
@@ -352,6 +351,11 @@
     <!-- %1$s will be replaced with the name of the app (e.g. Firefox Focus) -->
     <string name="preference_mozilla_telemetry_summary2">Mozilla esforzase por recoller só os datos necesarios para fornecer e mellorar %1$s para todos.</string>
 
+    <!-- Preference switch for daily usage ping data collection -->
+    <string name="preference_daily_usage_ping_title">Ping de uso diario</string>
+    <string name="preference_daily_usage_ping_description">Isto axuda a Mozilla a estimar os usuarios activos.</string>
+    <string name="preference_daily_usage_ping_learn_more">Máis información</string>
+
     <!-- In-app link (in settings) to Focus privacy notice. -->
     <string name="preference_privacy_notice">Política de privacidade</string>
 
@@ -360,6 +364,9 @@
 
     <!-- Link to Focus licensing information from other libraries that we use. -->
     <string name="preference_libraries_we_use">Bibliotecas que empregamos</string>
+
+    <!-- Link to Focus Crash reports list. -->
+    <string name="preference_crashes">Quebras</string>
 
     <!-- Open Source Licenses page title. The first parameter is the app name -->
     <string name="open_source_licenses_title">%s | Bibliotecas OSS</string>
@@ -515,10 +522,7 @@
 
 
 
-  <!-- Content description (not visible, for screen readers etc.): This is the description for the close button from the new onboarding flow screen one and two -->
-    <string name="onboarding_close_button_content_description">Pechar</string>
-
-    <!-- New Onboarding flow first screen title -->
+  <!-- New Onboarding flow first screen title -->
     <!-- %1$s will be replaced by the app name and build variant(e.g. Firefox Focus, Firefox Klar Nightly) -->
     <string name="onboarding_first_screen_title">Reciba a benvida a %1$s</string>
 
@@ -837,7 +841,7 @@
     <string name="studies_learn_more">Máis información</string>
 
     <!-- Dialog message shown when some changes are made on studies -->
-    <string name="studies_restart_app">A aplicación pecharase para aplicar os cambios</string>
+    <string name="studies_restart_app" moz:removedIn="135">A aplicación pecharase para aplicar os cambios</string>
 
     <!-- Title of the remove studies button -->
     <string name="studies_remove">Retirar</string>
@@ -925,9 +929,6 @@
 
     <!-- Label for the button in the snackbar that switches to the newly opened tab -->
     <string name="open_new_tab_snackbar">Trocar</string>
-
-    <!-- Text displayed in a notification when the user enters full screen mode -->
-    <string name="full_screen_notification" moz:removedIn="130" tools:ignore="UnusedResources">Entrado no modo de pantalla completa</string>
 
     <!-- Preference for switching to a new tab immediately after opening -->
     <string name="preference_open_new_tab">Cambiar a unha ligazón nunha nova lapela inmediatamente</string>
@@ -1100,8 +1101,10 @@
     <string name="promote_search_widget_snackbar_message">Engadiuse o widget á pantalla de inicio</string>
 
     <!-- Messages explaining how to exit fullscreen mode -->
-    <!-- Message shown to explain how to exit fullscreen mode when gesture navigation is enabled -->
-    <string name="exit_fullscreen_with_gesture">Para saír da pantalla completa, arrastra desde arriba e usa o xesto de retroceso</string>
-    <!-- Message shown to explain how to exit fullscreen mode when using back button navigation -->
-    <string name="exit_fullscreen_with_back_button">Para saír da pantalla completa, arrastra dende arriba e preme a tecla de retroceso</string>
+    <!-- Message shown to explain how to exit fullscreen mode when gesture navigation is enabled. -->
+    <!-- Localisation note: this text should be as short as possible, max 68 chars -->
+    <string name="exit_fullscreen_with_gesture_short">Arrastra dende a parte superior e usa o xesto cara atrás para saír</string>
+    <!-- Message shown to explain how to exit fullscreen mode when using back button navigation. -->
+    <!-- Localisation note: this text should be as short as possible, max 68 chars -->
+    <string name="exit_fullscreen_with_back_button_short">Arrastra desde arriba e preme cara atrás para saír</string>
 </resources>

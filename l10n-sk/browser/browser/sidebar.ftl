@@ -4,6 +4,12 @@
 
 menu-view-genai-chat =
     .label = AI Chatbot
+menu-view-review-checker =
+    .label = Kontrola recenzií
+menu-view-contextual-password-manager =
+    .label = Heslá
+sidebar-options-menu-button =
+    .title = Otvoriť ponuku
 
 ## Labels for sidebar history panel
 
@@ -46,16 +52,30 @@ sidebar-position-right =
     .label = Zobraziť vpravo
 sidebar-vertical-tabs =
     .label = Vertikálne karty
+sidebar-settings =
+    .label = Nastavenia bočného panela
+sidebar-hide-tabs-and-sidebar =
+    .label = Skryť karty a bočný panel
+sidebar-show-on-the-right =
+    .label = Presunúť bočný panel doprava
+sidebar-show-on-the-left =
+    .label = Presunúť bočný panel doľava
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = Po umiestnení kurzora myši rozbaliť bočný panel
 sidebar-horizontal-tabs =
-    .label = Horizontálne karty
+    .label = Karty v hornej časti
 sidebar-customize-tabs-header =
     .label = Nastavenia kariet
-sidebar-customize-settings-header =
-    .label = Nastavenia bočného panela
-sidebar-visibility-always-show =
-    .label = Vždy zobrazovať
-sidebar-visibility-hide-sidebar =
-    .label = Skryť bočný panel
+sidebar-customize-button-header =
+    .label = Tlačidlo na bočnom paneli
+sidebar-customize-position-header =
+    .label = Umiestnenie bočného panela
+sidebar-visibility-setting-always-show =
+    .label = Rozbaliť a zbaliť bočný panel
+sidebar-visibility-setting-hide-sidebar =
+    .label = Zobraziť a skryť bočný panel
 
 ## Labels for sidebar context menu items
 
@@ -95,6 +115,41 @@ sidebar-menu-bookmarks-label =
     .label = Záložky
 sidebar-menu-customize-label =
     .label = Prispôsobiť bočný panel
+sidebar-menu-review-checker-label =
+    .label = Kontrola recenzií
+sidebar-menu-contextual-password-manager-label =
+    .label = Heslá
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = Otvoriť históriu ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = Zavrieť históriu ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = Otvoriť záložky ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = Zavrieť záložky ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = Otvoriť AI chatbota
+sidebar-menu-close-ai-chatbot-tooltip = Zavrieť AI chatbota
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = Otvoriť AI chatbota ({ $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = Otvoriť { $provider } ({ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip-generic = Zavrieť AI chatbota ({ $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = Zavrieť { $provider } ({ $shortcut })
 
 ## Headings for sidebar menu panels.
 
@@ -104,6 +159,18 @@ sidebar-menu-history-header =
     .heading = História
 sidebar-menu-syncedtabs-header =
     .heading = Karty z ďalších zariadení
+sidebar-menu-bookmarks-header =
+    .heading = Záložky
+sidebar-menu-cpm-header =
+    .heading = Heslá
+sidebar-panel-header-close-button =
+    .tooltiptext = Zavrieť
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Prispôsobiť bočný panel
+sidebar-history-title = História
+sidebar-syncedtabs-title = Karty z ďalších zariadení
 
 ## Context for closing synced tabs when hovering over the items
 
@@ -113,3 +180,29 @@ sidebar-menu-syncedtabs-header =
 #   $deviceName (String) - the name of the device the user is closing a tab for
 synced-tabs-context-close-tab-title =
     .title = Zavrieť kartu v zariadení { $deviceName }
+show-sidebars =
+    .tooltiptext = Zobrazí bočne panely
+    .label = Bočné panely
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = Rozbaliť bočný panel ({ $shortcut })
+    .label = Bočné panely
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Zbaliť bočný panel ({ $shortcut })
+    .label = Bočné panely
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Zobraziť bočný panel ({ $shortcut })
+    .label = Bočné panely
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Skryť bočný panel ({ $shortcut })
+    .label = Bočné panely

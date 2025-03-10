@@ -11,6 +11,7 @@ more-from-moz-category =
 more-from-moz-subtitle = Discoperi altere productos de { -vendor-short-name } que labora pro supportar un internet san.
 more-from-moz-firefox-mobile-title = { -brand-product-name } Mobile
 more-from-moz-firefox-mobile-description = Le navigator mobile que antepone tu vita private.
+more-from-moz-firefox-mobile-title-1 = { -brand-product-name } pro apparato mobile
 more-from-moz-mozilla-vpn-title = { -mozilla-vpn-brand-name }
 more-from-moz-mozilla-vpn-description = Discoperi un strato additional de navigation anonyme e protection.
 more-from-moz-qr-code-box-firefox-mobile-title = Discarga con tu apparato mobile. Puncta tu camera al codice QR. Quando un ligamine appare, tocca lo.
@@ -32,3 +33,9 @@ more-from-moz-mozilla-monitor-title = { -mozmonitor-brand-name }
 more-from-moz-mozilla-monitor-us-description = Automaticamente reprende tu informationes personal exponite.
 more-from-moz-mozilla-monitor-global-description = Obtene avisos quando tu datos ha essite in un violation.
 more-from-moz-mozilla-monitor-button = Obtene { -monitor-brand-short-name }
+
+## These strings are for the Solo card in about:preferences moreFromMozilla page
+
+more-from-moz-solo-title = IA de { -solo-ai-brand-name }
+more-from-moz-solo-description = Crea tu sito web instantaneemente e connecte te a tu proprie dominio personal gratuitemente.
+more-from-moz-solo-button = Essaya { -solo-ai-brand-name }

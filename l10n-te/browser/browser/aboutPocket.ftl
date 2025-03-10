@@ -11,7 +11,6 @@
 # Placeholder text for tag input
 pocket-panel-saved-add-tags =
     .placeholder = ట్యాగులను చేర్చు
-
 pocket-panel-saved-error-generic = { -pocket-brand-name }కు భద్రపరచడానికి ప్రయత్నిస్తున్నప్పుడు లోపం తలెత్తింది.
 pocket-panel-saved-error-tag-length = ట్యాగులు 25 అక్షరాలకు పరిమితం
 pocket-panel-saved-error-only-links = కేవలం లంకెలను మాత్రమే భద్రపరచగలరు
@@ -20,6 +19,7 @@ pocket-panel-saved-error-remove = ఈ పేజీని తీసివేయ�
 pocket-panel-saved-page-removed = పేజీ తీసివేయబడెను
 pocket-panel-saved-page-saved = { -pocket-brand-name }కు భద్రపరచబడింది
 pocket-panel-saved-processing-remove = పేజీని తొలగించు…
+pocket-panel-saved-removed-updated = భద్రపరిచిన వాటి నుండి పేజీ తీసివేయబడింది
 pocket-panel-saved-processing-tags = టాగ్లు జోడిస్తోంది...
 pocket-panel-saved-remove-page = పేజీని తొలగించు
 pocket-panel-saved-save-tags = భద్రపరచు
@@ -44,8 +44,9 @@ pocket-panel-signup-tagline-story-two = ఏ పరికరంలో అయి�
 pocket-panel-home-welcome-back = పునఃస్వాగతం
 pocket-panel-home-explore-popular-topics = ప్రాచుర్య అంశాలను చూడండి
 pocket-panel-home-discover-more = మరింత కనుగొనండి
-
+pocket-panel-home-explore-more = అన్వేషించు
 pocket-panel-home-most-recent-saves = ఇటీవల మీరు భద్రపరచినవి ఇవి:
+pocket-panel-home-most-recent-saves-loading = ఇటీవలి భద్రపరిచినవి లోడవుతున్నాయి…
 pocket-panel-home-new-user-message = మీరు ఇటీవల భద్రపరచిన వాటిని ఇక్కడ చూడవచ్చు.
 
 ## Pocket panel header component

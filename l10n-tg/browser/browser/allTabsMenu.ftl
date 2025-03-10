@@ -16,3 +16,10 @@ all-tabs-menu-close-duplicate-tabs =
     .label = Пӯшидани варақаҳои такрорӣ
 all-tabs-menu-close-all-duplicate-tabs =
     .label = Пӯшидани ҳамаи варақаҳои такрорӣ
+all-tabs-menu-synced-tabs =
+    .label = Варақаҳо аз дастгоҳҳои дигар
+all-tabs-menu-current-window-header = Равзанаи ҷорӣ
+# "Show all" is for showing all open groups as well as saved groups. Initially,
+# we only show up to five of these groups.
+all-tabs-menu-tab-groups-show-all =
+    .label = Ҳамаро намоиш додан

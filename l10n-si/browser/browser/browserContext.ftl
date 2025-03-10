@@ -80,6 +80,9 @@ toolbar-button-fxaccount =
 
 ## Account toolbar Button
 
+toolbar-button-account =
+    .label = ගිණුම
+    .tooltiptext = ගිණුම
 
 ## Save Page
 
@@ -287,9 +290,7 @@ main-context-menu-send-to-device =
     .label = පිටුව උපාංගයට යවන්න
     .accesskey = D
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = සුරැකි පිවිසුම භාවිතය

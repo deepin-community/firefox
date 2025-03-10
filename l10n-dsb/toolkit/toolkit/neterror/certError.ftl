@@ -18,6 +18,9 @@ cert-error-trust-signature-algorithm-disabled = Toś ten certifikat njejo dowěr
 cert-error-trust-expired-issuer = Certifikat njejo dowěry gódny, dokulaž wudawarski certifikat jo pśepadnjony.
 cert-error-trust-self-signed = Certifikat njejo dowěry gódny, dokulaž jo se sam pódpisał.
 cert-error-trust-symantec = Certifikaty, kótarež GeoTrust, RapidSSL, Symantec, Thawte a VeriSign su wudali wěcej za wěste njamaju, dokulaž toś te certificěrowanišća w zajźonosći njejsu se źaržali za wěstotnymi pócynkami.
+# Variables:
+#   $hostname (string) - Hostname of the website with cert error.
+cert-error-trust-certificate-transparency = { -brand-short-name } { $hostname } njedowěrja, dokulaž njejo mógał dopokazaś, až pominanja transparence za zjawne certifikaty docynja.
 cert-error-untrusted-default = Certifikat njepóchada z dowěry gódnego žrědła.
 # Variables:
 #   $hostname (string) - Hostname of the website with cert error.
@@ -68,6 +71,45 @@ open-in-new-window-for-csp-or-xfo-error = Sedło w nowem woknje wócyniś
 # Variables:
 #   $hostname (string) - Hostname of the website blocked by csp or xfo error.
 csp-xfo-blocked-long-desc = Aby swóju wěstotu šćitał, { $hostname } { -brand-short-name } njedowólijo, bok pokazaś, jolic jo zasajźony w drugem sedle. Aby toś ten bok wiźeł, musyśo jen w nowem woknje wócyniś.
+fp-certerror-view-certificate-link = Certifikat sedła pokazaś
+fp-certerror-return-to-previous-page-recommended-button = Slědk (dopórucony)
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+#   $validHosts (String) - Valid hostnames.
+fp-certerror-bad-domain-why-dangerous-body = Sedło jo tak konfigurěrowane, až jano wěste zwiski dowólujo, ale dajo problem z certifikatom sedła. Jo móžno, až złosny akter wopytujo, sedło imitěrowaś. Sedła certifikaty wužywaju, kótarež su se wudali wót certifikowateje awtority, aby dopokazali, až wóni napšawdu te su, za kótarež se wudawaju. { -brand-short-name } toś tomu sedłoju njedowěrja, dokulaž jogo certifikat za { $hostname } njejo płaśiwy. Certifikat jo jano płaśiwy za: { $validHosts }.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-bad-domain-what-can-you-do-body = Snaź nic, dokulaž to jo nejskerjej problem ze sedłom samym. Sedła certifikaty wužywaju, kótarež su se wudali wót certifikatoweje awtority, aby dopokazali, až wóni napšawdu te su, za kótarež se wudawaju. Ale jolic sćo w seśi pśedewześa, waš team pomocy snaź dalšne informacije ma. Jolic antiwirusowu software wužywaśo, wopytajśo za potencielnymi konfliktami abo znatymi problemami pytaś.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-certerror-unknown-issuer-why-dangerous-body = Dajo problem z certifikatom sedła. Jo móžno, až złosny akter wopytujo, sedło imitěrowaś. Sedła certifikaty wužywaju, kótarež su se wudali wót certifikowateje awtority, aby dopokazali, až wóni napšawdu te su, za kótarež se wudawaju. { -brand-short-name } toś tomu sedłoju njedowěrja, dokulaž njamóžomy k wěsći daś, chtož jo wudał certifikat, jo samosigněrowany abo sedło mjazycertifikaty njesćelo, kótarym dowěrjamy.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-unknown-issuer-what-can-you-do-body = Snaź nic, dokulaž to jo nejskerjej problem ze sedłom samym. Ale jolic sćo w seśi pśedewześa, waš team pomocy snaź dalšne informacije ma. Jolic antiwirusowu software wužywaśo, musyśo ju snaź tak konfigurěrowaś, aby z { -brand-short-name } funkcioněrowała.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-certerror-self-signed-why-dangerous-body = Dokulaž dajo problem z certifikatom sedła. Sedła certifikaty wužywaju, kótarež su se wudali wót certifikatoweje awtority, aby dopokazali, až wóni napšawdu te su, za kótarež se wudawaju. Certifikat toś togo sedła jo samosigněrowany. Njejo se wót pśipóznateje certifikatoweje awtority – togodla jomu pó standarźe njedowěrjamy.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-self-signed-what-can-you-do-body = Nic wjele. Zda se, až jo problem ze sedłom samym.
+fp-certerror-self-signed-important-note = WAŽNA POKAZKA: Jolic wopytujośo, se k toś tomu sedłoju we firmowem interneśe woglědaś, móžo waš personal IT samosigněrowane certifikaty wužywaś. Mógu wam pomagaś, jich awtentiskosć pśeglědowaś.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate expiration date.
+fp-certerror-expired-why-dangerous-body = Sedła certifikaty wužywaju, kótarež su se wudali wót certifikatoweje awtority, aby dopokazali, až wóni napšawdu te su, za kótarež se wudawaju. { -brand-short-name } toś tomu sedłoju njedowěrja, dokulaž se zda, až certifikat jo spadnuł dnja { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $date (Date) - Certificate start date.
+fp-certerror-not-yet-valid-why-dangerous-body = Sedła certifikaty wužywaju, kótarež su se wudali wót certifikatoweje awtority, aby dopokazali, až wóni napšawdu te su, za kótarež se wudawaju. { -brand-short-name } toś tomu sedłoju njedowěrja, dokulaž se zda, až certifikat njebuźo płaśiwy až do dnja { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") }.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+# Variables:
+#   $date (Date) - Clock date.
+fp-certerror-expired-what-can-you-do-body = Zeger wašogo rěda jo na { DATETIME($date, month: "numeric", day: "numeric", year: "numeric") } stajony. Jolic to jo korektne, ma wěstotny problem nejskerjej ze sedłom samym cyniś. Jolic jo wopacny, móžośo to w swójich systemowych nastajenjach změniś.
+# Variables:
+#   $error (string) - NSS error code string that specifies type of cert error. e.g. unknown issuer, invalid cert, etc.
+fp-cert-error-code = Zmólkowy kod: { $error }
+# Variables:
+#   $datetime (Date) - Current datetime.
+fp-datetime = { DATETIME($datetime, month: "short", year: "numeric", day: "numeric") } { DATETIME($datetime, timeStyle: "long") }
+fp-learn-more-about-secure-connection-failures = Zgóńśo wěcej wó wěstych zwiskowych wótłamanjach
+fp-learn-more-about-cert-issues = Zgóńśo wěcej wó toś tych družynach certifikatowych problemow
+fp-learn-more-about-time-related-errors = Zgóńśo wěcej wó rozwězowanju na cas póśěgowanych zmólkow
 
 ## Messages used for certificate error titles
 
@@ -92,6 +134,7 @@ contentEncodingError-title = Zmólka pśi koděrowanju wopśimjeśa
 unsafeContentType-title = Njewěsty datajowy typ
 netReset-title = Zwisk jo se slědk stajił
 netTimeout-title = Zwisk jo cas pśekšocył
+httpErrorPage-title = Zda se, až jo problem z toś tym sedłom
 serverError-title = Zda se, až jo problem z toś tym sedłom
 unknownProtocolFound-title = Adresa njejo se zrozměła
 proxyConnectFailure-title = Proksy-serwer wótpokazujo zwiski
@@ -109,3 +152,20 @@ networkProtocolError-title = Zmólka seśowego protokola
 nssBadCert-title = Warnowanje: Potencielne wěstotne riziko prědku
 nssBadCert-sts-title = Njejo se zwězało: Potencielny wěstotny problem
 certerror-mitm-title = Software { -brand-short-name } wěste zwězowanje z toś tym sedłom zawoborujo
+
+## Felt Privacy V1 Strings
+
+fp-certerror-page-title = Warnowanje: wěstotne riziko
+fp-certerror-body-title = Buźćo wobglědniwy. Něco njejo w pórěźe.
+fp-certerror-why-site-dangerous = Cogodla sedło tšašnje wuglěda?
+fp-certerror-what-can-you-do = Co móžośo pśeśiwo tomu cyniś?
+fp-certerror-advanced-title = Rozšyrjone
+fp-certerror-advanced-button = Rozšyrjone
+fp-certerror-hide-advanced-button = Rozšyrjone schowaś
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-certerror-override-exception-button = Dalej k { $hostname } (riskantny)
+fp-certerror-intro = { -brand-short-name } jo namakał potencielnje śěžki wěstotny problem z <strong>{ $hostname }</strong>. Něchten, kótaryž twarźi, až toś to sedło wěcy ako informacije kreditowych kórtow, gronidła abo e-mailowe adrese kšadnjo.
+fp-certerror-expired-into = { -brand-short-name } jo namakał potencielnje śěžki wěstotny problem z <strong>{ $hostname }</strong>. Pak sedło njejo korektnje konfigurěrowane pak zeger wašogo rěda jo na wopacny datum/cas stajony.

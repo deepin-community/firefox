@@ -22,7 +22,7 @@
 #include "mozilla/gfx/gfxVars.h"
 #include "mozilla/ipc/FileDescriptor.h"
 #include "mozilla/layers/CompositorBridgeChild.h"
-#include "mozilla/layers/D3D11TextureIMFSampleImage.h"
+#include "mozilla/layers/D3D11ZeroCopyTextureImage.h"
 #include "mozilla/layers/GpuProcessD3D11QueryMap.h"
 #include "mozilla/layers/GpuProcessD3D11TextureMap.h"
 #include "mozilla/layers/HelpersD3D11.h"
@@ -430,8 +430,6 @@ void D3D11TextureData::SyncWithObject(RefPtr<SyncObjectClient> aSyncObject) {
 
 bool D3D11TextureData::SerializeSpecific(
     SurfaceDescriptorD3D10* const aOutDesc) {
-  if (mGpuProcessTextureId.isNothing()) {
-  }
   *aOutDesc = SurfaceDescriptorD3D10(
       mSharedHandle, mGpuProcessTextureId, mArrayIndex, mFormat, mSize,
       mColorSpace, mColorRange, /* hasKeyedMutex */ mHasKeyedMutex,
@@ -460,7 +458,7 @@ already_AddRefed<TextureClient> D3D11TextureData::CreateTextureClient(
     ID3D11Texture2D* aTexture, uint32_t aIndex, gfx::IntSize aSize,
     gfx::SurfaceFormat aFormat, gfx::ColorSpace2 aColorSpace,
     gfx::ColorRange aColorRange, KnowsCompositor* aKnowsCompositor,
-    RefPtr<IMFSampleUsageInfo> aUsageInfo) {
+    RefPtr<ZeroCopyUsageInfo> aUsageInfo) {
   D3D11TextureData* data = new D3D11TextureData(
       aTexture, aIndex, nullptr, aSize, aFormat,
       TextureAllocationFlags::ALLOC_MANUAL_SYNCHRONIZATION);
@@ -631,8 +629,8 @@ D3D11TextureData* D3D11TextureData::Create(IntSize aSize, SurfaceFormat aFormat,
   RefPtr<gfx::FileHandleWrapper> handle =
       new gfx::FileHandleWrapper(UniqueFileHandle(sharedHandle));
 
-  D3D11TextureData* data = new D3D11TextureData(texture11, 0, std::move(handle),
-                                                aSize, aFormat, aFlags);
+  D3D11TextureData* data =
+      new D3D11TextureData(texture11, 0, handle, aSize, aFormat, aFlags);
 
   texture11->GetDevice(getter_AddRefs(device));
   if (XRE_IsGPUProcess() &&
@@ -1101,13 +1099,16 @@ DXGITextureHostD3D11::GetAsSurfaceWithDevice(
       }
     }
 
-    if (!videoProcessor->Init(mSize)) {
-      gfxCriticalNoteOnce << "Failed to init VideoProcessorD3D11";
+    hr = videoProcessor->Init(mSize);
+    if (FAILED(hr)) {
+      gfxCriticalNoteOnce << "Failed to init VideoProcessorD3D11"
+                          << gfx::hexa(hr);
       return nullptr;
     }
 
-    if (!videoProcessor->CallVideoProcessorBlt(this, d3dTexture,
-                                               copiedTexture)) {
+    VideoProcessorD3D11::InputTextureInfo info(mColorSpace, mColorRange,
+                                               mArrayIndex, d3dTexture);
+    if (!videoProcessor->CallVideoProcessorBlt(info, copiedTexture)) {
       gfxCriticalNoteOnce << "CallVideoProcessorBlt failed";
       return nullptr;
     }
@@ -1242,7 +1243,8 @@ void DXGITextureHostD3D11::PushResourceUpdates(
                                  wr::ImageBufferKind::TextureRect)
                            : wr::ExternalImageType::TextureHandle(
                                  wr::ImageBufferKind::TextureExternal);
-      (aResources.*method)(aImageKeys[0], descriptor, aExtID, imageType, 0);
+      (aResources.*method)(aImageKeys[0], descriptor, aExtID, imageType, 0,
+                           /* aNormalizedUvs */ false);
       break;
     }
     case gfx::SurfaceFormat::P010:
@@ -1268,8 +1270,10 @@ void DXGITextureHostD3D11::PushResourceUpdates(
                                  wr::ImageBufferKind::TextureRect)
                            : wr::ExternalImageType::TextureHandle(
                                  wr::ImageBufferKind::TextureExternal);
-      (aResources.*method)(aImageKeys[0], descriptor0, aExtID, imageType, 0);
-      (aResources.*method)(aImageKeys[1], descriptor1, aExtID, imageType, 1);
+      (aResources.*method)(aImageKeys[0], descriptor0, aExtID, imageType, 0,
+                           /* aNormalizedUvs */ false);
+      (aResources.*method)(aImageKeys[1], descriptor1, aExtID, imageType, 1,
+                           /* aNormalizedUvs */ false);
       break;
     }
     default: {
@@ -1418,9 +1422,12 @@ void DXGIYCbCrTextureHostD3D11::PushResourceUpdates(
   wr::ImageDescriptor descriptor0(mSizeY, gfx::SurfaceFormat::A8);
   // cb and cr
   wr::ImageDescriptor descriptor1(mSizeCbCr, gfx::SurfaceFormat::A8);
-  (aResources.*method)(aImageKeys[0], descriptor0, aExtID, imageType, 0);
-  (aResources.*method)(aImageKeys[1], descriptor1, aExtID, imageType, 1);
-  (aResources.*method)(aImageKeys[2], descriptor1, aExtID, imageType, 2);
+  (aResources.*method)(aImageKeys[0], descriptor0, aExtID, imageType, 0,
+                       /* aNormalizedUvs */ false);
+  (aResources.*method)(aImageKeys[1], descriptor1, aExtID, imageType, 1,
+                       /* aNormalizedUvs */ false);
+  (aResources.*method)(aImageKeys[2], descriptor1, aExtID, imageType, 2,
+                       /* aNormalizedUvs */ false);
 }
 
 void DXGIYCbCrTextureHostD3D11::PushDisplayItems(

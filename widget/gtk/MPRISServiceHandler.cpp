@@ -463,8 +463,7 @@ void MPRISServiceHandler::InitIdentity() {
   mIdentity.Append(' ');
   mIdentity.Append(mDesktopEntry);
 
-  // Compute the desktop entry name like nsAppRunner does for g_set_prgname
-  ToLowerCase(mDesktopEntry);
+  LOGMPRIS("InitIdentity() MPRIS desktop ID %s", mDesktopEntry.get());
 }
 
 const char* MPRISServiceHandler::Identity() const {
@@ -682,10 +681,13 @@ bool MPRISServiceHandler::RenewLocalImageFile(const char* aImageData,
 
   MOZ_ASSERT(mLocalImageFile);
   nsCOMPtr<nsIOutputStream> out;
-  NS_NewLocalFileOutputStream(getter_AddRefs(out), mLocalImageFile,
-                              PR_RDWR | PR_CREATE_FILE | PR_TRUNCATE);
+  nsresult rv =
+      NS_NewLocalFileOutputStream(getter_AddRefs(out), mLocalImageFile,
+                                  PR_RDWR | PR_CREATE_FILE | PR_TRUNCATE);
   uint32_t written;
-  nsresult rv = out->Write(aImageData, aDataSize, &written);
+  if (NS_SUCCEEDED(rv)) {
+    rv = out->Write(aImageData, aDataSize, &written);
+  }
   if (NS_FAILED(rv) || written != aDataSize) {
     LOGMPRIS("Failed to write an image file");
     RemoveAllLocalImages();
@@ -756,7 +758,7 @@ bool MPRISServiceHandler::InitLocalImageFolder() {
     // The XDG_DATA_HOME points to the same location in the host and guest
     // filesystem.
     if (const auto* xdgDataHome = g_getenv("XDG_DATA_HOME")) {
-      rv = NS_NewNativeLocalFile(nsDependentCString(xdgDataHome), true,
+      rv = NS_NewNativeLocalFile(nsDependentCString(xdgDataHome),
                                  getter_AddRefs(mLocalImageFolder));
     }
   } else {
@@ -846,6 +848,11 @@ GVariant* MPRISServiceHandler::GetMetadataAsGVariant() const {
                           g_variant_new_string(static_cast<const gchar*>(
                               mMPRISMetadata.mArtUrl.get())));
   }
+  if (!mMPRISMetadata.mUrl.IsEmpty()) {
+    g_variant_builder_add(&builder, "{sv}", "xesam:url",
+                          g_variant_new_string(static_cast<const gchar*>(
+                              mMPRISMetadata.mUrl.get())));
+  }
   if (mPositionState.isSome()) {
     CheckedInt64 length =
         CheckedInt64((int64_t)mPositionState.value().mDuration) * 1000000;
@@ -869,7 +876,8 @@ struct InterfaceProperty {
   const char* interface;
   const char* property;
 };
-static const std::unordered_map<dom::MediaControlKey, InterfaceProperty>
+MOZ_RUNINIT static const std::unordered_map<dom::MediaControlKey,
+                                            InterfaceProperty>
     gKeyProperty = {
         {dom::MediaControlKey::Focus, {DBUS_MPRIS_INTERFACE, "CanRaise"}},
         {dom::MediaControlKey::Nexttrack,

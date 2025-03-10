@@ -184,6 +184,18 @@ shopping-survey-terms-link = Käyttöehdot
 shopping-survey-thanks =
     .heading = Kiitos palautteestasi!
 
+## Shopping opted-out survey strings
+## Opt-out survey options are displayed as checkboxes and the user can select one or many.
+
+shopping-survey-opted-out-multiselect-label = Kerro meille, miksi poistit arvostelujen tarkistuksen käytöstä. Valitse tarvittaessa useita syitä.
+shopping-survey-thanks-title = Kiitos palautteestasi!
+shopping-survey-opted-out-hard-to-understand = Sitä on vaikea ymmärtää
+shopping-survey-opted-out-too-slow = Se on liian hidas
+shopping-survey-opted-out-not-accurate = Se ei ole tarkka
+shopping-survey-opted-out-not-helpful = Siitä ei ole minulle hyötyä
+shopping-survey-opted-out-check-myself = Tarkistan arvostelut mieluummin itse
+shopping-survey-opted-out-other = Muu
+
 ## Shopping Feature Callout strings.
 ## "price tag" refers to the price tag icon displayed in the address bar to
 ## access the feature.
@@ -196,6 +208,7 @@ shopping-callout-closed-not-opted-in-revised-title = Luotettavat arvostelut yhde
 shopping-callout-closed-not-opted-in-revised-subtitle = Napsauta hintalappukuvaketta osoitepalkissa päästäksesi takaisin arvostelujen tarkistukseen.
 shopping-callout-closed-not-opted-in-revised-button = Selvä
 shopping-callout-not-opted-in-reminder-title = Tee ostoksia luottavaisin mielin
+shopping-callout-not-opted-in-reminder-subtitle = Etkö ole varma, ovatko tuotteen arvostelut oikeita vai tekaistuja? Arvostelujen tarkistus { -brand-product-name }lta voi auttaa.
 shopping-callout-not-opted-in-reminder-open-button = Avaa arvostelujen tarkistus
 shopping-callout-not-opted-in-reminder-close-button = Hylkää
 shopping-callout-not-opted-in-reminder-ignore-checkbox = Älä kysy uudestaan

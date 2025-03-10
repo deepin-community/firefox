@@ -4,6 +4,12 @@
 
 menu-view-genai-chat =
     .label = AI チャットボット
+menu-view-review-checker =
+    .label = レビューチェッカー
+menu-view-contextual-password-manager =
+    .label = パスワード
+sidebar-options-menu-button =
+    .title = メニューを開く
 
 ## Labels for sidebar history panel
 
@@ -46,16 +52,30 @@ sidebar-position-right =
     .label = 右側に表示
 sidebar-vertical-tabs =
     .label = 垂直タブ
+sidebar-settings =
+    .label = サイドバー設定
+sidebar-hide-tabs-and-sidebar =
+    .label = タブとサイドバーを隠す
+sidebar-show-on-the-right =
+    .label = サイドバーを右側へ移動
+sidebar-show-on-the-left =
+    .label = サイドバーを左側へ移動
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = カーソルを合わせた時にサイドバーを展開する
 sidebar-horizontal-tabs =
     .label = 水平タブ
 sidebar-customize-tabs-header =
     .label = タブ設定
-sidebar-customize-settings-header =
-    .label = サイドバー設定
-sidebar-visibility-always-show =
-    .label = 常に表示
-sidebar-visibility-hide-sidebar =
-    .label = サイドバーを隠す
+sidebar-customize-button-header =
+    .label = サイドバーボタン
+sidebar-customize-position-header =
+    .label = サイドバーの配置
+sidebar-visibility-setting-always-show =
+    .label = サイドバーの開閉
+sidebar-visibility-setting-hide-sidebar =
+    .label = サイドバーの表示
 
 ## Labels for sidebar context menu items
 
@@ -73,6 +93,10 @@ sidebar-context-menu-bookmark-tab =
     .label = タブをブックマーク...
 sidebar-context-menu-copy-link =
     .label = リンクをコピー
+# Variables:
+#   $deviceName (String) - The name of the device the user is closing a tab for
+sidebar-context-menu-close-remote-tab =
+    .label = { $deviceName } 端末上のタブを閉じる
 
 ## Labels for sidebar history context menu items
 
@@ -91,6 +115,41 @@ sidebar-menu-bookmarks-label =
     .label = ブックマーク
 sidebar-menu-customize-label =
     .label = サイドバーをカスタマイズ
+sidebar-menu-review-checker-label =
+    .label = レビューチェッカー
+sidebar-menu-contextual-password-manager-label =
+    .label = パスワード
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = 履歴を開きます ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = 履歴を閉じます ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = ブックマークを開きます ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = ブックマークを閉じます ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = AI チャットボットを開きます
+sidebar-menu-close-ai-chatbot-tooltip = AI チャットボットを閉じます
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = AI チャットボットを開きます ({ $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = { $provider } を開きます ({ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip-generic = AI チャットボットを閉じます ({ $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = { $provider } を閉じます ({ $shortcut })
 
 ## Headings for sidebar menu panels.
 
@@ -100,3 +159,50 @@ sidebar-menu-history-header =
     .heading = 履歴
 sidebar-menu-syncedtabs-header =
     .heading = 他の端末からのタブ
+sidebar-menu-bookmarks-header =
+    .heading = ブックマーク
+sidebar-menu-cpm-header =
+    .heading = パスワード
+sidebar-panel-header-close-button =
+    .tooltiptext = 閉じる
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = サイドバーのカスタマイズ
+sidebar-history-title = 履歴
+sidebar-syncedtabs-title = 他の端末からのタブ
+
+## Context for closing synced tabs when hovering over the items
+
+# Context for hovering over the close tab button that will
+# send a push to the device to close said tab
+# Variables:
+#   $deviceName (String) - the name of the device the user is closing a tab for
+synced-tabs-context-close-tab-title =
+    .title = { $deviceName } 端末上のタブを閉じる
+show-sidebars =
+    .tooltiptext = サイドバーを表示します
+    .label = サイドバー
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = サイドバーを展開します ({ $shortcut })
+    .label = サイドバー
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = サイドバーを折りたたみます ({ $shortcut })
+    .label = サイドバー
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = サイドバーを表示します ({ $shortcut })
+    .label = サイドバー
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = サイドバーを隠します ({ $shortcut })
+    .label = サイドバー

@@ -222,6 +222,8 @@ shortcuts-duplicate-warning-message2 =
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Już je używany ôd rozszyrzynio { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
         [one] Pokoż { $numberToShow } wiyncyj
@@ -348,6 +350,10 @@ addon-detail-update-check-label = Badnij za aktualizacyjami
 install-update-button = Aktualizuj
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Przizwolōne w prywatnych ôknach
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Przizwolōne w prywatnych ôknach
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -365,6 +371,8 @@ addon-detail-private-browsing-disallow = Niy zwolej
 addon-badge-recommended2 =
     .title = { -brand-product-name } rykōmynduje ino rozszyrzynia, co trzimiōm sie naszych sztandardōw bezpieczyństwa i fungowanio
     .aria-label = { addon-badge-recommended2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } rykōmynduje ino rozszyrzynia, co trzimiōm sie naszych sztandardōw bezpieczyństwa i fungowanio
 
 ##
 
@@ -400,7 +408,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = Rozszyrzynie { $name } je niykōmpatybilne z aplikacyjōm { -brand-short-name }{ $version }.
 # Variables:
 #   $version (string) - Application version.

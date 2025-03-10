@@ -211,8 +211,7 @@ static MConstant* EvaluateInt64ConstantOperands(TempAllocator& alloc,
 }
 
 static MConstant* EvaluateConstantOperands(TempAllocator& alloc,
-                                           MBinaryInstruction* ins,
-                                           bool* ptypeChange = nullptr) {
+                                           MBinaryInstruction* ins) {
   MDefinition* left = ins->getOperand(0);
   MDefinition* right = ins->getOperand(1);
 
@@ -293,22 +292,15 @@ static MConstant* EvaluateConstantOperands(TempAllocator& alloc,
   if (ins->type() == MIRType::Double) {
     return MConstant::New(alloc, DoubleValue(ret));
   }
-
-  Value retVal;
-  retVal.setNumber(JS::CanonicalizeNaN(ret));
-
-  // If this was an int32 operation but the result isn't an int32 (for
-  // example, a division where the numerator isn't evenly divisible by the
-  // denominator), decline folding.
   MOZ_ASSERT(ins->type() == MIRType::Int32);
-  if (!retVal.isInt32()) {
-    if (ptypeChange) {
-      *ptypeChange = true;
-    }
+
+  // If the result isn't an int32 (for example, a division where the numerator
+  // isn't evenly divisible by the denominator), decline folding.
+  int32_t intRet;
+  if (!mozilla::NumberIsInt32(ret, &intRet)) {
     return nullptr;
   }
-
-  return MConstant::New(alloc, retVal);
+  return MConstant::New(alloc, Int32Value(intRet));
 }
 
 static MConstant* EvaluateConstantNaNOperand(MBinaryInstruction* ins) {
@@ -968,7 +960,6 @@ bool MDefinition::hasLiveDefUses() const {
       }
     }
   }
-
   return false;
 }
 
@@ -1430,6 +1421,9 @@ bool MConstant::valueToBoolean(bool* res) const {
     case MIRType::Int64:
       *res = toInt64() != 0;
       return true;
+    case MIRType::IntPtr:
+      *res = toIntPtr() != 0;
+      return true;
     case MIRType::Double:
       *res = !std::isnan(toDouble()) && toDouble() != 0.0;
       return true;
@@ -1676,13 +1670,17 @@ WrappedFunction::WrappedFunction(JSFunction* nativeFun, uint16_t nargs,
 
 MCall* MCall::New(TempAllocator& alloc, WrappedFunction* target, size_t maxArgc,
                   size_t numActualArgs, bool construct, bool ignoresReturnValue,
-                  bool isDOMCall, mozilla::Maybe<DOMObjectKind> objectKind) {
+                  bool isDOMCall, mozilla::Maybe<DOMObjectKind> objectKind,
+                  mozilla::Maybe<gc::Heap> initialHeap) {
   MOZ_ASSERT(isDOMCall == objectKind.isSome());
+  MOZ_ASSERT(isDOMCall == initialHeap.isSome());
+
   MOZ_ASSERT(maxArgc >= numActualArgs);
   MCall* ins;
   if (isDOMCall) {
     MOZ_ASSERT(!construct);
-    ins = new (alloc) MCallDOMNative(target, numActualArgs, *objectKind);
+    ins = new (alloc)
+        MCallDOMNative(target, numActualArgs, *objectKind, *initialHeap);
   } else {
     ins =
         new (alloc) MCall(target, numActualArgs, construct, ignoresReturnValue);
@@ -3315,6 +3313,218 @@ MDefinition* MBigIntPow::foldsTo(TempAllocator& alloc) {
   return this;
 }
 
+MDefinition* MBigIntAsIntN::foldsTo(TempAllocator& alloc) {
+  auto* bitsDef = bits();
+  if (!bitsDef->isConstant()) {
+    return this;
+  }
+
+  // Negative |bits| throw an error and too large |bits| don't fit into Int64.
+  int32_t bitsInt = bitsDef->toConstant()->toInt32();
+  if (bitsInt < 0 || bitsInt > 64) {
+    return this;
+  }
+
+  // Prefer sign-extension if possible.
+  bool canSignExtend = false;
+  switch (bitsInt) {
+    case 8:
+    case 16:
+    case 32:
+    case 64:
+      canSignExtend = true;
+      break;
+  }
+
+  // Ensure the input is either IntPtr or Int64 typed.
+  auto* inputDef = input();
+  if (inputDef->isIntPtrToBigInt()) {
+    inputDef = inputDef->toIntPtrToBigInt()->input();
+
+    if (!canSignExtend) {
+      auto* int64 = MIntPtrToInt64::New(alloc, inputDef);
+      block()->insertBefore(this, int64);
+      inputDef = int64;
+    }
+  } else if (inputDef->isInt64ToBigInt()) {
+    inputDef = inputDef->toInt64ToBigInt()->input();
+  } else {
+    auto* truncate = MTruncateBigIntToInt64::New(alloc, inputDef);
+    block()->insertBefore(this, truncate);
+    inputDef = truncate;
+  }
+
+  if (inputDef->type() == MIRType::IntPtr) {
+    MOZ_ASSERT(canSignExtend);
+
+    // If |bits| is larger-or-equal to |BigInt::DigitBits|, return the input.
+    if (size_t(bitsInt) >= BigInt::DigitBits) {
+      auto* limited = MIntPtrLimitedTruncate::New(alloc, inputDef);
+      block()->insertBefore(this, limited);
+      inputDef = limited;
+    } else {
+      MOZ_ASSERT(bitsInt < 64);
+
+      // Otherwise extension is the way to go.
+      MSignExtendIntPtr::Mode mode;
+      switch (bitsInt) {
+        case 8:
+          mode = MSignExtendIntPtr::Byte;
+          break;
+        case 16:
+          mode = MSignExtendIntPtr::Half;
+          break;
+        case 32:
+          mode = MSignExtendIntPtr::Word;
+          break;
+      }
+
+      auto* extend = MSignExtendIntPtr::New(alloc, inputDef, mode);
+      block()->insertBefore(this, extend);
+      inputDef = extend;
+    }
+
+    return MIntPtrToBigInt::New(alloc, inputDef);
+  }
+  MOZ_ASSERT(inputDef->type() == MIRType::Int64);
+
+  if (canSignExtend) {
+    // If |bits| is equal to 64, return the input.
+    if (bitsInt == 64) {
+      auto* limited = MInt64LimitedTruncate::New(alloc, inputDef);
+      block()->insertBefore(this, limited);
+      inputDef = limited;
+    } else {
+      MOZ_ASSERT(bitsInt < 64);
+
+      // Otherwise extension is the way to go.
+      MSignExtendInt64::Mode mode;
+      switch (bitsInt) {
+        case 8:
+          mode = MSignExtendInt64::Byte;
+          break;
+        case 16:
+          mode = MSignExtendInt64::Half;
+          break;
+        case 32:
+          mode = MSignExtendInt64::Word;
+          break;
+      }
+
+      auto* extend = MSignExtendInt64::New(alloc, inputDef, mode);
+      block()->insertBefore(this, extend);
+      inputDef = extend;
+    }
+  } else {
+    MOZ_ASSERT(bitsInt < 64);
+
+    uint64_t mask = 0;
+    if (bitsInt > 0) {
+      mask = uint64_t(-1) >> (64 - bitsInt);
+    }
+
+    auto* cst = MConstant::NewInt64(alloc, int64_t(mask));
+    block()->insertBefore(this, cst);
+
+    // Mask off any excess bits.
+    auto* bitAnd = MBitAnd::New(alloc, inputDef, cst, MIRType::Int64);
+    block()->insertBefore(this, bitAnd);
+
+    auto* shift = MConstant::NewInt64(alloc, int64_t(64 - bitsInt));
+    block()->insertBefore(this, shift);
+
+    // Left-shift to make the sign-bit the left-most bit.
+    auto* lsh = MLsh::New(alloc, bitAnd, shift, MIRType::Int64);
+    block()->insertBefore(this, lsh);
+
+    // Right-shift to propagate the sign-bit.
+    auto* rsh = MRsh::New(alloc, lsh, shift, MIRType::Int64);
+    block()->insertBefore(this, rsh);
+
+    inputDef = rsh;
+  }
+
+  return MInt64ToBigInt::New(alloc, inputDef, /* isSigned = */ true);
+}
+
+MDefinition* MBigIntAsUintN::foldsTo(TempAllocator& alloc) {
+  auto* bitsDef = bits();
+  if (!bitsDef->isConstant()) {
+    return this;
+  }
+
+  // Negative |bits| throw an error and too large |bits| don't fit into Int64.
+  int32_t bitsInt = bitsDef->toConstant()->toInt32();
+  if (bitsInt < 0 || bitsInt > 64) {
+    return this;
+  }
+
+  // Ensure the input is Int64 typed.
+  auto* inputDef = input();
+  if (inputDef->isIntPtrToBigInt()) {
+    inputDef = inputDef->toIntPtrToBigInt()->input();
+
+    auto* int64 = MIntPtrToInt64::New(alloc, inputDef);
+    block()->insertBefore(this, int64);
+    inputDef = int64;
+  } else if (inputDef->isInt64ToBigInt()) {
+    inputDef = inputDef->toInt64ToBigInt()->input();
+  } else {
+    auto* truncate = MTruncateBigIntToInt64::New(alloc, inputDef);
+    block()->insertBefore(this, truncate);
+    inputDef = truncate;
+  }
+  MOZ_ASSERT(inputDef->type() == MIRType::Int64);
+
+  if (bitsInt < 64) {
+    uint64_t mask = 0;
+    if (bitsInt > 0) {
+      mask = uint64_t(-1) >> (64 - bitsInt);
+    }
+
+    // Mask off any excess bits.
+    auto* cst = MConstant::NewInt64(alloc, int64_t(mask));
+    block()->insertBefore(this, cst);
+
+    auto* bitAnd = MBitAnd::New(alloc, inputDef, cst, MIRType::Int64);
+    block()->insertBefore(this, bitAnd);
+
+    inputDef = bitAnd;
+  }
+
+  return MInt64ToBigInt::New(alloc, inputDef, /* isSigned = */ false);
+}
+
+bool MBigIntPtrBinaryArithInstruction::isMaybeZero(MDefinition* ins) {
+  MOZ_ASSERT(ins->type() == MIRType::IntPtr);
+  if (ins->isBigIntToIntPtr()) {
+    ins = ins->toBigIntToIntPtr()->input();
+  }
+  if (ins->isConstant()) {
+    if (ins->type() == MIRType::IntPtr) {
+      return ins->toConstant()->toIntPtr() == 0;
+    }
+    MOZ_ASSERT(ins->type() == MIRType::BigInt);
+    return ins->toConstant()->toBigInt()->isZero();
+  }
+  return true;
+}
+
+bool MBigIntPtrBinaryArithInstruction::isMaybeNegative(MDefinition* ins) {
+  MOZ_ASSERT(ins->type() == MIRType::IntPtr);
+  if (ins->isBigIntToIntPtr()) {
+    ins = ins->toBigIntToIntPtr()->input();
+  }
+  if (ins->isConstant()) {
+    if (ins->type() == MIRType::IntPtr) {
+      return ins->toConstant()->toIntPtr() < 0;
+    }
+    MOZ_ASSERT(ins->type() == MIRType::BigInt);
+    return ins->toConstant()->toBigInt()->isNegative();
+  }
+  return true;
+}
+
 MDefinition* MInt32ToIntPtr::foldsTo(TempAllocator& alloc) {
   MDefinition* def = input();
   if (def->isConstant()) {
@@ -3404,7 +3614,11 @@ void MDiv::analyzeEdgeCasesForward() {
 }
 
 void MDiv::analyzeEdgeCasesBackward() {
-  if (canBeNegativeZero() && !NeedNegativeZeroCheck(this)) {
+  // In general, canBeNegativeZero_ is only valid for integer divides.
+  // It's fine to access here because we're only using it to avoid
+  // wasting effort to decide whether we can clear an already cleared
+  // flag.
+  if (canBeNegativeZero_ && !NeedNegativeZeroCheck(this)) {
     setCanBeNegativeZero(false);
   }
 }
@@ -3595,6 +3809,7 @@ MIRType MCompare::inputType() {
     case Compare_UInt32:
     case Compare_Int32:
       return MIRType::Int32;
+    case Compare_IntPtr:
     case Compare_UIntPtr:
       return MIRType::IntPtr;
     case Compare_Double:
@@ -3978,6 +4193,43 @@ bool MResumePoint::isRecoverableOperand(MUse* u) const {
   return block()->info().isRecoverableOperand(indexOf(u));
 }
 
+MDefinition* MBigIntToIntPtr::foldsTo(TempAllocator& alloc) {
+  MDefinition* def = input();
+
+  // If the operand converts an IntPtr to BigInt, drop both conversions.
+  if (def->isIntPtrToBigInt()) {
+    return def->toIntPtrToBigInt()->input();
+  }
+
+  // Fold this operation if the input operand is constant.
+  if (def->isConstant()) {
+    BigInt* bigInt = def->toConstant()->toBigInt();
+    intptr_t i;
+    if (BigInt::isIntPtr(bigInt, &i)) {
+      return MConstant::NewIntPtr(alloc, i);
+    }
+  }
+
+  // Fold BigIntToIntPtr(Int64ToBigInt(int64)) to Int64ToIntPtr(int64)
+  if (def->isInt64ToBigInt()) {
+    auto* toBigInt = def->toInt64ToBigInt();
+    return MInt64ToIntPtr::New(alloc, toBigInt->input(), toBigInt->isSigned());
+  }
+
+  return this;
+}
+
+MDefinition* MIntPtrToBigInt::foldsTo(TempAllocator& alloc) {
+  MDefinition* def = input();
+
+  // If the operand converts a BigInt to IntPtr, drop both conversions.
+  if (def->isBigIntToIntPtr()) {
+    return def->toBigIntToIntPtr()->input();
+  }
+
+  return this;
+}
+
 MDefinition* MTruncateBigIntToInt64::foldsTo(TempAllocator& alloc) {
   MDefinition* input = getOperand(0);
 
@@ -3990,14 +4242,14 @@ MDefinition* MTruncateBigIntToInt64::foldsTo(TempAllocator& alloc) {
     return input->getOperand(0);
   }
 
-  // If the operand converts an I32 to BigInt, extend the I32 to I64.
-  if (input->isInt32ToBigInt()) {
-    auto* int32 = input->toInt32ToBigInt()->input();
-    if (int32->isConstant()) {
-      int32_t c = int32->toConstant()->toInt32();
+  // If the operand is an IntPtr, extend the IntPtr to I64.
+  if (input->isIntPtrToBigInt()) {
+    auto* intPtr = input->toIntPtrToBigInt()->input();
+    if (intPtr->isConstant()) {
+      intptr_t c = intPtr->toConstant()->toIntPtr();
       return MConstant::NewInt64(alloc, int64_t(c));
     }
-    return MExtendInt32ToInt64::New(alloc, int32, /* isUnsigned = */ false);
+    return MIntPtrToInt64::New(alloc, intPtr);
   }
 
   // Fold this operation if the input operand is constant.
@@ -4021,15 +4273,15 @@ MDefinition* MToInt64::foldsTo(TempAllocator& alloc) {
     return input->getOperand(0);
   }
 
-  // Unwrap Int32ToBigInt:
-  // MToInt64(MInt32ToBigInt(int32)) = MExtendInt32ToInt64(int32).
-  if (input->isInt32ToBigInt()) {
-    auto* int32 = input->toInt32ToBigInt()->input();
-    if (int32->isConstant()) {
-      int32_t c = int32->toConstant()->toInt32();
+  // Unwrap IntPtrToBigInt:
+  // MToInt64(MIntPtrToBigInt(intptr)) = MIntPtrToInt64(intptr).
+  if (input->isIntPtrToBigInt()) {
+    auto* intPtr = input->toIntPtrToBigInt()->input();
+    if (intPtr->isConstant()) {
+      intptr_t c = intPtr->toConstant()->toIntPtr();
       return MConstant::NewInt64(alloc, int64_t(c));
     }
-    return MExtendInt32ToInt64::New(alloc, int32, /* isUnsigned = */ false);
+    return MIntPtrToInt64::New(alloc, intPtr);
   }
 
   // When the input is an Int64 already, just return it.
@@ -4206,6 +4458,28 @@ MDefinition* MSignExtendInt64::foldsTo(TempAllocator& alloc) {
   return this;
 }
 
+MDefinition* MSignExtendIntPtr::foldsTo(TempAllocator& alloc) {
+  MDefinition* input = this->input();
+  if (input->isConstant()) {
+    intptr_t c = input->toConstant()->toIntPtr();
+    intptr_t res;
+    switch (mode_) {
+      case Byte:
+        res = intptr_t(int8_t(c & 0xFF));
+        break;
+      case Half:
+        res = intptr_t(int16_t(c & 0xFFFF));
+        break;
+      case Word:
+        res = intptr_t(int32_t(c & 0xFFFFFFFFU));
+        break;
+    }
+    return MConstant::NewIntPtr(alloc, res);
+  }
+
+  return this;
+}
+
 MDefinition* MToDouble::foldsTo(TempAllocator& alloc) {
   MDefinition* input = getOperand(0);
   if (input->isBox()) {
@@ -4346,30 +4620,44 @@ bool MCompare::tryFoldEqualOperands(bool* result) {
   // However NaN !== NaN is true! So we spend some time trying
   // to eliminate this case.
 
-  if (!IsStrictEqualityOp(jsop())) {
+  if (!IsEqualityOp(jsop())) {
     return false;
   }
 
-  MOZ_ASSERT(
-      compareType_ == Compare_Undefined || compareType_ == Compare_Null ||
-      compareType_ == Compare_Int32 || compareType_ == Compare_UInt32 ||
-      compareType_ == Compare_UInt64 || compareType_ == Compare_Double ||
-      compareType_ == Compare_Float32 || compareType_ == Compare_UIntPtr ||
-      compareType_ == Compare_String || compareType_ == Compare_Object ||
-      compareType_ == Compare_Symbol || compareType_ == Compare_BigInt ||
-      compareType_ == Compare_BigInt_Int32 ||
-      compareType_ == Compare_BigInt_Double ||
-      compareType_ == Compare_BigInt_String);
+  switch (compareType_) {
+    case Compare_Int32:
+    case Compare_UInt32:
+    case Compare_Int64:
+    case Compare_UInt64:
+    case Compare_IntPtr:
+    case Compare_UIntPtr:
+    case Compare_Float32:
+    case Compare_Double:
+    case Compare_String:
+    case Compare_Object:
+    case Compare_Symbol:
+    case Compare_BigInt:
+    case Compare_WasmAnyRef:
+    case Compare_Null:
+    case Compare_Undefined:
+      break;
+    case Compare_BigInt_Int32:
+    case Compare_BigInt_String:
+    case Compare_BigInt_Double:
+      MOZ_CRASH("Expecting different operands for lhs and rhs");
+  }
 
   if (isDoubleComparison() || isFloat32Comparison()) {
     if (!operandsAreNeverNaN()) {
       return false;
     }
+  } else {
+    MOZ_ASSERT(!IsFloatingPointType(lhs()->type()));
   }
 
   lhs()->setGuardRangeBailoutsUnchecked();
 
-  *result = (jsop() == JSOp::StrictEq);
+  *result = (jsop() == JSOp::StrictEq || jsop() == JSOp::Eq);
   return true;
 }
 
@@ -4770,6 +5058,10 @@ bool MCompare::evaluateConstantOperands(TempAllocator& alloc, bool* result) {
                                uint64_t(rhs->toInt64()));
       return true;
     }
+    case Compare_IntPtr: {
+      *result = FoldComparison(jsop_, lhs->toIntPtr(), rhs->toIntPtr());
+      return true;
+    }
     case Compare_UIntPtr: {
       *result = FoldComparison(jsop_, uintptr_t(lhs->toIntPtr()),
                                uintptr_t(rhs->toIntPtr()));
@@ -5105,15 +5397,42 @@ MDefinition* MCompare::tryFoldBigInt64(TempAllocator& alloc) {
       auto* rhsInt64 = right->toInt64ToBigInt();
 
       // Don't optimize if Int64 against Uint64 comparison.
-      if (lhsInt64->elementType() != rhsInt64->elementType()) {
+      if (lhsInt64->isSigned() != rhsInt64->isSigned()) {
         return this;
       }
 
-      bool isSigned = lhsInt64->elementType() == Scalar::BigInt64;
+      bool isSigned = lhsInt64->isSigned();
       auto compareType =
           isSigned ? MCompare::Compare_Int64 : MCompare::Compare_UInt64;
       return MCompare::New(alloc, lhsInt64->input(), rhsInt64->input(), jsop_,
                            compareType);
+    }
+
+    // Optimize IntPtr x Int64 comparison to Int64 x Int64 comparison.
+    if (left->isIntPtrToBigInt() || right->isIntPtrToBigInt()) {
+      auto* int64ToBigInt = left->isInt64ToBigInt() ? left->toInt64ToBigInt()
+                                                    : right->toInt64ToBigInt();
+
+      // Can't optimize when comparing Uint64 against IntPtr.
+      if (!int64ToBigInt->isSigned()) {
+        return this;
+      }
+
+      auto* intPtrToBigInt = left->isIntPtrToBigInt()
+                                 ? left->toIntPtrToBigInt()
+                                 : right->toIntPtrToBigInt();
+
+      auto* intPtrToInt64 = MIntPtrToInt64::New(alloc, intPtrToBigInt->input());
+      block()->insertBefore(this, intPtrToInt64);
+
+      if (left == int64ToBigInt) {
+        left = int64ToBigInt->input();
+        right = intPtrToInt64;
+      } else {
+        left = intPtrToInt64;
+        right = int64ToBigInt->input();
+      }
+      return MCompare::New(alloc, left, right, jsop_, MCompare::Compare_Int64);
     }
 
     // The other operand must be a constant.
@@ -5123,7 +5442,7 @@ MDefinition* MCompare::tryFoldBigInt64(TempAllocator& alloc) {
 
     auto* int64ToBigInt = left->isInt64ToBigInt() ? left->toInt64ToBigInt()
                                                   : right->toInt64ToBigInt();
-    bool isSigned = int64ToBigInt->elementType() == Scalar::BigInt64;
+    bool isSigned = int64ToBigInt->isSigned();
 
     auto* constant =
         left->isConstant() ? left->toConstant() : right->toConstant();
@@ -5182,7 +5501,7 @@ MDefinition* MCompare::tryFoldBigInt64(TempAllocator& alloc) {
     }
 
     auto* int64ToBigInt = left->toInt64ToBigInt();
-    bool isSigned = int64ToBigInt->elementType() == Scalar::BigInt64;
+    bool isSigned = int64ToBigInt->isSigned();
 
     int32_t constInt32 = right->toConstant()->toInt32();
 
@@ -5199,6 +5518,91 @@ MDefinition* MCompare::tryFoldBigInt64(TempAllocator& alloc) {
         isSigned ? MCompare::Compare_Int64 : MCompare::Compare_UInt64;
     return MCompare::New(alloc, int64ToBigInt->input(), cst, jsop_,
                          compareType);
+  }
+
+  return this;
+}
+
+MDefinition* MCompare::tryFoldBigIntPtr(TempAllocator& alloc) {
+  if (compareType() == Compare_BigInt) {
+    auto* left = lhs();
+    MOZ_ASSERT(left->type() == MIRType::BigInt);
+
+    auto* right = rhs();
+    MOZ_ASSERT(right->type() == MIRType::BigInt);
+
+    // At least one operand must be MIntPtrToBigInt.
+    if (!left->isIntPtrToBigInt() && !right->isIntPtrToBigInt()) {
+      return this;
+    }
+
+    // Unwrap MIntPtrToBigInt on both sides and perform an IntPtr comparison.
+    if (left->isIntPtrToBigInt() && right->isIntPtrToBigInt()) {
+      auto* lhsIntPtr = left->toIntPtrToBigInt();
+      auto* rhsIntPtr = right->toIntPtrToBigInt();
+
+      return MCompare::New(alloc, lhsIntPtr->input(), rhsIntPtr->input(), jsop_,
+                           MCompare::Compare_IntPtr);
+    }
+
+    // The other operand must be a constant.
+    if (!left->isConstant() && !right->isConstant()) {
+      return this;
+    }
+
+    auto* intPtrToBigInt = left->isIntPtrToBigInt() ? left->toIntPtrToBigInt()
+                                                    : right->toIntPtrToBigInt();
+
+    auto* constant =
+        left->isConstant() ? left->toConstant() : right->toConstant();
+    auto* bigInt = constant->toBigInt();
+
+    // Extract the BigInt value if representable as intptr_t.
+    intptr_t value;
+    if (!BigInt::isIntPtr(bigInt, &value)) {
+      // The comparison is a constant if the BigInt has too many digits.
+      int32_t repr = bigInt->isNegative() ? -1 : 1;
+
+      bool result;
+      if (left == intPtrToBigInt) {
+        result = FoldComparison(jsop_, 0, repr);
+      } else {
+        result = FoldComparison(jsop_, repr, 0);
+      }
+      return MConstant::New(alloc, BooleanValue(result));
+    }
+
+    auto* cst = MConstant::NewIntPtr(alloc, value);
+    block()->insertBefore(this, cst);
+
+    if (left == intPtrToBigInt) {
+      left = intPtrToBigInt->input();
+      right = cst;
+    } else {
+      left = cst;
+      right = intPtrToBigInt->input();
+    }
+    return MCompare::New(alloc, left, right, jsop_, MCompare::Compare_IntPtr);
+  }
+
+  if (compareType() == Compare_BigInt_Int32) {
+    auto* left = lhs();
+    MOZ_ASSERT(left->type() == MIRType::BigInt);
+
+    auto* right = rhs();
+    MOZ_ASSERT(right->type() == MIRType::Int32);
+
+    // Optimize MIntPtrToBigInt against a constant int32.
+    if (!left->isIntPtrToBigInt() || !right->isConstant()) {
+      return this;
+    }
+
+    auto* cst =
+        MConstant::NewIntPtr(alloc, intptr_t(right->toConstant()->toInt32()));
+    block()->insertBefore(this, cst);
+
+    return MCompare::New(alloc, left->toIntPtrToBigInt()->input(), cst, jsop_,
+                         MCompare::Compare_IntPtr);
   }
 
   return this;
@@ -5282,6 +5686,10 @@ MDefinition* MCompare::foldsTo(TempAllocator& alloc) {
     return folded;
   }
 
+  if (MDefinition* folded = tryFoldBigIntPtr(alloc); folded != this) {
+    return folded;
+  }
+
   if (MDefinition* folded = tryFoldBigInt(alloc); folded != this) {
     return folded;
   }
@@ -5297,16 +5705,107 @@ void MCompare::trySpecializeFloat32(TempAllocator& alloc) {
   }
 }
 
+MDefinition* MSameValue::foldsTo(TempAllocator& alloc) {
+  MDefinition* lhs = left();
+  if (lhs->isBox()) {
+    lhs = lhs->toBox()->input();
+  }
+
+  MDefinition* rhs = right();
+  if (rhs->isBox()) {
+    rhs = rhs->toBox()->input();
+  }
+
+  // Trivially true if both operands are the same.
+  if (lhs == rhs) {
+    return MConstant::New(alloc, BooleanValue(true));
+  }
+
+  // CacheIR optimizes the following cases, so don't bother to handle them here:
+  // 1. Both inputs are numbers (int32 or double).
+  // 2. Both inputs are strictly different types.
+  // 3. Both inputs are the same type.
+
+  // Optimize when one operand is guaranteed to be |null|.
+  if (lhs->type() == MIRType::Null || rhs->type() == MIRType::Null) {
+    // The `null` value must be the right-hand side operand.
+    auto* input = lhs->type() == MIRType::Null ? rhs : lhs;
+    auto* cst = lhs->type() == MIRType::Null ? lhs : rhs;
+    return MCompare::New(alloc, input, cst, JSOp::StrictEq,
+                         MCompare::Compare_Null);
+  }
+
+  // Optimize when one operand is guaranteed to be |undefined|.
+  if (lhs->type() == MIRType::Undefined || rhs->type() == MIRType::Undefined) {
+    // The `undefined` value must be the right-hand side operand.
+    auto* input = lhs->type() == MIRType::Undefined ? rhs : lhs;
+    auto* cst = lhs->type() == MIRType::Undefined ? lhs : rhs;
+    return MCompare::New(alloc, input, cst, JSOp::StrictEq,
+                         MCompare::Compare_Undefined);
+  }
+
+  return this;
+}
+
+MDefinition* MSameValueDouble::foldsTo(TempAllocator& alloc) {
+  // Trivially true if both operands are the same.
+  if (left() == right()) {
+    return MConstant::New(alloc, BooleanValue(true));
+  }
+
+  // At least one operand must be a constant.
+  if (!left()->isConstant() && !right()->isConstant()) {
+    return this;
+  }
+
+  auto* input = left()->isConstant() ? right() : left();
+  auto* cst = left()->isConstant() ? left() : right();
+  double dbl = cst->toConstant()->toDouble();
+
+  // Use bitwise comparison for +/-0.
+  if (dbl == 0.0) {
+    auto* reinterp = MReinterpretCast::New(alloc, input, MIRType::Int64);
+    block()->insertBefore(this, reinterp);
+
+    auto* zeroBitsCst =
+        MConstant::NewInt64(alloc, mozilla::BitwiseCast<int64_t>(dbl));
+    block()->insertBefore(this, zeroBitsCst);
+
+    return MCompare::New(alloc, reinterp, zeroBitsCst, JSOp::StrictEq,
+                         MCompare::Compare_Int64);
+  }
+
+  // Fold `Object.is(d, NaN)` to `d !== d`.
+  if (std::isnan(dbl)) {
+    return MCompare::New(alloc, input, input, JSOp::StrictNe,
+                         MCompare::Compare_Double);
+  }
+
+  // Otherwise fold to MCompare.
+  return MCompare::New(alloc, left(), right(), JSOp::StrictEq,
+                       MCompare::Compare_Double);
+}
+
 MDefinition* MNot::foldsTo(TempAllocator& alloc) {
-  // Fold if the input is constant
-  if (MConstant* inputConst = input()->maybeConstantValue()) {
-    bool b;
-    if (inputConst->valueToBoolean(&b)) {
-      if (type() == MIRType::Int32 || type() == MIRType::Int64) {
-        return MConstant::New(alloc, Int32Value(!b));
-      }
-      return MConstant::New(alloc, BooleanValue(!b));
+  auto foldConstant = [&alloc](MDefinition* input, MIRType type) -> MConstant* {
+    MConstant* inputConst = input->maybeConstantValue();
+    if (!inputConst) {
+      return nullptr;
     }
+    bool b;
+    if (!inputConst->valueToBoolean(&b)) {
+      return nullptr;
+    }
+    if (type == MIRType::Int32) {
+      return MConstant::New(alloc, Int32Value(!b));
+    }
+    MOZ_ASSERT(type == MIRType::Boolean);
+    return MConstant::New(alloc, BooleanValue(!b));
+  };
+
+  // Fold if the input is constant.
+  if (MConstant* folded = foldConstant(input(), type())) {
+    return folded;
   }
 
   // If the operand of the Not is itself a Not, they cancel out. But we can't
@@ -5333,7 +5832,20 @@ MDefinition* MNot::foldsTo(TempAllocator& alloc) {
 
   // Drop the conversion in `Not(Int64ToBigInt(int64))` to `Not(int64)`.
   if (input()->isInt64ToBigInt()) {
-    return MNot::New(alloc, input()->toInt64ToBigInt()->input());
+    MDefinition* int64 = input()->toInt64ToBigInt()->input();
+    if (MConstant* folded = foldConstant(int64, type())) {
+      return folded;
+    }
+    return MNot::New(alloc, int64);
+  }
+
+  // Drop the conversion in `Not(IntPtrToBigInt(intptr))` to `Not(intptr)`.
+  if (input()->isIntPtrToBigInt()) {
+    MDefinition* intPtr = input()->toIntPtrToBigInt()->input();
+    if (MConstant* folded = foldConstant(intPtr, type())) {
+      return folded;
+    }
+    return MNot::New(alloc, intPtr);
   }
 
   return this;
@@ -7002,6 +7514,12 @@ AliasSet MMapObjectSize::getAliasSet() const {
   return AliasSet::Load(AliasSet::MapOrSetHashTable);
 }
 
+AliasSet MDateFillLocalTimeSlots::getAliasSet() const {
+  // Reads and stores fixed slots. Additional reads from DateTimeInfo don't need
+  // to be tracked, because they don't interact with other alias set states.
+  return AliasSet::Store(AliasSet::FixedSlot);
+}
+
 MBindFunction* MBindFunction::New(TempAllocator& alloc, MDefinition* target,
                                   uint32_t argc, JSObject* templateObj) {
   auto* ins = new (alloc) MBindFunction(templateObj);
@@ -7265,6 +7783,17 @@ MDefinition* MArrayLength::foldsTo(TempAllocator& alloc) {
   // there is no other resume point in-between.
   MObjectKeysLength* keysLength = MObjectKeysLength::New(alloc, noproxy);
   keysLength->stealResumePoint(keys->toObjectKeys());
+
+  // Set the dependency of the newly created instruction. Unfortunately
+  // MObjectKeys (keys) is an instruction with a Store(Any) alias set, as it
+  // could be used with proxies which can re-enter JavaScript.
+  //
+  // Thus, the loadDependency field of MObjectKeys is null. On the other hand
+  // MObjectKeysLength has a Load alias set. Thus, instead of reconstructing the
+  // Alias Analysis by updating every instructions which depends on MObjectKeys
+  // and finding the matching store instruction, we reuse the MObjectKeys as any
+  // store instruction, despite it being marked as recovered-on-bailout.
+  keysLength->setDependency(keys);
 
   return keysLength;
 }

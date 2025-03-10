@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 import { ContextMenu } from "content-src/components/ContextMenu/ContextMenu";
 import { _LinkMenu as LinkMenu } from "content-src/components/LinkMenu/LinkMenu";
 import React from "react";
@@ -418,6 +419,7 @@ describe("<LinkMenu>", () => {
           tile_id: 12345,
           recommendation_id: undefined,
           scheduled_corpus_item_id: undefined,
+          corpus_item_id: undefined,
           recommended_at: undefined,
           received_rank: undefined,
           isSponsoredTopSite: undefined,
@@ -425,6 +427,7 @@ describe("<LinkMenu>", () => {
           card_type: undefined,
           position: 3,
           is_pocket_card: false,
+          is_list_card: undefined,
         },
       ],
       menu_action_webext_dismiss: {
@@ -625,6 +628,7 @@ describe("<LinkMenu>", () => {
         tile_id: undefined,
         recommendation_id: undefined,
         scheduled_corpus_item_id: undefined,
+        corpus_item_id: undefined,
         recommended_at: undefined,
         received_rank: undefined,
         advertiser_name: site.hostname,
@@ -633,6 +637,7 @@ describe("<LinkMenu>", () => {
         card_type: undefined,
         position: 3,
         is_pocket_card: false,
+        is_list_card: undefined,
       };
       assert.deepEqual(blockUrlOption.action.data[0], expected);
     });
@@ -673,6 +678,7 @@ describe("<LinkMenu>", () => {
         tile_id: undefined,
         recommendation_id: undefined,
         scheduled_corpus_item_id: undefined,
+        corpus_item_id: undefined,
         recommended_at: undefined,
         received_rank: undefined,
         isSponsoredTopSite: undefined,
@@ -680,6 +686,7 @@ describe("<LinkMenu>", () => {
         card_type: undefined,
         position: 3,
         is_pocket_card: true,
+        is_list_card: undefined,
       };
       assert.deepEqual(blockUrlOption.action.data[0], expected);
     });

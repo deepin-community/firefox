@@ -116,7 +116,11 @@ ad-by-fakespot = Bruderezh gant { -fakespot-brand-name }
 ## Shopping survey strings.
 
 shopping-survey-headline = Skoazellit da wellaat { -brand-product-name }
+shopping-survey-q1-radio-1-label = Plijet-tre
+shopping-survey-q1-radio-2-label = Plijet
 shopping-survey-q1-radio-3-label = Ali ebet
+shopping-survey-q1-radio-4-label = Displijet
+shopping-survey-q1-radio-5-label = Displijet-tre
 shopping-survey-q2-radio-1-label = Ya
 shopping-survey-q2-radio-2-label = Ket
 shopping-survey-q2-radio-3-label = N’ouzon ket
@@ -126,10 +130,16 @@ shopping-survey-terms-link = Termenoù implij
 shopping-survey-thanks =
     .heading = Trugarez da vezañ roet hoc’h ali!
 
+## Shopping opted-out survey strings
+## Opt-out survey options are displayed as checkboxes and the user can select one or many.
+
+
 ## Shopping Feature Callout strings.
 ## "price tag" refers to the price tag icon displayed in the address bar to
 ## access the feature.
 
+shopping-callout-closed-not-opted-in-revised-button = Komprenet am eus
+shopping-callout-not-opted-in-reminder-close-button = Argas
 shopping-callout-not-opted-in-reminder-ignore-checkbox = Na ziskouez din en-dro
 shopping-callout-disabled-auto-open-button = Komprenet am eus
 shopping-callout-opted-out-button = Komprenet am eus

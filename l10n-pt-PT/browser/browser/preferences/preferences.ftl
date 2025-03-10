@@ -3,6 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Enviar um sinal de “Não Monitorizar” para os sites da Internet com a indicação que não deseja ser monitorizado
+do-not-track-removal = Nós já não suportamos o sinal “Do Not Track”
 do-not-track-description2 =
     .label = Enviar aos sites um pedido de “Não monitorizar”
     .accesskey = d
@@ -137,6 +138,7 @@ windows-launch-on-login =
     .label = Abrir o { -brand-short-name } automaticamente quando o seu computador arranca
     .accesskey = o
 windows-launch-on-login-disabled = Esta preferência foi desativada no Windows. Para alterar, visite <a data-l10n-name="startup-link">Aplicações de arranque</a> nas definições do Sistema.
+windows-launch-on-login-profile-disabled = Ative esta preferência marcando “{ profile-manager-use-selected.label }” na janela “Escolher perfil de utilizador”.
 startup-restore-warn-on-quit =
     .label = Avisar-lhe ao sair do navegador
 disable-extension =
@@ -153,6 +155,17 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Abrir ligações em novos separadores em vez de novas janelas
     .accesskey = j
+ask-on-close-multiple-tabs =
+    .label = Questionar antes de fechar múltiplos separadores
+    .accesskey = m
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = Questionar antes de sair com { $quitKey }
+    .accesskey = Q
 confirm-on-close-multiple-tabs =
     .label = Confirmar antes de fechar múltiplos separadores
     .accesskey = m
@@ -212,6 +225,16 @@ containers-remove-cancel-button = Não remover este contentor
 settings-tabs-show-image-in-preview =
     .label = Mostrar uma pré-visualização da imagem ao passar o rato sobre um separador
     .accessKey = v
+browser-layout-header = Esquema do navegador
+browser-layout-horizontal-tabs =
+    .label = Separadores horizontais
+browser-layout-horizontal-tabs-desc = Mostrar no topo do navegador
+browser-layout-vertical-tabs =
+    .label = Separadores verticais
+browser-layout-vertical-tabs-desc = Mostrar ao lado, na barra lateral
+browser-layout-show-sidebar =
+    .label = Mostrar barra lateral
+browser-layout-show-sidebar-desc = Aceda rapidamente a marcadores, separadores do seu telemóvel, chatbots de IA e muito mais, sem sair da vista principal.
 
 ## General Section - Language & Appearance
 
@@ -568,8 +591,7 @@ home-prefs-shortcuts-description = Sites que guarda ou visita
 home-prefs-shortcuts-by-option-sponsored =
     .label = Atalhos patrocinados
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Recomendado por { $provider }
@@ -640,6 +662,10 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Mostrar sugestões de pesquisa nos resultados da barra de endereço
     .accesskey = l
+# With this option enabled, on the search results page
+# the URL will be replaced by the search terms in the address bar.
+search-show-search-term-option-2 =
+    .label = Mostrar os termos de pesquisa na barra de endereço das páginas de resultados
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -783,6 +809,9 @@ sync-currently-syncing-creditcards = Cartões de crédito
 sync-currently-syncing-payment-methods = Métodos de pagamento
 sync-currently-syncing-addons = Extras
 sync-currently-syncing-settings = Definições
+sync-manage-options =
+    .label = Gerir a sincronização…
+    .accesskey = G
 sync-change-options =
     .label = Alterar...
     .accesskey = A
@@ -835,6 +864,13 @@ sync-engine-settings =
     .label = Definições
     .tooltiptext = Definições gerais, de privacidade e de segurança que alterou
     .accesskey = D
+sync-choose-what-to-sync-dialog4 =
+    .title = Faça a gestão do que é sincronizado em todos os seus dispositivos associados
+    .style = min-width: 59em;
+    .buttonlabelaccept = Guardar
+    .buttonaccesskeyaccept = G
+    .buttonlabelextra2 = Desligar…
+    .buttonaccesskeyextra2 = D
 
 ## The device name controls.
 
@@ -1281,17 +1317,40 @@ permissions-addon-exceptions =
 collection-header = Recolha de dados e utilização do { -brand-short-name }
 collection-header2 = Recolha de dados e utilização do { -brand-short-name }
     .searchkeywords = telemetria
+preferences-collection-description = Nós esforçamos-nos para lhe dar opções e recolher apenas a quantidade mínima de dados que são necessários para melhorar o { -brand-product-name } para todos.
+preferences-collection-privacy-notice = Ver informação de privacidade
 collection-description = Nós esforçamos-nos para lhe fornecer escolhas e recolher apenas o que precisamos para fornecer e melhorar o { -brand-short-name } para toda a gente. Pedimos sempre permissão antes de receber informação pessoal.
 collection-privacy-notice = Aviso de privacidade
 collection-health-report-telemetry-disabled = Já não está a permitir que o { -vendor-short-name } recolha dados técnicos e de interação. Todos os dados antigos serão eliminados dentro de 30 dias.
 collection-health-report-telemetry-disabled-link = Saber mais
+collection-usage-ping =
+    .label = Enviar ping de utilização diário para a { -vendor-short-name }
+    .accesskey = u
+collection-usage-ping-description = Isto ajuda a { -vendor-short-name } a calcular os utilizadores ativos.
+collection-health-report2 =
+    .label = Enviar dados técnicos e de interação para a { -vendor-short-name }
+    .accesskey = r
 collection-health-report =
     .label = Permitir que o { -brand-short-name } envie os dados técnicos e de interação para a { -vendor-short-name }
     .accesskey = r
 collection-health-report-link = Saber mais
+collection-health-report-description = Isto ajuda-nos a melhorar as funcionalidades, desempenho e a estabilidade do { -brand-product-name }.
+collection-studies2 =
+    .label = Instalar e executar estudos
+collection-studies-description = Experimente funcionalidades e ideias antes de serem disponibilizadas para todos.
 collection-studies =
     .label = Permitir que { -brand-short-name } instale e execute os estudos
 collection-studies-link = Ver estudos do { -brand-short-name }
+addon-recommendations2 =
+    .label = Permitir recomendações personalizadas de extensões
+addon-recommendations-description = Obtenha recomendações de extensões para melhorar a sua experiência de navegação.
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = A partilha de dados está desativada para a configuração desta compilação.
+collection-backlogged-crash-reports2 =
+    .label = Enviar relatórios de falha automaticamente
+    .accesskey = c
+collection-backlogged-crash-reports-description = Isto ajuda o { -vendor-short-name } a diagnosticar e corrigir problemas com o navegador. Os relatórios podem incluir dados pessoais ou sensíveis.
 addon-recommendations =
     .label = Permitir que { -brand-short-name } faça recomendações personalizadas de extensões
 addon-recommendations-link = Saber mais
@@ -1359,6 +1418,8 @@ space-alert-under-5gb-message2 = <strong>O { -brand-short-name } está a ficar s
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = Modo apenas HTTPS
+httpsonly-description3 = Apenas permite ligações seguras a sites. O { -brand-short-name } irá perguntar antes de ligar sem segurança.
+httpsonly-learn-more2 = Como funciona o Apenas HTTPS
 httpsonly-description = O HTTPS fornece um ligação segura e encriptada entre o { -brand-short-name } e os sites que visita. A maioria dos sites suporta HTTPS e se o modo apenas HTTPS estiver ativo, então o { -brand-short-name } irá melhorar/atualizar todas as ligações para HTTPS.
 httpsonly-description2 = O { -brand-short-name } estabelece ligações seguras e encriptadas aos sites que visita. Irá alertar caso uma ligação não seja segura, quando o modo Apenas HTTPS estiver ativado.
 httpsonly-learn-more = Saber mais
@@ -1368,6 +1429,9 @@ httpsonly-radio-enabled2 =
     .label = Utilizar apenas HTTPS em todas as janelas
 httpsonly-radio-enabled-pbm =
     .label = Ativar o modo apenas HTTPS somente em janelas privadas
+httpsonly-radio-disabled3 =
+    .label = Não ativar o modo Apenas HTTPS
+    .description = O { -brand-short-name } pode, ainda assim, atualizar algumas ligações
 httpsonly-radio-enabled-pbm2 =
     .label = Utilizar HTTPS apenas nas janelas privadas
 httpsonly-radio-disabled =

@@ -3,23 +3,23 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 rights-title = Mbi të Drejtat Tuaja
-rights-intro = { -brand-full-name }-i është software i lirë dhe me burim të hapur, krijuar nga një bashkësi disamijëshe anembanë botës. Ka pak gjëra që do të duhej t'i dinit:
+rights-intro = { -brand-full-name }-i është <em>software</em> i lirë dhe me burim të hapët, krijuar nga një bashkësi disamijëshe anembanë botës. Ka pak gjëra që do të duhej t'i dinit:
 rights-intro-point-1 = { -brand-short-name }-i ju jepet sipas kushteve të <a data-l10n-name="mozilla-public-license-link">Licencës Publike Mozilla</a>. Kjo do të thotë që { -brand-short-name }-in mund ta përdorni, kopjoni dhe tua shpërndani të tjerëve. Jeni gjithashtu të lirë ta ndryshoni kodin burim të { -brand-short-name }-it në përputhje me nevojat tuaja. Licenca Publike Mozilla ju jep po ashtu të drejtën të shpërndani versionet tuaj të ndryshuar.
 rights-intro-point-2 = Mozilla nuk ju jep ndonjë të drejtë mbi shenja tregtare ose mbi licenca shenjash tregtare të Mozilla Foundation-it ose të çfarëdo pale të tretë, përfshi, pa kufizim, emrin dhe stemën e Firefox-it. Më tepër të dhëna rreth shenjave tregtare (trademarks) mund të gjeni <a data-l10n-name="mozilla-trademarks-link">këtu</a>.
 rights-intro-point-3 = Disa veçori te { -brand-short-name }-i, të tilla si Njoftuesi i Vithisjeve, ju ofrojnë mundësinë të jepni përshtypjet te { -vendor-short-name }. Duke zgjedhur parashtrim përshtypjesh, i jepni leje { -vendor-short-name }-s t’i përdorë përshtypjet për të përmirësuar produktet e veta, të botojë përshtypje te sajtet e veta dhe t’i shpërndajë përshtypjet.
 rights-intro-point-4 = Se si i përdorim ne të dhënat tuaja vetjake dhe përshtypjet tuaja e dhëna te { -vendor-short-name } përmes { -brand-short-name }-it përshkruhet te <a data-l10n-name="mozilla-privacy-policy-link">Rregullat e Privatësisë për { -brand-short-name }-in</a>.
 rights-intro-point-4-unbranded = Çfarëdo rregullash privatësie të zbatueshme mbi këtë produkt do të duheshin radhitur këtu.
-rights-intro-point-5 = Disa veçori të { -brand-short-name }-it përdorin shërbime të dhënash me bazë web-in, sidoqoftë, nuk garantojmë dot që të jenë 100% të përpikta ose pa gabime. Më tepër hollësi, përfshi të dhëna rreth se si të çaktivizohen veçoritë, mund të gjenden te <a data-l10n-name="mozilla-service-terms-link">kushtet e shërbimit</a>.
+rights-intro-point-5 = Disa veçori të { -brand-short-name }-it përdorin shërbime informacionitë dhënash me bazë web-in, sidoqoftë, s’garantojmë dot që të jenë 100% të përpikta, ose pa gabime. Më tepër hollësi, përfshi të dhëna rreth se si të çaktivizohen veçoritë, mund të gjenden te <a data-l10n-name="mozilla-service-terms-link">kushtet e shërbimit</a>.
 rights-intro-point-5-unbranded = Nëse ky produkt përmban shërbime web, çfarëdo kushtesh të zbatueshëm për shërbimin(et) do të duhej të tregoheshin me një lidhje te <a data-l10n-name="mozilla-website-services-link">ndarja</a> Shërbime Sajtesh.
 rights-intro-point-6 = Që të mund të luajë disa lloje lënde video, { -brand-short-name }-i shkarkon nga palë të treta disa module shfshehtëzimi lënde.
-rights-webservices-header = Shërbime Sajtesh të { -brand-full-name }-it
+rights-webservices-header = Shërbime { -brand-full-name }-i Informacioni Me Bazë Web-in
 rights-webservices = { -brand-full-name }-i përdor shërbime të dhënash me bazë web ("Shërbimet") për të bërë të mundur funksionimin e disa veçorive që ju ofrohen për përdorim përmes këtij versioni dyor të { -brand-short-name }-it, sipas kushteve të përshkruara më poshtë. Nëse nuk dëshironi të përdorni një ose më tepër prej Shërbimeve, ose nëse kushtet më poshtë janë të papranueshme për ju, mund ta çaktivizoni veçorinë ose Shërbimin(t). Udhëzimet se si të çaktivizohet një veçori ose Shërbim i caktuar mund të gjenden <a data-l10n-name="mozilla-disable-service-link">këtu</a>. Të tjera veçori dhe Shërbime mund të çaktivizohen te parapëlqimet e aplikacionit.
 rights-safebrowsing = <strong>Shfletim i Parrezik: </strong>Nuk këshillohet çaktivizimi i veçorisë Shfletim i Parrezik, pasi mund të bëjë që të shkoni te sajte jo të parrezik. Nëse dëshironi ta çaktivizoni tërësisht këtë veçori, ndiqni hapat vijues:
 rights-safebrowsing-term-1 = Hapni parapëlqimet e aplikacionit
 rights-safebrowsing-term-2 = Përzgjidhni ndarjen Siguri
 rights-safebrowsing-term-3 = Hiqjani shenjën mundësisë te "{ enableSafeBrowsing-label }"
 enableSafeBrowsing-label = Blloko lëndë të rrezikshme dhe të rrejshme
-rights-safebrowsing-term-4 = Shfletimi i Parrezik Sigurt tani është çaktivizuar
+rights-safebrowsing-term-4 = Shfletimi i Parrezik tani është çaktivizuar
 rights-locationawarebrowsing = <strong>Shfletimi i Ndjeshëm Ndaj Vendndodhjes: </strong>është përherë në dorën tuaj ta përdorni a jo. Kurrë nuk dërgohen të dhëna vendndodhjeje pa lejen tuaj. Nëse dëshironi ta çaktivizoni tërësisht veçorinë, ndiqni hapat vijues:
 rights-locationawarebrowsing-term-1 = Te shtylla e URL-ve, shtypni <code>about:config</code>
 rights-locationawarebrowsing-term-2 = Shtypni geo.enabled

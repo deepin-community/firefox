@@ -243,6 +243,9 @@ device-migration-fxa-spotlight-older-device-primary-button = 创建账户
 device-migration-fxa-spotlight-getting-new-device-header-2 = 打算换新设备？
 device-migration-fxa-spotlight-getting-new-device-body-2 = 只需简单几步，即可将您的书签、历史记录、密码同步至新设备。
 device-migration-fxa-spotlight-getting-new-device-primary-button = 如何备份数据
+device-migration-fxa-spotlight-sync-header = 跨设备浏览也如行云流水
+device-migration-fxa-spotlight-sync-body = 加密同步书签、密码等所有重要信息，供您在使用 { -brand-product-name } 的各设备上随手取用。
+device-migration-fxa-spotlight-sync-primary-button = 开始使用
 
 ## Set as Default PDF Reader Infobar
 
@@ -279,3 +282,61 @@ tail-fox-spotlight-title = 甩掉讨厌的跟踪器
 tail-fox-spotlight-subtitle = 甩掉广告跟踪器，上网安全又快速。
 tail-fox-spotlight-primary-button = 用 { -brand-short-name } 打开我的链接
 tail-fox-spotlight-secondary-button = 暂时不要
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>2025 年 1 月 14 日起，旧版本 { -brand-short-name } 可能会出现问题。</strong>
+root-certificate-succession-infobar-march-message = <strong>更新以在 2025 年 3 月 14 日后继续使用 { -brand-short-name }。</strong>
+root-certificate-succession-infobar-link = 为什么要更新？
+root-certificate-succession-infobar-primary-button =
+    .label = 立即更新
+    .accesskey = U
+root-certificate-succession-infobar-secondary-button =
+    .label = 以后
+    .accesskey = L
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = 您尚未安装 { -brand-short-name } 的重要更新
+root-certificate-windows-background-notification-subtitle = 若不进行更新，浏览器的部分功能将在不久后失效。现在就是获取我们先进保护和新鲜功能的绝佳时机。
+root-certificate-windows-background-notification-learn-more-button = 详细了解
+root-certificate-windows-background-notification-update-button = 更新 { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = 关闭
+    .aria-label = 关闭
+fxa-menu-message-sign-up-button = 注册
+fxa-menu-message-sync-devices-primary-text = 同步各设备
+fxa-menu-message-sync-devices-secondary-text = 顷刻间让书签、密码等数据在您使用 { -brand-short-name } 的各设备上触手可得。
+fxa-menu-message-sync-devices-collapsed-text = 同步各设备
+fxa-menu-message-backup-data-primary-text = 备份您的浏览器数据
+fxa-menu-message-backup-data-secondary-text = 自动保护所有设备上的书签、密码等信息。
+fxa-menu-message-backup-data-collapsed-text = 备份浏览数据
+fxa-menu-message-backup-sync-primary-text = 保持数据安全与同步
+fxa-menu-message-backup-sync-secondary-text = 同步功能可备份大部分数据，供您在使用 { -brand-short-name } 的各设备上随手取用。
+fxa-menu-message-backup-sync-collapsed-text = 同步和备份数据
+fxa-menu-message-mobile-primary-text = 发送标签页到手机
+fxa-menu-message-mobile-secondary-text = 将标签页同步到移动设备，从上次看到的地方无缝接续浏览。
+fxa-menu-message-mobile-collapsed-text = 与手机同步
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = 欢迎回来
+multi-cta-fox-doodle-set-default-checkbox = 将 { -brand-short-name } 设为默认浏览器
+multi-cta-fox-doodle-pin-startmenu-checkbox = 将 { -brand-short-name } 固定到开始菜单
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] 将 { -brand-short-name } 保留在程序坞中
+       *[other] 将 { -brand-short-name } 固定到任务栏
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = 开始上网冲浪
+multi-cta-fox-doodle-main-browser-primary-button-label = 将 { -brand-short-name } 设为我的主浏览器
+multi-cta-fox-doodle-quick-reminder-subtitle = 小提示：您可以把最爱的隐私为先浏览器固定起来，随时随地一键打开。
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] 随时随地一键打开您最爱的隐私为先浏览器。将 { -brand-short-name } 设为用于打开链接的默认浏览器，并保留在程序坞中。
+       *[other] 随时随地一键打开您最爱的隐私为先浏览器。将 { -brand-short-name } 设为用于打开链接的默认浏览器，并固定到任务栏。
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = 随时随地一键打开您最爱的隐私为先浏览器。将 { -brand-short-name } 设为用于打开链接的默认浏览器，并固定到任务栏和开始菜单。

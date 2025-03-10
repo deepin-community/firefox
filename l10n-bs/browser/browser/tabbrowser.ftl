@@ -39,6 +39,9 @@ tabbrowser-close-tabs-tooltip =
 ##   $tabCount (Number): The number of tabs that will be affected.
 
 
+## Tooltips for tab audio control
+
+
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
@@ -81,6 +84,10 @@ tabbrowser-confirm-close-tabs-with-key-button = Zatvori { -brand-short-name }
 #   $quitKey (String): the text of the keyboard shortcut for quitting.
 tabbrowser-confirm-close-tabs-with-key-checkbox = Potvrdite prije gašenja s { $quitKey }
 
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
+
+
 ## Confirmation dialog when opening multiple tabs simultaneously
 
 
@@ -111,6 +118,19 @@ tabbrowser-ctrl-tab-list-all-tabs =
     .label = Izlistaj svih { $tabCount } tabova
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-close-tab =
     .tooltiptext = Zatvori tab
+
+## Tab Groups
+
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
+
+## Open/saved tab group context menu
+

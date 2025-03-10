@@ -8,11 +8,18 @@
 newtab-page-title = Варақаи нав
 newtab-settings-button =
     .title = Танзим кардани саҳифаи худ дар варақаи нав
+newtab-personalize-settings-icon-label =
+    .title = Шахсисозии варақаи нав
+    .aria-label = Танзимот
+newtab-settings-dialog-label =
+    .aria-label = Танзимот
 newtab-personalize-icon-label =
     .title = Танзимоти шахсии варақаи нав
     .aria-label = Танзимоти шахсии варақаи нав
 newtab-personalize-dialog-label =
     .aria-label = Танзимоти шахсӣ
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Нигоҳ доштан ба { -pocket-brand-name }
 newtab-menu-delete-pocket = Нест кардан аз { -pocket-brand-name }
 newtab-menu-archive-pocket = Бойгонӣ кардан ба { -pocket-brand-name }
 newtab-menu-show-privacy-info = Сарпарастони мо ва махфияти шумо
+newtab-menu-about-fakespot = Дар бораи «{ -fakespot-brand-name }»
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Манъ кардан
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Бекор кардани обуна аз мавзуъ
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -116,7 +130,7 @@ newtab-privacy-modal-button-done = Тайёр
 newtab-privacy-modal-button-manage = Идоракунии танзимоти муҳтавои сарпарастӣ
 newtab-privacy-modal-header = Махфияти шумо муҳим аст.
 newtab-privacy-modal-paragraph-2 =
-    Илова ба нигоҳдории ҳикояҳои ҷолиб, мо, инчунин, ба шумо муҳтавои мувофиқ ва тафтишшударо аз сарпарастони мунтахаб нишон медиҳем. Боварӣ ҳосил кунед, ки <strong>маълумоти тамошокунӣ ҳеҷ вақт нусхаи шахсии «{ -brand-product-name }»-и шуморо бесоҳиб намемонад</strong> — ҳатто мо ба маълумоти шахсии шумо дастрасӣ надорем, сарпарастони мо ҳам дастрасӣ надоранд.
+    Илова ба нигоҳдории ҳикояҳои ҷолиб, мо, инчунин, ба шумо муҳтавои мувофиқ ва тафтишшударо аз сарпарастони мунтахаб нишон медиҳем. Боварӣ ҳосил кунед, ки <strong>маълумоти тамошобинӣ ҳеҷ вақт нусхаи шахсии «{ -brand-product-name }»-и шуморо бесоҳиб намемонад</strong> — ҳатто мо ба маълумоти шахсии шумо дастрасӣ надорем, сарпарастони мо ҳам дастрасӣ надоранд.
     сарпарастон низ надоранд.
 newtab-privacy-modal-link = Маълумот гиред, ки чӣ тавр махфият дар варақаи нав риоя карда мешавад
 
@@ -152,7 +166,7 @@ newtab-menu-open-file = Кушодани файл
 newtab-label-visited = Дидашуда
 newtab-label-bookmarked = Дар хатбаракҳо
 newtab-label-removed-bookmark = Хатбарак тоза карда шуд
-newtab-label-recommended = Тамоюл
+newtab-label-recommended = Ҳавасангез
 newtab-label-saved = Ба { -pocket-brand-name } нигоҳ дошта шуд
 newtab-label-download = Боргиришуда
 # This string is used in the story cards to indicate sponsored content
@@ -198,10 +212,12 @@ newtab-section-header-recent-activity = Фаъолияти охирин
 #   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = Аз тарафи «{ $provider }» тавсия дода мешавад
 newtab-section-header-stories = Ҳикояҳои андешаангез
+# "picks" refers to recommended articles
+newtab-section-header-todays-picks = Маҷмуи маълумоти интихобшуда барои шумо
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
-newtab-empty-section-highlights = Тамошокунии сомонаҳоро оғоз намоед ва мо баъзеи мақолаҳои шавқовар, видеоҳо ва саҳифаҳои дигареро, ки шумо тамошо кардед ё ба хатбаракҳо гузоштед, дар ин ҷо намоиш медиҳем.
+newtab-empty-section-highlights = Тамошобинии сомонаҳоро оғоз намоед ва мо баъзеи мақолаҳои шавқовар, видеоҳо ва саҳифаҳои дигареро, ки шумо тамошо кардед ё ба хатбаракҳо гузоштед, дар ин ҷо намоиш медиҳем.
 # Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 # Variables:
 #   $provider (string) - Name of the content provider for this section, e.g "Pocket".
@@ -229,6 +245,8 @@ newtab-pocket-cta-button = «{ -pocket-brand-name }»-ро бор кунед
 newtab-pocket-cta-text = Ҳикояҳоеро, ки дӯст медоред, дар { -pocket-brand-name } нигоҳ доред ва ба зеҳни худ аз хониши дилрабо қувват диҳед.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } қисми оилаи { -brand-product-name } мебошад
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Нигоҳ доштан
 newtab-pocket-saved = Нигоҳ дошта шуд
 
@@ -240,6 +258,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Ман ҳавасманд нестам
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Ташаккур. Фикру мулоҳизаҳои шумо ба мо барои беҳтар кардани навори хабарҳои шумо ёрӣ медиҳанд.
 newtab-toast-thumbs-up-or-down = Ташаккур. Фикру мулоҳизаҳои шумо ба мо барои беҳтар кардани навори хабарҳои шумо ёрӣ медиҳанд.
 newtab-toast-dismiss-button =
     .title = Нодида гузарондан
@@ -293,6 +314,12 @@ newtab-custom-settings = Идоракунии танзимоти бештар
 
 newtab-wallpaper-title = Тасвирҳои замина
 newtab-wallpaper-reset = Ба ҳолати пешфарз барқарор кунед
+newtab-wallpaper-upload-image = Бор кардани тасвир
+newtab-wallpaper-custom-color = Рангеро интихоб кунед
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = Андозаи тасвир зиёда аз маҳдудияти андозаи файли { $file_size } МБ мебошад. Лутфан, кӯшиш кунед, ки файлеро бо андозаи хурдтар бор намоед.
+newtab-wallpaper-error-file-type = Мо файли шуморо бор карда натавонистем. Лутфан, бо навъи дигари файл аз нав кӯшиш намоед.
 newtab-wallpaper-light-red-panda = Пандаи сурх
 newtab-wallpaper-light-mountain = Кӯҳи сафед
 newtab-wallpaper-light-sky = Осмон бо абрҳои лоҷувард ва гулобӣ
@@ -305,6 +332,8 @@ newtab-wallpaper-dark-panda = Пандаи сурх дар ҷангал пинҳ
 newtab-wallpaper-dark-sky = Манзараи шаҳр бо осмони шабона
 newtab-wallpaper-dark-mountain = Манзараи кӯҳӣ
 newtab-wallpaper-dark-city = Манзараи шаҳри лоҷувард
+newtab-wallpaper-dark-fox-anniversary = Рӯбоҳи ҷилодор дар роҳи сангфарш дар назди ҷангал
+newtab-wallpaper-light-fox-anniversary = Рӯбоҳи ҷилодор дар саҳрои сералаф бо манзараи тумани кӯҳӣ
 
 ## Solid Colors
 
@@ -334,18 +363,32 @@ newtab-wallpaper-abstract-purple = Шаклҳои лоҷувард
 newtab-wallpaper-abstract-orange = Шаклҳои норинҷӣ
 newtab-wallpaper-gradient-orange = Тағйирёбии норинҷӣ ва голубӣ
 newtab-wallpaper-abstract-blue-purple = Шаклҳои кабуд ва норинҷӣ
+newtab-wallpaper-abstract-white-curves = Сафед бо хатҳои каҷи сояандоз
+newtab-wallpaper-abstract-purple-green = Тобиши лоҷувард ва сабзи равшан
+newtab-wallpaper-abstract-blue-purple-waves = Шаклҳои мавҷноки кабуд ва норинҷӣ
+newtab-wallpaper-abstract-black-waves = Шаклҳои мавҷноки сиёҳ
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Суратҳо
 newtab-wallpaper-beach-at-sunrise = Соҳил дар тулӯи офтоб
 newtab-wallpaper-beach-at-sunset = Соҳил дар ғуруби офтоб
+newtab-wallpaper-storm-sky = Осмони тӯфонӣ
+newtab-wallpaper-sky-with-pink-clouds = Осмон бо абрҳои гулобӣ
+newtab-wallpaper-red-panda-yawns-in-a-tree = Пандаи сурх дар дарахт хамёза мекашад
 newtab-wallpaper-white-mountains = Кӯҳҳои сафед
+newtab-wallpaper-hot-air-balloons = Рангҳои гуногуни пуфакҳои ҳавоӣ дар давоми рӯз
+newtab-wallpaper-starry-canyon = Шаби ситоразори кабуд
+newtab-wallpaper-suspension-bridge = Акси пули хокистариранги овезон дар давоми рӯз
+newtab-wallpaper-sand-dunes = Хомаҳои регии сафед
+newtab-wallpaper-palm-trees = Акси сиёҳи дарахтҳои ҷавзи ҳиндӣ дар соати тиллоӣ
+newtab-wallpaper-forest-trees = Дарахтҳои бо туман пӯшидашуда
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
 newtab-wallpaper-attribution = Акс аз ҷониби <a data-l10n-name="name-link">{ $author_string }</a> дар <a data-l10n-name="webpage-link">{ $webpage_string }</a>
 newtab-wallpaper-feature-highlight-header = Чакраҳои рангро кӯшиш намоед
+newtab-wallpaper-feature-highlight-content = Бо истифода аз тасвирҳои замина ба варақаи нави худ намуди зоҳирии наверо диҳед.
 newtab-wallpaper-feature-highlight-button = Фаҳмидам
 # Tooltip for dismiss button
 feature-highlight-dismiss-button =
@@ -354,6 +397,19 @@ feature-highlight-dismiss-button =
 feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
+
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Осмонӣ
+newtab-wallpaper-celestial-lunar-eclipse = Гирифти Моҳ
+newtab-wallpaper-celestial-earth-night = Акси шабона аз мадори пасти кураи Замин
+newtab-wallpaper-celestial-starry-sky = Осмони ситоразор
+newtab-wallpaper-celestial-eclipse-time-lapse = Вақти фарогирии гирифти Моҳ
+newtab-wallpaper-celestial-black-hole = Тасвири роҳи каҳкашон бо сӯрохи сиёҳ
+newtab-wallpaper-celestial-river = Акси дарё аз моҳвораи алоқа
 
 ## New Tab Weather
 
@@ -365,6 +421,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Реклама
 newtab-weather-menu-change-location = Иваз кардани макон
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Ҷустуҷӯи макон
+    .aria-label = Ҷустуҷӯи макон
 newtab-weather-change-location-search-input = Ҷустуҷӯи макон
 newtab-weather-menu-weather-display = Намоиши обу ҳаво
 # Display options are:
@@ -407,8 +466,61 @@ newtab-topic-label-society = Таҷрибаи ҳаёт
 newtab-topic-label-sports = Варзишҳо
 newtab-topic-label-tech = Технологияҳо
 newtab-topic-label-travel = Сайёҳӣ
+newtab-topic-label-home = Хона ва боғ
 
 ## Topic Selection Modal
 
+# “fine-tune” refers to the process of making small adjustments to something to get
+# the best or desired experience or performance.
+newtab-topic-selection-title = Барои танзими дақиқи навори хабарҳои худ, мавзуъҳоеро интихоб намоед
+# “tailored” refers to process of (a tailor) making (clothes) to fit individual customers.
+# In other words, “Our expert curators prioritize stories to fit your selected interests”
+newtab-topic-selection-subtitle = Ду ё зиёда мавзуи дӯстдоштаро интихоб намоед. Нозирони коршиноси мо ба ҳикоятҳое, ки ба шавқу завқи шумо мувофиқанд, афзалият медиҳанд. Дар вақти дилхоҳ навсозӣ кунед.
 newtab-topic-selection-save-button = Нигоҳ доштан
 newtab-topic-selection-cancel-button = Бекор кардан
+newtab-topic-selection-button-maybe-later = Шояд дертар
+newtab-topic-selection-privacy-link = Бифаҳмед, ки чӣ тавр мо маълумотро ҳифз ва идора мекунем
+newtab-topic-selection-button-update-interests = Манфиатҳои худро навсозӣ кунед
+newtab-topic-selection-button-pick-interests = Манфиатҳои худро интихоб кунед
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Обуна шавед
+newtab-section-following-button = Обуна шуд
+newtab-section-unfollow-button = Бекор кардани обуна
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Манъ кардан
+newtab-section-blocked-button = Манъ карда шуд
+newtab-section-unblock-button = Кушодан
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = Шумо мутмаин ҳастед, ки мехоҳед ин қисматро манъ кунед?
+newtab-section-confirm-block-section-p2 = Қисмати манъшуда дигар дар навори хабарҳои шумо пайдо намешавад.
+newtab-section-block-section-button = Манъ кардани ин қисмат
+newtab-section-cancel-button = Ҳоло не
+newtab-section-confirm-block-topic-p1 = Шумо мутмаин ҳастед, ки мехоҳед ин мавзуъро манъ кунед?
+newtab-section-confirm-block-topic-p2 = Мавзуъҳои манъшуда дигар дар навори хабарҳои шумо пайдо намешаванд.
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = Манъ кардани { $topic }
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = Мавзуъҳо
+newtab-section-manage-topics-button-v2 =
+    .label = Идоракунии мавзуъҳо
+newtab-section-mangage-topics-followed-topics = Пайгирӣ карда мешавад
+newtab-section-mangage-topics-button =
+    .label = Мавзуъҳои пайгиришуда ва манъшуда
+newtab-section-mangage-topics-followed-topics-subtitle = Мавзуъҳои пайгиришуда
+newtab-section-mangage-topics-followed-topics-empty-state = Шумо то ҳол ягон мавзуъро пайгирӣ накардаед.
+newtab-section-mangage-topics-blocked-topics = Манъ карда мешавад
+newtab-section-mangage-topics-blocked-topics-subtitle = Мавзуъҳои пайгиришуда
+newtab-section-mangage-topics-blocked-topics-empty-state = Шумо то ҳол ягон мавзуъро манъ накардаед.

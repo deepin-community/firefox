@@ -8,11 +8,18 @@
 newtab-page-title = Jauna cilne
 newtab-settings-button =
     .title = Pielāgojiet jaunās cilnes lapu
+newtab-personalize-settings-icon-label =
+    .title = Personalizēt jauno cilni
+    .aria-label = Iestatījumi
+newtab-settings-dialog-label =
+    .aria-label = Iestatījumi
 newtab-personalize-icon-label =
     .title = Personalizēt jauno cilni
     .aria-label = Personalizēt jauno cilni
 newtab-personalize-dialog-label =
     .aria-label = Personalizēt
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Saglabāt { -pocket-brand-name }
 newtab-menu-delete-pocket = Dzēst no { -pocket-brand-name }
 newtab-menu-archive-pocket = Arhivēt { -pocket-brand-name }
 newtab-menu-show-privacy-info = Mūsu sponsori un jūsu privātums
+newtab-menu-about-fakespot = Par { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Bloķēt
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Pārtraukt sekot tēmai
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -233,6 +247,8 @@ newtab-pocket-cta-button = Izmēģiniet { -pocket-brand-name }
 newtab-pocket-cta-text = Saglabājiet interesantus stāstus { -pocket-brand-name } un barojiet savu prātu ar interesantu lasāmvielu.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } ir daļa no { -brand-product-name } saimes
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Saglabāt
 newtab-pocket-saved = Saglabāts
 
@@ -244,6 +260,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Tas nav man
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Paldies. Jūsu atsauksmes palīdzēs mums uzlabot jūsu plūsmu.
 newtab-toast-thumbs-up-or-down = Paldies. Jūsu atsauksmes palīdzēs mums uzlabot jūsu plūsmu.
 newtab-toast-dismiss-button =
     .title = Noraidīt
@@ -263,10 +282,10 @@ newtab-error-fallback-refresh-link = Pārlādējiet lapu, lai mēģinātu vēlre
 ## Customization Menu
 
 newtab-custom-shortcuts-title = Saīsnes
-newtab-custom-shortcuts-subtitle = Vietnes, kuras saglabājat vai apmeklējat
+newtab-custom-shortcuts-subtitle = Saglabātās vai apmeklētās vietnes
 newtab-custom-shortcuts-toggle =
     .label = Saīsnes
-    .description = Vietnes, kuras saglabājat vai apmeklējat
+    .description = Saglabātās vai apmeklētās vietnes
 # Variables
 #   $num (number) - Number of rows to display
 newtab-custom-row-selector =
@@ -292,12 +311,12 @@ newtab-custom-weather-toggle =
     .label = Laikapstākļi
     .description = Šodienas prognoze ātrā acu uzmetienā
 newtab-custom-close-button = Aizvērt
-newtab-custom-settings = Pārvaldīt vēl iestatījumu
+newtab-custom-settings = Pārvaldīt vairāk iestatījumu
 
 ## New Tab Wallpapers
 
 newtab-wallpaper-title = Tapetes
-newtab-wallpaper-reset = Atiestatīt uz noklusējuma
+newtab-wallpaper-reset = Atiestatīt uz noklusējumu
 newtab-wallpaper-light-red-panda = Sarkana panda
 newtab-wallpaper-light-mountain = Balts kalns
 newtab-wallpaper-light-sky = Debesis ar violetiem un rozā mākoņiem
@@ -310,6 +329,8 @@ newtab-wallpaper-dark-panda = Sarkanā panda paslēpta mežā
 newtab-wallpaper-dark-sky = Pilsētas ainava ar nakts debesīm
 newtab-wallpaper-dark-mountain = Ainavisks kalns
 newtab-wallpaper-dark-city = Violeta pilsētas ainava
+newtab-wallpaper-dark-fox-anniversary = Lapsa uz ceļa pie meža
+newtab-wallpaper-light-fox-anniversary = Lapsa pļavā ar dūmakainu kalnu ainavu
 
 ## Solid Colors
 
@@ -340,7 +361,7 @@ newtab-wallpaper-abstract-orange = Oranžas formas
 newtab-wallpaper-gradient-orange = Oranža un rozā krāsu pāreja
 newtab-wallpaper-abstract-blue-purple = Zilas un violetas formas
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Fotogrāfijas
 newtab-wallpaper-beach-at-sunrise = Pludmale saullēktā
@@ -364,6 +385,9 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+
 ## New Tab Weather
 
 # Variables:
@@ -374,6 +398,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ sponsorēts
 newtab-weather-menu-change-location = Mainīt atrašanās vietu
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Meklēt atrašanās vietu
+    .aria-label = Meklēt atrašanās vietu
 newtab-weather-change-location-search-input = Meklēt atrašanās vietu
 newtab-weather-menu-weather-display = Laikapstākļu attēlotājs
 # Display options are:
@@ -432,3 +459,26 @@ newtab-topic-selection-button-maybe-later = Varbūt vēlāk
 newtab-topic-selection-privacy-link = Uzziniet, kā mēs aizsargājam un pārvaldām datus
 newtab-topic-selection-button-update-interests = Atjauniniet savas intereses
 newtab-topic-selection-button-pick-interests = Izvēlieties savas intereses
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Sekot
+newtab-section-following-button = Seko
+newtab-section-unfollow-button = Pārtraukt sekošanu
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = Vai tiešām vēlaties bloķēt šo sadaļu?
+newtab-section-confirm-block-section-p2 = Bloķētā sadaļa vairs neparādīsies jūsu plūsmā.
+newtab-section-block-section-button = Bloķēt šo sadaļu
+newtab-section-cancel-button = Ne tagad
+
+## Panel in the Customize menu section to manage followed and blocked topics
+

@@ -22,13 +22,13 @@ Build-Depends: debhelper-compat (= 12),
                libnspr4-dev (>= 2:@NSPR_VERSION@~),
 %endif
 %if USE_SYSTEM_NSS
-%define NSS_VERSION 3.104
+%define NSS_VERSION 3.108
                libnss3-dev (>= 2:@NSS_VERSION@~),
 %endif
 %if USE_SYSTEM_VPX
                libvpx-dev (>= 1.10.0),
 %endif
-               libdbus-glib-1-dev,
+               libdbus-1-dev,
 %if USE_SYSTEM_FFI
                libffi-dev,
 %endif

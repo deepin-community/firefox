@@ -11,6 +11,7 @@ more-from-moz-category =
 more-from-moz-subtitle = Tekintse meg a többi { -vendor-short-name } termékét, amelyek az egészséges internetet támogatják.
 more-from-moz-firefox-mobile-title = { -brand-product-name } mobilon
 more-from-moz-firefox-mobile-description = A mobilböngésző, amely az Ön adatvédelmét helyezi előtérbe.
+more-from-moz-firefox-mobile-title-1 = { -brand-product-name } mobilra
 more-from-moz-mozilla-vpn-title = { -mozilla-vpn-brand-name }
 more-from-moz-mozilla-vpn-description = Fedezze fel az anonim böngészés és védelem további rétegét.
 more-from-moz-qr-code-box-firefox-mobile-title = Töltse le a mobileszközével. Irányítsa a kamerát a QR-kódra. Amikor megjelenik egy hivatkozás, koppintson rá.
@@ -32,3 +33,9 @@ more-from-moz-mozilla-monitor-title = { -mozmonitor-brand-name }
 more-from-moz-mozilla-monitor-us-description = Automatikusan szerezze vissza a kikerült személyes adatait.
 more-from-moz-mozilla-monitor-global-description = Kapjon értesítést, ha az adatai adatvédelmi incidensben voltak érintettek.
 more-from-moz-mozilla-monitor-button = A { -monitor-brand-short-name } beszerzése
+
+## These strings are for the Solo card in about:preferences moreFromMozilla page
+
+more-from-moz-solo-title = { -solo-ai-brand-name } MI
+more-from-moz-solo-description = Hozza létre azonnal a weboldalát, és kapcsolja hozzá ingyenesen a saját egyéni domainjét.
+more-from-moz-solo-button = A { -solo-ai-brand-name } kipróbálása

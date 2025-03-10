@@ -148,6 +148,13 @@ class MobileViewportManager final : public nsIDOMEventListener,
    * need updating. */
   void RefreshViewportSize(bool aForceAdjustResolution);
 
+  /*
+   * Returns the visible area for setting nsPresContext's visible area.
+   */
+  nsRect InitialVisibleArea();
+
+  mozilla::ScreenIntCoord GetKeyboardHeight() const { return mKeyboardHeight; }
+
  private:
   ~MobileViewportManager();
 
@@ -238,6 +245,7 @@ class MobileViewportManager final : public nsIDOMEventListener,
    * The software keyboard height.
    */
   mozilla::ScreenIntCoord mKeyboardHeight;
+  mozilla::Maybe<mozilla::ScreenIntCoord> mPendingKeyboardHeight;
 };
 
 #endif

@@ -44,7 +44,7 @@ appmenuitem-help =
 appmenuitem-exit2 =
     .label =
         { PLATFORM() ->
-            [linux] Έξοδος
+            [linux] Τερματισμός
            *[other] Έξοδος
         }
 appmenu-menu-button-closed2 =
@@ -70,7 +70,7 @@ appmenuitem-fullscreen =
 ## Firefox Account toolbar button and Sync panel in App menu.
 
 appmenu-remote-tabs-sign-into-sync =
-    .label = Σύνδεση στο Sync…
+    .label = Σύνδεση για συγχρονισμό…
 appmenu-remote-tabs-turn-on-sync =
     .label = Ενεργοποίηση Sync…
 # This is shown after the tabs list if we can display more tabs by clicking on the button
@@ -108,8 +108,11 @@ appmenu-fxa-sync-and-save-data2 = Συγχρονισμός και αποθήκε
 appmenu-fxa-signed-in-label = Σύνδεση
 appmenu-fxa-setup-sync =
     .label = Ενεργοποίηση συγχρονισμού…
+appmenu-fxa-setup-sync-new = Ενεργοποίηση
 appmenuitem-save-page =
     .label = Αποθήκευση σελίδας ως…
+appmenuitem-fxa-sync-off-title = Ο συγχρονισμός είναι ανενεργός
+appmenuitem-fxa-sync-off-description = Προστατέψτε και χρησιμοποιήστε τους σελιδοδείκτες, τους κωδικούς πρόσβασης και πολλά άλλα, οπουδήποτε.
 
 ## What's New panel in App menu.
 
@@ -277,5 +280,21 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Λάβετε ειδοποιήσεις παραβίασης δεδομένων
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Αποκρύψτε το πραγματικό email και το τηλέφωνό σας
+appmenuitem-services-relay-description = Εκκίνηση πίνακα μασκών email
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Προστατέψτε το διαδικτυακό σας απόρρητο
+appmenu-services-header = Οι υπηρεσίες μου
+appmenu-other-protection-header = Δοκιμάστε άλλα εργαλεία προστασίας από τη { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-profiles = Προφίλ
+appmenu-other-profiles = Άλλα προφίλ
+appmenu-manage-profiles =
+    .label = Διαχείριση προφίλ
+appmenu-create-profile =
+    .label = Νέο προφίλ
+appmenu-edit-profile =
+    .aria-label = Επεξεργασία προφίλ
+appmenu-profiles-2 =
+    .label = Προφίλ

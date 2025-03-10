@@ -46,12 +46,15 @@ add_task(async function test_tools_prefs() {
   for (const toolInput of customizeComponent.toolInputs) {
     let toolDisabledInitialState = !toolInput.checked;
     toolInput.click();
-    await BrowserTestUtils.waitForCondition(() => {
-      let toggledTool = win.SidebarController.toolsAndExtensions.get(
-        toolInput.name
-      );
-      return toggledTool.disabled === !toolDisabledInitialState;
-    }, `The entrypoint for ${toolInput.name} has been ${toolDisabledInitialState ? "enabled" : "disabled"} in the sidebar.`);
+    await BrowserTestUtils.waitForCondition(
+      () => {
+        let toggledTool = win.SidebarController.toolsAndExtensions.get(
+          toolInput.name
+        );
+        return toggledTool.disabled === !toolDisabledInitialState;
+      },
+      `The entrypoint for ${toolInput.name} has been ${toolDisabledInitialState ? "enabled" : "disabled"} in the sidebar.`
+    );
     toolEntrypointsCount = sidebar.toolButtons.length;
     checkedInputs = Array.from(customizeComponent.toolInputs).filter(
       input => input.checked
@@ -68,8 +71,8 @@ add_task(async function test_tools_prefs() {
   const updatedTools = Services.prefs.getStringPref("sidebar.main.tools");
   is(
     updatedTools,
-    "aichat,bookmarks",
-    "History and syncedtabs have been removed from the pref, and bookmarks added"
+    "bookmarks",
+    "History, aichat and syncedtabs have been removed from the pref, and bookmarks added"
   );
 
   await BrowserTestUtils.closeWindow(win);
@@ -123,28 +126,6 @@ add_task(async function test_tools_prefs() {
 });
 
 /**
- * Check that conditional sidebar tools are added and removed on pref change
- */
-add_task(async function test_conditional_tools() {
-  const win = await BrowserTestUtils.openNewBrowserWindow();
-  const sidebar = win.document.querySelector("sidebar-main");
-  await sidebar.updateComplete;
-
-  const origCount = sidebar.toolButtons.length;
-  is(origCount, 1, "Expected number of initial tools");
-
-  await SpecialPowers.pushPrefEnv({ set: [["browser.ml.chat.enabled", true]] });
-  is(sidebar.toolButtons.length, origCount + 1, "Enabled tool added");
-
-  await SpecialPowers.pushPrefEnv({
-    set: [["browser.ml.chat.enabled", false]],
-  });
-  is(sidebar.toolButtons.length, origCount, "Disabled tool removed");
-
-  await BrowserTestUtils.closeWindow(win);
-});
-
-/**
  * Check that tools pref changes happen for existing windows
  */
 add_task(async function test_tool_pref_change() {
@@ -156,7 +137,7 @@ add_task(async function test_tool_pref_change() {
 
   const origTools = Services.prefs.getStringPref("sidebar.main.tools");
   await SpecialPowers.pushPrefEnv({
-    set: [["sidebar.main.tools", origTools.replace(",bookmarks", "")]],
+    set: [["sidebar.main.tools", origTools.replace(/,?bookmarks/, "")]],
   });
   is(sidebar.toolButtons.length, origCount - 1, "Removed tool");
 
@@ -164,7 +145,7 @@ add_task(async function test_tool_pref_change() {
   is(sidebar.toolButtons.length, origCount, "Restored tool");
 
   await SpecialPowers.pushPrefEnv({ clear: [["sidebar.main.tools"]] });
-  is(sidebar.toolButtons.length, origCount + 1, "Restored default tools");
+  is(sidebar.toolButtons.length, 3, "Restored default tools");
 });
 
 /**
@@ -192,7 +173,8 @@ add_task(async function test_flip_revamp_pref() {
   await SpecialPowers.pushPrefEnv({ set: [["sidebar.revamp", false]] });
 
   await TestUtils.waitForCondition(() => {
-    let isSidebarMainShown = !win.document.querySelector("sidebar-main").hidden;
+    let isSidebarMainShown =
+      !win.document.getElementById("sidebar-main").hidden;
     let isSwitcherPanelShown =
       !win.document.getElementById("sidebar-header").hidden;
     // Vertical tabs pref should be turned off when revamp pref is turned off
@@ -207,7 +189,7 @@ add_task(async function test_flip_revamp_pref() {
   });
   await sidebar.updateComplete;
   await TestUtils.waitForCondition(() => {
-    let isSidebarMainShown = !document.querySelector("sidebar-main").hidden;
+    let isSidebarMainShown = !document.getElementById("sidebar-main").hidden;
     let isSwitcherPanelShown =
       !win.document.getElementById("sidebar-header").hidden;
     return isSidebarMainShown && !isSwitcherPanelShown;

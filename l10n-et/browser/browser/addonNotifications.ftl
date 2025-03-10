@@ -14,13 +14,17 @@ xpinstall-prompt-message = Üritad paigaldada lisa saidilt { $host }. Enne jätk
 
 xpinstall-prompt-header-unknown = Kas lubada tundmatul saidil lisa paigaldamine?
 xpinstall-prompt-message-unknown = Üritad paigaldada lisa tundmatult saidilt. Enne jätkamist veendu, et usaldad seda saiti.
-
 xpinstall-prompt-dont-allow =
     .label = Ära luba
     .accesskey = r
 xpinstall-prompt-never-allow =
     .label = Ära luba mitte kunagi
     .accesskey = Ä
+# Long text in this context make the dropdown menu extend awkwardly to the left,
+# avoid a localization that's significantly longer than the English version.
+xpinstall-prompt-never-allow-and-report =
+    .label = Teavita kahtlasest saidist
+    .accesskey = T
 # Accessibility Note:
 # Be sure you do not choose an accesskey that is used elsewhere in the active context (e.g. main menu bar, submenu of the warning popup button)
 # See https://website-archive.mozilla.org/www.mozilla.org/access/access/keyboard/ for details
@@ -30,15 +34,17 @@ xpinstall-prompt-install =
 
 # These messages are shown when a website invokes navigator.requestMIDIAccess.
 
+site-permission-install-first-prompt-midi-header = See sait taotleb juurdepääsu sinu MIDI-seadmetele (Musical Instrument Digital Interface). Juurdepääsu seadmetele saab lubada lisa paigaldamise teel.
+site-permission-install-first-prompt-midi-message = Selle juurdepääsu ohutust ei garanteerita. Jätka ainult siis, kui usaldad seda saiti.
 
 ##
 
 xpinstall-disabled-locked = Tarkvara paigaldamine on süsteemiadministraatori poolt keelatud.
+xpinstall-disabled-by-policy = Tarkvara paigaldamine on sinu organisatsiooni poolt keelatud.
 xpinstall-disabled = Tarkvara paigaldamine on praegu keelatud. Klõpsa Luba ja proovi uuesti.
 xpinstall-disabled-button =
     .label = Luba
     .accesskey = b
-
 # This message is shown when the installation of an add-on is blocked by enterprise policy.
 # Variables:
 #   $addonName (String): the name of the add-on.
@@ -46,14 +52,24 @@ xpinstall-disabled-button =
 addon-install-blocked-by-policy = Lisa { $addonName } ({ $addonId }) on süsteemiadministraatori poolt blokitud.
 # This message is shown when the installation of add-ons from a domain is blocked by enterprise policy.
 addon-domain-blocked-by-policy = Sinu süsteemiadministraator takistas sellel veebilehel sinult luba küsida tarkvara paigaldamiseks sinu arvutisse.
+# This message is shown when the installation of an add-on is blocked by enterprise policy.
+# Variables:
+#   $addonName (String): the name of the add-on.
+#   $addonId (String): the ID of add-on.
+addon-installation-blocked-by-policy = Lisa { $addonName } ({ $addonId }) on sinu organisatsiooni poolt blokitud.
+# This message is shown when the installation of add-ons from a domain is blocked by enterprise policy.
+addon-install-domain-blocked-by-policy = Sinu organisatsioon takistas sellel veebilehel sinult luba küsida tarkvara paigaldamiseks sinu arvutisse.
 addon-install-full-screen-blocked = Täisekraanirežiimis või sellesse sisenemisel pole lisade paigaldamine lubatud.
-
 # Variables:
 #   $addonName (String): the localized name of the sideloaded add-on.
 webext-perms-sideload-menu-item = { -brand-short-name }ile paigaldati lisa { $addonName }
 # Variables:
 #   $addonName (String): the localized name of the extension which has been updated.
 webext-perms-update-menu-item = { $addonName } nõuab uusi õigusi
+# This message is shown when one or more extensions have been imported from a
+# different browser into Firefox, and the user needs to complete the import to
+# start these extensions. This message is shown in the appmenu.
+webext-imported-addons = Lõpeta { -brand-short-name }i imporditud laienduste paigaldamine.
 
 ## Add-on removal warning
 
@@ -65,7 +81,6 @@ addon-removal-title = Kas eemaldada lisa { $name }?
 addon-removal-message = Kas soovid laienduse { $name } { -brand-shorter-name }ist eemaldada?
 addon-removal-button = Eemalda
 addon-removal-abuse-report-checkbox = Teavita { -vendor-short-name }t sellest lisast
-
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -74,7 +89,6 @@ addon-downloading-and-verifying =
        *[other] { $addonCount } lisa allalaadimine ja kontrollimine…
     }
 addon-download-verifying = Kontrollimine
-
 addon-install-cancel-button =
     .label = Loobu
     .accesskey = L
@@ -117,4 +131,8 @@ addon-local-install-error-not-signed = Seda lisa polnud võimalik paigaldada, ku
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = Lisa { $addonName } polnud võimalik paigaldada, kuna see ei ühildu { -brand-short-name }i versiooniga { $appVersion }.
+addon-install-error-hard-blocked = Lisa { $addonName } rikub Mozilla eeskirju ja seda pole võimalik { -brand-short-name }i paigaldada.
 addon-install-error-blocklisted = Lisa { $addonName } polnud võimalik paigaldada, kuna see võib põhjustada tõsiseid stabiilsuse või turvalisuse probleeme.
+addon-install-error-soft-blocked = Lisa { $addonName } rikub Mozilla eeskirju ja seda pole võimalik { -brand-short-name }i paigaldada.
+# Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
+addon-install-error-admin-install-only = Lisa { $addonName } paigaldamine lõppkasutajana pole võimalik, selle saab paigaldada ainult ettevõtte reegleid kasutav organisatsioon.

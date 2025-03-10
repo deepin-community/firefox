@@ -230,8 +230,8 @@ class ServoRefTestExecutor(ServoExecutor):
         with TempFilename(self.tempdir) as output_path:
             extra_args = ["--exit",
                           "--output=%s" % output_path,
-                          "--resolution", viewport_size or "800x600"]
-            debug_opts = "disable-text-aa,load-webfonts-synchronously,replace-surrogates"
+                          "--window-size", viewport_size or "800x600"]
+            debug_opts = "replace-surrogates"
 
             if dpi:
                 extra_args += ["--device-pixel-ratio", dpi]

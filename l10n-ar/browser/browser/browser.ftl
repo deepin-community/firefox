@@ -51,6 +51,70 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = { -brand-shortcut-name } التصفح الخفي
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } التصفح الخاص
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } التصفح الخاص
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — { -brand-full-name } التصفح الخاص
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — { -brand-full-name } التصفح الخاص
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — التصفح الخاص
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } التصفح الخاص
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — التصفح الخاص
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — التصفح الخاص
+# This gets set as the initial title, and is overridden as soon as we start
+# updating the titlebar based on loaded tabs or private browsing state.
+# This should match the `data-title-default` attribute in both
+# `browser-main-window` and `browser-main-window-mac`.
+browser-main-window-default-title = { -brand-full-name }
 
 ##
 
@@ -201,7 +265,7 @@ full-screen-exit =
 
 # This string prompts the user to use the list of search shortcuts in
 # the Urlbar and searchbar.
-search-one-offs-with-title = الآن فقط ابحث باستعمال:
+search-one-offs-with-title = ابحث هذه المرة ب:
 search-one-offs-change-settings-compact-button =
     .tooltiptext = غيّر إعدادات البحث
 search-one-offs-context-open-new-tab =
@@ -309,6 +373,10 @@ quickactions-cmd-viewsource = اعرض المصدر، مصدر
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = تعرف على المزيد حول الإجراءات السريعة
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = اضغط على tab لتحديد:
 
 ## Bookmark Panel
 
@@ -549,7 +617,7 @@ urlbar-placeholder-search-mode-other-actions =
 # Variables
 #  $name (String): the name of the user's default search engine
 urlbar-placeholder-with-name =
-    .placeholder = ‫ابحث مستعملًا { $name } أو أدخِل عنوانا
+    .placeholder = ‫ابحث ب { $name } أو أدخِل عنوانا
 # Variables
 #  $component (String): the name of the component which forces remote control.
 #    Example: "DevTools", "Marionette", "RemoteAgent".
@@ -566,6 +634,8 @@ urlbar-go-button =
     .tooltiptext = انتقل للعنوان في شريط الموقع
 urlbar-page-action-button =
     .tooltiptext = إجراءات الصفحة
+urlbar-revert-button =
+    .tooltiptext = أظهِر العنوان في شريط الموقع
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -575,14 +645,14 @@ urlbar-page-action-button =
 # "Search", and we would like to avoid strings like "Search MSN Search".
 # Variables
 #  $engine (String): the name of a search engine
-urlbar-result-action-search-in-private-w-engine = ابحث مستعملًا { $engine } في نافذة خاصة
+urlbar-result-action-search-in-private-w-engine = ابحث ب { $engine } في نافذة خاصة
 # Used when the private browsing engine is the same as the default engine.
 urlbar-result-action-search-in-private = ابحث في نافذةٍ خاصة
 # The "with" format was chosen because the search engine name can end with
 # "Search", and we would like to avoid strings like "Search MSN Search".
 # Variables
 #  $engine (String): the name of a search engine
-urlbar-result-action-search-w-engine = ابحث مستخدمًا { $engine }
+urlbar-result-action-search-w-engine = ابحث ب { $engine }
 urlbar-result-action-sponsored = نتيجة مموّلة
 urlbar-result-action-switch-tab = انتقل إلى اللسان
 urlbar-result-action-visit = زُر
@@ -598,7 +668,7 @@ urlbar-result-action-visit-from-clipboard = زر من الحافظة
 # Variables
 #  $engine (String): the name of a search engine that searches the entire Web
 #  (e.g. Google).
-urlbar-result-action-before-tabtosearch-web = اضغط Tab للبحث باستعمال { $engine }
+urlbar-result-action-before-tabtosearch-web = اضغط Tab للبحث ب { $engine }
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -608,7 +678,7 @@ urlbar-result-action-before-tabtosearch-other = اضغط Tab للبحث عبر {
 # Variables
 #  $engine (String): the name of a search engine that searches the entire Web
 #  (e.g. Google).
-urlbar-result-action-tabtosearch-web = ابحث مستعملًا { $engine } مباشرة من شريط العنوان
+urlbar-result-action-tabtosearch-web = ابحث ب { $engine } مباشرة من شريط العنوان
 # Variables
 #  $engine (String): the name of a search engine that searches a specific site
 #  (e.g. Amazon).
@@ -625,7 +695,43 @@ urlbar-result-action-calculator-result = = { $result }
 
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
-urlbar-result-search-with = ابحث مستخدمًا { $engine }
+urlbar-result-search-with = ابحث ب { $engine }
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - بحث { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - ابحث ب { $engine }
+urlbar-searchmode-dropmarker =
+    .tooltiptext = اختر محرك بحث
+urlbar-searchmode-bookmarks =
+    .label = العلامات
+urlbar-searchmode-tabs =
+    .label = الألسنة
+urlbar-searchmode-history =
+    .label = التأريخ
+urlbar-searchmode-actions =
+    .label = الإجراءات
+urlbar-searchmode-exit-button =
+    .tooltiptext = أغلق
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = ابحث هذه المرة ب:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = إعدادات البحث
+urlbar-searchmode-popup-search-settings = إعدادات البحث
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }، اختر محرك بحث
+    .tooltiptext = { $engine }، اختر محرك بحث
+urlbar-searchmode-button-no-engine =
+    .label = لم تحدد اختصار، اختر اختصارًا
+    .tooltiptext = لم تحدد اختصار، اختر اختصارًا
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -635,6 +741,12 @@ urlbar-result-action-search-bookmarks = ابحث في العلامات
 urlbar-result-action-search-history = ابحث في التأريخ
 urlbar-result-action-search-tabs = ابحث في الألسنة
 urlbar-result-action-search-actions = إجراءات البحث
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = تبديل إلى { $group }
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = افتح { $group }
 
 ## Labels shown above groups of urlbar results
 
@@ -656,6 +768,21 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = عمليات البحث الأخيرة
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = الشائع في { $engine }
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = لا تعرض عمليات البحث الشائعة
+    .accesskey = م
+urlbar-result-menu-trending-why =
+    .label = لماذا أرى هذا؟
+    .accesskey = ل
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = شكرًا على تعليقك. لن ترى عمليات البحث الشائعة بعد الآن.
 
 ## Reader View toolbar buttons
 
@@ -933,6 +1060,18 @@ data-reporting-notification-button =
     .accesskey = خ
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = التصفح الخاص
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = التصفح الخاص
+# Tooltip for the indicator shown in the window titlebar when content analysis is active.
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-indicator-tooltip =
+    .tooltiptext = منع فقدان البيانات (DLP) بواسطة { $agentName }. انقر للحصول على مزيد من المعلومات.
+content-analysis-panel-title = حماية البيانات
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-panel-text-styled = تستخدم مؤسستك   <b>{ $agentName }</b> لحماية من فقدان البيانات. <a data-l10n-name="info"> اطّلع على المزيد</a>
 
 ## Unified extensions (toolbar) button
 
@@ -957,6 +1096,15 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         الامتدادات
         بعض الامتدادات غير مسموح بها
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = الامتدادات
+    .tooltiptext =
+        الامتدادات
+        بعض الامتدادات مُعطَّلة
 
 ## Private browsing reset button
 
@@ -997,6 +1145,7 @@ firefox-relay-offer-legal-notice = بالنقر على"أستخدم قناع ا�
 popup-notification-addon-install-unsigned =
     .value = (لم يُتحقق منها)
 popup-notification-xpinstall-prompt-learn-more = اطّلع على المزيد حول طريقة تثبيت الإضافات بأمان تام
+popup-notification-xpinstall-prompt-block-url = اعرض التفاصيل
 # Note: Access key is set to P to match "Private" in the corresponding localized label.
 popup-notification-addon-privatebrowsing-checkbox =
     .label = تشغيله في النوافذ الخاصة
@@ -1042,6 +1191,14 @@ popup-show-popup-menuitem =
 
 ## File-picker crash notification ("FilePickerCrashed.sys.mjs")
 
+file-picker-failed-open = لم يتمكن من فتح مربع حوار الملفات في ويندوز. لم يتمكن من تحديد أي ملف أو مجلد.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = لم يتمكن من فتح مربع حوار ملف ويندوز. سيتم حفظ الملف في { $path }.
+file-picker-failed-save-nowhere = لم يتمكن من فتح مربع حوار ملف ويندوز. لم يتم العثور على المجلد الافتراضي؛ ولن يتم حفظ الملف.
+file-picker-crashed-open = تعطل مربع حوار ملف ويندوز. لم يتم تحديد أي ملف أو مجلد.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = تعطل مربع حوار ملف ويندوز. سيتم حفظ الملف في { $path }.
+file-picker-crashed-save-nowhere = تعطل مربع حوار ملف ويندوز. لم يتم العثور على المجلد المبدئي؛ ولن يُحفظ الملف.
 
 # Button used with file-picker-crashed-save-default. Opens the folder in Windows
 # Explorer, with the saved file selected and in focus.
@@ -1049,3 +1206,6 @@ popup-show-popup-menuitem =
 # The wording here should be consistent with the Windows variant of
 # `downloads-cmd-show-menuitem-2` and similar messages.
 
+file-picker-crashed-show-in-folder =
+    .label = اعرض في المجلد
+    .accessKey = م

@@ -49,7 +49,7 @@ rtc_library("adaptive_digital_gain_controller") {
     ":common",
     ":gain_applier",
     "..:apm_logging",
-    "..:audio_frame_view",
+    "../../../api/audio:audio_frame_api",
     "../../../api/audio:audio_processing",
     "../../../common_audio",
     "../../../rtc_base:checks",
@@ -80,7 +80,6 @@ rtc_library("saturation_protector") {
     "../../../rtc_base:checks",
     "../../../rtc_base:safe_compare",
     "../../../rtc_base:safe_minmax",
-    "//third_party/abseil-cpp/absl/types:optional",
   ]
 }
 
@@ -117,7 +116,6 @@ rtc_library("clipping_predictor") {
     "../../../rtc_base:checks",
     "../../../rtc_base:logging",
     "../../../rtc_base:safe_minmax",
-    "//third_party/abseil-cpp/absl/types:optional",
   ]
 }
 
@@ -148,6 +146,7 @@ rtc_library("fixed_digital") {
     "..:apm_logging",
     "..:audio_frame_view",
     "../../../api:array_view",
+    "../../../api/audio:audio_frame_api",
     "../../../common_audio",
     "../../../rtc_base:checks",
     "../../../rtc_base:gtest_prod",
@@ -173,7 +172,7 @@ rtc_library("gain_applier") {
   deps = [
     ":common",
     "..:audio_frame_view",
-    "../../../api:array_view",
+    "../../../api/audio:audio_frame_api",
     "../../../rtc_base:safe_minmax",
   ]
 }
@@ -219,7 +218,6 @@ rtc_library("input_volume_controller") {
     "../../../rtc_base:safe_minmax",
     "../../../system_wrappers:field_trial",
     "../../../system_wrappers:metrics",
-    "//third_party/abseil-cpp/absl/types:optional",
   ]
 }
 
@@ -231,8 +229,7 @@ rtc_library("noise_level_estimator") {
   deps = [
     ":biquad_filter",
     "..:apm_logging",
-    "..:audio_frame_view",
-    "../../../api:array_view",
+    "../../../api/audio:audio_frame_api",
     "../../../rtc_base:checks",
     "../../../system_wrappers",
   ]
@@ -258,15 +255,14 @@ rtc_library("vad_wrapper") {
 
   defines = []
   if (rtc_build_with_neon && current_cpu != "arm64") {
-    suppressed_configs += [ "//build/config/compiler:compiler_arm_fpu" ]
+    suppressed_configs += [ "//chromium/build/config/compiler:compiler_arm_fpu" ]
     cflags = [ "-mfpu=neon" ]
   }
 
   deps = [
     ":common",
     ":cpu_features",
-    "..:audio_frame_view",
-    "../../../api:array_view",
+    "../../../api/audio:audio_frame_api",
     "../../../common_audio",
     "../../../rtc_base:checks",
     "rnn_vad",
@@ -334,7 +330,7 @@ rtc_library("gain_applier_unittest") {
   deps = [
     ":gain_applier",
     ":test_utils",
-    "..:audio_frame_view",
+    "../../../api/audio:audio_frame_api",
     "../../../rtc_base:gunit_helpers",
     "../../../test:test_support",
   ]
@@ -388,6 +384,7 @@ rtc_library("fixed_digital_unittests") {
     "..:apm_logging",
     "..:audio_frame_view",
     "../../../api:array_view",
+    "../../../api/audio:audio_frame_api",
     "../../../common_audio",
     "../../../rtc_base:checks",
     "../../../rtc_base:gunit_helpers",
@@ -433,9 +430,8 @@ rtc_library("noise_estimator_unittests") {
     ":noise_level_estimator",
     ":test_utils",
     "..:apm_logging",
-    "..:audio_frame_view",
-    "../../../api:array_view",
     "../../../api:function_view",
+    "../../../api/audio:audio_frame_api",
     "../../../rtc_base:checks",
     "../../../rtc_base:gunit_helpers",
   ]
@@ -447,7 +443,7 @@ rtc_library("vad_wrapper_unittests") {
   deps = [
     ":common",
     ":vad_wrapper",
-    "..:audio_frame_view",
+    "../../../api/audio:audio_frame_api",
     "../../../rtc_base:checks",
     "../../../rtc_base:gunit_helpers",
     "../../../rtc_base:safe_compare",
@@ -469,6 +465,7 @@ rtc_library("test_utils") {
   ]
   deps = [
     "..:audio_frame_view",
+    "../../../api/audio:audio_frame_api",
     "../../../rtc_base:checks",
     "../../../rtc_base:random",
   ]
@@ -486,7 +483,6 @@ rtc_library("input_volume_stats_reporter") {
     "../../../rtc_base:stringutils",
     "../../../system_wrappers:metrics",
     "//third_party/abseil-cpp/absl/strings:string_view",
-    "//third_party/abseil-cpp/absl/types:optional",
   ]
 }
 

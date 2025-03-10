@@ -32,6 +32,8 @@ search-input-box2 =
     .style = width: 19em
     .placeholder = Cercar pels paramètres
 managed-notice = Vòstra organizacion gerís vòstre navegador.
+managed-notice-info-icon =
+    .alt = Informacions
 category-list =
     .aria-label = Categorias
 pane-general-title = General
@@ -149,6 +151,17 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Dobrir los ligams dins d’onglets allòc de fenèstras
     .accesskey = f
+ask-on-close-multiple-tabs =
+    .label = Demandar abans de tampar mantun onglet
+    .accesskey = m
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = Demandar abans de quitar { $quitKey }
+    .accesskey = a
 confirm-on-close-multiple-tabs =
     .label = Confirmar abans la tampadura de mantun onglet
     .accesskey = a
@@ -559,8 +572,7 @@ home-prefs-shortcuts-description = Los sites qu’enregistratz o consultatz
 home-prefs-shortcuts-by-option-sponsored =
     .label = Acorchis pairinejats
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Recomandat per { $provider }
@@ -593,6 +605,7 @@ home-prefs-snippets-header =
 home-prefs-snippets-description-new = Astúcias e novetats de { -vendor-short-name } e { -brand-product-name }
 home-prefs-weather-header =
     .label = Metèo
+home-prefs-weather-learn-more-link = Ne saber mai
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -707,6 +720,10 @@ sync-profile-picture =
 sync-profile-picture-with-alt =
     .tooltiptext = Cambiar la fòto de perfil de l'utilizaire
     .alt = Cambiar la fòto de perfil de l'utilizaire
+sync-profile-picture-account-problem =
+    .alt = Imatge de perfil del compte
+fxa-login-rejected-warning =
+    .alt = Avertiment
 sync-sign-out =
     .label = Se desconnectar
     .accesskey = d
@@ -765,6 +782,9 @@ sync-currently-syncing-creditcards = Cartas de crèdit
 sync-currently-syncing-payment-methods = Metòdes de pagament
 sync-currently-syncing-addons = Moduls complementaris
 sync-currently-syncing-settings = Paramètres
+sync-manage-options =
+    .label = Gerir la sincronizacion…
+    .accesskey = G
 sync-change-options =
     .label = Modificar…
     .accesskey = M
@@ -1333,8 +1353,12 @@ httpsonly-radio-enabled =
     .label = Activar lo mòde HTTPS solament dins totas las fenèstras
 httpsonly-radio-enabled-pbm =
     .label = Activar lo mòde HTTPS solament dins totas las fenèstras privadas
+httpsonly-radio-enabled-pbm2 =
+    .label = Utilizar solament lo HTTPS dins las fenèstras de navegacion privada
 httpsonly-radio-disabled =
     .label = Activar pas lo mòde HTTPS solament
+httpsonly-radio-disabled2 =
+    .label = Ensajar en HTTPS d’en primièr, mas permetre las connexion non seguras
 
 ## DoH Section
 

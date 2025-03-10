@@ -93,7 +93,10 @@ nsDataHandler::NewChannel(nsIURI* uri, nsILoadInfo* aLoadInfo,
   nsresult rv = channel->SetLoadInfo(aLoadInfo);
   NS_ENSURE_SUCCESS(rv, rv);
 
-  channel.forget(result);
+  rv = channel->Init();
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  *result = channel.forget().downcast<nsBaseChannel>().take();
   return NS_OK;
 }
 
@@ -198,10 +201,6 @@ nsresult nsDataHandler::ParsePathWithoutRef(const nsACString& aPath,
     parsed->GetEssence(aContentType);
     if (aContentCharset) {
       parsed->GetParameterValue(kCharset, *aContentCharset);
-    }
-    if (parsed->IsBase64() &&
-        !StaticPrefs::network_url_strict_data_url_base64_placement()) {
-      aIsBase64 = true;
     }
     if (aMimeType) {
       *aMimeType = std::move(parsed);

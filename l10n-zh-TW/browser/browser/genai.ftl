@@ -43,6 +43,10 @@ genai-prompts-quiz =
 genai-prompts-explain =
     .label = 解釋這段文字
     .value = 請用簡單的文字解釋選擇的這段文字的主要概念，並且舉例說明。
+# Prompt purpose: writing tool that helps users with spelling and grammar mistakes and produce a response that identifies errors and rewrites the inputted text correctly
+genai-prompts-proofread =
+    .label = 校對
+    .value = 請校對選擇的文字段落，確認當中是否有拼字、錯別字或文法錯誤，並且提供要修改的內容。請保持內容原意正確與精準，先列出要修改的項目，再提供修正後的完整段落。
 # This prompt is added to the beginning of selection prompts sent to a chatbot.
 # $tabTitle (string) - title of the webpage
 # $selection (string) - selected text
@@ -55,8 +59,101 @@ genai-menu-ask-generic =
 # $provider (string) - name of the provider
 genai-menu-ask-provider =
     .label = 問問 { $provider }
+genai-menu-remove-generic =
+    .label = 移除 AI 聊天機器人
+# $provider (string) - name of the provider
+genai-menu-remove-provider =
+    .label = 移除 { $provider }
 genai-input-ask-generic =
     .placeholder = 問問 AI 聊天機器人…
 # $provider (string) - name of the provider
 genai-input-ask-provider =
     .placeholder = 問問 { $provider }…
+# $selectionLength (number) - selected text length
+# $maxLength (number) - max length of what can be selected
+genai-shortcuts-selected-warning-generic =
+    .heading = AI 聊天機器人，無法獲得您完整的反白範圍
+    .message = 您選擇了大約 { $selectionLength } 個字，我們能傳送給 AI 聊天機器人的最大字數約為 { $maxLength } 個字。
+# $provider (string) - name of the provider
+# $selectionLength (number) - selected text length
+# $maxLength (number) - max length of what can be selected
+genai-shortcuts-selected-warning =
+    .heading = { $provider } 無法獲得您完整的反白範圍
+    .message = 您選擇了大約 { $selectionLength } 個字，我們能傳送給 { $provider } 的最大字數約為 { $maxLength } 個字。
+genai-shortcuts-hide =
+    .label = 隱藏聊天機器人捷徑
+
+## Chatbot header
+
+genai-chatbot-title = AI 聊天機器人
+genai-header-provider-menu =
+    .title = 挑選一套機器人
+genai-header-options-button =
+    .title = 開啟選單
+genai-header-close-button =
+    .title = 關閉
+genai-provider-view-details =
+    .label = 檢視聊天機器人的詳細資訊
+genai-provider-about-chatbots =
+    .label = 關於這些聊天機器人
+genai-options-reload-generic =
+    .label = 重新載入 AI 聊天機器人
+# $provider (string) - name of the provider
+genai-options-reload-provider =
+    .label = 重新載入 { $provider }
+genai-options-show-shortcut =
+    .label = 選擇文字時顯示捷徑
+genai-options-hide-shortcut =
+    .label = 選擇文字時隱藏捷徑
+genai-options-about-chatbot =
+    .label = 關於 { -brand-short-name } 的 AI 聊天機器人功能
+
+## Chatbot onboarding
+
+genai-onboarding-header = 一邊上網，一邊摘要、腦力激盪，還有更多功能
+# "Switch anytime" refers to allowing the user to switch to a different chatbot.
+genai-onboarding-description = 挑選要在 { -brand-short-name } 側邊欄當中使用的 AI 聊天機器人。當您選擇時，我們會顯示每一套機器人的詳細資訊，也可隨時切換。<a data-l10n-name="learn-more">更多資訊</a>
+genai-onboarding-primary = 繼續
+genai-onboarding-secondary = 關閉
+genai-onboarding-claude-tooltip =
+    .title = Anthropic Claude
+genai-onboarding-claude-learn = 了解 Claude 的更多資訊
+genai-onboarding-chatgpt-tooltip =
+    .title = ChatGPT
+genai-onboarding-chatgpt-learn = 了解 ChatGPT 的更多資訊
+genai-onboarding-copilot-tooltip =
+    .title = Copilot
+genai-onboarding-copilot-learn = 了解 Copilot 的更多資訊
+genai-onboarding-gemini-tooltip =
+    .title = Google Gemini
+genai-onboarding-gemini-learn = 了解 Gemini 的更多資訊
+genai-onboarding-huggingchat-tooltip =
+    .title = HuggingChat
+genai-onboarding-huggingchat-learn = 了解 HuggingChat 的更多資訊
+genai-onboarding-lechat-tooltip =
+    .title = Le Chat Mistral
+genai-onboarding-lechat-learn = 了解 Le Chat 的更多資訊
+genai-onboarding-select-header = 選擇文字即可檢視建議
+genai-onboarding-select-description = 選擇文字時，我們將提供您一些可以直接送到機器人的提示語，您也可以寫自己的提示語。
+genai-onboarding-select-primary = 開始聊天
+
+## Chatbot onboarding choices
+## These describe features/capabilities of chatbot providers. These are not buttons/actions.
+
+genai-onboarding-claude-generate = 產生文字或程式碼
+genai-onboarding-claude-analyze = 分析文件與圖片
+genai-onboarding-claude-price = 有免費與收費版，需要註冊
+genai-onboarding-chatgpt-generate = 產生文字、圖片或程式碼
+genai-onboarding-chatgpt-analyze = 分析文件與圖片
+genai-onboarding-chatgpt-price = 有免費與收費版，在某些國家或作特定任務時需要註冊
+genai-onboarding-copilot-generate = 產生文字、圖片或程式碼
+genai-onboarding-copilot-analyze = 分析圖片
+genai-onboarding-copilot-price = 有免費與收費版，作特定任務時需要註冊
+genai-onboarding-gemini-generate = 產生文字、圖片或程式碼
+genai-onboarding-gemini-analyze = 分析圖片（免費）與文件（收費）
+genai-onboarding-gemini-price = 有免費與收費版，需要註冊
+genai-onboarding-huggingchat-generate = 產生文字或程式碼
+genai-onboarding-huggingchat-switch = 切換使用一系列不同的開放模型
+genai-onboarding-huggingchat-price-2 = 免費，但發出一定數量請求後需要註冊
+genai-onboarding-lechat-generate = 產生文字或程式碼
+genai-onboarding-lechat-price = 免費，需要註冊

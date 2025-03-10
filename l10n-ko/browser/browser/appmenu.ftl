@@ -108,8 +108,11 @@ appmenu-fxa-sync-and-save-data2 = 데이터 동기화 및 저장
 appmenu-fxa-signed-in-label = 로그인
 appmenu-fxa-setup-sync =
     .label = 동기화 켜기…
+appmenu-fxa-setup-sync-new = 켜기
 appmenuitem-save-page =
     .label = 페이지를 다른 이름으로 저장…
+appmenuitem-fxa-sync-off-title = 동기화 꺼짐
+appmenuitem-fxa-sync-off-description = 어디서나 북마크, 비밀번호 등을 보호하고 접근하세요.
 
 ## What's New panel in App menu.
 
@@ -277,5 +280,21 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = 데이터 유출 알림 받기
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = 실제 이메일과 전화를 가리세요
+appmenuitem-services-relay-description = 이메일 가리기 대시보드 실행
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = 온라인 활동을 보호하세요
+appmenu-services-header = 내 서비스
+appmenu-other-protection-header = { -vendor-short-name }의 다른 보호 도구를 사용해 보세요:
+
+## Profiles panel
+
+appmenu-profiles = 프로필
+appmenu-other-profiles = 다른 프로필
+appmenu-manage-profiles =
+    .label = 프로필 관리
+appmenu-create-profile =
+    .label = 새 프로필
+appmenu-edit-profile =
+    .aria-label = 프로필 편집
+appmenu-profiles-2 =
+    .label = 프로필

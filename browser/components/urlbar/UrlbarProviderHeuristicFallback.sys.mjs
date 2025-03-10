@@ -116,13 +116,19 @@ class ProviderHeuristicFallback extends UrlbarProvider {
       return;
     }
 
-    result = await this._engineSearchResult(queryContext);
-    if (instance != this.queryInstance) {
-      return;
-    }
-    if (result) {
-      result.heuristic = true;
-      addCallback(this, result);
+    if (
+      lazy.UrlbarPrefs.get("keyword.enabled") ||
+      queryContext.restrictSource == UrlbarUtils.RESULT_SOURCE.SEARCH ||
+      queryContext.searchMode
+    ) {
+      result = await this._engineSearchResult(queryContext);
+      if (instance != this.queryInstance) {
+        return;
+      }
+      if (result) {
+        result.heuristic = true;
+        addCallback(this, result);
+      }
     }
   }
 
@@ -323,7 +329,7 @@ class ProviderHeuristicFallback extends UrlbarProvider {
       UrlbarUtils.RESULT_SOURCE.SEARCH,
       ...lazy.UrlbarResult.payloadAndSimpleHighlights(queryContext.tokens, {
         engine: [engine.name, UrlbarUtils.HIGHLIGHT.TYPED],
-        icon: await engine.getIconURL(),
+        icon: UrlbarUtils.ICON.SEARCH_GLASS,
         query: [query, UrlbarUtils.HIGHLIGHT.NONE],
         keyword: keyword ? [keyword, UrlbarUtils.HIGHLIGHT.NONE] : undefined,
       })

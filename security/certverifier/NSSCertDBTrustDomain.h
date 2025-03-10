@@ -80,12 +80,9 @@ bool LoadLoadableRoots(const nsCString& dir);
 /**
  * Loads the OS client certs module.
  *
- * @param dir
- *        The path to the directory containing the module. This should be the
- *        same as where all of the other gecko libraries live.
  * @return true if the module was successfully loaded, false otherwise.
  */
-bool LoadOSClientCertsModule(const nsCString& dir);
+bool LoadOSClientCertsModule();
 
 /**
  * Loads the IPC client certs module.
@@ -145,7 +142,9 @@ class NSSCertDBTrustDomain : public mozilla::pkix::TrustDomain {
 
   NSSCertDBTrustDomain(
       SECTrustType certDBTrustType, OCSPFetching ocspFetching,
-      OCSPCache& ocspCache, void* pinArg, mozilla::TimeDuration ocspTimeoutSoft,
+      OCSPCache& ocspCache, SignatureCache* signatureCache,
+      TrustCache* trustCache, void* pinArg,
+      mozilla::TimeDuration ocspTimeoutSoft,
       mozilla::TimeDuration ocspTimeoutHard, uint32_t certShortLifetimeInDays,
       unsigned int minRSABits, ValidityCheckingMode validityCheckingMode,
       NetscapeStepUpPolicy netscapeStepUpPolicy, CRLiteMode crliteMode,
@@ -299,8 +298,10 @@ class NSSCertDBTrustDomain : public mozilla::pkix::TrustDomain {
 
   const SECTrustType mCertDBTrustType;
   const OCSPFetching mOCSPFetching;
-  OCSPCache& mOCSPCache;  // non-owning!
-  void* mPinArg;          // non-owning!
+  OCSPCache& mOCSPCache;            // non-owning!
+  SignatureCache* mSignatureCache;  // non-owning!
+  TrustCache* mTrustCache;          // non-owning!
+  void* mPinArg;                    // non-owning!
   const mozilla::TimeDuration mOCSPTimeoutSoft;
   const mozilla::TimeDuration mOCSPTimeoutHard;
   const uint32_t mCertShortLifetimeInDays;

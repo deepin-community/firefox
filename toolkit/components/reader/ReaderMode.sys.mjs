@@ -42,8 +42,6 @@ ChromeUtils.defineESModuleGetters(lazy, {
 const gIsFirefoxDesktop =
   Services.appinfo.ID == "{ec8030f7-c20a-464f-9b0e-13a3a9e97384}";
 
-Services.telemetry.setEventRecordingEnabled("readermode", true);
-
 export var ReaderMode = {
   DEBUG: 0,
 
@@ -58,7 +56,7 @@ export var ReaderMode = {
   enterReaderMode(docShell, win) {
     this.enterTime = Date.now();
 
-    Services.telemetry.recordEvent("readermode", "view", "on", null, {
+    Glean.readermode.viewOn.record({
       subcategory: "feature",
     });
 
@@ -99,7 +97,7 @@ export var ReaderMode = {
       ((win.scrollY + win.innerHeight) / win.document.body.clientHeight) * 100
     );
 
-    Services.telemetry.recordEvent("readermode", "view", "off", null, {
+    Glean.readermode.viewOff.record({
       subcategory: "feature",
       reader_time: `${timeSpentInReaderMode}`,
       scroll_position: `${scrollPosition}`,
@@ -272,9 +270,6 @@ export var ReaderMode = {
       );
       return null;
     }
-    let histogram = Services.telemetry.getHistogramById(
-      "READER_MODE_DOWNLOAD_RESULT"
-    );
     try {
       attrs.firstPartyDomain = Services.eTLD.getSchemelessSite(uri);
     } catch (e) {
@@ -289,7 +284,9 @@ export var ReaderMode = {
       xhr.onload = () => {
         if (xhr.status !== 200) {
           reject("Reader mode XHR failed with status: " + xhr.status);
-          histogram.add(DOWNLOAD_ERROR_XHR);
+          Services.telemetry
+            .getHistogramById("READER_MODE_DOWNLOAD_RESULT")
+            .add(DOWNLOAD_ERROR_XHR);
           return;
         }
 
@@ -297,7 +294,9 @@ export var ReaderMode = {
           xhr.responseType === "text" ? xhr.responseText : xhr.responseXML;
         if (!doc) {
           reject("Reader mode XHR didn't return a document");
-          histogram.add(DOWNLOAD_ERROR_NO_DOC);
+          Services.telemetry
+            .getHistogramById("READER_MODE_DOWNLOAD_RESULT")
+            .add(DOWNLOAD_ERROR_NO_DOC);
           return;
         }
 
@@ -324,7 +323,9 @@ export var ReaderMode = {
         }
 
         // We treat redirects as download successes here:
-        histogram.add(DOWNLOAD_SUCCESS);
+        Services.telemetry
+          .getHistogramById("READER_MODE_DOWNLOAD_RESULT")
+          .add(DOWNLOAD_SUCCESS);
 
         let result = { doc };
         if (responseURL != givenURL) {
@@ -352,9 +353,6 @@ export var ReaderMode = {
    * @resolves JS object representing the article, or null if no article is found.
    */
   async _readerParse(doc) {
-    let histogram = Services.telemetry.getHistogramById(
-      "READER_MODE_PARSE_RESULT"
-    );
     if (this.parseNodeLimit) {
       let numTags = doc.getElementsByTagName("*").length;
       if (numTags > this.parseNodeLimit) {
@@ -365,7 +363,9 @@ export var ReaderMode = {
             numTags +
             " elements found"
         );
-        histogram.add(PARSE_ERROR_TOO_MANY_ELEMENTS);
+        Services.telemetry
+          .getHistogramById("READER_MODE_PARSE_RESULT")
+          .add(PARSE_ERROR_TOO_MANY_ELEMENTS);
         return null;
       }
     }
@@ -407,6 +407,7 @@ export var ReaderMode = {
 
     let options = {
       classesToPreserve: CLASSES_TO_PRESERVE,
+      debug: Services.prefs.getBoolPref("reader.debug", false),
     };
 
     let article = null;
@@ -418,12 +419,16 @@ export var ReaderMode = {
       ]);
     } catch (e) {
       console.error("Error in ReaderWorker: ", e);
-      histogram.add(PARSE_ERROR_WORKER);
+      Services.telemetry
+        .getHistogramById("READER_MODE_PARSE_RESULT")
+        .add(PARSE_ERROR_WORKER);
     }
 
     if (!article) {
       this.log("Worker did not return an article");
-      histogram.add(PARSE_ERROR_NO_ARTICLE);
+      Services.telemetry
+        .getHistogramById("READER_MODE_PARSE_RESULT")
+        .add(PARSE_ERROR_NO_ARTICLE);
       return null;
     }
 
@@ -446,7 +451,9 @@ export var ReaderMode = {
 
     this._assignReadTime(article);
 
-    histogram.add(PARSE_SUCCESS);
+    Services.telemetry
+      .getHistogramById("READER_MODE_PARSE_RESULT")
+      .add(PARSE_SUCCESS);
     return article;
   },
 

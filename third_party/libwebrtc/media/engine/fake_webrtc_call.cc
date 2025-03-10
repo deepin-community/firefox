@@ -137,7 +137,7 @@ void FakeAudioReceiveStream::SetFrameDecryptor(
 }
 
 webrtc::AudioReceiveStreamInterface::Stats FakeAudioReceiveStream::GetStats(
-    bool get_and_clear_legacy_stats) const {
+    bool /* get_and_clear_legacy_stats */) const {
   return stats_;
 }
 
@@ -259,11 +259,8 @@ void FakeVideoSendStream::OnFrame(const webrtc::VideoFrame& frame) {
               encoder_config_);
     } else {
       webrtc::VideoEncoder::EncoderInfo encoder_info;
-      auto factory = rtc::make_ref_counted<cricket::EncoderStreamFactory>(
-          encoder_config_.video_format.name, encoder_config_.max_qp,
-          encoder_config_.content_type ==
-              webrtc::VideoEncoderConfig::ContentType::kScreen,
-          encoder_config_.legacy_conference_mode, encoder_info);
+      auto factory =
+          rtc::make_ref_counted<cricket::EncoderStreamFactory>(encoder_info);
 
       video_streams_ = factory->CreateEncoderStreams(
           env_.field_trials(), frame.width(), frame.height(), encoder_config_);
@@ -302,10 +299,8 @@ void FakeVideoSendStream::ReconfigureVideoEncoder(
         env_.field_trials(), width, height, config);
   } else {
     webrtc::VideoEncoder::EncoderInfo encoder_info;
-    auto factory = rtc::make_ref_counted<cricket::EncoderStreamFactory>(
-        config.video_format.name, config.max_qp,
-        config.content_type == webrtc::VideoEncoderConfig::ContentType::kScreen,
-        config.legacy_conference_mode, encoder_info);
+    auto factory =
+        rtc::make_ref_counted<cricket::EncoderStreamFactory>(encoder_info);
 
     video_streams_ = factory->CreateEncoderStreams(env_.field_trials(), width,
                                                    height, config);
@@ -354,7 +349,7 @@ void FakeVideoSendStream::Stop() {
 }
 
 void FakeVideoSendStream::AddAdaptationResource(
-    rtc::scoped_refptr<webrtc::Resource> resource) {}
+    rtc::scoped_refptr<webrtc::Resource> /* resource */) {}
 
 std::vector<rtc::scoped_refptr<webrtc::Resource>>
 FakeVideoSendStream::GetAdaptationResources() {
@@ -642,7 +637,7 @@ void FakeCall::DestroyFlexfecReceiveStream(
 }
 
 void FakeCall::AddAdaptationResource(
-    rtc::scoped_refptr<webrtc::Resource> resource) {}
+    rtc::scoped_refptr<webrtc::Resource> /* resource */) {}
 
 webrtc::PacketReceiver* FakeCall::Receiver() {
   return this;
@@ -733,7 +728,7 @@ void FakeCall::SignalChannelNetworkState(webrtc::MediaType media,
 }
 
 void FakeCall::OnAudioTransportOverheadChanged(
-    int transport_overhead_per_packet) {}
+    int /* transport_overhead_per_packet */) {}
 
 void FakeCall::OnLocalSsrcUpdated(webrtc::AudioReceiveStreamInterface& stream,
                                   uint32_t local_ssrc) {

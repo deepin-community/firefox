@@ -51,6 +51,70 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = { -brand-shortcut-name } privatno pregledavanje
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } privatno pregledavanje
+    .data-title-default-with-profile = { $profile-name } – { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } – { -brand-full-name } privatno pregledavanje
+    .data-content-title-default = { $content-title } – { -brand-full-name }
+    .data-content-title-private = { $content-title } – { -brand-full-name } privatno pregledavanje
+    .data-content-title-default-with-profile = { $content-title } – { $profile-name } – { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } – { $profile-name } – { -brand-full-name } privatno pregledavanje
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } – privatno pregledavanje
+    .data-title-default-with-profile = { $profile-name } – { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } – { -brand-full-name } privatno pregledavanje
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } – privatno pregledavanje
+    .data-content-title-default-with-profile = { $content-title } – { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } – { $profile-name } – privatno pregledavanje
+# This gets set as the initial title, and is overridden as soon as we start
+# updating the titlebar based on loaded tabs or private browsing state.
+# This should match the `data-title-default` attribute in both
+# `browser-main-window` and `browser-main-window-mac`.
+browser-main-window-default-title = { -brand-full-name }
 
 ##
 
@@ -130,7 +194,7 @@ urlbar-result-menu-tip-get-help =
 ##  $engineName (String): The name of the user's default search engine. e.g. "Google" or "DuckDuckGo".
 
 urlbar-search-tips-onboard = Tipkaj manje, pronađi više: Traži { $engineName } direktno u adresnoj traci.
-urlbar-search-tips-redirect-2 = Započni pretragu u adresnoj traci za prikaz prijedloga od { $engineName } i tvoju povijest pregledavanja.
+urlbar-search-tips-redirect-2 = Započni pretragu u adresnoj traci za prikaz prijedloga { $engineName } tražilice i tvoje povijesti pregledavanja.
 # Make sure to match the name of the Search panel in settings.
 urlbar-search-tips-persist = Pretraživanje je upravo postalo jednostavnije. Pokušaj preciznije odrediti pretraživanje u adresnoj traci. Za prikaz URL-a, prijeđi na opciju „Traži” u postavkama.
 # Prompts users to use the Urlbar when they are typing in the domain of a
@@ -309,6 +373,10 @@ quickactions-cmd-viewsource = pogledaj izvorni kod, izvorni kod
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = Saznaj više o brzim radnjama
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = Pritisni tipku tabulatora za biranje:
 
 ## Bookmark Panel
 
@@ -556,8 +624,6 @@ urlbar-page-action-button =
     .tooltiptext = Radnje na stranici
 urlbar-revert-button =
     .tooltiptext = Prikaži adresu u lokacijskoj traci
-urlbar-show-page-actions-button =
-    .tooltiptext = Prikaži sve radnje na stranici
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -612,12 +678,61 @@ urlbar-result-action-copy-to-clipboard = Kopiraj
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+# The string returned for an undefined calculator result such as when dividing by 0
+urlbar-result-action-undefined-calculator-result = nedefinirano
+# Shows the result of a formula expression being calculated, to a maximum of 9 significant
+# digits. The last = sign will be shown as part of the result (e.g. "= 2").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-2 = = { NUMBER($result, maximumSignificantDigits: 9) }
+# Shows the result of a formula expression being calculated, in scientific notation.
+# The last = sign will be shown as part of the result (e.g. "= 1.0e17").
+# Variables
+#  $result (String): the string representation for a result in scientific notation
+#  (e.g. "1.0e17").
+urlbar-result-action-calculator-result-scientific-notation = = { $result }
 
 ## Strings used for buttons in the urlbar
 
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = Traži pomoću { $engine }
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } – Pretraži { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } – Pretraži pomoću { $engine }
+urlbar-searchmode-dropmarker =
+    .tooltiptext = Odaberi tražilicu
+urlbar-searchmode-bookmarks =
+    .label = Zabilješke
+urlbar-searchmode-tabs =
+    .label = Kartice
+urlbar-searchmode-history =
+    .label = Povijest
+urlbar-searchmode-actions =
+    .label = Radnje
+urlbar-searchmode-exit-button =
+    .tooltiptext = Zatvori
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = Ovaj put traži pomoću:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = Postavke pretrage
+urlbar-searchmode-popup-search-settings = Postavke pretrage
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, odaberi tražilicu
+    .tooltiptext = { $engine }, odaberi tražilicu
+urlbar-searchmode-button-no-engine =
+    .label = Nije odabran nijedan prečac, odaberi prečac
+    .tooltiptext = Nije odabran nijedan prečac, odaberi prečac
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -627,6 +742,12 @@ urlbar-result-action-search-bookmarks = Pretraži zabilješke
 urlbar-result-action-search-history = Pretraži povijest
 urlbar-result-action-search-tabs = Pretraži kartice
 urlbar-result-action-search-actions = Traži radnje
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = Prijeđi na { $group }
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = Otvori { $group }
 
 ## Labels shown above groups of urlbar results
 
@@ -940,15 +1061,18 @@ data-reporting-notification-button =
     .accesskey = O
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Privatno pregledavanje
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = Privatno pregledavanje
 # Tooltip for the indicator shown in the window titlebar when content analysis is active.
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
 content-analysis-indicator-tooltip =
-    .tooltiptext = Sprječavanje gubitka podataka od { $agentName }. Kliknite za više informacija.
+    .tooltiptext = Sprečavanje gubitka podataka (DLP) od { $agentName }. Klikni za više informacija.
 content-analysis-panel-title = Zaštita podataka
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
-content-analysis-panel-text = Tvoja organizacija koristi { $agentName } za zaštitu od gubitka podataka. <a data-l10n-name="info">Saznaj više</a>
+content-analysis-panel-text-styled = Tvoja organizacija koristi <b>{ $agentName }</b> za zaštitu od gubljenja podataka. <a data-l10n-name="info">Saznaj više</a>
 
 ## Unified extensions (toolbar) button
 
@@ -973,6 +1097,15 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Proširenja
         Neka proširenja nisu dozvoljena
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = Proširenja
+    .tooltiptext =
+        Proširenja
+        Neka proširenja su deaktivirana
 
 ## Private browsing reset button
 
@@ -1013,6 +1146,7 @@ firefox-relay-offer-legal-notice = Klikom na „Koristi e-mail masku” prihvać
 popup-notification-addon-install-unsigned =
     .value = (Nepotvrđeno)
 popup-notification-xpinstall-prompt-learn-more = Naučite više o sigurnom instaliranju dodataka
+popup-notification-xpinstall-prompt-block-url = Pogledaj detalje
 # Note: Access key is set to P to match "Private" in the corresponding localized label.
 popup-notification-addon-privatebrowsing-checkbox =
     .label = Pokreni u privatnim prozorima

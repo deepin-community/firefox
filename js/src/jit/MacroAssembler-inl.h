@@ -428,6 +428,16 @@ void MacroAssembler::branchIfTrueBool(Register reg, Label* label) {
   branchTest32(Assembler::NonZero, reg, Imm32(0xFF), label);
 }
 
+void MacroAssembler::branchIfNotNullOrUndefined(ValueOperand val,
+                                                Label* label) {
+  Label nullOrUndefined;
+  ScratchTagScope tag(*this, val);
+  splitTagForTest(val, tag);
+  branchTestNull(Assembler::Equal, tag, &nullOrUndefined);
+  branchTestUndefined(Assembler::NotEqual, tag, label);
+  bind(&nullOrUndefined);
+}
+
 void MacroAssembler::branchIfRope(Register str, Label* label) {
   Address flags(str, JSString::offsetOfFlags());
   branchTest32(Assembler::Zero, flags, Imm32(JSString::LINEAR_BIT), label);
@@ -554,15 +564,17 @@ void MacroAssembler::branchIfObjectEmulatesUndefined(Register objReg,
       scratch);
   branchPtr(Assembler::Equal, scratch, ImmPtr(nullptr), &done);
 
-  // The branches to out-of-line code here implement a conservative version
-  // of the JSObject::isWrapper test performed in EmulatesUndefined.
   loadObjClassUnsafe(objReg, scratch);
-
-  branchTestClassIsProxy(true, scratch, slowCheck);
 
   Address flags(scratch, JSClass::offsetOfFlags());
   branchTest32(Assembler::NonZero, flags, Imm32(JSCLASS_EMULATES_UNDEFINED),
                label);
+
+  // Call into C++ if the object is a wrapper.
+  branchTestClassIsProxy(false, scratch, &done);
+  branchTestProxyHandlerFamily(Assembler::Equal, objReg, scratch,
+                               &Wrapper::family, slowCheck);
+
   bind(&done);
 }
 

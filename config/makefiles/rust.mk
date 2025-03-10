@@ -62,9 +62,9 @@ RUSTFLAGS += -Zsanitizer=thread
 endif
 
 rustflags_sancov =
-ifdef LIBFUZZER
 ifndef MOZ_TSAN
 ifndef FUZZING_JS_FUZZILLI
+ifdef LIBFUZZER
 # These options should match what is implicitly enabled for `clang -fsanitize=fuzzer`
 #   here: https://github.com/llvm/llvm-project/blob/release/13.x/clang/lib/Driver/SanitizerArgs.cpp#L422
 #
@@ -75,6 +75,15 @@ ifndef FUZZING_JS_FUZZILLI
 #
 # In TSan builds, we must not pass any of these, because sanitizer coverage is incompatible with TSan.
 rustflags_sancov += -Cpasses=sancov-module -Cllvm-args=-sanitizer-coverage-inline-8bit-counters -Cllvm-args=-sanitizer-coverage-level=4 -Cllvm-args=-sanitizer-coverage-trace-compares -Cllvm-args=-sanitizer-coverage-pc-table
+else
+ifdef AFLFUZZ
+# Use the same flags as afl-cc, specified here:
+# https://github.com/AFLplusplus/AFLplusplus/blob/4eaacfb095ac164afaaf9c10b8112f98d8ad7c2a/src/afl-cc.c#L2101
+#  -sanitizer-coverage-level=3                   Enable coverage for all blocks, critical edges. Implied by clang as default.
+#  -sanitizer-coverage-pc-table                  Create a static PC table.
+#  -sanitizer-coverage-trace-pc-guard            Adds guard_variable (uint32_t) to every edge
+rustflags_sancov += -Cpasses=sancov-module -Cllvm-args=-sanitizer-coverage-level=3  -Cllvm-args=-sanitizer-coverage-pc-table -Cllvm-args=-sanitizer-coverage-trace-pc-guard
+endif
 endif
 endif
 endif
@@ -204,10 +213,13 @@ else
 # This means C code built by rust is not going to be covered by sanitizers
 # and coverage. But at least we control what compiler is being used,
 # rather than relying on cc-rs guesses, which, sometimes fail us.
+# -fno-sized-deallocation is important, though, as -fsized-deallocation may be the
+# compiler default and we don't want it to be used
+# (see build/moz.configure/flags.configure). Likewise with -fno-aligned-new.
 export CFLAGS_$(rust_host_cc_env_name)=$(HOST_CC_BASE_FLAGS)
 export CXXFLAGS_$(rust_host_cc_env_name)=$(HOST_CXX_BASE_FLAGS)
 export CFLAGS_$(rust_cc_env_name)=$(CC_BASE_FLAGS)
-export CXXFLAGS_$(rust_cc_env_name)=$(CXX_BASE_FLAGS)
+export CXXFLAGS_$(rust_cc_env_name)=$(CXX_BASE_FLAGS) $(filter -fno-aligned-new -fno-sized-deallocation,$(COMPUTED_CXXFLAGS))
 endif
 
 # When host == target, cargo will compile build scripts with sanitizers enabled
@@ -261,6 +273,9 @@ export IPHONEOS_SDK_DIR
 PATH := $(topsrcdir)/build/macosx:$(PATH)
 endif
 endif
+# Use the same prefix as set through modules/zlib/src/mozzconf.h
+# for libz-rs-sys, since we still use the headers from there.
+export LIBZ_RS_SYS_PREFIX=MOZ_Z_
 
 ifndef RUSTC_BOOTSTRAP
 RUSTC_BOOTSTRAP := mozglue_static,qcms

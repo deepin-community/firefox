@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = Dispensar
     .secondarybuttonaccesskey = D
 appmenu-update-restart-message2 = Obtenha a versão mais recente do { -brand-shorter-name }. Os separadores e janelas abertas serão restaurados.
+appmenu-theme-installed =
+    .secondarybuttonlabel = Anular
+    .secondarybuttonaccesskey = u
 appmenu-update-other-instance =
     .label = O { -brand-shorter-name } não consegue atualizar automaticamente para a nova versão.
     .buttonlabel = Atualizar o { -brand-shorter-name } mesmo assim
@@ -37,7 +40,6 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = Agora não
     .secondarybuttonaccesskey = n
 appmenu-update-other-instance-message = Está disponível uma nova atualização para o { -brand-shorter-name }, mas a mesma não pode ser instalada porque está em execução uma outra cópia do { -brand-shorter-name }. Encerre a mesma para continuar a atualização ou opte por atualizar mesmo assim (a outra cópia pode não funcionar corretamente até que a reinicie).
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = OK
     .buttonaccesskey = O
@@ -45,7 +47,6 @@ appmenu-addon-post-install-message3 = Faça a gestão das suas extensões e tema
 appmenu-addon-post-install-incognito-checkbox =
     .label = Permitir que esta extensão seja executada em janelas privadas
     .accesskey = a
-    
 appmenu-new-tab-controlled-changes =
     .label = A página novo separador foi alterada.
     .buttonlabel = Manter alterações

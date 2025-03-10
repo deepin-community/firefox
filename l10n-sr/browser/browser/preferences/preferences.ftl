@@ -8,6 +8,10 @@ do-not-track-option-default-content-blocking-known =
     .label = Само када је { -brand-short-name } подешен да блокира познате елементе за праћење
 do-not-track-option-always =
     .label = Увек
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Подешавања
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -21,6 +25,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Претражите подешавања
 managed-notice = Вашим прегледачем управља ваша организација.
+managed-notice-info-icon =
+    .alt = Информације
 category-list =
     .aria-label = Категорије
 pane-general-title = Опште
@@ -53,6 +59,7 @@ pane-experimental-description2 =
 settings-pane-labs-title = { -firefoxlabs-brand-name }
 settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Испробајте наше експерименталне функције! Још увек су у развоју и могу утицати на то како { -brand-short-name } ради.
 pane-experimental-reset =
     .label = Врати подразумевано
     .accesskey = В
@@ -143,6 +150,7 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Врати претходне прозоре и картице
     .accesskey = т
+windows-launch-on-login-disabled = Ово подешавање је онемогућено у Windows-у. Да промените, посетите <a data-l10n-name="startup-link">апликације при покретању</a> у подешавањима система.
 startup-restore-warn-on-quit =
     .label = Упозори ме при изласку из прегледача
 disable-extension =
@@ -589,12 +597,13 @@ home-prefs-shortcuts-description = Сачувани или посећени са
 home-prefs-shortcuts-by-option-sponsored =
     .label = Спонзорисане пречице
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Предложио { $provider }
 home-prefs-recommended-by-description-new = Изузетан садржај који је уредио { $provider }, део { -brand-product-name } породице
+home-prefs-recommended-by-header-generic =
+    .label = Препоручене приче
 
 ##
 
@@ -627,6 +636,10 @@ home-prefs-snippets-description-new =
         [neuter] { -brand-product-name(case: "acc") }
        *[other] програм { -brand-product-name }
     } и организацију { -vendor-short-name }
+home-prefs-weather-header =
+    .label = Време
+home-prefs-weather-description = Временска прогноза за данас
+home-prefs-weather-learn-more-link = Сазнајте више
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -739,6 +752,10 @@ sync-profile-picture =
 sync-profile-picture-with-alt =
     .tooltiptext = Промени профилну слику
     .alt = Промени профилну слику
+sync-profile-picture-account-problem =
+    .alt = Профилна слика налога
+fxa-login-rejected-warning =
+    .alt = Упозорење
 sync-sign-out =
     .label = Одјави ме…
     .accesskey = О
@@ -788,8 +805,10 @@ sync-currently-syncing-bookmarks = Обележивачи
 sync-currently-syncing-history = Историја
 sync-currently-syncing-tabs = Отворене картице
 sync-currently-syncing-logins-passwords = Подаци за пријаву
+sync-currently-syncing-passwords = Лозинке
 sync-currently-syncing-addresses = Адресе
 sync-currently-syncing-creditcards = Кредитне картице
+sync-currently-syncing-payment-methods = Начини плаћања
 sync-currently-syncing-addons = Додаци
 sync-currently-syncing-settings = Подешавања
 sync-change-options =
@@ -931,9 +950,11 @@ primary-password-os-auth-dialog-message-win = Из безбедносних ра
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = направите главну лозинку
 master-password-os-auth-dialog-caption = { -brand-full-name }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
+pane-privacy-autofill-header = Аутоматско попуњавање
 
 ## Privacy Section - History
 
@@ -1046,9 +1067,12 @@ cookie-banner-handling-description = { -brand-short-name } покушава ау
 
 ## Privacy Section - Cookie Banner Blocking
 
+cookie-banner-blocker-header = Блокатор банера колачића
 cookie-banner-learn-more = Сазнајте више
 forms-handle-cookie-banners =
     .label = Смањи банере колачића
+cookie-banner-blocker-checkbox-label =
+    .label = Аутоматски одбијте банере колачића
 
 ## Privacy Section - Address Bar
 

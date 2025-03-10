@@ -86,6 +86,16 @@ tabbrowser-unblock-tab-audio-tooltip =
            *[other] { $tabCount } rajtarkow wothrać
         }
 
+## Tooltips for tab audio control
+
+tabbrowser-unmute-tab-audio-aria-label =
+    .aria-label = Rajtark hižo njezněmić
+tabbrowser-mute-tab-audio-aria-label =
+    .aria-label = Rajtark zněmić
+# Used to unblock a tab with audio from autoplaying
+tabbrowser-unblock-tab-audio-aria-label =
+    .aria-label = Rajtark wothrać
+
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
@@ -100,6 +110,7 @@ tabbrowser-confirm-close-tabs-title =
        *[other] { $tabCount } rajtarkow začinić?
     }
 tabbrowser-confirm-close-tabs-button = Rajtarki začinić
+tabbrowser-ask-close-tabs-checkbox = Prašeć so, prjedy hač so wjacore rajtarki začinjeja
 tabbrowser-confirm-close-tabs-checkbox = Wobkrućić, prjedy hač so wjacore rajtarki začinjeja
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
@@ -128,7 +139,21 @@ tabbrowser-confirm-close-tabs-with-key-title = Wokno začinić a { -brand-short-
 tabbrowser-confirm-close-tabs-with-key-button = { -brand-short-name } skónčić
 # Variables:
 #   $quitKey (String): the text of the keyboard shortcut for quitting.
+tabbrowser-ask-close-tabs-with-key-checkbox = Prašeć so, prjedy hač so z { $quitKey } skónči
+# Variables:
+#   $quitKey (String): the text of the keyboard shortcut for quitting.
 tabbrowser-confirm-close-tabs-with-key-checkbox = Wobkrućić, prjedy hač so z { $quitKey } skónči
+
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
+
+tabbrowser-confirm-close-warn-shortcut-title = { -brand-short-name } skónčić abo aktualny rajtark začinić?
+tabbrowser-confirm-close-windows-warn-shortcut-button =
+    { PLATFORM() ->
+        [windows] { -brand-short-name } skónčić
+       *[other] { -brand-short-name } skónčić
+    }
+tabbrowser-confirm-close-tab-only-button = Aktualny rajtark začinić
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
@@ -199,6 +224,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
         }
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = Rajark zněmić
@@ -206,3 +234,130 @@ tabbrowser-manager-unmute-tab =
     .tooltiptext = Zněmjenje rajtarka anulować
 tabbrowser-manager-close-tab =
     .tooltiptext = Rajtark začinić
+# This is for tab groups that have been "saved and closed" (see tab-group-editor-action-save). It does
+# not include "deleted" tab groups (see tab-group-editor-action-delete).
+tabbrowser-manager-closed-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } – Začinjeny
+tabbrowser-manager-current-window-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } – Aktualne wokno
+# "Show more" is for showing all open groups from other windows, as well as saved groups. Initially,
+# we only show up to six of these groups.
+tabbrowser-manager-tab-groups-show-more =
+    .label = Wjace pokazać
+
+## Tab Groups
+
+tab-group-editor-title-create = Skupinu rajtarkow wutworić
+tab-group-editor-title-edit = Skupinu rajtarkow rjadować
+tab-group-editor-name-label = Mjeno
+tab-group-editor-name-field =
+    .placeholder = Přikład: Nakupowanje
+tab-group-editor-cancel =
+    .label = Přetorhnyć
+    .accesskey = P
+tab-group-editor-color-selector =
+    .aria-label = Barba skupiny rajtarkow
+tab-group-editor-color-selector2-blue = Módry
+    .title = Módry
+tab-group-editor-color-selector2-purple = Purpurny
+    .title = Purpurny
+tab-group-editor-color-selector2-cyan = Cyan
+    .title = Cyan
+tab-group-editor-color-selector2-orange = Oranžowy
+    .title = Oranžowy
+tab-group-editor-color-selector2-yellow = Žołty
+    .title = Žołty
+tab-group-editor-color-selector2-pink = Pink
+    .title = Pink
+tab-group-editor-color-selector2-green = Zeleny
+    .title = Zeleny
+tab-group-editor-color-selector2-gray = Šěry
+    .title = Šěry
+tab-group-editor-color-selector2-red = Čerwjeny
+    .title = Čerwjeny
+# Variables:
+#  $tabGroupName (String): The name of the tab group. Defaults to the value
+#                          of tab-group-name-default.
+tab-group-description = { $tabGroupName } – skupina rajtarkow
+tab-group-menu-header = Skupiny rajtarkow
+tab-context-unnamed-group =
+    .label = Skupina bjez mjena
+tab-group-name-default = Skupina bjez mjena
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
+tab-context-move-tab-to-new-group =
+    .label =
+        { $tabCount ->
+            [1] Nowej skupinje { $tabCount } rajtark přidać
+            [one] Nowej skupinje { $tabCount } rajtark přidać
+            [two] Nowej skupinje { $tabCount } rajtarkaj přidać
+            [few] Nowej skupinje { $tabCount } rajtarki přidać
+           *[other] Nowej skupinje { $tabCount } rajtarkow přidać
+        }
+    .accesskey = N
+tab-context-move-tab-to-group =
+    .label =
+        { $tabCount ->
+            [1] Skupinje { $tabCount } rajtark přidać
+            [one] Skupinje { $tabCount } rajtark přidać
+            [two] Skupinje { $tabCount } rajtarkaj přidać
+            [few] Skupinje { $tabCount } rajtarki přidać
+           *[other] Skupinje { $tabCount } rajtarkow přidać
+        }
+    .accesskey = S
+tab-group-editor-action-new-tab =
+    .label = Nowy rajtark w skupinje
+tab-group-editor-action-new-window =
+    .label = Skupinu do noweho wokna přesunyć
+tab-group-editor-action-save =
+    .label = Skupinu składować a začinić
+tab-group-editor-action-ungroup =
+    .label = Skupinu rajtarkow zběhnyć
+tab-group-editor-action-delete =
+    .label = Skupinu zhašeć
+tab-group-editor-done =
+    .label = Dokónčeny
+    .accessKey = D
+tab-context-reopen-tab-group =
+    .label = Skupinu rajtarkow zaso wočinić
+# Variables:
+#  $groupCount (Number): the number of tab groups that are affected by the action.
+tab-context-ungroup-tab =
+    .label =
+        { $groupCount ->
+            [1] Z { $groupCount } skupiny wotstronić
+            [one] Z { $groupCount } skupiny wotstronić
+            [two] Z { $groupCount } skupinow wotstronić
+            [few] Z { $groupCount } skupinow wotstronić
+           *[other] Z { $groupCount } skupinow wotstronić
+        }
+    .accesskey = t
+
+## Open/saved tab group context menu
+
+# For a tab group open in any window, clicking this will create a new
+# window and move this tab group to that new window.
+tab-group-context-move-to-new-window =
+    .label = Skupinu do noweho wokna přesunyć
+# For a tab group open in a different window from the one that the
+# user is using to access the tab group menu, move that tab group into the
+# user's current window.
+tab-group-context-move-to-this-window =
+    .label = Skupinu do tutoho wokna přesunyć
+# For a tab group that is open in any window, close the tab group and
+# do not save it. For a tab group that is closed but saved by the user, clicking
+# this will forget the saved tab group.
+tab-group-context-delete =
+    .label = Skupinu zhašeć
+# For a saved tab group that is not open in any window, open the tab group
+# in the user's current window.
+tab-group-context-open-saved-group-in-this-window =
+    .label = Skupinu w tutym woknje wočinić
+# For a saved tab group that is not open in any window, create a new window and
+# open the tab group in that window.
+tab-group-context-open-saved-group-in-new-window =
+    .label = Skupinu w nowym woknje wočinić

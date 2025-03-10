@@ -124,8 +124,9 @@ void CanvasContext::Configure(const dom::GPUCanvasConfiguration& aConfig) {
   mConfig.reset(new dom::GPUCanvasConfiguration(aConfig));
   mRemoteTextureOwnerId = Some(layers::RemoteTextureOwnerId::GetNext());
   mUseExternalTextureInSwapChain =
+      aConfig.mDevice->mSupportExternalTextureInSwapChain &&
       wgpu_client_use_external_texture_in_swapChain(
-          aConfig.mDevice->mId, ConvertTextureFormat(aConfig.mFormat));
+          ConvertTextureFormat(aConfig.mFormat));
   if (!gfx::gfxVars::AllowWebGPUPresentWithoutReadback()) {
     mUseExternalTextureInSwapChain = false;
   }
@@ -330,7 +331,7 @@ NS_IMETHODIMP CanvasContext::GetInputStream(const char* aMimeType,
                                   aMimeType, aEncoderOptions, aStream);
 }
 
-already_AddRefed<mozilla::gfx::SourceSurface> CanvasContext::GetSurfaceSnapshot(
+already_AddRefed<gfx::SourceSurface> CanvasContext::GetSurfaceSnapshot(
     gfxAlphaType* aOutAlphaType) {
   if (aOutAlphaType) {
     *aOutAlphaType = gfxAlphaType::Premult;
@@ -346,9 +347,16 @@ already_AddRefed<mozilla::gfx::SourceSurface> CanvasContext::GetSurfaceSnapshot(
   }
 
   MOZ_ASSERT(mRemoteTextureOwnerId.isSome());
-  return cm->GetSnapshot(cm->Id(), mBridge->Id(), mRemoteTextureOwnerId,
-                         mGfxFormat, /* aPremultiply */ false,
-                         /* aYFlip */ false);
+
+  // The parent side needs to create a command encoder which will be submitted
+  // and dropped right away so we create and release an encoder ID here.
+  RawId encoderId = ffi::wgpu_client_make_encoder_id(mBridge->GetClient());
+  RefPtr<gfx::SourceSurface> snapshot =
+      cm->GetSnapshot(cm->Id(), mBridge->Id(), mRemoteTextureOwnerId,
+                      Some(encoderId), mGfxFormat, /* aPremultiply */ false,
+                      /* aYFlip */ false);
+  ffi::wgpu_client_free_command_encoder_id(mBridge->GetClient(), encoderId);
+  return snapshot.forget();
 }
 
 Maybe<layers::SurfaceDescriptor> CanvasContext::GetFrontBuffer(
@@ -381,7 +389,6 @@ void CanvasContext::ForceNewFrame() {
     dom::OffscreenCanvasDisplayData data;
     data.mSize = mCanvasSize;
     data.mIsOpaque = false;
-    data.mOwnerId = mRemoteTextureOwnerId;
     mOffscreenCanvas->UpdateDisplayData(data);
   }
 }

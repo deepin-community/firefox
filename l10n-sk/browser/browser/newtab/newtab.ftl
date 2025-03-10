@@ -8,11 +8,18 @@
 newtab-page-title = Nová karta
 newtab-settings-button =
     .title = Prispôsobte si svoju stránku Nová karta
+newtab-personalize-settings-icon-label =
+    .title = Prispôsobte si Novú kartu
+    .aria-label = Nastavenia
+newtab-settings-dialog-label =
+    .aria-label = Nastavenia
 newtab-personalize-icon-label =
     .title = Prispôsobiť stránku novej karty
     .aria-label = Prispôsobiť stránku novej karty
 newtab-personalize-dialog-label =
     .aria-label = Prispôsobiť
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -109,6 +116,13 @@ newtab-menu-save-to-pocket = Uložiť do { -pocket-brand-name(case: "gen") }
 newtab-menu-delete-pocket = Odstrániť z { -pocket-brand-name(case: "gen") }
 newtab-menu-archive-pocket = Archivovať v { -pocket-brand-name(case: "loc") }
 newtab-menu-show-privacy-info = Naši sponzori a vaše súkromie
+newtab-menu-about-fakespot = Čo je { -fakespot-brand-name }
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Blokovať
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Prestať sledovať tému
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -229,6 +243,8 @@ newtab-pocket-cta-button = Získajte { -pocket-brand-name }
 newtab-pocket-cta-text = Ukladajte si články do { -pocket-brand-name(case: "gen") } a užívajte si skvelé čítanie.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } je súčasťou rodiny { -brand-product-name(case: "gen") }
 # A save to Pocket button that shows over the card thumbnail on hover.
+newtab-pocket-image =
+    .aria-label = { -pocket-brand-name }
 newtab-pocket-save = Uložiť
 newtab-pocket-saved = Uložené
 
@@ -240,6 +256,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Nie je pre mňa
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Vďaka. Vaša spätná väzba nám pomôže zlepšiť váš informačný kanál.
 newtab-toast-thumbs-up-or-down = Vďaka. Vaša spätná väzba nám pomôže zlepšiť váš informačný kanál.
 newtab-toast-dismiss-button =
     .title = Zavrieť
@@ -294,6 +313,12 @@ newtab-custom-settings = Ďalšie nastavenia
 
 newtab-wallpaper-title = Tapety
 newtab-wallpaper-reset = Obnoviť predvolenú tapetu
+newtab-wallpaper-upload-image = Nahrať obrázok
+newtab-wallpaper-custom-color = Zvoľte farbu
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = Obrázok prekročil limit veľkosti súboru { $file_size } MB. Skúste nahrať menší súbor.
+newtab-wallpaper-error-file-type = Nepodarilo sa nám nahrať váš súbor. Skúste to znova s iným typom súboru.
 newtab-wallpaper-light-red-panda = Červená panda
 newtab-wallpaper-light-mountain = Biela hora
 newtab-wallpaper-light-sky = Obloha s fialovými a ružovými oblakmi
@@ -306,6 +331,8 @@ newtab-wallpaper-dark-panda = Panda červená ukrytá v lese
 newtab-wallpaper-dark-sky = Mestská scenéria s nočnou oblohou
 newtab-wallpaper-dark-mountain = Horská scenéria
 newtab-wallpaper-dark-city = Fialová mestská scenéria
+newtab-wallpaper-dark-fox-anniversary = Líška na chodníku pri lese
+newtab-wallpaper-light-fox-anniversary = Líška na trávnatom poli so zahmlenou horskou krajinou
 
 ## Solid Colors
 
@@ -335,8 +362,12 @@ newtab-wallpaper-abstract-purple = Fialové tvary
 newtab-wallpaper-abstract-orange = Oranžové tvary
 newtab-wallpaper-gradient-orange = Prechod oranžový a ružový
 newtab-wallpaper-abstract-blue-purple = Modré a fialové tvary
+newtab-wallpaper-abstract-white-curves = Biela s tieňovanými krivkami
+newtab-wallpaper-abstract-purple-green = Gradient fialového a zeleného svetla
+newtab-wallpaper-abstract-blue-purple-waves = Modré a fialové vlnité tvary
+newtab-wallpaper-abstract-black-waves = Čierne vlnité tvary
 
-## Photographs
+## Celestial
 
 newtab-wallpaper-category-title-photographs = Fotografie
 newtab-wallpaper-beach-at-sunrise = Pláž pri východe slnka
@@ -345,6 +376,12 @@ newtab-wallpaper-storm-sky = Búrková obloha
 newtab-wallpaper-sky-with-pink-clouds = Obloha s ružovými oblakmi
 newtab-wallpaper-red-panda-yawns-in-a-tree = Panda červená zíva na strome
 newtab-wallpaper-white-mountains = Biele hory
+newtab-wallpaper-hot-air-balloons = Rôzne farby teplovzdušných balónov počas dňa
+newtab-wallpaper-starry-canyon = Modrá hviezdna noc
+newtab-wallpaper-suspension-bridge = Sivá fotografia celoodpruženého mosta počas dňa
+newtab-wallpaper-sand-dunes = Biele pieskové duny
+newtab-wallpaper-palm-trees = Silueta kokosových paliem počas zlatej hodiny
+newtab-wallpaper-forest-trees = Stromy pokryté hmlou
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -360,6 +397,19 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Nebeské
+newtab-wallpaper-celestial-lunar-eclipse = Zatmenie Mesiaca
+newtab-wallpaper-celestial-earth-night = Nočná fotografia z nízkej obežnej dráhy Zeme
+newtab-wallpaper-celestial-starry-sky = Hviezdna obloha
+newtab-wallpaper-celestial-eclipse-time-lapse = Časozberné zatmenie Mesiaca
+newtab-wallpaper-celestial-black-hole = Ilustrácia galaxie čiernej diery
+newtab-wallpaper-celestial-river = Satelitný obraz rieky
+
 ## New Tab Weather
 
 # Variables:
@@ -370,6 +420,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Sponzorované
 newtab-weather-menu-change-location = Zmeniť oblasť
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Hľadať oblasť
+    .aria-label = Hľadať oblasť
 newtab-weather-change-location-search-input = Hľadať oblasť
 newtab-weather-menu-weather-display = Zobrazenie počasia
 # Display options are:
@@ -428,3 +481,45 @@ newtab-topic-selection-button-maybe-later = Možno neskôr
 newtab-topic-selection-privacy-link = Zistite, ako chránime a spravujeme údaje
 newtab-topic-selection-button-update-interests = Aktualizujte svoje záujmy
 newtab-topic-selection-button-pick-interests = Vyberte si svoje záujmy
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Sledovať
+newtab-section-following-button = Sledované
+newtab-section-unfollow-button = Prestať sledovať
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Zablokovať
+newtab-section-blocked-button = Zablokované
+newtab-section-unblock-button = Odblokovať
+
+## Confirmation modal for blocking a section
+
+newtab-section-confirm-block-section-p1 = Naozaj chcete zablokovať túto sekciu?
+newtab-section-confirm-block-section-p2 = Blokovaná sekcia sa už nebude zobrazovať vo vašom informačnom kanáli.
+newtab-section-block-section-button = Blokovať túto sekciu
+newtab-section-cancel-button = Teraz nie
+newtab-section-confirm-block-topic-p1 = Naozaj chcete zablokovať túto tému?
+newtab-section-confirm-block-topic-p2 = Zablokované témy sa už nebudú zobrazovať vo vašom informačnom kanáli.
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = Blokovať { $topic }
+
+## Panel in the Customize menu section to manage followed and blocked topics
+
+newtab-section-mangage-topics-title = Témy
+newtab-section-manage-topics-button-v2 =
+    .label = Spravovať témy
+newtab-section-mangage-topics-followed-topics = Sledované
+newtab-section-mangage-topics-button =
+    .label = Sledované a zablokované témy
+newtab-section-mangage-topics-followed-topics-subtitle = Sledované témy
+newtab-section-mangage-topics-followed-topics-empty-state = Zatiaľ nesledujete žiadne témy.
+newtab-section-mangage-topics-blocked-topics = Zablokované
+newtab-section-mangage-topics-blocked-topics-subtitle = Zablokované témy
+newtab-section-mangage-topics-blocked-topics-empty-state = Zatiaľ ste nezablokovali žiadne témy.

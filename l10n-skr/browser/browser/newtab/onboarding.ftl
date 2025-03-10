@@ -214,7 +214,9 @@ mr2022-onboarding-set-default-subtitle = ہک غیر منافع بخش دا حم
 mr2022-onboarding-get-started-primary-subtitle = اساݙا نواں نکور ورژن تہاݙے چودھار بݨایا ڳیا ہے، جیندے نال ویب تے زپ کرݨ پہلے کنوں کتھائیں زیادہ آسان ہے۔ ایہ انہاں خصوصییتاں نال بھری ہوئی ہے جیڑھیاں اساکوں لڳدے جو تساں پسند کریسو۔
 mr2022-onboarding-get-started-primary-button-label = سیکنڈاں  وِچ سیٹ اپ کرو
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = بجلی وانگوں تکھا سیٹ اپ
 mr2022-onboarding-import-subtitle = ترتیب ݙیو { -brand-short-name } جیویں تساں اینکوں پسند کریندے او۔ اپݨے پراݨے براؤزر کنوں اپݨیاں نشانیاں، پاس ورڈ تے ودھیک شامل کرو۔
@@ -344,6 +346,8 @@ onboarding-mobile-download-security-and-privacy-subtitle = جہڑیلے تُسا
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } تُہاݙی کن٘ڈ تے ہِے
 onboarding-gratitude-security-and-privacy-subtitle = موزیلا فاؤنڈیشن دے تعاون نال { -brand-short-name }ورتݨ کِیتے تھورا۔ تُہاݙے تعاون نال، اَساں انٹرنیٹ کوں ساریاں کِیتے محفوظ اَتے وَدھ قابلِ رسائی بݨاوݨ کِیتے کَݨ کرین٘دے پئے ہِسے۔
+onboarding-sign-up-button = سائن اپ یا سائن ان
+onboarding-sign-up-secondary-button = براؤزنگ شروع کرو
 
 ## New user time and familiarity survey strings
 
@@ -363,3 +367,39 @@ onboarding-new-user-survey-familiarity-based-option-1 = میں اصلوں نوا
 onboarding-new-user-survey-familiarity-based-option-2 = میں اِیکُوں کُجھ ورتیا ہِے
 onboarding-new-user-survey-familiarity-based-option-3 = میں اِین٘دا چَنڳا ڄاݨُوں ہاں
 onboarding-new-user-survey-familiarity-based-option-4 = میں اِیکوں ماضی وِچ ورتیا ہَئی، پَر کُجھ وخت لنگھ ڳِیا ہِے
+
+## UI strings for the sidebar and vertical tabs
+
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = سائیڈ تے ٹیباں
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = ٹاپ تے ٹیباں
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = عمودی ٹیباں اتھ ہن
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = افقی ٹیباں متعارف کرواوݨ
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = عمودی ٹیباں ازماؤ
+onboarding-flair-text = نواں!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = افقی ٹیباں رکھو
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = سائیڈ بار وچ اے آئی چیٹ بوٹ ازماؤ
+onboarding-genai-sidebar-primary-button = چیٹ بوٹ چݨو
+onboarding-genai-sidebar-secondary-button = براؤزنگ شروع کرو
+
+## New user onboarding checklist
+
+onboarding-checklist-set-default = { -brand-short-name } کوں ڈیفالٹ براؤزر بݨاؤ
+onboarding-checklist-pin = { -brand-short-name } ٹاسک بار تے پن کرو
+onboarding-checklist-import = پچھلے براؤزر کنوں درآمد کرو
+onboarding-checklist-extension = ایکسٹنشن شامل کرو
+
+## Tab Groups feature onboarding strings
+
+
+## Multi Profiles feature onboarding messages
+
+
+## Desktop to Mobile Adoption feature callout strings
+

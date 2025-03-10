@@ -30,4 +30,13 @@ webext-perms-description-sessions = גישה ללשוניות שנסגרו לא�
 webext-perms-description-tabs = גישה ללשוניות
 webext-perms-description-tabHide = הסתרה והצגת לשוניות הדפדפן
 webext-perms-description-topSites = גישה להיסטוריית הגלישה
+webext-perms-description-trialML = הורדה והרצת מודולי AI במכשיר שלך
+webext-perms-description-userScripts = לאפשר לתסריטי צד שלישי לא מאומתים לגשת לנתונים שלך
 webext-perms-description-webNavigation = גישה לפעילות הדפדפן במהלך הניווט
+
+## The userScripts permission includes an additional explanation that is
+## displayed prominently near the usual permission description.
+
+webext-perms-extra-warning-userScripts-long = תסריטים שאינם מאומתים עלולים להוות סיכוני אבטחה ופרטיות, כמו הפעלת קוד מזיק או מעקב אחר פעילות באתר. יש להריץ תסריטים מהרחבות או מקורות מהימנים בלבד.
+# A shorter warning is displayed in UI surfaces with little room, such as a permission prompt.
+webext-perms-extra-warning-userScripts-short = תסריטים שאינם מאומתים עלולים להוות סיכוני אבטחה ופרטיות. יש להריץ תסריטים מהרחבות או מקורות מהימנים בלבד.

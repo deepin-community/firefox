@@ -18,7 +18,7 @@
 ## Application Menu (macOS only)
 
 menu-application-preferences =
-    .label = การกำหนดลักษณะ
+    .label = ค่าปรับแต่ง
 menu-application-services =
     .label = บริการ
 menu-application-hide-this =
@@ -253,6 +253,15 @@ menu-bookmarks-other =
     .label = ที่คั่นหน้าอื่น ๆ
 menu-bookmarks-mobile =
     .label = ที่คั่นหน้าในมือถือ
+
+## Profiles Menu
+
+menu-profiles =
+    .label = โปรไฟล์
+menu-profiles-manage-profiles =
+    .label = จัดการโปรไฟล์
+menu-profiles-new-profile =
+    .label = โปรไฟล์ใหม่
 
 ## Tools Menu
 

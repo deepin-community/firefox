@@ -225,7 +225,9 @@ mr2022-onboarding-set-default-subtitle = Коммерциялық емес ұй�
 mr2022-onboarding-get-started-primary-subtitle = Біздің соңғы нұсқамыз сіз үшін жасалған, бұл интернетті шолуды бұрынғыдан да жеңілдетеді. Ол жаңа мүмкіндіктерге толы, олар сізге ұнайды деп ойлаймыз.
 mr2022-onboarding-get-started-primary-button-label = Бірнеше секундта баптау
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Найзағайдай жылдам баптау
 mr2022-onboarding-import-subtitle = { -brand-short-name } өнімін өзіңізге ұнайтындай етіп баптаңыз . Ескі браузерден бетбелгілер, парольдер және т.б. қосыңыз.
@@ -356,6 +358,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Синхрондал�
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } сізді қолдайды
 onboarding-gratitude-security-and-privacy-subtitle = Mozilla Foundation ұсынған { -brand-short-name } қолданбасын пайдаланғаныңыз үшін рахмет. Сіздің қолдауыңызбен біз интернетті қауіпсіздеу және әркім үшін қолжетімді ету үшін жұмыс істеп жатырмыз.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Деректеріңізді құрылғылар арасында синхрондау
+onboarding-sign-up-description = Тіркелгі жасаңых және барлық маңызды ақпаратыңыз — парольдер, бетбелгілер және т.б. — қауіпсіз сақталады және кез келген құрылғыға кірген кезде қолжетімді болады.
+onboarding-sign-up-button = Тіркелгіні жасау немесе кіру
+onboarding-sign-up-secondary-button = Шолуды бастау
 
 ## New user time and familiarity survey strings
 
@@ -375,3 +382,75 @@ onboarding-new-user-survey-familiarity-based-option-1 = Мен жаңадан к
 onboarding-new-user-survey-familiarity-based-option-2 = Мен оны біраз қолдандым
 onboarding-new-user-survey-familiarity-based-option-3 = Мен онымен өте жақсы таныспын
 onboarding-new-user-survey-familiarity-based-option-4 = Мен оны бұрын қолдандым, бірақ біраз уақыт өтті
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Беттер қай жерде көргіңіз келетініңізді айтыңыз
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Бүйір панелінің параметрлерінде оны кез келген уақытта ауыстырыңыз.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Сіздің беттеріңіз, сіздің жолыңызбен
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Көптеген беттерді ашық ұстап отырсыз ба? Оңтайлы көрініс үшін бүйір панелі беттерін қолданып көріңіз. Немесе оны жоғарғы жағындағы беттермен классикалық күйде сақтаңыз. Кез келген уақытта ауысыңыз.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Беттер жаймасын таңдаңыз
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Беттер бүйір жақта
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Беттер жоғарыда
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Вертикалды беттер осында
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Вертикалды беттер ұсынылады
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Бүйір жағындағы беттерді қолданып көріңіз. Бүйір панелі параметрлерінде оны кез келген уақытта ауыстырыңыз.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Вертикалды беттерді қолданып көріңіз
+onboarding-flair-text = Жаңа!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Горизонталды беттерді қолдана беру
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = { -brand-shorter-name } бүйір панелінің бөлігі ретінде экран бүйіріндегі беттерді көрсететін браузер терезесі.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = { -brand-shorter-name } бүйір панелінің бөлігі ретінде экран бүйіріндегі беттерді көрсететін браузер терезесі.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Жоғарғы жағында беттерді көрсететін браузер терезесі.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Жоғарғы жағында беттерді көрсететін браузер терезесі.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Бүйір панелінде ЖИ чат-ботын қолданып көріңіз
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Веб-мазмұнды қорытындылау, идеяларды талқылау, хабарламаларды жобалау - барлығын шолу кезінде жасаңыз. Бірнеше провайдерлерден таңдаңыз. Кез келген уақытта ауысыңыз.<a data-l10n-name="learn-more">Көбірек білу</a>
+onboarding-genai-sidebar-primary-button = Чат-ботты таңдау
+onboarding-genai-sidebar-secondary-button = Шолуды бастау
+
+## New user onboarding checklist
+
+onboarding-checklist-title = { -brand-short-name } баптауды аяқтау
+onboarding-checklist-subtitle = Шолу тәжірибесін барынша пайдалану үшін осы қадамдарды орындаңыз.
+onboarding-checklist-set-default = { -brand-short-name } өнімін негізгі браузер ету
+onboarding-checklist-pin = { -brand-short-name } өнімін тапсырмалар панеліне бекіту
+onboarding-checklist-import = Бұрынғы браузерден импорттау
+onboarding-checklist-extension = Кеңейтуді қосу
+onboarding-checklist-sign-up = Тіркеліңіз немесе тіркелгіңізге кіріңіз
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-dismiss = ОК
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = { -brand-product-name } профильдеріне сәлем айтыңыз
+multi-profile-spotlight-cta = Профиль жасау
+multi-profile-callout-title = Жұмыс және көңіл көтеру үшін әртүрлі профильдер жасау
+multi-profile-callout-cta = Профиль жасау
+
+## Desktop to Mobile Adoption feature callout strings
+
+dismiss-button-label = Елемеу
+sync-to-mobile-button-label = Мобильді құрылғымен синхрондау

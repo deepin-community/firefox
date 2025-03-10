@@ -4,6 +4,12 @@
 
 menu-view-genai-chat =
     .label = AI chatbot
+menu-view-review-checker =
+    .label = Marandu’i rechajeyha
+menu-view-contextual-password-manager =
+    .label = Ñe’ẽñemikuéra
+sidebar-options-menu-button =
+    .title = Eike poravorãme
 
 ## Labels for sidebar history panel
 
@@ -46,16 +52,30 @@ sidebar-position-right =
     .label = Ehechauka akatúa gotyo
 sidebar-vertical-tabs =
     .label = Tendayke ñembo’y
+sidebar-settings =
+    .label = Emboheko ta’ãngarupa ykegua
+sidebar-hide-tabs-and-sidebar =
+    .label = Eñomi tendayke ha tenda yke
+sidebar-show-on-the-right =
+    .label = Emongu'e tenda yke akatúa gotyo
+sidebar-show-on-the-left =
+    .label = Emongu'e tenda yke asu gotyo
+# Option to automatically expand the collapsed sidebar when the mouse pointer
+# hovers over it.
+expand-sidebar-on-hover =
+    .label = Emyasãi tenda yke embohasávo anguja’i
 sidebar-horizontal-tabs =
     .label = Tendayke ñeno
 sidebar-customize-tabs-header =
     .label = Tendayke mboheko
-sidebar-customize-settings-header =
-    .label = Emboheko ta’ãngarupa ykegua
-sidebar-visibility-always-show =
-    .label = Jehechauka tapia
-sidebar-visibility-hide-sidebar =
-    .label = Eñomi ta’ãngarupa ykegua
+sidebar-customize-button-header =
+    .label = Votõ tenda ykegua
+sidebar-customize-position-header =
+    .label = Tenda ykegua oĩha
+sidebar-visibility-setting-always-show =
+    .label = Emyasãi ha emyanyhẽrasa tenda yke
+sidebar-visibility-setting-hide-sidebar =
+    .label = Ehechauka ha eñomi tenda yke
 
 ## Labels for sidebar context menu items
 
@@ -95,6 +115,41 @@ sidebar-menu-bookmarks-label =
     .label = Techaukaha
 sidebar-menu-customize-label =
     .label = Embohéra ta’ãngarupa ykegua
+sidebar-menu-review-checker-label =
+    .label = Marandu’i rechajeyha
+sidebar-menu-contextual-password-manager-label =
+    .label = Ñe’ẽñemi
+
+## Tooltips for sidebar menu items.
+
+# The tooltip to show over the history icon, when history is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-history-tooltip = Embojuruja tembiasakue ({ $shortcut })
+# The tooltip to show over the history icon, when history is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-history-tooltip = Emboty tembiasakue ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is not currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-open-bookmarks-tooltip = Embojuruja techaukaha ({ $shortcut })
+# The tooltip to show over the bookmarks icon, when bookmarks is currently showing.
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-menu-close-bookmarks-tooltip = Emboty techaukaha ({ $shortcut })
+sidebar-menu-open-ai-chatbot-tooltip = Embojuruja IA chatbot ({ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip = Emboty IA chatbot ({ $shortcut })
+
+## Tooltips displayed over the AI chatbot icon.
+## Variables:
+##   $shortcut (String) - The OS specific keyboard shortcut.
+##   $provider (String) - The name of the AI chatbot provider (if available).
+
+sidebar-menu-open-ai-chatbot-tooltip-generic = Embojuruja chatbot IA ({ $shortcut })
+sidebar-menu-open-ai-chatbot-provider-tooltip = Embojuruja { $provider } ({ $shortcut })
+sidebar-menu-close-ai-chatbot-tooltip-generic = Emboty chatbot IA ({ $shortcut })
+sidebar-menu-close-ai-chatbot-provider-tooltip = Emboty { $provider } ({ $shortcut })
 
 ## Headings for sidebar menu panels.
 
@@ -104,6 +159,18 @@ sidebar-menu-history-header =
     .heading = Tembiasakue
 sidebar-menu-syncedtabs-header =
     .heading = Tendaykekuéra ambue mba’e’okagua
+sidebar-menu-bookmarks-header =
+    .heading = Techaukaha
+sidebar-menu-cpm-header =
+    .heading = Ñe’ẽñemikuéra
+sidebar-panel-header-close-button =
+    .tooltiptext = Mboty
+
+## Titles for sidebar menu panels.
+
+sidebar-customize-title = Embohéra ta’ãngarupa ykegua
+sidebar-history-title = Tembiasakue
+sidebar-syncedtabs-title = Tendaykekuéra ambue mba’e’okaygua
 
 ## Context for closing synced tabs when hovering over the items
 
@@ -113,3 +180,29 @@ sidebar-menu-syncedtabs-header =
 #   $deviceName (String) - the name of the device the user is closing a tab for
 synced-tabs-context-close-tab-title =
     .title = Emboty tendayke { $deviceName }-pe
+show-sidebars =
+    .tooltiptext = Tenda yke jehechauka
+    .label = Tenda yke
+
+## Tooltips for the sidebar toolbar widget.
+
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-expand-sidebar2 =
+    .tooltiptext = Emyasãi tenda yke ({ $shortcut })
+    .label = Tenda yke
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-collapse-sidebar2 =
+    .tooltiptext = Ta’ãngarupa yke momichĩ ({ $shortcut })
+    .label = Tenda yke
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-show-sidebar2 =
+    .tooltiptext = Ehechauka tenda yke ({ $shortcut })
+    .label = Tenda yke
+# Variables:
+#   $shortcut (String) - The OS specific keyboard shortcut.
+sidebar-widget-hide-sidebar2 =
+    .tooltiptext = Eñomi tenda yke ({ $shortcut })
+    .label = Tenda yke

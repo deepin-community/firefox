@@ -108,8 +108,11 @@ appmenu-fxa-sync-and-save-data2 = Синхронизиране и запазва
 appmenu-fxa-signed-in-label = Вход
 appmenu-fxa-setup-sync =
     .label = Включване синхронизиране
+appmenu-fxa-setup-sync-new = Включване
 appmenuitem-save-page =
     .label = Запазване като…
+appmenuitem-fxa-sync-off-title = Синхронизирането е изключено
+appmenuitem-fxa-sync-off-description = Защитете и имайте достъп до отметки, пароли и други навсякъде.
 
 ## What's New panel in App menu.
 
@@ -263,12 +266,12 @@ appmenu-help-not-deceptive =
 ## More Tools
 
 appmenu-customizetoolbar =
-    .label = Персонализиране на лентата…
+    .label = Приспособяване на лентата…
 appmenu-developer-tools-subheader = Инструменти за четеца
 appmenu-developer-tools-extensions =
     .label = Разширения за разработчици
 appmenuitem-report-broken-site =
-    .label = Съобщаване за неработеща страница
+    .label = Доклад за повредена страница
 
 ## Panel for privacy and security products
 
@@ -279,3 +282,16 @@ appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Скрива истинския телефонен номер и адрес на ел. поща
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Защита на действията ви онлайн
+
+## Profiles panel
+
+appmenu-profiles = Профили
+appmenu-other-profiles = Други профили
+appmenu-manage-profiles =
+    .label = Управление на профили
+appmenu-create-profile =
+    .label = Нов профил
+appmenu-edit-profile =
+    .aria-label = Промяна на профила
+appmenu-profiles-2 =
+    .label = Профили

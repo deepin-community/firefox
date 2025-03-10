@@ -476,11 +476,16 @@ void nsSplitterFrameInner::RemoveListener() {
 nsresult nsSplitterFrameInner::HandleEvent(dom::Event* aEvent) {
   nsAutoString eventType;
   aEvent->GetType(eventType);
-  if (eventType.EqualsLiteral("mouseup")) return MouseUp(aEvent);
-  if (eventType.EqualsLiteral("mousedown")) return MouseDown(aEvent);
+  if (eventType.EqualsLiteral("mouseup")) {
+    return MouseUp(aEvent);
+  }
+  if (eventType.EqualsLiteral("mousedown")) {
+    return MouseDown(aEvent);
+  }
   if (eventType.EqualsLiteral("mousemove") ||
-      eventType.EqualsLiteral("mouseout"))
+      eventType.EqualsLiteral("mouseout")) {
     return MouseMove(aEvent);
+  }
 
   MOZ_ASSERT_UNREACHABLE("Unexpected eventType");
   return NS_OK;
@@ -534,8 +539,9 @@ nsresult nsSplitterFrameInner::MouseDown(Event* aMouseEvent) {
   }
 
   if (SplitterElement()->AttrValueIs(kNameSpaceID_None, nsGkAtoms::disabled,
-                                     nsGkAtoms::_true, eCaseMatters))
+                                     nsGkAtoms::_true, eCaseMatters)) {
     return NS_OK;
+  }
 
   mParentBox = GetValidParentBox(mOuter);
   if (!mParentBox) {
@@ -631,11 +637,12 @@ nsresult nsSplitterFrameInner::MouseDown(Event* aMouseEvent) {
 
     nsSize curSize = childBox->GetSize();
     const auto& pos = *childBox->StylePosition();
-    nsSize minSize = ToLengthWithFallback(pos.mMinWidth, pos.mMinHeight);
-    nsSize maxSize = ToLengthWithFallback(pos.mMaxWidth, pos.mMaxHeight,
+    nsSize minSize =
+        ToLengthWithFallback(pos.GetMinWidth(), pos.GetMinHeight());
+    nsSize maxSize = ToLengthWithFallback(pos.GetMaxWidth(), pos.GetMaxHeight(),
                                           NS_UNCONSTRAINEDSIZE);
-    nsSize prefSize(ToLengthWithFallback(pos.mWidth, curSize.width),
-                    ToLengthWithFallback(pos.mHeight, curSize.height));
+    nsSize prefSize(ToLengthWithFallback(pos.GetWidth(), curSize.width),
+                    ToLengthWithFallback(pos.GetHeight(), curSize.height));
 
     maxSize.width = std::max(maxSize.width, minSize.width);
     maxSize.height = std::max(maxSize.height, minSize.height);

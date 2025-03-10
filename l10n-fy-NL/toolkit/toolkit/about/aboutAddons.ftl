@@ -225,7 +225,7 @@ shortcuts-remove-button =
     .aria-label = Fluchkeppeling fuortsmite
 shortcuts-browserAction2 = Arkbalkeknop aktivearje
 shortcuts-pageAction = Side-aksje aktivearje
-shortcuts-sidebarAction = De sydbalke yn-/útskeakelje
+shortcuts-sidebarAction = De sidebalke yn-/útskeakelje
 shortcuts-modifier-mac = Druk ek op Ctrl, Alt of ⌘
 shortcuts-modifier-other = Druk ek op Ctrl of Alt
 shortcuts-invalid = Unjildige kombinaasje
@@ -297,6 +297,14 @@ find-more-themes = Fyn mear tema’s
 # used for screen readers.
 addon-options-button =
     .aria-label = Mear opsjes
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+discopane-intro2 =
+    Me útwreidingen en tema’s kinne jo { -brand-product-name } oanpasse. Se kinne privacy,
+    produktiviteit en media ferbetterje, it uterlik fan { -brand-product-name } wizigje, en
+    sa folle mear. Dizze lytse softwareprogramma’s wurde faak troch in tredde partij ûntwikkele. Dit is
+    in seleksje dy’t { -brand-product-name } <a data-l10n-name="learn-more-trigger">oanrekommandearret</a>
+    foar útsûnderlike befeiliging, prestaasjes en funksjonaliteit.
 
 ## Add-on actions
 
@@ -383,6 +391,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Tastien yn priveefinsters
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Tastien yn priveefinsters
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -422,6 +434,14 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Dizze útwreiding is beoardiele en foldocht oan ús noarms foar befeiliging en prestaasjes
     .aria-label = { addon-badge-verified2.title }
+addon-badge-recommended3 =
+    .title = { -brand-product-name } rekommandearret allinnich útwreidingen oan dy’t foldogge oan ús noarms foar feilichheid en prestaasjes.
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Offisjele troch Mozilla Firefox boude útwreiding. Foldocht oan befeiligings- en prestaasjenoarmen.
+addon-badge-verified3 =
+    .title = Dizze útwreiding is beoardiele en foldocht oan ús noarms foar befeiliging en prestaasjes
 
 ##
 
@@ -429,6 +449,7 @@ available-updates-heading = Beskikbere fernijingen
 recent-updates-heading = Resinte fernijingen
 release-notes-loading = Lade…
 release-notes-error = Sorry, mar der wie in flater mei it laden fan de útjefteopmerkingen.
+addon-permissions-empty2 = Foar dizze útwreiding binne gjin tastimmingen fereaske.
 addon-permissions-empty = Foar dizze útwreiding binne gjin tastimmingen fereaske
 addon-permissions-required = Fereaske tastimmingen foar kernfunksjonaliteit:
 addon-permissions-optional = Opsjonele tastimmingen foar ekstra funksjonaliteit:
@@ -478,10 +499,24 @@ details-notification-unsigned-and-disabled-link = Mear ynformaasje
 details-notification-unsigned = { $name } koe net ferifiearre wurde foar gebrûk yn { -brand-short-name }. Wês foarsichtich as jo fierdergean.
 details-notification-unsigned2 =
     .message = { $name } koe net ferifiearre wurde foar gebrûk yn { -brand-short-name }. Wês foarsichtich as jo fierdergean.
+details-notification-hard-blocked-extension =
+    .message = Dizze útwreiding is blokkearre fanwegen skeining fan it belied fan Mozilla en is útskeakele.
+details-notification-hard-blocked-other =
+    .message = Dizze add-on is blokkearre fanwegen skeining fan it belied fan Mozilla en is útskeakele.
 details-notification-unsigned-link = Mear ynformaasje
 details-notification-blocked = { $name } is útskeakele om reden fan feilichheid of stabiliteit.
 details-notification-blocked2 =
     .message = { $name } is útskeakele om reden fan feilichheid of stabiliteit.
+details-notification-blocked-link2 = Details besjen
+details-notification-soft-blocked-extension-disabled =
+    .message = Dizze útwreiding is beheind fanwegen skeinen fan it belied fan Mozilla en is útskeakele. Jo kinne it ynskeakelje, mar dit kin gefaarlik wêze.
+details-notification-soft-blocked-extension-enabled =
+    .message = Dizze útwreiding skeint it belied fan Mozilla. It brûken hjirfan kin gefaarlik wêze.
+details-notification-soft-blocked-other-disabled =
+    .message = Dizze add-on is beheind fanwegen skeinen fan it belied fan Mozilla en is útskeakele. Jo kinne it ynskeakelje, mar dit kin gefaarlik wêze.
+details-notification-soft-blocked-other-enabled =
+    .message = Dizze add-on skeint it belied fan Mozilla. It brûken hjirfan kin gefaarlik wêze.
+details-notification-softblocked-link2 = Details besjen
 details-notification-blocked-link = Mear ynformaasje
 details-notification-softblocked = { $name } kin feilichheids- of stabiliteitsproblemen feroarsaakje.
 details-notification-softblocked2 =

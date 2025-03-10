@@ -30,4 +30,13 @@ webext-perms-description-sessions = Son kapatılan sekmelere erişme
 webext-perms-description-tabs = Tarayıcı sekmelerine erişme
 webext-perms-description-tabHide = Tarayıcı sekmelerini gizleme ve gösterme
 webext-perms-description-topSites = Gezinti geçmişine erişme
+webext-perms-description-trialML = Yapay zekâ modellerini indirip cihazınızda çalıştırma
+webext-perms-description-userScripts = Doğrulanmamış üçüncü taraf betiklerin verilerinize erişmesine izin verme
 webext-perms-description-webNavigation = Gezinti sırasında tarayıcı etkinliğine erişme
+
+## The userScripts permission includes an additional explanation that is
+## displayed prominently near the usual permission description.
+
+webext-perms-extra-warning-userScripts-long = Doğrulanmamış betikler, zararlı kod çalıştırma veya web sitesi etkinliğini izleme gibi güvenlik ve gizlilik riskleri doğurabilir. Yalnızca güvendiğiniz uzantılardan veya kaynaklardan gelen betikleri çalıştırın.
+# A shorter warning is displayed in UI surfaces with little room, such as a permission prompt.
+webext-perms-extra-warning-userScripts-short = Doğrulanmamış betikler güvenlik ve gizlilik riskleri doğurabilir. Yalnızca güvendiğiniz uzantılardan veya kaynaklardan gelen betikleri çalıştırın.

@@ -98,7 +98,7 @@ places-delete-page =
            *[other] Deler paginas
         }
     .accesskey = D
-# Managed bookmarks are created by an administrator and cannot be changed by the user.
+# Managed bookmarks are created by enterprise policy and cannot be changed by the user.
 managed-bookmarks =
     .label = Marcapaginas gerite
 # This label is used when a managed bookmarks folder doesn't have a name.
@@ -137,7 +137,7 @@ places-manage-bookmarks =
 places-forget-about-this-site-confirmation-title = Oblidante iste sito
 # Variables:
 # $hostOrBaseDomain (string) - The base domain (or host in case there is no base domain) for which data is being removed
-places-forget-about-this-site-confirmation-msg = Iste action removera datos correlate a { $hostOrBaseDomain } includite chronologia, cookies, cache e preferentias de contento. Le marcapaginas e le contrasignos non sera removite.
+places-forget-about-this-site-confirmation-msg = Iste action removera datos relative a { $hostOrBaseDomain } includite chronologia, cookies, cache e preferentias de contento. Le marcapaginas e contrasignos associate non essera removite. Es tu secur de voler continuar?
 places-forget-about-this-site-forget = Oblidar
 places-library3 =
     .title = Bibliotheca
