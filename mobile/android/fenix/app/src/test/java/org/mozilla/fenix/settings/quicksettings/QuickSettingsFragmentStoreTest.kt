@@ -32,7 +32,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mozilla.fenix.R
 import org.mozilla.fenix.ext.components
-import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
 import org.mozilla.fenix.settings.PhoneFeature
 import org.mozilla.fenix.settings.quicksettings.QuickSettingsFragmentStore.Companion.toWebsitePermission
 import org.mozilla.fenix.settings.quicksettings.WebsiteInfoState.Companion.createWebsiteInfoState
@@ -42,8 +41,9 @@ import org.mozilla.fenix.settings.sitepermissions.AUTOPLAY_BLOCK_ALL
 import org.mozilla.fenix.trackingprotection.CookieBannerUIMode
 import org.mozilla.fenix.trackingprotection.ProtectionsState
 import org.mozilla.fenix.utils.Settings
+import org.robolectric.RobolectricTestRunner
 
-@RunWith(FenixRobolectricTestRunner::class)
+@RunWith(RobolectricTestRunner::class)
 class QuickSettingsFragmentStoreTest {
     private val context = spyk(testContext)
 
@@ -78,6 +78,7 @@ class QuickSettingsFragmentStoreTest {
             websiteUrl = tab.content.url,
             websiteTitle = tab.content.title,
             certificateName = "issuer",
+            isLocalPdf = false,
             isSecured = true,
             permissions = permissions,
             permissionHighlights = permissionHighlights,
@@ -101,12 +102,18 @@ class QuickSettingsFragmentStoreTest {
         val certificateIssuer = "issuer"
         val securedStatus = true
 
-        val state = createWebsiteInfoState(websiteUrl, websiteTitle, securedStatus, certificateIssuer)
+        val state = createWebsiteInfoState(
+            websiteUrl = websiteUrl,
+            websiteTitle = websiteTitle,
+            isLocalPdf = false,
+            isSecured = securedStatus,
+            certificateName = certificateIssuer,
+        )
 
         assertNotNull(state)
         assertSame(websiteUrl, state.websiteUrl)
         assertSame(websiteTitle, state.websiteTitle)
-        assertEquals(WebsiteSecurityUiValues.SECURE, state.websiteSecurityUiValues)
+        assertEquals(WebsiteInfoUiValues.SECURE, state.websiteInfoUiValues)
     }
 
     @Test
@@ -116,12 +123,60 @@ class QuickSettingsFragmentStoreTest {
         val certificateIssuer = "issuer"
         val securedStatus = false
 
-        val state = createWebsiteInfoState(websiteUrl, websiteTitle, securedStatus, certificateIssuer)
+        val state = createWebsiteInfoState(
+            websiteUrl = websiteUrl,
+            websiteTitle = websiteTitle,
+            isLocalPdf = false,
+            isSecured = securedStatus,
+            certificateName = certificateIssuer,
+        )
 
         assertNotNull(state)
         assertSame(websiteUrl, state.websiteUrl)
         assertSame(websiteTitle, state.websiteTitle)
-        assertEquals(WebsiteSecurityUiValues.INSECURE, state.websiteSecurityUiValues)
+        assertEquals(WebsiteInfoUiValues.INSECURE, state.websiteInfoUiValues)
+    }
+
+    @Test
+    fun `WHEN website is not secure and a local PDF is displayed THEN createWebsiteInfoState constructs a WebsiteInfoState with the right value for a local PDF`() {
+        val websiteUrl = "content://testPdf"
+        val websiteTitle = "Test PDF"
+        val certificateIssuer = "issuer"
+        val securedStatus = false
+
+        val state = createWebsiteInfoState(
+            websiteUrl = websiteUrl,
+            websiteTitle = websiteTitle,
+            isLocalPdf = true,
+            isSecured = securedStatus,
+            certificateName = certificateIssuer,
+        )
+
+        assertNotNull(state)
+        assertSame(websiteUrl, state.websiteUrl)
+        assertSame(websiteTitle, state.websiteTitle)
+        assertEquals(WebsiteInfoUiValues.Document, state.websiteInfoUiValues)
+    }
+
+    @Test
+    fun `WHEN website is secure and a local PDF is displayed THEN createWebsiteInfoState constructs a WebsiteInfoState with the right value for a local PDF`() {
+        val websiteUrl = "content://testPdf"
+        val websiteTitle = "Test PDF"
+        val certificateIssuer = "issuer"
+        val securedStatus = true
+
+        val state = createWebsiteInfoState(
+            websiteUrl = websiteUrl,
+            websiteTitle = websiteTitle,
+            isLocalPdf = true,
+            isSecured = securedStatus,
+            certificateName = certificateIssuer,
+        )
+
+        assertNotNull(state)
+        assertSame(websiteUrl, state.websiteUrl)
+        assertSame(websiteTitle, state.websiteTitle)
+        assertEquals(WebsiteInfoUiValues.Document, state.websiteInfoUiValues)
     }
 
     @Test
@@ -298,7 +353,7 @@ class QuickSettingsFragmentStoreTest {
                     updatedMicrophoneStatus,
                     updatedMicrophoneEnabledStatus,
                 ),
-            ).join()
+            )
 
             assertNotNull(store.state)
             assertNotSame(initialState, store.state)
@@ -374,5 +429,7 @@ class QuickSettingsFragmentStoreTest {
         persistentStorage = Action.ASK_TO_ALLOW,
         mediaKeySystemAccess = Action.ASK_TO_ALLOW,
         crossOriginStorageAccess = Action.ASK_TO_ALLOW,
+        localDeviceAccess = Action.ASK_TO_ALLOW,
+        localNetworkAccess = Action.ASK_TO_ALLOW,
     )
 }

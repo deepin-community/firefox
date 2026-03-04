@@ -7,12 +7,10 @@
 #ifndef mozilla_dom_workers_workerrunnable_h__
 #define mozilla_dom_workers_workerrunnable_h__
 
-#include <cstdint>
 #include <utility>
+
 #include "MainThreadUtils.h"
-#include "mozilla/Atomics.h"
 #include "mozilla/RefPtr.h"
-#include "mozilla/ThreadSafeWeakPtr.h"
 #include "mozilla/dom/WorkerPrivate.h"
 #include "mozilla/dom/WorkerRef.h"
 #include "mozilla/dom/WorkerStatus.h"
@@ -278,7 +276,7 @@ class WorkerDebuggerRunnable : public WorkerThreadRunnable {
  private:
   virtual bool IsDebuggerRunnable() const override { return true; }
 
-  bool PreDispatch(WorkerPrivate* aWorkerPrivate) final {
+  virtual bool PreDispatch(WorkerPrivate* aWorkerPrivate) override {
     AssertIsOnMainThread();
 
     return true;

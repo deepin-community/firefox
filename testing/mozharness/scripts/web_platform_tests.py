@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-# ***** BEGIN LICENSE BLOCK *****
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
-# ***** END LICENSE BLOCK *****
 import copy
 import gzip
 import json
@@ -223,13 +221,22 @@ class WebPlatformTest(TestingMixin, MercurialScript, CodeCoverageMixin, AndroidM
                     "help": "Sets the timeout multiplier (0.25 for `--backlog` tests by default)",
                 },
             ],
+            [
+                ["--no-update-status-on-crash"],
+                {
+                    "action": "store_false",
+                    "dest": "update_status_on_crash",
+                    "default": True,
+                    "help": "Sets whether to update the test status if a crash dump is detected",
+                },
+            ],
         ]
         + copy.deepcopy(testing_config_options)
         + copy.deepcopy(code_coverage_config_options)
     )
 
     def __init__(self, require_config_file=True):
-        super(WebPlatformTest, self).__init__(
+        super().__init__(
             config_options=self.config_options,
             all_actions=[
                 "clobber",
@@ -273,7 +280,7 @@ class WebPlatformTest(TestingMixin, MercurialScript, CodeCoverageMixin, AndroidM
     def query_abs_dirs(self):
         if self.abs_dirs:
             return self.abs_dirs
-        abs_dirs = super(WebPlatformTest, self).query_abs_dirs()
+        abs_dirs = super().query_abs_dirs()
 
         dirs = {}
         dirs["abs_app_install_dir"] = os.path.join(
@@ -318,11 +325,8 @@ class WebPlatformTest(TestingMixin, MercurialScript, CodeCoverageMixin, AndroidM
 
         webtransport_requirements = os.path.join(
             dirs["abs_test_install_dir"],
-            "web-platform",
-            "tests",
-            "tools",
-            "webtransport",
-            "requirements.txt",
+            "config",
+            "wpt_ci_requirements.txt",
         )
 
         self.register_virtualenv_module(requirements=[webtransport_requirements])
@@ -413,13 +417,13 @@ class WebPlatformTest(TestingMixin, MercurialScript, CodeCoverageMixin, AndroidM
         else:
             cmd += ["--binary=%s" % self.binary_path, "--product=firefox"]
 
-        cmd += ["--install-fonts"]
+        cmd += ["--no-install-fonts"]
 
         for test_type in test_types:
             cmd.append("--test-type=%s" % test_type)
 
         if c["extra_prefs"]:
-            cmd.extend(["--setpref={}".format(p) for p in c["extra_prefs"]])
+            cmd.extend([f"--setpref={p}" for p in c["extra_prefs"]])
 
         if c["disable_fission"]:
             cmd.append("--disable-fission")
@@ -445,6 +449,11 @@ class WebPlatformTest(TestingMixin, MercurialScript, CodeCoverageMixin, AndroidM
         elif c["backlog"]:
             cmd.append("--timeout-multiplier=0.25")
 
+        if c["update_status_on_crash"]:
+            cmd.append("--update-status-on-crash")
+        else:
+            cmd.append("--no-update-status-on-crash")
+
         test_paths = set()
         if not (self.verify_enabled or self.per_test_coverage):
             # mozharness_test_paths is a set of test groups (directories) to run
@@ -463,11 +472,11 @@ class WebPlatformTest(TestingMixin, MercurialScript, CodeCoverageMixin, AndroidM
                 if not os.path.exists(path):
                     self.critical("Unable to locate web-platform-test groups file.")
 
-                cmd.append("--test-groups={}".format(path))
+                cmd.append(f"--test-groups={path}")
 
                 for key in mozharness_test_paths.keys():
                     if "web-platform" not in key:
-                        self.info("Ignoring test_paths for {} harness".format(key))
+                        self.info(f"Ignoring test_paths for {key} harness")
                         continue
                     paths = mozharness_test_paths.get(key, [])
                     for p in paths:
@@ -475,7 +484,7 @@ class WebPlatformTest(TestingMixin, MercurialScript, CodeCoverageMixin, AndroidM
                             # Assume this is a filesystem path rather than a test id
                             path = os.path.relpath(p, "testing/web-platform")
                             if ".." in path:
-                                self.fatal("Invalid WPT path: {}".format(path))
+                                self.fatal(f"Invalid WPT path: {path}")
                             path = os.path.join(dirs["abs_wpttest_dir"], path)
                         else:
                             path = p
@@ -544,7 +553,7 @@ class WebPlatformTest(TestingMixin, MercurialScript, CodeCoverageMixin, AndroidM
         return cmd
 
     def download_and_extract(self):
-        super(WebPlatformTest, self).download_and_extract(
+        super().download_and_extract(
             extract_dirs=[
                 "mach",
                 "bin/*",
@@ -614,7 +623,7 @@ class WebPlatformTest(TestingMixin, MercurialScript, CodeCoverageMixin, AndroidM
         if self.is_android:
             self.install_android_app(self.installer_path)
         else:
-            super(WebPlatformTest, self).install()
+            super().install()
 
     def _install_fonts(self):
         if self.is_android:
@@ -662,6 +671,11 @@ class WebPlatformTest(TestingMixin, MercurialScript, CodeCoverageMixin, AndroidM
 
         if self.is_android:
             env["ADB_PATH"] = self.adb_path
+
+        env["MOZ_GMP_PATH"] = os.pathsep.join(
+            os.path.join(dirs["abs_test_bin_dir"], "plugins", p, "1.0")
+            for p in ("gmp-fake", "gmp-fakeopenh264")
+        )
 
         env = self.query_env(partial_env=env, log_level=INFO)
 

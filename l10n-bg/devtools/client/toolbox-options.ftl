@@ -44,9 +44,6 @@ options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
 options-default-color-unit-name = Имена на цветове
 
-## Web Console section
-
-
 ## Style Editor section
 
 # The heading
@@ -62,6 +59,8 @@ options-stylesheet-autocompletion-tooltip =
 options-screenshot-label = Снимка на екрана
 # Label for the checkbox that toggles screenshot to clipboard feature
 options-screenshot-clipboard-only-label = Екранна снимка само в системен буфер
+options-screenshot-clipboard-tooltip2 =
+    .title = Запазва екранната снимка директно в системния буфер
 # Label for the checkbox that toggles the camera shutter audio for screenshot tool
 options-screenshot-audio-label = Звук от затвора на фотоапарат
 options-screenshot-audio-tooltip =
@@ -110,5 +109,5 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Включване на Source Maps
 options-source-maps-tooltip =
     .title = Ако е отметнато source maps ще бъдат използвани в инструментите.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Само за текущата сесия, презарежда страницата

@@ -121,9 +121,6 @@ tabbrowser-confirm-caretbrowsing-title = Caret Stravaigin
 tabbrowser-confirm-caretbrowsing-message = Pressin F7 turns Caret Stravaigin on or aff. This featur pits a flittable cursor in wab pages, allooin ye tae select text wi the keybuird. Are ye wantin tae turn Caret Stravaigin on?
 tabbrowser-confirm-caretbrowsing-checkbox = Dinnae kythe this dialog box oniemair.
 
-## Confirmation dialog for closing all duplicate tabs
-
-
 ##
 
 # Variables:
@@ -155,6 +152,3 @@ tabbrowser-context-unmute-selected-tabs =
 #   $tabCount (Number): The number of tabs in the current browser window. It will always be 2 at least.
 tabbrowser-ctrl-tab-list-all-tabs =
     .label = List Aw { $tabCount } Tabs
-
-## Tab manager menu buttons
-

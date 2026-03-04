@@ -5,53 +5,40 @@
 permissions-window2 =
     .title = விதிவிலக்குகள்
     .style = min-width: 45em
-
 permissions-close-key =
     .key = w
-
 permissions-address = வலைத்தளத்தின் முகவரி
     .accesskey = d
-
 permissions-block =
     .label = தடு
     .accesskey = B
-
 permissions-session =
     .label = அமர்வுக்கு அனுமதி
     .accesskey = S
-
 permissions-allow =
     .label = அனுமதி
     .accesskey = A
-
 permissions-site-name =
     .label = வலைத்தளம்
-
 permissions-status =
     .label = நிலை
-
 permissions-remove =
     .label = வலைத்தளத்தை நீக்கு
     .accesskey = R
-
 permissions-remove-all =
     .label = அனைத்து தளங்களையும் நீக்கு
     .accesskey = e
-
 permission-dialog =
     .buttonlabelaccept = மாற்றங்களைச் சேமிக்கவும்
     .buttonaccesskeyaccept = S
-
 permissions-searchbox =
     .placeholder = வலைத்தளத்தைத் தேடவும்
-
 permissions-capabilities-allow =
     .label = அனுமதி
 permissions-capabilities-block =
     .label = தடு
 permissions-capabilities-prompt =
     .label = எப்போதும் கேள்
-
 permissions-capabilities-listitem-allow =
     .value = அனுமதி
 permissions-capabilities-listitem-block =
@@ -64,17 +51,11 @@ permissions-capabilities-listitem-allow-session =
 permissions-invalid-uri-title = தவறான புரவலன் பெயர் உள்ளிடப்பட்டுள்ளது
 permissions-invalid-uri-label = ஒரு சரியான புரவலன் பெயரை உள்ளிடு
 
-## Exceptions - Tracking Protection
-
-
 ## Exceptions - Cookies
 
 permissions-exceptions-cookie-window2 =
     .title = விதிவிலக்குகள் - நினைவிகளும் தள தரவும்
     .style = { permissions-window2.style }
-
-## Exceptions - HTTPS-Only Mode
-
 
 ## Exceptions - Pop-ups
 
@@ -97,9 +78,6 @@ permissions-exceptions-addons-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-addons-desc = எந்த இணையதளங்கள் கூடுதல் இணைப்புகளை நிறுவ அனுமதிக்கும் என்பதைக் குறிப்பிடலாம். மேலாண்மை செய்ய வேண்டிய இணைய தளத்தின் சரியான முகவரியை தட்டச்சு செய்து பின் அனுமதி என்பதை சொடுக்கவும்.
 
-## Site Permissions - Autoplay
-
-
 ## Site Permissions - Notifications
 
 permissions-site-notification-window2 =
@@ -116,9 +94,6 @@ permissions-site-location-window2 =
 permissions-site-location-disable-label =
     .label = உங்கள் இருப்பிடத்தை அணுகும் புதிய கோரிக்கைகளைத் தடு
 
-## Site Permissions - Virtual Reality
-
-
 ## Site Permissions - Camera
 
 permissions-site-camera-window2 =
@@ -134,8 +109,3 @@ permissions-site-microphone-window2 =
     .style = { permissions-window2.style }
 permissions-site-microphone-disable-label =
     .label = உங்கள் ஒலிவாங்கி அணுகும் புதிய கோரிக்கைகளைத் தடு
-
-## Site Permissions - Speaker
-##
-## "Speaker" refers to an audio output device.
-

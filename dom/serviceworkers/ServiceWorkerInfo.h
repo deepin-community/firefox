@@ -8,17 +8,18 @@
 #define mozilla_dom_serviceworkerinfo_h
 
 #include "MainThreadUtils.h"
-#include "mozilla/dom/ServiceWorkerBinding.h"  // For ServiceWorkerState
-#include "mozilla/dom/ServiceWorkerDescriptor.h"
-#include "mozilla/dom/WorkerCommon.h"
 #include "mozilla/OriginAttributes.h"
 #include "mozilla/TimeStamp.h"
+#include "mozilla/dom/ServiceWorkerBinding.h"  // For ServiceWorkerState
+#include "mozilla/dom/ServiceWorkerDescriptor.h"
+#include "mozilla/dom/ServiceWorkerLifetimeExtension.h"
+#include "mozilla/dom/WorkerCommon.h"
 #include "nsIServiceWorkerManager.h"
 
 namespace mozilla::dom {
 
-class ClientInfoAndState;
-class ClientState;
+class ClientInfo;
+class PostMessageSource;
 class ServiceWorkerCloneData;
 class ServiceWorkerPrivate;
 
@@ -78,8 +79,7 @@ class ServiceWorkerInfo final : public nsIServiceWorkerInfo {
   NS_DECL_NSISERVICEWORKERINFO
 
   void PostMessage(RefPtr<ServiceWorkerCloneData>&& aData,
-                   const ClientInfo& aClientInfo,
-                   const ClientState& aClientState);
+                   const PostMessageSource& aSource);
 
   class ServiceWorkerPrivate* WorkerPrivate() const {
     MOZ_ASSERT(mServiceWorkerPrivate);
@@ -91,6 +91,12 @@ class ServiceWorkerInfo final : public nsIServiceWorkerInfo {
   const nsCString& ScriptSpec() const { return mDescriptor.ScriptURL(); }
 
   const nsCString& Scope() const { return mDescriptor.Scope(); }
+  WorkerType Type() const { return mDescriptor.Type(); }
+  Maybe<ClientInfo> GetClientInfo();
+
+  // Pass-through of ServiceWorkerPrivate::GetLifetimeDeadline(); note that
+  // we have an XPCOM variation that returns a double for testing purposes.
+  TimeStamp LifetimeDeadline();
 
   bool SkipWaitingFlag() const {
     MOZ_ASSERT(NS_IsMainThread());
@@ -108,9 +114,10 @@ class ServiceWorkerInfo final : public nsIServiceWorkerInfo {
   }
 
   ServiceWorkerInfo(nsIPrincipal* aPrincipal, const nsACString& aScope,
-                    uint64_t aRegistrationId, uint64_t aRegistrationVersion,
+                    const WorkerType& aType, uint64_t aRegistrationId,
+                    uint64_t aRegistrationVersion,
                     const nsACString& aScriptSpec, const nsAString& aCacheName,
-                    nsLoadFlags aLoadFlags);
+                    nsLoadFlags aImportsLoadFlags);
 
   ServiceWorkerState State() const { return mDescriptor.State(); }
 

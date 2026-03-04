@@ -1,5 +1,9 @@
-commit 616dcadff406451eb249c6170253c5ff7486a3ea
-Author: Sosuke Suzuki <aosukeke@gmail.com>
-Date:   Tue Jul 30 14:24:39 2024 +0900
+commit 4869a68f71f9ea4c1b50ac7b1283e1fc81525581
+Author: Frank Yung-Fong Tang <ftang@chromium.org>
+Date:   Wed Dec 10 08:37:46 2025 -0800
 
-    Fix escaped `a`
+    Add test for ECMA402 PR 1015 to verify  (new Intl.Segmenter()).segment("123")[Symbol.iterator].name (#4635)
+    
+    * Add test for ECMA402 PR 1015
+    
+    https://github.com/tc39/ecma402/pull/1015

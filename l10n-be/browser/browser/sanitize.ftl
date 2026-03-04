@@ -59,10 +59,7 @@ history-section-label = Гісторыю
 item-history-and-downloads =
     .label = Гісторыя аглядання і сцягванняў
     .accesskey = а
-item-history-form-data-downloads =
-    .label = Гісторыю
-    .accesskey = р
-item-history-form-data-downloads-description = Ачышчае гісторыю сайтаў і сцягвання, інфармацыю пра захаваныя формы і пошук
+item-history-and-downloads-description2 = Ачышчае гісторыю сайтаў і сцягванняў
 item-cookies =
     .label = Кукі
     .accesskey = К
@@ -98,6 +95,10 @@ item-form-search-history =
 item-site-prefs =
     .label = Налады сайтаў
     .accesskey = д
+item-formdata-prefs =
+    .label = Захаваная інфармацыя формы
+    .accesskey = З
+item-formdata-description = Ачышчае такія рэчы, як імёны, адрасы электроннай пошты і іншае, што вы ўводзіце ў формы
 item-site-prefs-description = Скідвае вашы дазволы і параметры сайтаў да зыходных налад
 data-section-label = Дадзеныя
 item-site-settings =
@@ -106,7 +107,7 @@ item-site-settings =
 item-offline-apps =
     .label = Пазасеткавыя дадзеныя вэб-сайтаў
     .accesskey = П
-sanitize-everything-undo-warning = Гэтае дзеянне немагчыма скасаваць.
+sanitize-everything-undo-warning = Гэта дзеянне нельга адмяніць.
 window-close =
     .key = w
 sanitize-button-ok =
@@ -127,3 +128,6 @@ sanitize-everything-warning = Уся гісторыя будзе ачышчан�
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = Усе вылучаныя элементы будуць ачышчаныя.
+# Label shown next to the loading spinner while calculating the size of cached data
+# and cookies in the clear data dialog.
+sanitize-calculating-size = Падлік…

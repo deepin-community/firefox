@@ -4,35 +4,29 @@
 
 profile-selection-window =
     .title = { -brand-short-name } – Felhasználói profil kiválasztása
-
 profile-selection-button-accept =
     .label = { -brand-short-name } indítása
-
 profile-selection-button-cancel =
     .label = Kilépés
-
 profile-selection-new-button =
     .label = Profil létrehozása…
     .accesskey = P
-
 profile-selection-rename-button =
     .label = Profil átnevezése…
     .accesskey = n
-
 profile-selection-delete-button =
     .label = Profil törlése…
     .accesskey = t
-
-profile-selection-conflict-message = A { -brand-product-name } egy másik példánya módosította a profilokat. A további változtatások előtt újra kell indítania a { -brand-short-name(case: "accusative") }.
+profile-selection-conflict-message = A { -brand-product-name } egy másik példánya módosította a profilokat. A további változtatások előtt újra kell indítania a { -brand-short-name }ot.
 
 ## Messages used in the profile manager
 
 profile-manager-description = A beállításokat, jellemzőket és egyéb felhasználói elemeket a { -brand-short-name } egy felhasználói profilban tárolja.
-
 profile-manager-work-offline =
     .label = Kapcsolat nélküli munka
     .accesskey = a
-
 profile-manager-use-selected =
     .label = A kijelölt profil használata induláskor kérdés nélkül
     .accesskey = d
+profile-has-selectable-profiles-title = Nem törölhető olyan profil, amely más profilokhoz van kapcsolva
+profile-has-selectable-profiles-message = A profil törléséhez nyissa meg, és válassza a { -brand-short-name } menü profilok részében a „Profilok kezelése” lehetőséget. Az itt létrehozott további profilok törlése után visszatérhet az about:profiles oldalra, és törölheti ezt a profilt.

@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 page-title = Upplýsingar fyrir úrræðaleit
-page-subtitle =   Þessi síða inniheldur tæknilegar upplýsingar sem gætu verið hjálplegar ef þú ert að reyna að leysa eitthvað vandamál. Ef þú ert að leita að svörum við algengum spurningum um { -brand-short-name }, athugaðu þá <a data-l10n-name="support-link">hjálparvefsvæðið okkar</a>.
+page-subtitle = Þessi síða inniheldur tæknilegar upplýsingar sem gætu verið hjálplegar ef þú ert að reyna að leysa eitthvað vandamál. Ef þú ert að leita að svörum við algengum spurningum um { -brand-short-name }, athugaðu þá <a data-l10n-name="support-link">hjálparvefsvæðið okkar</a>.
 crashes-title = Hrunskýrslur
 crashes-id = Skýrslu auðkenni
 crashes-send-date = Sent
@@ -15,6 +15,10 @@ support-addons-type = Tegund
 support-addons-enabled = Virkt
 support-addons-version = Útgáfa
 support-addons-id = Auðkenni
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Staðsetning
 legacy-user-stylesheets-title = Eldri stílblöð notanda
 legacy-user-stylesheets-enabled = Virkt
 legacy-user-stylesheets-stylesheet-types = Stílblöð
@@ -45,7 +49,7 @@ app-basics-update-dir =
         [linux] Uppfæra möppu
        *[other] Uppfæra möppu
     }
-app-basics-update-history = Uppfærslusaga
+app-basics-update-history = Uppfærsluferill
 app-basics-show-update-history = Sýna uppfærsluferil
 # Represents the path to the binary used to start the application.
 app-basics-binary = Keyrsluskrá forrits

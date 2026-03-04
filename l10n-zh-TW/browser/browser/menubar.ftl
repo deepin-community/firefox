@@ -3,18 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -145,8 +133,6 @@ menu-view-history-button =
     .label = 歷史
 menu-view-synced-tabs-sidebar =
     .label = 同步的分頁
-menu-view-megalist-sidebar =
-    .label = 密碼
 menu-view-full-zoom =
     .label = 縮放
     .accesskey = Z
@@ -192,11 +178,11 @@ menu-view-full-screen =
 
 # This should match reader-view-enter-button in browser.ftl
 menu-view-enter-readerview =
-    .label = 進入閱讀模式
+    .label = 進入閱讀畫面
     .accesskey = R
 # This should match reader-view-close-button in browser.ftl
 menu-view-close-readerview =
-    .label = 關閉閱讀模式
+    .label = 關閉閱讀畫面
     .accesskey = R
 
 ##
@@ -254,6 +240,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = 行動書籤
 
+## Profiles Menu
+
+menu-profiles =
+    .label = 設定檔
+menu-profiles-manage-profiles =
+    .label = 管理設定檔
+menu-profiles-new-profile =
+    .label = 新增設定檔
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName }（目前）
+menu-profiles-menu =
+    .label = 設定檔
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -262,6 +264,9 @@ menu-tools =
 menu-tools-downloads =
     .label = 下載
     .accesskey = D
+menu-tools-extensions-and-themes =
+    .label = 擴充套件和佈景主題
+    .accesskey = E
 menu-tools-addons-and-themes =
     .label = 附加元件與佈景主題
     .accesskey = A

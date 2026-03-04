@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = 查看
 download-cert-view-text = 检查CA证书
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -85,8 +82,13 @@ client-auth-cert-details-issued-by = 颁发者：{ $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = 存储于：{ $storedOn }
-client-auth-cert-remember-box =
-    .label = 记住此决定
+client-auth-cert-remember-label = 记住此决定：
+client-auth-cert-remember-never =
+    .label = 仅此一次
+client-auth-cert-remember-always =
+    .label = 永久
+client-auth-cert-remember-temporarily =
+    .label = 本次浏览期间
 
 ## Set password (p12) dialog
 

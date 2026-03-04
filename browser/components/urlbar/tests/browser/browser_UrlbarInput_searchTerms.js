@@ -15,18 +15,10 @@ add_setup(async function () {
       ["browser.urlbar.showSearchTerms.featureGate", true],
     ],
   });
-
-  await SearchTestUtils.installSearchExtension(
-    {
-      name: "MozSearch",
-      search_url: "https://www.example.com/",
-      search_url_get_params: "q={searchTerms}&pc=fake_code",
-    },
-    { setAsDefault: true }
-  );
-
+  let cleanup = await installPersistTestEngines();
   registerCleanupFunction(async function () {
     await PlacesUtils.history.clear();
+    cleanup();
   });
 });
 
@@ -46,10 +38,61 @@ add_task(async function go_back() {
     tab.linkedBrowser,
     "pageshow"
   );
-  tab.linkedBrowser.goBack();
+  tab.linkedBrowser.goBack(false);
   await pageShowPromise;
 
   assertSearchStringIsInUrlbar(SEARCH_STRING);
+
+  BrowserTestUtils.removeTab(tab);
+});
+
+add_task(async function go_back_to_newtab() {
+  let tab = await BrowserTestUtils.openNewForegroundTab(
+    gBrowser,
+    "about:newtab",
+    false
+  );
+
+  let [expectedSearchUrl] = UrlbarUtils.getSearchQueryUrl(
+    Services.search.defaultEngine,
+    SEARCH_STRING
+  );
+  let browserLoadedPromise = BrowserTestUtils.browserLoaded(
+    tab.linkedBrowser,
+    false,
+    expectedSearchUrl
+  );
+
+  gURLBar.focus();
+  await UrlbarTestUtils.promiseAutocompleteResultPopup({
+    window,
+    waitForFocus,
+    value: SEARCH_STRING,
+    fireInputEvent: true,
+    selectionStart: 0,
+    selectionEnd: SEARCH_STRING.length - 1,
+  });
+  EventUtils.synthesizeKey("KEY_Enter");
+  await browserLoadedPromise;
+
+  Assert.equal(
+    gURLBar.value,
+    SEARCH_STRING,
+    "Search string should be in the address bar after loading the search results page."
+  );
+
+  let pageShowPromise = BrowserTestUtils.waitForContentEvent(
+    tab.linkedBrowser,
+    "pageshow"
+  );
+  tab.linkedBrowser.goBack(false);
+  await pageShowPromise;
+
+  Assert.equal(
+    gURLBar.value,
+    "",
+    "Search string should be blank after going back to about:newtab."
+  );
 
   BrowserTestUtils.removeTab(tab);
 });
@@ -75,27 +118,17 @@ add_task(async function load_url() {
 });
 
 // Focusing and blurring the urlbar while the search terms
-// persist should change the pageproxystate.
+// persist should not change the "persistsearchterms" attribute.
 add_task(async function focus_and_unfocus() {
   let { tab } = await searchWithTab(SEARCH_STRING);
 
   EventUtils.synthesizeMouseAtCenter(gURLBar.inputField, {});
-  Assert.equal(
-    gURLBar.getAttribute("pageproxystate"),
-    "invalid",
-    "Should have matching pageproxystate."
-  );
   Assert.ok(
-    !gURLBar.hasAttribute("persistsearchterms"),
-    "Urlbar does not have persistsearchterms attribute."
+    gURLBar.hasAttribute("persistsearchterms"),
+    "Urlbar has persistsearchterms attribute."
   );
 
   gURLBar.blur();
-  Assert.equal(
-    gURLBar.getAttribute("pageproxystate"),
-    "valid",
-    "Should have matching pageproxystate."
-  );
   Assert.ok(
     gURLBar.hasAttribute("persistsearchterms"),
     "Urlbar has persistsearchterms attribute."
@@ -105,19 +138,14 @@ add_task(async function focus_and_unfocus() {
 });
 
 // If the user modifies the search term, blurring the
-// urlbar should keep the urlbar in an invalid pageproxystate.
+// urlbar should remove persistsearchterms.
 add_task(async function focus_and_unfocus_modified() {
   let { tab } = await searchWithTab(SEARCH_STRING);
 
   EventUtils.synthesizeMouseAtCenter(gURLBar.inputField, {});
-  Assert.equal(
-    gURLBar.getAttribute("pageproxystate"),
-    "invalid",
-    "Should have matching pageproxystate."
-  );
   Assert.ok(
-    !gURLBar.hasAttribute("persistsearchterms"),
-    "Urlbar does not have persistsearchterms attribute."
+    gURLBar.hasAttribute("persistsearchterms"),
+    "Urlbar has persistsearchterms attribute."
   );
 
   await UrlbarTestUtils.promiseAutocompleteResultPopup({
@@ -126,6 +154,11 @@ add_task(async function focus_and_unfocus_modified() {
     value: "another search term",
     fireInputEvent: true,
   });
+  Assert.equal(
+    gURLBar.getAttribute("pageproxystate"),
+    "invalid",
+    "Should have matching pageproxystate."
+  );
 
   gURLBar.blur();
   Assert.equal(
@@ -208,8 +241,9 @@ add_task(async function focus_after_top_sites() {
     false,
     expectedSearchUrl
   );
+  let state = window.gURLBar.getBrowserState(window.gBrowser.selectedBrowser);
   Assert.equal(
-    gBrowser.selectedBrowser.searchTerms,
+    state.persist.searchTerms,
     SEARCH_STRING,
     "The search term should be in the Urlbar."
   );

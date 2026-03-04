@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { html, ifDefined } from "../vendor/lit.all.mjs";
+import { html, ifDefined, classMap } from "../vendor/lit.all.mjs";
 import "./moz-checkbox.mjs";
 
 export default {
@@ -14,6 +14,7 @@ export default {
         "moz-checkbox-label",
         "moz-checkbox-label-description",
         "moz-checkbox-long-label",
+        "moz-checkbox-long-description",
       ],
       control: { type: "select" },
     },
@@ -29,6 +30,9 @@ moz-checkbox-label-description =
   .description = This is a description
 moz-checkbox-long-label =
   .label = Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum libero enim, luctus eu ante a, maximus imperdiet mi. Suspendisse sodales, nisi et commodo malesuada, lectus.
+moz-checkbox-long-description =
+  .label = Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum libero enim, luctus eu ante a, maximus imperdiet mi. Suspendisse sodales, nisi et commodo malesuada, lectus.
+  .description = Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum libero enim, luctus eu ante a, maximus imperdiet mi. Suspendisse sodales, nisi et commodo malesuada, lectus.
     `,
   },
 };
@@ -43,22 +47,46 @@ const Template = ({
   hasSlottedDescription,
   accesskey,
   supportPage,
-}) => html`
-  <moz-checkbox
-    ?checked=${checked}
-    label=${ifDefined(label)}
-    description=${ifDefined(description)}
-    data-l10n-id=${ifDefined(l10nId)}
-    .iconSrc=${iconSrc}
-    ?disabled=${disabled}
-    accesskey=${ifDefined(accesskey)}
-    support-page=${ifDefined(supportPage)}
-  >
-    ${hasSlottedDescription
-      ? html`<div slot="description">test slot text</div>`
-      : ""}
-  </moz-checkbox>
-`;
+  hasSlottedSupportLink,
+  nestedFields,
+  ellipsized,
+  value,
+}) => {
+  let checkboxTemplate = html`
+    <moz-checkbox
+      ?checked=${checked}
+      label=${ifDefined(label)}
+      description=${ifDefined(description)}
+      data-l10n-id=${ifDefined(l10nId)}
+      .iconSrc=${iconSrc}
+      ?disabled=${disabled}
+      accesskey=${ifDefined(accesskey)}
+      support-page=${ifDefined(supportPage)}
+      value=${ifDefined(value)}
+      class=${classMap({ "text-truncated-ellipsis": ellipsized })}
+    >
+      ${hasSlottedDescription
+        ? html`<div slot="description">test slot text</div>`
+        : ""}
+      ${hasSlottedSupportLink
+        ? html`<a slot="support-link" href="www.example.com">Click me!</a>`
+        : ""}
+      ${nestedFields
+        ? html`<moz-checkbox slot="nested" data-l10n-id=${ifDefined(l10nId)}>
+            </moz-checkbox>
+            <moz-checkbox slot="nested" data-l10n-id=${ifDefined(l10nId)}>
+              <moz-checkbox slot="nested" data-l10n-id=${ifDefined(l10nId)}>
+              </moz-checkbox>
+            </moz-checkbox> `
+        : ""}
+    </moz-checkbox>
+  `;
+  return nestedFields
+    ? html`<moz-fieldset label="Checkbox with nested fields">
+        ${checkboxTemplate}
+      </moz-fieldset>`
+    : checkboxTemplate;
+};
 
 export const Default = Template.bind({});
 Default.args = {
@@ -72,6 +100,9 @@ Default.args = {
   label: "",
   accesskey: "",
   supportPage: "",
+  hasSlottedSupportLink: false,
+  nestedFields: false,
+  ellipsized: false,
 };
 
 export const WithIcon = Template.bind({});
@@ -110,8 +141,27 @@ WithAccesskey.args = {
   accesskey: "c",
 };
 
-export const WithSupportPage = Template.bind({});
-WithSupportPage.args = {
+export const WithSupportLink = Template.bind({});
+WithSupportLink.args = {
   ...Default.args,
   supportPage: "test",
+};
+
+export const WithSlottedSupportLink = Template.bind({});
+WithSlottedSupportLink.args = {
+  ...Default.args,
+  hasSlottedSupportLink: true,
+};
+
+export const WithNestedFields = Template.bind({});
+WithNestedFields.args = {
+  ...Default.args,
+  nestedFields: true,
+};
+
+export const WithEllipsizedLabel = Template.bind({});
+WithEllipsizedLabel.args = {
+  ...Default.args,
+  ellipsized: true,
+  l10nId: "moz-checkbox-long-label",
 };

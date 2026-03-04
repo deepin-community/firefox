@@ -27,6 +27,10 @@ appmenuitem-downloads =
     .label = Ñemboguejy
 appmenuitem-passwords =
     .label = Ñe’ẽñemi
+appmenuitem-extensions-and-themes =
+    .label = Jepysokue ha téma
+appmenuitem-extensions =
+    .label = Jepysokue
 appmenuitem-addons-and-themes =
     .label = Moĩmbaha ha Téma
 appmenuitem-print =
@@ -108,8 +112,11 @@ appmenu-fxa-sync-and-save-data2 = Embojuehe ha eñongatu mba’ekuaarã
 appmenu-fxa-signed-in-label = Tembiapo ñepyrũ
 appmenu-fxa-setup-sync =
     .label = Emyandy ñembojuehe…
+appmenu-fxa-setup-sync-new = Myandy
 appmenuitem-save-page =
     .label = Ñongatu pyahu…
+appmenuitem-fxa-sync-off-title = Ñembojuehe oñemboguéma
+appmenuitem-fxa-sync-off-description = Emo’ã ha eike nde rechaukaha, ñe’ẽñemi ha hetavépe oimeraẽva mba’e’oka guive.
 
 ## What's New panel in App menu.
 
@@ -163,6 +170,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Embojuruja mbohapeha rupa
+    .tooltiptext = Embojuruja mbohapeha rupa
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +199,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Oñemoĩva ohapykuerereka hag̃ua mba’epu ha ta’ãngamýi { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Momaranduha
+profiler-popup-presets-ml-description = Oĩva ohapykuereka hag̃ua kuaarã ijeheguíva jejavy { -brand-shorter-name } ndive.
+profiler-popup-presets-ml-label =
+    .label = Kuaarã Ijeheguíva
 profiler-popup-presets-networking-description = Oñemoĩva ohapykuereka hag̃ua pyha apañuái { -brand-shorter-name }-pe.
 profiler-popup-presets-networking-label =
     .label = Pyha
@@ -199,6 +212,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = Oĩva oñemopotĩ hag̃uáicha { -brand-shorter-name } ndive. Ojehechaiterei, ani eiporu oiko porãve hag̃ua katu eikumby hag̃ua mba’éichapa omba’apo kundahára.
 profiler-popup-presets-debug-label =
     .label = Mopotĩ
+profiler-popup-presets-web-compat-description = Moĩporã ypygua oñemopotĩ hag̃ua ñanduti jokupytyha apañuái ñanduti roguépe, ehapykuehorangue hembiapo rapykuere.
+profiler-popup-presets-web-compat-label =
+    .label = Ñandutirogue jokupyty
 profiler-popup-presets-custom-label =
     .label = Mboavapyre
 
@@ -277,5 +293,27 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Ejapyhy mongyhyje mba’ekuaarã ñembogua rehe
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Ehovamo’ã ne ñanduti veve ha pumbyry
+appmenuitem-services-relay-description = Emoñepyrũ ñanduti veve rovara’ãnga rupa
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Eheka ñemo’ã mba’e’okápe g̃uarã
 appmenuitem-vpn-description = Emo’ã ne rekoñemi ñandutípe
+appmenu-services-header = Mba’epytyvõrã
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Eiporu ambue tembiporu ñemo’ãha Mozilla mba’éva:
+appmenu-other-protection-header = Eiporu ambue tembiporu ñemo’ãrã { -vendor-short-name } rehegua:
+
+## Profiles panel
+
+appmenu-other-profiles = Ambue mba’etekuéra
+appmenu-manage-profiles =
+    .label = Mba’etekuéra ñangareko
+appmenu-copy-profile =
+    .label = Ekopia ko mba’ete
+appmenu-create-profile =
+    .label = Mba’ete pyahu
+appmenu-edit-profile =
+    .aria-label = Embosako’i mba’ete
+appmenu-profiles-2 =
+    .label = Mba’etekuéra

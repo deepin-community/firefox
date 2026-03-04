@@ -43,9 +43,9 @@ ChromeUtils.defineESModuleGetters(lazy, {
 XPCOMUtils.defineLazyServiceGetters(lazy, {
   gClipboardHelper: [
     "@mozilla.org/widget/clipboardhelper;1",
-    "nsIClipboardHelper",
+    Ci.nsIClipboardHelper,
   ],
-  gMIMEService: ["@mozilla.org/mime;1", "nsIMIMEService"],
+  gMIMEService: ["@mozilla.org/mime;1", Ci.nsIMIMEService],
 });
 
 ChromeUtils.defineLazyGetter(lazy, "DownloadsLogger", () => {
@@ -53,7 +53,7 @@ ChromeUtils.defineLazyGetter(lazy, "DownloadsLogger", () => {
     "resource://gre/modules/Console.sys.mjs"
   );
   let consoleOptions = {
-    maxLogLevelPref: "browser.download.loglevel",
+    maxLogLevelPref: "toolkit.download.loglevel",
     prefix: "Downloads",
   };
   return new ConsoleAPI(consoleOptions);
@@ -75,6 +75,10 @@ const kDownloadsFluentStrings = new Localization(
 );
 
 const kDownloadsStringsRequiringFormatting = {
+  contentAnalysisNoAgentError: true,
+  contentAnalysisInvalidAgentSignatureError: true,
+  contentAnalysisUnspecifiedError: true,
+  contentAnalysisTimeoutError: true,
   sizeWithUnits: true,
   statusSeparator: true,
   statusSeparatorBeforeNumber: true,
@@ -91,10 +95,7 @@ const kGenericContentTypes = [
 ];
 
 var PrefObserver = {
-  QueryInterface: ChromeUtils.generateQI([
-    "nsIObserver",
-    "nsISupportsWeakReference",
-  ]),
+  QueryInterface: ChromeUtils.generateQI(["nsIObserver"]),
   getPref(name) {
     try {
       switch (typeof this.prefs[name]) {
@@ -112,7 +113,7 @@ var PrefObserver = {
   },
   register(prefs) {
     this.prefs = prefs;
-    kPrefBranch.addObserver("", this, true);
+    kPrefBranch.addObserver("", this);
     for (let key in prefs) {
       let name = key;
       ChromeUtils.defineLazyGetter(this, name, function () {
@@ -146,6 +147,7 @@ export var DownloadsCommon = {
   DOWNLOAD_BLOCKED_PARENTAL: 6,
   DOWNLOAD_DIRTY: 8,
   DOWNLOAD_BLOCKED_POLICY: 9,
+  DOWNLOAD_BLOCKED_CONTENT_ANALYSIS: 10,
 
   // The following are the possible values of the "attention" property.
   ATTENTION_NONE: "",
@@ -298,6 +300,18 @@ export var DownloadsCommon = {
       if (download.error.becauseBlockedByReputationCheck) {
         return DownloadsCommon.DOWNLOAD_DIRTY;
       }
+      if (download.error.becauseBlockedByContentAnalysis) {
+        // BLOCK_VERDICT_MALWARE indicates that the download was
+        // blocked by the content analysis service, so return
+        // DOWNLOAD_BLOCKED_CONTENT_ANALYSIS to indicate this.
+        // Otherwise, the content analysis service returned
+        // WARN, so the user has a chance to unblock the download,
+        // which corresponds with DOWNLOAD_DIRTY.
+        return download.error.reputationCheckVerdict ===
+          lazy.Downloads.Error.BLOCK_VERDICT_MALWARE
+          ? DownloadsCommon.DOWNLOAD_BLOCKED_CONTENT_ANALYSIS
+          : DownloadsCommon.DOWNLOAD_DIRTY;
+      }
       return DownloadsCommon.DOWNLOAD_FAILED;
     }
     if (download.canceled) {
@@ -314,14 +328,14 @@ export var DownloadsCommon = {
    */
   async deleteDownload(download) {
     // Check hasBlockedData to avoid double counting if you click the X button
-    // in the Libarary view and then delete the download from the history.
+    // in the Library view and then delete the download from the history.
     if (
       download.error?.becauseBlockedByReputationCheck &&
       download.hasBlockedData
     ) {
-      Services.telemetry
-        .getKeyedHistogramById("DOWNLOADS_USER_ACTION_ON_BLOCKED_DOWNLOAD")
-        .add(download.error.reputationCheckVerdict, 1); // confirm block
+      Glean.downloads.userActionOnBlockedDownload[
+        download.error.reputationCheckVerdict
+      ].accumulateSingleSample(1); // confirm block
     }
 
     // Remove the associated history element first, if any, so that the views
@@ -334,6 +348,9 @@ export var DownloadsCommon = {
     }
     let list = await lazy.Downloads.getList(lazy.Downloads.ALL);
     await list.remove(download);
+    if (download.error?.becauseBlockedByContentAnalysis) {
+      await download.respondToContentAnalysisWarnWithBlock();
+    }
     await download.finalize(true);
   },
 
@@ -362,6 +379,9 @@ export var DownloadsCommon = {
       await list.remove(download);
     }
     await download.manuallyRemoveData();
+    if (download.error?.becauseBlockedByContentAnalysis) {
+      await download.respondToContentAnalysisWarnWithBlock();
+    }
     if (clearHistory < 2) {
       lazy.DownloadHistory.updateMetaData(download).catch(console.error);
     }
@@ -559,11 +579,11 @@ export var DownloadsCommon = {
    * @param options.useSystemDefault
    *        Optional value indicating how to handle launching this download,
    *        this call only. Will override the associated mimeInfo.preferredAction
-   * @return {Promise}
-   * @resolves When the instruction to launch the file has been
-   *           successfully given to the operating system or handled internally
-   * @rejects  JavaScript exception if there was an error trying to launch
-   *           the file.
+   * @returns {Promise<void>}
+   *   Resolves when the instruction to launch the file has been successfully
+   *   given to the operating system or handled internally.
+   * @rejects
+   *   With a JavaScript exception if there was an error trying to launch the file.
    */
   async openDownload(download, options) {
     // some download objects got serialized and need reconstituting
@@ -632,6 +652,8 @@ export var DownloadsCommon = {
    *            the "Downloads.Error.BLOCK_VERDICT_" constants. If an unknown
    *            reason is specified, "Downloads.Error.BLOCK_VERDICT_MALWARE" is
    *            assumed.
+   *          becauseBlockedByReputationCheck:
+   *            Whether the the download was blocked by a reputation check.
    *          window:
    *            The window with which this action is associated.
    *          dialogType:
@@ -641,14 +663,19 @@ export var DownloadsCommon = {
    *             - "chooseOpen" to offer "open" and "confirmBlock".
    *        }
    *
-   * @return {Promise}
-   * @resolves String representing the action that should be executed:
-   *            - "open" to allow the download and open the file.
-   *            - "unblock" to allow the download without opening the file.
-   *            - "confirmBlock" to delete the blocked data permanently.
-   *            - "cancel" to do nothing and cancel the operation.
+   * @returns {Promise<string>}
+   *   Resolves to a string representing the action that should be executed:
+   *   - "open" to allow the download and open the file.
+   *   - "unblock" to allow the download without opening the file.
+   *   - "confirmBlock" to delete the blocked data permanently.
+   *   - "cancel" to do nothing and cancel the operation.
    */
-  async confirmUnblockDownload({ verdict, window, dialogType }) {
+  async confirmUnblockDownload({
+    verdict,
+    becauseBlockedByReputationCheck,
+    window,
+    dialogType,
+  }) {
     let s = DownloadsCommon.strings;
 
     // All the dialogs have an action button and a cancel button, while only
@@ -688,12 +715,18 @@ export var DownloadsCommon = {
     }
 
     let message;
+    let tip = s.unblockTip2;
     switch (verdict) {
       case lazy.Downloads.Error.BLOCK_VERDICT_UNCOMMON:
         message = s.unblockTypeUncommon2;
         break;
       case lazy.Downloads.Error.BLOCK_VERDICT_POTENTIALLY_UNWANTED:
-        message = s.unblockTypePotentiallyUnwanted2;
+        if (becauseBlockedByReputationCheck) {
+          message = s.unblockTypePotentiallyUnwanted2;
+        } else {
+          message = s.unblockTypeContentAnalysisWarn;
+          tip = s.unblockContentAnalysisTip;
+        }
         break;
       case lazy.Downloads.Error.BLOCK_VERDICT_INSECURE:
         message = s.unblockInsecure2;
@@ -703,7 +736,7 @@ export var DownloadsCommon = {
         message = s.unblockTypeMalware;
         break;
     }
-    message += "\n\n" + s.unblockTip2;
+    message += "\n\n" + tip;
 
     Services.ww.registerNotification(function onOpen(subj, topic) {
       if (topic == "domwindowopened" && subj instanceof Ci.nsIDOMWindow) {
@@ -800,7 +833,7 @@ function DownloadsDataCtor({ isPrivate, isHistory, maxHistoryResults } = {}) {
     let list = await lazy.Downloads.getList(
       isPrivate ? lazy.Downloads.PRIVATE : lazy.Downloads.PUBLIC
     );
-    await list.addView(this);
+    list.addView(this);
     return list;
   })();
 }
@@ -863,7 +896,10 @@ DownloadsDataCtor.prototype = {
       download,
       DownloadsCommon.stateOfDownload(download)
     );
-    if (download.error?.becauseBlockedByReputationCheck) {
+    if (
+      download.error?.becauseBlockedByReputationCheck ||
+      download.error?.becauseBlockedByContentAnalysis
+    ) {
       this._notifyDownloadEvent("error");
     }
   },
@@ -951,6 +987,7 @@ DownloadsDataCtor.prototype = {
   /**
    * Displays a new or finished download notification in the most recent browser
    * window, if one is currently available with the required privacy type.
+   *
    * @param {string} aType
    *        Set to "start" for new downloads, "finish" for completed downloads,
    *        "error" for downloads that failed and need attention
@@ -967,6 +1004,7 @@ DownloadsDataCtor.prototype = {
     // Show the panel in the most recent browser window, if present.
     let browserWin = lazy.BrowserWindowTracker.getTopWindow({
       private: this._isPrivate,
+      allowFromInactiveWorkspace: true,
     });
     if (!browserWin) {
       return;
@@ -1148,7 +1186,7 @@ const DownloadsViewPrototype = {
    * @param download
    *        Download object that was just added.
    *
-   * @note Subclasses should override this and still call the base method.
+   * Note: Subclasses should override this and still call the base method.
    */
   onDownloadAdded(download) {
     this._oldDownloadStates.set(
@@ -1164,7 +1202,7 @@ const DownloadsViewPrototype = {
    *
    * The onDownloadChanged notification will always be sent afterwards.
    *
-   * @note Subclasses should override this.
+   * Note: Subclasses should override this.
    */
   onDownloadStateChanged() {
     throw Components.Exception("", Cr.NS_ERROR_NOT_IMPLEMENTED);
@@ -1177,7 +1215,7 @@ const DownloadsViewPrototype = {
    * Note that progress notification changes are throttled at the Downloads.sys.mjs
    * API level, and there is no throttling mechanism in the front-end.
    *
-   * @note Subclasses should override this and still call the base method.
+   * Note: Subclasses should override this and still call the base method.
    */
   onDownloadChanged(download) {
     let oldState = this._oldDownloadStates.get(download);
@@ -1196,7 +1234,7 @@ const DownloadsViewPrototype = {
    * @param download
    *        Download object that is being removed.
    *
-   * @note Subclasses should override this.
+   * Note: Subclasses should override this.
    */
   onDownloadRemoved(download) {
     this._oldDownloadStates.delete(download);
@@ -1206,7 +1244,7 @@ const DownloadsViewPrototype = {
    * Private function used to refresh the internal properties being sent to
    * each registered view.
    *
-   * @note Subclasses should override this.
+   * Note: Subclasses should override this.
    */
   _refreshProperties() {
     throw Components.Exception("", Cr.NS_ERROR_NOT_IMPLEMENTED);
@@ -1215,7 +1253,7 @@ const DownloadsViewPrototype = {
   /**
    * Private function used to refresh an individual view.
    *
-   * @note Subclasses should override this.
+   * Note: Subclasses should override this.
    */
   _updateView() {
     throw Components.Exception("", Cr.NS_ERROR_NOT_IMPLEMENTED);
@@ -1429,7 +1467,10 @@ DownloadsIndicatorDataCtor.prototype = {
       ? lazy.PrivateDownloadsData._downloads
       : lazy.DownloadsData._downloads;
     for (let download of downloads) {
-      if (!download.stopped || (download.canceled && download.hasPartialData)) {
+      if (
+        download.isInCurrentBatch ||
+        (download.canceled && download.hasPartialData)
+      ) {
         yield download;
       }
     }

@@ -18,9 +18,7 @@
 #include "mozilla/dom/XRSession.h"
 #include "mozilla/dom/XRInputSourceArray.h"
 #include "mozilla/Preferences.h"
-#include "mozilla/Unused.h"
 #include "mozilla/StaticPrefs_dom.h"
-#include "mozilla/Telemetry.h"
 #include "mozilla/dom/WebXRBinding.h"
 #include "nsServiceManagerUtils.h"
 
@@ -113,11 +111,7 @@ void VRDisplayClient::MakePresentationGenerationCurrent() {
 
 gfx::VRAPIMode VRDisplayClient::GetXRAPIMode() const { return mAPIMode; }
 
-void VRDisplayClient::SetXRAPIMode(gfx::VRAPIMode aMode) {
-  mAPIMode = aMode;
-  Telemetry::Accumulate(Telemetry::WEBXR_API_MODE,
-                        static_cast<uint32_t>(mAPIMode));
-}
+void VRDisplayClient::SetXRAPIMode(gfx::VRAPIMode aMode) { mAPIMode = aMode; }
 
 void VRDisplayClient::FireEvents() {
   RefPtr<VRManagerChild> vm = VRManagerChild::Get();
@@ -481,8 +475,8 @@ void VRDisplayClient::FireGamepadEvents() {
         (state.numButtons > 0 || state.numAxes > 0)) {
       dom::GamepadAdded info(NS_ConvertUTF8toUTF16(state.controllerName.data()),
                              dom::GamepadMappingType::_empty, state.hand,
-                             mDisplayInfo.mDisplayID, state.numButtons,
-                             state.numAxes, state.numHaptics, 0, 0);
+                             state.numButtons, state.numAxes, state.numHaptics,
+                             0, 0);
       dom::GamepadChangeEventBody body(info);
       dom::GamepadChangeEvent event(gamepadHandle, body);
       gamepadManager->Update(event);

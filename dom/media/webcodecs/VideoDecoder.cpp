@@ -5,29 +5,30 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/VideoDecoder.h"
-#include "mozilla/dom/VideoDecoderBinding.h"
 
 #include "DecoderTraits.h"
+#include "DecoderTypes.h"
 #include "GPUVideoImage.h"
 #include "H264.h"
 #include "ImageContainer.h"
 #include "MediaContainerType.h"
 #include "MediaData.h"
 #include "VideoUtils.h"
+#include "WebCodecsUtils.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/Logging.h"
 #include "mozilla/Maybe.h"
+#include "mozilla/RefPtr.h"
 #include "mozilla/Try.h"
-#include "mozilla/Unused.h"
 #include "mozilla/dom/EncodedVideoChunk.h"
 #include "mozilla/dom/EncodedVideoChunkBinding.h"
 #include "mozilla/dom/ImageUtils.h"
 #include "mozilla/dom/Promise.h"
 #include "mozilla/dom/VideoColorSpaceBinding.h"
+#include "mozilla/dom/VideoDecoderBinding.h"
 #include "mozilla/dom/VideoFrameBinding.h"
 #include "mozilla/dom/WebCodecsUtils.h"
 #include "nsPrintfCString.h"
-#include "nsReadableUtils.h"
 
 #ifdef XP_MACOSX
 #  include "MacIOSurfaceImage.h"
@@ -76,22 +77,6 @@ NS_INTERFACE_MAP_END_INHERITING(DOMEventTargetHelper)
 /*
  * Below are helper classes
  */
-
-VideoColorSpaceInternal::VideoColorSpaceInternal(
-    const VideoColorSpaceInit& aColorSpaceInit)
-    : mFullRange(NullableToMaybe(aColorSpaceInit.mFullRange)),
-      mMatrix(NullableToMaybe(aColorSpaceInit.mMatrix)),
-      mPrimaries(NullableToMaybe(aColorSpaceInit.mPrimaries)),
-      mTransfer(NullableToMaybe(aColorSpaceInit.mTransfer)) {}
-
-VideoColorSpaceInit VideoColorSpaceInternal::ToColorSpaceInit() const {
-  VideoColorSpaceInit init;
-  init.mFullRange = MaybeToNullable(mFullRange);
-  init.mMatrix = MaybeToNullable(mMatrix);
-  init.mPrimaries = MaybeToNullable(mPrimaries);
-  init.mTransfer = MaybeToNullable(mTransfer);
-  return init;
-};
 
 VideoDecoderConfigInternal::VideoDecoderConfigInternal(
     const nsAString& aCodec, Maybe<uint32_t>&& aCodedHeight,
@@ -175,23 +160,23 @@ nsCString VideoDecoderConfigInternal::ToString() const {
 
 struct MIMECreateParam {
   explicit MIMECreateParam(const VideoDecoderConfigInternal& aConfig)
-      : mParsedCodec(ParseCodecString(aConfig.mCodec).valueOr(EmptyString())),
+      : mCodec(aConfig.mCodec),
         mWidth(aConfig.mCodedWidth),
         mHeight(aConfig.mCodedHeight) {}
   explicit MIMECreateParam(const VideoDecoderConfig& aConfig)
-      : mParsedCodec(ParseCodecString(aConfig.mCodec).valueOr(EmptyString())),
+      : mCodec(aConfig.mCodec),
         mWidth(OptionalToMaybe(aConfig.mCodedWidth)),
         mHeight(OptionalToMaybe(aConfig.mCodedHeight)) {}
 
-  const nsString mParsedCodec;
+  const nsString mCodec;
   const Maybe<uint32_t> mWidth;
   const Maybe<uint32_t> mHeight;
 };
 
 static nsTArray<nsCString> GuessMIMETypes(const MIMECreateParam& aParam) {
-  const auto codec = NS_ConvertUTF16toUTF8(aParam.mParsedCodec);
+  const auto codec = NS_ConvertUTF16toUTF8(aParam.mCodec);
   nsTArray<nsCString> types;
-  for (const nsCString& container : GuessContainers(aParam.mParsedCodec)) {
+  for (const nsCString& container : GuessContainers(aParam.mCodec)) {
     nsPrintfCString mime("video/%s; codecs=%s", container.get(), codec.get());
     if (aParam.mWidth) {
       mime.AppendPrintf("; width=%d", *aParam.mWidth);
@@ -207,18 +192,33 @@ static nsTArray<nsCString> GuessMIMETypes(const MIMECreateParam& aParam) {
 // https://w3c.github.io/webcodecs/#check-configuration-support
 template <typename Config>
 static bool CanDecode(const Config& aConfig) {
-  auto param = MIMECreateParam(aConfig);
   // TODO: Enable WebCodecs on Android (Bug 1840508)
   if (IsOnAndroid()) {
     return false;
   }
-  if (!IsSupportedVideoCodec(param.mParsedCodec)) {
+  if (!IsSupportedVideoCodec(aConfig.mCodec)) {
     return false;
   }
-  // TODO: Instead of calling CanHandleContainerType with the guessed the
-  // containers, DecoderTraits should provide an API to tell if a codec is
+
+  // TODO (1880326): code below is wrongly using the logic of HTMLMediaElement
+  // for determining if a codec can be played, and incorrect codec string for
+  // h264 are accepted for HTMLMediaElement for compat reasons. Perform stricter
+  // check here until we fix it for real.
+  if (IsH264CodecString(aConfig.mCodec)) {
+    uint8_t profile, constraint;
+    H264_LEVEL level;
+    bool supported =
+        ExtractH264CodecDetails(aConfig.mCodec, profile, constraint, level,
+                                H264CodecStringStrictness::Strict);
+    if (!supported) {
+      return false;
+    }
+  }
+
+  // TODO (1880326): Instead of calling CanHandleContainerType with the guessed
+  // the containers, DecoderTraits should provide an API to tell if a codec is
   // decodable or not.
-  for (const nsCString& mime : GuessMIMETypes(param)) {
+  for (const nsCString& mime : GuessMIMETypes(MIMECreateParam(aConfig))) {
     if (Maybe<MediaContainerType> containerType =
             MakeMediaExtendedMIMEType(mime)) {
       if (DecoderTraits::CanHandleContainerType(
@@ -560,10 +560,10 @@ static RefPtr<VideoFrame> CreateVideoFrame(
     }
   }
 
-  return MakeRefPtr<VideoFrame>(
-      aGlobalObject, aData->mImage, format, aData->mImage->GetSize(),
-      aData->mImage->GetPictureRect(), displaySize, Some(aDuration), aTimestamp,
-      aColorSpace.ToColorSpaceInit());
+  return MakeRefPtr<VideoFrame>(aGlobalObject, aData->mImage, format,
+                                aData->mImage->GetSize(),
+                                aData->mImage->GetPictureRect(), displaySize,
+                                Some(aDuration), aTimestamp, aColorSpace);
 }
 
 /* static */
@@ -704,8 +704,7 @@ Result<UniquePtr<TrackInfo>, nsresult> VideoDecoderTraits::CreateTrackInfo(
     vi->mExtraData = new MediaByteBuffer();
   }
 
-  LOG("Created a VideoInfo for decoder - %s",
-      NS_ConvertUTF16toUTF8(vi->ToString()).get());
+  LOG("Created a VideoInfo for decoder - %s", vi->ToString().get());
 
   return track;
 }
@@ -863,7 +862,11 @@ already_AddRefed<Promise> VideoDecoder::IsConfigSupported(
     return p.forget();
   }
 
-  bool canDecode = CanDecode(config);
+  // This is incomplete and will be implemented fully in bug 1967793
+  auto configInternal = VideoDecoderConfigInternal::Create(aConfig);
+  ApplyResistFingerprintingIfNeeded(configInternal, global);
+
+  bool canDecode = CanDecode(*configInternal);
   RootedDictionary<VideoDecoderSupport> s(aGlobal.Context());
   s.mConfig.Construct(std::move(config));
   s.mSupported.Construct(canDecode);

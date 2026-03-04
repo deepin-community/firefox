@@ -47,7 +47,7 @@ conn.executeSimpleSQL(
     "baseDomain, host, name, value, path, expiry, " +
     "lastAccessed, creationTime, isSecure, isHttpOnly) VALUES (" +
     "'foo.com', '.foo.com', 'foo', 'bar=baz', '/', " +
-    now +
+    Math.round(now / 1000) +
     ", " +
     now +
     ", " +
@@ -59,7 +59,7 @@ conn.executeSimpleSQL(
 // Get sessionCookies to wait for the initialization in cookie thread
 Services.cookies.sessionCookies;
 
-Assert.equal(conn.schemaVersion, 13);
+Assert.greaterOrEqual(conn.schemaVersion, 13);
 let stmt = conn.createStatement(
   "SELECT sql FROM sqlite_master " +
     "WHERE type = 'table' AND " +
@@ -80,7 +80,7 @@ stmt = conn.createStatement(
     "      value = 'bar=baz' AND " +
     "      path = '/' AND " +
     "      expiry = " +
-    now +
+    Math.round(now / 1000) * 1000 +
     " AND " +
     "      lastAccessed = " +
     now +

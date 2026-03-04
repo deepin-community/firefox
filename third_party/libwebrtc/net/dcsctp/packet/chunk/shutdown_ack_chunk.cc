@@ -9,11 +9,11 @@
  */
 #include "net/dcsctp/packet/chunk/shutdown_ack_chunk.h"
 
-#include <stdint.h>
-
+#include <cstdint>
+#include <optional>
+#include <string>
 #include <vector>
 
-#include "absl/types/optional.h"
 #include "api/array_view.h"
 
 namespace dcsctp {
@@ -25,12 +25,11 @@ namespace dcsctp {
 //  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //  |   Type = 8    |Chunk  Flags   |      Length = 4               |
 //  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-constexpr int ShutdownAckChunk::kType;
 
-absl::optional<ShutdownAckChunk> ShutdownAckChunk::Parse(
-    rtc::ArrayView<const uint8_t> data) {
+std::optional<ShutdownAckChunk> ShutdownAckChunk::Parse(
+    webrtc::ArrayView<const uint8_t> data) {
   if (!ParseTLV(data).has_value()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   return ShutdownAckChunk();
 }

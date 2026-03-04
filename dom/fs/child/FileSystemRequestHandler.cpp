@@ -8,7 +8,6 @@
 
 #include "FileSystemEntryMetadataArray.h"
 #include "fs/FileSystemConstants.h"
-#include "mozilla/ResultVariant.h"
 #include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/dom/BlobImpl.h"
 #include "mozilla/dom/File.h"
@@ -304,6 +303,11 @@ struct BeginRequestFailureCallback {
       : mPromise(std::move(aPromise)) {}
 
   void operator()(nsresult aRv) const {
+    if (aRv == NS_ERROR_ABORT) {
+      mPromise->MaybeRejectWithAbortError(
+          "Abort error when calling GetDirectory");
+      return;
+    }
     if (aRv == NS_ERROR_DOM_SECURITY_ERR) {
       mPromise->MaybeRejectWithSecurityError(
           "Security error when calling GetDirectory");

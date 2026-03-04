@@ -10,6 +10,7 @@ import pathlib
 import re
 
 from mozbuild.base import MozbuildObject
+from mozperftest.script import MissingFieldError, ScriptInfo
 
 here = os.path.abspath(os.path.dirname(__file__))
 build = MozbuildObject.from_environment(cwd=here)
@@ -33,7 +34,7 @@ class ClassificationEnum(enum.Enum):
 
 
 class Platforms(ClassificationEnum):
-    ANDROID_A51 = {"value": "android-a51", "index": 0}
+    ANDROID_A55 = {"value": "android-a55", "index": 0}
     ANDROID = {"value": "android", "index": 1}
     WINDOWS = {"value": "windows", "index": 2}
     LINUX = {"value": "linux", "index": 3}
@@ -57,6 +58,7 @@ class Suites(ClassificationEnum):
     RAPTOR = {"value": "raptor", "index": 0}
     TALOS = {"value": "talos", "index": 1}
     AWSY = {"value": "awsy", "index": 2}
+    PERFTEST = {"value": "perftest", "index": 3}
 
 
 class Variants(ClassificationEnum):
@@ -69,9 +71,7 @@ class Variants(ClassificationEnum):
 
 """
 The following methods and constants are used for restricting
-certain platforms and applications such as chrome, safari, and
-android tests. These all require a flag such as --android to
-enable (see build_category_matrix for more info).
+certain platforms and applications such as chrome and safari
 """
 
 
@@ -198,6 +198,40 @@ def talos_test_finder(task_cmd, task_label, test):
     return modified_task_label
 
 
+def perftest_test_finder(task_cmd, task_label, test):
+    """
+    This is a general finder for all performance tests, given
+    that mozperftest names don't include things like:
+    aarch64, shippable, or opt among other identifiers
+    """
+    from mozperftest.argparser import PerftestArgumentParser
+
+    runner_calls = []
+    for part in task_cmd:
+        for cmd in part:
+            if isinstance(cmd, str) and "runner.py" in cmd:
+                runner_segments = cmd.split("&&")
+                for seg in runner_segments:
+                    if "runner.py" in seg:
+                        runner_calls.append(seg.split("runner.py")[-1])
+
+    perftest_parser = PerftestArgumentParser()
+    for runner_call in runner_calls:
+        runner_opts = runner_call.strip().split()
+        args, _ = perftest_parser.parse_known_args(runner_opts)
+        test_paths = [pathlib.Path(build.topsrcdir, p) for p in args.tests]
+        for path in test_paths:
+            if not path.is_file():
+                continue
+            try:
+                si = ScriptInfo(path)
+            except MissingFieldError:
+                continue
+
+            if test in str(si.script).replace(os.sep, "/") or si.get("name") == test:
+                return task_label
+
+
 def awsy_test_finder(task_cmd, task_label, test):
     """AWSY doesn't mention it's test name anywhere, and only
     reports the metrics without the test name that actually triggered
@@ -216,32 +250,48 @@ class ClassificationProvider:
     @property
     def platforms(self):
         return {
-            Platforms.ANDROID_A51.value: {
-                "query": "'android 'a51 'shippable 'aarch64",
-                "restriction": check_for_android,
+            Platforms.ANDROID_A55.value: {
+                "query": {
+                    Suites.PERFTEST.value: "'android 'a55",
+                    "default": "'android 'a55 'shippable 'aarch64",
+                },
                 "platform": Platforms.ANDROID.value,
             },
             Platforms.ANDROID.value: {
-                # The android, and android-a51 queries are expected to be the same,
+                # The android, and android-a55 queries are expected to be the same,
                 # we don't want to run the tests on other mobile platforms.
-                "query": "'android 'a51 'shippable 'aarch64",
-                "restriction": check_for_android,
+                "query": {
+                    Suites.PERFTEST.value: "'android",
+                    "default": "'android 'a55 'shippable 'aarch64",
+                },
                 "platform": Platforms.ANDROID.value,
             },
             Platforms.WINDOWS.value: {
-                "query": "!-32 !10-64 'windows 'shippable",
+                "query": {
+                    Suites.PERFTEST.value: "'windows",
+                    "default": "!-32 !10-64 'windows 'shippable",
+                },
                 "platform": Platforms.DESKTOP.value,
             },
             Platforms.LINUX.value: {
-                "query": "!clang 'linux 'shippable",
+                "query": {
+                    Suites.PERFTEST.value: "'linux",
+                    "default": "!clang 'linux 'shippable",
+                },
                 "platform": Platforms.DESKTOP.value,
             },
             Platforms.MACOSX.value: {
-                "query": "'osx 'shippable",
+                "query": {
+                    Suites.PERFTEST.value: "'macosx",
+                    "default": "'osx 'shippable",
+                },
                 "platform": Platforms.DESKTOP.value,
             },
             Platforms.DESKTOP.value: {
-                "query": "!android 'shippable !-32 !clang",
+                "query": {
+                    Suites.PERFTEST.value: "!android",
+                    "default": "!android 'shippable !-32 !clang",
+                },
                 "platform": Platforms.DESKTOP.value,
             },
         }
@@ -383,6 +433,14 @@ class ClassificationProvider:
                 "task-test-finder": awsy_test_finder,
                 "framework": 4,
             },
+            Suites.PERFTEST.value: {
+                "apps": list(self.apps.keys()),
+                "platforms": list(self.platforms.keys()),
+                "variants": [],
+                "task-specifier": "perftest",
+                "task-test-finder": perftest_test_finder,
+                "framework": 15,
+            },
         }
 
     """
@@ -432,7 +490,7 @@ class ClassificationProvider:
                 "suites": [Suites.RAPTOR.value],
                 "app-restrictions": {},
                 "tasks": [],
-                "description": "A group of Speedometer3 tests on various platforms and architectures, speedometer3 is"
+                "description": "A group of Speedometer3 tests on various platforms and architectures, speedometer3 is "
                 "currently the best benchmark we have for a baseline on real-world web performance",
             },
             "Responsiveness": {
@@ -450,8 +508,29 @@ class ClassificationProvider:
                     ],
                 },
                 "tasks": [],
-                "description": "A group of tests that ensure that the interactive part of the browser stays fast and"
+                "description": "A group of tests that ensure that the interactive part of the browser stays fast and "
                 "responsive",
+            },
+            "Accessibility": {
+                "query": {
+                    Suites.PERFTEST.value: ["'perftest 'accessibility"],
+                },
+                "suites": [Suites.PERFTEST.value],
+                "platform-restrictions": [
+                    Platforms.DESKTOP.value,
+                    Platforms.LINUX.value,
+                    Platforms.MACOSX.value,
+                    Platforms.WINDOWS.value,
+                ],
+                "app-restrictions": {
+                    Suites.PERFTEST.value: [
+                        Apps.FIREFOX.value,
+                    ],
+                },
+                "tasks": [],
+                "description": (
+                    "A set of tests used to test accessibility engine performance in Firefox."
+                ),
             },
             "Benchmarks": {
                 "query": {
@@ -513,7 +592,7 @@ class ClassificationProvider:
                     Suites.TALOS.value: [Apps.FIREFOX.value],
                 },
                 "tasks": [],
-                "description": "A group of tests that monitor resource usage of various metrics like power, CPU, and"
+                "description": "A group of tests that monitor resource usage of various metrics like power, CPU, and "
                 "memory",
             },
             "Graphics, & Media Playback": {
@@ -554,6 +633,113 @@ class ClassificationProvider:
                 "description": (
                     "Similar to the Pageload category, but it provides a minimum set "
                     "of pageload tests to run for performance testing."
+                ),
+            },
+            "Startup": {
+                "query": {
+                    Suites.PERFTEST.value: ["'startup !-test- !profiling"],
+                    Suites.TALOS.value: ["'sessionrestore | 'other !damp"],
+                },
+                "suites": [Suites.PERFTEST.value, Suites.TALOS.value],
+                "platform-restrictions": [
+                    Platforms.ANDROID.value,
+                    Platforms.LINUX.value,
+                    Platforms.MACOSX.value,
+                    Platforms.WINDOWS.value,
+                ],
+                "app-restrictions": {
+                    Suites.PERFTEST.value: [
+                        Apps.FENIX.value,
+                        Apps.GECKOVIEW.value,
+                        Apps.CHROME_M.value,
+                        Apps.FIREFOX.value,
+                    ],
+                },
+                "tasks": [],
+                "description": (
+                    "A group of tests that monitor startup performance of our "
+                    "android and desktop browsers"
+                ),
+            },
+            "Machine Learning": {
+                "query": {
+                    Suites.PERFTEST.value: ["'perftest '-ml-"],
+                },
+                "suites": [Suites.PERFTEST.value],
+                "platform-restrictions": [
+                    Platforms.DESKTOP.value,
+                    Platforms.LINUX.value,
+                    Platforms.MACOSX.value,
+                    Platforms.WINDOWS.value,
+                ],
+                "app-restrictions": {
+                    Suites.PERFTEST.value: [
+                        Apps.FIREFOX.value,
+                    ],
+                },
+                "tasks": [],
+                "description": (
+                    "A set of tests used to test machine learning performance in Firefox."
+                ),
+            },
+            "Mobile Resource Usage": {
+                "query": {
+                    Suites.PERFTEST.value: ["'perftest 'resource"],
+                },
+                "suites": [Suites.PERFTEST.value],
+                "platform-restrictions": [
+                    Platforms.ANDROID.value,
+                ],
+                "app-restrictions": {
+                    Suites.PERFTEST.value: [
+                        Apps.FENIX.value,
+                        Apps.CHROME_M.value,
+                    ],
+                },
+                "tasks": [],
+                "description": ("A set of tests for testing resource usage on mobile."),
+            },
+            "Translations": {
+                "query": {
+                    Suites.PERFTEST.value: ["'perftest 'tr8ns"],
+                },
+                "suites": [Suites.PERFTEST.value],
+                "platform-restrictions": [
+                    Platforms.DESKTOP.value,
+                    Platforms.LINUX.value,
+                    Platforms.MACOSX.value,
+                    Platforms.WINDOWS.value,
+                ],
+                "app-restrictions": {
+                    Suites.PERFTEST.value: [
+                        Apps.FIREFOX.value,
+                    ],
+                },
+                "tasks": [],
+                "description": (
+                    "A set of tests used to test Translations performance in Firefox."
+                ),
+            },
+            "Critical Android Performance": {
+                "query": {
+                    Suites.RAPTOR.value: ["'speedometer3 | 'jetstream"],
+                    Suites.PERFTEST.value: ["'applink-startup"],
+                },
+                "suites": [Suites.RAPTOR.value, Suites.PERFTEST.value],
+                "platform-restrictions": [
+                    Platforms.ANDROID_A55.value,
+                ],
+                "app-restrictions": {
+                    Suites.PERFTEST.value: [
+                        Apps.FENIX.value,
+                    ],
+                    Suites.RAPTOR.value: [
+                        Apps.FENIX.value,
+                    ],
+                },
+                "tasks": [],
+                "description": (
+                    "Our most important set of tests for android performance."
                 ),
             },
         }

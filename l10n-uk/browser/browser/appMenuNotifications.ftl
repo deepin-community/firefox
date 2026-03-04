@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = Відхилити
     .secondarybuttonaccesskey = х
 appmenu-update-restart-message2 = Отримайте найновішу версію { -brand-shorter-name }. Відкриті вкладки та вікна будуть відновлені.
+appmenu-theme-installed =
+    .secondarybuttonlabel = Повернути
+    .secondarybuttonaccesskey = П
 appmenu-update-other-instance =
     .label = { -brand-shorter-name } не може автоматично встановити найновішу версію.
     .buttonlabel = Все одно оновити { -brand-shorter-name }
@@ -41,6 +44,12 @@ appmenu-addon-private-browsing-installed2 =
     .buttonlabel = Гаразд
     .buttonaccesskey = Г
 appmenu-addon-post-install-message3 = Керуйте своїми додатками й темами з меню програми.
+# This string is used in the confirmation popup displayed after an extension
+# has been installed, when the data collection feature is enabled.
+appmenu-addon-post-install-message-with-data-collection = Оновлюйте дозволи та налаштування даних будь-коли в <a data-l10n-name="settings-link">налаштуваннях розширення</a>.
+appmenu-addon-post-install-pin-toolbarbutton-checkbox =
+    .label = Закріпити розширення на панелі інструментів
+    .accesskey = З
 appmenu-addon-post-install-incognito-checkbox =
     .label = Дозволити цьому розширенню виконуватися в приватних вікнах
     .accesskey = л

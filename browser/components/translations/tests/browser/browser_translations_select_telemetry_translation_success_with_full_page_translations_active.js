@@ -27,7 +27,7 @@ add_task(
           document_language: "es",
           from_language: "es",
           to_language: "en",
-          top_preferred_language: "en",
+          top_preferred_language: "en-US",
           text_source: "hyperlink",
         },
       }
@@ -47,7 +47,7 @@ add_task(
           document_language: "es",
           from_language: "es",
           to_language: "en",
-          top_preferred_language: "en",
+          top_preferred_language: "en-US",
           request_target: "select",
           auto_translate: false,
           source_text_code_units: 23,
@@ -83,7 +83,7 @@ add_task(
           document_language: "es",
           from_language: "es",
           to_language: "fr",
-          top_preferred_language: "en",
+          top_preferred_language: "en-US",
           request_target: "select",
           auto_translate: false,
           source_text_code_units: 23,
@@ -121,10 +121,12 @@ add_task(
       }
     );
 
-    await FullPageTranslationsTestUtils.assertPageIsTranslated(
-      "es",
-      "fr",
-      runInPage
+    await FullPageTranslationsTestUtils.assertOnlyIntersectingNodesAreTranslated(
+      {
+        fromLanguage: "es",
+        toLanguage: "fr",
+        runInPage,
+      }
     );
 
     await SelectTranslationsTestUtils.openPanel(runInPage, {
@@ -169,9 +171,9 @@ add_task(
           auto_translate: false,
           source_text_code_units:
             AppConstants.platform === "win"
-              ? 1718 // With carriage returns
-              : 1709, // No carriage returns
-          source_text_word_count: 281,
+              ? 1616 // With carriage returns
+              : 1607, // No carriage returns
+          source_text_word_count: 257,
         },
       }
     );
@@ -208,9 +210,9 @@ add_task(
           auto_translate: false,
           source_text_code_units:
             AppConstants.platform === "win"
-              ? 1718 // With carriage returns
-              : 1709, // No carriage returns
-          source_text_word_count: 281,
+              ? 1616 // With carriage returns
+              : 1607, // No carriage returns
+          source_text_word_count: 257,
         },
       }
     );
@@ -236,6 +238,10 @@ add_task(
         opened_from: "translationsButton",
         document_language: "es",
       },
+    });
+
+    await TestTranslationsTelemetry.assertTranslationsEnginePerformance({
+      expectedEventCount: 4,
     });
 
     await cleanup();

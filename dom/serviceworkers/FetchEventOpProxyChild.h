@@ -7,14 +7,13 @@
 #ifndef mozilla_dom_fetcheventopproxychild_h__
 #define mozilla_dom_fetcheventopproxychild_h__
 
-#include "nsISupportsImpl.h"
-
 #include "ServiceWorkerOp.h"
 #include "ServiceWorkerOpPromise.h"
 #include "mozilla/MozPromise.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/dom/InternalRequest.h"
 #include "mozilla/dom/PFetchEventOpProxyChild.h"
+#include "nsISupportsImpl.h"
 
 namespace mozilla::dom {
 
@@ -69,6 +68,12 @@ class FetchEventOpProxyChild final : public PFetchEventOpProxyChild {
       mPreloadResponseTimingPromise;
   RefPtr<FetchEventPreloadResponseEndPromise::Private>
       mPreloadResponseEndPromise;
+
+  // MozPromise intentionally does not expose synchronous access to the
+  // resolved/rejected state of a promise, so track whether or not we've
+  // resolved these promises manually.
+  bool mPreloadResponseAvailablePromiseResolved = false;
+  bool mPreloadResponseEndPromiseResolved = false;
 
   Maybe<ServiceWorkerOpResult> mCachedOpResult;
 };

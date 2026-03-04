@@ -30,6 +30,27 @@ const IMPROVED_CONTROLS_ENABLED_PREF =
 const SEETHROUGH_MODE_ENABLED_PREF =
   "media.videocontrols.picture-in-picture.seethrough-mode.enabled";
 
+/**
+ * The "showing" attribute means that we intentionally want to show controls
+ * on the PiP window. Examples include:
+ * - temporarily revealing PiP controls after initializing a PiP window.
+ * - revealing PiP controls after pausing the video.
+ *
+ * We remove the attribute once we're ready to hide controls on the window.
+ */
+const SHOWING_ATTRIBUTE = "showing";
+/**
+ * The "keying" attribute means that the controls have keyboard focus. Set this
+ * pref to keep controls visible on the PiP window until focus is gone.
+ */
+const KEYING_ATTRIBUTE = "keying";
+/**
+ * The "donthide" attribute is used to keep controls visible while users
+ * interact with the PiP CC settings menu. This ensures that we don't hide
+ * controls while the menu is still in use.
+ */
+const DONTHIDE_ATTRIBUTE = "donthide";
+
 // Time to fade the Picture-in-Picture video controls after first opening.
 const CONTROLS_FADE_TIMEOUT_MS = 3000;
 const RESIZE_DEBOUNCE_RATE_MS = 500;
@@ -48,7 +69,7 @@ const BOTTOM_RIGHT_QUADRANT = 4;
  * Public function to be called from PictureInPicture.sys.mjs. This is the main
  * entrypoint for initializing the player window.
  *
- * @param {Number} id
+ * @param {number} id
  *   A unique numeric ID for the window, used for Telemetry Events.
  * @param {WindowGlobalParent} wgp
  *   The WindowGlobalParent that is hosting the originating video.
@@ -64,7 +85,7 @@ function setupPlayer(id, wgp, videoRef, autoFocus) {
  * Public function to be called from PictureInPicture.sys.mjs. This update the
  * controls based on whether or not the video is playing.
  *
- * @param {Boolean} isPlaying
+ * @param {boolean} isPlaying
  *   True if the Picture-in-Picture video is playing.
  */
 function setIsPlayingState(isPlaying) {
@@ -75,7 +96,7 @@ function setIsPlayingState(isPlaying) {
  * Public function to be called from PictureInPicture.sys.mjs. This update the
  * controls based on whether or not the video is muted.
  *
- * @param {Boolean} isMuted
+ * @param {boolean} isMuted
  *   True if the Picture-in-Picture video is muted.
  */
 function setIsMutedState(isMuted) {
@@ -84,7 +105,8 @@ function setIsMutedState(isMuted) {
 
 /**
  * Function to resize and reposition the PiP window
- * @param {Object} rect
+ *
+ * @param {object} rect
  *   An object containing `left`, `top`, `width`, and `height` for the PiP
  *   window
  */
@@ -134,6 +156,7 @@ let Player = {
   WINDOW_EVENTS: [
     "click",
     "contextmenu",
+    "command",
     "dblclick",
     "keydown",
     "mouseup",
@@ -182,9 +205,14 @@ let Player = {
   deferredResize: null,
 
   /**
+   * Set a shortcut that can be used for unpiping without pausing
+   */
+  isUnpipWithoutPauseShortcut: e => e.shiftKey === true,
+
+  /**
    * Initializes the player browser, and sets up the initial state.
    *
-   * @param {Number} id
+   * @param {number} id
    *   A unique numeric ID for the window, used for Telemetry Events.
    * @param {WindowGlobalParent} wgp
    *   The WindowGlobalParent that is hosting the originating video.
@@ -318,8 +346,8 @@ let Player = {
     this.resizeDebouncer = new DeferredTask(() => {
       this.alignEndControlsButtonTooltips();
       this.recordEvent("resize", {
-        width: window.outerWidth.toString(),
-        height: window.outerHeight.toString(),
+        width: window.outerWidth,
+        height: window.outerHeight,
       });
     }, RESIZE_DEBOUNCE_RATE_MS);
 
@@ -374,10 +402,21 @@ let Player = {
         // Don't run onClick if middle or right click is pressed respectively
         if (event.button !== 1 && event.button !== 2) {
           this.onClick(event);
-          this.controls.removeAttribute("keying");
+          this.controls.removeAttribute(KEYING_ATTRIBUTE);
         }
         break;
       }
+
+      case "command":
+        switch (event.target.id) {
+          case "View:PictureInPicture":
+            this.onCommand(event);
+            break;
+          case "View:Fullscreen":
+            this.fullscreenModeToggle(event);
+            break;
+        }
+        break;
 
       case "contextmenu": {
         event.preventDefault();
@@ -391,7 +430,7 @@ let Player = {
 
       case "keydown": {
         if (event.keyCode == KeyEvent.DOM_VK_TAB) {
-          this.controls.setAttribute("keying", true);
+          this.controls.setAttribute(KEYING_ATTRIBUTE, true);
           this.showVideoControls();
         } else if (event.keyCode == KeyEvent.DOM_VK_ESCAPE) {
           let isSettingsPanelInFocus = this.settingsPanel.contains(
@@ -411,7 +450,7 @@ let Player = {
             document.exitFullscreen();
           } else {
             // We handle the ESC key, as an intent to leave the picture-in-picture modus
-            this.onClose();
+            this.onClose(this.isUnpipWithoutPauseShortcut(event));
           }
         } else if (
           Services.prefs.getBoolPref(KEYBOARD_CONTROLS_ENABLED_PREF, false) &&
@@ -481,8 +520,8 @@ let Player = {
           this.actor.sendAsyncMessage("PictureInPicture:ExitFullscreen", {
             isFullscreen: this.isFullscreen,
             isVideoControlsShowing:
-              !!this.controls.getAttribute("showing") ||
-              !!this.controls.getAttribute("keying"),
+              this.controls.hasAttribute(SHOWING_ATTRIBUTE) ||
+              this.controls.hasAttribute(KEYING_ATTRIBUTE),
             playerBottomControlsDOMRect:
               this.controlsBottom.getBoundingClientRect(),
           });
@@ -496,7 +535,7 @@ let Player = {
       }
 
       case "oop-browser-crashed": {
-        this.closePipWindow({ reason: "browser-crash" });
+        this.closePipWindow({ reason: "BrowserCrash" });
         break;
       }
 
@@ -522,6 +561,7 @@ let Player = {
    * because if we get an input event from the keyboard, onKeyDown will set
    * this.preventNextInputEvent to true.
    * This function is called by input events on the scrubber
+   *
    * @param {Event} event The input event
    */
   handleScrubbing(event) {
@@ -547,6 +587,7 @@ let Player = {
   /**
    * This function handles setting the scrubbing state to false and playing
    * the video if we paused it before scrubbing.
+   *
    * @param {Event} event The change event
    */
   handleScrubbingDone(event) {
@@ -565,7 +606,8 @@ let Player = {
    * Set the volume on the video and unmute if the video was muted.
    * If the volume is changed via the keyboard, onKeyDown will set
    * this.preventNextInputEvent to true.
-   * @param {Number} volume A number between 0 and 1 that represents the volume
+   *
+   * @param {number} volume A number between 0 and 1 that represents the volume
    */
   handleAudioScrubbing(volume) {
     // When using the keyboard to adjust the volume, we get both a keydown and
@@ -659,7 +701,7 @@ let Player = {
       }
 
       case "close": {
-        this.onClose();
+        this.onClose(this.isUnpipWithoutPauseShortcut(event));
         break;
       }
 
@@ -703,7 +745,7 @@ let Player = {
       case "fullscreen": {
         this.fullscreenModeToggle();
         this.recordEvent("fullscreen", {
-          enter: (!this.isFullscreen).toString(),
+          enter: !this.isFullscreen,
         });
         break;
       }
@@ -732,7 +774,8 @@ let Player = {
 
   /**
    * Function to toggle the visibility of the subtitles settings panel
-   * @param {Object} options [optional] Object containing options for the function
+   *
+   * @param {object} options [optional] Object containing options for the function
    *   - forceHide: true to force hide the subtitles settings panel
    *   - isKeyboard: true if the subtitles button was activated using the keyboard
    *     to show or hide the subtitles settings panel
@@ -742,12 +785,12 @@ let Player = {
     if (options?.forceHide || settingsPanelVisible) {
       this.settingsPanel.classList.add("hide");
       this.closedCaptionButton.setAttribute("aria-expanded", false);
-      this.controls.removeAttribute("donthide");
+      this.controls.removeAttribute(DONTHIDE_ATTRIBUTE);
 
       if (
-        this.controls.getAttribute("keying") ||
+        this.controls.hasAttribute(KEYING_ATTRIBUTE) ||
         this.isCurrentHover ||
-        this.controls.getAttribute("showing")
+        this.controls.hasAttribute(SHOWING_ATTRIBUTE)
       ) {
         return;
       }
@@ -756,7 +799,7 @@ let Player = {
     } else {
       this.settingsPanel.classList.remove("hide");
       this.closedCaptionButton.setAttribute("aria-expanded", true);
-      this.controls.setAttribute("donthide", true);
+      this.controls.setAttribute(DONTHIDE_ATTRIBUTE, true);
       this.showVideoControls();
 
       if (options?.isKeyboard) {
@@ -765,16 +808,21 @@ let Player = {
     }
   },
 
-  onClose() {
-    this.actor.sendAsyncMessage("PictureInPicture:Pause", {
-      reason: "pip-closed",
-    });
-    this.closePipWindow({ reason: "closeButton" });
+  onClose(bypassPause = false) {
+    // By default, we want to pause the video on close, unless the user
+    // used the assigned isUnpipWithoutPauseShortcut
+    if (!bypassPause) {
+      this.actor.sendAsyncMessage("PictureInPicture:Pause", {
+        reason: "pip-closed",
+      });
+    }
+
+    this.closePipWindow({ reason: "CloseButton" });
   },
 
   closeFromForeground() {
     PictureInPicture.closeSinglePipWindow({
-      reason: "foregrounded",
+      reason: "Foregrounded",
       actorRef: this.actor,
     });
   },
@@ -786,8 +834,8 @@ let Player = {
       this.deferredResize = {
         left: window.screenX,
         top: window.screenY,
-        width: window.innerWidth,
-        height: window.innerHeight,
+        width: window.outerWidth,
+        height: window.outerHeight,
       };
       document.body.requestFullscreen();
     }
@@ -915,8 +963,8 @@ let Player = {
    */
   determineCurrentQuadrant() {
     // Determine center coordinates of window.
-    let windowCenterX = window.screenX + window.innerWidth / 2;
-    let windowCenterY = window.screenY + window.innerHeight / 2;
+    let windowCenterX = window.screenX + window.outerWidth / 2;
+    let windowCenterY = window.screenY + window.outerHeight / 2;
     let quadrant = null;
     let halfWidth = window.screen.availLeft + window.screen.availWidth / 2;
     let halfHeight = window.screen.availTop + window.screen.availHeight / 2;
@@ -1107,9 +1155,9 @@ let Player = {
     if (!this.isFullscreen) {
       this.isCurrentHover = false;
       if (
-        !this.controls.getAttribute("showing") &&
-        !this.controls.getAttribute("keying") &&
-        !this.controls.getAttribute("donthide")
+        !this.controls.hasAttribute(SHOWING_ATTRIBUTE) &&
+        !this.controls.hasAttribute(KEYING_ATTRIBUTE) &&
+        !this.controls.hasAttribute(DONTHIDE_ATTRIBUTE)
       ) {
         this.hideVideoControls();
       }
@@ -1168,7 +1216,7 @@ let Player = {
    *  Event context data object
    */
   onCommand() {
-    this.closePipWindow({ reason: "shortcut" });
+    this.closePipWindow({ reason: "Shortcut" });
   },
 
   get controls() {
@@ -1224,7 +1272,7 @@ let Player = {
    * SET isPlaying to true if the video is playing, false otherwise. This will
    * update the internal state and displayed controls.
    *
-   * @type {Boolean}
+   * @type {boolean}
    */
   get isPlaying() {
     return this._isPlaying;
@@ -1240,8 +1288,11 @@ let Player = {
 
     if (
       !this._isInitialized ||
-      this.isCurrentHover ||
-      this.controls.getAttribute("keying")
+      // Currently, controls will always be visible on hover for non-fullscreen.
+      // Only ensure we hide controls after playing state update for fullscreen,
+      // by not bothering to call revealControls.
+      (!this.isFullscreen && this.isCurrentHover) ||
+      this.controls.hasAttribute(KEYING_ATTRIBUTE)
     ) {
       return;
     }
@@ -1260,7 +1311,7 @@ let Player = {
    * SET isMuted to true if the video is muted, false otherwise. This will
    * update the internal state and displayed controls.
    *
-   * @type {Boolean}
+   * @type {boolean}
    */
   get isMuted() {
     return this._isMuted;
@@ -1299,13 +1350,8 @@ let Player = {
    *   The data to pass to telemetry when the event is recorded.
    */
   recordEvent(type, args) {
-    Services.telemetry.recordEvent(
-      "pictureinpicture",
-      type,
-      "player",
-      this.id,
-      args
-    );
+    args.value = this.id;
+    Glean.pictureinpicture[type + "Player"].record(args);
   },
 
   /**
@@ -1338,7 +1384,7 @@ let Player = {
   /**
    * Makes the player controls visible.
    *
-   * @param {Boolean} revealIndefinitely
+   * @param {boolean} revealIndefinitely
    *   If false, this will hide the controls again after
    *   CONTROLS_FADE_TIMEOUT_MS milliseconds has passed. If true, the controls
    *   will remain visible until revealControls is called again with
@@ -1348,7 +1394,7 @@ let Player = {
     clearTimeout(this.showingTimeout);
     this.showingTimeout = null;
 
-    this.controls.setAttribute("showing", true);
+    this.controls.setAttribute(SHOWING_ATTRIBUTE, true);
 
     if (!this.isFullscreen) {
       // revealControls() is called everytime we hover over fullscreen pip window.
@@ -1364,13 +1410,13 @@ let Player = {
         if (this.isFullscreen && isHoverOverControlItem) {
           return;
         }
-        this.controls.removeAttribute("showing");
+        this.controls.removeAttribute(SHOWING_ATTRIBUTE);
 
         if (
           !this.isFullscreen &&
           !this.isCurrentHover &&
-          !this.controls.getAttribute("keying") &&
-          !this.controls.getAttribute("donthide")
+          !this.controls.hasAttribute(KEYING_ATTRIBUTE) &&
+          !this.controls.hasAttribute(DONTHIDE_ATTRIBUTE)
         ) {
           this.hideVideoControls();
         }
@@ -1386,9 +1432,9 @@ let Player = {
    * impose a minimum window size. For other platforms, this function is a
    * no-op.
    *
-   * @param {Number} width
+   * @param {number} width
    *   The width of the video being played.
-   * @param {Number} height
+   * @param {number} height
    *   The height of the video being played.
    */
   computeAndSetMinimumSize(width, height) {

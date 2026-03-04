@@ -4,7 +4,7 @@
 
 use std::collections::HashMap;
 
-use crate::{db::SuggestDao, error::Error, rs, Result};
+use crate::{error::Error, rs, Result};
 
 /// Remotes settings client for benchmarking
 ///
@@ -21,19 +21,28 @@ impl RemoteSettingsBenchmarkClient {
     pub fn new() -> Result<Self> {
         let mut new_benchmark_client = Self::default();
         new_benchmark_client.fetch_data_with_client(
-            remote_settings::Client::new(remote_settings::RemoteSettingsConfig {
+            remote_settings::RemoteSettings::new(remote_settings::RemoteSettingsConfig {
                 server: None,
                 bucket_name: None,
-                collection_name: "quicksuggest".to_owned(),
+                collection_name: rs::Collection::Amp.name().to_owned(),
                 server_url: None,
             })?,
-            rs::Collection::Quicksuggest,
+            rs::Collection::Amp,
         )?;
         new_benchmark_client.fetch_data_with_client(
-            remote_settings::Client::new(remote_settings::RemoteSettingsConfig {
+            remote_settings::RemoteSettings::new(remote_settings::RemoteSettingsConfig {
                 server: None,
                 bucket_name: None,
-                collection_name: "fakespot-suggest-products".to_owned(),
+                collection_name: rs::Collection::Other.name().to_owned(),
+                server_url: None,
+            })?,
+            rs::Collection::Other,
+        )?;
+        new_benchmark_client.fetch_data_with_client(
+            remote_settings::RemoteSettings::new(remote_settings::RemoteSettingsConfig {
+                server: None,
+                bucket_name: None,
+                collection_name: rs::Collection::Fakespot.name().to_owned(),
                 server_url: None,
             })?,
             rs::Collection::Fakespot,
@@ -43,7 +52,7 @@ impl RemoteSettingsBenchmarkClient {
 
     fn fetch_data_with_client(
         &mut self,
-        client: remote_settings::Client,
+        client: remote_settings::RemoteSettings,
         collection: rs::Collection,
     ) -> Result<()> {
         let response = client.get_records()?;
@@ -62,17 +71,32 @@ impl RemoteSettingsBenchmarkClient {
         Ok(())
     }
 
+    pub fn attachment_size_by_record_type(&self) -> Vec<(rs::SuggestRecordType, usize)> {
+        let mut sizes = HashMap::<rs::SuggestRecordType, usize>::new();
+        for record in self.records.iter() {
+            let record_type = rs::SuggestRecordType::from(&record.payload);
+            if let Some(a) = &record.attachment {
+                if let Some(attachment) = self.attachments.get(&a.location) {
+                    sizes
+                        .entry(record_type)
+                        .and_modify(|size| *size += attachment.len())
+                        .or_insert(attachment.len());
+                }
+            }
+        }
+        let mut sizes_vec: Vec<_> = sizes.into_iter().collect();
+        sizes_vec.sort_by_key(|(_, size)| *size);
+        sizes_vec.reverse();
+        sizes_vec
+    }
+
     pub fn total_attachment_size(&self) -> usize {
         self.attachments.values().map(|a| a.len()).sum()
     }
 }
 
 impl rs::Client for RemoteSettingsBenchmarkClient {
-    fn get_records(
-        &self,
-        collection: rs::Collection,
-        _db: &mut SuggestDao,
-    ) -> Result<Vec<rs::Record>> {
+    fn get_records(&self, collection: rs::Collection) -> Result<Vec<rs::Record>> {
         Ok(self
             .records
             .iter()

@@ -79,10 +79,11 @@ ${helpers.predefined_type(
     "clip-path",
     "basic_shape::ClipPath",
     "generics::basic_shape::ClipPath::None",
-    engines="gecko",
+    engines="gecko servo",
     extra_prefixes="webkit",
     spec="https://drafts.fxtf.org/css-masking-1/#propdef-clip-path",
     affects="paint",
+    servo_restyle_damage="repaint",
 )}
 
 ${helpers.single_keyword(
@@ -180,7 +181,8 @@ ${helpers.single_keyword(
 ${helpers.predefined_type(
     "mask-image",
     "Image",
-    engines="gecko",
+    engines="gecko servo",
+    servo_pref="layout.unimplemented",
     initial_value="computed::Image::None",
     initial_specified_value="specified::Image::None",
     parse_method="parse_with_cors_anonymous",

@@ -9,7 +9,7 @@ function synthesizeKeyAndWaitForFocus(element, keyCode, options) {
 
 function synthesizeKeyAndWaitForTabToGetKeyboardFocus(tab, keyCode, options) {
   let focused = TestUtils.waitForCondition(() => {
-    return tab.classList.contains("keyboard-focused-tab");
+    return tab.classList.contains("tablist-keyboard-focus");
   }, "Waiting for tab to get keyboard focus");
   EventUtils.synthesizeKey(keyCode, options);
   return focused;
@@ -19,6 +19,10 @@ add_setup(async function () {
   // The DevEdition has the DevTools button in the toolbar by default. Remove it
   // to prevent branch-specific rules what button should be focused.
   CustomizableUI.removeWidgetFromArea("developer-button");
+
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.urlbar.scotchBonnet.enableOverride", true]],
+  });
 
   let prevActiveElement = document.activeElement;
   registerCleanupFunction(() => {
@@ -36,28 +40,42 @@ add_task(async function changeSelectionUsingKeyboard() {
 
   await BrowserTestUtils.switchTab(gBrowser, tab3);
   info("Move focus to location bar using the keyboard");
-  await synthesizeKeyAndWaitForFocus(gURLBar, "l", { accelKey: true });
+  await synthesizeKeyAndWaitForFocus(gURLBar.inputField, "l", {
+    accelKey: true,
+  });
   is(document.activeElement, gURLBar.inputField, "urlbar should be focused");
 
   info("Move focus to the selected tab using the keyboard");
-  let trackingProtectionIconContainer = document.querySelector(
-    "#tracking-protection-icon-container"
+  let unifiedSearchButton = document.querySelector(
+    "#urlbar-searchmode-switcher"
   );
-  await synthesizeKeyAndWaitForFocus(
-    trackingProtectionIconContainer,
-    "VK_TAB",
-    { shiftKey: true }
-  );
+  await synthesizeKeyAndWaitForFocus(unifiedSearchButton, "VK_TAB", {
+    shiftKey: true,
+  });
   is(
     document.activeElement,
-    trackingProtectionIconContainer,
-    "tracking protection icon container should be focused"
+    unifiedSearchButton,
+    "Unified Search Button should be focused"
   );
-  await synthesizeKeyAndWaitForFocus(
-    document.getElementById("reload-button"),
-    "VK_TAB",
-    { shiftKey: true }
-  );
+  if (Services.prefs.getBoolPref("sidebar.revamp", false)) {
+    // when sidebar.revamp is enabled, the sidebar-button is placed by default at the
+    // start of the #nav-bar and will receive focus.
+    info("Move focus to the sidebar-button using the keyboard");
+    await synthesizeKeyAndWaitForFocus(
+      document.getElementById("sidebar-button"),
+      "VK_TAB",
+      { shiftKey: true }
+    );
+  } else {
+    info("Move focus to the reload-button using the keyboard");
+    await synthesizeKeyAndWaitForFocus(
+      document.getElementById("reload-button"),
+      "VK_TAB",
+      { shiftKey: true }
+    );
+  }
+
+  info("Move focus to the tabs-newtab-button using the keyboard");
   await synthesizeKeyAndWaitForFocus(
     document.getElementById("tabs-newtab-button"),
     "VK_TAB",

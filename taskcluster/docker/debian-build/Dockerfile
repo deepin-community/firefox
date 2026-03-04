@@ -37,7 +37,6 @@ RUN apt-get update && \
       libgtk-3-0 \
       libucl1 \
       libxml2 \
-      m4 \
       make \
       p7zip-full \
       perl \
@@ -49,5 +48,4 @@ RUN apt-get update && \
       unzip \
       uuid \
       wget \
-      x11-utils \
       zip

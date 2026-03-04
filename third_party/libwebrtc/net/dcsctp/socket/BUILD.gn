@@ -25,6 +25,7 @@ rtc_library("heartbeat_handler") {
     ":context",
     "../../../api:array_view",
     "../../../api/units:time_delta",
+    "../../../api/units:timestamp",
     "../../../rtc_base:checks",
     "../../../rtc_base:logging",
     "../packet:bounded_io",
@@ -36,7 +37,6 @@ rtc_library("heartbeat_handler") {
     "../timer",
     "//third_party/abseil-cpp/absl/functional:bind_front",
     "//third_party/abseil-cpp/absl/strings:string_view",
-    "//third_party/abseil-cpp/absl/types:optional",
   ]
   sources = [
     "heartbeat_handler.cc",
@@ -54,6 +54,7 @@ rtc_library("stream_reset_handler") {
     "../../../rtc_base:stringutils",
     "../../../rtc_base/containers:flat_set",
     "../common:internal_types",
+    "../common:sequence_numbers",
     "../packet:chunk",
     "../packet:parameter",
     "../packet:sctp_packet",
@@ -66,7 +67,6 @@ rtc_library("stream_reset_handler") {
     "../tx:retransmission_queue",
     "//third_party/abseil-cpp/absl/functional:bind_front",
     "//third_party/abseil-cpp/absl/strings:string_view",
-    "//third_party/abseil-cpp/absl/types:optional",
   ]
   sources = [
     "stream_reset_handler.cc",
@@ -76,6 +76,7 @@ rtc_library("stream_reset_handler") {
 
 rtc_library("packet_sender") {
   deps = [
+    "../../../api:array_view",
     "../packet:sctp_packet",
     "../public:socket",
     "../public:types",
@@ -94,11 +95,13 @@ rtc_library("transmission_control_block") {
     ":packet_sender",
     ":stream_reset_handler",
     "../../../api:array_view",
-    "../../../api/task_queue:task_queue",
+    "../../../api/task_queue",
     "../../../api/units:time_delta",
+    "../../../api/units:timestamp",
     "../../../rtc_base:checks",
     "../../../rtc_base:logging",
     "../../../rtc_base:stringutils",
+    "../common:internal_types",
     "../common:sequence_numbers",
     "../packet:chunk",
     "../packet:sctp_packet",
@@ -113,7 +116,6 @@ rtc_library("transmission_control_block") {
     "../tx:send_queue",
     "//third_party/abseil-cpp/absl/functional:bind_front",
     "//third_party/abseil-cpp/absl/strings:string_view",
-    "//third_party/abseil-cpp/absl/types:optional",
   ]
   sources = [
     "capabilities.h",
@@ -133,7 +135,9 @@ rtc_library("dcsctp_socket") {
     "../../../api:make_ref_counted",
     "../../../api:refcountedbase",
     "../../../api:scoped_refptr",
-    "../../../api/task_queue:task_queue",
+    "../../../api/task_queue",
+    "../../../api/units:time_delta",
+    "../../../api/units:timestamp",
     "../../../rtc_base:checks",
     "../../../rtc_base:logging",
     "../../../rtc_base:stringutils",
@@ -159,8 +163,6 @@ rtc_library("dcsctp_socket") {
     "//third_party/abseil-cpp/absl/functional:bind_front",
     "//third_party/abseil-cpp/absl/memory",
     "//third_party/abseil-cpp/absl/strings:string_view",
-    "//third_party/abseil-cpp/absl/types:optional",
-    "//third_party/abseil-cpp/absl/types:variant",
   ]
   sources = [
     "callback_deferrer.cc",
@@ -178,7 +180,9 @@ if (rtc_include_tests) {
     sources = [ "mock_dcsctp_socket_callbacks.h" ]
     deps = [
       "../../../api:array_view",
-      "../../../api/task_queue:task_queue",
+      "../../../api/task_queue",
+      "../../../api/units:time_delta",
+      "../../../api/units:timestamp",
       "../../../rtc_base:logging",
       "../../../rtc_base:random",
       "../../../test:test_support",
@@ -186,7 +190,6 @@ if (rtc_include_tests) {
       "../public:types",
       "../timer",
       "//third_party/abseil-cpp/absl/strings:string_view",
-      "//third_party/abseil-cpp/absl/types:optional",
     ]
   }
 
@@ -196,13 +199,13 @@ if (rtc_include_tests) {
     deps = [
       ":context",
       ":mock_callbacks",
+      "../../../api/units:time_delta",
       "../../../test:test_support",
       "../common:internal_types",
       "../packet:sctp_packet",
       "../public:socket",
       "../public:types",
       "//third_party/abseil-cpp/absl/strings:string_view",
-      "//third_party/abseil-cpp/absl/types:optional",
     ]
   }
 
@@ -220,23 +223,29 @@ if (rtc_include_tests) {
       "../../../api:array_view",
       "../../../api:create_network_emulation_manager",
       "../../../api:network_emulation_manager_api",
+      "../../../api:simulated_network_api",
       "../../../api/task_queue",
       "../../../api/task_queue:pending_task_safety_flag",
+      "../../../api/test/network_emulation",
       "../../../api/units:data_rate",
       "../../../api/units:time_delta",
+      "../../../api/units:timestamp",
       "../../../rtc_base:checks",
       "../../../rtc_base:copy_on_write_buffer",
       "../../../rtc_base:gunit_helpers",
       "../../../rtc_base:logging",
+      "../../../rtc_base:random",
       "../../../rtc_base:rtc_base_tests_utils",
       "../../../rtc_base:socket_address",
       "../../../rtc_base:stringutils",
+      "../../../rtc_base:threading",
       "../../../rtc_base:timeutils",
       "../../../test:test_support",
       "../common:handover_testing",
       "../common:internal_types",
       "../common:math",
       "../packet:chunk",
+      "../packet:data",
       "../packet:error_cause",
       "../packet:parameter",
       "../packet:sctp_packet",
@@ -255,7 +264,6 @@ if (rtc_include_tests) {
       "//third_party/abseil-cpp/absl/flags:flag",
       "//third_party/abseil-cpp/absl/memory",
       "//third_party/abseil-cpp/absl/strings:string_view",
-      "//third_party/abseil-cpp/absl/types:optional",
     ]
     sources = [
       "dcsctp_socket_network_test.cc",

@@ -21,6 +21,7 @@ policy-AutofillAddressEnabled = Habilitar autocompletado de direcciones.
 policy-AutofillCreditCardEnabled = Habilitar autocompletado para métodos de pago.
 policy-AutoLaunchProtocolsFromOrigins = Defina una lista de protocolos externos que se puedan utilizar desde los orígenes enumerados sin avisarle al usuario.
 policy-BackgroundAppUpdate2 = Habilitar o deshabilitar la actualización en segundo plano.
+policy-Backup = Deshabilitar copia de seguridad o restauración de datos de perfil.
 policy-BlockAboutAddons = Bloquear acceso al administrador de complementos (about:addons).
 policy-BlockAboutConfig = Bloquear el acceso a la página about:config.
 policy-BlockAboutProfiles = Bloquear acceso a la página about:profiles.
@@ -55,6 +56,7 @@ policy-DisablePocket2 = Deshabilitar la función de guardar páginas web a { -po
 policy-DisablePrivateBrowsing = Deshabilitar la Navegación privada.
 policy-DisableProfileImport = Deshabilitar el comando de menú para importar datos desde otro navegador.
 policy-DisableProfileRefresh = Deshabilitar el botón Recargar { -brand-short-name } en la página about:support.
+policy-DisableRemoteImprovements = Evitar que { -brand-short-name } aplique cambios de rendimiento, estabilidad y funcionalidades entre actualizaciones.
 policy-DisableSafeMode = Deshabilitar la función para reiniciar en Modo seguro. Nota: la tecla Mayús para ingresar al Modo seguro solo se puede deshabilitar en Windows usando la política de grupo.
 policy-DisableSecurityBypass = Impedir que el usuario ignore ciertas advertencias de seguridad.
 policy-DisableSetAsDesktopBackground = Deshabilitar el comando de menú configurado como Fondo de escritorio para las imágenes.
@@ -79,6 +81,7 @@ policy-ExtensionSettings = Administrar todos los aspectos de la instalación de 
 policy-ExtensionUpdate = Habilitar o deshabilitar las actualizaciones automáticas de las extensiones.
 policy-FirefoxHome2 = Configurar { -firefox-home-brand-name }.
 policy-FirefoxSuggest = Configurar { -firefox-suggest-brand-name }.
+policy-GenerativeAI = Configurar características generativas de IA.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Forzar la navegación directa del sitio de intranet en lugar de buscar al escribir entradas de una sola palabra en la barra de direcciones.
 policy-Handlers = Configurar controladores de aplicaciones predeterminados.
 policy-HardwareAcceleration = Si es falso, deshabilitar aceleración por hardware.
@@ -97,6 +100,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Volver al comportamien
 ##
 
 policy-LocalFileLinks = Permitir que sitios web específicos se enlacen con archivos locales.
+policy-LocalNetworkAccess = Habilitar o deshabilitar las verificaciones de acceso a la red local.
 policy-ManagedBookmarks = Configura una lista de marcadores administrada por un administrador que el usuario no puede cambiar.
 policy-ManualAppUpdateOnly = Permitir solo actualizaciones manuales y no notificar al usuario sobre las mismas.
 policy-PrimaryPassword = Requerir o evitar el uso de una contraseña maestra.
@@ -117,6 +121,7 @@ policy-PostQuantumKeyAgreementEnabled = Habilitar acuerdo de claves post-quantum
 policy-PDFjs = Deshabilitar o configurar PDF.js, el visor de PDF incorporado en { -brand-short-name }.
 policy-Permissions2 = Configurar permisos para cámara, micrófono, ubicación, notificaciones y reproducción automática.
 policy-PictureInPicture = Habilitar o deshabilitar Picture-in-Picture.
+policy-PopupBlocking2 = Permitir que ciertos sitios web muestren ventanas emergentes y sean redireccionados por marcos de terceros.
 policy-PopupBlocking = Permitir que ciertos sitios web muestren ventanas emergentes de manera predeterminada.
 policy-Preferences = Establezca y bloquee el valor para un subconjunto de preferencias.
 policy-PrivateBrowsingModeAvailability = Configurar la disponibilidad del modo de navegación privada.
@@ -130,6 +135,8 @@ policy-SearchSuggestEnabled = Habilitar o deshabilitar las sugerencias de búsqu
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = Agregar o borrar módulos PKCS #11.
 policy-ShowHomeButton = Mostrar el botón de inicio en la barra de herramientas.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = No mostrar los términos de uso y la nota de privacidad al iniciar. Usted declara que acepta y tiene autoridad para aceptar los Términos de uso en nombre de todas las personas a las que proporcione acceso a este navegador.
 policy-SSLVersionMax = Establecer la versión máxima de SSL.
 policy-SSLVersionMin = Establecer la versión mínima de SSL.
 policy-StartDownloadsInTempDirectory = Forzar que las descargas se inicien en una ubicación local temporal en vez del directorio de descargas predeterminado.
@@ -137,6 +144,9 @@ policy-SupportMenu = Agregar un elemento de menú de ayuda personalizada al men�
 policy-TranslateEnabled = Habilitar o deshabilitar la traducción de páginas web.
 policy-UserMessaging = No mostrar ciertos mensajes al usuario.
 policy-UseSystemPrintDialog = Imprimir usando la ventana del sistema.
+policy-VisualSearchEnabled = Habilitar o deshabilitar la búsqueda visual.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Bloquear la visita a sitios web. Consulte la documentación para obtener más detalles sobre el formato.
 policy-Windows10SSO = Permitir un solo inicio de sesión de Windows para Microsoft, cuentas de trabajo y cuentas escolares.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Permitir el inicio de sesión único para cuentas de Microsoft Entra.

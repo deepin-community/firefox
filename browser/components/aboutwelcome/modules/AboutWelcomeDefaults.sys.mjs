@@ -17,7 +17,8 @@ const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   AddonRepository: "resource://gre/modules/addons/AddonRepository.sys.mjs",
-  AttributionCode: "resource:///modules/AttributionCode.sys.mjs",
+  AttributionCode:
+    "moz-src:///browser/components/attribution/AttributionCode.sys.mjs",
   AWScreenUtils: "resource:///modules/aboutwelcome/AWScreenUtils.sys.mjs",
   BrowserUtils: "resource://gre/modules/BrowserUtils.sys.mjs",
 });
@@ -39,9 +40,45 @@ const MR_ABOUT_WELCOME_DEFAULT = {
     "var(--mr-welcome-background-color) var(--mr-welcome-background-gradient)",
   screens: [
     {
+      id: "AW_BACKUP_RESTORE_EMBEDDED_BACKUP_FOUND",
+      targeting:
+        "backupRestoreEnabled && (backupsInfo.found || backupsInfo.multipleBackupsFound)",
+      content: {
+        fullscreen: true,
+        logo: {},
+        title: {
+          string_id: "restore-from-backup-title",
+        },
+        subtitle: {
+          string_id: "restore-from-backup-subtitle",
+        },
+        tiles: {
+          type: "backup_restore",
+        },
+        position: "split",
+        split_narrow_bkg_position: "-42px",
+        background:
+          "url('chrome://activity-stream/content/data/content/assets/fox-doodle-backup-restore.svg') var(--mr-secondary-position) no-repeat var(--mr-screen-background-color)",
+        progress_bar: true,
+        hide_secondary_section: "responsive",
+        backup_show_filepicker: {
+          action: {},
+        },
+        skip_button: {
+          label: {
+            string_id: "restore-from-backup-secondary-button",
+          },
+          action: {
+            navigate: true,
+          },
+        },
+      },
+    },
+    {
       id: "AW_WELCOME_BACK",
       targeting: "isDeviceMigration",
       content: {
+        fullscreen: true,
         position: "split",
         split_narrow_bkg_position: "-100px",
         image_alt_text: {
@@ -63,6 +100,7 @@ const MR_ABOUT_WELCOME_DEFAULT = {
           },
           action: {
             type: "FXA_SIGNIN_FLOW",
+            needsAwait: true,
             navigate: "actionResult",
             data: {
               entrypoint: "fx-device-migration-onboarding",
@@ -87,10 +125,59 @@ const MR_ABOUT_WELCOME_DEFAULT = {
       },
     },
     {
+      id: "RETURN_TO_AMO",
+      targeting: "isRTAMO",
+      content: {
+        fullscreen: true,
+        position: "split",
+        title: { string_id: "mr1-return-to-amo-subtitle" },
+        isRtamo: true,
+        subtitle: {
+          string_id: "mr1-return-to-amo-addon-title",
+        },
+        backdrop:
+          "var(--mr-welcome-background-color) var(--mr-welcome-background-gradient)",
+        background:
+          "url('chrome://activity-stream/content/data/content/assets/mr-rtamo-background-image.svg') center center / cover no-repeat",
+        progress_bar: true,
+        primary_button: {
+          label: { string_id: "mr1-return-to-amo-add-extension-label" },
+          action: {
+            type: "INSTALL_ADDON_FROM_URL",
+            data: { url: null, telemetrySource: "rtamo" },
+          },
+        },
+        secondary_button: {
+          label: {
+            string_id: "mr2022-onboarding-secondary-skip-button-label",
+          },
+          action: {
+            navigate: true,
+          },
+          has_arrow_icon: true,
+        },
+        secondary_button_top: {
+          label: {
+            string_id: "mr1-onboarding-sign-in-button-label",
+          },
+          action: {
+            data: {
+              entrypoint: "activity-stream-firstrun",
+              where: "tab",
+            },
+            type: "SHOW_FIREFOX_ACCOUNTS",
+            addFlowParams: true,
+          },
+          targeting: "!isFxASignedIn",
+        },
+      },
+    },
+    {
       id: "AW_EASY_SETUP_NEEDS_DEFAULT_AND_PIN",
       targeting:
-        "doesAppNeedPin && 'browser.shell.checkDefaultBrowser'|preferenceValue && !isDefaultBrowser",
+        "doesAppNeedPin && (unhandledCampaignAction != 'SET_DEFAULT_BROWSER') && (unhandledCampaignAction != 'PIN_FIREFOX_TO_TASKBAR') && (unhandledCampaignAction != 'PIN_AND_DEFAULT') && 'browser.shell.checkDefaultBrowser'|preferenceValue && !isDefaultBrowser",
       content: {
+        fullscreen: true,
         position: "split",
         split_narrow_bkg_position: "-60px",
         image_alt_text: {
@@ -205,26 +292,36 @@ const MR_ABOUT_WELCOME_DEFAULT = {
           },
           has_arrow_icon: true,
         },
-        secondary_button_top: {
-          label: {
-            string_id: "mr1-onboarding-sign-in-button-label",
-          },
-          action: {
-            data: {
-              entrypoint: "activity-stream-firstrun",
-              where: "tab",
+        secondary_button_top: [
+          {
+            label: { string_id: "mr1-onboarding-sign-in-button-label" },
+            action: {
+              data: { entrypoint: "activity-stream-firstrun", where: "tab" },
+              type: "SHOW_FIREFOX_ACCOUNTS",
+              addFlowParams: true,
             },
-            type: "SHOW_FIREFOX_ACCOUNTS",
-            addFlowParams: true,
+            targeting: "!isFxASignedIn",
           },
-        },
+          {
+            label: { string_id: "restore-from-backup-secondary-top-button" },
+            action: {
+              type: "SET_PREF",
+              data: {
+                pref: { name: "showRestoreFromBackup", value: true },
+              },
+              navigate: true,
+            },
+            targeting: "backupRestoreEnabled",
+          },
+        ],
       },
     },
     {
       id: "AW_EASY_SETUP_NEEDS_DEFAULT",
       targeting:
-        "!doesAppNeedPin && 'browser.shell.checkDefaultBrowser'|preferenceValue && !isDefaultBrowser",
+        "!doesAppNeedPin && (unhandledCampaignAction != 'SET_DEFAULT_BROWSER') && (unhandledCampaignAction != 'PIN_AND_DEFAULT') && 'browser.shell.checkDefaultBrowser'|preferenceValue && !isDefaultBrowser",
       content: {
+        fullscreen: true,
         position: "split",
         split_narrow_bkg_position: "-60px",
         image_alt_text: {
@@ -316,26 +413,36 @@ const MR_ABOUT_WELCOME_DEFAULT = {
           },
           has_arrow_icon: true,
         },
-        secondary_button_top: {
-          label: {
-            string_id: "mr1-onboarding-sign-in-button-label",
-          },
-          action: {
-            data: {
-              entrypoint: "activity-stream-firstrun",
-              where: "tab",
+        secondary_button_top: [
+          {
+            label: { string_id: "mr1-onboarding-sign-in-button-label" },
+            action: {
+              data: { entrypoint: "activity-stream-firstrun", where: "tab" },
+              type: "SHOW_FIREFOX_ACCOUNTS",
+              addFlowParams: true,
             },
-            type: "SHOW_FIREFOX_ACCOUNTS",
-            addFlowParams: true,
+            targeting: "!isFxASignedIn",
           },
-        },
+          {
+            label: { string_id: "restore-from-backup-secondary-top-button" },
+            action: {
+              type: "SET_PREF",
+              data: {
+                pref: { name: "showRestoreFromBackup", value: true },
+              },
+              navigate: true,
+            },
+            targeting: "backupRestoreEnabled",
+          },
+        ],
       },
     },
     {
       id: "AW_EASY_SETUP_NEEDS_PIN",
       targeting:
-        "doesAppNeedPin && (!'browser.shell.checkDefaultBrowser'|preferenceValue || isDefaultBrowser)",
+        "(unhandledCampaignAction != 'PIN_FIREFOX_TO_TASKBAR') && (unhandledCampaignAction != 'PIN_AND_DEFAULT') && doesAppNeedPin && (!'browser.shell.checkDefaultBrowser'|preferenceValue || isDefaultBrowser || (unhandledCampaignAction == 'SET_DEFAULT_BROWSER'))",
       content: {
+        fullscreen: true,
         position: "split",
         split_narrow_bkg_position: "-60px",
         image_alt_text: {
@@ -438,26 +545,36 @@ const MR_ABOUT_WELCOME_DEFAULT = {
           },
           has_arrow_icon: true,
         },
-        secondary_button_top: {
-          label: {
-            string_id: "mr1-onboarding-sign-in-button-label",
-          },
-          action: {
-            data: {
-              entrypoint: "activity-stream-firstrun",
-              where: "tab",
+        secondary_button_top: [
+          {
+            label: { string_id: "mr1-onboarding-sign-in-button-label" },
+            action: {
+              data: { entrypoint: "activity-stream-firstrun", where: "tab" },
+              type: "SHOW_FIREFOX_ACCOUNTS",
+              addFlowParams: true,
             },
-            type: "SHOW_FIREFOX_ACCOUNTS",
-            addFlowParams: true,
+            targeting: "!isFxASignedIn",
           },
-        },
+          {
+            label: { string_id: "restore-from-backup-secondary-top-button" },
+            action: {
+              type: "SET_PREF",
+              data: {
+                pref: { name: "showRestoreFromBackup", value: true },
+              },
+              navigate: true,
+            },
+            targeting: "backupRestoreEnabled",
+          },
+        ],
       },
     },
     {
       id: "AW_EASY_SETUP_ONLY_IMPORT",
       targeting:
-        "!doesAppNeedPin && (!'browser.shell.checkDefaultBrowser'|preferenceValue || isDefaultBrowser)",
+        "(!doesAppNeedPin || (unhandledCampaignAction == 'PIN_FIREFOX_TO_TASKBAR') || (unhandledCampaignAction == 'PIN_AND_DEFAULT')) && (!'browser.shell.checkDefaultBrowser'|preferenceValue || isDefaultBrowser || (unhandledCampaignAction == 'SET_DEFAULT_BROWSER') || (unhandledCampaignAction == 'PIN_AND_DEFAULT'))",
       content: {
+        fullscreen: true,
         position: "split",
         split_narrow_bkg_position: "-60px",
         image_alt_text: {
@@ -538,17 +655,67 @@ const MR_ABOUT_WELCOME_DEFAULT = {
           },
           has_arrow_icon: true,
         },
-        secondary_button_top: {
-          label: {
-            string_id: "mr1-onboarding-sign-in-button-label",
-          },
-          action: {
-            data: {
-              entrypoint: "activity-stream-firstrun",
-              where: "tab",
+        secondary_button_top: [
+          {
+            label: { string_id: "mr1-onboarding-sign-in-button-label" },
+            action: {
+              data: { entrypoint: "activity-stream-firstrun", where: "tab" },
+              type: "SHOW_FIREFOX_ACCOUNTS",
+              addFlowParams: true,
             },
-            type: "SHOW_FIREFOX_ACCOUNTS",
-            addFlowParams: true,
+            targeting: "!isFxASignedIn",
+          },
+          {
+            label: { string_id: "restore-from-backup-secondary-top-button" },
+            action: {
+              type: "SET_PREF",
+              data: {
+                pref: { name: "showRestoreFromBackup", value: true },
+              },
+              navigate: true,
+            },
+            targeting: "backupRestoreEnabled",
+          },
+        ],
+      },
+    },
+    {
+      id: "AW_BACKUP_RESTORE_EMBEDDED_NO_BACKUP_FOUND",
+      targeting:
+        "backupRestoreEnabled && 'messaging-system-action.showRestoreFromBackup' |preferenceValue == true",
+      content: {
+        fullscreen: true,
+        logo: {},
+        title: {
+          string_id: "restore-from-backup-title",
+        },
+        subtitle: {
+          string_id: "restore-from-backup-subtitle",
+        },
+        tiles: {
+          type: "backup_restore",
+        },
+        position: "split",
+        split_narrow_bkg_position: "-42px",
+        background:
+          "url('chrome://activity-stream/content/data/content/assets/fox-doodle-backup-restore.svg') var(--mr-secondary-position) no-repeat var(--mr-screen-background-color)",
+        progress_bar: true,
+        hide_secondary_section: "responsive",
+        backup_show_filepicker: {
+          action: {},
+        },
+        skip_button: {
+          label: {
+            string_id: "restore-from-backup-secondary-button",
+          },
+          has_arrow_icon: true,
+          action: {
+            type: "SET_PREF",
+            data: {
+              pref: { name: "showRestoreFromBackup", value: false },
+            },
+            goBack: true,
+            navigate: true,
           },
         },
       },
@@ -556,6 +723,7 @@ const MR_ABOUT_WELCOME_DEFAULT = {
     {
       id: "AW_LANGUAGE_MISMATCH",
       content: {
+        fullscreen: true,
         position: "split",
         background: "var(--mr-screen-background-color)",
         progress_bar: true,
@@ -596,6 +764,7 @@ const MR_ABOUT_WELCOME_DEFAULT = {
       id: "AW_IMPORT_SETTINGS_EMBEDDED",
       targeting: `("messaging-system-action.showEmbeddedImport" |preferenceValue == true) && useEmbeddedMigrationWizard`,
       content: {
+        fullscreen: true,
         tiles: { type: "migration-wizard" },
         position: "split",
         split_narrow_bkg_position: "-42px",
@@ -626,40 +795,33 @@ const MR_ABOUT_WELCOME_DEFAULT = {
       },
     },
     {
-      id: "AW_MOBILE_DOWNLOAD",
-      // The mobile download screen should only be shown to users who
-      // are either not logged into FxA, or don't have any mobile devices syncing
-      targeting: "!isFxASignedIn || sync.mobileDevices == 0",
+      id: "AW_AMO_INTRODUCE",
+      targeting: "localeLanguageCode == 'en'",
       content: {
         position: "split",
-        split_narrow_bkg_position: "-160px",
-        image_alt_text: {
-          string_id: "mr2022-onboarding-mobile-download-image-alt",
-        },
+        fullscreen: true,
+        split_narrow_bkg_position: "-58px",
         background:
-          "url('chrome://activity-stream/content/data/content/assets/mr-mobilecrosspromo.svg') var(--mr-secondary-position) no-repeat var(--mr-screen-background-color)",
+          "url('chrome://activity-stream/content/data/content/assets/mr-amo-collection.svg') var(--mr-secondary-position) no-repeat var(--mr-screen-background-color)",
         progress_bar: true,
         logo: {},
         title: {
-          string_id: "onboarding-mobile-download-security-and-privacy-title",
+          string_id: "amo-screen-title",
         },
         subtitle: {
-          string_id: "onboarding-mobile-download-security-and-privacy-subtitle",
+          raw: "Extensions are tiny apps that let you customize Firefox. They can boost your privacy, enhance productivity, improve media, change the way Firefox looks, and so much more.",
         },
-        hero_image: {
-          url: "chrome://activity-stream/content/data/content/assets/mobile-download-qr-new-user.svg",
-        },
-        cta_paragraph: {
-          text: {
-            string_id: "mr2022-onboarding-mobile-download-cta-text",
-            string_name: "download-label",
+        primary_button: {
+          label: {
+            raw: "Explore staff recommended extensions",
           },
           action: {
             type: "OPEN_URL",
             data: {
-              args: "https://www.mozilla.org/firefox/mobile/get-app/?utm_medium=firefox-desktop&utm_source=onboarding-modal&utm_campaign=mr2022&utm_content=new-global",
-              where: "tab",
+              args: "https://addons.mozilla.org/en-US/firefox/collections/4757633/b4d5649fb087446aa05add5f0258c3/?page=1&collection_sort=-popularity",
+              where: "tabshifted",
             },
+            navigate: true,
           },
         },
         secondary_button: {
@@ -674,96 +836,9 @@ const MR_ABOUT_WELCOME_DEFAULT = {
       },
     },
     {
-      id: "AW_ADDONS_PICKER",
-      // Show to en-* locales only
-      targeting: "localeLanguageCode == 'en'",
-      content: {
-        position: "center",
-        progress_bar: true,
-        logo: {},
-        tiles: {
-          type: "addons-picker",
-          data: [
-            {
-              id: "jid1-MnnxcxisBPnSXQ@jetpack",
-              name: "Privacy Badger",
-              icon: "https://addons.mozilla.org/user-media/addon_icons/506/506646-64.png?modified=mcrushed",
-              type: "extension",
-              description: "Automatically learns to block invisible trackers.",
-              source_id: "ADD_EXTENSION_BUTTON",
-              action: {
-                type: "INSTALL_ADDON_FROM_URL",
-                data: {
-                  url: "https://addons.mozilla.org/firefox/downloads/file/4129240/privacy_badger17-2023.6.23.xpi",
-                  telemetrySource: "aboutwelcome-addon",
-                },
-              },
-            },
-            {
-              id: "@contain-facebook",
-              name: "Facebook Container",
-              icon: "https://addons.mozilla.org/user-media/addon_icons/954/954390-64.png?modified=97d4c956",
-              type: "extension",
-              description: "Prevent Facebook from tracking you around the web.",
-              source_id: "ADD_EXTENSION_BUTTON",
-              action: {
-                type: "INSTALL_ADDON_FROM_URL",
-                data: {
-                  url: "https://addons.mozilla.org/firefox/downloads/file/4141092/facebook_container-2.3.11.xpi",
-                  telemetrySource: "aboutwelcome-addon",
-                },
-              },
-            },
-            {
-              id: "{74145f27-f039-47ce-a470-a662b129930a}",
-              name: "ClearURLs",
-              icon: "https://addons.mozilla.org/user-media/addon_icons/839/839767-64.png?modified=b06fa7ed",
-              type: "extension",
-              description: "Removes tracking elements from URLs.",
-              source_id: "ADD_EXTENSION_BUTTON",
-              action: {
-                type: "INSTALL_ADDON_FROM_URL",
-                data: {
-                  url: "https://addons.mozilla.org/firefox/downloads/file/4064884/clearurls-1.26.1.xpi",
-                  telemetrySource: "aboutwelcome-addon",
-                },
-              },
-            },
-          ],
-        },
-        title: {
-          string_id: "amo-picker-title",
-        },
-        subtitle: {
-          string_id: "amo-picker-subtitle",
-        },
-        additional_button: {
-          label: {
-            string_id: "amo-picker-collection-link",
-          },
-          style: "link",
-          action: {
-            type: "OPEN_URL",
-            data: {
-              args: "https://addons.mozilla.org",
-              where: "tab",
-            },
-          },
-        },
-        secondary_button: {
-          label: {
-            string_id: "mr2022-onboarding-secondary-skip-button-label",
-          },
-          style: "secondary",
-          action: {
-            navigate: true,
-          },
-        },
-      },
-    },
-    {
       id: "AW_GRATITUDE",
       content: {
+        fullscreen: true,
         position: "split",
         split_narrow_bkg_position: "-228px",
         image_alt_text: {
@@ -788,6 +863,50 @@ const MR_ABOUT_WELCOME_DEFAULT = {
           },
         },
       },
+      targeting: "isFxASignedIn",
+    },
+    {
+      id: "AW_ACCOUNT_LOGIN",
+      content: {
+        fullscreen: true,
+        position: "split",
+        split_narrow_bkg_position: "-228px",
+        image_alt_text: {
+          string_id: "mr2022-onboarding-gratitude-image-alt",
+        },
+        background:
+          "url('chrome://activity-stream/content/data/content/assets/fox-doodle-waving-laptop.svg') center center / 80% no-repeat var(--mr-screen-background-color)",
+        progress_bar: true,
+        logo: {},
+        title: {
+          string_id: "onboarding-sign-up-title",
+        },
+        subtitle: {
+          string_id: "onboarding-sign-up-description",
+        },
+        secondary_button: {
+          label: {
+            string_id: "mr2-onboarding-start-browsing-button-label",
+          },
+          style: "secondary",
+          action: {
+            navigate: true,
+          },
+        },
+        primary_button: {
+          label: {
+            string_id: "onboarding-sign-up-button",
+          },
+          action: {
+            data: {
+              entrypoint: "newuser-onboarding-desktop",
+            },
+            type: "FXA_SIGNIN_FLOW",
+            navigate: true,
+          },
+        },
+      },
+      targeting: "!isFxASignedIn",
     },
   ],
 };
@@ -799,6 +918,7 @@ async function getAddonFromRepository(data) {
   }
 
   return {
+    addonId: addonInfo.id,
     name: addonInfo.name,
     url: addonInfo.sourceURI.spec,
     iconURL: addonInfo.icons["64"] || addonInfo.icons["32"],
@@ -845,6 +965,7 @@ async function getAttributionContent() {
     if (addonInfo) {
       return {
         ...addonInfo,
+        ua: decodeURIComponent(attribution.ua),
         template: "return_to_amo",
       };
     }
@@ -873,7 +994,12 @@ function getLocalizedUA(ua) {
     gSourceL10n = new Localization(["browser/migrationWizard.ftl"]);
   }
   if (allowedUAs.includes(ua)) {
-    return gSourceL10n.formatValue(`migration-source-name-${ua.toLowerCase()}`);
+    const messageIDs = {
+      chrome: "migration-source-name-chrome",
+      edge: "migration-source-name-edge",
+      ie: "migration-source-name-ie",
+    };
+    return gSourceL10n.formatValue(messageIDs[ua]);
   }
   return null;
 }
@@ -895,7 +1021,7 @@ function prepareMobileDownload(content) {
     };
   }
   // Update CN specific QRCode url
-  if (AppConstants.isChinaRepack()) {
+  if (lazy.BrowserUtils.isChinaRepack()) {
     mobileContent.hero_image.url = `${mobileContent.hero_image.url.slice(
       0,
       mobileContent.hero_image.url.indexOf(".svg")
@@ -906,6 +1032,10 @@ function prepareMobileDownload(content) {
 }
 
 async function prepareContentForReact(content) {
+  if (!content.screens) {
+    return content;
+  }
+
   const { screens } = content;
 
   if (content?.template === "return_to_amo") {

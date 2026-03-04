@@ -40,7 +40,7 @@ class HTMLRadioButtonAccessible : public RadioButtonAccessible {
                                      int32_t* aSetSize) override;
 
   virtual void DOMAttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
-                                   int32_t aModType,
+                                   AttrModType aModType,
                                    const nsAttrValue* aOldValue,
                                    uint64_t aOldState) override;
 
@@ -59,6 +59,7 @@ class HTMLButtonAccessible : public HyperTextAccessible {
   HTMLButtonAccessible(nsIContent* aContent, DocAccessible* aDoc);
 
   // LocalAccessible
+  virtual void Value(nsString& aValue) const override;
   virtual mozilla::a11y::role NativeRole() const override;
   virtual uint64_t NativeState() const override;
 
@@ -74,7 +75,7 @@ class HTMLButtonAccessible : public HyperTextAccessible {
   virtual ENameValueFlag NativeName(nsString& aName) const override;
 
   virtual void DOMAttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
-                                   int32_t aModType,
+                                   AttrModType aModType,
                                    const nsAttrValue* aOldValue,
                                    uint64_t aOldState) override;
 };
@@ -117,10 +118,10 @@ class HTMLTextFieldAccessible : public HyperTextAccessible {
   virtual ~HTMLTextFieldAccessible() {}
 
   // LocalAccessible
-  virtual ENameValueFlag Name(nsString& aName) const override;
+  virtual ENameValueFlag DirectName(nsString& aName) const override;
 
   virtual void DOMAttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
-                                   int32_t aModType,
+                                   AttrModType aModType,
                                    const nsAttrValue* aOldValue,
                                    uint64_t aOldState) override;
 };
@@ -135,7 +136,7 @@ class HTMLFileInputAccessible : public HyperTextAccessible {
   // LocalAccessible
   virtual mozilla::a11y::role NativeRole() const override;
   virtual bool IsAcceptableChild(nsIContent* aEl) const override;
-  virtual ENameValueFlag Name(nsString& aName) const override;
+  virtual ENameValueFlag DirectName(nsString& aName) const override;
   virtual bool HasPrimaryAction() const override;
   virtual void ActionNameAt(uint8_t aIndex, nsAString& aName) override;
   virtual bool IsWidget() const override;
@@ -261,7 +262,7 @@ class HTMLFormAccessible : public HyperTextAccessible {
 
  protected:
   virtual void DOMAttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
-                                   int32_t aModType,
+                                   AttrModType aModType,
                                    const nsAttrValue* aOldValue,
                                    uint64_t aOldState) override;
 
@@ -302,7 +303,7 @@ class HTMLProgressAccessible : public LeafAccessible {
   virtual ~HTMLProgressAccessible() {}
 
   virtual void DOMAttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
-                                   int32_t aModType,
+                                   AttrModType aModType,
                                    const nsAttrValue* aOldValue,
                                    uint64_t aOldState) override;
 };
@@ -350,7 +351,7 @@ class HTMLMeterAccessible : public LeafAccessible {
   virtual ~HTMLMeterAccessible() {}
 
   virtual void DOMAttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
-                                   int32_t aModType,
+                                   AttrModType aModType,
                                    const nsAttrValue* aOldValue,
                                    uint64_t aOldState) override;
 };

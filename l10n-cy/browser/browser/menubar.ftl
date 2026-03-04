@@ -3,18 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -150,8 +138,6 @@ menu-view-history-button =
     .label = Hanes
 menu-view-synced-tabs-sidebar =
     .label = Tabiau wedi'u Cydweddu
-menu-view-megalist-sidebar =
-    .label = Cyfrineiriau
 menu-view-full-zoom =
     .label = Chwyddo
     .accesskey = h
@@ -259,6 +245,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Nodau Tudalen Symudol
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Proffiliau
+menu-profiles-manage-profiles =
+    .label = Rheoli proffiliau
+menu-profiles-new-profile =
+    .label = Proffil newydd
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (cyfredol)
+menu-profiles-menu =
+    .label = Proffiliau
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -267,6 +269,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Llwythi i lawr
     .accesskey = L
+menu-tools-extensions-and-themes =
+    .label = Estyniadau a Themâu
+    .accesskey = E
 menu-tools-addons-and-themes =
     .label = Ychwanegion a Themâu
     .accesskey = Y
@@ -292,7 +297,7 @@ menu-tools-page-source =
     .label = Cod Gwreiddiol y Dudalen
     .accesskey = o
 menu-tools-page-info =
-    .label = Gwybodaeth am y Dudalen
+    .label = Manylion y Dudalen
     .accesskey = w
 menu-settings =
     .label = Gosodiadau
@@ -330,12 +335,12 @@ menu-get-help =
     .label = Derbyn Cymorth
     .accesskey = D
 menu-help-more-troubleshooting-info =
-    .label = Rhagor o Wybodaeth i Ddatrys Problemau
-    .accesskey = R
+    .label = Gwybodaeth am Ddatrys Problemau
+    .accesskey = G
 menu-help-report-site-issue =
-    .label = Adrodd ar Fater Gwefan…
+    .label = Adrodd am Fater Gwefan…
 menu-help-share-ideas =
-    .label = Rhannwch Syniadau ac Adborth…
+    .label = Rhannu Syniadau ac Adborth…
     .accesskey = R
 menu-help-enter-troubleshoot-mode2 =
     .label = Y Modd Datrys Problemau…
@@ -349,10 +354,10 @@ menu-help-switch-device =
 # Label of the Help menu item. Either this or
 # menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =
-    .label = Adroddwch ar wefan twyllodrus…
+    .label = Adrodd am wefan twyllodrus…
     .accesskey = t
 menu-help-not-deceptive =
     .label = Nid yw hon yn wefan twyllodrus…
     .accesskey = t
 menu-report-broken-site =
-    .label = Adrodd ar Wefan wedi Torri
+    .label = Adrodd am Wefan wedi Torri

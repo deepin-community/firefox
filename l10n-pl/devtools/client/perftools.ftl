@@ -33,6 +33,7 @@ perftools-description-local-build =
     Jeśli profilowana jest samodzielnie skompilowana wersja na tym komputerze,
     dodaj objdir swojej kompilacji do poniższej listy, aby można było wyszukać
     informacje o symbolach.
+perftools-pick-local-build-directory = Wybierz katalog budowania
 
 ## The controls for the interval at which the profiler samples the code.
 
@@ -68,6 +69,14 @@ perftools-button-restart = Uruchom ponownie
 perftools-button-add-directory = Dodaj katalog
 perftools-button-remove-directory = Usuń zaznaczone
 perftools-button-edit-settings = Zmień ustawienia…
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Więcej działań
+perftools-menu-more-actions-restart-with-profiling = Uruchom ponownie { -brand-shorter-name(case: "acc") } z włączonym profilowaniem uruchamiania
+perftools-menu-more-actions-copy-for-startup = Kopiuj zmienne środowiskowe do profilowania uruchamiania
+perftools-menu-more-actions-copy-for-perf-tests = Kopiuj parametry do testów wydajności
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -141,6 +150,8 @@ perftools-presets-graphics-label = Grafika
 perftools-presets-graphics-description = Ustawienie do badania błędów graficznych w { -brand-shorter-name(case: "loc") }.
 perftools-presets-media-label = Multimedia
 perftools-presets-media-description2 = Ustawienie do badania błędów dźwięku i obrazu w { -brand-shorter-name(case: "loc") }.
+perftools-presets-ml-label = Uczenie maszynowe
+perftools-presets-ml-description2 = Ustawienie do badania błędów uczenia maszynowego w { -brand-shorter-name(case: "loc") }.
 perftools-presets-networking-label = Sieć
 perftools-presets-networking-description = Ustawienie do badania błędów sieciowych w { -brand-shorter-name(case: "loc") }.
 # "Power" is used in the sense of energy (electricity used by the computer).
@@ -148,7 +159,6 @@ perftools-presets-power-label = Energia
 perftools-presets-power-description = Ustawienie do badania błędów użycia energii w { -brand-shorter-name(case: "loc") } o niskim wpływie na wydajność.
 perftools-presets-debug-label = Debugowanie
 perftools-presets-debug-description = Ustawienie do debugowania w { -brand-shorter-name(case: "loc") }. Wysoki wpływ na wydajność. Nie należy używać do pracy nad wydajnością, tylko do zrozumienia zachowania przeglądarki.
+perftools-presets-web-compat-label = Zgodność w Internecie
+perftools-presets-web-compat-description = Zalecane ustawienie do debugowania problemów ze zgodnością stron internetowych, a nie do śledzenia wydajności.
 perftools-presets-custom-label = Inne
-
-##
-

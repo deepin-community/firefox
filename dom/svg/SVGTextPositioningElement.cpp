@@ -6,10 +6,9 @@
 
 #include "mozilla/dom/SVGTextPositioningElement.h"
 
-#include "mozilla/ArrayUtils.h"
-#include "SVGAnimatedLengthList.h"
 #include "DOMSVGAnimatedLengthList.h"
 #include "DOMSVGAnimatedNumberList.h"
+#include "SVGAnimatedLengthList.h"
 #include "SVGContentUtils.h"
 
 namespace mozilla::dom {
@@ -23,7 +22,7 @@ SVGElement::LengthListInfo SVGTextPositioningElement::sLengthListInfo[4] = {
 SVGElement::LengthListAttributesInfo
 SVGTextPositioningElement::GetLengthListInfo() {
   return LengthListAttributesInfo(mLengthListAttributes, sLengthListInfo,
-                                  ArrayLength(sLengthListInfo));
+                                  std::size(sLengthListInfo));
 }
 
 SVGElement::NumberListInfo SVGTextPositioningElement::sNumberListInfo[1] = {
@@ -32,7 +31,7 @@ SVGElement::NumberListInfo SVGTextPositioningElement::sNumberListInfo[1] = {
 SVGElement::NumberListAttributesInfo
 SVGTextPositioningElement::GetNumberListInfo() {
   return NumberListAttributesInfo(mNumberListAttributes, sNumberListInfo,
-                                  ArrayLength(sNumberListInfo));
+                                  std::size(sNumberListInfo));
 }
 
 //----------------------------------------------------------------------

@@ -5,6 +5,9 @@
 //! DOM types to be shared between Rust and C++.
 
 use bitflags::bitflags;
+use malloc_size_of::malloc_size_of_is_0;
+
+pub const HEADING_LEVEL_OFFSET: usize = 52;
 
 bitflags! {
     /// Event-based element states.
@@ -130,6 +133,21 @@ bitflags! {
         /// https://html.spec.whatwg.org/#selector-popover-open
         /// Match element's popover visibility state of showing
         const POPOVER_OPEN = 1u64 << 47;
+        /// https://drafts.csswg.org/css-scoping-1/#the-has-slotted-pseudo
+        /// Match whether a slot element has assigned nodes
+        const HAS_SLOTTED = 1u64 << 48;
+        /// https://drafts.csswg.org/selectors-4/#open-state
+        /// Match whether an openable element is currently open
+        const OPEN = 1u64 << 49;
+        /// For :active-view-transition.
+        /// <https://www.w3.org/TR/css-view-transitions-2/#the-active-view-transition-pseudo>
+        const ACTIVE_VIEW_TRANSITION = 1u64 << 50;
+        /// For :-moz-suppress-for-print-selection.
+        const SUPPRESS_FOR_PRINT_SELECTION = 1u64 << 51;
+        /// https://drafts.csswg.org/selectors-5/#headings
+        /// These 4 bits are used to pack the elements heading level into the element state
+        /// Heading levels can be from 1-9 so 4 bits allows us to express the full range.
+        const HEADING_LEVEL_BITS = 0b1111u64 << HEADING_LEVEL_OFFSET;
 
         /// Some convenience unions.
         const DIR_STATES = Self::LTR.bits() | Self::RTL.bits();
@@ -160,3 +178,5 @@ bitflags! {
         const ALL_LOCALEDIR_BITS = Self::LTR_LOCALE.bits() | Self::RTL_LOCALE.bits();
     }
 }
+
+malloc_size_of_is_0!(ElementState, DocumentState);

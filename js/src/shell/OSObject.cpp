@@ -8,7 +8,6 @@
 
 #include "shell/OSObject.h"
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/ScopeExit.h"
 #include "mozilla/TextUtils.h"
 
@@ -19,7 +18,7 @@
 #  include <process.h>
 #  include <string.h>
 #  include <wchar.h>
-#  include <windows.h>
+#  include "util/WindowsWrapper.h"
 #elif __wasi__
 #  include <dirent.h>
 #  include <sys/types.h>
@@ -120,6 +119,7 @@ static UniqueChars DirectoryName(JSContext* cx, const char* path) {
   char dirName[PATH_MAX + 1];
   strncpy(dirName, narrowPath.get(), PATH_MAX);
   if (dirName[PATH_MAX - 1] != '\0') {
+    JS_ReportErrorASCII(cx, "Path is too long");
     return nullptr;
   }
 
@@ -194,11 +194,10 @@ JSString* ResolvePath(JSContext* cx, HandleString filenameStr,
   JS::AutoFilename scriptFilename;
   if (resolveMode == ScriptRelative) {
     // Get the currently executing script's name.
-    if (!DescribeScriptedCaller(cx, &scriptFilename)) {
-      return nullptr;
-    }
 
-    if (!scriptFilename.get()) {
+    if (!DescribeScriptedCaller(&scriptFilename, cx) || !scriptFilename.get()) {
+      JS_ReportErrorASCII(
+          cx, "cannot resolve path due to hidden or unscripted caller");
       return nullptr;
     }
 
@@ -1000,14 +999,14 @@ UniqueChars SystemErrorMessage(JSContext* cx, int errnum) {
 #if defined(XP_WIN)
   wchar_t buffer[200];
   const wchar_t* errstr = buffer;
-  if (_wcserror_s(buffer, mozilla::ArrayLength(buffer), errnum) != 0) {
+  if (_wcserror_s(buffer, std::size(buffer), errnum) != 0) {
     errstr = L"unknown error";
   }
   return JS::EncodeWideToUtf8(cx, errstr);
 #else
   char buffer[200];
-  const char* errstr = strerror_message(
-      strerror_r(errno, buffer, mozilla::ArrayLength(buffer)), buffer);
+  const char* errstr =
+      strerror_message(strerror_r(errno, buffer, std::size(buffer)), buffer);
   if (!errstr) {
     errstr = "unknown error";
   }

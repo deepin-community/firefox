@@ -7,10 +7,6 @@ search-header =
     .placeholder = addons.mozilla.org تلاش کریں
     .searchbuttonlabel = تلاش
 
-## Variables
-##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
-
-
 ##
 
 list-empty-installed =
@@ -271,14 +267,6 @@ install-update-button = تازہ کاری کریں
 addon-detail-private-browsing-allow = اجازت دیں
 addon-detail-private-browsing-disallow = اجازت مت دیں
 
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
-
-## This is the tooltip text for the recommended badges for an extension in about:addons. The
-## badge is a small icon displayed next to an extension when it is recommended on AMO.
-
-
 ##
 
 available-updates-heading = دستیاب تازہ کاریاں
@@ -307,7 +295,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } { -brand-short-name } { $version } کے ساتھ غیر موازن ہے۔
 # Variables:
 #   $version (string) - Application version.
@@ -322,12 +310,8 @@ details-notification-unsigned2 =
     .message = { $name } کی { -brand-short-name } میں استعمال کے لیے تصدیق نہیں ہو سکی۔ احتیاط سے آگے بڑھیں۔
 details-notification-unsigned-link = مزید معلومات
 details-notification-blocked = { $name } سلامتی یا سٹبلٹی مسائل کی بناہ پر نا اہل کر دیا گیا ہے۔
-details-notification-blocked2 =
-    .message = { $name } سلامتی یا سٹبلٹی مسائل کی بناہ پر نا اہل کر دیا گیا ہے۔
 details-notification-blocked-link = مزید معلومات
 details-notification-softblocked = { $name } سلامتی یا سٹبلٹی مسائل پیدا کرنے کی وجہ سے جانا جاتا ہے۔
-details-notification-softblocked2 =
-    .message = { $name } سلامتی یا سٹبلٹی مسائل پیدا کرنے کی وجہ سے جانا جاتا ہے۔
 details-notification-softblocked-link = مزید معلومات
 details-notification-gmp-pending = { $name } ابھی تنصیب ہو جائے گا۔
 details-notification-gmp-pending2 =

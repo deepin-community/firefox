@@ -10,14 +10,15 @@
 #ifndef MODULES_RTP_RTCP_SOURCE_RTCP_PACKET_CONGESTION_CONTROL_FEEDBACK_H_
 #define MODULES_RTP_RTCP_SOURCE_RTCP_PACKET_CONGESTION_CONTROL_FEEDBACK_H_
 
+#include <cstddef>
 #include <cstdint>
 #include <vector>
 
 #include "api/array_view.h"
+#include "api/transport/ecn_marking.h"
 #include "api/units/time_delta.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/common_header.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/rtpfb.h"
-#include "rtc_base/network/ecn_marking.h"
 
 namespace webrtc {
 namespace rtcp {
@@ -29,22 +30,24 @@ class CongestionControlFeedback : public Rtpfb {
   struct PacketInfo {
     uint32_t ssrc = 0;
     uint16_t sequence_number = 0;
-    //  Time offset from report timestamp.
-    TimeDelta arrival_time_offset = TimeDelta::Zero();
-    rtc::EcnMarking ecn = rtc::EcnMarking::kNotEct;
+    //  Time offset from report timestamp. Minus infinity if the packet has not
+    //  been received.
+    TimeDelta arrival_time_offset = TimeDelta::MinusInfinity();
+    EcnMarking ecn = EcnMarking::kNotEct;
   };
 
   static constexpr uint8_t kFeedbackMessageType = 11;
 
-  // `Packets` MUST be sorted in sequence_number order per SSRC.
-  // `Packets` MUST not include duplicate sequence numbers.
+  // `Packets` MUST be sorted in sequence_number order per SSRC. There MUST not
+  // be missing sequence numbers between `Packets`. `Packets` MUST not include
+  // duplicate sequence numbers.
   CongestionControlFeedback(std::vector<PacketInfo> packets,
                             uint32_t report_timestamp_compact_ntp);
   CongestionControlFeedback() = default;
 
   bool Parse(const CommonHeader& packet);
 
-  rtc::ArrayView<const PacketInfo> packets() const { return packets_; }
+  ArrayView<const PacketInfo> packets() const { return packets_; }
 
   uint32_t report_timestamp_compact_ntp() const {
     return report_timestamp_compact_ntp_;

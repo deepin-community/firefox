@@ -11,11 +11,29 @@
 ##   $extension (String): replaced with the localized name of the extension.
 
 webext-perms-header = 要安裝 { $extension } 嗎？
-webext-perms-header-with-perms = 要安裝 { $extension } 嗎？此擴充套件將有下列權限:
+webext-perms-header-with-perms = 要安裝 { $extension } 嗎？此擴充套件將有下列權限：
 webext-perms-header-unsigned = 要安裝 { $extension } 嗎？此擴充套件尚未經過驗證。惡意的擴充套件可偷走您的個人資訊，或讓您的電腦成為有害軟體散布的溫床。請只在信任此套件的來源時才安裝。
 webext-perms-header-unsigned-with-perms = 要安裝 { $extension } 嗎？此擴充套件尚未經過驗證。惡意的擴充套件可偷走您的個人資訊，或讓您的電腦成為有害軟體散布的溫床。請只在信任此元件的來源時才安裝。此擴充套件將有下列權限：
 webext-perms-sideload-header = 已安裝 { $extension }
+webext-perms-optional-perms-header2 = { $extension } 要求更多權限
 webext-perms-optional-perms-header = { $extension } 要求更多權限。
+webext-perms-header2 = 安裝 { $extension }
+webext-perms-list-intro-unsigned = 這套擴充套件未經驗證，可能會導致您的隱私外流或破壞您的裝置。請務必只有在信任來源時才安裝。
+
+## Headers used in the webextension permissions dialog, inside the content.
+
+webext-perms-header-required-perms = 必要權限：
+webext-perms-header-optional-settings = 選用設定：
+webext-perms-header-update-required-perms = 新增的必要權限：
+webext-perms-header-optional-required-perms = 新增的權限：
+webext-perms-header-data-collection-perms = 必需收集的資料：
+webext-perms-header-data-collection-is-none = 收集下列資料：
+# This is a header used in the add-ons "update" prompt, shown when the new
+# version requires new data collection permissions.
+webext-perms-header-update-data-collection-perms = 新增必需收集的資料：
+# This is a header used in the add-ons "optional" prompt, shown when the
+# extension requests new data collection permissions programmatically.
+webext-perms-header-optional-data-collection-perms = 新增收集的資料：
 
 ##
 
@@ -35,7 +53,10 @@ webext-perms-sideload-cancel =
     .accesskey = C
 # Variables:
 #   $extension (String): replaced with the localized name of the extension.
-webext-perms-update-text = { $extension } 已有更新。您必須允許新版套件所要求的權限，才會安裝。點擊「取消」可繼續使用目前版本的擴充套件。此擴充套件將有下列權限:
+webext-perms-update-text2 = { $extension } 已有更新。您必須允許新版套件所要求的權限，才會安裝。點擊「取消」可繼續使用目前版本的擴充套件。
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
+webext-perms-update-text = { $extension } 已有更新。您必須允許新版套件所要求的權限，才會安裝。點擊「取消」可繼續使用目前版本的擴充套件。此擴充套件將有下列權限：
 webext-perms-update-accept =
     .label = 更新
     .accesskey = U
@@ -61,6 +82,40 @@ webext-perms-host-description-one-site = 存取您在 { $domain } 的資料
 #   $domainCount (Number): Integer indicating the number of additional
 #     hosts for which this webextension is requesting permission.
 webext-perms-host-description-too-many-sites = 存取您在其他 { $domainCount } 個網站中的資料
+# Variables:
+#   $domain (String): will be replaced by the DNS host name for which a webextension is requesting access (e.g., mozilla.org),
+#     $domain should be treated as plural (because it may also include all subdomains, e.g www.mozilla.org, ftp.mozilla.org).
+webext-perms-host-description-one-domain = 存取您在 { $domain } 網域中的資料
+# Permission string used for webextensions requesting access to 2 or more domains (and so $domainCount is expected to always
+# be >= 2, for webextensions requesting access to only one domain the `webext-perms-host-description-one-domain` string is
+# used instead).
+# Variables:
+#   $domainCount (Number): Integer indicating the number of websites domains for which this webextension is requesting permission
+#     (the list of domains will follow this string).
+webext-perms-host-description-multiple-domains = 存取您在 { $domainCount } 個網域中的資料
+
+## Strings for data collection permissions in the permission prompt.
+
+webext-perms-description-data-none = 開發者聲稱此擴充套件不要求收集任何資料。
+# Variables:
+#    $permissions (String): a list of data collection permissions formatted with `Intl.ListFormat` using the "narrow" style.
+webext-perms-description-data-some = 開發者聲稱此擴充套件收集下列資料：{ $permissions }
+# Variables:
+#    $permissions (String): a list of data collection permissions formatted with `Intl.ListFormat` using the "narrow" style.
+webext-perms-description-data-some-update = 開發者聲稱此擴充套件將收集下列資料：{ $permissions }
+# Variables:
+#    $permissions (String): a list of data collection permissions formatted with `Intl.ListFormat` using the "narrow" style.
+webext-perms-description-data-some-optional = 開發者聲稱此擴充套件希望收集下列資料：{ $permissions }
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
+webext-perms-update-text-with-data-collection = { $extension } 需要新設定才能更新
+webext-perms-update-list-intro-with-data-collection = 現在取消可維持目前的版本與設定，或更新以接受必要變更，並安裝最新版本。
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
+webext-perms-optional-text-with-data-collection = { $extension } 要求更多設定
+# Variables:
+#   $extension (String): replaced with the localized name of the extension.
+webext-perms-optional-text-with-data-collection-only = { $extension } 要求收集更多資料
 
 ## Headers used in the webextension permissions dialog for synthetic add-ons.
 ## The part of the string describing what privileges the extension gives should be consistent
@@ -95,3 +150,8 @@ webext-site-perms-header-unsigned-with-perms = 要安裝 { $extension } 嗎？�
 
 webext-site-perms-midi = 存取 MIDI 裝置
 webext-site-perms-midi-sysex = 存取 MIDI 裝置並支援 SysEx
+
+## Colorway theme migration
+
+webext-colorway-theme-migration-notification-message = <b>已移除您的配色佈景主題</b> { -brand-shorter-name } 已更新配色收藏集，可到附加元件站下載新版主題。
+webext-colorway-theme-migration-notification-button = 下載新版配色

@@ -149,9 +149,7 @@ main-context-menu-save-link-to-pocket =
     .label = لنک { -pocket-brand-name } تے ہتھیکڑا کرو
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = ای میل پتہ کاپی کرو
@@ -162,11 +160,6 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = لنک کاپی کرو
     .accesskey = L
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = سائٹ ٹریکنگ دے بغیر لنک کاپی کرو
-    .accesskey = y
 
 ## Media (video/audio) controls
 ##
@@ -290,9 +283,7 @@ main-context-menu-send-to-device =
     .label = ورقہ ڈیوائس تے بھیڄو
     .accesskey = n
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = محفوظ لاگ ان استعمال کرو

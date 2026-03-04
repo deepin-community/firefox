@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = 新しいタブ
     .accesskey = w
@@ -28,10 +32,16 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = 左側のタブをすべて閉じる
     .accesskey = l
+close-tabs-to-the-start-vertical =
+    .label = 上側のタブをすべて閉じる
+    .accesskey = l
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = 右側のタブをすべて閉じる
+    .accesskey = i
+close-tabs-to-the-end-vertical =
+    .label = 下側のタブをすべて閉じる
     .accesskey = i
 close-other-tabs =
     .label = 他のタブをすべて閉じる
@@ -52,10 +62,10 @@ unpin-selected-tabs =
     .label = タブのピン留めを外す
     .accesskey = p
 bookmark-selected-tabs =
-    .label = タブをブックマーク...
+    .label = 選択したタブをブックマークに追加...
     .accesskey = B
 tab-context-bookmark-tab =
-    .label = タブをブックマーク...
+    .label = タブをブックマークに追加...
     .accesskey = B
 tab-context-open-in-new-container-tab =
     .label = 新しいコンテナータブで開く
@@ -69,6 +79,10 @@ move-to-end =
 move-to-new-window =
     .label = 新しいウィンドウへ移動
     .accesskey = W
+# Variables
+#  $profileName (string): The name of the profile to move tab to
+move-to-new-profile =
+    .label = { $profileName } へ移動
 tab-context-close-multiple-tabs =
     .label = 複数のタブを閉じる
     .accesskey = M
@@ -78,6 +92,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = 共有
     .accesskey = h
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = 新しいタブを右隣に開く
+    .accesskey = w
+tab-context-new-tab-open-vertical =
+    .label = 新しいタブを下隣に開く
+    .accesskey = w
+tab-context-new-group =
+    .label = 新しいグループ
+    .accesskey = G
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -87,7 +111,7 @@ tab-context-reopen-closed-tabs =
     .accesskey = o
 tab-context-close-n-tabs =
     .label =
-        { NUMBER($tabCount) ->
+        { $tabCount ->
             [1] タブを閉じる
            *[other] { $tabCount } 個のタブを閉じる
         }
@@ -95,10 +119,25 @@ tab-context-close-n-tabs =
 tab-context-move-tabs =
     .label = タブを移動
     .accesskey = v
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-device =
+    .label =
+        { $tabCount ->
+            [1] 端末へ送信
+           *[other] { $tabCount } 個のタブを端末へ送信
+        }
+    .accesskey = n
 tab-context-send-tabs-to-device =
     .label =
-        { NUMBER($tabCount) ->
+        { $tabCount ->
             [1] タブを端末へ送信
            *[other] { $tabCount } 個のタブを端末へ送信
         }
     .accesskey = n
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [1] タブを解放
+           *[other] { $tabCount } 個のタブを解放
+        }
+    .accesskey = U

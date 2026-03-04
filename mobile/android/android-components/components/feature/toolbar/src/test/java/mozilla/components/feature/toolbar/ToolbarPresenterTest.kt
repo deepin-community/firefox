@@ -11,7 +11,7 @@ import mozilla.components.browser.state.action.TabListAction
 import mozilla.components.browser.state.action.TrackingProtectionAction
 import mozilla.components.browser.state.state.BrowserState
 import mozilla.components.browser.state.state.ContentState
-import mozilla.components.browser.state.state.SecurityInfoState
+import mozilla.components.browser.state.state.SecurityInfo
 import mozilla.components.browser.state.state.TabSessionState
 import mozilla.components.browser.state.state.TrackingProtectionState
 import mozilla.components.browser.state.state.content.PermissionHighlightsState
@@ -21,7 +21,6 @@ import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.concept.toolbar.Toolbar
 import mozilla.components.feature.toolbar.internal.URLRenderer
 import mozilla.components.support.test.any
-import mozilla.components.support.test.ext.joinBlocking
 import mozilla.components.support.test.mock
 import mozilla.components.support.test.rule.MainCoroutineRule
 import org.junit.Rule
@@ -64,7 +63,7 @@ class ToolbarPresenterTest {
         verify(toolbarPresenter.renderer).post("https://www.mozilla.org")
         verify(toolbar).setSearchTerms("")
         verify(toolbar).displayProgress(0)
-        verify(toolbar).siteSecure = Toolbar.SiteSecurity.INSECURE
+        verify(toolbar).siteInfo = Toolbar.SiteInfo.INSECURE
     }
 
     @Test
@@ -92,11 +91,11 @@ class ToolbarPresenterTest {
         verify(toolbarPresenter.renderer).post("https://www.example.org")
         verify(toolbar).setSearchTerms("")
         verify(toolbar).displayProgress(0)
-        verify(toolbar).siteSecure = Toolbar.SiteSecurity.INSECURE
+        verify(toolbar).siteInfo = Toolbar.SiteInfo.INSECURE
     }
 
     @Test
-    fun `SecurityInfoState change updates toolbar`() {
+    fun `SiteInfoState change updates toolbar`() {
         val toolbar: Toolbar = mock()
         val store = spy(
             BrowserStore(
@@ -115,22 +114,21 @@ class ToolbarPresenterTest {
 
         dispatcher.scheduler.advanceUntilIdle()
 
-        verify(toolbar, never()).siteSecure = Toolbar.SiteSecurity.SECURE
+        verify(toolbar, never()).siteInfo = Toolbar.SiteInfo.SECURE
 
         store.dispatch(
             ContentAction.UpdateSecurityInfoAction(
                 "tab1",
-                SecurityInfoState(
-                    secure = true,
+                SecurityInfo.Secure(
                     host = "mozilla.org",
                     issuer = "Mozilla",
                 ),
             ),
-        ).joinBlocking()
+        )
 
         dispatcher.scheduler.advanceUntilIdle()
 
-        verify(toolbar).siteSecure = Toolbar.SiteSecurity.SECURE
+        verify(toolbar).siteInfo = Toolbar.SiteInfo.SECURE
     }
 
     @Test
@@ -144,7 +142,7 @@ class ToolbarPresenterTest {
                             id = "tab1",
                             content = ContentState(
                                 url = "https://www.mozilla.org",
-                                securityInfo = SecurityInfoState(true, "mozilla.org", "Mozilla"),
+                                securityInfo = SecurityInfo.Secure("mozilla.org", "Mozilla"),
                                 searchTerms = "Hello World",
                                 progress = 60,
                             ),
@@ -166,20 +164,20 @@ class ToolbarPresenterTest {
         verify(toolbarPresenter.renderer).post("https://www.mozilla.org")
         verify(toolbar).setSearchTerms("Hello World")
         verify(toolbar).displayProgress(60)
-        verify(toolbar).siteSecure = Toolbar.SiteSecurity.SECURE
+        verify(toolbar).siteInfo = Toolbar.SiteInfo.SECURE
         verify(toolbar).siteTrackingProtection = Toolbar.SiteTrackingProtection.OFF_GLOBALLY
         verify(toolbar).highlight = Toolbar.Highlight.NONE
         verifyNoMoreInteractions(toolbarPresenter.renderer)
         verifyNoMoreInteractions(toolbar)
 
-        store.dispatch(TabListAction.RemoveTabAction("tab1")).joinBlocking()
+        store.dispatch(TabListAction.RemoveTabAction("tab1"))
 
         dispatcher.scheduler.advanceUntilIdle()
 
         verify(toolbarPresenter.renderer).post("")
         verify(toolbar).setSearchTerms("")
         verify(toolbar).displayProgress(0)
-        verify(toolbar).siteSecure = Toolbar.SiteSecurity.INSECURE
+        verify(toolbar).siteInfo = Toolbar.SiteInfo.INSECURE
     }
 
     @Test
@@ -209,7 +207,7 @@ class ToolbarPresenterTest {
                 sessionId = "tab1",
                 searchTerms = "Hello World",
             ),
-        ).joinBlocking()
+        )
 
         dispatcher.scheduler.advanceUntilIdle()
 
@@ -240,7 +238,7 @@ class ToolbarPresenterTest {
 
         store.dispatch(
             ContentAction.UpdateProgressAction("tab1", 75),
-        ).joinBlocking()
+        )
 
         dispatcher.scheduler.advanceUntilIdle()
 
@@ -250,7 +248,7 @@ class ToolbarPresenterTest {
 
         store.dispatch(
             ContentAction.UpdateProgressAction("tab1", 90),
-        ).joinBlocking()
+        )
 
         dispatcher.scheduler.advanceUntilIdle()
 
@@ -268,7 +266,7 @@ class ToolbarPresenterTest {
                             id = "tab1",
                             content = ContentState(
                                 url = "https://www.mozilla.org",
-                                securityInfo = SecurityInfoState(true, "mozilla.org", "Mozilla"),
+                                securityInfo = SecurityInfo.Secure("mozilla.org", "Mozilla"),
                                 searchTerms = "Hello World",
                                 progress = 60,
                             ),
@@ -287,13 +285,13 @@ class ToolbarPresenterTest {
 
         dispatcher.scheduler.advanceUntilIdle()
 
-        store.dispatch(TabListAction.RemoveTabAction("tab2")).joinBlocking()
+        store.dispatch(TabListAction.RemoveTabAction("tab2"))
 
         verify(toolbarPresenter.renderer).start()
         verify(toolbarPresenter.renderer).post("https://www.mozilla.org")
         verify(toolbar).setSearchTerms("Hello World")
         verify(toolbar).displayProgress(60)
-        verify(toolbar).siteSecure = Toolbar.SiteSecurity.SECURE
+        verify(toolbar).siteInfo = Toolbar.SiteInfo.SECURE
         verify(toolbar).siteTrackingProtection = Toolbar.SiteTrackingProtection.OFF_GLOBALLY
         verify(toolbar).highlight = Toolbar.Highlight.NONE
         verifyNoMoreInteractions(toolbarPresenter.renderer)
@@ -311,7 +309,7 @@ class ToolbarPresenterTest {
                             id = "tab1",
                             content = ContentState(
                                 url = "https://www.mozilla.org",
-                                securityInfo = SecurityInfoState(true, "mozilla.org", "Mozilla"),
+                                securityInfo = SecurityInfo.Secure("mozilla.org", "Mozilla"),
                                 searchTerms = "Hello World",
                                 progress = 60,
                             ),
@@ -320,7 +318,7 @@ class ToolbarPresenterTest {
                             id = "tab2",
                             content = ContentState(
                                 url = "https://www.example.org",
-                                securityInfo = SecurityInfoState(false, "example.org", "Example"),
+                                securityInfo = SecurityInfo.Insecure("example.org", "Example"),
                                 searchTerms = "Example",
                                 permissionHighlights = PermissionHighlightsState(true),
                                 progress = 90,
@@ -344,20 +342,20 @@ class ToolbarPresenterTest {
         verify(toolbarPresenter.renderer).post("https://www.mozilla.org")
         verify(toolbar).setSearchTerms("Hello World")
         verify(toolbar).displayProgress(60)
-        verify(toolbar).siteSecure = Toolbar.SiteSecurity.SECURE
+        verify(toolbar).siteInfo = Toolbar.SiteInfo.SECURE
         verify(toolbar).siteTrackingProtection = Toolbar.SiteTrackingProtection.OFF_GLOBALLY
         verify(toolbar).highlight = Toolbar.Highlight.NONE
         verifyNoMoreInteractions(toolbarPresenter.renderer)
         verifyNoMoreInteractions(toolbar)
 
-        store.dispatch(TabListAction.SelectTabAction("tab2")).joinBlocking()
+        store.dispatch(TabListAction.SelectTabAction("tab2"))
 
         dispatcher.scheduler.advanceUntilIdle()
 
         verify(toolbarPresenter.renderer).post("https://www.example.org")
         verify(toolbar).setSearchTerms("Example")
         verify(toolbar).displayProgress(90)
-        verify(toolbar).siteSecure = Toolbar.SiteSecurity.INSECURE
+        verify(toolbar).siteInfo = Toolbar.SiteInfo.INSECURE
         verify(toolbar).siteTrackingProtection = Toolbar.SiteTrackingProtection.ON_NO_TRACKERS_BLOCKED
         verify(toolbar).highlight = Toolbar.Highlight.PERMISSIONS_CHANGED
         verifyNoMoreInteractions(toolbarPresenter.renderer)
@@ -375,7 +373,7 @@ class ToolbarPresenterTest {
                             id = "tab",
                             content = ContentState(
                                 url = "https://www.mozilla.org",
-                                securityInfo = SecurityInfoState(true, "mozilla.org", "Mozilla"),
+                                securityInfo = SecurityInfo.Secure("mozilla.org", "Mozilla"),
                                 searchTerms = "Hello World",
                                 progress = 60,
                             ),
@@ -396,21 +394,18 @@ class ToolbarPresenterTest {
         verify(toolbar).siteTrackingProtection = Toolbar.SiteTrackingProtection.OFF_GLOBALLY
 
         store.dispatch(TrackingProtectionAction.ToggleAction("tab", true))
-            .joinBlocking()
 
         dispatcher.scheduler.advanceUntilIdle()
 
         verify(toolbar).siteTrackingProtection = Toolbar.SiteTrackingProtection.ON_NO_TRACKERS_BLOCKED
 
         store.dispatch(TrackingProtectionAction.TrackerBlockedAction("tab", mock()))
-            .joinBlocking()
 
         dispatcher.scheduler.advanceUntilIdle()
 
         verify(toolbar).siteTrackingProtection = Toolbar.SiteTrackingProtection.ON_TRACKERS_BLOCKED
 
         store.dispatch(TrackingProtectionAction.ToggleExclusionListAction("tab", true))
-            .joinBlocking()
 
         dispatcher.scheduler.advanceUntilIdle()
 
@@ -428,7 +423,7 @@ class ToolbarPresenterTest {
                             id = "tab",
                             content = ContentState(
                                 url = "https://www.mozilla.org",
-                                securityInfo = SecurityInfoState(true, "mozilla.org", "Mozilla"),
+                                securityInfo = SecurityInfo.Secure("mozilla.org", "Mozilla"),
                                 searchTerms = "Hello World",
                                 progress = 60,
                             ),
@@ -448,20 +443,19 @@ class ToolbarPresenterTest {
 
         verify(toolbar).highlight = Toolbar.Highlight.NONE
 
-        store.dispatch(NotificationChangedAction("tab", true)).joinBlocking()
+        store.dispatch(NotificationChangedAction("tab", true))
 
         dispatcher.scheduler.advanceUntilIdle()
 
         verify(toolbar).highlight = Toolbar.Highlight.PERMISSIONS_CHANGED
 
         store.dispatch(TrackingProtectionAction.ToggleExclusionListAction("tab", true))
-            .joinBlocking()
 
         dispatcher.scheduler.advanceUntilIdle()
 
         verify(toolbar, times(2)).highlight = Toolbar.Highlight.PERMISSIONS_CHANGED
 
-        store.dispatch(UpdatePermissionHighlightsStateAction.Reset("tab")).joinBlocking()
+        store.dispatch(UpdatePermissionHighlightsStateAction.Reset("tab"))
 
         dispatcher.scheduler.advanceUntilIdle()
 
@@ -499,7 +493,7 @@ class ToolbarPresenterTest {
         verify(presenter.renderer).post("")
         verify(toolbar).setSearchTerms("")
         verify(toolbar).displayProgress(0)
-        verify(toolbar).siteSecure = Toolbar.SiteSecurity.INSECURE
+        verify(toolbar).siteInfo = Toolbar.SiteInfo.INSECURE
         verify(toolbar).siteTrackingProtection = Toolbar.SiteTrackingProtection.OFF_GLOBALLY
         verify(toolbar).highlight = Toolbar.Highlight.NONE
     }

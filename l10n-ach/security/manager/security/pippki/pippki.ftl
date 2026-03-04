@@ -33,9 +33,6 @@ download-cert-view-cert =
     .label = Nen
 download-cert-view-text = Pim waraga me CA
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -65,8 +62,6 @@ client-auth-cert-details-issued-by = Lamiyo ne aye: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Kigwoko i: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Poo ikom moko tam man
 
 ## Set password (p12) dialog
 
@@ -78,6 +73,3 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = Mung me donyo me waraga (doki):
 set-password-reminder = Pire tek: Ka wiyi owil ki mung me kano waraga, pe iromo dong gwoko man lacen.  Tim ber i ket rekod ne i kabedo ma ogwoke maber.
-
-## Protected authentication alert
-

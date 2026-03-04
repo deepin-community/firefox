@@ -217,16 +217,7 @@ class DebuggerSourceGetTextMatcher {
       return NewStringCopyZ<CanGC>(cx_, "[no source]");
     }
 
-    // In case of DOM event handler like <div onclick="foo()" the JS code is
-    // wrapped into
-    //   function onclick() {foo()}
-    // We want to only return `foo()` here.
-    // But only for event handlers, for `new Function("foo()")`, we want to
-    // return:
-    //   function anonymous() {foo()}
-    if (ss->hasIntroductionType() &&
-        strcmp(ss->introductionType(), "eventHandler") == 0 &&
-        ss->isFunctionBody()) {
+    if (ss->shouldUnwrapEventHandlerBody()) {
       return ss->functionBodyString(cx_);
     }
 
@@ -281,14 +272,13 @@ bool DebuggerSource::CallData::getBinary() {
     return false;
   }
 
-  const wasm::Bytes& bytecode = instance.debug().bytecode();
+  const wasm::BytecodeSource& bytecode = instance.debug().bytecode();
   RootedObject arr(cx, JS_NewUint8Array(cx, bytecode.length()));
   if (!arr) {
     return false;
   }
 
-  memcpy(arr->as<TypedArrayObject>().dataPointerUnshared(), bytecode.begin(),
-         bytecode.length());
+  bytecode.copyTo((uint8_t*)arr->as<TypedArrayObject>().dataPointerUnshared());
 
   args.rval().setObject(*arr);
   return true;

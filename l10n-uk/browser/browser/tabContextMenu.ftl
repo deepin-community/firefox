@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = Нова вкладка
     .accesskey = Н
@@ -9,8 +13,8 @@ reload-tab =
     .label = Оновити вкладку
     .accesskey = О
 select-all-tabs =
-    .label = Обрати всі вкладки
-    .accesskey = О
+    .label = Вибрати всі вкладки
+    .accesskey = б
 tab-context-play-tab =
     .label = Відтворити вкладку
     .accesskey = т
@@ -28,11 +32,17 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Закрити вкладки ліворуч
     .accesskey = і
+close-tabs-to-the-start-vertical =
+    .label = Закрити вкладки зверху
+    .accesskey = в
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Закрити вкладки праворуч
     .accesskey = п
+close-tabs-to-the-end-vertical =
+    .label = Закрити вкладки знизу
+    .accesskey = н
 close-other-tabs =
     .label = Закрити інші вкладки
     .accesskey = З
@@ -40,14 +50,14 @@ reload-tabs =
     .label = Оновити вкладки
     .accesskey = н
 pin-tab =
-    .label = Прикріпити вкладку
-    .accesskey = П
+    .label = Закріпити вкладку
+    .accesskey = З
 unpin-tab =
     .label = Відкріпити вкладку
     .accesskey = В
 pin-selected-tabs =
-    .label = Прикріпити вкладки
-    .accesskey = П
+    .label = Закріпити вкладки
+    .accesskey = З
 unpin-selected-tabs =
     .label = Відкріпити вкладки
     .accesskey = В
@@ -55,7 +65,7 @@ bookmark-selected-tabs =
     .label = Додати закладки вкладок…
     .accesskey = к
 tab-context-bookmark-tab =
-    .label = Додати вкладку до закладок
+    .label = Додати вкладку до закладок…
     .accesskey = и
 tab-context-open-in-new-container-tab =
     .label = Відкрити в новій вкладці контейнера
@@ -69,6 +79,10 @@ move-to-end =
 move-to-new-window =
     .label = Перенести в нове вікно
     .accesskey = е
+# Variables
+#  $profileName (string): The name of the profile to move tab to
+move-to-new-profile =
+    .label = Перемістити до { $profileName }
 tab-context-close-multiple-tabs =
     .label = Закрити кілька вкладок
     .accesskey = к
@@ -78,6 +92,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Поділитися
     .accesskey = я
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Нова вкладка праворуч
+    .accesskey = п
+tab-context-new-tab-open-vertical =
+    .label = Нова вкладка нижче
+    .accesskey = ж
+tab-context-new-group =
+    .label = Нова група
+    .accesskey = Н
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -106,6 +130,15 @@ tab-context-move-tabs =
            *[many] Перемістити { $tabCount } вкладок
         }
     .accesskey = м
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-device =
+    .label =
+        { $tabCount ->
+            [one] Надіслати на пристрій
+            [few] Надіслати { $tabCount } вкладки на пристрій
+           *[many] Надіслати { $tabCount } вкладок на пристрій
+        }
+    .accesskey = с
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->
@@ -114,3 +147,11 @@ tab-context-send-tabs-to-device =
            *[many] Надіслати { $tabCount } вкладок на пристрій
         }
     .accesskey = с
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [one] Вивантажити вкладку
+            [few] Вивантажити { $tabCount } вкладки
+           *[many] Вивантажити { $tabCount } вкладок
+        }
+    .accesskey = В

@@ -52,7 +52,6 @@ mr1-onboarding-import-primary-button-label-attribution = Внасяне от { $
 mr1-onboarding-theme-header = По свой вкус
 mr1-onboarding-theme-subtitle = Приспособете { -brand-short-name } с тема.
 mr1-onboarding-theme-secondary-button-label = Не сега
-newtab-wallpaper-onboarding-subtitle = Изберете тапет, за да придадете свеж вид на новия си раздел.
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Системна тема
 mr1-onboarding-theme-label-light = Светла
@@ -198,10 +197,12 @@ mr2022-onboarding-set-default-primary-button-label = Задаване на { -br
 mr2022-onboarding-get-started-primary-subtitle = Последното издание е изградено на вашите желания, което прави по-лесно от всякога разглеждането в интернет. Изданието е пълно с функции, които смятаме, че ще обикнете.
 mr2022-onboarding-get-started-primary-button-label = Настройва се за секунди
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Светкавично-бърза настройка
-mr2022-onboarding-import-subtitle = Настройте { -brand-short-name } както ви харесва. Добавете своите отметки, пароли и всичко друго от стария си четец.
+mr2022-onboarding-import-subtitle = Настройте { -brand-short-name } както ви харесва. Добавете вашите отметки, пароли и други от стария ви браузър.
 mr2022-onboarding-import-primary-button-label-no-attribution = Внасяне от предишен четец
 
 ## If your language uses grammatical genders, in the description for the
@@ -213,6 +214,7 @@ mr2022-onboarding-colorway-title = Изберете цвета, който ви 
 mr2022-onboarding-colorway-subtitle = Независимите гласове могат да променят културата.
 mr2022-onboarding-colorway-primary-button-label-continue = Запазване и продължаване
 mr2022-onboarding-existing-colorway-checkbox-label = Направете вашата { -firefox-home-brand-name }  начална страница цветна
+mr2022-onboarding-colorway-label-default = По подразбиране
 mr2022-onboarding-colorway-tooltip-default2 =
     .title = Текущи { -brand-short-name } цветове
 mr2022-onboarding-colorway-label-playmaker = Плеймейкър
@@ -242,19 +244,17 @@ mr2022-onboarding-mobile-download-subtitle = Вземете разделите �
 mr2022-onboarding-mobile-download-cta-text = Сканирайте QR кода, за да получите { -brand-product-name } за мобилно устройство или <a data-l10n-name="download-label">изпратете си връзка за изтегляне.</a>
 mr2022-onboarding-no-mobile-download-cta-text = Сканирайте QR кода, за да получите { -brand-product-name } за мобилни устройства.
 
-## MR2022 Upgrade Dialog screens
-## Pin private window screen shown only for users who don't have Firefox private pinned
-
-
 ## MR2022 Privacy Segmentation screen strings
 
 mr2022-onboarding-privacy-segmentation-title = Ние винаги уважаваме вашата поверителност
+mr2022-onboarding-privacy-segmentation-button-primary-label = Използвайте препоръките от { -brand-product-name }
 mr2022-onboarding-privacy-segmentation-button-secondary-label = Показване на подробна информация
 
 ## MR2022 Multistage Gratitude screen strings
 
 mr2022-onboarding-gratitude-title = Вие ни помагате да изградим по-добра мрежа
 mr2022-onboarding-gratitude-primary-button-label = Вижте какво е ново
+mr2022-onboarding-gratitude-secondary-button-label = Започнете да сърфирате
 
 ## Onboarding spotlight for infrequent users
 
@@ -264,6 +264,10 @@ onboarding-infrequent-import-primary-button = Внасяне към { -brand-sho
 ## MR2022 Illustration alt tags
 ## Descriptive tags for illustrations used by screen readers and other assistive tech
 
+mr2022-onboarding-pin-image-alt =
+    .aria-label = Човек, работещ на лаптоп, заобиколен от звезди и цветя
+mr2022-onboarding-default-image-alt =
+    .aria-label = Човек прегръщащ логото на { -brand-product-name }
 
 ## Device migration onboarding
 
@@ -275,10 +279,39 @@ onboarding-device-migration-primary-button-label = Вход
 
 amo-picker-title = Персонализирайте вашия { -brand-short-name }
 amo-picker-install-complete-label = Инсталирано
+amo-picker-collection-link = Открийте още добавки
 
 ## The following screens have been updated to use security and privacy focused strings:
 
+# Easy setup screen
+onboarding-easy-setup-security-and-privacy-title = Обичаме да ви пазим в безопасност
+# Sign up or Sign in screen
+onboarding-sign-up-title = Синхронизирайте данните си между устройства
+onboarding-sign-up-button = Регистрирайте се или се впишете
+onboarding-sign-up-secondary-button = Започнете да сърфирате
 
 ## New user time and familiarity survey strings
 
+onboarding-new-user-time-based-survey-title = От колко време използвате { -brand-short-name }?
 onboarding-new-user-survey-legal-link-label = С избирането на „{ onboarding-new-user-survey-next-button-label }“ вие се съгласявате с <a data-l10n-name="privacy_notice">Политиката за поверителност на { -brand-product-name }.</a>
+onboarding-new-user-survey-time-based-option-4 = Повече от 1 месец, от време на време
+# When translating "brand new" it means completely new.
+onboarding-new-user-survey-familiarity-based-option-1 = Нямам опит
+onboarding-new-user-survey-familiarity-based-option-2 = Ползвал съм го
+onboarding-new-user-survey-familiarity-based-option-3 = Много съм запознат с него
+onboarding-new-user-survey-familiarity-based-option-4 = Ползвал съм го и преди, но мина доста време
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Кажете ни къде искате да са разделите
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Вашите раздели, по ваш начин
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Изпробвайте вертикалните раздели
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Опитайте чатбот с AI в страничната лента
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-cta = Създаване на профил

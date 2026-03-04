@@ -33,3 +33,11 @@ searchbar-icon =
 removed-search-engine-message = <strong>Ваш подразумевани претраживач је промењен.</strong> { $oldEngine } више није ваш подразумевани претраживач за { -brand-short-name }, већ { $newEngine }. Да бисте користили други претраживач, идите на подешавања. <label data-l10n-name="remove-search-engine-article">Сазнајте више</label>
 removed-search-engine-message2 = <strong>Ваш подразумевани претраживач је промењен.</strong> { $oldEngine } више није ваш подразумевани претраживач за { -brand-short-name }, већ { $newEngine }. Да бисте користили други претраживач, идите на подешавања.
 remove-search-engine-button = У реду
+
+## The following strings are used as input labels.
+
+add-engine-window =
+    .title = Додај претраживач
+    .style = min-width: 32em;
+add-engine-button = Додај прилагођени претраживач
+add-engine-name = Назив претраживача

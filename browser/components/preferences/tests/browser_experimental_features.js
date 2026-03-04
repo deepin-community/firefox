@@ -3,19 +3,9 @@
 
 "use strict";
 
-add_task(async function testPrefRequired() {
-  await SpecialPowers.pushPrefEnv({
-    set: [["browser.preferences.experimental", false]],
-  });
-
-  await openPreferencesViaOpenPreferencesAPI("paneHome", { leaveOpen: true });
-  let doc = gBrowser.contentDocument;
-
-  let experimentalCategory = doc.getElementById("category-experimental");
-  ok(experimentalCategory, "The category exists");
-  ok(experimentalCategory.hidden, "The category is hidden");
-
-  BrowserTestUtils.removeTab(gBrowser.selectedTab);
+add_setup(async function setup() {
+  const cleanup = await setupLabsTest();
+  registerCleanupFunction(cleanup);
 });
 
 add_task(async function testCanOpenWithPref() {
@@ -46,13 +36,11 @@ add_task(async function testCanOpenWithPref() {
   );
 
   BrowserTestUtils.removeTab(gBrowser.selectedTab);
+
+  await SpecialPowers.popPrefEnv();
 });
 
 add_task(async function testSearchFindsExperiments() {
-  await SpecialPowers.pushPrefEnv({
-    set: [["browser.preferences.experimental", true]],
-  });
-
   await openPreferencesViaOpenPreferencesAPI("paneHome", { leaveOpen: true });
   let doc = gBrowser.contentDocument;
 
@@ -68,40 +56,6 @@ add_task(async function testSearchFindsExperiments() {
     "in development and evolving",
     ["pane-experimental-featureGates"],
     /* include experiments */ true
-  );
-
-  BrowserTestUtils.removeTab(gBrowser.selectedTab);
-});
-
-add_task(async function testExtraTemplate() {
-  await SpecialPowers.pushPrefEnv({
-    set: [["browser.preferences.experimental", true]],
-  });
-
-  // Pretend a feature has id of "featureGate" to reuse that template
-  const server = new DefinitionServer();
-  server.addDefinition({
-    id: "testFeatureGateExtra",
-    isPublicJexl: "true",
-    preference: "test.feature",
-  });
-  await BrowserTestUtils.openNewForegroundTab(
-    gBrowser,
-    `about:preferences?definitionsUrl=${encodeURIComponent(
-      server.definitionsUrl
-    )}#paneExperimental`
-  );
-
-  const doc = gBrowser.contentDocument;
-  let extraContent = await TestUtils.waitForCondition(
-    () => doc.getElementById("testFeatureGateExtraContent"),
-    "wait for feature to get added to the DOM"
-  );
-
-  is(
-    extraContent.textContent,
-    "Test extra content",
-    "extra template added extra content"
   );
 
   BrowserTestUtils.removeTab(gBrowser.selectedTab);

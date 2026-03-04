@@ -4,7 +4,7 @@
 
 //! Test data that we use in many tests
 
-use crate::{testing::MockIcon, Suggestion};
+use crate::{suggestion::FtsMatchInfo, suggestion::YelpSubjectType, testing::MockIcon, Suggestion};
 use serde_json::json;
 use serde_json::Value as JsonValue;
 
@@ -13,7 +13,9 @@ pub fn los_pollos_amp() -> JsonValue {
         "id": 100,
         "advertiser": "Los Pollos Hermanos",
         "iab_category": "8 - Food & Drink",
+        "serp_categories": [9],
         "keywords": ["lo", "los", "los p", "los pollos", "los pollos h", "los pollos hermanos"],
+        "full_keywords": [("los pollos", 4), ("los pollos hermanos", 2)],
         "title": "Los Pollos Hermanos - Albuquerque",
         "url": "https://www.lph-nm.biz",
         "icon": "los-pollos-favicon",
@@ -31,7 +33,10 @@ pub fn los_pollos_icon() -> MockIcon {
     }
 }
 
-pub fn los_pollos_suggestion(full_keyword: &str) -> Suggestion {
+pub fn los_pollos_suggestion(
+    full_keyword: &str,
+    fts_match_info: Option<FtsMatchInfo>,
+) -> Suggestion {
     Suggestion::Amp {
         title: "Los Pollos Hermanos - Albuquerque".into(),
         url: "https://www.lph-nm.biz".into(),
@@ -41,11 +46,13 @@ pub fn los_pollos_suggestion(full_keyword: &str) -> Suggestion {
         block_id: 100,
         advertiser: "Los Pollos Hermanos".into(),
         iab_category: "8 - Food & Drink".into(),
+        categories: vec![9],
         impression_url: "https://example.com/impression_url".into(),
         click_url: "https://example.com/click_url".into(),
         raw_click_url: "https://example.com/click_url".into(),
         score: 0.3,
         full_keyword: full_keyword.to_string(),
+        fts_match_info,
     }
 }
 
@@ -55,6 +62,7 @@ pub fn good_place_eats_amp() -> JsonValue {
         "advertiser": "Good Place Eats",
         "iab_category": "8 - Food & Drink",
         "keywords": ["la", "las", "lasa", "lasagna", "lasagna come out tomorrow"],
+        "full_keywords": [("lasagna", 2), ("lasagna come out tomorrow", 2)],
         "title": "Lasagna Come Out Tomorrow",
         "url": "https://www.lasagna.restaurant",
         "icon": "good-place-eats-favicon",
@@ -71,7 +79,10 @@ pub fn good_place_eats_icon() -> MockIcon {
     }
 }
 
-pub fn good_place_eats_suggestion(full_keyword: &str) -> Suggestion {
+pub fn good_place_eats_suggestion(
+    full_keyword: &str,
+    fts_match_info: Option<FtsMatchInfo>,
+) -> Suggestion {
     Suggestion::Amp {
         title: "Lasagna Come Out Tomorrow".into(),
         url: "https://www.lasagna.restaurant".into(),
@@ -82,10 +93,12 @@ pub fn good_place_eats_suggestion(full_keyword: &str) -> Suggestion {
         block_id: 101,
         advertiser: "Good Place Eats".into(),
         iab_category: "8 - Food & Drink".into(),
+        categories: vec![],
         impression_url: "https://example.com/impression_url".into(),
         click_url: "https://example.com/click_url".into(),
         raw_click_url: "https://example.com/click_url".into(),
         score: 0.2,
+        fts_match_info,
     }
 }
 
@@ -146,39 +159,6 @@ pub fn caltech_suggestion(full_keyword: &str) -> Suggestion {
         icon: Some("caltech-icon-data".as_bytes().to_vec()),
         icon_mimetype: Some("image/png".into()),
         full_keyword: full_keyword.into(),
-    }
-}
-
-pub fn a1a_amp_mobile() -> JsonValue {
-    json!({
-        "id": 300,
-        "advertiser": "A1A Car Wash",
-        "iab_category": "2 - Auto",
-        "keywords": ["a1a", "ca", "car", "car wash"],
-        "title": "A1A Car Wash",
-        "url": "https://www.a1a-wash.biz",
-        "icon": "200",
-        "impression_url": "https://example.com/impression_url",
-        "click_url": "https://example.com/click_url",
-        "score": 0.3
-    })
-}
-
-pub fn a1a_suggestion(full_keyword: &str) -> Suggestion {
-    Suggestion::Amp {
-        title: "A1A Car Wash".into(),
-        url: "https://www.a1a-wash.biz".into(),
-        raw_url: "https://www.a1a-wash.biz".into(),
-        icon: None,
-        icon_mimetype: None,
-        block_id: 300,
-        advertiser: "A1A Car Wash".into(),
-        iab_category: "2 - Auto".into(),
-        impression_url: "https://example.com/impression_url".into(),
-        click_url: "https://example.com/click_url".into(),
-        raw_click_url: "https://example.com/click_url".into(),
-        score: 0.3,
-        full_keyword: full_keyword.to_string(),
     }
 }
 
@@ -292,38 +272,19 @@ pub fn new_tab_override_suggestion() -> Suggestion {
     }
 }
 
-pub fn burnout_pocket() -> JsonValue {
-    json!({
-        "description": "pocket suggestion",
-        "url": "https://getpocket.com/collections/its-not-just-burnout-how-grind-culture-failed-women",
-        "lowConfidenceKeywords": ["soft life", "workaholism", "toxic work culture", "work-life balance"],
-        "highConfidenceKeywords": ["burnout women", "grind culture", "women burnout"],
-        "title": "‘It’s Not Just Burnout:’ How Grind Culture Fails Women",
-        "score": 0.25
-    })
-}
-
-pub fn burnout_suggestion(is_top_pick: bool) -> Suggestion {
-    Suggestion::Pocket {
-        title: "‘It’s Not Just Burnout:’ How Grind Culture Fails Women".into(),
-        url:
-            "https://getpocket.com/collections/its-not-just-burnout-how-grind-culture-failed-women"
-                .into(),
-        score: 0.25,
-        is_top_pick,
-    }
-}
-
 pub fn ramen_yelp() -> JsonValue {
     json!({
         "subjects": ["ramen", "spicy ramen", "spicy random ramen", "rats", "raven", "raccoon", "012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789", "012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789Z"],
+        "businessSubjects": ["the shop"],
         "preModifiers": ["best", "super best", "same_modifier"],
         "postModifiers": ["delivery", "super delivery", "same_modifier"],
         "locationSigns": [
+            // V1 format also can be used as location sign.
             { "keyword": "in", "needLocation": true },
-            { "keyword": "near", "needLocation": true },
             { "keyword": "near by", "needLocation": false },
-            { "keyword": "near me", "needLocation": false },
+            // V2 format.
+            "near",
+            "near me",
         ],
         "yelpModifiers": ["yelp", "yelp keyword"],
         "icon": "yelp-favicon",
@@ -340,6 +301,7 @@ pub fn ramen_suggestion(title: &str, url: &str) -> Suggestion {
         score: 0.5,
         has_location_sign: true,
         subject_exact_match: true,
+        subject_type: YelpSubjectType::Service,
         location_param: "find_loc".into(),
     }
 }
@@ -399,31 +361,11 @@ pub fn multimatch_amo() -> JsonValue {
     })
 }
 
-pub fn multimatch_pocket() -> JsonValue {
-    json!({
-        "description": "pocket suggestion multi-match",
-        "url": "https://getpocket.com/collections/multimatch",
-        "lowConfidenceKeywords": [],
-        "highConfidenceKeywords": ["multimatch"],
-        "title": "Multimatching",
-        "score": 0.88
-    })
-}
-
 pub fn multimatch_wiki_icon() -> MockIcon {
     MockIcon {
         id: "multimatch-wiki-favicon",
         data: "multimatch-wiki-icon-data",
         mimetype: "image/png",
-    }
-}
-
-pub fn multimatch_pocket_suggestion(is_top_pick: bool) -> Suggestion {
-    Suggestion::Pocket {
-        title: "Multimatching".into(),
-        url: "https://getpocket.com/collections/multimatch".into(),
-        score: 0.88,
-        is_top_pick,
     }
 }
 
@@ -466,7 +408,7 @@ pub fn snowglobe_fakespot() -> JsonValue {
     })
 }
 
-pub fn snowglobe_suggestion() -> Suggestion {
+pub fn snowglobe_suggestion(match_info: Option<FtsMatchInfo>) -> Suggestion {
     Suggestion::Fakespot {
         fakespot_grade: "B".into(),
         product_id: "amazon-ABC".into(),
@@ -477,6 +419,7 @@ pub fn snowglobe_suggestion() -> Suggestion {
         score: 0.3 + 0.00008,
         icon: Some("fakespot-icon-amazon-data".as_bytes().to_vec()),
         icon_mimetype: Some("image/png".into()),
+        match_info,
     }
 }
 
@@ -496,7 +439,7 @@ pub fn simpsons_fakespot() -> JsonValue {
     })
 }
 
-pub fn simpsons_suggestion() -> Suggestion {
+pub fn simpsons_suggestion(match_info: Option<FtsMatchInfo>) -> Suggestion {
     Suggestion::Fakespot {
         fakespot_grade: "A".into(),
         product_id: "vendorwithouticon-XYZ".into(),
@@ -507,6 +450,7 @@ pub fn simpsons_suggestion() -> Suggestion {
         score: 0.3 + 0.00009,
         icon: None,
         icon_mimetype: None,
+        match_info,
     }
 }
 

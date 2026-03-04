@@ -6,7 +6,7 @@
 ChromeUtils.defineESModuleGetters(this, {
   RemoteSettings: "resource://services-settings/remote-settings.sys.mjs",
   UrlbarSearchTermsPersistence:
-    "resource:///modules/UrlbarSearchTermsPersistence.sys.mjs",
+    "moz-src:///browser/components/urlbar/UrlbarSearchTermsPersistence.sys.mjs",
 });
 
 const TEST_PROVIDER_INFO = [
@@ -56,19 +56,18 @@ add_setup(async function () {
   await SpecialPowers.pushPrefEnv({
     set: [["browser.urlbar.showSearchTerms.featureGate", true]],
   });
-
-  await SearchTestUtils.installSearchExtension(
-    {
-      name: "Example",
-      search_url: "https://www.example.com/",
-      search_url_get_params: "q={searchTerms}",
-    },
-    { setAsDefault: true }
-  );
+  let cleanup = await installPersistTestEngines();
   defaultTestEngine = Services.search.getEngineByName("Example");
-
   registerCleanupFunction(async function () {
     await PlacesUtils.history.clear();
+    // Clear existing records.
+    await updateClientWithRecords({
+      current: [],
+      created: [],
+      updated: [],
+      deleted: [],
+    });
+    cleanup();
   });
 });
 

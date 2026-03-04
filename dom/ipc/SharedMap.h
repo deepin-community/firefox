@@ -7,14 +7,14 @@
 #ifndef dom_ipc_SharedMap_h
 #define dom_ipc_SharedMap_h
 
-#include "mozilla/dom/MozSharedMapBinding.h"
-
-#include "mozilla/AutoMemMap.h"
-#include "mozilla/dom/ipc/StructuredCloneData.h"
 #include "mozilla/DOMEventTargetHelper.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/Variant.h"
+#include "mozilla/dom/MozSharedMapBinding.h"
+#include "mozilla/dom/ipc/StructuredCloneData.h"
+#include "mozilla/ipc/SharedMemoryHandle.h"
+#include "mozilla/ipc/SharedMemoryMapping.h"
 #include "nsClassHashtable.h"
 #include "nsTArray.h"
 
@@ -53,12 +53,14 @@ namespace ipc {
  * WritableSharedMap instances.
  */
 class SharedMap : public DOMEventTargetHelper {
-  using FileDescriptor = mozilla::ipc::FileDescriptor;
+ protected:
+  using SharedMemoryMapping = mozilla::ipc::ReadOnlySharedMemoryMapping;
+  using SharedMemoryHandle = mozilla::ipc::ReadOnlySharedMemoryHandle;
 
  public:
   SharedMap();
 
-  SharedMap(nsIGlobalObject* aGlobal, const FileDescriptor&, size_t,
+  SharedMap(nsIGlobalObject* aGlobal, SharedMemoryHandle&&,
             nsTArray<RefPtr<BlobImpl>>&& aBlobs);
 
   // Returns true if the map contains the given (UTF-8) key.
@@ -92,26 +94,16 @@ class SharedMap : public DOMEventTargetHelper {
                        JS::MutableHandle<JS::Value> aResult) const;
 
   /**
-   * Returns a copy of the read-only file descriptor which backs the shared
-   * memory region for this map. The file descriptor may be passed between
-   * processes, and used to update corresponding instances in child processes.
+   * Returns the size of the memory mapped region that backs this map.
    */
-  FileDescriptor CloneMapFile() const;
-
-  /**
-   * Returns the size of the memory mapped region that backs this map. Must be
-   * passed to the SharedMap() constructor or Update() method along with the
-   * descriptor returned by CloneMapFile() in order to initialize or update a
-   * child SharedMap.
-   */
-  size_t MapSize() const { return mMap.size(); }
+  size_t MapSize() const { return mMapping.Size(); }
 
   /**
    * Updates this instance to reflect the contents of the shared memory region
-   * in the given map file, and broadcasts a change event for the given set of
+   * in the given map handle, and broadcasts a change event for the given set of
    * changed (UTF-8-encoded) keys.
    */
-  void Update(const FileDescriptor& aMapFile, size_t aMapSize,
+  void Update(SharedMemoryHandle&& aMapHandle,
               nsTArray<RefPtr<BlobImpl>>&& aBlobs,
               nsTArray<nsCString>&& aChangedKeys);
 
@@ -161,7 +153,7 @@ class SharedMap : public DOMEventTargetHelper {
      * which it takes ownership. The passed StructuredCloneData object must not
      * be used after this call.
      */
-    void TakeData(StructuredCloneData&&);
+    void TakeData(UniquePtr<StructuredCloneData> aHolder);
 
     /**
      * This is called while building a new snapshot of the SharedMap. aDestPtr
@@ -195,12 +187,12 @@ class SharedMap : public DOMEventTargetHelper {
 
    private:
     // Returns a pointer to the entry value's structured clone data within the
-    // SharedMap's mapped memory region. This is *only* valid shen mData
+    // SharedMap's mapped memory region. This is *only* valid when mData
     // contains a uint32_t.
     const char* Data() const { return mMap.Data() + DataOffset(); }
 
     // Returns the offset of the entry value's structured clone data within the
-    // SharedMap's mapped memory region. This is *only* valid shen mData
+    // SharedMap's mapped memory region. This is *only* valid when mData
     // contains a uint32_t.
     uint32_t& DataOffset() { return mData.as<uint32_t>(); }
     const uint32_t& DataOffset() const { return mData.as<uint32_t>(); }
@@ -210,18 +202,18 @@ class SharedMap : public DOMEventTargetHelper {
     uint16_t BlobCount() const { return mBlobCount; }
 
     Span<const RefPtr<BlobImpl>> Blobs() {
-      if (mData.is<StructuredCloneData>()) {
-        return mData.as<StructuredCloneData>().BlobImpls();
+      if (mData.is<UniquePtr<StructuredCloneData>>()) {
+        return mData.as<UniquePtr<StructuredCloneData>>()->BlobImpls();
       }
       return {&mMap.mBlobImpls[mBlobOffset], BlobCount()};
     }
 
    private:
     // Returns the temporary StructuredCloneData object containing the entry's
-    // value. This is *only* value when mData contains a StructuredCloneDAta
+    // value. This is *only* valid when mData contains a StructuredCloneData
     // object.
     const StructuredCloneData& Holder() const {
-      return mData.as<StructuredCloneData>();
+      return *mData.as<UniquePtr<StructuredCloneData>>();
     }
 
     SharedMap& mMap;
@@ -242,7 +234,7 @@ class SharedMap : public DOMEventTargetHelper {
      *   data. This will be discarded the next time the map is serialized, and
      *   replaced with a buffer offset, as described above.
      */
-    Variant<uint32_t, StructuredCloneData> mData;
+    Variant<uint32_t, UniquePtr<StructuredCloneData>> mData;
 
     // The size, in bytes, of the entry's structured clone data.
     uint32_t mSize = 0;
@@ -262,28 +254,20 @@ class SharedMap : public DOMEventTargetHelper {
   Result<Ok, nsresult> MaybeRebuild();
   void MaybeRebuild() const;
 
-  // Note: This header is included by WebIDL binding headers, and therefore
-  // can't include "windows.h". Since FileDescriptor.h does include "windows.h"
-  // on Windows, we can only forward declare FileDescriptor, and can't include
-  // it as an inline member.
-  UniquePtr<FileDescriptor> mMapFile;
-  // The size of the memory-mapped region backed by mMapFile, in bytes.
-  size_t mMapSize = 0;
-
   mutable nsClassHashtable<nsCStringHashKey, Entry> mEntries;
   mutable Maybe<nsTArray<Entry*>> mEntryArray;
 
   // Manages the memory mapping of the current snapshot. This is initialized
-  // lazily after each SharedMap construction or updated, based on the values in
-  // mMapFile and mMapSize.
-  loader::AutoMemMap mMap;
+  // lazily after each SharedMap construction or update.
+  SharedMemoryHandle mHandle;
+  SharedMemoryMapping mMapping;
 
   bool mWritable = false;
 
   // Returns a pointer to the beginning of the memory mapped snapshot. Entry
   // offsets are relative to this pointer, and Entry objects access their
   // structured clone data by indexing this pointer.
-  char* Data() { return mMap.get<char>().get(); }
+  const char* Data() { return mMapping.DataAs<char>(); }
 };
 
 class WritableSharedMap final : public SharedMap {

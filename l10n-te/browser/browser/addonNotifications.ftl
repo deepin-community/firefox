@@ -12,13 +12,17 @@ xpinstall-prompt-header = { $host }‌ను పొడగింతను స్�
 ##
 
 xpinstall-prompt-header-unknown = గుర్తుతెలియని సైటు పొడగింతను స్థాపించడాన్ని అనుమతించాలా?
-
 xpinstall-prompt-dont-allow =
     .label = అనుమతించవద్దు
     .accesskey = D
 xpinstall-prompt-never-allow =
     .label = ఎప్పటికీ అనుమతించవద్దు
     .accesskey = N
+# Long text in this context make the dropdown menu extend awkwardly to the left,
+# avoid a localization that's significantly longer than the English version.
+xpinstall-prompt-never-allow-and-report =
+    .label = అనుమానాస్పద సైటును నివేదించు
+    .accesskey = R
 # Accessibility Note:
 # Be sure you do not choose an accesskey that is used elsewhere in the active context (e.g. main menu bar, submenu of the warning popup button)
 # See https://website-archive.mozilla.org/www.mozilla.org/access/access/keyboard/ for details
@@ -36,7 +40,11 @@ xpinstall-disabled = సాఫ్ట్‌వేర్ స్థాపన ప్
 xpinstall-disabled-button =
     .label = చేతనించు
     .accesskey = n
-
+# This message is shown when the installation of an add-on is blocked by enterprise policy.
+# Variables:
+#   $addonName (String): the name of the add-on.
+#   $addonId (String): the ID of add-on.
+addon-installation-blocked-by-policy = { $addonName } ({ $addonId }) మీ సంస్థచే నిరోధించబడింది.
 # Variables:
 #   $addonName (String): the localized name of the sideloaded add-on.
 webext-perms-sideload-menu-item = { $addonName } ని { -brand-short-name } కి జోడించబడినది
@@ -53,7 +61,6 @@ addon-removal-title = { $name }‌ను తీసివేయారా?
 #   $name (String): the name of the extension which is about to be removed.
 addon-removal-message = { -brand-shorter-name } నుండి { $name }‌ని తొలగించాలా?
 addon-removal-button = తొలగించు
-
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -62,7 +69,6 @@ addon-downloading-and-verifying =
        *[other] { $addonCount } పొడిగింతలను దింపుకుంటోంది మరియు నిర్ధారిస్తోంది…
     }
 addon-download-verifying = నిర్ధారించుచున్నది
-
 addon-install-cancel-button =
     .label = రద్దుచేయి
     .accesskey = C

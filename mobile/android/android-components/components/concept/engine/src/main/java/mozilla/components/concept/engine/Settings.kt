@@ -7,6 +7,7 @@ package mozilla.components.concept.engine
 import mozilla.components.concept.engine.EngineSession.CookieBannerHandlingMode
 import mozilla.components.concept.engine.EngineSession.SafeBrowsingPolicy
 import mozilla.components.concept.engine.EngineSession.TrackingProtectionPolicy
+import mozilla.components.concept.engine.fission.WebContentIsolationStrategy
 import mozilla.components.concept.engine.history.HistoryTrackingDelegate
 import mozilla.components.concept.engine.mediaquery.PreferredColorScheme
 import mozilla.components.concept.engine.request.RequestInterceptor
@@ -243,6 +244,26 @@ abstract class Settings {
     open var httpsOnlyMode: Engine.HttpsOnlyMode by UnsupportedSetting()
 
     /**
+     * Setting the DNS over HTTPS mode for upgrading connections to HTTPS.
+     */
+    open var dohSettingsMode: Engine.DohSettingsMode by UnsupportedSetting()
+
+    /**
+     * The url of the current provider in the DNS over HTTPS mode
+     */
+    open var dohProviderUrl: String by UnsupportedSetting()
+
+    /**
+     * The url of the default provider in the DNS over HTTPS mode
+     */
+    open var dohDefaultProviderUrl: String? by UnsupportedSetting()
+
+    /**
+     * The exceptions in the DNS over HTTPS mode
+     */
+    open var dohExceptionsList: List<String> by UnsupportedSetting()
+
+    /**
      * Setting to control whether Global Privacy Control isenabled.
      */
     open var globalPrivacyControlEnabled: Boolean by UnsupportedSetting()
@@ -257,17 +278,17 @@ abstract class Settings {
      * This is enabled by default in private browsing mode (see variable below)
      * and exposed in the ETP Custom UI as 'Suspected Fingerprinters'.
      */
-    open var fingerprintingProtection: Boolean by UnsupportedSetting()
+    open var fingerprintingProtection: Boolean? by UnsupportedSetting()
 
     /**
      * Setting to control whether privacy.fingerprintingProtection.pbmode is enabled.
      */
-    open var fingerprintingProtectionPrivateBrowsing: Boolean by UnsupportedSetting()
+    open var fingerprintingProtectionPrivateBrowsing: Boolean? by UnsupportedSetting()
 
     /**
      * Setting to enable or disable certain fingerprinting protection features.
      */
-    open var fingerprintingProtectionOverrides: String by UnsupportedSetting()
+    open var fingerprintingProtectionOverrides: String? by UnsupportedSetting()
 
     /**
      * Setting to control whehter to use fdlibm for Math.sin, Math.cos, and Math.tan.
@@ -278,6 +299,95 @@ abstract class Settings {
      * Setting to control the user characteristic ping current version.
      */
     open var userCharacteristicPingCurrentVersion: Int by UnsupportedSetting()
+
+    /**
+     * Setting to control whether privacy.baselineFingerprintingProtection is enabled.
+     * This is enabled by default in all modes.
+     */
+    open var baselineFingerprintingProtection: Boolean? by UnsupportedSetting()
+
+    /**
+     * Setting to enable or disable certain fingerprinting protection features
+     * of baseline fpp.
+     */
+    open var baselineFingerprintingProtectionOverrides: String? by UnsupportedSetting()
+
+    /**
+     * Setting to control whether the desktop user agent is used.
+     */
+    open val desktopModeEnabled: Boolean by UnsupportedSetting()
+
+    /**
+     * Setting to control the web content isolation strategy used by fission.
+     */
+    open var webContentIsolationStrategy: WebContentIsolationStrategy? by UnsupportedSetting()
+
+    /**
+     * Setting to control whether network.fetchpriority.enabled is enabled.
+     */
+    open var fetchPriorityEnabled: Boolean by UnsupportedSetting()
+
+    /**
+     * Setting to control whether javascript.options.mem.gc_parallel_marking is enabled.
+     */
+    open var parallelMarkingEnabled: Boolean by UnsupportedSetting()
+
+    /**
+     * Setting to control the cookie behavior opt-in partitioning.
+     */
+    open var cookieBehaviorOptInPartitioning: Boolean by UnsupportedSetting()
+
+    /**
+     * Setting to control the cookie behavior opt-in partitioning in private browsing mode.
+     */
+    open var cookieBehaviorOptInPartitioningPBM: Boolean by UnsupportedSetting()
+
+    /**
+     * Setting to control how Certificate Transparency information is processed.
+     */
+    open var certificateTransparencyMode: Int? by UnsupportedSetting()
+
+    /**
+     * Setting to control whether post-quantum key exchange mechanisms are used
+     * in TLS and HTTP/3.
+     */
+    open var postQuantumKeyExchangeEnabled: Boolean? by UnsupportedSetting()
+
+    /**
+     * Setting to control whether a DoH provider will be automatically selected when in Default Protection mode.
+     */
+    open var dohAutoselectEnabled: Boolean by UnsupportedSetting()
+
+    /**
+     * Comma-separated list of destination ports that the application should block connections to.
+     */
+    open var bannedPorts: String by UnsupportedSetting()
+
+    /**
+     * Setting to control the request blocking feature of Local Network / Device Access blocking
+     */
+    open var lnaBlockingEnabled: Boolean by UnsupportedSetting()
+
+    /**
+     * Setting to control the tracker blocking feature of Local Network / Device Access blocking
+     */
+    open var lnaTrackerBlockingEnabled: Boolean by UnsupportedSetting()
+
+    /**
+     * Setting to control the overall Local Network / Device Access blocking feature. This is a
+     * superset of [lnaBlockingEnabled] & [lnaTrackerBlockingEnabled]
+     */
+    open var lnaFeatureEnabled: Boolean by UnsupportedSetting()
+
+    /**
+     * Setting to control the CRLite certificate blocklist channel
+     */
+    open var crliteChannel: String? by UnsupportedSetting()
+
+    /**
+     * Setting to control whether Safe Browsing V5 is enabled.
+     */
+    open var safeBrowsingV5Enabled: Boolean? by UnsupportedSetting()
 }
 
 /**
@@ -316,11 +426,17 @@ data class DefaultSettings(
     override var clearColor: Int? = null,
     override var enterpriseRootsEnabled: Boolean = false,
     override var httpsOnlyMode: Engine.HttpsOnlyMode = Engine.HttpsOnlyMode.DISABLED,
+    override var dohSettingsMode: Engine.DohSettingsMode = Engine.DohSettingsMode.DEFAULT,
+    override var dohProviderUrl: String = "",
+    override var dohDefaultProviderUrl: String? = "",
+    override var dohExceptionsList: List<String> = emptyList(),
     override var globalPrivacyControlEnabled: Boolean = false,
-    override var fingerprintingProtection: Boolean = false,
-    override var fingerprintingProtectionPrivateBrowsing: Boolean = true,
-    override var fingerprintingProtectionOverrides: String = "",
+    override var fingerprintingProtection: Boolean? = null,
+    override var fingerprintingProtectionPrivateBrowsing: Boolean? = null,
+    override var fingerprintingProtectionOverrides: String? = null,
     override var fdlibmMathEnabled: Boolean = false,
+    override var baselineFingerprintingProtection: Boolean? = null,
+    override var baselineFingerprintingProtectionOverrides: String? = null,
     override var cookieBannerHandlingMode: CookieBannerHandlingMode = CookieBannerHandlingMode.DISABLED,
     override var cookieBannerHandlingModePrivateBrowsing: CookieBannerHandlingMode =
         CookieBannerHandlingMode.DISABLED,
@@ -333,7 +449,26 @@ data class DefaultSettings(
     override var queryParameterStrippingStripList: String = "",
     override var emailTrackerBlockingPrivateBrowsing: Boolean = false,
     override var userCharacteristicPingCurrentVersion: Int = 0,
-) : Settings()
+    override var webContentIsolationStrategy: WebContentIsolationStrategy? =
+        WebContentIsolationStrategy.ISOLATE_HIGH_VALUE,
+    override var fetchPriorityEnabled: Boolean = true,
+    override var parallelMarkingEnabled: Boolean = false,
+    val getDesktopMode: () -> Boolean = { false },
+    override var cookieBehaviorOptInPartitioning: Boolean = false,
+    override var cookieBehaviorOptInPartitioningPBM: Boolean = false,
+    override var certificateTransparencyMode: Int? = null,
+    override var postQuantumKeyExchangeEnabled: Boolean? = null,
+    override var dohAutoselectEnabled: Boolean = false,
+    override var bannedPorts: String = "",
+    override var lnaBlockingEnabled: Boolean = false,
+    override var lnaTrackerBlockingEnabled: Boolean = false,
+    override var lnaFeatureEnabled: Boolean = false,
+    override var crliteChannel: String? = null,
+    override var safeBrowsingV5Enabled: Boolean? = null,
+) : Settings() {
+    override val desktopModeEnabled: Boolean
+        get() = getDesktopMode()
+}
 
 class UnsupportedSetting<T> {
     operator fun getValue(thisRef: Any?, prop: KProperty<*>): T {

@@ -9,12 +9,12 @@
 #ifndef nsLineLayout_h___
 #define nsLineLayout_h___
 
-#include "gfxTypes.h"
-#include "gfxTextRun.h"
+#include "BlockReflowState.h"
 #include "JustificationUtils.h"
+#include "gfxTextRun.h"
+#include "gfxTypes.h"
 #include "mozilla/ArenaAllocator.h"
 #include "mozilla/WritingModes.h"
-#include "BlockReflowState.h"
 #include "nsLineBox.h"
 
 class nsFloatManager;
@@ -648,6 +648,10 @@ class nsLineLayout {
                       const nsStyleText* aStyleText, float aInflation,
                       bool* aZeroEffectiveSpanBox);
 
+  static void SetSpanForEmptyLine(PerSpanData* aPerSpanData,
+                                  mozilla::WritingMode aWM,
+                                  const nsSize& aContainerSize,
+                                  nscoord aBStartEdge);
   void VerticalAlignFrames(PerSpanData* psd);
 
   void PlaceTopBottomFrames(PerSpanData* psd, nscoord aDistanceFromStart,

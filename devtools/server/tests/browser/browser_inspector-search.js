@@ -101,15 +101,30 @@ add_task(async function () {
         {
           desc: "Search for tag with one result.",
           search: "body",
-          expected: [{ node: inspectee.body, type: "tag" }],
+          expected: [
+            { node: inspectee.body, type: "xpath" },
+            { node: inspectee.body, type: "tag" },
+          ],
         },
         {
           desc: "Search for tag with multiple results",
           search: "h2",
           expected: [
-            { node: inspectee.querySelectorAll("h2")[0], type: "tag" },
-            { node: inspectee.querySelectorAll("h2")[1], type: "tag" },
-            { node: inspectee.querySelectorAll("h2")[2], type: "tag" },
+            {
+              node: inspectee.querySelector("h2:nth-of-type(1)"),
+              type: "selector",
+            },
+            { node: inspectee.querySelector("h2:nth-of-type(1)"), type: "tag" },
+            {
+              node: inspectee.querySelector("h2:nth-of-type(2)"),
+              type: "selector",
+            },
+            { node: inspectee.querySelector("h2:nth-of-type(2)"), type: "tag" },
+            {
+              node: inspectee.querySelector("h2:nth-of-type(3)"),
+              type: "selector",
+            },
+            { node: inspectee.querySelector("h2:nth-of-type(3)"), type: "tag" },
           ],
         },
         {
@@ -140,16 +155,106 @@ add_task(async function () {
           ],
         },
         {
+          desc: "Search for selector with :has()",
+          search: "article:has(p)",
+          expected: [
+            {
+              node: inspectee.querySelectorAll("aside article")[0],
+              type: "selector",
+            },
+            {
+              node: inspectee.querySelectorAll("aside article")[2],
+              type: "selector",
+            },
+          ],
+        },
+        {
           desc: "Search with multiple matches in a single tag expecting a single result",
           search: "💩",
           expected: [
+            { node: inspectee.getElementById("💩"), type: "attributeName" },
             { node: inspectee.getElementById("💩"), type: "attributeValue" },
           ],
+        },
+        {
+          desc: "Search for attributeName=attributeValue pairs without quotation marks",
+          search: "id=arrows",
+          expected: [
+            { node: inspectee.getElementById("arrows"), type: "attributeName" },
+          ],
+        },
+        {
+          desc: "Search for attributeName=attributeValue pairs with quotation marks",
+          search: 'id="arrows"',
+          expected: [
+            { node: inspectee.getElementById("arrows"), type: "attributeName" },
+          ],
+        },
+        {
+          desc: "Search for attributeName=attributeValue pairs with partial quotation marks",
+          search: 'id="arr',
+          expected: [
+            { node: inspectee.getElementById("arrows"), type: "attributeName" },
+          ],
+        },
+        {
+          desc: `Search for unmatched attributeName="attr"`,
+          search: 'id="arr"',
+          expected: [],
+        },
+        {
+          desc: "Search for attributeName=",
+          search: "id=",
+          expected: [
+            { node: inspectee.getElementById("pseudo"), type: "attributeName" },
+            { node: inspectee.getElementById("arrows"), type: "attributeName" },
+            { node: inspectee.getElementById("💩"), type: "attributeName" },
+            {
+              node: inspectee.getElementById("with-hyphen"),
+              type: "attributeName",
+            },
+          ],
+        },
+        {
+          desc: "Search for =attributeValue",
+          search: "=arr",
+          expected: [
+            {
+              node: inspectee.getElementById("arrows"),
+              type: "attributeValue",
+            },
+          ],
+        },
+        {
+          desc: `Search for ="attributeValue`,
+          search: `="arr`,
+          expected: [
+            {
+              node: inspectee.getElementById("arrows"),
+              type: "attributeValue",
+            },
+          ],
+        },
+        {
+          desc: `Search for ="attributeValue"`,
+          search: `="arrows"`,
+          expected: [
+            {
+              node: inspectee.getElementById("arrows"),
+              type: "attributeValue",
+            },
+          ],
+        },
+        {
+          desc: `Search for unmatched ="attributeValue"`,
+          search: `="arr"`,
+          expected: [],
         },
         {
           desc: "Search that has tag and text results",
           search: "h1",
           expected: [
+            { node: inspectee.querySelector("h1"), type: "selector" },
             { node: inspectee.querySelector("h1"), type: "tag" },
             {
               node: inspectee.querySelector("h1 + p").childNodes[0],
@@ -183,6 +288,13 @@ add_task(async function () {
           expected: [{ node: inspectee.querySelector("p"), type: "xpath" }],
         },
         {
+          desc: "Search for XPath via strict equal text",
+          search: "//*[text()='Heading 1']",
+          expected: [
+            { node: inspectee.querySelector("h1#pseudo"), type: "xpath" },
+          ],
+        },
+        {
           desc: "Search for XPath matching text node",
           search: "//strong/text()",
           expected: [
@@ -204,15 +316,55 @@ add_task(async function () {
             { node: inspectee.querySelector("#arrows"), type: "xpath" },
           ],
         },
+        {
+          desc: "Search using div + id with hyphen",
+          search: "div#with-hyphen",
+          expected: [
+            {
+              node: inspectee.querySelector("div#with-hyphen"),
+              type: "selector",
+            },
+          ],
+        },
+        {
+          desc: "Search using div + class with hyphen",
+          search: "div.with-hyphen",
+          expected: [
+            {
+              node: inspectee.querySelector("div.with-hyphen"),
+              type: "selector",
+            },
+          ],
+        },
       ];
 
-      const isDeeply = (a, b, msg) => {
-        return is(JSON.stringify(a), JSON.stringify(b), msg);
+      const assertSearchResults = (searchResults, expectedResults, msg) => {
+        is(
+          searchResults.length,
+          expectedResults.length,
+          `${msg} - got expected number of results`
+        );
+        if (searchResults.length === expectedResults.length) {
+          searchResults.forEach((result, i) => {
+            const { type, node } = expectedResults[i];
+            is(result.type, type, `${msg} - result #${i} type`);
+            if (result.node != node) {
+              const displayNode = el => {
+                return `<${el.nodeName.toLowerCase()}${el.id ? "#" + el.id : ""}>`;
+              };
+              ok(
+                false,
+                `${msg} - result #${i} unexpected node: Got ${displayNode(result.node)}, expected ${displayNode(node)}`
+              );
+            }
+          });
+        }
       };
+
       for (const { desc, search, expected } of testData) {
         info("Running test: " + desc);
         results = walkerSearch.search(search);
-        isDeeply(
+        assertSearchResults(
           results,
           expected,
           "Search returns correct results with '" + search + "'"
@@ -233,7 +385,7 @@ add_task(async function () {
 
       // ::before
       results = walkerSearch.search("::before");
-      isDeeply(
+      assertSearchResults(
         results,
         [{ node: beforeElt, type: "tag" }],
         "Tag search works for pseudo element"
@@ -243,7 +395,7 @@ add_task(async function () {
       is(results.length, 0, "No results for anon tag name");
 
       results = walkerSearch.search("before element");
-      isDeeply(
+      assertSearchResults(
         results,
         [
           { node: styleText, type: "text" },
@@ -254,7 +406,7 @@ add_task(async function () {
 
       // ::after
       results = walkerSearch.search("::after");
-      isDeeply(
+      assertSearchResults(
         results,
         [{ node: afterElt, type: "tag" }],
         "Tag search works for pseudo element"
@@ -264,7 +416,7 @@ add_task(async function () {
       is(results.length, 0, "No results for anon tag name");
 
       results = walkerSearch.search("after element");
-      isDeeply(
+      assertSearchResults(
         results,
         [
           { node: styleText, type: "text" },
@@ -275,13 +427,25 @@ add_task(async function () {
 
       info("Testing search before and after a mutation.");
       const expected = [
-        { node: inspectee.querySelectorAll("h3")[0], type: "tag" },
-        { node: inspectee.querySelectorAll("h3")[1], type: "tag" },
-        { node: inspectee.querySelectorAll("h3")[2], type: "tag" },
+        {
+          node: inspectee.querySelector("h3:nth-of-type(1)"),
+          type: "selector",
+        },
+        { node: inspectee.querySelector("h3:nth-of-type(1)"), type: "tag" },
+        {
+          node: inspectee.querySelector("h3:nth-of-type(2)"),
+          type: "selector",
+        },
+        { node: inspectee.querySelector("h3:nth-of-type(2)"), type: "tag" },
+        {
+          node: inspectee.querySelector("h3:nth-of-type(3)"),
+          type: "selector",
+        },
+        { node: inspectee.querySelector("h3:nth-of-type(3)"), type: "tag" },
       ];
 
       results = walkerSearch.search("h3");
-      isDeeply(results, expected, "Search works with tag results");
+      assertSearchResults(results, expected, "Search works with tag results");
 
       function mutateDocumentAndWaitForMutation(mutationFn) {
         // eslint-disable-next-line new-cap
@@ -297,9 +461,9 @@ add_task(async function () {
       });
 
       results = walkerSearch.search("h3");
-      isDeeply(
+      assertSearchResults(
         results,
-        [expected[1], expected[2]],
+        [expected[2], expected[3], expected[4], expected[5]],
         "Results are updated after removal"
       );
 
@@ -314,12 +478,14 @@ add_task(async function () {
       });
 
       results = walkerSearch.search("h3");
-      isDeeply(
+      assertSearchResults(
         results,
         [
           { node: inspectee.body, type: "attributeName" },
-          expected[1],
           expected[2],
+          expected[3],
+          expected[4],
+          expected[5],
         ],
         "Results are updated after addition"
       );
@@ -336,8 +502,8 @@ add_task(async function () {
           subtree: true,
         });
         inspectee.body.removeAttribute("h3");
-        expected[1].node.remove();
         expected[2].node.remove();
+        expected[4].node.remove();
       });
 
       results = walkerSearch.search("h3");

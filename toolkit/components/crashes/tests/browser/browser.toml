@@ -1,0 +1,7 @@
+[DEFAULT]
+prefs = [
+  "browser.crashReports.onDemand=true",
+  "browser.crashReports.unsubmittedCheck.enabled=true"
+]
+
+["browser_RemoteSettingsCrashPull_notification.js"]

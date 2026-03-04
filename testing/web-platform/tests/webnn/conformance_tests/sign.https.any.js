@@ -1,5 +1,5 @@
 // META: title=test WebNN API sign operation
-// META: global=window,dedicatedworker
+// META: global=window
 // META: variant=?cpu
 // META: variant=?gpu
 // META: variant=?npu
@@ -29,7 +29,7 @@ const signTests = [
             -0.946033775806427, 0.9996118545532227, 0.21998752653598785,
             -0.22639396786689758
           ],
-          'descriptor': {'dimensions': [4], 'dataType': 'float32'},
+          'descriptor': {shape: [4], dataType: 'float32'},
           'constant': true
         }
       },
@@ -41,7 +41,7 @@ const signTests = [
       'expectedOutputs': {
         'signOutput': {
           'data': [-1, 1, 1, -1],
-          'descriptor': {'dimensions': [4], 'dataType': 'float32'}
+          'descriptor': {shape: [4], dataType: 'float32'}
         }
       }
     }
@@ -55,7 +55,7 @@ const signTests = [
             -0.946033775806427, 0.9996118545532227, 0.21998752653598785,
             -0.22639396786689758
           ],
-          'descriptor': {'dimensions': [4], 'dataType': 'float16'}
+          'descriptor': {shape: [4], dataType: 'float16'}
         }
       },
       'operators': [{
@@ -66,7 +66,7 @@ const signTests = [
       'expectedOutputs': {
         'signOutput': {
           'data': [-1, 1, 1, -1],
-          'descriptor': {'dimensions': [4], 'dataType': 'float16'}
+          'descriptor': {shape: [4], dataType: 'float16'}
         }
       }
     }
@@ -79,7 +79,7 @@ const signTests = [
           'data': [
             -0.946033775806427, 0.9996118545532227, 0.21998752653598785, 0.0
           ],
-          'descriptor': {'dimensions': [4], 'dataType': 'float32'}
+          'descriptor': {shape: [4], dataType: 'float32'}
         }
       },
       'operators': [{
@@ -90,7 +90,7 @@ const signTests = [
       'expectedOutputs': {
         'signOutput': {
           'data': [-1, 1, 1, 0],
-          'descriptor': {'dimensions': [4], 'dataType': 'float32'}
+          'descriptor': {shape: [4], dataType: 'float32'}
         }
       }
     }
@@ -101,7 +101,7 @@ const signTests = [
       'inputs': {
         'signInput': {
           'data': [-0.946033775806427, 0.9996118545532227, -Infinity, Infinity],
-          'descriptor': {'dimensions': [4], 'dataType': 'float32'}
+          'descriptor': {shape: [4], dataType: 'float32'}
         }
       },
       'operators': [{
@@ -112,7 +112,7 @@ const signTests = [
       'expectedOutputs': {
         'signOutput': {
           'data': [-1, 1, -1, 1],
-          'descriptor': {'dimensions': [4], 'dataType': 'float32'}
+          'descriptor': {shape: [4], dataType: 'float32'}
         }
       }
     }
@@ -122,8 +122,9 @@ const signTests = [
     'graph': {
       'inputs': {
         'signInput': {
-          'data': [-1, 0, 1, 2],
-          'descriptor': {'dimensions': [2, 2], 'dataType': 'int32'}
+          // int32 range: [/* -(2**31) */ -2147483648, /* 2**31 - 1 */ 2147483647]
+          'data': [-2147483648, 0, 2147483646, 2147483647],
+          'descriptor': {shape: [2, 2], dataType: 'int32'}
         }
       },
       'operators': [{
@@ -134,7 +135,7 @@ const signTests = [
       'expectedOutputs': {
         'signOutput': {
           'data': [-1, 0, 1, 1],
-          'descriptor': {'dimensions': [2, 2], 'dataType': 'int32'}
+          'descriptor': {shape: [2, 2], dataType: 'int32'}
         }
       }
     }
@@ -145,7 +146,7 @@ const signTests = [
       'inputs': {
         'signInput': {
           'data': [-1, 0, 1, 2, -2, -1, 0, 1],
-          'descriptor': {'dimensions': [2, 2, 2], 'dataType': 'int64'}
+          'descriptor': {shape: [2, 2, 2], dataType: 'int64'}
         }
       },
       'operators': [{
@@ -156,7 +157,7 @@ const signTests = [
       'expectedOutputs': {
         'signOutput': {
           'data': [-1, 0, 1, 1, -1, -1, 0, 1],
-          'descriptor': {'dimensions': [2, 2, 2], 'dataType': 'int64'}
+          'descriptor': {shape: [2, 2, 2], dataType: 'int64'}
         }
       }
     }
@@ -166,8 +167,9 @@ const signTests = [
     'graph': {
       'inputs': {
         'signInput': {
-          'data': [-1, 0, 1, 2, -2, -1, 0, 1],
-          'descriptor': {'dimensions': [1, 2, 2, 2], 'dataType': 'int8'}
+          // int8 range: [/* -(2**7) */ -128, /* 2**7 - 1 */ 127]
+          'data': [-128, 0, 1, 2, -2, -1, 0, 127],
+          'descriptor': {shape: [1, 2, 2, 2], dataType: 'int8'}
         }
       },
       'operators': [{
@@ -178,18 +180,12 @@ const signTests = [
       'expectedOutputs': {
         'signOutput': {
           'data': [-1, 0, 1, 1, -1, -1, 0, 1],
-          'descriptor': {'dimensions': [1, 2, 2, 2], 'dataType': 'int8'}
+          'descriptor': {shape: [1, 2, 2, 2], dataType: 'int8'}
         }
       }
     }
   },
 ];
 
-if (navigator.ml) {
-  signTests.forEach((test) => {
-    webnn_conformance_test(
-        buildGraphAndCompute, getSignPrecisionTolerance, test);
-  });
-} else {
-  test(() => assert_implements(navigator.ml, 'missing navigator.ml'));
-}
+webnn_conformance_test(
+    signTests, buildAndExecuteGraph, getSignPrecisionTolerance);

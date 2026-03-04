@@ -172,7 +172,7 @@ void SVGClipPathFrame::PaintFrameIntoMask(nsIFrame* aFrame,
   }
 
   // The CTM of each frame referencing us can be different.
-  frame->NotifySVGChanged(ISVGDisplayableFrame::TRANSFORM_CHANGED);
+  frame->NotifySVGChanged(ISVGDisplayableFrame::ChangeFlag::TransformChanged);
 
   // Children of this clipPath may themselves be clipped.
   SVGClipPathFrame* clipPathThatClipsChild;
@@ -366,18 +366,11 @@ bool SVGClipPathFrame::IsValid() {
 
 nsresult SVGClipPathFrame::AttributeChanged(int32_t aNameSpaceID,
                                             nsAtom* aAttribute,
-                                            int32_t aModType) {
-  if (aNameSpaceID == kNameSpaceID_None) {
-    if (aAttribute == nsGkAtoms::transform) {
-      SVGObserverUtils::InvalidateRenderingObservers(this);
-      SVGUtils::NotifyChildrenOfSVGChange(
-          this, ISVGDisplayableFrame::TRANSFORM_CHANGED);
-    }
-    if (aAttribute == nsGkAtoms::clipPathUnits) {
-      SVGObserverUtils::InvalidateRenderingObservers(this);
-    }
+                                            AttrModType aModType) {
+  if (aNameSpaceID == kNameSpaceID_None &&
+      aAttribute == nsGkAtoms::clipPathUnits) {
+    SVGObserverUtils::InvalidateRenderingObservers(this);
   }
-
   return SVGContainerFrame::AttributeChanged(aNameSpaceID, aAttribute,
                                              aModType);
 }

@@ -18,14 +18,12 @@ GfxInfo::GfxInfo() {}
 GfxInfo::~GfxInfo() {}
 
 NS_IMETHODIMP
-GfxInfo::GetD2DEnabled(bool* aEnabled) { return NS_ERROR_FAILURE; }
-
-NS_IMETHODIMP
 GfxInfo::GetDWriteEnabled(bool* aEnabled) { return NS_ERROR_FAILURE; }
 
 NS_IMETHODIMP
 GfxInfo::GetEmbeddedInFirefoxReality(bool* aEmbeddedInFirefoxReality) {
-  return NS_ERROR_NOT_IMPLEMENTED;
+  *aEmbeddedInFirefoxReality = false;
+  return NS_OK;
 }
 
 NS_IMETHODIMP
@@ -67,12 +65,13 @@ GfxInfo::GetAdapterRAM2(uint32_t* aAdapterRAM) { return NS_ERROR_FAILURE; }
 
 NS_IMETHODIMP
 GfxInfo::GetAdapterDriverVendor(nsAString& aAdapterDriverVendor) {
-  return NS_ERROR_NOT_IMPLEMENTED;
+  aAdapterDriverVendor.AssignLiteral("");
+  return NS_OK;
 }
 
 NS_IMETHODIMP
 GfxInfo::GetAdapterDriverVendor2(nsAString& aAdapterDriverVendor2) {
-  return NS_ERROR_NOT_IMPLEMENTED;
+  return NS_ERROR_FAILURE;
 }
 
 NS_IMETHODIMP
@@ -87,12 +86,14 @@ GfxInfo::GetAdapterDriver2(nsAString& aAdapterDriver) {
 
 NS_IMETHODIMP
 GfxInfo::GetAdapterDriverVersion(nsAString& aAdapterDriverVersion) {
-  return NS_ERROR_FAILURE;
+  aAdapterDriverVersion = EmptyString();
+  return NS_OK;
 }
 
 NS_IMETHODIMP
 GfxInfo::GetAdapterDriverVersion2(nsAString& aAdapterDriverVersion) {
-  return NS_ERROR_FAILURE;
+  aAdapterDriverVersion = EmptyString();
+  return NS_OK;
 }
 
 NS_IMETHODIMP
@@ -107,22 +108,26 @@ GfxInfo::GetAdapterDriverDate2(nsAString& aAdapterDriverDate) {
 
 NS_IMETHODIMP
 GfxInfo::GetAdapterVendorID(nsAString& aAdapterVendorID) {
-  return NS_ERROR_FAILURE;
+  aAdapterVendorID = EmptyString();
+  return NS_OK;
 }
 
 NS_IMETHODIMP
 GfxInfo::GetAdapterVendorID2(nsAString& aAdapterVendorID) {
-  return NS_ERROR_FAILURE;
+  aAdapterVendorID = EmptyString();
+  return NS_OK;
 }
 
 NS_IMETHODIMP
 GfxInfo::GetAdapterDeviceID(nsAString& aAdapterDeviceID) {
-  return NS_ERROR_FAILURE;
+  aAdapterDeviceID = EmptyString();
+  return NS_OK;
 }
 
 NS_IMETHODIMP
 GfxInfo::GetAdapterDeviceID2(nsAString& aAdapterDeviceID) {
-  return NS_ERROR_FAILURE;
+  aAdapterDeviceID = EmptyString();
+  return NS_OK;
 }
 
 NS_IMETHODIMP
@@ -143,7 +148,7 @@ GfxInfo::GetDrmRenderDevice(nsACString& aDrmRenderDevice) {
   return NS_ERROR_NOT_IMPLEMENTED;
 }
 
-const nsTArray<GfxDriverInfo>& GfxInfo::GetGfxDriverInfo() {
+const nsTArray<RefPtr<GfxDriverInfo>>& GfxInfo::GetGfxDriverInfo() {
   if (sDriverInfo->IsEmpty()) {
     APPEND_TO_DRIVER_BLOCKLIST2(
         OperatingSystem::Ios, DeviceFamily::All,
@@ -157,7 +162,7 @@ const nsTArray<GfxDriverInfo>& GfxInfo::GetGfxDriverInfo() {
 
 nsresult GfxInfo::GetFeatureStatusImpl(
     int32_t aFeature, int32_t* aStatus, nsAString& aSuggestedDriverVersion,
-    const nsTArray<GfxDriverInfo>& aDriverInfo, nsACString& aFailureId,
+    const nsTArray<RefPtr<GfxDriverInfo>>& aDriverInfo, nsACString& aFailureId,
     OperatingSystem* aOS /* = nullptr */) {
   NS_ENSURE_ARG_POINTER(aStatus);
   aSuggestedDriverVersion.SetIsVoid(true);
@@ -198,6 +203,11 @@ NS_IMETHODIMP GfxInfo::SpoofDriverVersion(const nsAString& aDriverVersion) {
 }
 
 NS_IMETHODIMP GfxInfo::SpoofOSVersion(uint32_t aVersion) {
+  return NS_ERROR_FAILURE;
+}
+
+NS_IMETHODIMP GfxInfo::SpoofOSVersionEx(uint32_t aMajor, uint32_t aMinor,
+                                        uint32_t aBuild, uint32_t aRevision) {
   return NS_ERROR_FAILURE;
 }
 

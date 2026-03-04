@@ -68,7 +68,6 @@ Structure:
           CrashTime: <time>, // Seconds since the Epoch
           DOMFissionEnabled: "1", // Optional, if set indicates that a Fission window had been opened
           EventLoopNestingLevel: <levels>, // Optional, present only if >0, indicates the nesting level of the event-loop
-          ExperimentalFeatures: <features>, // Optional, a comma-separated string that specifies the enabled experimental features from about:preferences#experimental
           FontName: <name>, // Optional, the font family name that is being loaded when the crash occurred
           GPUProcessLaunchCount: <num>, // Number of times the GPU process was launched
           HeadlessMode: "1", // Optional, "1" if the app was invoked in headless mode via `--headless ...` or `--backgroundtask ...`
@@ -77,6 +76,7 @@ Structure:
           LowCommitSpaceEvents: <num>, // Windows-only, present only if >0, number of low commit space events detected by the available memory tracker
           MainThreadRunnableName: <name>, // Optional, Nightly-only, name of the currently executing nsIRunnable on the main thread
           MozCrashReason: <reason>, // Optional, contains the string passed to MOZ_CRASH()
+          NimbusEnrollments: <enrollments>, // Optional, a comma-separated string that specifies the active Nimbus experiments and rollouts, as well as their branches.
           OOMAllocationSize: <size>, // Size of the allocation that caused an OOM
           ProfilerChildShutdownPhase: <string>, // Profiler shutdown phase
           PurgeablePhysicalMemory: <size>, // macOS-only, amount of memory that can be deallocated by the OS in case of memory pressure
@@ -128,8 +128,6 @@ are sent only for the ones below:
 | rdd           | :ref:`Data decoder process <data-decoder-process>`                            |
 +---------------+-------------------------------------------------------------------------------+
 | socket        | :ref:`Network socket process <network-socket-process>`                        |
-+---------------+-------------------------------------------------------------------------------+
-| sandboxbroker | :ref:`Remote sandbox broker <remote-sandbox-process>`                         |
 +---------------+-------------------------------------------------------------------------------+
 | forkserver    | :ref:`Fork server <fork-server>`                                              |
 +---------------+-------------------------------------------------------------------------------+
@@ -268,3 +266,5 @@ Version History
 - Firefox 103: Removed ContainsMemoryReport (`bug 1776279 <https://bugzilla.mozilla.org/show_bug.cgi?id=1776279>`_).
 - Firefox 107: Added UtilityActorsName (`bug 1788596 <https://bugzilla.mozilla.org/show_bug.cgi?id=1788596>`_).
 - Firefox 119: Added WindowsFileDialogErrorCode (`bug 1837079 <https://bugzilla.mozilla.org/show_bug.cgi?id=1837079>`_)
+- Firefox 137: Added NimbusEnrollments (`bug 1950661 <https://bugzilla.mozilla.org/show_bug.cgi?id=1950661>`_).
+- Firefox 138: Removed ExperimentalFeatures (`bug 1942694 <https://bugzilla.mozilla.org/show_bug.cgi?id=1942694>`_).

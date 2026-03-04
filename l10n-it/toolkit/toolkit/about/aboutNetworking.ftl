@@ -39,6 +39,7 @@ about-networking-dns-lookup = DNS lookup
 about-networking-dns-lookup-button = Risolvi
 about-networking-dns-domain = Dominio:
 about-networking-dns-lookup-table-column = IP
+about-networking-dns-https-rrs-lookup-table-column = HTTPS RRs
 about-networking-dns-https-rr-lookup-table-column = HTTP RR
 about-networking-rcwn = Statistiche RCWN
 about-networking-rcwn-status = Stato RCWN
@@ -57,13 +58,10 @@ about-networking-rcwn-cache-slow = Conteggio cache lenta
 about-networking-rcwn-cache-not-slow = Conteggio cache non lenta
 about-networking-networkid = Network ID
 about-networking-networkid-id = Network ID
-
+# Note: do not translate about:logging, as it is a URL.
 about-networking-moved-about-logging = Questa sezione è ora disponibile in <a data-l10n-name="about-logging-url">about:logging</a>.
 
 ## Link is intended as "network link"
 
 about-networking-networkid-is-up = Il collegamento è attivo
 about-networking-networkid-status-known = Lo stato del collegamento è noto
-
-##
-

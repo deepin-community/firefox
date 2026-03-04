@@ -29,7 +29,7 @@
 #include "nsITimer.h"
 #include "mozilla/Omnijar.h"
 #include "prenv.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/StartupcacheMetrics.h"
 #include "nsThreadUtils.h"
 #include "nsXULAppAPI.h"
 #include "nsIProtocolHandler.h"
@@ -87,9 +87,12 @@ static const uint8_t MAGIC[] = "startupcache0002";
 // debug builds as it should be stable. If we exceed this number we should
 // just increase it.
 static const size_t STARTUP_CACHE_RESERVE_CAPACITY = 450;
+
+#ifdef MOZ_DIAGNOSTIC_ASSERT_ENABLED
 // This is a hard limit which we will assert on, to ensure that we don't
 // have some bug causing runaway cache growth.
 static const size_t STARTUP_CACHE_MAX_CAPACITY = 5000;
+#endif
 
 // Not const because we change it for gtests.
 static uint8_t STARTUP_CACHE_WRITE_TIMEOUT = 60;
@@ -186,8 +189,8 @@ nsresult StartupCache::Init() {
   // cache in.
   char* env = PR_GetEnv("MOZ_STARTUP_CACHE");
   if (env && *env) {
-    rv = NS_NewLocalFile(NS_ConvertUTF8toUTF16(env), false,
-                         getter_AddRefs(mFile));
+    MOZ_TRY(
+        NS_NewNativeLocalFile(nsDependentCString(env), getter_AddRefs(mFile)));
   } else {
     nsCOMPtr<nsIFile> file;
     rv = NS_GetSpecialDirectory("ProfLDS", getter_AddRefs(file));
@@ -204,13 +207,10 @@ nsresult StartupCache::Init() {
     if (NS_FAILED(rv) && rv != NS_ERROR_FILE_ALREADY_EXISTS) return rv;
 
     rv = file->AppendNative(nsLiteralCString(STARTUP_CACHE_NAME));
-
     NS_ENSURE_SUCCESS(rv, rv);
 
-    mFile = file;
+    mFile = file.forget();
   }
-
-  NS_ENSURE_TRUE(mFile, NS_ERROR_UNEXPECTED);
 
   mObserverService = do_GetService("@mozilla.org/observer-service;1");
 
@@ -297,7 +297,7 @@ Result<Ok, nsresult> StartupCache::LoadArchive() {
     return Err(NS_ERROR_UNEXPECTED);
   }
 
-  Range<uint8_t> header(data, data + headerSize);
+  Range<const uint8_t> header(data, data + headerSize);
   data += headerSize;
 
   mCacheEntriesBaseOffset = sizeof(MAGIC) + sizeof(headerSize) + headerSize;
@@ -380,10 +380,9 @@ nsresult StartupCache::GetBuffer(const char* id, const char** outbuf,
   NS_ASSERTION(NS_IsMainThread(),
                "Startup cache only available on main thread");
 
-  Telemetry::LABELS_STARTUP_CACHE_REQUESTS label =
-      Telemetry::LABELS_STARTUP_CACHE_REQUESTS::Miss;
-  auto telemetry =
-      MakeScopeExit([&label] { Telemetry::AccumulateCategorical(label); });
+  auto label = glean::startup_cache::RequestsLabel::eMiss;
+  auto telemetry = MakeScopeExit(
+      [&label] { glean::startup_cache::requests.EnumGet(label).Add(); });
 
   MutexAutoLock lock(mTableLock);
   decltype(mTable)::Ptr p = mTable.lookup(nsDependentCString(id));
@@ -393,7 +392,7 @@ nsresult StartupCache::GetBuffer(const char* id, const char** outbuf,
 
   auto& value = p->value();
   if (value.mData) {
-    label = Telemetry::LABELS_STARTUP_CACHE_REQUESTS::HitMemory;
+    label = glean::startup_cache::RequestsLabel::eHitmemory;
   } else {
     if (!mCacheData.initialized()) {
       return NS_ERROR_NOT_AVAILABLE;
@@ -435,7 +434,7 @@ nsresult StartupCache::GetBuffer(const char* id, const char** outbuf,
 
     MMAP_FAULT_HANDLER_CATCH(NS_ERROR_FAILURE)
 
-    label = Telemetry::LABELS_STARTUP_CACHE_REQUESTS::HitDisk;
+    label = glean::startup_cache::RequestsLabel::eHitdisk;
   }
 
   if (!value.mRequested) {
@@ -454,7 +453,6 @@ nsresult StartupCache::GetBuffer(const char* id, const char** outbuf,
   return NS_OK;
 }
 
-// Makes a copy of the buffer, client retains ownership of inbuf.
 nsresult StartupCache::PutBuffer(const char* id, UniqueFreePtr<char[]>&& inbuf,
                                  uint32_t len) MOZ_NO_THREAD_SAFETY_ANALYSIS {
   NS_ASSERTION(NS_IsMainThread(),
@@ -579,22 +577,21 @@ Result<Ok, nsresult> StartupCache::WriteToDisk() {
   for (auto& e : entries) {
     auto value = e.second;
     value->mOffset = offset;
-    Span<const char> result;
-    MOZ_TRY_VAR(result,
-                ctx.BeginCompressing(writeSpan).mapErr(MapLZ4ErrorToNsresult));
+    Span<const char> result =
+        MOZ_TRY(ctx.BeginCompressing(writeSpan).mapErr(MapLZ4ErrorToNsresult));
     MOZ_TRY(Write(fd, result.Elements(), result.Length()));
     offset += result.Length();
 
     for (size_t i = 0; i < value->mUncompressedSize; i += chunkSize) {
       size_t size = std::min(chunkSize, value->mUncompressedSize - i);
       char* uncompressed = value->mData.get() + i;
-      MOZ_TRY_VAR(result, ctx.ContinueCompressing(Span(uncompressed, size))
-                              .mapErr(MapLZ4ErrorToNsresult));
+      result = MOZ_TRY(ctx.ContinueCompressing(Span(uncompressed, size))
+                           .mapErr(MapLZ4ErrorToNsresult));
       MOZ_TRY(Write(fd, result.Elements(), result.Length()));
       offset += result.Length();
     }
 
-    MOZ_TRY_VAR(result, ctx.EndCompressing().mapErr(MapLZ4ErrorToNsresult));
+    result = MOZ_TRY(ctx.EndCompressing().mapErr(MapLZ4ErrorToNsresult));
     MOZ_TRY(Write(fd, result.Elements(), result.Length()));
     offset += result.Length();
     value->mCompressedSize = offset - value->mOffset;
@@ -695,7 +692,7 @@ void StartupCache::EnsureShutdownWriteComplete() {
   // have run before now.
 
   auto writeResult = WriteToDisk();
-  Unused << NS_WARN_IF(writeResult.isErr());
+  (void)NS_WARN_IF(writeResult.isErr());
   // We've had the lock, and `WriteToDisk()` sets mWrittenOnce and mDirty
   // when done, and checks for them when starting, so we don't need to do
   // anything else.
@@ -781,7 +778,7 @@ void StartupCache::MaybeWriteOffMainThread() {
       NS_NewRunnableFunction("StartupCache::Write", [self]() mutable {
         MutexAutoLock lock(self->mTableLock);
         auto result = self->WriteToDisk();
-        Unused << NS_WARN_IF(result.isErr());
+        (void)NS_WARN_IF(result.isErr());
       });
   NS_DispatchBackgroundTask(runnable.forget(), NS_DISPATCH_EVENT_MAY_BLOCK);
 }
@@ -839,7 +836,7 @@ nsresult StartupCache::ResetStartupWriteTimerCheckingReadCount() {
   // Wait for the specified timeout, then write out the cache.
   mTimer->InitWithNamedFuncCallback(
       StartupCache::WriteTimeout, this, STARTUP_CACHE_WRITE_TIMEOUT * 1000,
-      nsITimer::TYPE_ONE_SHOT, "StartupCache::WriteTimeout");
+      nsITimer::TYPE_ONE_SHOT, "StartupCache::WriteTimeout"_ns);
   return NS_OK;
 }
 
@@ -860,7 +857,7 @@ nsresult StartupCache::ResetStartupWriteTimer() {
   // Wait for the specified timeout, then write out the cache.
   mTimer->InitWithNamedFuncCallback(
       StartupCache::WriteTimeout, this, STARTUP_CACHE_WRITE_TIMEOUT * 1000,
-      nsITimer::TYPE_ONE_SHOT, "StartupCache::WriteTimeout");
+      nsITimer::TYPE_ONE_SHOT, "StartupCache::WriteTimeout"_ns);
   return NS_OK;
 }
 

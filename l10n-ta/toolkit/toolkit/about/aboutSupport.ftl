@@ -4,7 +4,6 @@
 
 page-title = சிக்கல்தீர்த்தல் தகவல்
 page-subtitle = இந்த பக்கமானது ஒரு பிரச்சனைக்கு தீர்வு காணும் பொருட்டு தேவைப்படும் நுட்ப தகவல்களை கொண்டிருக்கலாம். ஒருவேளை தாங்கள் பொதுவான பதிலுக்கு எதிர்பார்த்தால் { -brand-short-name } பற்றிய, எங்களின் பக்கத்தை பாருங்கள் <a data-l10n-name="support-link">இணையத்தள உதவி</a>.
-
 crashes-title = செயலிழப்பு அறிக்கைகள்
 crashes-id = அறிக்கை ID
 crashes-send-date = சமர்பிக்கப்பட்டது
@@ -40,7 +39,6 @@ app-basics-profiles = விவரத்தொகுப்பு
 app-basics-multi-process-support = பன்செயல் சாளரங்கள்
 app-basics-key-mozilla = மொசில்லா புவியிடச்சேவைச் சாவி
 app-basics-safe-mode = பாதுகாப்பான முறைமை
-
 show-dir-label =
     { PLATFORM() ->
         [macos] தேடியில் காட்டு
@@ -102,8 +100,6 @@ media-device-channels = சேனல்கள்
 media-device-rate = தரம்
 media-device-latency = தாமதம்
 
-## Codec support table
-
 ##
 
 intl-app-title = பயன்பாட்டு அமைவுகள்
@@ -114,16 +110,6 @@ intl-os-title = இயங்கு தளம்
 intl-os-prefs-system-locales = கணினி மொழிகள்
 intl-regional-prefs = வட்டார முன்னுரிமைகள்
 
-## Remote Debugging
-##
-## The Firefox remote protocol provides low-level debugging interfaces
-## used to inspect state and control execution of documents,
-## browser instrumentation, user interaction simulation,
-## and for subscribing to browser-internal events.
-##
-## See also https://firefox-source-docs.mozilla.org/remote/
-
-
 ##
 
 # Variables
@@ -133,7 +119,6 @@ report-crash-for-days =
         [one] கடைசி { $days } நாளுக்கானசெயலிழப்பு அறிக்கை
        *[other] கடைசி { $days } நாட்களுக்கான செயலிழப்பு அறிக்கை
     }
-
 # Variables
 # $minutes (integer) - Number of minutes since crash
 crashes-time-minutes =
@@ -141,7 +126,6 @@ crashes-time-minutes =
         [one] { $minutes } நிமிடம் முன்பு
        *[other] { $minutes } நிமிடங்கள் முன்பு
     }
-
 # Variables
 # $hours (integer) - Number of hours since crash
 crashes-time-hours =
@@ -149,7 +133,6 @@ crashes-time-hours =
         [one] { $hours } மணி நேரம் முன்பு
        *[other] { $hours } மணி நேரங்கள் முன்பு
     }
-
 # Variables
 # $days (integer) - Number of days since crash
 crashes-time-days =
@@ -157,7 +140,6 @@ crashes-time-days =
         [one] { $days } நாள் முன்பு
        *[other] { $days } நாட்கள் முன்பு
     }
-
 # Variables
 # $reports (integer) - Number of pending reports
 pending-reports =
@@ -165,7 +147,6 @@ pending-reports =
         [one] அனைத்து செயலிழப்பு அறிக்கைகள்(கொடுக்கப்பட்ட காலத்திற்க்குட்பட்ட நிலுவைலுள்ள { $reports } செயலிழப்பு )
        *[other] அனைத்து செயலிழப்பு அறிக்கைகள்(கொடுக்கப்பட்ட காலத்திற்க்குட்பட்ட நிலுவைலுள்ள { $reports } செயலிழப்புகள் )
     }
-
 raw-data-copied = அசல் தரவு ஒட்டுப்பலகைக்கு நகலெடுக்கப்பட்டது
 text-copied = உரை ஒட்டுப்பலகைக்கு நகலெடுக்கப்பட்டது
 
@@ -178,11 +159,9 @@ blocked-mismatched-version = பதிவகத்திற்கும் DLL �
 # Variables
 # $driverVersion - The graphics driver version string
 try-newer-driver = உங்கள் கிராஃபிக்ஸ் இயக்கி பதிப்புக்கு தடுக்கப்பட்டது. உங்கள் கிராஃபிக்ஸ் இயக்கியை { $driverVersion } அல்லது சமீபத்திய பதிப்பாக புதுப்பிக்க முயற்சிக்கவும்.
-
 # "ClearType" is a proper noun and should not be translated. Feel free to leave English strings if
 # there are no good translations, these are only used in about:support
 clear-type-parameters = ClearType அளவுருக்கள்
-
 compositing = தொகுப்பு
 hardware-h264 = வன்பொருள் H264 குறியேற்றம்
 main-thread-no-omtc = முக்கிய இழை, OMTC இல்லை
@@ -195,7 +174,6 @@ no = இல்லை
 
 found = கிடைத்தது
 missing = காணவில்லை
-
 gpu-description = விளக்கம்
 gpu-vendor-id = விற்பனையாளர் ID
 gpu-device-id = சாதன ID
@@ -215,21 +193,16 @@ webgl2-renderer = WebGL 2 இயக்கி வரைவு
 webgl2-version = WebGL 2 இயக்கி பதிப்பு
 webgl2-driver-extensions = WebGL 2 இயக்கி நீட்சிகள்
 webgl2-extensions = WebGL 2 நீட்சிகள்
-
 # Variables
 # $failureCode (string) - String that can be searched in the source tree.
 unknown-failure = தடுக்கப்பட்டது; தோல்விக்கன குறியீடு { $failureCode }
-
 d3d11layers-crash-guard = D3D11 தொகுப்பி
 glcontext-crash-guard = OpenGL
-
 reset-on-next-restart = அடுத்த மீள்துவக்கத்தில் மீட்டமை
 gpu-process-kill-button = GPU செயல்பாடுகளை நிறுத்து
 gpu-device-reset-button = சாதன மீட்டமைத்தலைத் தூண்டு
-
 min-lib-versions = எதிர்பார்க்கப்படும் குறைந்தபட்ச பதிப்பு
 loaded-lib-versions = பயன்பாட்டிலுள்ள பதிப்பு
-
 has-seccomp-bpf = Seccomp-BPF (கணினி அழைத்தல் வடிகட்டி)
 has-seccomp-tsync = Seccomp இழை ஒத்திசைவு
 has-user-namespaces = பயனர் பெயரிடைவெளிகள்
@@ -241,12 +214,10 @@ effective-content-sandbox-level = உள்ளடக்க செயல்பா
 sandbox-proc-type-content = உள்ளடக்கம்
 sandbox-proc-type-file = கோப்பு உள்ளடக்கம்
 sandbox-proc-type-media-plugin = ஊடகம் செருகி
-
 # Variables
 # $remoteWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
 multi-process-windows = { $remoteWindows }/{ $totalWindows }
-
 async-pan-zoom = ஒத்திசையா Pan/Zoom
 apz-none = ஒன்றுமில்லை
 wheel-enabled = சக்கர உள்ளீடு செயலிடப்பட்டது
@@ -260,10 +231,3 @@ autoscroll-enabled = தானே உருள் செயலிடப்பட
 
 wheel-warning = ஆதரவற்ற முன்னுரிமை: { $preferenceKey } காரணமாக ஒத்திசையா சக்கர உள்ளீடு முடக்கப்பட்டது
 touch-warning = ஆதரவற்ற முன்னுரிமை: { $preferenceKey } காரணமாக ஒத்திசையா தொடு உள்ளீடு முடக்கப்பட்டது
-
-## Strings representing the status of the Enterprise Policies engine.
-
-## Printing section
-
-## Normandy sections
-

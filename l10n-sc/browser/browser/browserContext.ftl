@@ -149,9 +149,7 @@ main-context-menu-save-link-to-pocket =
     .label = Sarva su ligòngiu in { -pocket-brand-name }
     .accesskey = S
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Còpia s'indiritzu
@@ -162,11 +160,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Còpia su ligòngiu
     .accesskey = C
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Còpia su ligòngiu chena sighiduras de su situ
-    .accesskey = i
+main-context-menu-preview-link =
+    .label = Ammustra sa previsualizatzione de su ligòngiu
+    .accesskey = A
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Còpia ligòngiu lìmpiu
+    .accesskey = u
 
 ## Media (video/audio) controls
 ##
@@ -268,6 +270,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Visualiza sa descritzione
     .accesskey = d
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Chirca s’immàgine cun { $engine }
+    .accesskey = h
 main-context-menu-video-save-as =
     .label = Sarva su vìdeu comente...
     .accesskey = v
@@ -283,6 +290,9 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Imbia s'àudio...
     .accesskey = a
+main-context-menu-send-to-device-2 =
+    .label = Imbia a su dispositivu
+    .accesskey = I
 main-context-menu-save-to-pocket =
     .label = Sarva sa pàgina in { -pocket-brand-name }
     .accesskey = k
@@ -290,9 +300,7 @@ main-context-menu-send-to-device =
     .label = Imbia pàgina a su dispositivu
     .accesskey = d
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Imprea is credentziales sarvadas
@@ -319,6 +327,9 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Agiunghe unu faeddu crae pro custa chirca...
     .accesskey = f
+main-context-menu-add-engine =
+    .label = Agiunghe unu motore de chirca
+    .accesskey = A
 main-context-menu-link-send-to-device =
     .label = Imbia su ligòngiu a su dispositivu
     .accesskey = d
@@ -389,3 +400,5 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Isvela crae
     .accesskey = v
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Nou

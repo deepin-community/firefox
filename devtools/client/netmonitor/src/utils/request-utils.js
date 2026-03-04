@@ -10,15 +10,35 @@ const {
   getUnicodeHostname,
 } = require("resource://devtools/client/shared/unicode-url.js");
 
+const lazy = {};
+ChromeUtils.defineESModuleGetters(
+  lazy,
+  {
+    parseJsonLossless:
+      "resource://devtools/client/shared/components/reps/reps/rep-utils.mjs",
+    JSON_NUMBER:
+      "resource://devtools/client/shared/components/reps/reps/constants.mjs",
+  },
+  { global: "contextual" }
+);
+
+loader.lazyRequireGetter(
+  this,
+  "L10N",
+  "resource://devtools/client/netmonitor/src/utils/l10n.js",
+  true
+);
+
 const {
   UPDATE_PROPS,
 } = require("resource://devtools/client/netmonitor/src/constants.js");
 
-const CONTENT_MIME_TYPE_ABBREVIATIONS = {
-  ecmascript: "js",
-  javascript: "js",
-  "x-javascript": "js",
-};
+const CONTENT_MIME_TYPE_ABBREVIATIONS = new Map([
+  ["ecmascript", "js"],
+  ["javascript", "js"],
+  ["x-javascript", "js"],
+  ["event-stream", "eventsource"],
+]);
 
 /**
  * Extracts any urlencoded form data sections (e.g. "?foo=bar&baz=42") from a
@@ -27,7 +47,7 @@ const CONTENT_MIME_TYPE_ABBREVIATIONS = {
  * @param {object} headers - the "requestHeaders".
  * @param {object} uploadHeaders - the "requestHeadersFromUploadStream".
  * @param {object} postData - the "requestPostData".
- * @return {array} a promise list that is resolved with the extracted form data.
+ * @return {Array} a promise list that is resolved with the extracted form data.
  */
 async function getFormDataSections(
   headers,
@@ -63,7 +83,6 @@ async function getFormDataSections(
       }
     }
   }
-
   return formDataSections;
 }
 
@@ -86,15 +105,25 @@ async function fetchHeaders(headers, getLongString) {
  *
  * @param {function} requestData - requestData function for lazily fetch data
  * @param {object} request - request object
- * @param {array} updateTypes - a list of network event update types
+ * @param {Array} updateTypes - a list of network event update types
  */
 function fetchNetworkUpdatePacket(requestData, request, updateTypes) {
   const promises = [];
   if (request) {
     updateTypes.forEach(updateType => {
-      // Only stackTrace will be handled differently
+      // stackTrace needs to be handled specially as the property to lookup
+      // on the request object follows a slightly different convention.
+      // i.e `stacktrace` not `stackTrace`
       if (updateType === "stackTrace") {
         if (request.cause.stacktraceAvailable && !request.stacktrace) {
+          promises.push(requestData(request.id, updateType));
+        }
+        return;
+      }
+      // responseContent only checks the availiability flag as there can
+      // be multiple response content events
+      if (updateType === "responseContent") {
+        if (request.responseContentAvailable) {
           promises.push(requestData(request.id, updateType));
         }
         return;
@@ -129,7 +158,7 @@ function formDataURI(mimeType, encoding, text) {
 /**
  * Write out a list of headers into a chunk of text
  *
- * @param {array} headers - array of headers info { name, value }
+ * @param {Array} headers - array of headers info { name, value }
  * @param {string} preHeaderText - first line of the headers request/response
  * @return {string} list of headers in text format
  */
@@ -168,8 +197,10 @@ function getAbbreviatedMimeType(mimeType) {
   if (!mimeType) {
     return "";
   }
-  const abbrevType = (mimeType.split(";")[0].split("/")[1] || "").split("+")[0];
-  return CONTENT_MIME_TYPE_ABBREVIATIONS[abbrevType] || abbrevType;
+  const abbrevType = (
+    mimeType.toLowerCase().split(";")[0].split("/")[1] || ""
+  ).split("+")[0];
+  return CONTENT_MIME_TYPE_ABBREVIATIONS.get(abbrevType) || abbrevType;
 }
 
 /**
@@ -186,27 +217,26 @@ function getFileName(baseNameWithQuery) {
 /**
  * Helpers for retrieving a URL object from a string
  *
- * @param {string} url - unvalidated url string
+ * @param {string|URL} url - unvalidated url string or already a URL object
  * @return {URL} The URL object
  */
 function getUrl(url) {
-  try {
-    return new URL(url);
-  } catch (err) {
-    return null;
+  if (URL.isInstance(url)) {
+    return url;
   }
+  return URL.parse(url);
 }
 
 /**
  * Helpers for retrieving the value of a URL object property
  *
- * @param {string} input - unvalidated url string
+ * @param {string|URL} input - unvalidated url string or URL instance
  * @param {string} string - desired property in the URL object
  * @return {string} unicode query of a url
  */
 function getUrlProperty(input, property) {
   const url = getUrl(input);
-  return url?.[property] ? url[property] : "";
+  return url?.[property] ?? "";
 }
 
 /**
@@ -214,7 +244,7 @@ function getUrlProperty(input, property) {
  * For example helper returns "basename" from http://domain.com/path/basename
  * If basename portion is empty, it returns the url pathname.
  *
- * @param {string} input - unvalidated url string
+ * @param {string|URL} url - unvalidated url string or URL instance
  * @return {string} unicode basename of a url
  */
 function getUrlBaseName(url) {
@@ -225,7 +255,7 @@ function getUrlBaseName(url) {
 /**
  * Helpers for getting the query portion of a url.
  *
- * @param {string} url - unvalidated url string
+ * @param {string|URL} url - unvalidated url string or URL instance
  * @return {string} unicode query of a url
  */
 function getUrlQuery(url) {
@@ -235,19 +265,25 @@ function getUrlQuery(url) {
 /**
  * Helpers for getting unicode name and query portions of a url.
  *
- * @param {string} url - unvalidated url string
+ * @param {URL} urlObject - the URL instance
  * @return {string} unicode basename and query portions of a url
  */
-function getUrlBaseNameWithQuery(url) {
-  const basename = getUrlBaseName(url);
-  const search = getUrlProperty(url, "search");
+function getUrlBaseNameWithQuery(urlObject) {
+  if (urlObject.href.startsWith("data:")) {
+    // For data URIs, no basename can be extracted from the URL so just reuse
+    // the full url.
+    return urlObject.href;
+  }
+
+  const basename = getUrlBaseName(urlObject);
+  const search = getUrlProperty(urlObject, "search");
   return basename + getUnicodeUrlPath(search);
 }
 
 /**
  * Helpers for getting hostname portion of an URL.
  *
- * @param {string} url - unvalidated url string
+ * @param {string|URL} url - unvalidated url string or URL instance
  * @return {string} unicode hostname of a url
  */
 function getUrlHostName(url) {
@@ -257,7 +293,7 @@ function getUrlHostName(url) {
 /**
  * Helpers for getting host portion of an URL.
  *
- * @param {string} url - unvalidated url string
+ * @param {string|URL} url - unvalidated url string or URL instance
  * @return {string} unicode host of a url
  */
 function getUrlHost(url) {
@@ -268,7 +304,7 @@ function getUrlHost(url) {
  * Helpers for getting the shceme portion of a url.
  * For example helper returns "http" from http://domain.com/path/basename
  *
- * @param {string}  url - unvalidated url string
+ * @param {string|URL} url - unvalidated url string or URL instance
  * @return {string} string scheme of a url
  */
 function getUrlScheme(url) {
@@ -277,14 +313,28 @@ function getUrlScheme(url) {
 }
 
 /**
+ * Helpers for getting the full path portion of a url.
+ *
+ * @param {string|URL} url - unvalidated url string or URL instance
+ * @return {string} string path of a url
+ */
+function getUrlPath(url) {
+  const href = getUrlProperty(url, "href");
+  const origin = getUrlProperty(url, "origin");
+  return href.replace(origin, "");
+}
+
+/**
  * Extract several details fields from a URL at once.
  */
 function getUrlDetails(url) {
-  const baseNameWithQuery = getUrlBaseNameWithQuery(url);
-  let host = getUrlHost(url);
-  const hostname = getUrlHostName(url);
-  const unicodeUrl = getUnicodeUrl(url);
-  const scheme = getUrlScheme(url);
+  const urlObject = getUrl(url);
+  const baseNameWithQuery = getUrlBaseNameWithQuery(urlObject);
+  let host = getUrlHost(urlObject);
+  const hostname = getUrlHostName(urlObject);
+  const unicodeUrl = getUnicodeUrl(urlObject);
+  const scheme = getUrlScheme(urlObject);
+  const path = getUrlPath(urlObject);
 
   // If the hostname contains unreadable ASCII characters, we need to do the
   // following two steps:
@@ -310,9 +360,9 @@ function getUrlDetails(url) {
   // IPv6 parsing is a little sloppy; it assumes that the address has
   // been validated before it gets here.
   const isLocal =
-    hostname.match(/(.+\.)?localhost$/) ||
-    hostname.match(/^127\.\d{1,3}\.\d{1,3}\.\d{1,3}/) ||
-    hostname.match(/\[[0:]+1\]/);
+    /^(.+\.)?localhost$/.test(hostname) ||
+    /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(hostname) ||
+    /^\[[0:]+1\]$/.test(hostname);
 
   return {
     baseNameWithQuery,
@@ -321,14 +371,40 @@ function getUrlDetails(url) {
     unicodeUrl,
     isLocal,
     url,
+    path,
   };
+}
+
+/**
+ * Helpers for retrieving the value of a URL tooltip
+ *
+ * @param {object} urlDetails - a urlDetails object
+ * @returns
+ */
+function getUrlToolTip(urlDetails) {
+  const url = urlDetails.url;
+  const decodedURL = urlDetails.unicodeUrl;
+
+  // The `originalFileURL` below refers to "File" because it was initially created for use in the File column.
+  // Now it is also being used in the Path and URL columns, while retaining the original name.
+  const ORIGINAL_URL = L10N.getFormatStr(
+    "netRequest.originalFileURL.tooltip",
+    url
+  );
+  const DECODED_URL = L10N.getFormatStr(
+    "netRequest.decodedFileURL.tooltip",
+    decodedURL
+  );
+  const toolTip =
+    url === decodedURL ? url : ORIGINAL_URL + "\n\n" + DECODED_URL;
+  return toolTip;
 }
 
 /**
  * Parse a url's query string into its components
  *
  * @param {string} query - query string of a url portion
- * @return {array} array of query params { name, value }
+ * @return {Array} array of query params { name, value }
  */
 function parseQueryString(query) {
   if (!query) {
@@ -351,28 +427,29 @@ function parseQueryString(query) {
 /**
  * Parse a string of formdata sections into its components
  *
- * @param {string} sections - sections of formdata joined by &
- * @return {array} array of formdata params { name, value }
+ * @param {Array<string>} sections Array of sections of formdata
+ *                                 e.g ["", "a=x&b=y", "c=z"]
+ * @return {Array<object>}  Array of formdata params
+ *                          e.g [{ name: 'a', value: 'x' }, { name: 'b', value: 'y'}, { name: 'c', value: 'z'}]
  */
 function parseFormData(sections) {
-  if (!sections) {
+  if (!sections || !sections.length) {
     return [];
   }
+  const formDataParams = [];
+  const searchStr = sections
+    // Filter out empty sections
+    .filter(str => /\S/.test(str))
+    .join("&");
 
-  return sections
-    .replace(/^&/, "")
-    .split("&")
-    .map(e => {
-      const firstEqualSignIndex = e.indexOf("=");
-      const paramName =
-        firstEqualSignIndex !== -1 ? e.slice(0, firstEqualSignIndex) : e;
-      const paramValue =
-        firstEqualSignIndex !== -1 ? e.slice(firstEqualSignIndex + 1) : "";
-      return {
-        name: paramName ? getUnicodeUrlPath(paramName) : "",
-        value: paramValue ? getUnicodeUrlPath(paramValue) : "",
-      };
+  const params = new URLSearchParams(searchStr);
+  for (const [key, value] of params) {
+    formDataParams.push({
+      name: getUnicodeUrlPath(key),
+      value: getUnicodeUrlPath(value),
     });
+  }
+  return formDataParams;
 }
 
 /**
@@ -589,6 +666,7 @@ async function getMessagePayload(payload, getLongString) {
  * incoming network update packets. It makes sure the only valid
  * update properties and the values are correct.
  * It's used by Network and Console panel reducers.
+ *
  * @param {object} update
  *        The new update payload
  * @param {object} request
@@ -629,7 +707,8 @@ function isBase64(payload) {
  * This function also handles JSON with XSSI-escaping characters by stripping them
  * and returning the stripped chars in the strippedChars property
  * This function also handles Base64 encoded JSON.
- * @returns {Object} shape:
+ *
+ * @returns {object} shape:
  *  {Object} json: parsed JSON object
  *  {Error} error: JSON parsing error
  *  {string} strippedChars: XSSI stripped chars removed from JSON payload
@@ -651,7 +730,7 @@ function parseJSON(payloadUnclean) {
   let { payload, strippedChars, error } = removeXSSIString(payloadUnclean);
 
   try {
-    json = JSON.parse(payload);
+    json = lazy.parseJsonLossless(payload);
   } catch (err) {
     if (isBase64(payload)) {
       try {
@@ -666,11 +745,19 @@ function parseJSON(payloadUnclean) {
 
   // Do not present JSON primitives (e.g. boolean, strings in quotes, numbers)
   // as JSON expandable tree.
-  if (!error) {
-    if (typeof json !== "object") {
-      return {};
-    }
+  if (
+    !error &&
+    (typeof json !== "object" ||
+      json === null ||
+      // Parsed JSON numbers might be different than the source, for example
+      // JSON.parse("1516340399466235648") returns 1516340399466235600. In such case,
+      // parseJsonLossless will return an object with `type: JSON_NUMBER` property.
+      // We still want to display those numbers as the other numbers here.
+      json?.type === lazy.JSON_NUMBER)
+  ) {
+    return {};
   }
+
   return {
     json,
     error,
@@ -680,9 +767,10 @@ function parseJSON(payloadUnclean) {
 
 /**
  * Removes XSSI prevention sequences from JSON payloads
+ *
  * @param {string} payloadUnclean: JSON payload that may or may have a
  *                                 XSSI prevention sequence
- * @returns {Object} Shape:
+ * @returns {object} Shape:
  *   {string} payload: the JSON witht the XSSI prevention sequence removed
  *   {string} strippedChars: XSSI string that was removed, null if no XSSI
  *                           prevention sequence was found
@@ -695,7 +783,7 @@ function removeXSSIString(payloadUnclean) {
   const xssiRegexMatch = payloadUnclean.match(xssiRegex);
 
   // Remove XSSI string if there was one found
-  if (xssiRegexMatch?.length > 0) {
+  if (xssiRegexMatch?.length) {
     const xssiLen = xssiRegexMatch[0].length;
     try {
       // substring the payload by the length of the XSSI match to remove it
@@ -733,10 +821,48 @@ function getRequestHeadersRawText(
   requestHeaders,
   urlDetails
 ) {
-  const url = new URL(urlDetails.url);
+  const url = getUrl(urlDetails.url);
   const path = url ? `${url.pathname}${url.search}` : "<unknown>";
   const preHeaderText = `${method} ${path} ${httpVersion}`;
   return writeHeaderText(requestHeaders.headers, preHeaderText).trim();
+}
+
+/**
+ * Checks if the "Expiration Calculations" defined in section 13.2.4 of the
+ * "HTTP/1.1: Caching in HTTP" spec holds true for a collection of headers.
+ *
+ * @param object
+ *        An object containing the { responseHeaders, status } properties.
+ * @return boolean
+ *         True if the response is fresh and loaded from cache.
+ */
+function responseIsFresh({ responseHeaders, status }) {
+  // Check for a "304 Not Modified" status and response headers availability.
+  if (status != 304 || !responseHeaders) {
+    return false;
+  }
+
+  const list = responseHeaders.headers;
+  const cacheControl = list.find(e => e.name.toLowerCase() === "cache-control");
+  const expires = list.find(e => e.name.toLowerCase() === "expires");
+
+  // Check the "Cache-Control" header for a maximum age value.
+  if (cacheControl) {
+    const maxAgeMatch =
+      cacheControl.value.match(/s-maxage\s*=\s*(\d+)/) ||
+      cacheControl.value.match(/max-age\s*=\s*(\d+)/);
+
+    if (maxAgeMatch && maxAgeMatch.pop() > 0) {
+      return true;
+    }
+  }
+
+  // Check the "Expires" header for a valid date.
+  if (expires && Date.parse(expires.value)) {
+    return true;
+  }
+
+  return false;
 }
 
 module.exports = {
@@ -755,13 +881,14 @@ module.exports = {
   getResponseHeader,
   getResponseTime,
   getStartTime,
+  getUrl,
   getUrlBaseName,
-  getUrlBaseNameWithQuery,
   getUrlDetails,
   getUrlHost,
   getUrlHostName,
   getUrlQuery,
   getUrlScheme,
+  getUrlToolTip,
   parseQueryString,
   parseFormData,
   updateFormDataSections,
@@ -770,4 +897,5 @@ module.exports = {
   ipToLong,
   parseJSON,
   getRequestHeadersRawText,
+  responseIsFresh,
 };

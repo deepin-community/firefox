@@ -3,9 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Enviar um sinal de “Não Monitorizar” para os sites da Internet com a indicação que não deseja ser monitorizado
-do-not-track-description2 =
-    .label = Enviar aos sites um pedido de “Não monitorizar”
-    .accesskey = d
+do-not-track-removal = Nós já não suportamos o sinal “Do Not Track”
 do-not-track-learn-more = Saber mais
 do-not-track-option-default-content-blocking-known =
     .label = Apenas quando o { -brand-short-name } está definido para bloquear os rastreadores conhecidos
@@ -14,7 +12,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Dizer aos sites para não venderem ou partilharem os meus dados
     .accesskey = s
+non-technical-privacy-group =
+    .label = Preferências de Privacidade do Site
 non-technical-privacy-header = Preferências de Privacidade do Site
+non-technical-privacy-label =
+    .aria-label = { non-technical-privacy-header }
 # Do not translate.
 # "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
 # included to facilitate power-user search of the about:preferences page.
@@ -70,6 +72,8 @@ focus-search =
     .key = f
 close-button =
     .aria-label = Fechar
+do-not-track-removal2 =
+    .label = Nós já não suportamos o sinal “Do Not Track”
 
 ## Browser Restart Dialog
 
@@ -111,6 +115,10 @@ extension-controlling-proxy-config = <img data-l10n-name ="icon"/> <strong>{ $na
 # <img data-l10n-name="addons-icon"/> will be replaced with Add-ons icon
 # <img data-l10n-name="menu-icon"/> will be replaced with Menu icon
 extension-controlled-enable = Para ativar esta extensão vá a <img data-l10n-name="addons-icon"/> Extras no menu <img data-l10n-name="menu-icon"/>.
+extension-controlled-enable-2 = Para reativar esta extensão visite <a data-l10n-name="addons-link">Extensões e temas</a>.
+# This string is shown to notify the user that their home page or new tab preferences
+# are being controlled by an extension.
+extension-controlling-homepage = { $name } controla algumas das definições da sua página inicial.
 
 ## Preferences UI Search Results
 
@@ -125,6 +133,10 @@ startup-header = Inicialização
 always-check-default =
     .label = Verificar sempre se o { -brand-short-name } é o seu navegador predefinido
     .accesskey = V
+is-default-browser =
+    .message = O { -brand-short-name } é o seu navegador predefinido
+is-not-default-browser =
+    .message = O { -brand-short-name } não é o seu navegador predefinido
 is-default = O { -brand-short-name } é o seu navegador predefinido
 is-not-default = O { -brand-short-name } não é o seu navegador predefinido
 set-as-my-default-browser =
@@ -133,10 +145,13 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Abrir janelas e separadores anteriores
     .accesskey = s
+startup-windows-launch-on-login-profile-disabled =
+    .message = Ative esta preferência marcando “{ profile-manager-use-selected.label }” na janela “Escolher perfil de utilizador”.
 windows-launch-on-login =
     .label = Abrir o { -brand-short-name } automaticamente quando o seu computador arranca
     .accesskey = o
 windows-launch-on-login-disabled = Esta preferência foi desativada no Windows. Para alterar, visite <a data-l10n-name="startup-link">Aplicações de arranque</a> nas definições do Sistema.
+windows-launch-on-login-profile-disabled = Ative esta preferência marcando “{ profile-manager-use-selected.label }” na janela “Escolher perfil de utilizador”.
 startup-restore-warn-on-quit =
     .label = Avisar-lhe ao sair do navegador
 disable-extension =
@@ -146,6 +161,20 @@ preferences-data-migration-description = Importe favoritos, palavras-passe, hist
 preferences-data-migration-button =
     .label = Importar dados
     .accesskey = m
+preferences-profiles-group-header =
+    .heading = Perfis
+preferences-profiles-subpane-description =
+    .description = Cada perfil possui dados de navegação e definições separadas, incluindo histórico, palavras-passe e muito mais.
+preferences-profiles-section-header =
+    .label = Perfis
+    .description = Cada perfil possui dados de navegação e definições separadas, incluindo histórico, palavras-passe e muito mais.
+preferences-profiles-header = Perfis
+preferences-manage-profiles-description = Cada perfil possui dados de navegação e definições separadas, incluindo histórico, palavras-passe e muito mais.
+preferences-manage-profiles-learn-more = Saber mais
+preferences-manage-profiles-button =
+    .label = Gerir perfis
+tabs-group-header2 =
+    .label = Separadores
 tabs-group-header = Separadores
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab permuta em ciclo os separadores pela ordem dos mais recentemente utilizados
@@ -153,6 +182,19 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Abrir ligações em novos separadores em vez de novas janelas
     .accesskey = j
+open-external-link-next-to-active-tab =
+    .label = Abrir as ligações das aplicações ao lado do seu separador ativo
+ask-on-close-multiple-tabs =
+    .label = Questionar antes de fechar múltiplos separadores
+    .accesskey = m
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = Questionar antes de sair com { $quitKey }
+    .accesskey = Q
 confirm-on-close-multiple-tabs =
     .label = Confirmar antes de fechar múltiplos separadores
     .accesskey = m
@@ -181,6 +223,8 @@ browser-containers-settings =
     .label = Definições…
     .accesskey = i
 containers-disable-alert-title = Fechar todos os separadores contentores?
+startup-group =
+    .label = Inicialização
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -212,12 +256,41 @@ containers-remove-cancel-button = Não remover este contentor
 settings-tabs-show-image-in-preview =
     .label = Mostrar uma pré-visualização da imagem ao passar o rato sobre um separador
     .accessKey = v
+browser-layout-header2 =
+    .label = Esquema do navegador
+browser-layout-show-sidebar2 =
+    .label = Mostrar barra lateral
+    .description = Aceda rapidamente a marcadores, separadores do seu telemóvel, chatbots de IA e muito mais, sem sair da vista principal.
+browser-layout-header = Esquema do navegador
+browser-layout-horizontal-tabs =
+    .label = Separadores horizontais
+browser-layout-horizontal-tabs-desc = Mostrar no topo do navegador
+browser-layout-vertical-tabs =
+    .label = Separadores verticais
+browser-layout-vertical-tabs-desc = Mostrar ao lado, na barra lateral
+browser-layout-show-sidebar =
+    .label = Mostrar barra lateral
+browser-layout-show-sidebar-desc = Aceda rapidamente a marcadores, separadores do seu telemóvel, chatbots de IA e muito mais, sem sair da vista principal.
 
 ## General Section - Language & Appearance
 
-language-and-appearance-header = Idioma e aparência
-preferences-web-appearance-header = Aparência do site
+language-and-appearance-header = Idioma e aspeto
+appearance-group =
+    .label = Aspeto do site
+    .description = Alguns sites adaptam o seu esquema de cores com base nas suas preferências. Escolha qual o esquema de cores que gostaria de usar para esses sites.
+preferences-web-appearance-header = Aspeto do site
 preferences-web-appearance-description = Alguns sites adaptam o seu esquema de cores com base nas suas preferências. Escolha qual o esquema de cores que gostaria de usar para esses sites.
+preferences-web-appearance-choice-auto2 =
+    .label = Automático
+    .title = Altere automaticamente os planos de fundo e o conteúdo do site com base nas definições do seu sistema e no tema do { -brand-short-name }.
+preferences-web-appearance-choice-light2 =
+    .label = Claro
+    .title = Utilizar um aspeto claro para fundos e conteúdo de websites.
+preferences-web-appearance-choice-dark2 =
+    .label = Escuro
+    .title = Utilizar um aspeto escuro para fundos e conteúdo de websites.
+web-appearance-group =
+    .aria-label = Aparência do site
 preferences-web-appearance-choice-auto = Automático
 preferences-web-appearance-choice-light = Claro
 preferences-web-appearance-choice-dark = Escuro
@@ -235,19 +308,40 @@ preferences-web-appearance-choice-input-dark =
     .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
-preferences-web-appearance-override-warning = As suas seleções de cores estão a substituir a aparência do website. <a data-l10n-name="colors-link">Gerir cores</a>
+preferences-web-appearance-override-warning3 =
+    .message = As suas definições do controlo de contraste estão a sobrepor-se à aparência do site.
+preferences-web-appearance-link =
+    .label = Gerir temas do { -brand-short-name } em Extensões e Temas
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
-preferences-web-appearance-override-warning2 =
-    .message = As suas seleções de cores estão a substituir a aparência do website.
+preferences-web-appearance-override-warning = As suas seleções de cores estão a substituir o aspeto do website. <a data-l10n-name="colors-link">Gerir cores</a>
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = Gerir temas do { -brand-short-name } em <a data-l10n-name="themes-link">Extensões e Temas</a>
+preferences-contrast-control-header = Controlo de contraste
+preferences-contrast-control-description = Os sites apresentam uma diversidade de cores de primeiro plano e de fundo. Configure o { -brand-short-name } para utilizar cores consistentes em todos os sites, de forma a melhorar a legibilidade.
+preferences-contrast-control-use-platform-settings =
+    .label = Automático (utilizar definições do sistema)
+    .accesskey = A
+preferences-contrast-control-off =
+    .label = Desligado
+    .accesskey = o
+preferences-contrast-control-custom =
+    .label = Personalizado
+    .accesskey = z
 preferences-colors-header = Cores
 preferences-colors-description = Subsituir as cores padrão do { -brand-short-name } quanto a texto, fundos de websites e ligações.
 preferences-colors-manage-button =
     .label = Gerir cores…
     .accesskey = C
+preferences-fonts-header2 =
+    .label = Tipos de letra
+default-font-2 =
+    .label = Tipo de letra predefinido
+    .accesskey = d
+default-font-size-2 =
+    .label = Tamanho
+    .accesskey = n
 preferences-fonts-header = Tipos de letra
 default-font = Tipo de letra predefinido
     .accesskey = d
@@ -256,6 +350,12 @@ default-font-size = Tamanho
 advanced-fonts =
     .label = Avançadas…
     .accesskey = A
+# Zoom is a noun, and the message is used as header for a group of options
+preferences-zoom-header2 =
+    .label = Zoom
+preferences-default-zoom-label =
+    .label = Zoom predefinido
+    .accesskey = Z
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Zoom
 preferences-default-zoom = Zoom predefinido
@@ -301,6 +401,11 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = Ficheiros e aplicações
+downloads-header-2 =
+    .label = Transferências
+download-save-where-2 =
+    .label = Guardar ficheiros em
+    .accesskey = f
 download-header = Transferências
 download-save-where = Guardar ficheiros em
     .accesskey = f
@@ -318,6 +423,9 @@ download-choose-folder =
 download-always-ask-where =
     .label = Perguntar sempre onde guardar ficheiros
     .accesskey = a
+download-private-browsing-delete =
+    .label = Eliminar os ficheiros transferidos na navegação privada quando todas as janelas privadas são fechadas
+    .accesskey = l
 applications-header = Aplicações
 applications-description = Escolha como o { -brand-short-name } manuseia os ficheiros que transfere da web ou as aplicações que utiliza enquanto navega.
 applications-filter =
@@ -400,6 +508,8 @@ applications-save-for-new-types =
 applications-ask-before-handling =
     .label = Pedir se deseja abrir ou guardar ficheiros
     .accesskey = P
+drm-group =
+    .label = Conteúdo com Gestão de Direitos Digitais (DRM)
 drm-content-header = Conteúdo com Gestão de Direitos Digitais (DRM)
 play-drm-content =
     .label = Reproduzir conteúdo controlado por DRM
@@ -468,10 +578,14 @@ performance-limit-content-process-blocked-desc = Modificar o número de processo
 #   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (predefinição)
+performance-group =
+    .label = Desempenho
 
 ## General Section - Browsing
 
 browsing-title = Navegação
+browsing-group-label =
+    .aria-label = Navegação
 browsing-use-autoscroll =
     .label = Utilizar deslocação automática
     .accesskey = a
@@ -511,6 +625,8 @@ browsing-cfr-features =
     .label = Recomendar funcionalidades enquanto navega
     .accesskey = f
 browsing-cfr-recommendations-learn-more = Saber mais
+browsing-group =
+    .label = Navegação
 
 ## General Section - Proxy
 
@@ -520,16 +636,28 @@ network-proxy-connection-learn-more = Saber mais
 network-proxy-connection-settings =
     .label = Definições…
     .accesskey = e
+network-proxy-group =
+    .label = Definições de rede
+    .description = Configure como o { -brand-short-name } se liga à internet.
 
 ## Home Section
 
 home-new-windows-tabs-header = Novas janelas e separadores
 home-new-windows-tabs-description2 = Escolha o que vê quando abre a sua página inicial, novas janelas, e novos separadores.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = Predefinir
+    .accesskey = d
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = Página inicial e novas janelas
+home-homepage-mode-label2 = Novas janelas
 home-newtabs-mode-label = Novos separadores
+home-homepage-new-tabs =
+    .label = Novos separadores
 home-restore-defaults =
     .label = Restaurar predefinições
     .accesskey = R
@@ -541,6 +669,11 @@ home-mode-choice-blank =
     .label = Página em branco
 home-homepage-custom-url =
     .placeholder = Cole um URL...
+# This button is shown when the homepage is managed by an extension and is placed below extension-controlling-homepage.
+home-homepage-manage-extension-button =
+    .label = Gerir extensão
+# This option leads to the "Custom Homepage" subpage
+home-homepage-custom-homepage-url = Escolha um site específico
 # This string has a special case for '1' and [other] (default). If necessary for
 # your language, you can add {$tabCount} to your translations and use the
 # standard CLDR forms, or only use the form for [other] if both strings should
@@ -555,6 +688,36 @@ use-current-pages =
 choose-bookmark =
     .label = Utilizar marcador…
     .accesskey = m
+home-homepage-header = Página inicial
+
+## Custom Homepage subpage
+
+home-custom-homepage-header = Página inicial personalizada
+home-custom-homepage-subpage =
+    .heading = Página inicial personalizada
+# Subheader on the Custom Homepage subpage. Followed by a form to enter URLs and a list of URLs already saved, if any.
+home-custom-homepage-card-header =
+    .label = Endereço(s) do site
+# Subheader on the Custom Homepage subpage. Followed by a form to enter URLs and a list of URLs already saved, if any.
+home-custom-homepage-subheader = Endereço(s) do site
+home-custom-homepage-address =
+    .placeholder = Inserir endereço
+home-custom-homepage-address-button =
+    .label = Adicionar endereço
+# Shown when no custom websites/URLs to use as a homepage have been added yet
+home-custom-homepage-no-results =
+    .label = Ainda não foram adicionados sites.
+# Shown when no custom websites/URLs to use as a homepage have been added yet
+home-custom-homepage-no-websites-yet = Ainda não foram adicionados sites.
+# Further options to use when setting the home page. Two action buttons are placed in line with this prompt
+# to replace the current home page with a currently open page or bookmark.
+home-custom-homepage-replace-with = Substituir por
+# Button that appears in-line after text "Replace with" (home-custom-homepage-replace-with)
+home-custom-homepage-current-pages-button =
+    .label = Páginas atualmente abertas
+# Button that appears in-line after text "Replace with" (home-custom-homepage-replace-with)
+home-custom-homepage-bookmarks-button =
+    .label = Marcadores…
 
 ## Home Section - Firefox Home Content Customization
 
@@ -562,14 +725,17 @@ home-prefs-content-header2 = Conteúdo { -firefox-home-brand-name }
 home-prefs-content-description2 = Escolha que conteúdo deseja no seu ecrã inicial do { -firefox-home-brand-name }.
 home-prefs-search-header =
     .label = Pesquisa Web
+home-prefs-search-header2 =
+    .label = Pesquisar
 home-prefs-shortcuts-header =
     .label = Atalhos
 home-prefs-shortcuts-description = Sites que guarda ou visita
 home-prefs-shortcuts-by-option-sponsored =
     .label = Atalhos patrocinados
+home-prefs-content-header =
+    .label = { -firefox-home-brand-name }
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Recomendado por { $provider }
@@ -577,6 +743,9 @@ home-prefs-recommended-by-description-new = Conteúdo excecional com curadoria d
 home-prefs-recommended-by-header-generic =
     .label = Histórias recomendadas
 home-prefs-recommended-by-description-generic = Conteúdo excecional com curadoria da família { -brand-product-name }
+home-prefs-stories-header =
+    .label = Histórias
+home-prefs-stories-description = Histórias personalizadas baseadas na sua atividade
 
 ##
 
@@ -607,6 +776,19 @@ home-prefs-weather-header =
     .label = Meteorologia
 home-prefs-weather-description = Um relance da previsão para hoje
 home-prefs-weather-learn-more-link = Saber mais
+# Lists is a widget on New Tab, similar to a to-do widget
+home-prefs-lists-header =
+    .label = Listas
+# Timer is a widget on New Tab, similar to the Pomodoro timer.
+home-prefs-timer-header =
+    .label = Temporizador
+# "Support" here means to help sustain or contribute to something, especially through funding or sponsorship.
+home-prefs-support-firefox-header =
+    .label = Apoiar o { -brand-product-name }
+home-prefs-mission-message = Os nossos patrocinadores apoiam a nossa missão para construir uma Internet melhor
+home-prefs-mission-message-learn-more-link = Descubra como
+home-prefs-manage-topics-link = Gerir tópicos
+home-prefs-choose-wallpaper-link = Escolha um fundo
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -640,6 +822,12 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Mostrar sugestões de pesquisa nos resultados da barra de endereço
     .accesskey = l
+search-suggestions-cant-show-2 =
+    .message = Sugestões de pesquisa não serão apresentadas nos resultados da barra de localização porque configurou o { -brand-short-name } para nunca memorizar histórico.
+# With this option enabled, while on a SERP, the URL normally displayed in the
+# address bar will be replaced with the search term used to generate that SERP.
+search-show-search-term-option-2 =
+    .label = Mostrar os termos de pesquisa na barra de endereço das páginas de resultados
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -671,6 +859,9 @@ search-remove-engine =
 search-add-engine =
     .label = Adicionar
     .accesskey = A
+search-edit-engine =
+    .label = Editar
+    .accesskey = E
 search-find-more-link = Encontrar mais motores de pesquisa
 # This warning is displayed when the chosen keyword is already in use
 # ('Duplicate' is an adjective)
@@ -678,13 +869,26 @@ search-keyword-warning-title = Palavra-chave duplicada
 # Variables:
 #   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Escolheu uma palavra-chave que está atualmente a ser utilizada por “{ $name }”. Por favor, selecione outra.
-search-keyword-warning-bookmark = Escolheu uma palavra chave que está a ser utilizada por um marcador. Por favor, escolha outra.
+search-keyword-warning-bookmark = Escolheu uma palavra-chave que está a ser utilizada por um marcador. Por favor, escolha outra.
+# This warning is displayed when the chosen name is already in use.
+# Variables:
+#   $name (string) - Name of a search engine.
+edit-engine-name-warning-duplicate = Já existe um motor de pesquisa com o nome "{ $name }". Escolha outro nome.
+remove-engine-confirmation = Tem a certeza de que pretende remover este motor de pesquisa?
+remove-engine-remove = Remover
+remove-addon-engine-alert = Para remover este motor de pesquisa, remova o extra associado.
+search-engine-group =
+    .label = Motor de pesquisa predefinido
+search-default-engine =
+    .aria-label = Motor de pesquisa predefinido
 
 ## Containers Section
 
 containers-back-button2 =
     .aria-label = Voltar para as Definições
 containers-header = Separadores contentores
+containers-section-header =
+    .heading = Separadores contentores
 containers-add-button =
     .label = Adicionar novo contentor
     .accesskey = A
@@ -695,6 +899,11 @@ containers-settings-button =
     .label = Definições
 containers-remove-button =
     .label = Remover
+
+## Account and sync
+
+sync-group-label =
+    .label = Sincronizar
 
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
@@ -728,11 +937,18 @@ fxa-login-rejected-warning =
 sync-sign-out =
     .label = Terminar sessão...
     .accesskey = T
+sync-sign-out2 =
+    .label = Terminar sessão
+    .accesskey = T
 sync-manage-account = Gerir conta
+    .accesskey = o
+sync-manage-account2 =
+    .label = Gerir conta
     .accesskey = o
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } não está verificado.
 sync-signedin-login-failure = Por favor, inicie a sessão para reassociar { $email }
@@ -759,6 +975,9 @@ prefs-syncing-off = Sincronização: DESATIVADA
 prefs-sync-turn-on-syncing =
     .label = Ativar sincronização...
     .accesskey = s
+prefs-sync-turn-on-syncing-2 =
+    .label = Ativar sincronização
+    .accesskey = s
 prefs-sync-offer-setup-label2 = Sincronize os marcadores, histórico, separadores, palavras-passe, extras e definições entre todos os seus dispositivos.
 prefs-sync-now =
     .labelnotsyncing = Sincronizar agora
@@ -767,8 +986,14 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = Sincronizar agora
     .accesskey = N
+prefs-sync-now-button-2 =
+    .label = Sincronizar agora
+    .accesskey = N
 prefs-syncing-button =
     .label = A sincronizar...
+prefs-syncing-button-2 =
+    .label = A sincronizar...
+    .title = Sincronizar agora
 
 ## The list of things currently syncing.
 
@@ -783,6 +1008,9 @@ sync-currently-syncing-creditcards = Cartões de crédito
 sync-currently-syncing-payment-methods = Métodos de pagamento
 sync-currently-syncing-addons = Extras
 sync-currently-syncing-settings = Definições
+sync-manage-options =
+    .label = Gerir a sincronização…
+    .accesskey = G
 sync-change-options =
     .label = Alterar...
     .accesskey = A
@@ -835,10 +1063,27 @@ sync-engine-settings =
     .label = Definições
     .tooltiptext = Definições gerais, de privacidade e de segurança que alterou
     .accesskey = D
+sync-choose-what-to-sync-dialog4 =
+    .title = Faça a gestão do que é sincronizado em todos os seus dispositivos associados
+    .style = min-width: 59em;
+    .buttonlabelaccept = Guardar
+    .buttonaccesskeyaccept = G
+    .buttonlabelextra2 = Desligar…
+    .buttonaccesskeyextra2 = D
 
 ## The device name controls.
 
 sync-device-name-header = Nome do dispositivo
+sync-device-name-header-2 =
+    .label = Nome do dispositivo
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Nome do dispositivo
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Alterar nome do dispositivo
+    .accesskey = l
 sync-device-name-change =
     .label = Alterar nome do dispositivo…
     .accesskey = l
@@ -849,6 +1094,8 @@ sync-device-name-save =
     .label = Guardar
     .accesskey = r
 sync-connect-another-device = Ligar outro dispositivo
+sync-connect-another-device-2 =
+    .label = Ligar outro dispositivo
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -979,10 +1226,46 @@ autofill-saved-payment-methods-button = Métodos de pagamento guardados
 # This operation requires the user to authenticate with the operating system (device sign-in)
 autofill-reauth-payment-methods-checkbox = Requerer o início de sessão no dispositivo para preencher e gerir métodos de pagamento
     .accesskey = o
+autofill-payment-methods-title = Métodos de pagamento
+autofill-payment-methods-header =
+    .aria-label = Métodos de pagamento
+autofill-payment-methods-checkbox-message-2 =
+    .label = Guardar e preencher automaticamente as informações de pagamento
+    .accesskey = p
+autofill-payment-methods-manage-payments-button =
+    .label = Gerir os métodos de pagamento
+    .accesskey = m
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox-2 =
+    .label = Exigir início de sessão do dispositivo para o preenchimento automaticamente e gerir métodos de pagamento
+    .accesskey = E
+autofill-addresses-title = Endereços e mais
+autofill-addresses-header =
+    .aria-label = Endereços e mais
+autofill-addresses-checkbox-message =
+    .label = Guardar e autopreencher os endereços
+    .accesskey = G
+autofill-addresses-manage-addresses-button =
+    .label = Gerir endereços e mais
+    .accesskey = m
+addresses-group =
+    .label = Endereços e mais
+payments-group =
+    .label = Métodos de pagamento
 
 ## Privacy Section - History
 
 history-header = Histórico
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label2 = O { -brand-short-name } irá
 # This label is followed, on the same line, by a dropdown list of options
 # (Remember history, etc.).
 # In English it visually creates a full sentence, e.g.
@@ -1000,6 +1283,18 @@ history-remember-option-never =
     .label = Nunca memorizar histórico
 history-remember-option-custom =
     .label = Utilizar definições personalizadas para o histórico
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = O { -brand-short-name } irá memorizar o seu histórico de navegação, transferências, formulários e pesquisa.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = O { -brand-short-name } irá utilizar as mesmas definições da navegação privada e não irá memorizar qualquer histórico enquanto navega na Web.
+history-remember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = O { -brand-short-name } irá memorizar o seu histórico de navegação, transferências, formulários e pesquisa.
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = O { -brand-short-name } irá utilizar as mesmas definições da navegação privada e não irá memorizar qualquer histórico enquanto navega na Web.
 history-remember-description = O { -brand-short-name } irá memorizar o seu histórico de navegação, transferências, formulários e pesquisa.
 history-dontremember-description = O { -brand-short-name } irá utilizar as mesmas definições da navegação privada e não irá memorizar qualquer histórico enquanto navega na Web.
 history-private-browsing-permanent =
@@ -1020,11 +1315,19 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = Limpar histórico…
     .accesskey = s
+history-group =
+    .label = Histórico
 
 ## Privacy Section - Site Data
 
 sitedata-header = Cookies e dados de sites
+sitedata-label =
+    .aria-label = { sitedata-header }
 sitedata-total-size-calculating = A calcular tamanho dos dados de sites e cache…
+# Variables:
+#   $value (number) - Value of the unit (for example: 4.6, 500)
+#   $unit (string) - Name of the unit (for example: "bytes", "KB")
+sitedata-total-size2 = Os seus cookies, histórico, dados de sites e cache estão atualmente a utilizar <strong>{ $value } { $unit }</strong> de espaço em disco.
 # Variables:
 #   $value (number) - Value of the unit (for example: 4.6, 500)
 #   $unit (string) - Name of the unit (for example: "bytes", "KB")
@@ -1033,6 +1336,8 @@ sitedata-learn-more = Saber mais
 sitedata-delete-on-close =
     .label = Eliminar cookies e os dados de sites quando o { -brand-short-name } é fechado
     .accesskey = c
+sitedata-delete-on-close-private-browsing3 =
+    .message = Com base nas suas definições do histórico, o { -brand-short-name } elimina os cookies e os dados dos sites da sua sessão quando fecha o navegador.
 sitedata-delete-on-close-private-browsing = No modo de navegação privada permanente, os cookies e os dados de sites irão ser sempre limpos quando o { -brand-short-name } é fechado.
 sitedata-delete-on-close-private-browsing2 = Com base nas suas definições do histórico, o { -brand-short-name } elimina os cookies e os dados dos sites da sua sessão quando fecha o navegador.
 sitedata-allow-cookies-option =
@@ -1049,14 +1354,22 @@ sitedata-option-block-cross-site-trackers =
     .label = Rastreadores entre sites
 sitedata-option-block-cross-site-tracking-cookies =
     .label = Cookies de monitorização entre sites
+sitedata-option-block-cross-site-cookies2 =
+    .label = Isolar cookies cruzados
 sitedata-option-block-cross-site-cookies =
-    .label = Cookies de monitorização cruzadas entre sites e isolar outras cookies cruzadas entre sites
+    .label = Cookies de monitorização cruzados entre sites e isolar outros cookies cruzados entre sites
 sitedata-option-block-unvisited =
     .label = Cookies de sites não visitados
 sitedata-option-block-all-cross-site-cookies =
     .label = Todos os cookies cruzados (pode fazer com que alguns sites deixem de funcionar)
 sitedata-option-block-all =
     .label = Todos os cookies (irá resultar na falha de sites)
+sitedata-clear2 =
+    .label = Limpar os dados de navegação
+    .accesskey = L
+sitedata-settings2 =
+    .label = Gerir os dados de navegação
+    .accesskey = G
 sitedata-clear =
     .label = Limpar dados…
     .accesskey = L
@@ -1066,6 +1379,12 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = Gerir exceções…
     .accesskey = x
+sitedata-cookies-exceptions2 =
+    .label = Gerir exceções
+    .accesskey = x
+    .description = Pode especificar que sites que estão, sempre ou nunca, autorizados a utilizar os cookies e os dados de sites.
+cookies-site-data-group =
+    .label = Cookies e dados de sites
 
 ## Privacy Section - Cookie Banner Handling
 
@@ -1082,10 +1401,20 @@ forms-handle-cookie-banners =
 cookie-banner-blocker-checkbox-label =
     .label = Recusar automaticamente faixas de cookies
 
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = Barra de endereço
+addressbar-suggest-1 = Escolha quais as sugestões a mostrar na sua barra de endereço
+# When Firefox Suggest is enabled, this replaces `addressbar-header`.
+addressbar-header-firefox-suggest-1 = { -firefox-suggest-brand-name }
 addressbar-suggest = Ao utilizar a barra de endereço, sugerir
+# When Firefox Suggest is enabled, this replaces `addressbar-header`.
+addressbar-header-firefox-suggest = Barra de endereço — { -firefox-suggest-brand-name }
+# When Firefox Suggest is enabled, this replaces `addressbar-suggest`.
+addressbar-suggest-firefox-suggest = Selecione o tipo de sugestões que surgem na barra de endereços.
+# When Firefox Suggest is enabled, a "Learn more" link appears at the end of
+# `addressbar-suggest-firefox-suggest`.
+addressbar-locbar-firefox-suggest-learn-more = Saber mais
 addressbar-locbar-history-option =
     .label = Histórico de navegação
     .accesskey = H
@@ -1105,12 +1434,22 @@ addressbar-locbar-shortcuts-option =
 addressbar-locbar-topsites-option =
     .label = Principais sites
     .accesskey = t
+addressbar-locbar-engines-option-1 =
+    .label = Sugerir os motores de pesquisa a utilizar
+    .accesskey = a
 addressbar-locbar-engines-option =
     .label = Motores de pesquisa
     .accesskey = a
 addressbar-locbar-quickactions-option =
     .label = Ações rápidas
     .accesskey = Q
+# Toggles whether suggestions are obtained from Firefox Suggest or not (local or online).
+addressbar-locbar-suggest-all-option-2 =
+    .label = Sugestões do { -brand-short-name }
+    .description = Obtenha sugestões da Internet relacionadas com a sua pesquisa
+addressbar-locbar-suggest-sponsored-option-2 =
+    .label = Sugestões de patrocinadores
+    .description = Apoie o { -brand-short-name } com sugestões patrocinadas ocasionais.
 addressbar-suggestions-settings = Alterar preferências para as sugestões dos motores de pesquisa
 addressbar-locbar-showrecentsearches-option =
     .label = Mostrar pesquisas recentes
@@ -1118,7 +1457,33 @@ addressbar-locbar-showrecentsearches-option =
 addressbar-locbar-showtrendingsuggestions-option =
     .label = Mostrar sugestões de pesquisa com uma popularidade crescente
     .accesskey = p
+# Toggles whether suggestions are obtained from Firefox Suggest or not (local or online).
+addressbar-locbar-suggest-all-option =
+    .label = Sugestões do { -brand-short-name }
+addressbar-locbar-suggest-all-option-desc = Obtenha sugestões da Internet relacionadas com a sua pesquisa
+# Nonsponsored suggestions refers to Firefox Suggest suggestions like Wikipedia.
+addressbar-locbar-suggest-nonsponsored-option =
+    .label = Sugestões do { -brand-short-name }
+addressbar-locbar-suggest-nonsponsored-desc = Obtenha sugestões da Internet relacionadas com a sua pesquisa
+addressbar-locbar-suggest-sponsored-option =
+    .label = Sugestões de patrocinadores
+addressbar-locbar-suggest-sponsored-desc = Apoie o { -brand-short-name } com sugestões patrocinadas ocasionais.
+# This string is used for a checkbox in the settings UI that opts the
+# user into "online" Firefox Suggest, allowing them to receive suggestions from
+# Mozilla's Merino server.
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since the online suggest is created and maintained
+# by Mozilla.
+addressbar-firefox-suggest-online =
+    .label = Obter as sugestões da Mozilla enquanto digita
+addressbar-dismissed-suggestions-label-2 =
+    .label = Dispensar sugestões
+    .description = Restaurar sugestões dispensadas dos patrocinadores e do { -brand-short-name }.
 addressbar-quickactions-learn-more = Saber mais
+addressbar-dismissed-suggestions-label = Dispensar sugestões
+addressbar-restore-dismissed-suggestions-description = Restaurar sugestões dispensadas dos patrocinadores e do { -brand-short-name }.
+addressbar-restore-dismissed-suggestions-button =
+    .label = Restaurar
 
 ## Privacy Section - Content Blocking
 
@@ -1155,7 +1520,8 @@ content-blocking-private-windows = Conteúdo de monitorização nas janelas priv
 content-blocking-cross-site-cookies-in-all-windows2 = Cookies entre sites em todas as janelas
 content-blocking-cross-site-tracking-cookies = Cookies de monitorização entre sites
 content-blocking-all-cross-site-cookies-private-windows = Cookies entre sites em janelas privadas
-content-blocking-cross-site-tracking-cookies-plus-isolate = Cookies de monitorização entre sites e isolamento das cookies remanescentes
+content-blocking-isolate-cross-site-cookies = Isolar cookies cruzados
+content-blocking-cross-site-tracking-cookies-plus-isolate = Cookies cruzados de rastreamento e isolamento dos cookies remanescentes
 content-blocking-social-media-trackers = Rastreadores de redes sociais
 content-blocking-all-cookies = Todos os cookies
 content-blocking-unvisited-cookies = Cookies de sites não visitados
@@ -1177,6 +1543,11 @@ content-blocking-etp-standard-tcp-title = Inclui a Proteção Total de Cookies, 
 content-blocking-warning-title = Atenção!
 content-blocking-and-isolating-etp-warning-description-2 = Esta definição pode fazer com que alguns sites não mostrem o conteúdo ou que não funcionem corretamente. Se um site parecer com problemas, pode querer desativar a proteção contra a monitorização para esse site para carregar todo o conteúdo.
 content-blocking-warning-learn-how = Saiba como
+content-blocking-baseline-exceptions-3 =
+    .label = Corrigir os principais problemas dos sites (recomendado)
+    .description = Ajuda a carregar os sites e as funcionalidades desbloqueando apenas os elementos essenciais que podem conter rastreadores. Abrange os problemas mais comuns.
+content-blocking-baseline-uncheck-warning-dialog-ok-button = Desativar as correções
+content-blocking-baseline-uncheck-warning-dialog-cancel-button = Manter as correções ativadas
 content-blocking-reload-description = Irá precisar de recarregar os seus separadores para aplicar estas alterações.
 content-blocking-reload-tabs-button =
     .label = Recarregar todos os separadores
@@ -1256,10 +1627,15 @@ permissions-notification-link = Saber mais
 permissions-notification-pause =
     .label = Pausar notificações até o { -brand-short-name } reiniciar
     .accesskey = n
+permissions-autoplay2 =
+    .label = Reprodução automática
 permissions-autoplay = Reprodução automática
 permissions-autoplay-settings =
     .label = Definições…
     .accesskey = f
+permissions-block-popups2 =
+    .label = Bloquear pop-ups e redirecionamentos de terceiros
+    .accesskey = B
 permissions-block-popups =
     .label = Bloquear janelas pop-up
     .accesskey = B
@@ -1275,23 +1651,58 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = Exceções…
     .accesskey = E
+permissions-location2 =
+    .label = Localização
+permissions-xr2 =
+    .label = Realidade virtual
+permissions-camera2 =
+    .label = Câmara
+permissions-microphone2 =
+    .label = Microfone
+permissions-notification2 =
+    .label = Notificações
 
 ## Privacy Section - Data Collection
 
 collection-header = Recolha de dados e utilização do { -brand-short-name }
 collection-header2 = Recolha de dados e utilização do { -brand-short-name }
     .searchkeywords = telemetria
+preferences-collection-description = Nós esforçamos-nos para lhe dar opções e recolher apenas a quantidade mínima de dados que são necessários para melhorar o { -brand-product-name } para todos.
+preferences-collection-privacy-notice = Ver informação de privacidade
+preferences-across-profiles = Estas definições são aplicadas a todos os perfis do { -brand-product-name } neste dispositivo.
+preferences-view-profiles = Ver todos os perfis
 collection-description = Nós esforçamos-nos para lhe fornecer escolhas e recolher apenas o que precisamos para fornecer e melhorar o { -brand-short-name } para toda a gente. Pedimos sempre permissão antes de receber informação pessoal.
 collection-privacy-notice = Aviso de privacidade
 collection-health-report-telemetry-disabled = Já não está a permitir que o { -vendor-short-name } recolha dados técnicos e de interação. Todos os dados antigos serão eliminados dentro de 30 dias.
 collection-health-report-telemetry-disabled-link = Saber mais
+collection-usage-ping =
+    .label = Enviar ping de utilização diário para a { -vendor-short-name }
+    .accesskey = u
+collection-usage-ping-description = Isto ajuda a { -vendor-short-name } a calcular os utilizadores ativos.
+collection-health-report2 =
+    .label = Enviar dados técnicos e de interação para a { -vendor-short-name }
+    .accesskey = r
 collection-health-report =
     .label = Permitir que o { -brand-short-name } envie os dados técnicos e de interação para a { -vendor-short-name }
     .accesskey = r
 collection-health-report-link = Saber mais
+collection-health-report-description = Isto ajuda-nos a melhorar as funcionalidades, desempenho e a estabilidade do { -brand-product-name }.
+collection-studies2 =
+    .label = Instalar e executar estudos
+collection-studies-description = Experimente funcionalidades e ideias antes de serem disponibilizadas para todos.
 collection-studies =
     .label = Permitir que { -brand-short-name } instale e execute os estudos
 collection-studies-link = Ver estudos do { -brand-short-name }
+addon-recommendations2 =
+    .label = Permitir recomendações personalizadas de extensões
+addon-recommendations-description = Obtenha recomendações de extensões para melhorar a sua experiência de navegação.
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = A partilha de dados está desativada para a configuração desta compilação.
+collection-backlogged-crash-reports2 =
+    .label = Enviar relatórios de falha automaticamente
+    .accesskey = c
+collection-backlogged-crash-reports-description = Isto ajuda o { -vendor-short-name } a diagnosticar e corrigir problemas com o navegador. Os relatórios podem incluir dados pessoais ou sensíveis.
 addon-recommendations =
     .label = Permitir que { -brand-short-name } faça recomendações personalizadas de extensões
 addon-recommendations-link = Saber mais
@@ -1299,8 +1710,6 @@ addon-recommendations-link = Saber mais
 # or builds with no Telemetry support available.
 collection-health-report-disabled = A comunicação de dados está desativada para esta configuração da compilação
 collection-backlogged-crash-reports-with-link = Permitir que o { -brand-short-name } envie relatórios de falhas acumuladas em seu nome. <a data-l10n-name="crash-reports-link">Saber mais</a>
-    .accesskey = f
-collection-backlogged-crash-reports = Permitir que o { -brand-short-name } envie relatórios de falhas acumuladas em seu nome.
     .accesskey = f
 privacy-segmentation-section-header = Novas funcionalidades que melhoram a sua navegação
 privacy-segmentation-section-description = Quando oferecemos funcionalidades que utilizam os seus dados para fornecer uma experiência mais pessoal:
@@ -1323,6 +1732,8 @@ website-advertising-private-attribution-description = Isto ajuda os sites a comp
 ## https://developers.google.com/safe-browsing/developers_guide_v2#AcceptableUsage
 
 security-header = Segurança
+browsing-protection-group =
+    .label = Conteúdo decetivo e proteção contra software perigoso
 security-browsing-protection = Conteúdo decetivo e proteção contra software perigoso
 security-enable-safe-browsing =
     .label = Bloquear conteúdo perigoso e decetivo
@@ -1350,34 +1761,44 @@ certs-devices =
 certs-thirdparty-toggle =
     .label = Permitir que o { -brand-short-name } confie automaticamente em certificados raiz de terceiros que instale
     .accesskey = t
+certs-devices-enable-fips = Ativar FIPS
 space-alert-over-5gb-settings-button =
     .label = Abrir definições
     .accesskey = A
 space-alert-over-5gb-message2 = <strong>O { -brand-short-name } está a ficar sem espaço em disco</strong>. Os conteúdos dos sites podem não ser apresentados corretamente. Pode limpar os dados armazenados em Definições > Privacidade e segurança > Cookies e Dados de sites.
 space-alert-under-5gb-message2 = <strong>O { -brand-short-name } está a ficar sem espaço em disco</strong>. Os conteúdos de sites podem não ser apresentados corretamente. Visite “Saber mais” para otimizar a utilização do seu disco e melhorar a experiência de navegação.
+certs-description2 =
+    .label = Certificados
+    .description = Configure os certificados que o { -brand-short-name } utiliza para a autenticação.
 
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = Modo apenas HTTPS
+httpsonly-label =
+    .aria-label = { httpsonly-header }
+    .description = Apenas permite ligações seguras a sites. O { -brand-short-name } irá perguntar antes de ligar sem segurança.
+httpsonly-description3 = Apenas permite ligações seguras a sites. O { -brand-short-name } irá perguntar antes de ligar sem segurança.
+httpsonly-learn-more2 = Como funciona o Apenas HTTPS
 httpsonly-description = O HTTPS fornece um ligação segura e encriptada entre o { -brand-short-name } e os sites que visita. A maioria dos sites suporta HTTPS e se o modo apenas HTTPS estiver ativo, então o { -brand-short-name } irá melhorar/atualizar todas as ligações para HTTPS.
-httpsonly-description2 = O { -brand-short-name } estabelece ligações seguras e encriptadas aos sites que visita. Irá alertar caso uma ligação não seja segura, quando o modo Apenas HTTPS estiver ativado.
 httpsonly-learn-more = Saber mais
 httpsonly-radio-enabled =
     .label = Ativar o modo apenas HTTPS em todas as janelas
-httpsonly-radio-enabled2 =
-    .label = Utilizar apenas HTTPS em todas as janelas
 httpsonly-radio-enabled-pbm =
     .label = Ativar o modo apenas HTTPS somente em janelas privadas
-httpsonly-radio-enabled-pbm2 =
-    .label = Utilizar HTTPS apenas nas janelas privadas
+httpsonly-radio-disabled3 =
+    .label = Não ativar o modo Apenas HTTPS
+    .description = O { -brand-short-name } pode, ainda assim, atualizar algumas ligações
 httpsonly-radio-disabled =
     .label = Não ativar o modo apenas HTTPS
-httpsonly-radio-disabled2 =
-    .label = Tentar primeiro HTTPS, mas permitir as ligações que não são seguras
+httpsonly-group =
+    .label = Modo apenas HTTPS
+    .description = Apenas permite ligações seguras a sites. O { -brand-short-name } irá perguntar antes de ligar sem segurança.
 
 ## DoH Section
 
 preferences-doh-header = DNS sobre HTTPS
+dns-over-https-group =
+    .label = DNS sobre HTTPS
 preferences-doh-description = O Domain Name System (DNS) sobre HTTPS envia o seu pedido de nome de domínio através de uma ligação encriptada, criando um DNS seguro e tornando mais difícil para os outros verem qual o site que está prestes a aceder.
 preferences-doh-description2 = O Domain Name System (DNS) sobre HTTPS envia o seu pedido de nome de domínio através de uma ligação encriptada, fornecendo um DNS seguro e tornando mais difícil para os outros verem qual o site que está prestes a aceder.
 # Variables:

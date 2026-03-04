@@ -7,9 +7,10 @@
 #define MOZILLA_AUDIOSEGMENT_H_
 
 #include <speex/speex_resampler.h>
-#include "MediaSegment.h"
-#include "AudioSampleFormat.h"
+
 #include "AudioChannelFormat.h"
+#include "AudioSampleFormat.h"
+#include "MediaSegment.h"
 #include "SharedBuffer.h"
 #include "WebAudioUtils.h"
 #include "mozilla/ScopeExit.h"
@@ -262,6 +263,12 @@ struct AudioChunk {
   T* ChannelDataForWrite(size_t aChannel) {
     MOZ_ASSERT(AudioSampleTypeToFormat<T>::Format == mBufferFormat);
     MOZ_ASSERT(!mBuffer->IsShared());
+    // Array access check for 1905287
+    if (aChannel >= mChannelData.Length()) {
+      MOZ_CRASH_UNSAFE_PRINTF(
+          "Invalid index: aChannel: %zu, mChannelData size: %zu\n", aChannel,
+          mChannelData.Length());
+    }
     return static_cast<T*>(const_cast<void*>(mChannelData[aChannel]));
   }
 

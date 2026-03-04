@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = Жаңа бет
     .accesskey = Ж
@@ -28,11 +32,17 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Сол жақтан беттерді жабу
     .accesskey = л
+close-tabs-to-the-start-vertical =
+    .label = Үстінен беттерді жау
+    .accesskey = т
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Оң жақтан беттерді жабу
     .accesskey = О
+close-tabs-to-the-end-vertical =
+    .label = Астынан беттерді жау
+    .accesskey = ы
 close-other-tabs =
     .label = Басқа беттерді жабу
     .accesskey = с
@@ -69,6 +79,10 @@ move-to-end =
 move-to-new-window =
     .label = Жаңа терезеге жылжыту
     .accesskey = е
+# Variables
+#  $profileName (string): The name of the profile to move tab to
+move-to-new-profile =
+    .label = { $profileName } ішіне жылжыту
 tab-context-close-multiple-tabs =
     .label = Бірнеше бетті жабу
     .accesskey = ш
@@ -78,6 +92,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Бөлісу
     .accesskey = л
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Оң жақтан жаңа бет
+    .accesskey = а
+tab-context-new-tab-open-vertical =
+    .label = Астынан жаңа бет
+    .accesskey = а
+tab-context-new-group =
+    .label = Жаңа топ
+    .accesskey = т
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -103,10 +127,25 @@ tab-context-move-tabs =
            *[other] Беттерді жылжыту
         }
     .accesskey = ы
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-device =
+    .label =
+        { $tabCount ->
+            [1] Құрылғыға жіберу
+           *[other] Send { $tabCount } Tabs to Device
+        }
+    .accesskey = б
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->
             [one] Бетті құрылғыға жіберу
-           *[other] Бетті { $tabCount } құрылғыға жіберу
+           *[other] { $tabCount } бетті құрылғыға жіберу
+        }
+    .accesskey = б
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [1] Бетті жадыдан шығару
+           *[other] { $tabCount } бетті жадыдан шығару
         }
     .accesskey = ы

@@ -5,9 +5,7 @@
 "use strict";
 
 const TextEditor = require("resource://devtools/client/inspector/markup/views/text-editor.js");
-const {
-  truncateString,
-} = require("resource://devtools/shared/inspector/utils.js");
+const { truncateString } = require("resource://devtools/shared/string.js");
 const {
   editableField,
   InplaceEditor,
@@ -76,59 +74,59 @@ const DISPLAY_TYPES = {
 
 /**
  * Creates an editor for an Element node.
- *
- * @param  {MarkupContainer} container
- *         The container owning this editor.
- * @param  {NodeFront} node
- *         The NodeFront being edited.
  */
-function ElementEditor(container, node) {
-  this.container = container;
-  this.node = node;
-  this.markup = this.container.markup;
-  this.doc = this.markup.doc;
-  this.inspector = this.markup.inspector;
-  this.highlighters = this.markup.highlighters;
-  this._cssProperties = this.inspector.cssProperties;
+class ElementEditor {
+  /**
+   * @param  {MarkupContainer} container
+   *         The container owning this editor.
+   * @param  {NodeFront} node
+   *         The NodeFront being edited.
+   */
+  constructor(container, node) {
+    this.container = container;
+    this.node = node;
+    this.markup = this.container.markup;
+    this.doc = this.markup.doc;
+    this.inspector = this.markup.inspector;
+    this.highlighters = this.markup.highlighters;
+    this._cssProperties = this.inspector.cssProperties;
 
-  this.isOverflowDebuggingEnabled = Services.prefs.getBoolPref(
-    "devtools.overflow.debugging.enabled"
-  );
+    this.isOverflowDebuggingEnabled = Services.prefs.getBoolPref(
+      "devtools.overflow.debugging.enabled"
+    );
 
-  // If this is a scrollable element, this specifies whether or not its overflow causing
-  // elements are highlighted. Otherwise, it is null if the element is not scrollable.
-  this.highlightingOverflowCausingElements = this.node.isScrollable
-    ? false
-    : null;
+    // If this is a scrollable element, this specifies whether or not its overflow causing
+    // elements are highlighted. Otherwise, it is null if the element is not scrollable.
+    this.highlightingOverflowCausingElements = this.node.isScrollable
+      ? false
+      : null;
 
-  this.attrElements = new Map();
-  this.animationTimers = {};
+    this.attrElements = new Map();
+    this.animationTimers = {};
 
-  this.elt = null;
-  this.tag = null;
-  this.closeTag = null;
-  this.attrList = null;
-  this.newAttr = null;
-  this.closeElt = null;
+    this.elt = null;
+    this.tag = null;
+    this.closeTag = null;
+    this.attrList = null;
+    this.newAttr = null;
+    this.closeElt = null;
 
-  this.onCustomBadgeClick = this.onCustomBadgeClick.bind(this);
-  this.onDisplayBadgeClick = this.onDisplayBadgeClick.bind(this);
-  this.onScrollableBadgeClick = this.onScrollableBadgeClick.bind(this);
-  this.onExpandBadgeClick = this.onExpandBadgeClick.bind(this);
-  this.onTagEdit = this.onTagEdit.bind(this);
+    this.onCustomBadgeClick = this.onCustomBadgeClick.bind(this);
+    this.onDisplayBadgeClick = this.onDisplayBadgeClick.bind(this);
+    this.onScrollableBadgeClick = this.onScrollableBadgeClick.bind(this);
+    this.onExpandBadgeClick = this.onExpandBadgeClick.bind(this);
+    this.onTagEdit = this.onTagEdit.bind(this);
 
-  this.buildMarkup();
+    this.buildMarkup();
 
-  const isVoidElement = HTML_VOID_ELEMENTS.includes(this.node.displayName);
-  if (node.isInHTMLDocument && isVoidElement) {
-    this.elt.classList.add("void-element");
+    const isVoidElement = HTML_VOID_ELEMENTS.includes(this.node.displayName);
+    if (node.isInHTMLDocument && isVoidElement) {
+      this.elt.classList.add("void-element");
+    }
+
+    this.update();
+    this.initialized = true;
   }
-
-  this.update();
-  this.initialized = true;
-}
-
-ElementEditor.prototype = {
   buildMarkup() {
     this.elt = this.doc.createElement("span");
     this.elt.classList.add("editor");
@@ -152,7 +150,7 @@ ElementEditor.prototype = {
         cssProperties: this._cssProperties,
       });
     }
-  },
+  }
 
   renderOpenTag() {
     const open = this.doc.createElement("span");
@@ -173,12 +171,12 @@ ElementEditor.prototype = {
     closingBracket.classList.add("closing-bracket");
     closingBracket.textContent = ">";
     open.appendChild(closingBracket);
-  },
+  }
 
   renderAttributes(containerEl) {
     this.attrList = this.doc.createElement("span");
     containerEl.appendChild(this.attrList);
-  },
+  }
 
   renderNewAttributeEditor(containerEl) {
     this.newAttr = this.doc.createElement("span");
@@ -219,14 +217,14 @@ ElementEditor.prototype = {
       },
       cssProperties: this._cssProperties,
     });
-  },
+  }
 
   renderEventBadge() {
     this.expandBadge = this.doc.createElement("span");
     this.expandBadge.classList.add("markup-expand-badge");
     this.expandBadge.addEventListener("click", this.onExpandBadgeClick);
     this.elt.appendChild(this.expandBadge);
-  },
+  }
 
   renderCloseTag() {
     const close = this.doc.createElement("span");
@@ -235,22 +233,22 @@ ElementEditor.prototype = {
     this.elt.appendChild(close);
 
     this.closeTag = this.doc.createElement("span");
-    this.closeTag.classList.add("tag");
+    this.closeTag.classList.add("tag", "force-color-on-flash");
     this.closeTag.textContent = this.node.displayName;
     close.appendChild(this.closeTag);
 
     close.appendChild(this.doc.createTextNode(">"));
-  },
+  }
 
   get displayBadge() {
     return this._displayBadge;
-  },
+  }
 
   set selected(value) {
     if (this.textEditor) {
       this.textEditor.selected = value;
     }
-  },
+  }
 
   flashAttribute(attrName) {
     if (this.animationTimers[attrName]) {
@@ -266,14 +264,14 @@ ElementEditor.prototype = {
         backgroundClass: "theme-bg-contrast",
       });
     }, this.markup.CONTAINER_FLASHING_DURATION);
-  },
+  }
 
   /**
    * Returns information about node in the editor.
    *
    * @param  {DOMNode} node
    *         The node to get information from.
-   * @return {Object} An object literal with the following information:
+   * @return {object} An object literal with the following information:
    *         {type: "attribute", name: "rel", value: "index", el: node}
    */
   getInfoAtNode(node) {
@@ -294,7 +292,7 @@ ElementEditor.prototype = {
     }
 
     return { type, name, value, el: node };
-  },
+  }
 
   /**
    * Update the state of the editor from the node.
@@ -342,11 +340,12 @@ ElementEditor.prototype = {
     this.updateCustomBadge();
     this.updateScrollableBadge();
     this.updateContainerBadge();
+    this.updateAnchorBadge();
     this.updateTextEditor();
     this.updateUnavailableChildren();
     this.updateOverflowBadge();
     this.updateOverflowHighlight();
-  },
+  }
 
   updateEventBadge() {
     const showEventBadge = this.node.hasEventListeners;
@@ -356,7 +355,7 @@ ElementEditor.prototype = {
     } else if (showEventBadge && !this._eventBadge) {
       this._createEventBadge();
     }
-  },
+  }
 
   _createEventBadge() {
     this._eventBadge = this.doc.createElement("button");
@@ -373,7 +372,7 @@ ElementEditor.prototype = {
       this._displayBadge || this._customBadge
     );
     this.markup.emit("badge-added-event");
-  },
+  }
 
   updateScrollableBadge() {
     if (this.node.isScrollable && !this._scrollableBadge) {
@@ -382,7 +381,7 @@ ElementEditor.prototype = {
       this._scrollableBadge.remove();
       this._scrollableBadge = null;
     }
-  },
+  }
 
   _createScrollableBadge() {
     const isInteractive =
@@ -394,9 +393,7 @@ ElementEditor.prototype = {
     this._scrollableBadge = this.doc.createElement(
       isInteractive ? "button" : "div"
     );
-    this._scrollableBadge.className = `inspector-badge scrollable-badge ${
-      isInteractive ? "interactive" : ""
-    }`;
+    this._scrollableBadge.className = `inspector-badge scrollable-badge ${isInteractive ? "interactive" : ""}`;
     this._scrollableBadge.dataset.scrollable = "true";
     this._scrollableBadge.textContent = INSPECTOR_L10N.getStr(
       "markupView.scrollableBadge.label"
@@ -415,7 +412,7 @@ ElementEditor.prototype = {
       this._scrollableBadge.setAttribute("aria-pressed", "false");
     }
     this.elt.insertBefore(this._scrollableBadge, this._customBadge);
-  },
+  }
 
   /**
    * Update the markup display badge.
@@ -434,7 +431,7 @@ ElementEditor.prototype = {
 
       this._updateDisplayBadgeContent();
     }
-  },
+  }
 
   _createDisplayBadge() {
     this._displayBadge = this.doc.createElement("button");
@@ -442,7 +439,7 @@ ElementEditor.prototype = {
     this._displayBadge.addEventListener("click", this.onDisplayBadgeClick);
     // Badges order is [event][display][custom], insert display badge before custom.
     this.elt.insertBefore(this._displayBadge, this._customBadge);
-  },
+  }
 
   _updateDisplayBadgeContent() {
     const displayType = this.node.displayType;
@@ -473,7 +470,7 @@ ElementEditor.prototype = {
       this._displayBadge.setAttribute("role", "presentation");
       this._displayBadge.removeAttribute("aria-pressed");
     }
-  },
+  }
 
   updateOverflowBadge() {
     if (!this.isOverflowDebuggingEnabled) {
@@ -486,7 +483,7 @@ ElementEditor.prototype = {
       this._overflowBadge.remove();
       this._overflowBadge = null;
     }
-  },
+  }
 
   _createOverflowBadge() {
     this._overflowBadge = this.doc.createElement("div");
@@ -498,7 +495,7 @@ ElementEditor.prototype = {
       "markupView.overflowBadge.tooltip"
     );
     this.elt.insertBefore(this._overflowBadge, this._customBadge);
-  },
+  }
 
   /**
    * Update the markup custom element badge.
@@ -511,7 +508,7 @@ ElementEditor.prototype = {
     } else if (!this._customBadge && showCustomBadge) {
       this._createCustomBadge();
     }
-  },
+  }
 
   _createCustomBadge() {
     this._customBadge = this.doc.createElement("button");
@@ -524,7 +521,7 @@ ElementEditor.prototype = {
     this._customBadge.addEventListener("click", this.onCustomBadgeClick);
     // Badges order is [event][display][custom], insert custom badge at the end.
     this.elt.appendChild(this._customBadge);
-  },
+  }
 
   updateContainerBadge() {
     const showContainerBadge =
@@ -537,7 +534,7 @@ ElementEditor.prototype = {
     } else if (showContainerBadge && !this._containerBadge) {
       this._createContainerBadge();
     }
-  },
+  }
 
   _createContainerBadge() {
     this._containerBadge = this.doc.createElement("div");
@@ -550,7 +547,31 @@ ElementEditor.prototype = {
     // Ideally badges order should be [event][display][container][custom]
     this.elt.insertBefore(this._containerBadge, this._customBadge);
     this.markup.emit("badge-added-event");
-  },
+  }
+
+  updateAnchorBadge() {
+    const showAnchorBadge = this.node.anchorName?.includes?.("--");
+
+    if (this._anchorBadge && !showAnchorBadge) {
+      this._anchorBadge.remove();
+      this._anchorBadge = null;
+    } else if (showAnchorBadge && !this._anchorBadge) {
+      this._createAnchorBadge();
+    }
+
+    if (this._anchorBadge) {
+      this._anchorBadge.title = `anchor-name: ${this.node.anchorName}`;
+    }
+  }
+
+  _createAnchorBadge() {
+    this._anchorBadge = this.doc.createElement("div");
+    this._anchorBadge.classList.add("inspector-badge");
+    this._anchorBadge.dataset.anchor = "true";
+
+    this._anchorBadge.append(this.doc.createTextNode("anchor"));
+    this.elt.insertBefore(this._anchorBadge, this._containerBadge);
+  }
 
   /**
    * If node causes overflow, toggle its overflow highlight if its scrollable ancestor's
@@ -581,19 +602,19 @@ ElementEditor.prototype = {
     }
 
     this.setOverflowHighlight(showOverflowHighlight);
-  },
+  }
 
   /**
    * Show overflow highlight if showOverflowHighlight is true, otherwise hide it.
    *
-   * @param {Boolean} showOverflowHighlight
+   * @param {boolean} showOverflowHighlight
    */
   setOverflowHighlight(showOverflowHighlight) {
     this.container.tagState.classList.toggle(
       "overflow-causing-highlighted",
       showOverflowHighlight
     );
-  },
+  }
 
   /**
    * Update the inline text editor in case of a single text child node.
@@ -621,11 +642,11 @@ ElementEditor.prototype = {
     if (this.textEditor) {
       this.textEditor.update();
     }
-  },
+  }
 
   hasUnavailableChildren() {
     return !!this.childrenUnavailableElt;
-  },
+  }
 
   /**
    * Update a special badge displayed for nodes which have children that can't
@@ -654,16 +675,16 @@ ElementEditor.prototype = {
         this.elt.querySelector(".close")
       );
     }
-  },
+  }
 
   _startModifyingAttributes() {
     return this.node.startModifyingAttributes();
-  },
+  }
 
   /**
    * Get the element used for one of the attributes of this element.
    *
-   * @param  {String} attrName
+   * @param  {string} attrName
    *         The name of the attribute to get the element for
    * @return {DOMNode}
    */
@@ -671,12 +692,12 @@ ElementEditor.prototype = {
     return this.attrList.querySelector(
       ".attreditor[data-attr=" + CSS.escape(attrName) + "] .attr-value"
     );
-  },
+  }
 
   /**
    * Remove an attribute from the attrElements object and the DOM.
    *
-   * @param  {String} attrName
+   * @param  {string} attrName
    *         The name of the attribute to remove
    */
   removeAttribute(attrName) {
@@ -685,7 +706,7 @@ ElementEditor.prototype = {
       this.attrElements.delete(attrName);
       attr.remove();
     }
-  },
+  }
 
   /**
    * Creates and returns the DOM for displaying an attribute with the following DOM
@@ -750,12 +771,12 @@ ElementEditor.prototype = {
     this._appendAttributeValue(attribute, val);
 
     return attr;
-  },
+  }
 
   /**
    * Setup the editable field for the given attribute.
    *
-   * @param  {Object} attribute
+   * @param  {object} attribute
    *         An object containing the name and value of a DOM attribute.
    * @param  {Element} attrEditorEl
    *         The attribute container <span class="attreditor"> element.
@@ -844,12 +865,12 @@ ElementEditor.prototype = {
       },
       cssProperties: this._cssProperties,
     });
-  },
+  }
 
   /**
    * Appends the attribute value to the given attribute value <span> element.
    *
-   * @param  {Object} attribute
+   * @param  {object} attribute
    *         An object containing the name and value of a DOM attribute.
    * @param  {Element} attributeValueEl
    *         The attribute value <span class="attr-value"> element to append
@@ -907,15 +928,15 @@ ElementEditor.prototype = {
         }
       }
     }
-  },
+  }
 
   /**
    * Truncates the given attribute value if it is a base64 data URL or the
    * collapse attributes pref is enabled.
    *
-   * @param  {String} value
+   * @param  {string} value
    *         Attribute value.
-   * @return {String} truncated attribute value.
+   * @return {string} truncated attribute value.
    */
   _truncateAttributeValue(value) {
     if (value && value.match(COLLAPSE_DATA_URL_REGEX)) {
@@ -925,13 +946,13 @@ ElementEditor.prototype = {
     return this.markup.collapseAttributes
       ? truncateString(value, this.markup.collapseAttributeLength)
       : value;
-  },
+  }
 
   /**
    * Parse a user-entered attribute string and apply the resulting
    * attributes to the node. This operation is undoable.
    *
-   * @param  {String} value
+   * @param  {string} value
    *         The user-entered value.
    * @param  {DOMNode} attrNode
    *         The attribute editor that created this
@@ -946,7 +967,7 @@ ElementEditor.prototype = {
       this._saveAttribute(attr.name, undoMods);
       doMods.setAttribute(attr.name, attr.value);
     }
-  },
+  }
 
   /**
    * Saves the current state of the given attribute into an attribute
@@ -960,7 +981,7 @@ ElementEditor.prototype = {
     } else {
       undoMods.removeAttribute(name);
     }
-  },
+  }
 
   /**
    * Listen to mutations, and when the attribute list is regenerated
@@ -1074,7 +1095,7 @@ ElementEditor.prototype = {
     // Start listening for mutations until we find an attributes change
     // that modifies this attribute.
     this.markup.inspector.once("markupmutation", onMutations);
-  },
+  }
 
   /**
    * Called when the display badge is clicked. Toggles on the flexbox/grid highlighter for
@@ -1109,7 +1130,7 @@ ElementEditor.prototype = {
 
       await this.highlighters.toggleGridHighlighter(this.node, "markup");
     }
-  },
+  }
 
   async onCustomBadgeClick() {
     const { url, line, column } = this.node.customElementLocation;
@@ -1121,11 +1142,11 @@ ElementEditor.prototype = {
       null,
       "show_custom_element"
     );
-  },
+  }
 
   onExpandBadgeClick() {
     this.container.expandContainer();
-  },
+  }
 
   /**
    * Called when the scrollable badge is clicked. Shows the overflow causing elements and
@@ -1157,11 +1178,8 @@ ElementEditor.prototype = {
       }
     }
 
-    this.markup.telemetry.scalarAdd(
-      "devtools.markup.scrollable.badge.clicked",
-      1
-    );
-  },
+    Glean.devtoolsMarkupScrollableBadge.clicked.add(1);
+  }
 
   /**
    * Called when the tag name editor has is done editing.
@@ -1214,7 +1232,7 @@ ElementEditor.prototype = {
       // Failed to edit the tag name, cancel the reselection.
       this.markup.cancelReselectOnRemoved();
     }
-  },
+  }
 
   destroy() {
     if (this._displayBadge) {
@@ -1238,7 +1256,7 @@ ElementEditor.prototype = {
       clearTimeout(this.animationTimers[key]);
     }
     this.animationTimers = null;
-  },
-};
+  }
+}
 
 module.exports = ElementEditor;

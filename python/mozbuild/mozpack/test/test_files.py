@@ -38,12 +38,11 @@ import random
 import sys
 import tarfile
 import unittest
-from io import BytesIO
+from io import BytesIO, StringIO
 from tempfile import mkdtemp
 
 import mozfile
 import mozunit
-import six
 
 import mozpack.path as mozpath
 from mozpack.chrome.manifest import (
@@ -71,7 +70,7 @@ class TestWithTmpDir(unittest.TestCase):
             try:
                 os.symlink(dummy_path, self.tmppath("dummy_symlink"))
                 os.remove(self.tmppath("dummy_symlink"))
-            except EnvironmentError:
+            except OSError:
                 pass
             finally:
                 os.remove(dummy_path)
@@ -86,7 +85,7 @@ class TestWithTmpDir(unittest.TestCase):
             try:
                 os.link(dummy_path, self.tmppath("dummy_hardlink"))
                 os.remove(self.tmppath("dummy_hardlink"))
-            except EnvironmentError:
+            except OSError:
                 pass
             finally:
                 os.remove(dummy_path)
@@ -153,7 +152,7 @@ class TestDest(TestWithTmpDir):
 
 rand = bytes(
     random.choice(b"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-    for i in six.moves.xrange(131597)
+    for i in range(131597)
 )
 samples = [
     b"",
@@ -281,7 +280,7 @@ class TestAbsoluteSymlinkFile(TestWithTmpDir):
 
     def test_symlink_file(self):
         source = self.tmppath("test_path")
-        with open(source, "wt") as fh:
+        with open(source, "w") as fh:
             fh.write("Hello world")
 
         s = AbsoluteSymlinkFile(source)
@@ -301,7 +300,7 @@ class TestAbsoluteSymlinkFile(TestWithTmpDir):
         # If symlinks are supported, an existing file should be replaced by a
         # symlink.
         source = self.tmppath("test_path")
-        with open(source, "wt") as fh:
+        with open(source, "w") as fh:
             fh.write("source")
 
         dest = self.tmppath("dest")
@@ -368,7 +367,7 @@ class TestHardlinkFile(TestWithTmpDir):
 
     def test_hardlink_file(self):
         source = self.tmppath("test_path")
-        with open(source, "wt") as fh:
+        with open(source, "w") as fh:
             fh.write("Hello world")
 
         s = HardlinkFile(source)
@@ -390,7 +389,7 @@ class TestHardlinkFile(TestWithTmpDir):
         # If hardlink are supported, an existing file should be replaced by a
         # symlink.
         source = self.tmppath("test_path")
-        with open(source, "wt") as fh:
+        with open(source, "w") as fh:
             fh.write("source")
 
         dest = self.tmppath("dest")
@@ -827,12 +826,12 @@ class TestManifestFile(TestWithTmpDir):
 # because they will be automatically included by virtue of being an
 # argument to a method of |bar|.
 bar_xpt = GeneratedFile(
-    b"\x58\x50\x43\x4F\x4D\x0A\x54\x79\x70\x65\x4C\x69\x62\x0D\x0A\x1A"
-    + b"\x01\x02\x00\x02\x00\x00\x00\x7B\x00\x00\x00\x24\x00\x00\x00\x5C"
+    b"\x58\x50\x43\x4f\x4d\x0a\x54\x79\x70\x65\x4c\x69\x62\x0d\x0a\x1a"
+    + b"\x01\x02\x00\x02\x00\x00\x00\x7b\x00\x00\x00\x24\x00\x00\x00\x5c"
     + b"\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-    + b"\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x5F"
-    + b"\x70\xDA\x76\x51\x9C\x48\x58\xB7\x1E\xE3\xC9\x23\x33\xE2\xD6\x00"
-    + b"\x00\x00\x05\x00\x00\x00\x00\x00\x00\x00\x0D\x00\x66\x6F\x6F\x00"
+    + b"\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x5f"
+    + b"\x70\xda\x76\x51\x9c\x48\x58\xb7\x1e\xe3\xc9\x23\x33\xe2\xd6\x00"
+    + b"\x00\x00\x05\x00\x00\x00\x00\x00\x00\x00\x0d\x00\x66\x6f\x6f\x00"
     + b"\x62\x61\x72\x00\x62\x61\x72\x00\x00\x00\x00\x01\x00\x00\x00\x00"
     + b"\x09\x01\x80\x92\x00\x01\x80\x06\x00\x00\x80"
 )
@@ -843,11 +842,11 @@ bar_xpt = GeneratedFile(
 #         void foo();
 #     };
 foo_xpt = GeneratedFile(
-    b"\x58\x50\x43\x4F\x4D\x0A\x54\x79\x70\x65\x4C\x69\x62\x0D\x0A\x1A"
+    b"\x58\x50\x43\x4f\x4d\x0a\x54\x79\x70\x65\x4c\x69\x62\x0d\x0a\x1a"
     + b"\x01\x02\x00\x01\x00\x00\x00\x57\x00\x00\x00\x24\x00\x00\x00\x40"
-    + b"\x80\x00\x00\x32\x71\xBE\xBC\x92\x7E\x4B\xEF\x93\x5E\x44\xE0\xAA"
-    + b"\xF3\xC1\xE5\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x09\x00"
-    + b"\x66\x6F\x6F\x00\x66\x6F\x6F\x00\x00\x00\x00\x01\x00\x00\x00\x00"
+    + b"\x80\x00\x00\x32\x71\xbe\xbc\x92\x7e\x4b\xef\x93\x5e\x44\xe0\xaa"
+    + b"\xf3\xc1\xe5\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x09\x00"
+    + b"\x66\x6f\x6f\x00\x66\x6f\x6f\x00\x00\x00\x00\x01\x00\x00\x00\x00"
     + b"\x05\x00\x80\x06\x00\x00\x00"
 )
 
@@ -857,11 +856,11 @@ foo_xpt = GeneratedFile(
 #         void foo();
 #     };
 foo2_xpt = GeneratedFile(
-    b"\x58\x50\x43\x4F\x4D\x0A\x54\x79\x70\x65\x4C\x69\x62\x0D\x0A\x1A"
+    b"\x58\x50\x43\x4f\x4d\x0a\x54\x79\x70\x65\x4c\x69\x62\x0d\x0a\x1a"
     + b"\x01\x02\x00\x01\x00\x00\x00\x57\x00\x00\x00\x24\x00\x00\x00\x40"
-    + b"\x80\x00\x00\x70\x57\xF2\xAA\xFD\xC2\x45\x59\xAB\xDE\x08\xD9\x39"
-    + b"\xF7\xE8\x0D\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x09\x00"
-    + b"\x66\x6F\x6F\x00\x66\x6F\x6F\x00\x00\x00\x00\x01\x00\x00\x00\x00"
+    + b"\x80\x00\x00\x70\x57\xf2\xaa\xfd\xc2\x45\x59\xab\xde\x08\xd9\x39"
+    + b"\xf7\xe8\x0d\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x09\x00"
+    + b"\x66\x6f\x6f\x00\x66\x6f\x6f\x00\x00\x00\x00\x01\x00\x00\x00\x00"
     + b"\x05\x00\x80\x06\x00\x00\x00"
 )
 
@@ -912,13 +911,13 @@ class TestMinifiedJavaScript(TestWithTmpDir):
         orig_f = GeneratedFile("\n".join(self.orig_lines))
         min_f = MinifiedJavaScript(orig_f, verify_command=self._verify_command("0"))
 
-        mini_lines = [six.ensure_text(s) for s in min_f.open().readlines()]
+        mini_lines = [s.decode() for s in min_f.open().readlines()]
         self.assertTrue(mini_lines)
         self.assertTrue(len(mini_lines) < len(self.orig_lines))
 
     def test_minified_verify_failure(self):
         orig_f = GeneratedFile("\n".join(self.orig_lines))
-        errors.out = six.StringIO()
+        errors.out = StringIO()
         min_f = MinifiedJavaScript(orig_f, verify_command=self._verify_command("1"))
 
         mini_lines = min_f.open().readlines()
@@ -932,7 +931,7 @@ class TestMinifiedJavaScript(TestWithTmpDir):
         self.assertEqual(mini_lines, orig_f.open().readlines())
 
 
-class MatchTestTemplate(object):
+class MatchTestTemplate:
     def prepare_match_test(self, with_dotfiles=False):
         self.add("bar")
         self.add("foo/bar")
@@ -1054,7 +1053,7 @@ def do_check(test, finder, pattern, result):
 class TestFileFinder(MatchTestTemplate, TestWithTmpDir):
     def add(self, path):
         ensureParentDir(self.tmppath(path))
-        open(self.tmppath(path), "wb").write(six.ensure_binary(path))
+        open(self.tmppath(path), "wb").write(path.encode())
 
     def do_check(self, pattern, result):
         do_check(self, self.finder, pattern, result)
@@ -1218,7 +1217,7 @@ class TestComposedFinder(MatchTestTemplate, TestWithTmpDir):
             real_path = mozpath.join("a", path)
         ensureParentDir(self.tmppath(real_path))
         if not content:
-            content = six.ensure_binary(path)
+            content = path.encode()
         open(self.tmppath(real_path), "wb").write(content)
 
     def do_check(self, pattern, result):
@@ -1233,12 +1232,10 @@ class TestComposedFinder(MatchTestTemplate, TestWithTmpDir):
         ensureParentDir(self.tmppath("a/foo/qux/hoge"))
         open(self.tmppath("a/foo/qux/hoge"), "wb").write(b"hoge")
         open(self.tmppath("a/foo/qux/bar"), "wb").write(b"not the right content")
-        self.finder = ComposedFinder(
-            {
-                "": FileFinder(self.tmppath("a")),
-                "foo/qux": FileFinder(self.tmppath("b")),
-            }
-        )
+        self.finder = ComposedFinder({
+            "": FileFinder(self.tmppath("a")),
+            "foo/qux": FileFinder(self.tmppath("b")),
+        })
         self.do_match_test()
 
         self.assertIsNone(self.finder.get("does-not-exist"))
@@ -1246,12 +1243,10 @@ class TestComposedFinder(MatchTestTemplate, TestWithTmpDir):
 
 
 @unittest.skipUnless(hglib, "hglib not available")
-@unittest.skipIf(
-    six.PY3 and os.name == "nt", "Does not currently work in Python3 on Windows"
-)
+@unittest.skipIf(os.name == "nt", "Does not currently work in Python3 on Windows")
 class TestMercurialRevisionFinder(MatchTestTemplate, TestWithTmpDir):
     def setUp(self):
-        super(TestMercurialRevisionFinder, self).setUp()
+        super().setUp()
         hglib.init(self.tmpdir)
         self._clients = []
 
@@ -1265,7 +1260,7 @@ class TestMercurialRevisionFinder(MatchTestTemplate, TestWithTmpDir):
 
         self._clients[:] = []
 
-        super(TestMercurialRevisionFinder, self).tearDown()
+        super().tearDown()
 
     def _client(self):
         configs = (
@@ -1273,7 +1268,7 @@ class TestMercurialRevisionFinder(MatchTestTemplate, TestWithTmpDir):
             b'ui.username="Dummy User <dummy@example.com>"',
         )
         client = hglib.open(
-            six.ensure_binary(self.tmpdir),
+            self.tmpdir.encode(),
             encoding=b"UTF-8",  # b'' because py2 needs !unicode
             configs=configs,
         )
@@ -1284,8 +1279,8 @@ class TestMercurialRevisionFinder(MatchTestTemplate, TestWithTmpDir):
         with self._client() as c:
             ensureParentDir(self.tmppath(path))
             with open(self.tmppath(path), "wb") as fh:
-                fh.write(six.ensure_binary(path))
-            c.add(six.ensure_binary(self.tmppath(path)))
+                fh.write(path.encode())
+            c.add(self.tmppath(path).encode())
 
     def do_check(self, pattern, result):
         do_check(self, self.finder, pattern, result)
@@ -1310,14 +1305,14 @@ class TestMercurialRevisionFinder(MatchTestTemplate, TestWithTmpDir):
         with self._client() as c:
             with open(self.tmppath("foo"), "wb") as fh:
                 fh.write(b"foo initial")
-            c.add(six.ensure_binary(self.tmppath("foo")))
+            c.add(self.tmppath("foo").encode())
             c.commit("initial")
 
             with open(self.tmppath("foo"), "wb") as fh:
                 fh.write(b"foo second")
             with open(self.tmppath("bar"), "wb") as fh:
                 fh.write(b"bar second")
-            c.add(six.ensure_binary(self.tmppath("bar")))
+            c.add(self.tmppath("bar").encode())
             c.commit("second")
             # This wipes out the working directory, ensuring the finder isn't
             # finding anything from the filesystem.
@@ -1340,7 +1335,7 @@ class TestMercurialRevisionFinder(MatchTestTemplate, TestWithTmpDir):
         with self._client() as c:
             with open(self.tmppath("foo"), "wb") as fh:
                 fh.write(b"initial")
-            c.add(six.ensure_binary(self.tmppath("foo")))
+            c.add(self.tmppath("foo").encode())
             c.commit("initial")
             c.rawcommand([b"update", b"null"])
 

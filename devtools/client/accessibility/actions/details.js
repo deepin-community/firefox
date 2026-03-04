@@ -10,14 +10,13 @@ const {
 /**
  * Update details with the given accessible object.
  *
- * @param {Object} accessible front
+ * @param {object} accessible front
  */
 exports.updateDetails =
   accessible =>
   async ({ dispatch }) => {
-    const { walker: domWalker } = await accessible.targetFront.getFront(
-      "inspector"
-    );
+    const { walker: domWalker } =
+      await accessible.targetFront.getFront("inspector");
     // By the time getFront resolves, the accessibleFront may have been destroyed.
     // This typically happens during navigations.
     if (accessible.isDestroyed()) {

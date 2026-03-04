@@ -7,7 +7,6 @@
 #define mozilla_net_SocketProcessHost_h
 
 #include "mozilla/Maybe.h"
-#include "mozilla/UniquePtr.h"
 #include "mozilla/ipc/GeckoChildProcessHost.h"
 #include "mozilla/MemoryReportingProcess.h"
 #include "mozilla/ipc/TaskFactory.h"
@@ -121,7 +120,7 @@ class SocketProcessHost final : public mozilla::ipc::GeckoChildProcessHost {
   bool mChannelClosed;
 
 #if defined(XP_LINUX) && defined(MOZ_SANDBOX)
-  UniquePtr<SandboxBroker> mSandboxBroker;
+  RefPtr<SandboxBroker> mSandboxBroker;
 #endif
 };
 

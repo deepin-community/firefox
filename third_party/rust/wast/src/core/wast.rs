@@ -1,7 +1,7 @@
 use crate::core::{HeapType, V128Const};
 use crate::kw;
 use crate::parser::{Cursor, Parse, Parser, Peek, Result};
-use crate::token::{Index, F32, F64};
+use crate::token::{F32, F64, Index};
 
 /// Expression that can be used inside of `invoke` expressions for core wasm
 /// functions.
@@ -90,6 +90,8 @@ pub enum WastRetCore<'a> {
     RefStruct,
     /// A non-null i31ref is expected.
     RefI31,
+    /// A non-null, shared i31ref is expected.
+    RefI31Shared,
 
     Either(Vec<WastRetCore<'a>>),
 }
@@ -111,6 +113,7 @@ static RETS: &[(&str, fn(Parser<'_>) -> Result<WastRetCore<'_>>)] = {
         ("ref.array", |_| Ok(RefArray)),
         ("ref.struct", |_| Ok(RefStruct)),
         ("ref.i31", |_| Ok(RefI31)),
+        ("ref.i31_shared", |_| Ok(RefI31Shared)),
         ("either", |p| {
             p.depth_check()?;
             let mut cases = Vec::new();

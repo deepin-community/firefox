@@ -9,6 +9,8 @@
 #include <Security/Security.h>
 
 #include "mozilla/Logging.h"
+#include "mozilla/glean/SecurityManagerSslMetrics.h"
+#include "nsPrintfCString.h"
 
 // This is the implementation of KeychainSecret, an instantiation of OSKeyStore
 // for OS X. It uses the system keychain, hence the name.
@@ -68,16 +70,21 @@ nsresult KeychainSecret::StoreSecret(const nsACString& aSecret,
     return NS_ERROR_FAILURE;
   }
   const void* values[] = {kSecClassGenericPassword, label.get(), secret.get()};
-  static_assert(ArrayLength(keys) == ArrayLength(values),
+  static_assert(std::size(keys) == std::size(values),
                 "mismatched SecItemAdd key/value array sizes");
   ScopedCFType<CFDictionaryRef> addDictionary(CFDictionaryCreate(
-      nullptr, (const void**)&keys, (const void**)&values, ArrayLength(keys),
+      nullptr, (const void**)&keys, (const void**)&values, std::size(keys),
       &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks));
   // https://developer.apple.com/documentation/security/1401659-secitemadd
   OSStatus osrv = SecItemAdd(addDictionary.get(), nullptr);
   if (osrv != errSecSuccess) {
     MOZ_LOG(gKeychainSecretLog, LogLevel::Debug,
             ("SecItemAdd failed: %d", osrv));
+    nsPrintfCString osrvString("%d", osrv);
+    mozilla::glean::oskeystore::ReturnCodesExtra extra = {};
+    extra.function = Some("StoreSecret_SecItemAdd"_ns);
+    extra.result = Some(osrvString);
+    glean::oskeystore::return_codes.Record(Some(extra));
     return NS_ERROR_FAILURE;
   }
   return NS_OK;
@@ -96,16 +103,21 @@ nsresult KeychainSecret::DeleteSecret(const nsACString& aLabel) {
     return NS_ERROR_FAILURE;
   }
   const void* values[] = {kSecClassGenericPassword, label.get()};
-  static_assert(ArrayLength(keys) == ArrayLength(values),
+  static_assert(std::size(keys) == std::size(values),
                 "mismatched SecItemDelete key/value array sizes");
   ScopedCFType<CFDictionaryRef> deleteDictionary(CFDictionaryCreate(
-      nullptr, (const void**)&keys, (const void**)&values, ArrayLength(keys),
+      nullptr, (const void**)&keys, (const void**)&values, std::size(keys),
       &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks));
   // https://developer.apple.com/documentation/security/1395547-secitemdelete
-  OSStatus rv = SecItemDelete(deleteDictionary.get());
-  if (rv != errSecSuccess && rv != errSecItemNotFound) {
+  OSStatus osrv = SecItemDelete(deleteDictionary.get());
+  if (osrv != errSecSuccess && osrv != errSecItemNotFound) {
     MOZ_LOG(gKeychainSecretLog, LogLevel::Debug,
-            ("SecItemDelete failed: %d", rv));
+            ("SecItemDelete failed: %d", osrv));
+    mozilla::glean::oskeystore::ReturnCodesExtra extra = {};
+    extra.function = Some("DeleteSecret_SecItemDelete"_ns);
+    nsPrintfCString osrvString("%d", osrv);
+    extra.result = Some(osrvString);
+    glean::oskeystore::return_codes.Record(Some(extra));
     return NS_ERROR_FAILURE;
   }
   return NS_OK;
@@ -132,17 +144,27 @@ nsresult KeychainSecret::RetrieveSecret(const nsACString& aLabel,
   }
   const void* values[] = {kSecClassGenericPassword, label.get(),
                           kSecMatchLimitOne, kCFBooleanTrue, kCFBooleanTrue};
-  static_assert(ArrayLength(keys) == ArrayLength(values),
+  static_assert(std::size(keys) == std::size(values),
                 "mismatched SecItemCopyMatching key/value array sizes");
   ScopedCFType<CFDictionaryRef> searchDictionary(CFDictionaryCreate(
-      nullptr, (const void**)&keys, (const void**)&values, ArrayLength(keys),
+      nullptr, (const void**)&keys, (const void**)&values, std::size(keys),
       &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks));
   CFTypeRef item;
   // https://developer.apple.com/documentation/security/1398306-secitemcopymatching
-  OSStatus rv = SecItemCopyMatching(searchDictionary.get(), &item);
-  if (rv != errSecSuccess) {
+  OSStatus osrv = SecItemCopyMatching(searchDictionary.get(), &item);
+  if (osrv == errSecItemNotFound) {
     MOZ_LOG(gKeychainSecretLog, LogLevel::Debug,
-            ("SecItemCopyMatching failed: %d", rv));
+            ("Key not found in key store"));
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+  if (osrv != errSecSuccess) {
+    MOZ_LOG(gKeychainSecretLog, LogLevel::Debug,
+            ("SecItemCopyMatching failed: %d", osrv));
+    mozilla::glean::oskeystore::ReturnCodesExtra extra = {};
+    extra.function = Some("RetrieveSecret_SecItemCopyMatching"_ns);
+    nsPrintfCString osrvString("%d", osrv);
+    extra.result = Some(osrvString);
+    glean::oskeystore::return_codes.Record(Some(extra));
     return NS_ERROR_FAILURE;
   }
   ScopedCFType<CFDictionaryRef> dictionary(

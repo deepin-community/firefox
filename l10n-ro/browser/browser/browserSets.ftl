@@ -79,6 +79,10 @@ nav-reload-shortcut =
 # Shortcut available only on macOS.
 nav-stop-shortcut =
     .key = .
+ai-chatbot-sidebar-shortcut =
+    .key = X
+toggle-sidebar-shortcut =
+    .key = Z
 history-show-all-shortcut =
     .key = H
 history-show-all-shortcut-mac =
@@ -91,6 +95,13 @@ reader-mode-toggle-shortcut-windows =
     .keycode = VK_F9
 reader-mode-toggle-shortcut-other =
     .key = R
+picture-in-picture-toggle-shortcut-mac =
+    .key = ]
+# Pick the key that is commonly present
+# in your locale keyboards above the
+# `picture-in-picture-toggle-shortcut-mac` key.
+picture-in-picture-toggle-shortcut-mac-alt =
+    .key = { "}" }
 picture-in-picture-toggle-shortcut =
     .key = ]
 # Pick the key that is commonly present

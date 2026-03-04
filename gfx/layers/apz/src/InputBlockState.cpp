@@ -15,7 +15,6 @@
 #include "mozilla/StaticPrefs_layout.h"
 #include "mozilla/StaticPrefs_mousewheel.h"
 #include "mozilla/StaticPrefs_test.h"
-#include "mozilla/Telemetry.h"  // for Telemetry
 #include "mozilla/ToString.h"
 #include "mozilla/layers/APZEventState.h"
 #include "mozilla/layers/IAPZCTreeManager.h"  // for AllowedTouchBehavior
@@ -196,7 +195,8 @@ CancelableBlockState::CancelableBlockState(
     : InputBlockState(aTargetApzc, aFlags),
       mPreventDefault(false),
       mContentResponded(false),
-      mContentResponseTimerExpired(false) {}
+      mContentResponseTimerExpired(false),
+      mHasStateBeenReset(false) {}
 
 bool CancelableBlockState::SetContentResponse(bool aPreventDefault) {
   if (mContentResponded) {

@@ -9,10 +9,10 @@
 #ifndef mozilla_MediaFeatureChange_h__
 #define mozilla_MediaFeatureChange_h__
 
-#include "nsChangeHint.h"
 #include "mozilla/Attributes.h"
-#include "mozilla/TypedEnumBits.h"
 #include "mozilla/ServoStyleConsts.h"
+#include "mozilla/TypedEnumBits.h"
+#include "nsChangeHint.h"
 
 namespace mozilla {
 
@@ -77,7 +77,7 @@ struct MediaFeatureChange {
     return *this;
   }
 
-  static MediaFeatureChange ForPreferredColorSchemeChange() {
+  static MediaFeatureChange ForPreferredColorSchemeOrForcedColorsChange() {
     // We need to restyle because not only media queries have changed, system
     // colors may as well via the prefers-color-scheme meta tag / effective
     // color-scheme property value.

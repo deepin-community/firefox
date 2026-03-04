@@ -106,10 +106,6 @@ inline bool HasProperty(JSContext* cx, JS::Handle<JSObject*> obj,
 inline bool GetProperty(JSContext* cx, JS::Handle<JSObject*> obj,
                         JS::Handle<JS::Value> receiver, JS::Handle<jsid> id,
                         JS::MutableHandle<JS::Value> vp) {
-#ifdef ENABLE_RECORD_TUPLE
-  MOZ_ASSERT(!IsExtendedPrimitive(*obj));
-#endif
-
   if (GetPropertyOp op = obj->getOpsGetProperty()) {
     return op(cx, obj, receiver, id, vp);
   }
@@ -159,27 +155,17 @@ inline bool GetElement(JSContext* cx, JS::Handle<JSObject*> obj,
 inline bool GetElementLargeIndex(JSContext* cx, JS::Handle<JSObject*> obj,
                                  JS::Handle<JSObject*> receiver, uint64_t index,
                                  JS::MutableHandle<JS::Value> vp) {
-  MOZ_ASSERT(index < uint64_t(DOUBLE_INTEGRAL_PRECISION_LIMIT));
-
-  if (MOZ_LIKELY(index <= UINT32_MAX)) {
-    return GetElement(cx, obj, receiver, uint32_t(index), vp);
-  }
-
-  RootedValue tmp(cx, DoubleValue(index));
-  RootedId id(cx);
-  if (!PrimitiveValueToId<CanGC>(cx, tmp, &id)) {
+  JS::Rooted<jsid> id(cx);
+  if (!IndexToId(cx, index, &id)) {
     return false;
   }
 
-  return GetProperty(cx, obj, obj, id, vp);
+  JS::Rooted<JS::Value> receiverValue(cx, JS::ObjectValue(*receiver));
+  return GetProperty(cx, obj, receiverValue, id, vp);
 }
 
 inline bool GetPropertyNoGC(JSContext* cx, JSObject* obj,
                             const JS::Value& receiver, jsid id, JS::Value* vp) {
-#ifdef ENABLE_RECORD_TUPLE
-  MOZ_ASSERT(!IsExtendedPrimitive(*obj));
-#endif
-
   if (obj->getOpsGetProperty()) {
     return false;
   }
@@ -361,10 +347,6 @@ inline bool PutProperty(JSContext* cx, JS::Handle<JSObject*> obj,
  */
 inline bool DeleteProperty(JSContext* cx, JS::Handle<JSObject*> obj,
                            JS::Handle<jsid> id, JS::ObjectOpResult& result) {
-#ifdef ENABLE_RECORD_TUPLE
-  MOZ_ASSERT(!IsExtendedPrimitive(*obj));
-#endif
-
   if (DeletePropertyOp op = obj->getOpsDeleteProperty()) {
     return op(cx, obj, id, result);
   }

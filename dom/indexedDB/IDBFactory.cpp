@@ -9,24 +9,27 @@
 #include "BackgroundChildImpl.h"
 #include "IDBRequest.h"
 #include "IndexedDatabaseManager.h"
+#include "ProfilerHelpers.h"
+#include "ReportInternalError.h"
+#include "ThreadLocal.h"
 #include "mozilla/BasePrincipal.h"
 #include "mozilla/ErrorResult.h"
 #include "mozilla/Preferences.h"
+#include "mozilla/StaticPrefs_dom.h"
+#include "mozilla/StorageAccess.h"
 #include "mozilla/dom/BindingDeclarations.h"
+#include "mozilla/dom/BrowserChild.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/IDBFactoryBinding.h"
 #include "mozilla/dom/Promise.h"
+#include "mozilla/dom/WorkerPrivate.h"
+#include "mozilla/dom/quota/PrincipalUtils.h"
 #include "mozilla/dom/quota/QuotaManager.h"
 #include "mozilla/dom/quota/ResultExtensions.h"
-#include "mozilla/dom/BrowserChild.h"
-#include "mozilla/dom/WorkerPrivate.h"
 #include "mozilla/ipc/BackgroundChild.h"
 #include "mozilla/ipc/BackgroundUtils.h"
 #include "mozilla/ipc/PBackground.h"
 #include "mozilla/ipc/PBackgroundChild.h"
-#include "mozilla/StaticPrefs_dom.h"
-#include "mozilla/StorageAccess.h"
-#include "mozilla/Telemetry.h"
 #include "nsAboutProtocolUtils.h"
 #include "nsContentUtils.h"
 #include "nsGlobalWindowInner.h"
@@ -36,13 +39,10 @@
 #include "nsIUUIDGenerator.h"
 #include "nsIWebNavigation.h"
 #include "nsLiteralString.h"
-#include "nsStringFwd.h"
 #include "nsNetUtil.h"
 #include "nsSandboxFlags.h"
 #include "nsServiceManagerUtils.h"
-#include "ProfilerHelpers.h"
-#include "ReportInternalError.h"
-#include "ThreadLocal.h"
+#include "nsStringFwd.h"
 
 // Include this last to avoid path problems on Windows.
 #include "ActorsChild.h"
@@ -129,7 +129,7 @@ Result<RefPtr<IDBFactory>, nsresult> IDBFactory::CreateForWindow(
   MOZ_ASSERT(principalInfo->type() == PrincipalInfo::TContentPrincipalInfo ||
              principalInfo->type() == PrincipalInfo::TSystemPrincipalInfo);
 
-  if (NS_WARN_IF(!QuotaManager::IsPrincipalInfoValid(*principalInfo))) {
+  if (NS_WARN_IF(!quota::IsPrincipalInfoValid(*principalInfo))) {
     IDB_REPORT_INTERNAL_ERR();
     return Err(NS_ERROR_DOM_INDEXEDDB_UNKNOWN_ERR);
   }
@@ -180,7 +180,7 @@ Result<RefPtr<IDBFactory>, nsresult> IDBFactory::CreateForMainThreadJS(
     return Err(rv);
   }
 
-  if (NS_WARN_IF(!QuotaManager::IsPrincipalInfoValid(*principalInfo))) {
+  if (NS_WARN_IF(!quota::IsPrincipalInfoValid(*principalInfo))) {
     return Err(NS_ERROR_DOM_INDEXEDDB_UNKNOWN_ERR);
   }
 
@@ -403,8 +403,8 @@ void IDBFactory::UpdateActiveDatabaseCount(int32_t aDelta) {
                         (mActiveDatabaseCount + aDelta) < mActiveDatabaseCount);
   mActiveDatabaseCount += aDelta;
 
-  if (nsGlobalWindowInner* win = GetOwnerWindow()) {
-    win->UpdateActiveIndexedDBDatabaseCount(aDelta);
+  if (nsIGlobalObject* global = GetOwnerGlobal()) {
+    global->UpdateActiveIndexedDBDatabaseCount(aDelta);
   }
 }
 
@@ -705,7 +705,7 @@ RefPtr<IDBOpenDBRequest> IDBFactory::OpenInternal(
       return nullptr;
     }
 
-    if (NS_WARN_IF(!QuotaManager::IsPrincipalInfoValid(principalInfo))) {
+    if (NS_WARN_IF(!quota::IsPrincipalInfoValid(principalInfo))) {
       IDB_REPORT_INTERNAL_ERR();
       aRv.Throw(NS_ERROR_DOM_INDEXEDDB_UNKNOWN_ERR);
       return nullptr;

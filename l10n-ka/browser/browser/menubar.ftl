@@ -3,18 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -122,8 +110,8 @@ menu-edit-find-again =
     .label = კვლავძიება
     .accesskey = კ
 menu-edit-bidi-switch-text-direction =
-    .label = ტექსტის მიმართულების შეცვლა
-    .accesskey = ტ
+    .label = ნაწერის მიმართულების შეცვლა
+    .accesskey = წ
 
 ## View Menu
 
@@ -144,7 +132,7 @@ menu-view-bookmarks =
 menu-view-history-button =
     .label = ისტორია
 menu-view-synced-tabs-sidebar =
-    .label = დასინქრონებული ჩანართები
+    .label = დასინქ. ჩანართები
 menu-view-full-zoom =
     .label = ზომის ცვლილება
     .accesskey = მ
@@ -158,7 +146,7 @@ menu-view-full-zoom-actual-size =
     .label = არსებული ზომა
     .accesskey = ა
 menu-view-full-zoom-toggle =
-    .label = მხოლოდ ტექსტის ზომის შეცვლა
+    .label = მხოლოდ ნაწერის ზომის შეცვლა
     .accesskey = ტ
 menu-view-page-style-menu =
     .label = გვერდის სტილი
@@ -216,7 +204,7 @@ menu-history-show-all-history =
 menu-history-clear-recent-history =
     .label = უახლესი ისტორიის გასუფთავება...
 menu-history-synced-tabs =
-    .label = დასინქრონებული ჩანართები
+    .label = დასინქ. ჩანართები
 menu-history-restore-last-session =
     .label = წინა სეანსის აღდგენა
 menu-history-hidden-tabs =
@@ -252,6 +240,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = მობილურის სანიშნები
 
+## Profiles Menu
+
+menu-profiles =
+    .label = პროფილები
+menu-profiles-manage-profiles =
+    .label = პროფილების მართვა
+menu-profiles-new-profile =
+    .label = ახალი პროფილი
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (ამჟამინდელი)
+menu-profiles-menu =
+    .label = პროფილები
+    .accesskey = პ
+
 ## Tools Menu
 
 menu-tools =
@@ -260,6 +264,9 @@ menu-tools =
 menu-tools-downloads =
     .label = ჩამოტვირთვები
     .accesskey = ჩ
+menu-tools-extensions-and-themes =
+    .label = გაფართოებები და თემები
+    .accesskey = ფ
 menu-tools-addons-and-themes =
     .label = დამატებები და თემები
     .accesskey = დ
@@ -348,4 +355,4 @@ menu-help-not-deceptive =
     .label = ეს თაღლითური საიტი არაა…
     .accesskey = ე
 menu-report-broken-site =
-    .label = მოხსენება დაზიანებული საიტის შესახებ
+    .label = არეული საიტის მოხსენება

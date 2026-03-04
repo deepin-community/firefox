@@ -7,8 +7,8 @@
 #ifndef MOZILLA_GEOMETRYUTILS_H_
 #define MOZILLA_GEOMETRYUTILS_H_
 
-#include "nsTArray.h"
 #include "nsCOMPtr.h"
+#include "nsTArray.h"
 
 /**
  * This file defines utility functions for converting between layout
@@ -40,12 +40,12 @@ typedef dom::OwningTextOrElementOrDocument OwningGeometryNode;
  * GeometryUtils.getBoxQuads. May set an error in aRv.
  */
 void GetBoxQuads(nsINode* aNode, const dom::BoxQuadOptions& aOptions,
-                 nsTArray<RefPtr<dom::DOMQuad> >& aResult,
+                 nsTArray<RefPtr<dom::DOMQuad>>& aResult,
                  dom::CallerType aCallerType, ErrorResult& aRv);
 
 void GetBoxQuadsFromWindowOrigin(nsINode* aNode,
                                  const dom::BoxQuadOptions& aOptions,
-                                 nsTArray<RefPtr<dom::DOMQuad> >& aResult,
+                                 nsTArray<RefPtr<dom::DOMQuad>>& aResult,
                                  ErrorResult& aRv);
 
 already_AddRefed<dom::DOMQuad> ConvertQuadFromNode(

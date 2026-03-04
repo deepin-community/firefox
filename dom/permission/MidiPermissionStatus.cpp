@@ -6,14 +6,14 @@
 
 #include "mozilla/dom/MidiPermissionStatus.h"
 
-#include "mozilla/dom/PermissionStatus.h"
 #include "mozilla/Permission.h"
+#include "mozilla/dom/PermissionStatus.h"
 
 namespace mozilla::dom {
 
-MidiPermissionStatus::MidiPermissionStatus(nsPIDOMWindowInner* aWindow,
+MidiPermissionStatus::MidiPermissionStatus(nsIGlobalObject* aGlobal,
                                            bool aSysex)
-    : PermissionStatus(aWindow, PermissionName::Midi), mSysex(aSysex) {}
+    : PermissionStatus(aGlobal, PermissionName::Midi), mSysex(aSysex) {}
 
 nsLiteralCString MidiPermissionStatus::GetPermissionType() const {
   return mSysex ? "midi-sysex"_ns : "midi"_ns;

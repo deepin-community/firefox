@@ -21,7 +21,6 @@ from collections import Counter, OrderedDict
 from types import FunctionType
 
 import mozpack.path as mozpath
-import six
 
 from mozbuild.util import (
     HierarchicalStringList,
@@ -42,7 +41,7 @@ from .. import schedules
 from ..testing import read_manifestparser_manifest, read_reftest_manifest
 
 
-class ContextDerivedValue(object):
+class ContextDerivedValue:
     """Classes deriving from this one receive a special treatment in a
     Context. See Context documentation.
     """
@@ -246,7 +245,7 @@ class Context(KeyedDefaultDict):
 class TemplateContext(Context):
     def __init__(self, template=None, allowed_variables={}, config=None):
         self.template = template
-        super(TemplateContext, self).__init__(allowed_variables, config)
+        super().__init__(allowed_variables, config)
 
     def _validate(self, key, value):
         return Context._validate(self, key, value, True)
@@ -303,7 +302,7 @@ class InitializedDefines(ContextDerivedValue, OrderedDict):
         if other:
             if not isinstance(other[0], OrderedDict):
                 raise ValueError("Can only call update() with another OrderedDict")
-            return super(InitializedDefines, self).update(*other, **kwargs)
+            return super().update(*other, **kwargs)
         raise ValueError("No arguments passed to update()")
 
 
@@ -313,7 +312,7 @@ class BaseCompileFlags(ContextDerivedValue, dict):
 
         klass_name = self.__class__.__name__
         for k, v, build_vars in self.flag_variables:
-            if not isinstance(k, six.text_type):
+            if not isinstance(k, str):
                 raise ValueError("Flag %s for %s is not a string" % (k, klass_name))
             if not isinstance(build_vars, tuple):
                 raise ValueError(
@@ -332,7 +331,7 @@ class BaseCompileFlags(ContextDerivedValue, dict):
             dict.__init__(
                 self,
                 (
-                    (k, v if v is None else TypedList(six.text_type)(v))
+                    (k, v if v is None else TypedList(str)(v))
                     for k, v, _ in self.flag_variables
                 ),
             )
@@ -394,6 +393,21 @@ class HostCompileFlags(BaseCompileFlags):
         # --disable-optimize to make in-tree host tools slow. Doing so can
         # potentially make build times significantly worse.
         return self._context.config.substs.get("HOST_OPTIMIZE_FLAGS") or []
+
+
+class HostLinkFlags(BaseCompileFlags):
+    def __init__(self, context):
+        self._context = context
+
+        self.flag_variables = (
+            (
+                "HOST_LDFLAGS",
+                context.config.substs.get("HOST_LDFLAGS"),
+                ("HOST_LDFLAGS",),
+            ),
+            ("MOZBUILD", None, ("HOST_LDFLAGS",)),
+        )
+        BaseCompileFlags.__init__(self, context)
 
 
 class AsmFlags(BaseCompileFlags):
@@ -481,13 +495,11 @@ class LinkFlags(BaseCompileFlags):
 
         # TODO: This is pretty convoluted, and isn't really a per-context thing,
         # configure would be a better place to aggregate these.
-        if all(
-            [
-                self._context.config.substs.get("OS_ARCH") == "WINNT",
-                self._context.config.substs.get("CC_TYPE") == "clang-cl",
-                not self._context.config.substs.get("MOZ_DEBUG"),
-            ]
-        ):
+        if all([
+            self._context.config.substs.get("OS_ARCH") == "WINNT",
+            self._context.config.substs.get("CC_TYPE") == "clang-cl",
+            not self._context.config.substs.get("MOZ_DEBUG"),
+        ]):
             if self._context.config.substs.get("MOZ_OPTIMIZE"):
                 flags.append("-OPT:REF,ICF")
 
@@ -526,17 +538,14 @@ class TargetCompileFlags(BaseCompileFlags):
     def __setitem__(self, key, value):
         if key not in self._known_keys:
             raise ValueError(
-                "Invalid value. `%s` is not a compile flags " "category." % key
+                "Invalid value. `%s` is not a compile flags category." % key
             )
         if key in self and self[key] is None:
             raise ValueError(
                 "`%s` may not be set in COMPILE_FLAGS from moz.build, this "
                 "value is resolved from the emitter." % key
             )
-        if not (
-            isinstance(value, list)
-            and all(isinstance(v, six.string_types) for v in value)
-        ):
+        if not (isinstance(value, list) and all(isinstance(v, str) for v in value)):
             raise ValueError(
                 "A list of strings must be provided as a value for a compile "
                 "flags category."
@@ -551,6 +560,11 @@ class CompileFlags(TargetCompileFlags):
 
         self.flag_variables = (
             ("STL", context.config.substs.get("STL_FLAGS"), ("CXXFLAGS",)),
+            (
+                "STL_HARDENING",
+                context.config.substs.get("MOZ_STL_HARDENING_FLAGS"),
+                ("CXXFLAGS",),
+            ),
             (
                 "VISIBILITY",
                 context.config.substs.get("VISIBILITY_FLAGS"),
@@ -767,7 +781,7 @@ class WasmFlags(TargetCompileFlags):
         return ["-Os"]
 
 
-class FinalTargetValue(ContextDerivedValue, six.text_type):
+class FinalTargetValue(ContextDerivedValue, str):
     def __new__(cls, context, value=""):
         if not value:
             value = "dist/"
@@ -777,14 +791,14 @@ class FinalTargetValue(ContextDerivedValue, six.text_type):
                 value += "bin"
             if context["DIST_SUBDIR"]:
                 value += "/" + context["DIST_SUBDIR"]
-        return six.text_type.__new__(cls, value)
+        return str.__new__(cls, value)
 
 
 def Enum(*values):
-    assert len(values)
+    assert values
     default = values[0]
 
-    class EnumClass(object):
+    class EnumClass:
         def __new__(cls, value=None):
             if value is None:
                 return default
@@ -827,10 +841,10 @@ class PathMeta(type):
                 cls = AbsolutePath
             else:
                 cls = SourcePath
-        return super(PathMeta, cls).__call__(context, value)
+        return super().__call__(context, value)
 
 
-class Path(six.with_metaclass(PathMeta, ContextDerivedValue, six.text_type)):
+class Path(ContextDerivedValue, str, metaclass=PathMeta):
     """Stores and resolves a source path relative to a given context
 
     This class is used as a backing type for some of the sandbox variables.
@@ -843,7 +857,7 @@ class Path(six.with_metaclass(PathMeta, ContextDerivedValue, six.text_type)):
     """
 
     def __new__(cls, context, value=None):
-        self = super(Path, cls).__new__(cls, value)
+        self = super().__new__(cls, value)
         self.context = context
         self.srcdir = context.srcdir
         return self
@@ -862,7 +876,7 @@ class Path(six.with_metaclass(PathMeta, ContextDerivedValue, six.text_type)):
     def _cmp(self, other, op):
         if isinstance(other, Path) and self.srcdir != other.srcdir:
             return op(self.full_path, other.full_path)
-        return op(six.text_type(self), other)
+        return op(str(self), other)
 
     def __eq__(self, other):
         return self._cmp(other, operator.eq)
@@ -903,7 +917,7 @@ class SourcePath(Path):
             raise ValueError(
                 f'Filesystem absolute paths are not allowed\nPath: "{value}"'
             )
-        self = super(SourcePath, cls).__new__(cls, context, value)
+        self = super().__new__(cls, context, value)
 
         if value.startswith("/"):
             path = None
@@ -937,7 +951,7 @@ class RenamedSourcePath(SourcePath):
     def __new__(cls, context, value):
         assert isinstance(value, tuple)
         source, target_basename = value
-        self = super(RenamedSourcePath, cls).__new__(cls, context, source)
+        self = super().__new__(cls, context, source)
         self._target_basename = target_basename
         return self
 
@@ -952,7 +966,7 @@ class ObjDirPath(Path):
     def __new__(cls, context, value=None):
         if not value.startswith("!"):
             raise ValueError("Object directory paths must start with ! prefix")
-        self = super(ObjDirPath, cls).__new__(cls, context, value)
+        self = super().__new__(cls, context, value)
 
         if value.startswith("!/"):
             path = mozpath.join(context.config.topobjdir, value[2:])
@@ -970,7 +984,7 @@ class AbsolutePath(Path):
             raise ValueError("Absolute paths must start with % prefix")
         if not os.path.isabs(value[1:]):
             raise ValueError("Path '%s' is not absolute" % value[1:])
-        self = super(AbsolutePath, cls).__new__(cls, context, value)
+        self = super().__new__(cls, context, value)
         self.full_path = mozpath.normpath(value[1:])
         return self
 
@@ -983,7 +997,7 @@ def ContextDerivedTypedList(klass, base_class=List):
     class _TypedList(ContextDerivedValue, TypedList(klass, base_class)):
         def __init__(self, context, iterable=[], **kwargs):
             self.context = context
-            super(_TypedList, self).__init__(iterable, **kwargs)
+            super().__init__(iterable, **kwargs)
 
         def normalize(self, e):
             if not isinstance(e, klass):
@@ -1000,7 +1014,7 @@ def ContextDerivedTypedListWithItems(type, base_class=List):
     class _TypedListWithItems(ContextDerivedTypedList(type, base_class)):
         def __getitem__(self, name):
             name = self.normalize(name)
-            return super(_TypedListWithItems, self).__getitem__(name)
+            return super().__getitem__(name)
 
     return _TypedListWithItems
 
@@ -1040,7 +1054,7 @@ def ContextDerivedTypedRecord(*fields):
     return _TypedRecord
 
 
-class Schedules(object):
+class Schedules:
     """Similar to a ContextDerivedTypedRecord, but with different behavior
     for the properties:
 
@@ -1158,7 +1172,7 @@ def OrderedPathListWithAction(action):
             def _action(item):
                 return item, action(context, item)
 
-            super(_OrderedListWithAction, self).__init__(context, action=_action, *args)
+            super().__init__(context, action=_action, *args)
 
     return _OrderedListWithAction
 
@@ -1167,16 +1181,19 @@ ManifestparserManifestList = OrderedPathListWithAction(read_manifestparser_manif
 ReftestManifestList = OrderedPathListWithAction(read_reftest_manifest)
 
 BugzillaComponent = TypedNamedTuple(
-    "BugzillaComponent", [("product", six.text_type), ("component", six.text_type)]
+    "BugzillaComponent", [("product", str), ("component", str)]
 )
 SchedulingComponents = ContextDerivedTypedRecord(
-    ("inclusive", TypedList(six.text_type, StrictOrderingOnAppendList)),
-    ("exclusive", TypedList(six.text_type, StrictOrderingOnAppendList)),
+    ("inclusive", TypedList(str, StrictOrderingOnAppendList)),
+    ("exclusive", TypedList(str, StrictOrderingOnAppendList)),
 )
 
-GeneratedFilesList = StrictOrderingOnAppendListWithFlagsFactory(
-    {"script": six.text_type, "inputs": list, "force": bool, "flags": list}
-)
+GeneratedFilesList = StrictOrderingOnAppendListWithFlagsFactory({
+    "script": str,
+    "inputs": list,
+    "force": bool,
+    "flags": list,
+})
 
 
 class Files(SubContext):
@@ -1287,7 +1304,7 @@ class Files(SubContext):
     }
 
     def __init__(self, parent, *patterns):
-        super(Files, self).__init__(parent)
+        super().__init__(parent)
         self.patterns = patterns
         self.finalized = set()
 
@@ -1450,13 +1467,13 @@ VARIABLES = {
         """,
     ),
     "RUST_TESTS": (
-        TypedList(six.text_type),
+        TypedList(str),
         list,
         """Names of Rust tests to build and run via `cargo test`.
         """,
     ),
     "RUST_TEST_FEATURES": (
-        TypedList(six.text_type),
+        TypedList(str),
         list,
         """Cargo features to activate for RUST_TESTS.
         """,
@@ -1686,6 +1703,20 @@ VARIABLES = {
         current locale is ``en-US``.
         """,
     ),
+    "WINCONSOLE": (
+        bool,
+        bool,
+        """Whether the current binary requires a console.
+        """,
+    ),
+    "MOZ_SRC_FILES": (
+        ContextDerivedTypedList(SourcePath, StrictOrderingOnAppendList),
+        list,
+        """This variable contains a list of files that need to be accessible
+        under the "moz-src" protocol. They are copied to the moz-src portion
+        of the omni.ja, maintaining the path that they have in the source dir.
+        """,
+    ),
     "OBJDIR_FILES": (
         ContextDerivedTypedHierarchicalStringList(Path),
         list,
@@ -1704,8 +1735,8 @@ VARIABLES = {
         """,
     ),
     "FINAL_LIBRARY": (
-        six.text_type,
-        six.text_type,
+        str,
+        str,
         """Library in which the objects of the current directory will be linked.
 
         This variable contains the name of a library, defined elsewhere with
@@ -1738,7 +1769,7 @@ VARIABLES = {
         """Whether the library in this directory is a static library.
         """,
     ),
-    "USE_STATIC_LIBS": (
+    "USE_STATIC_MSVCRT": (
         bool,
         bool,
         """Whether the code in this directory is a built against the static
@@ -1763,8 +1794,8 @@ VARIABLES = {
         """,
     ),
     "HOST_LIBRARY_NAME": (
-        six.text_type,
-        six.text_type,
+        str,
+        str,
         """Name of target library generated when cross compiling.
         """,
     ),
@@ -1778,8 +1809,8 @@ VARIABLES = {
         """,
     ),
     "LIBRARY_NAME": (
-        six.text_type,
-        six.text_type,
+        str,
+        str,
         """The code name of the library generated for a directory.
 
         By default STATIC_LIBRARY_NAME and SHARED_LIBRARY_NAME take this name.
@@ -1792,8 +1823,8 @@ VARIABLES = {
         """,
     ),
     "SHARED_LIBRARY_NAME": (
-        six.text_type,
-        six.text_type,
+        str,
+        str,
         """The name of the static library generated for a directory, if it needs to
         differ from the library code name.
 
@@ -1801,22 +1832,22 @@ VARIABLES = {
         """,
     ),
     "SANDBOXED_WASM_LIBRARY_NAME": (
-        six.text_type,
-        six.text_type,
+        str,
+        str,
         """The name of the static sandboxed wasm library generated for a directory.
         """,
     ),
     "SHARED_LIBRARY_OUTPUT_CATEGORY": (
-        six.text_type,
-        six.text_type,
+        str,
+        str,
         """The output category for this context's shared library. If set this will
         correspond to the build command that will build this shared library, and
         the library will not be built as part of the default build.
         """,
     ),
     "RUST_LIBRARY_OUTPUT_CATEGORY": (
-        six.text_type,
-        six.text_type,
+        str,
+        str,
         """The output category for this context's rust library. If set this will
         correspond to the build command that will build this rust library, and
         the library will not be built as part of the default build.
@@ -1832,8 +1863,8 @@ VARIABLES = {
         """,
     ),
     "STATIC_LIBRARY_NAME": (
-        six.text_type,
-        six.text_type,
+        str,
+        str,
         """The name of the static library generated for a directory, if it needs to
         differ from the library code name.
 
@@ -1880,7 +1911,7 @@ VARIABLES = {
     ),
     "RCFILE": (
         Path,
-        six.text_type,
+        str,
         """The program .rc file.
 
         This variable can only be used on Windows.
@@ -1888,7 +1919,7 @@ VARIABLES = {
     ),
     "RCINCLUDE": (
         Path,
-        six.text_type,
+        str,
         """The resource script file to be included in the default .res file.
 
         This variable can only be used on Windows.
@@ -1896,7 +1927,7 @@ VARIABLES = {
     ),
     "DEFFILE": (
         Path,
-        six.text_type,
+        str,
         """The program .def (module definition) file.
 
         This variable can only be used on Windows.
@@ -1904,7 +1935,7 @@ VARIABLES = {
     ),
     "SYMBOLS_FILE": (
         Path,
-        six.text_type,
+        str,
         """A file containing a list of symbols to export from a shared library.
 
         The given file contains a list of symbols to be exported, and is
@@ -1928,8 +1959,8 @@ VARIABLES = {
         """,
     ),
     "SONAME": (
-        six.text_type,
-        six.text_type,
+        str,
+        str,
         """The soname of the shared object currently being linked
 
         soname is the "logical name" of a shared object, often used to provide
@@ -2012,8 +2043,8 @@ VARIABLES = {
         """,
     ),
     "PROGRAM": (
-        six.text_type,
-        six.text_type,
+        str,
+        str,
         """Compiled executable name.
 
         If the configuration token ``BIN_SUFFIX`` is set, its value will be
@@ -2022,8 +2053,8 @@ VARIABLES = {
         """,
     ),
     "HOST_PROGRAM": (
-        six.text_type,
-        six.text_type,
+        str,
+        str,
         """Compiled host executable name.
 
         If the configuration token ``HOST_BIN_SUFFIX`` is set, its value will be
@@ -2044,6 +2075,23 @@ VARIABLES = {
 
         This is confusing for historical reasons, but eventually, the behavior
         will be made explicit.
+        """,
+    ),
+    "DUMP_SYMBOLS_FLAGS": (
+        List,
+        list,
+        """Extra flags passed to the dumpsymbols utility when generating symbols for the crash reporter.
+        """,
+    ),
+    "LEGACY_RUN_TESTS": (
+        TypedList(dict),
+        list,
+        """Scripts to run during check phase.
+
+        This variable holds scripts that used to be part of ``make check`` rule
+        and which should probably migrate to another test target.
+
+        Please don't add new values to it.
         """,
     ),
     "JAR_MANIFESTS": (
@@ -2068,8 +2116,8 @@ VARIABLES = {
         """,
     ),
     "XPIDL_MODULE": (
-        six.text_type,
-        six.text_type,
+        str,
+        str,
         """XPCOM Interface Definition Module Name.
 
         This is the name of the ``.xpt`` file that is created by linking
@@ -2247,12 +2295,6 @@ VARIABLES = {
         """List of manifest files defining MozPerftest performance tests.
         """,
     ),
-    "CRAMTEST_MANIFESTS": (
-        ManifestparserManifestList,
-        list,
-        """List of manifest files defining cram unit tests.
-        """,
-    ),
     "TELEMETRY_TESTS_CLIENT_MANIFESTS": (
         ManifestparserManifestList,
         list,
@@ -2261,17 +2303,33 @@ VARIABLES = {
     ),
     # The following variables are used to control the target of installed files.
     "XPI_NAME": (
-        six.text_type,
-        six.text_type,
+        str,
+        str,
         """The name of an extension XPI to generate.
 
         When this variable is present, the results of this directory will end up
         being packaged into an extension instead of the main dist/bin results.
         """,
     ),
+    "XPI_PKGNAME": (
+        str,
+        str,
+        """The name of the package associated to an extension XPI to generate.
+
+        Override the name of the package generated for an XPI extension.
+        """,
+    ),
+    "XPI_TESTDIR": (
+        ObjDirPath,
+        str,
+        """The name of the directory where the associated test XPI package must be generated.
+
+        XPI_PKGNAME must be set for this variable to matter.
+        """,
+    ),
     "DIST_SUBDIR": (
-        six.text_type,
-        six.text_type,
+        str,
+        str,
         """The name of an alternate directory to install files to.
 
         When this variable is present, the results of this directory will end up
@@ -2281,7 +2339,7 @@ VARIABLES = {
     ),
     "FINAL_TARGET": (
         FinalTargetValue,
-        six.text_type,
+        str,
         """The name of the directory to install targets to.
 
         The directory is relative to the top of the object directory. The
@@ -2302,17 +2360,15 @@ VARIABLES = {
         """,
     ),
     "GYP_DIRS": (
-        StrictOrderingOnAppendListWithFlagsFactory(
-            {
-                "variables": dict,
-                "input": six.text_type,
-                "sandbox_vars": dict,
-                "no_chromium": bool,
-                "no_unified": bool,
-                "non_unified_sources": StrictOrderingOnAppendList,
-                "action_overrides": dict,
-            }
-        ),
+        StrictOrderingOnAppendListWithFlagsFactory({
+            "variables": dict,
+            "input": str,
+            "sandbox_vars": dict,
+            "no_chromium": bool,
+            "no_unified": bool,
+            "non_unified_sources": StrictOrderingOnAppendList,
+            "action_overrides": dict,
+        }),
         list,
         """Defines a list of object directories handled by gyp configurations.
 
@@ -2427,6 +2483,13 @@ VARIABLES = {
         See ``DEFINES`` for specifics.
         """,
     ),
+    "HOST_LINK_FLAGS": (
+        HostLinkFlags,
+        dict,
+        """Recipe for host linker flags for this context. Not to be manipulated
+        directly.
+        """,
+    ),
     "WASM_CFLAGS": (
         List,
         list,
@@ -2519,6 +2582,17 @@ VARIABLES = {
            appear in the moz.build file.
         """,
     ),
+    "HOST_LDFLAGS": (
+        List,
+        list,
+        """Flags passed to the host linker when linking all of the libraries and
+           executables declared in this directory.
+
+           Note that the ordering of flags matters here; these flags will be
+           added to the linker's command line in the same order as they
+           appear in the moz.build file.
+        """,
+    ),
     "LDFLAGS": (
         List,
         list,
@@ -2604,7 +2678,7 @@ VARIABLES = {
 
 # Sanity check: we don't want any variable above to have a list as storage type.
 for name, (storage_type, input_types, docs) in VARIABLES.items():
-    if storage_type == list:
+    if storage_type is list:
         raise RuntimeError('%s has a "list" storage type. Use "List" instead.' % name)
 
 # Set of variables that are only allowed in templates:
@@ -2803,9 +2877,9 @@ SPECIAL_VARIABLES = {
         str,
         """Constant defining the relative path of this file.
 
-        The relative path is from ``TOPSRCDIR``. This is defined as relative
-        to the main file being executed, regardless of whether additional
-        files have been included using ``include()``.
+        The relative path is from ``TOPSRCDIR``. When a file is included using
+        ``include()``, this variable reflects the relative path of the current
+        file being processed, not the main file that initiated the inclusion.
         """,
     ),
     "SRCDIR": (
@@ -2934,9 +3008,11 @@ SPECIAL_VARIABLES = {
         """,
     ),
     "TEST_DIRS": (
-        lambda context: context["DIRS"]
-        if context.config.substs.get("ENABLE_TESTS")
-        else TestDirsPlaceHolder,
+        lambda context: (
+            context["DIRS"]
+            if context.config.substs.get("ENABLE_TESTS")
+            else TestDirsPlaceHolder
+        ),
         list,
         """Like DIRS but only for directories that contain test-only code.
 
@@ -3116,6 +3192,7 @@ DEPRECATION_HINTS = {
 
             DIST_FILES += [ 'foo' ]
     """,
+    "USE_STATIC_LIBS": "Please use the USE_STATIC_MSVCRT variable instead.",
 }
 
 # Make sure that all template variables have a deprecation hint.

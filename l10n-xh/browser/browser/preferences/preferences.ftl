@@ -32,17 +32,6 @@ should-restart-title = Qalisa kwakhona { -brand-short-name }
 should-restart-ok = Phinda uqale i{ -brand-short-name } ngoku
 restart-later = Qalisa ngokutsha Kamva
 
-## Extension Control Notifications
-##
-## These strings are used to inform the user
-## about changes made by extensions to browser settings.
-##
-## <img data-l10n-name="icon"/> is going to be replaced by the extension icon.
-##
-## Variables:
-##   $name (string) - Name of the extension
-
-
 ## Preferences UI Search Results
 
 search-results-header = IZiphumo zoKhangelo
@@ -53,8 +42,14 @@ startup-header = Qalisa
 always-check-default =
     .label = Khangela qho ukuba i-{ -brand-short-name } iyibhrawuza yakho esisiseko
     .accesskey = o
+is-default-browser =
+    .message = I-{ -brand-short-name } kungokunje iyibhrawuza yakho esisiseko
+is-not-default-browser =
+    .message = I-{ -brand-short-name } ayiyobhrawuza yakho esisiseko
 is-default = I-{ -brand-short-name } kungokunje iyibhrawuza yakho esisiseko
 is-not-default = I-{ -brand-short-name } ayiyobhrawuza yakho esisiseko
+tabs-group-header2 =
+    .label = Izilungelelanisi zemigca
 tabs-group-header = Izilungelelanisi zemigca
 ctrl-tab-recently-used-order =
     .label = Imijikelo yeCtrl+Tab kwiithebhu kulungelelwano olusandul' ukusetyenziswa
@@ -73,6 +68,8 @@ browser-containers-settings =
     .label = Iisetingi…
     .accesskey = s
 containers-disable-alert-title = Ufuna ukuvala Zonke iiThebhu zeeKhonteyina?
+startup-group =
+    .label = Qalisa
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -93,7 +90,7 @@ containers-disable-alert-ok-button =
 containers-disable-alert-cancel-button = Zigcina zivuliwe
 containers-remove-alert-title = Ufuna ukuSusa le Khonteyina?
 # Variables:
-#   $count (Number) - Number of tabs that will be closed.
+#   $count (number) - Number of tabs that will be closed.
 containers-remove-alert-msg =
     { $count ->
         [one] Ukuba ususa le Khonteyina ngoku, ithebhu yekhonteyina i-{ $count } iya kuvalwa. Uqinisekile ukuba ufuna ukuyisusa le Khonteyina?
@@ -104,6 +101,12 @@ containers-remove-cancel-button = Musa ukuyisusa le Khonteyina
 
 ## General Section - Language & Appearance
 
+default-font-2 =
+    .label = Ifonti esisiseko
+    .accesskey = I
+default-font-size-2 =
+    .label = Isayizi
+    .accesskey = I
 default-font = Ifonti esisiseko
     .accesskey = I
 default-font-size = Isayizi
@@ -130,6 +133,11 @@ check-user-spelling =
 
 ## General Section - Files and Applications
 
+downloads-header-2 =
+    .label = Okukhutshelwayo
+download-save-where-2 =
+    .label = Gcina iifayile kwi
+    .accesskey = c
 download-header = Okukhutshelwayo
 download-save-where = Gcina iifayile kwi
     .accesskey = c
@@ -177,11 +185,11 @@ applications-manage-app =
 applications-always-ask =
     .label = Soloko ucela
 # Variables:
-#   $type-description (String) - Description of the type (e.g "Portable Document Format")
-#   $type (String) - the MIME type (e.g application/binary)
+#   $type-description (string) - Description of the type (e.g "Portable Document Format")
+#   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 # Variables:
-#   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
+#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = Sebenzisa i-{ $plugin-name } (kwi-{ -brand-short-name })
 
@@ -206,6 +214,8 @@ applications-use-other-label =
 
 play-drm-content-learn-more = Funda okungakumbi
 update-application-title = I-{ -brand-short-name } iZihlaziyi
+# Variables:
+# $version (string) - Firefox version
 update-application-version = Uhlobo { $version } <a data-l10n-name="learn-more">Yintoni entsha</a>
 update-history =
     .label = Bonisa iMbali yoHlaziyo…
@@ -237,9 +247,11 @@ performance-limit-content-process-option = Inkqubo yesiqulatho nomlinganiselo
 performance-limit-content-process-enabled-desc = Iinkqubo ezongezelelekileyo zesiqulatho zinokuphucula ukusebenza xa usebenzisa iithebhu ezininzi, kodwa iya kusebenzisa imemori engakumbi.
 performance-limit-content-process-blocked-desc = Ukuphucula inani leenkqubo zeziqulatho kunokwenzeka kuphela ngeenkqubo ezininzi ze-{ -brand-short-name }. <a data-l10n-name="learn-more">Funda indlela yokuhlola ukuba zivuliwe iinkqubo ezininzi</a>
 # Variables:
-#   $num - default value of the `dom.ipc.processCount` pref.
+#   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = Idifolti{ $num } (idifolthi)
+performance-group =
+    .label = Ukusebenza
 
 ## General Section - Browsing
 
@@ -259,6 +271,8 @@ browsing-use-cursor-navigation =
 browsing-search-on-start-typing =
     .label = Khangela iteksti xa uqalisa ukuchwetheza
     .accesskey = t
+browsing-group =
+    .label = Ukubhrawuza
 
 ## General Section - Proxy
 
@@ -266,10 +280,7 @@ network-proxy-connection-settings =
     .label = Isetingi…
     .accesskey = e
 
-## Home Section
-
-
-## Home Section - Home Page Customization
+## Custom Homepage subpage
 
 # This string has a special case for '1' and [other] (default). If necessary for
 # your language, you can add {$tabCount} to your translations and use the
@@ -286,22 +297,14 @@ choose-bookmark =
     .label = Sebenzisa iBhukhmakhi…
     .accesskey = B
 
-## Home Section - Firefox Home Content Customization
-
-
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
-
-
-##
-
-
 ## Search Section
 
 search-engine-default-header = Injini yesiseko yokukhangela
 search-suggestions-option =
     .label = Nika khangela iingcebiso
     .accesskey = k
+search-suggestions-cant-show-2 =
+    .message = Amacebiso okukhangela akayi kuboniswa kwiziphumo zebha yendawo ngenxa yokuba uyile i-{ -brand-short-name } ukuba ingaze iyikhumbule imbali.
 search-suggestions-cant-show = Amacebiso okukhangela akayi kuboniswa kwiziphumo zebha yendawo ngenxa yokuba uyile i-{ -brand-short-name } ukuba ingaze iyikhumbule imbali.
 search-choose-engine-column =
     .label = Iinjini zokukhangela
@@ -317,13 +320,19 @@ search-remove-engine =
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = Phindaphinda igama eliphambili
 # Variables:
-#   $name (String) - Name of a search engine.
+#   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Ukhethe igama eliphambili elisetyenziswa kungokunje yi"{ $name }". Nceda ukhethe elinye.
 search-keyword-warning-bookmark = Ukhethe igama eliphambili elisetyenziswa kungokunje yibhukhmakhi. Nceda ukhethe elinye.
+search-engine-group =
+    .label = Injini yesiseko yokukhangela
+search-default-engine =
+    .aria-label = Injini yesiseko yokukhangela
 
 ## Containers Section
 
 containers-header = Iithebhu Zekhonteyina
+containers-section-header =
+    .heading = Iithebhu Zekhonteyina
 containers-add-button =
     .label = Yongeza iKhonteyina eNtsha
     .accesskey = Y
@@ -352,6 +361,7 @@ sync-profile-picture-with-alt =
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } akuqinisekiswanga.
 sync-signedin-login-failure = Sicela ungene ukuze uphinde uqhagamshele { $email }
@@ -361,12 +371,6 @@ sync-signedin-login-failure = Sicela ungene ukuze uphinde uqhagamshele { $email 
 sync-sign-in =
     .label = Sayina uNgene
     .accesskey = g
-
-## Sync section - enabling or disabling sync.
-
-
-## The list of things currently syncing.
-
 
 ## The "Choose what to sync" dialog.
 
@@ -380,6 +384,16 @@ sync-engine-history =
 ## The device name controls.
 
 sync-device-name-header = Igama lesixhobo
+sync-device-name-header-2 =
+    .label = Igama lesixhobo
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Igama lesixhobo
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Tshintsha iGama leSixhobo
+    .accesskey = s
 sync-device-name-change =
     .label = Tshintsha iGama leSixhobo...
     .accesskey = s
@@ -400,12 +414,6 @@ sync-verification-sent-body = Ikhonkco lesiqinisekiso lithunyelwe kwi-{ $email }
 sync-verification-not-sent-title = Ayikwazi ukuThumela uQinisekiso
 sync-verification-not-sent-body = Asikwazi kuthumela imeyili yokuqinisekisa ngeli xesha, sicela uphinde uzame ngelinye ixesha.
 
-## Privacy Section
-
-
-## Privacy Section - Logins and Passwords
-
-
 ## Privacy Section - Passwords
 
 forms-exceptions =
@@ -414,20 +422,27 @@ forms-exceptions =
 forms-saved-logins =
     .label = Ezigciniweyo Logini…
     .accesskey = L
+# This string uses the former name of the Primary Password feature
+# ("Master Password" in English) so that the preferences can be found
+# when searching for the old name. The accesskey is unused.
 forms-master-pw-change =
     .label = Guqula iPhaswedi eyiMasta…
     .accesskey = P
 forms-master-pw-fips-desc = Ukuguqulwa Kwegama Lokugqithisa Akuphumelelanga
 
-## OS Authentication dialog
-
-
-## Privacy section - Autofill
-
-
 ## Privacy Section - History
 
 history-header = Imbali
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label2 = I-{ -brand-short-name } iya
 # This label is followed, on the same line, by a dropdown list of options
 # (Remember history, etc.).
 # In English it visually creates a full sentence, e.g.
@@ -445,6 +460,12 @@ history-remember-option-never =
     .label = Ungaze ukhumbule imbali
 history-remember-option-custom =
     .label = Sebenzisa iisethingi zesiqhelo kwimbali
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = i-{ -brand-short-name } iya kusebenzisa iisethingi ezifanayo njengokubhrawuza kwangasese kwaye ayiyi kukhumbula nayiphi na imbali njengokuba ubhrawuza iwebhu.
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = i-{ -brand-short-name } iya kusebenzisa iisethingi ezifanayo njengokubhrawuza kwangasese kwaye ayiyi kukhumbula nayiphi na imbali njengokuba ubhrawuza iwebhu.
 history-dontremember-description = i-{ -brand-short-name } iya kusebenzisa iisethingi ezifanayo njengokubhrawuza kwangasese kwaye ayiyi kukhumbula nayiphi na imbali njengokuba ubhrawuza iwebhu.
 history-private-browsing-permanent =
     .label = Soloko usebenzisa imo yokubhrawuza yangasese
@@ -458,18 +479,14 @@ history-clear-on-close-option =
 history-clear-on-close-settings =
     .label = Imimiselo…
     .accesskey = m
+history-group =
+    .label = Imbali
 
 ## Privacy Section - Site Data
 
 sitedata-learn-more = Funda okungakumbi
 
-## Privacy Section - Cookie Banner Handling
-
-
-## Privacy Section - Cookie Banner Blocking
-
-
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-locbar-bookmarks-option =
     .label = Iibhukhmakhi
@@ -478,22 +495,6 @@ addressbar-locbar-openpage-option =
     .label = Vula iithebhu
     .accesskey = V
 addressbar-suggestions-settings = Tshintsha iipreferensi zamacebiso enjini yokukhangela
-
-## Privacy Section - Content Blocking
-
-
-## These strings are used to define the different levels of
-## Enhanced Tracking Protection.
-
-
-##
-
-
-# The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
-
-
-## Privacy Section - Tracking
-
 
 ## Privacy Section - Permissions
 
@@ -511,9 +512,6 @@ collection-health-report-link = Funda okungakumbi
 # This message is displayed above disabled data sharing options in developer builds
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Ukuxelwa kwedatha kuyekisiwe ngenxa yolu lwakheko
-
-## Privacy Section - Website Advertising Preferences
-
 
 ## Privacy Section - Security
 ##
@@ -537,12 +535,7 @@ certs-header = Izatifikethi
 certs-enable-ocsp =
     .label = Buza iiseva zomphenduli ze-OCSP ukuqinisekisa ukugqibelela kwangoku kwezatifikethi
     .accesskey = B
-
-## Privacy Section - HTTPS-Only
-
-
-## DoH Section
-
+certs-devices-enable-fips = Nika isakhono kwi-FIPS
 
 ## The following strings are used in the Download section of settings
 

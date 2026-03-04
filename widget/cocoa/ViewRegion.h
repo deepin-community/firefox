@@ -11,7 +11,7 @@
 #include "nsRegion.h"
 #include "nsTArray.h"
 
-class nsChildView;
+class nsCocoaWindow;
 
 @class NSView;
 
@@ -24,12 +24,13 @@ class ViewRegion {
  public:
   ~ViewRegion();
 
-  mozilla::LayoutDeviceIntRegion Region() { return mRegion; }
+  const mozilla::LayoutDeviceIntRegion& Region() const { return mRegion; }
+  Span<NSView* const> Views() const { return mViews; }
 
   /**
    * Update the region.
    * @param aRegion  The new region.
-   * @param aCoordinateConverter  The nsChildView to use for converting
+   * @param aCoordinateConverter  The nsCocoaWindow to use for converting
    *   LayoutDeviceIntRect device pixel coordinates into Cocoa NSRect
    * coordinates.
    * @param aContainerView  The view that's going to be the superview of the
@@ -38,7 +39,7 @@ class ViewRegion {
    * @return  Whether or not the region changed.
    */
   bool UpdateRegion(const mozilla::LayoutDeviceIntRegion& aRegion,
-                    const nsChildView& aCoordinateConverter,
+                    const nsCocoaWindow& aCoordinateConverter,
                     NSView* aContainerView, NSView* (^aViewCreationCallback)());
 
   /**
@@ -48,6 +49,10 @@ class ViewRegion {
 
  private:
   mozilla::LayoutDeviceIntRegion mRegion;
+  // This array holds retained references to all the views we created. We
+  // don't rely on the lifetime of the superview to keeo our views alive,
+  // because we don't own the superview and don't know when it will be
+  // released.
   nsTArray<NSView*> mViews;
 };
 

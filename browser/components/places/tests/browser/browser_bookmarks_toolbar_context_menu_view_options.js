@@ -3,10 +3,16 @@
 
 "use strict";
 
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["test.wait300msAfterTabSwitch", true]],
+  });
+});
+
 add_task(async function testPopup() {
   let bookmark = await PlacesUtils.bookmarks.insert({
     parentGuid: PlacesUtils.bookmarks.toolbarGuid,
-    url: "http://example.com",
+    url: "https://example.com",
     title: "firefox",
   });
   registerCleanupFunction(async () => {

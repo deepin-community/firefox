@@ -12,7 +12,6 @@
 
 #include "AudioDeviceInfo.h"
 #include "DOMMediaStream.h"
-#include "DecoderBenchmark.h"
 #include "ImageContainer.h"
 #include "MediaDecoderStateMachineBase.h"
 #include "MediaFormatReader.h"
@@ -24,15 +23,12 @@
 #include "VideoUtils.h"
 #include "WindowRenderer.h"
 #include "mozilla/AbstractThread.h"
-#include "mozilla/FloatingPoint.h"
-#include "mozilla/MathAlgorithms.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/StaticPrefs_media.h"
 #include "mozilla/StaticPtr.h"
-#include "mozilla/Telemetry.h"
-#include "mozilla/Unused.h"
 #include "mozilla/dom/DOMTypes.h"
-#include "mozilla/glean/GleanMetrics.h"
+#include "mozilla/glean/DomMediaMetrics.h"
+#include "mozilla/glean/DomMediaPlatformsWmfMetrics.h"
 #include "nsComponentManagerUtils.h"
 #include "nsContentUtils.h"
 #include "nsError.h"
@@ -111,30 +107,11 @@ void MediaDecoder::InitStatics() {
   // Eagerly init gMediaDecoderLog to work around bug 1415441.
   MOZ_LOG(gMediaDecoderLog, LogLevel::Info, ("MediaDecoder::InitStatics"));
 
-#if defined(NIGHTLY_BUILD)
-  // Allow people to force a bit but try to warn them about filing bugs if audio
-  // decoding does not work on utility
-  static const bool allowLockPrefs =
-      PR_GetEnv("MOZ_DONT_LOCK_UTILITY_PLZ_FILE_A_BUG") == nullptr;
-  if (XRE_IsParentProcess() && allowLockPrefs) {
+  if (XRE_IsParentProcess()) {
     // Lock Utility process preferences so that people cannot opt-out of
     // Utility process
     Preferences::Lock("media.utility-process.enabled");
-#  if defined(MOZ_FFMPEG)
-    Preferences::Lock("media.utility-ffmpeg.enabled");
-#  endif  // defined(MOZ_FFMPEG)
-    Preferences::Lock("media.utility-ffvpx.enabled");
-#  if defined(MOZ_WMF)
-    Preferences::Lock("media.utility-wmf.enabled");
-#  endif  // defined(MOZ_WMF)
-#  if defined(MOZ_APPLEMEDIA)
-    Preferences::Lock("media.utility-applemedia.enabled");
-#  endif  // defined(MOZ_APPLEMEDIA)
-    Preferences::Lock("media.utility-vorbis.enabled");
-    Preferences::Lock("media.utility-wav.enabled");
-    Preferences::Lock("media.utility-opus.enabled");
   }
-#endif  // defined(NIGHTLY_BUILD)
 }
 
 NS_IMPL_ISUPPORTS(MediaMemoryTracker, nsIMemoryReporter)
@@ -239,7 +216,6 @@ MediaDecoder::MediaDecoder(MediaDecoderInit& aInit)
       mOwner(aInit.mOwner),
       mAbstractMainThread(aInit.mOwner->AbstractMainThread()),
       mFrameStats(new FrameStatistics()),
-      mDecoderBenchmark(new DecoderBenchmark()),
       mVideoFrameContainer(aInit.mOwner->GetVideoFrameContainer()),
       mMinimizePreroll(aInit.mMinimizePreroll),
       mFiredMetadataLoaded(false),
@@ -359,7 +335,7 @@ MediaDecoder::~MediaDecoder() {
   MediaMemoryTracker::RemoveMediaDecoder(this);
 }
 
-void MediaDecoder::OnPlaybackEvent(MediaPlaybackEvent&& aEvent) {
+void MediaDecoder::OnPlaybackEvent(const MediaPlaybackEvent& aEvent) {
   switch (aEvent.mType) {
     case MediaPlaybackEvent::PlaybackEnded:
       PlaybackEnded();
@@ -371,24 +347,24 @@ void MediaDecoder::OnPlaybackEvent(MediaPlaybackEvent&& aEvent) {
       Invalidate();
       break;
     case MediaPlaybackEvent::EnterVideoSuspend:
-      GetOwner()->DispatchAsyncEvent(u"mozentervideosuspend"_ns);
+      GetOwner()->QueueEvent(u"mozentervideosuspend"_ns);
       mIsVideoDecodingSuspended = true;
       break;
     case MediaPlaybackEvent::ExitVideoSuspend:
-      GetOwner()->DispatchAsyncEvent(u"mozexitvideosuspend"_ns);
+      GetOwner()->QueueEvent(u"mozexitvideosuspend"_ns);
       mIsVideoDecodingSuspended = false;
       break;
     case MediaPlaybackEvent::StartVideoSuspendTimer:
-      GetOwner()->DispatchAsyncEvent(u"mozstartvideosuspendtimer"_ns);
+      GetOwner()->QueueEvent(u"mozstartvideosuspendtimer"_ns);
       break;
     case MediaPlaybackEvent::CancelVideoSuspendTimer:
-      GetOwner()->DispatchAsyncEvent(u"mozcancelvideosuspendtimer"_ns);
+      GetOwner()->QueueEvent(u"mozcancelvideosuspendtimer"_ns);
       break;
     case MediaPlaybackEvent::VideoOnlySeekBegin:
-      GetOwner()->DispatchAsyncEvent(u"mozvideoonlyseekbegin"_ns);
+      GetOwner()->QueueEvent(u"mozvideoonlyseekbegin"_ns);
       break;
     case MediaPlaybackEvent::VideoOnlySeekCompleted:
-      GetOwner()->DispatchAsyncEvent(u"mozvideoonlyseekcompleted"_ns);
+      GetOwner()->QueueEvent(u"mozvideoonlyseekcompleted"_ns);
       break;
     default:
       break;
@@ -401,18 +377,23 @@ bool MediaDecoder::IsVideoDecodingSuspended() const {
 
 void MediaDecoder::OnPlaybackErrorEvent(const MediaResult& aError) {
   MOZ_ASSERT(NS_IsMainThread());
-#ifndef MOZ_WMF_MEDIA_ENGINE
-  DecodeError(aError);
-#else
-  if (aError != NS_ERROR_DOM_MEDIA_EXTERNAL_ENGINE_NOT_SUPPORTED_ERR &&
-      aError != NS_ERROR_DOM_MEDIA_CDM_PROXY_NOT_SUPPORTED_ERR) {
-    DecodeError(aError);
+#ifdef MOZ_WMF_MEDIA_ENGINE
+  if (aError == NS_ERROR_DOM_MEDIA_EXTERNAL_ENGINE_NOT_SUPPORTED_ERR ||
+      aError == NS_ERROR_DOM_MEDIA_CDM_PROXY_NOT_SUPPORTED_ERR) {
+    (void)SwitchStateMachine(aError);
     return;
   }
+#endif
+  DecodeError(aError);
+}
 
+#ifdef MOZ_WMF_MEDIA_ENGINE
+bool MediaDecoder::SwitchStateMachine(const MediaResult& aError) {
+  MOZ_ASSERT(aError == NS_ERROR_DOM_MEDIA_EXTERNAL_ENGINE_NOT_SUPPORTED_ERR ||
+             aError == NS_ERROR_DOM_MEDIA_CDM_PROXY_NOT_SUPPORTED_ERR);
   // Already in shutting down decoder, no need to create another state machine.
   if (mPlayState == PLAY_STATE_SHUTDOWN) {
-    return;
+    return false;
   }
 
   // External engine can't play the resource or we intentionally disable it, try
@@ -442,7 +423,7 @@ void MediaDecoder::OnPlaybackErrorEvent(const MediaResult& aError) {
       needExternalEngine ? "external engine" : "normal");
 
   nsresult rv = CreateAndInitStateMachine(
-      false /* live stream */,
+      discardStateMachine->IsLiveStream(),
       !needExternalEngine /* disable external engine */);
   if (NS_WARN_IF(NS_FAILED(rv))) {
     LOG("Failed to create a new state machine!");
@@ -491,8 +472,9 @@ void MediaDecoder::OnPlaybackErrorEvent(const MediaResult& aError) {
 
   discardStateMachine->BeginShutdown()->Then(
       AbstractThread::MainThread(), __func__, [discardStateMachine] {});
-#endif
+  return true;
 }
+#endif
 
 void MediaDecoder::OnDecoderDoctorEvent(DecoderDoctorEvent aEvent) {
   MOZ_ASSERT(NS_IsMainThread());
@@ -539,29 +521,6 @@ void MediaDecoder::OnSecondaryVideoContainerInstalled(
     const RefPtr<VideoFrameContainer>& aSecondaryVideoContainer) {
   MOZ_ASSERT(NS_IsMainThread());
   GetOwner()->OnSecondaryVideoContainerInstalled(aSecondaryVideoContainer);
-}
-
-void MediaDecoder::OnStoreDecoderBenchmark(const VideoInfo& aInfo) {
-  MOZ_ASSERT(NS_IsMainThread());
-
-  int32_t videoFrameRate = aInfo.GetFrameRate().ref();
-
-  if (mFrameStats && videoFrameRate) {
-    DecoderBenchmarkInfo benchmarkInfo{
-        aInfo.mMimeType,
-        aInfo.mDisplay.width,
-        aInfo.mDisplay.height,
-        videoFrameRate,
-        BitDepthForColorDepth(aInfo.mColorDepth),
-    };
-
-    LOG("Store benchmark: Video width=%d, height=%d, frameRate=%d, content "
-        "type = %s\n",
-        benchmarkInfo.mWidth, benchmarkInfo.mHeight, benchmarkInfo.mFrameRate,
-        benchmarkInfo.mContentType.BeginReading());
-
-    mDecoderBenchmark->Store(benchmarkInfo, mFrameStats);
-  }
 }
 
 void MediaDecoder::ShutdownInternal() {
@@ -625,9 +584,6 @@ void MediaDecoder::SetStateMachineParameters() {
       mDecoderStateMachine->OnSecondaryVideoContainerInstalled().Connect(
           mAbstractMainThread, this,
           &MediaDecoder::OnSecondaryVideoContainerInstalled);
-  mOnStoreDecoderBenchmark = mReader->OnStoreDecoderBenchmark().Connect(
-      mAbstractMainThread, this, &MediaDecoder::OnStoreDecoderBenchmark);
-
   mOnEncrypted = mReader->OnEncrypted().Connect(
       mAbstractMainThread, GetOwner(), &MediaDecoderOwner::DispatchEncrypted);
   mOnWaitingForKey = mReader->OnWaitingForKey().Connect(
@@ -651,7 +607,6 @@ void MediaDecoder::DisconnectEvents() {
   mOnNextFrameStatus.Disconnect();
   mOnTrackInfoUpdated.Disconnect();
   mOnSecondaryVideoContainerInstalled.Disconnect();
-  mOnStoreDecoderBenchmark.Disconnect();
 }
 
 RefPtr<ShutdownPromise> MediaDecoder::ShutdownStateMachine() {
@@ -798,7 +753,7 @@ void MediaDecoder::SetStatusUpdateForNewlyCreatedStateMachineIfNeeded() {
   LOG("Set pending statuses if necessary (mLogicallySeeking=%d, "
       "mLogicalPosition=%f, mPlaybackRate=%f)",
       mLogicallySeeking.Ref(), mLogicalPosition, mPlaybackRate);
-  if (mLogicalPosition != 0) {
+  if (mLogicallySeeking) {
     Seek(mLogicalPosition, SeekTarget::Accurate);
   }
   if (mPlaybackRate != 0 && mPlaybackRate != 1.0) {
@@ -832,7 +787,7 @@ void MediaDecoder::EnsureTelemetryReported() {
   }
   for (const nsCString& codec : codecs) {
     LOG("Telemetry MEDIA_CODEC_USED= '%s'", codec.get());
-    Telemetry::Accumulate(Telemetry::HistogramID::MEDIA_CODEC_USED, codec);
+    glean::media::codec_used.Get(codec).Add(1);
   }
 
   mTelemetryReported = true;
@@ -897,10 +852,11 @@ void MediaDecoder::FirstFrameLoaded(
           if (result->mReader.mVideoHardwareAccelerated) {
             flags += FirstFrameLoadedFlag::IsHardwareDecoding;
           }
-          mTelemetryProbesReporter->OntFirstFrameLoaded(
+          mTelemetryProbesReporter->OnFirstFrameLoaded(
               firstFrameLoadedTime, result->mReader.mTotalReadMetadataTimeMs,
               result->mReader.mTotalWaitingForVideoDataTimeMs,
-              result->mStateMachine.mTotalBufferingTimeMs, flags, *mInfo);
+              result->mStateMachine.mTotalBufferingTimeMs, flags, *mInfo,
+              NS_ConvertUTF16toUTF8(result->mReader.mVideoDecoderName));
         });
     mMDSMCreationTime.reset();
   }
@@ -1146,7 +1102,7 @@ void MediaDecoder::DurationChanged() {
   if (mFiredMetadataLoaded &&
       (!std::isinf(mDuration.match(DurationToDouble())) ||
        mExplicitDuration.isSome())) {
-    GetOwner()->DispatchAsyncEvent(u"durationchange"_ns);
+    GetOwner()->QueueEvent(u"durationchange"_ns);
   }
 
   if (CurrentPosition().ToSeconds() > mDuration.match(DurationToDouble())) {
@@ -1171,7 +1127,7 @@ void MediaDecoder::NotifyCompositor() {
         NewRunnableMethod<already_AddRefed<KnowsCompositor>&&>(
             "MediaFormatReader::UpdateCompositor", mReader,
             &MediaFormatReader::UpdateCompositor, knowsCompositor.forget());
-    Unused << mReader->OwnerThread()->Dispatch(r.forget());
+    (void)mReader->OwnerThread()->Dispatch(r.forget());
   }
 }
 
@@ -1525,7 +1481,7 @@ void MediaDecoder::NotifyReaderDataArrived() {
       NewRunnableMethod("MediaFormatReader::NotifyDataArrived", mReader.get(),
                         &MediaFormatReader::NotifyDataArrived));
   MOZ_DIAGNOSTIC_ASSERT(NS_SUCCEEDED(rv));
-  Unused << rv;
+  (void)rv;
 }
 
 // Provide access to the state machine object
@@ -1542,17 +1498,34 @@ bool MediaDecoder::CanPlayThrough() {
 
 RefPtr<SetCDMPromise> MediaDecoder::SetCDMProxy(CDMProxy* aProxy) {
   MOZ_ASSERT(NS_IsMainThread());
-#ifdef MOZ_WMF_MEDIA_ENGINE
-  // Switch to another state machine if the current one doesn't support the
-  // given CDM proxy.
-  if (aProxy && !GetStateMachine()->IsCDMProxySupported(aProxy)) {
-    LOG("CDM proxy not supported! Switch to another state machine.");
-    OnPlaybackErrorEvent(
-        MediaResult{NS_ERROR_DOM_MEDIA_CDM_PROXY_NOT_SUPPORTED_ERR, aProxy});
+#ifdef MOZ_WMF_CDM
+  if (aProxy) {
+    nsresult rv = GetStateMachine()->IsCDMProxySupported(aProxy);
+    if (rv == NS_ERROR_DOM_MEDIA_NOT_ALLOWED_ERR) {
+      // We can't switch to another state machine because this CDM proxy type is
+      // disabled by pref.
+      LOG("CDM proxy %s not allowed!",
+          NS_ConvertUTF16toUTF8(aProxy->KeySystem()).get());
+      return SetCDMPromise::CreateAndReject(rv, __func__);
+    }
+    if (rv == NS_ERROR_DOM_MEDIA_NOT_SUPPORTED_ERR) {
+      // Switch to another state machine if the current one doesn't support the
+      // given CDM proxy.
+      LOG("CDM proxy %s not supported! Switch to another state machine.",
+          NS_ConvertUTF16toUTF8(aProxy->KeySystem()).get());
+      [[maybe_unused]] bool switched = SwitchStateMachine(
+          MediaResult{NS_ERROR_DOM_MEDIA_CDM_PROXY_NOT_SUPPORTED_ERR, aProxy});
+      rv = GetStateMachine()->IsCDMProxySupported(aProxy);
+      if (NS_FAILED(rv)) {
+        MOZ_DIAGNOSTIC_ASSERT(
+            !switched, "We should only reach here if we failed to switch");
+        LOG("CDM proxy is still not supported!");
+        return SetCDMPromise::CreateAndReject(rv, __func__);
+      }
+    }
+    MOZ_DIAGNOSTIC_ASSERT(NS_SUCCEEDED(rv), "CDM proxy not supported!");
   }
 #endif
-  MOZ_DIAGNOSTIC_ASSERT_IF(aProxy,
-                           GetStateMachine()->IsCDMProxySupported(aProxy));
   return GetStateMachine()->SetCDMProxy(aProxy);
 }
 

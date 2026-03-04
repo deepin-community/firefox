@@ -10,6 +10,8 @@ safeb-blocked-phishing-page-short-desc = { -brand-short-name } ha blocau esta pa
 safeb-blocked-malware-page-short-desc = { -brand-short-name } ha blocau esta pachina perque podría mirar d'instalar software perchudicial que puede rapar u borrar información personal d'o suyo ordinador.
 safeb-blocked-unwanted-page-short-desc = { -brand-short-name } ha blocau esta pachina perque podría mirar d'enganyar-le pa que instale programas que pueden danyar la tuya experiencia de navegación (per eixemplo, cambiando la tuya pachina d'inicio u amostrando publicidat en os puestos que vesitas).
 safeb-blocked-harmful-page-short-desc = { -brand-short-name } ha blocau esta pachina ya que podría mirar d'instalar apps periglosas u rapar u borrar la suya información (per eixemplo, fotos, claus, mensaches u tarchetas de credito).
+# Variables:
+#   $advisoryname (string) - Name of the advisory entity
 safeb-palm-advisory-desc = Consello de <a data-l10n-name='advisory_provider'>{ $advisoryname }</a>.
 safeb-palm-accept-label = Ir enta zaga
 safeb-palm-see-details-label = Veyer los detalles
@@ -20,7 +22,8 @@ safeb-palm-see-details-label = Veyer los detalles
 safeb-blocked-phishing-page-error-desc-override = S'ha reportau que <span data-l10n-name='sitename'>{ $sitename }</span> ye un <a data-l10n-name='error_desc_link'>web enganyosos</a>. Puetz <a data-l10n-name='report_detection'>reportar un problema de detección</a> u <a data-l10n-name='ignore_warning_link'>ignorar lo risgo</a> y ir ta este puesto inseguro.
 safeb-blocked-phishing-page-error-desc-no-override = S'ha reportau que <span data-l10n-name='sitename'>{ $sitename }</span> ye un <a data-l10n-name='error_desc_link'>web enganyosos</a>. Puetz <a data-l10n-name='report_detection'>reportar un problema de detección</a>.
 
-##
+## Variables
+##  $sitename (string) - Domain name for the blocked page
 
 safeb-blocked-phishing-page-learn-more = Aprende mas sobre puestos enganyosos y phising en <a data-l10n-name='learn_more_link'>www.antiphishing.org</a>. Aprende mas sobre la protección contra Phising y Malware de { -brand-short-name }en <a data-l10n-name='firefox_support'>support.mozilla.org</a>.
 
@@ -30,7 +33,8 @@ safeb-blocked-phishing-page-learn-more = Aprende mas sobre puestos enganyosos y 
 safeb-blocked-malware-page-error-desc-override-sumo = S'ha reportau que <span data-l10n-name='sitename'>{ $sitename }</span> contiene <a data-l10n-name='error_desc_link'>software perchudicial</a>. Puetz <a data-l10n-name='ignore_warning_link'>ignorar lo risgo</a> y ir ta este puesto inseguro.
 safeb-blocked-malware-page-error-desc-no-override-sumo = S'ha reportau que <span data-l10n-name='sitename'>{ $sitename }</span> contiene <a data-l10n-name='error_desc_link'>software perchudicial</a>.
 
-##
+## Variables
+##  $sitename (string) - Domain name for the blocked page
 
 safeb-blocked-malware-page-learn-more-sumo = Aprende mas sobre la protección contra Phising y Malware de { -brand-short-name }en <a data-l10n-name='firefox_support'>support.mozilla.org</a>.
 
@@ -40,7 +44,8 @@ safeb-blocked-malware-page-learn-more-sumo = Aprende mas sobre la protección co
 safeb-blocked-unwanted-page-error-desc-override = S'ha reportau que <span data-l10n-name='sitename'>{ $sitename }</span> contiene <a data-l10n-name='error_desc_link'>software perchudicial</a>. Puetz <a data-l10n-name='ignore_warning_link'>ignorar lo risgo</a> y ir ta este puesto inseguro.
 safeb-blocked-unwanted-page-error-desc-no-override = S'ha reportau que <span data-l10n-name='sitename'>{ $sitename }</span> contiene <a data-l10n-name='error_desc_link'>software perchudicial</a>.
 
-##
+## Variables
+##  $sitename (string) - Domain name for the blocked page
 
 safeb-blocked-unwanted-page-learn-more = Aprende mas sobre lo software perchudicial y no deseyau en <a data-l10n-name='learn_more_link'>Unwanted Software Policy</a>. Aprende mas sobre la protección contra Phising y Malware de { -brand-short-name } en <a data-l10n-name='firefox_support'>support.mozilla.org</a>.
 
@@ -50,7 +55,8 @@ safeb-blocked-unwanted-page-learn-more = Aprende mas sobre lo software perchudic
 safeb-blocked-harmful-page-error-desc-override = S'ha reportau que <span data-l10n-name='sitename'>{ $sitename }</span> contién una <a data-l10n-name='error_desc_link'>aplicación potencialment perchudicial</a>. Puetz <a data-l10n-name='ignore_warning_link'>ignorar lo risgo</a> y ir ta este puesto inseguro.
 safeb-blocked-harmful-page-error-desc-no-override = S'ha reportau que <span data-l10n-name='sitename'>{ $sitename }</span> contién una <a data-l10n-name='error_desc_link'>aplicación potencialment perchudicial</a>.
 
-##
+## Variables
+##  $sitename (string) - Domain name for the blocked page
 
 safeb-blocked-harmful-page-learn-more = Aprende mas sobre la protección contra Phising y Malware de { -brand-short-name }en <a data-l10n-name='firefox_support'>support.mozilla.org</a>.
 safeb-palm-notdeceptive =

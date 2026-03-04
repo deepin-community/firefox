@@ -4,12 +4,11 @@
 
 sidebar-menu-bookmarks =
     .label = Dấu trang
+sidebar-menu-bookmarks-2 = Dấu trang
 sidebar-menu-history =
     .label = Lịch sử
 sidebar-menu-synced-tabs =
     .label = Các thẻ đã đồng bộ
-sidebar-menu-megalist =
-    .label = Mật khẩu
 sidebar-menu-close =
     .label = Đóng thanh lề
 sidebar-close-button =

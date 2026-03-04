@@ -8,8 +8,8 @@
 #define _MOZILLA_GFX_DRAWTARGETWEBGL_INTERNAL_H
 
 #include "DrawTargetWebgl.h"
-
 #include "mozilla/HashFunctions.h"
+#include "mozilla/WeakPtr.h"
 #include "mozilla/gfx/Etagere.h"
 #include "mozilla/gfx/PathSkia.h"
 #include "mozilla/gfx/WPFGpuRaster.h"
@@ -78,7 +78,7 @@ class CacheImpl {
   typedef LinkedList<RefPtr<T>> ListType;
 
   // Whether the cache should be small and space-efficient or prioritize speed.
-  static constexpr size_t kNumChains = BIG ? 499 : 17;
+  static constexpr size_t kNumChains = BIG ? 499 : 71;
 
  public:
   ~CacheImpl() {
@@ -141,6 +141,7 @@ class BackingTexture {
 // or standalone texture). It may be further linked to use-specific metadata
 // such as for shadow drawing or for cached entries in the glyph cache.
 class TextureHandle : public RefCounted<TextureHandle>,
+                      public SupportsWeakPtr,
                       public LinkedListElement<RefPtr<TextureHandle>> {
  public:
   MOZ_DECLARE_REFCOUNTED_VIRTUAL_TYPENAME(TextureHandle)
@@ -356,9 +357,14 @@ class GlyphCache : public LinkedListElement<GlyphCache>,
       const IntRect& aBounds, const IntRect& aFullBounds, HashNumber aHash,
       const StrokeOptions* aOptions);
 
+  bool IsWhitespace(const GlyphBuffer& aBuffer) const;
+  void SetLastWhitespace(const GlyphBuffer& aBuffer);
+
  private:
   // Weak pointer to the owning font
   ScaledFont* mFont;
+  // The last whitespace queried from this cache
+  Maybe<uint32_t> mLastWhitespace;
 };
 
 struct QuantizedPath {
@@ -384,6 +390,12 @@ struct PathVertexRange {
   bool IsValid() const { return mLength > 0; }
 };
 
+enum class AAStrokeMode {
+  Unsupported,
+  Geometry,
+  Mask,
+};
+
 // PathCacheEntry stores a rasterized version of a supplied path with a given
 // pattern.
 class PathCacheEntry : public CacheEntryImpl<PathCacheEntry> {
@@ -391,14 +403,15 @@ class PathCacheEntry : public CacheEntryImpl<PathCacheEntry> {
   MOZ_DECLARE_REFCOUNTED_VIRTUAL_TYPENAME(PathCacheEntry, override)
 
   PathCacheEntry(QuantizedPath&& aPath, Pattern* aPattern,
-                 StoredStrokeOptions* aStrokeOptions, const Matrix& aTransform,
-                 const IntRect& aBounds, const Point& aOrigin, HashNumber aHash,
-                 float aSigma = -1.0f);
+                 StoredStrokeOptions* aStrokeOptions, AAStrokeMode aStrokeMode,
+                 const Matrix& aTransform, const IntRect& aBounds,
+                 const Point& aOrigin, HashNumber aHash, float aSigma = -1.0f);
 
   bool MatchesPath(const QuantizedPath& aPath, const Pattern* aPattern,
                    const StrokeOptions* aStrokeOptions,
-                   const Matrix& aTransform, const IntRect& aBounds,
-                   const Point& aOrigin, HashNumber aHash, float aSigma);
+                   AAStrokeMode aStrokeMode, const Matrix& aTransform,
+                   const IntRect& aBounds, const Point& aOrigin,
+                   HashNumber aHash, float aSigma);
 
   static HashNumber HashPath(const QuantizedPath& aPath,
                              const Pattern* aPattern, const Matrix& aTransform,
@@ -414,6 +427,13 @@ class PathCacheEntry : public CacheEntryImpl<PathCacheEntry> {
   const PathVertexRange& GetVertexRange() const { return mVertexRange; }
   void SetVertexRange(const PathVertexRange& aRange) { mVertexRange = aRange; }
 
+  const WeakPtr<TextureHandle>& GetSecondaryHandle() const {
+    return mSecondaryHandle;
+  }
+  void SetSecondaryHandle(WeakPtr<TextureHandle> aHandle) {
+    mSecondaryHandle = std::move(aHandle);
+  }
+
  private:
   // The actual path geometry supplied
   QuantizedPath mPath;
@@ -423,10 +443,14 @@ class PathCacheEntry : public CacheEntryImpl<PathCacheEntry> {
   UniquePtr<Pattern> mPattern;
   // The StrokeOptions used for stroked paths, if applicable
   UniquePtr<StoredStrokeOptions> mStrokeOptions;
+  // The AAStroke mode used for rendering a stroked path.
+  AAStrokeMode mAAStrokeMode = AAStrokeMode::Unsupported;
   // The shadow blur sigma
   float mSigma;
   // If the path has cached geometry in the vertex buffer.
   PathVertexRange mVertexRange;
+  // Secondary texture handle that is not linked and only weakly referenced.
+  WeakPtr<TextureHandle> mSecondaryHandle;
 };
 
 class PathCache : public CacheImpl<PathCacheEntry, true> {
@@ -435,8 +459,15 @@ class PathCache : public CacheImpl<PathCacheEntry, true> {
 
   already_AddRefed<PathCacheEntry> FindOrInsertEntry(
       QuantizedPath aPath, const Pattern* aPattern,
-      const StrokeOptions* aStrokeOptions, const Matrix& aTransform,
-      const IntRect& aBounds, const Point& aOrigin, float aSigma = -1.0f);
+      const StrokeOptions* aStrokeOptions, AAStrokeMode aStrokeMode,
+      const Matrix& aTransform, const IntRect& aBounds, const Point& aOrigin,
+      float aSigma = -1.0f);
+
+  already_AddRefed<PathCacheEntry> FindEntry(
+      const QuantizedPath& aPath, const Pattern* aPattern,
+      const StrokeOptions* aStrokeOptions, AAStrokeMode aStrokeMode,
+      const Matrix& aTransform, const IntRect& aBounds, const Point& aOrigin,
+      float aSigma = -1.0f, bool aHasSecondaryHandle = false);
 
   void ClearVertexRanges();
 };

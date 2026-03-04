@@ -7,6 +7,8 @@ import types
 import unittest
 from unittest import mock
 
+import mozunit
+
 PYWIN32 = False
 if os.name == "nt":
     try:
@@ -17,9 +19,7 @@ if os.name == "nt":
         pass
 
 
-import mozharness.base.errors as errors
-import mozharness.base.log as log
-import mozharness.base.script as script
+from mozharness.base import errors, log, script
 from mozharness.base.config import parse_config_file
 from mozharness.base.log import CRITICAL, DEBUG, ERROR, FATAL, IGNORE, INFO, WARNING
 
@@ -32,7 +32,7 @@ baz"""
 
 class CleanupObj(script.ScriptMixin, log.LogMixin):
     def __init__(self):
-        super(CleanupObj, self).__init__()
+        super().__init__()
         self.log_obj = None
         self.config = {"log_level": ERROR}
 
@@ -281,6 +281,7 @@ class TestScript(unittest.TestCase):
             "archive.tar",
             "archive.tar.bz2",
             "archive.tar.gz",
+            "archive.tar.xz",
             "archive.zip",
         ):
             self.s.download_unpack(
@@ -343,6 +344,7 @@ class TestScript(unittest.TestCase):
             "archive.tar",
             "archive.tar.bz2",
             "archive.tar.gz",
+            "archive.tar.xz",
             "archive.zip",
         ):
             self.s.unpack(os.path.join(archives_path, archive), self.tmpdir)
@@ -416,9 +418,11 @@ class TestHelperFunctions(unittest.TestCase):
     def test_get_output_from_command(self):
         self._create_temp_file()
         self.s = script.BaseScript(initial_config_file="test/test.json")
-        contents = self.s.get_output_from_command(
-            ["bash", "-c", "cat %s" % self.temp_file]
-        )
+        contents = self.s.get_output_from_command([
+            "bash",
+            "-c",
+            "cat %s" % self.temp_file,
+        ])
         self.assertEqual(
             test_string,
             contents,
@@ -787,7 +791,12 @@ class TestRetry(unittest.TestCase):
 
 class BaseScriptWithDecorators(script.BaseScript):
     def __init__(self, *args, **kwargs):
-        super(BaseScriptWithDecorators, self).__init__(*args, **kwargs)
+        self._tmpdir = tempfile.mkdtemp(suffix=".mozharness")
+        option_args = kwargs.get("option_args", [])
+        option_args.extend(["--base-work-dir", self._tmpdir])
+        kwargs["option_args"] = option_args
+
+        super().__init__(*args, **kwargs)
 
         self.pre_run_1_args = []
         self.raise_during_pre_run_1 = False
@@ -863,6 +872,9 @@ class TestScriptDecorators(unittest.TestCase):
         self.s = None
 
     def tearDown(self):
+        if isinstance(getattr(self, "s", None), BaseScriptWithDecorators):
+            cleanup([self.s._tmpdir])
+
         if hasattr(self, "s") and isinstance(self.s, object):
             del self.s
 
@@ -980,4 +992,4 @@ class TestScriptDecorators(unittest.TestCase):
 
 # main {{{1
 if __name__ == "__main__":
-    unittest.main()
+    mozunit.main()

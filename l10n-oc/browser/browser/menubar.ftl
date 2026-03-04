@@ -3,18 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -146,8 +134,6 @@ menu-view-history-button =
     .label = Istoric
 menu-view-synced-tabs-sidebar =
     .label = Onglets sincronizats
-menu-view-megalist-sidebar =
-    .label = Senhals
 menu-view-full-zoom =
     .label = Zoom
     .accesskey = Z
@@ -255,6 +241,15 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Marcapaginas del mobile
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Perfils
+menu-profiles-manage-profiles =
+    .label = Gestion dels perfils
+menu-profiles-new-profile =
+    .label = Perfil nòu
+
 ## Tools Menu
 
 menu-tools =
@@ -263,6 +258,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Telecargaments
     .accesskey = T
+menu-tools-extensions-and-themes =
+    .label = Extensions e tèmas
+    .accesskey = E
 menu-tools-addons-and-themes =
     .label = Moduls complementaris e tèmas
     .accesskey = M

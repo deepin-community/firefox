@@ -49,7 +49,7 @@ ScriptAndCounts::ScriptAndCounts(ScriptAndCounts&& sac)
       scriptCounts(std::move(sac.scriptCounts)) {}
 
 void SetFrameArgumentsObject(JSContext* cx, AbstractFramePtr frame,
-                             HandleScript script, JSObject* argsobj);
+                             JSObject* argsobj);
 
 inline void ScriptWarmUpData::initEnclosingScript(BaseScript* enclosingScript) {
   MOZ_ASSERT(data_ == ResetState());
@@ -158,6 +158,10 @@ inline bool JSScript::isDebuggee() const {
 
 inline bool js::BaseScript::hasBaselineScript() const {
   return hasJitScript() && jitScript()->hasBaselineScript();
+}
+
+inline bool JSScript::isBaselineCompilingOffThread() const {
+  return hasJitScript() && jitScript()->isBaselineCompiling();
 }
 
 inline bool js::BaseScript::hasIonScript() const {

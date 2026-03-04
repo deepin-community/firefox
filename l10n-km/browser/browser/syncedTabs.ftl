@@ -20,9 +20,26 @@ synced-tabs-sidebar-search =
 synced-tabs-context-open =
     .label = បើក
     .accesskey = O
+synced-tabs-context-open-in-tab =
+    .label = បើក​ក្នុង​ផ្ទាំង​ថ្មី
+    .accesskey = w
+synced-tabs-context-open-in-window =
+    .label = បើក​ក្នុង​បង្អួច​ថ្មី
+    .accesskey = N
+synced-tabs-context-open-in-private-window =
+    .label = បើកក្នុងបង្អួចឯកជនថ្មី
+    .accesskey = P
 
 ##
 
+# Displayed in the Synced Tabs sidebar's context menu when right-clicking tabs
+# and/or devices in the list. This string is for a menuitem equivalent to one in
+# the tab context menu (activated by right-clicking a tab in the tabstrip). That
+# string is located in tabContextMenu.ftl. So, this string should be translated
+# consistently with the "Bookmark Tab…" string there.
+synced-tabs-context-bookmark =
+    .label = ផ្ទាំងចំណាំ…
+    .accesskey = B
 synced-tabs-context-copy =
     .label = ចម្លង
     .accesskey = C

@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Visualitza
 download-cert-view-text = Examina el certificat de la CA
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -80,8 +77,6 @@ client-auth-cert-details-issued-by = Emés per: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Emmagatzemat a: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Recorda esta decisió
 
 ## Set password (p12) dialog
 
@@ -93,6 +88,3 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = Contrasenya de la còpia de seguretat del certificat (un altre cop):
 set-password-reminder = Important: si oblideu la contrasenya de la còpia de seguretat del certificat no podreu recuperar-la més avant. Guardeu-la en un lloc segur.
-
-## Protected authentication alert
-

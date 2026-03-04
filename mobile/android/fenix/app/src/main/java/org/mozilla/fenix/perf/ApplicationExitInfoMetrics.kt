@@ -13,6 +13,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.annotation.VisibleForTesting
 import androidx.annotation.VisibleForTesting.Companion.PRIVATE
+import androidx.core.content.edit
 import org.mozilla.fenix.GleanMetrics.AppExitInfo
 import org.mozilla.fenix.R
 import org.mozilla.fenix.ext.getPreferenceKey
@@ -93,13 +94,6 @@ object ApplicationExitInfoMetrics {
                         pss = historicalExit.pss.toValueInMB(),
                         rss = historicalExit.rss.toValueInMB(),
                         reason = historicalExit.reason.toProcessExitReason(),
-                        // we want to know the death description for application exits with REASON_OTHER
-                        deathDescription =
-                        if (historicalExit.reason == ApplicationExitInfo.REASON_OTHER) {
-                            historicalExit.description
-                        } else {
-                            null
-                        },
                     ),
                 )
             }
@@ -142,13 +136,12 @@ object ApplicationExitInfoMetrics {
         context: Context,
         mostRecentProcessExitTimestamp: Long,
     ) {
-        preferences(context)
-            .edit()
-            .putLong(
+        preferences(context).edit {
+            putLong(
                 context.getPreferenceKey(R.string.pref_key_application_exit_info_last_handled_time),
                 mostRecentProcessExitTimestamp,
             )
-            .apply()
+        }
     }
 
     private fun String.toProcessType(): String {

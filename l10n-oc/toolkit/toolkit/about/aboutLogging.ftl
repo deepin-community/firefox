@@ -46,9 +46,7 @@ about-logging-preset-custom-description = Moduls de jornalizacion seleccionats m
 # Error handling
 about-logging-error = Error :
 
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
+##
 
 about-logging-invalid-output = Valor « { $v } » invalida  per la clau « { $k } »
 about-logging-unknown-logging-preset = Prereglatge de jornalizacion « { $v } » desconegut

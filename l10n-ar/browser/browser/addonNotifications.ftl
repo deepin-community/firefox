@@ -81,6 +81,8 @@ addon-removal-title = أتريد إزالة { $name }؟
 addon-removal-message = أأُزيل { $name } من { -brand-shorter-name }؟
 addon-removal-button = أزِل
 addon-removal-abuse-report-checkbox = أبلِغ { -vendor-short-name } عن هذا الامتداد
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = إذا كنت تستخدم الميزات أو الامتدادات التي تستخدم هذا النموذج، فسيتم إعادة إضافته.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -146,4 +148,8 @@ addon-local-install-error-not-signed = تعذر تثبيت هذه الإضافة
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = تعذر تثبيت الإضافة { $addonName } لأنها غير متوافقة مع { -brand-short-name }‏ { $appVersion }.
+addon-install-error-hard-blocked = ينتهك { $addonName } سياسات Mozilla ولا يمكن تثبيته على { -brand-short-name }.
 addon-install-error-blocklisted = تعذر تثبيت الإضافة { $addonName } بسبب احتمال كبير في تسببها لمشاكل في الأمن أو الثبات.
+addon-install-error-soft-blocked = ينتهك { $addonName } سياسات Mozilla ولا يمكن تثبيته على { -brand-short-name }.
+# Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
+addon-install-error-admin-install-only = لا يمكنك تثبيت { $addonName } كمستخدم، حيث لا يمكن تثبيتها إلا بواسطة مُنظَّمة بإستخدام سياسات المؤسّسات.

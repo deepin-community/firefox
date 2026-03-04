@@ -58,12 +58,12 @@ class TracingStateWatcher {
    * in case it stops by itself, instead of being stopped when the Actor's stopTracing
    * method is called by the user.
    *
-   * @param {Boolean} enabled
+   * @param {boolean} enabled
    *        True if the tracer starts tracing, false it it stops.
-   * @param {String} reason
+   * @param {string} reason
    *        Optional string to justify why the tracer stopped.
    */
-  onTracingToggled(enabled, reason) {
+  async onTracingToggled(enabled, reason) {
     const tracerActor = this.targetActor.getTargetScopedActor("tracer");
     const logMethod = tracerActor?.getLogMethod();
 
@@ -81,10 +81,11 @@ class TracingStateWatcher {
         logMethod,
         profile:
           logMethod == TRACER_LOG_METHODS.PROFILER && !enabled
-            ? tracerActor.getProfile()
+            ? await tracerActor.getProfile()
             : undefined,
         timeStamp: ChromeUtils.dateNow(),
         reason,
+        traceValues: tracerActor.traceValues,
       },
     ]);
   }

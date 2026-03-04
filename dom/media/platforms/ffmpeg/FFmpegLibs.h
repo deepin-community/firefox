@@ -14,9 +14,9 @@ extern "C" {
 #include "libavcodec/avcodec.h"
 #include "libavutil/avutil.h"
 #include "libavutil/mem.h"
-#ifdef MOZ_USE_HWDECODE
-#  include "libavutil/hwcontext_vaapi.h"
+#if defined(MOZ_USE_HWDECODE) && defined(MOZ_WIDGET_GTK)
 #  include "libavutil/hwcontext_drm.h"
+#  include "libavutil/hwcontext_vaapi.h"
 #endif
 #ifdef __GNUC__
 #  pragma GCC visibility pop

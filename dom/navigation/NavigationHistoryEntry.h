@@ -9,30 +9,60 @@
 
 #include "mozilla/DOMEventTargetHelper.h"
 
+class nsIGlobalObject;
+class nsIStructuredCloneContainer;
+
 namespace mozilla::dom {
 
+class SessionHistoryInfo;
+
+// https://html.spec.whatwg.org/#navigationhistoryentry
 class NavigationHistoryEntry final : public DOMEventTargetHelper {
  public:
   NS_DECL_ISUPPORTS_INHERITED
   NS_DECL_CYCLE_COLLECTION_CLASS_INHERITED(NavigationHistoryEntry,
                                            DOMEventTargetHelper)
 
-  void GetUrl(nsAString& aResult) const {}
-  void GetKey(nsAString& aResult) const {}
-  void GetId(nsAString& aResult) const {}
-  int64_t Index() const { return {}; }
-  bool SameDocument() const { return {}; }
+  NavigationHistoryEntry(nsIGlobalObject* aGlobal,
+                         const SessionHistoryInfo* aSHInfo, int64_t aIndex);
+
+  void GetUrl(nsAString& aResult) const;
+  void GetKey(nsAString& aResult) const;
+  void GetId(nsAString& aResult) const;
+  int64_t Index() const;
+  bool SameDocument() const;
 
   void GetState(JSContext* aCx, JS::MutableHandle<JS::Value> aResult,
-                ErrorResult& aRv) {}
+                ErrorResult& aRv) const;
 
   IMPL_EVENT_HANDLER(dispose);
 
   JSObject* WrapObject(JSContext* aCx,
                        JS::Handle<JSObject*> aGivenProto) override;
 
+  bool IsSameEntry(const SessionHistoryInfo* aSHInfo) const;
+
+  bool SharesDocumentWith(const SessionHistoryInfo& aSHInfo) const;
+
+  const nsID& Key() const;
+
+  nsIStructuredCloneContainer* GetNavigationAPIState() const;
+  void SetNavigationAPIState(nsIStructuredCloneContainer* aState);
+
+  class SessionHistoryInfo* SessionHistoryInfo() { return mSHInfo.get(); }
+
+  void ResetIndexForDisposal();
+
  private:
-  ~NavigationHistoryEntry() = default;
+  ~NavigationHistoryEntry();
+
+  Document* GetAssociatedDocument() const;
+
+  bool HasActiveDocument() const;
+
+  // https://html.spec.whatwg.org/#nhe-she
+  UniquePtr<class SessionHistoryInfo> mSHInfo;
+  int64_t mIndex;
 };
 
 }  // namespace mozilla::dom

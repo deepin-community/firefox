@@ -52,6 +52,7 @@ class QuickSettingsFragmentStore(
          * @param websiteUrl [String] the URL of the current web page.
          * @param websiteTitle [String] the title of the current web page.
          * @param certificateName [String] the certificate name of the current web page.
+         * @param isLocalPdf [Boolean] whether the current tab is displaying a local PDF.
          * @param isSecured [Boolean] whether the connection is secured (TLS) or not.
          * @param permissions [SitePermissions]? list of website permissions and their status.
          * @param permissionHighlights [PermissionHighlightsState] Current state of the website
@@ -69,6 +70,7 @@ class QuickSettingsFragmentStore(
             websiteUrl: String,
             websiteTitle: String,
             certificateName: String,
+            isLocalPdf: Boolean,
             isSecured: Boolean,
             permissions: SitePermissions?,
             permissionHighlights: PermissionHighlightsState,
@@ -81,6 +83,7 @@ class QuickSettingsFragmentStore(
                 webInfoState = createWebsiteInfoState(
                     websiteUrl,
                     websiteTitle,
+                    isLocalPdf,
                     isSecured,
                     certificateName,
                 ),
@@ -184,6 +187,14 @@ class QuickSettingsFragmentStore(
                     autoplayValue = selected,
                     options = autoplayValues,
                     isVisible = permissionHighlights.isAutoPlayBlocking || permissions !== null,
+                )
+            } else if (this == PhoneFeature.LOCAL_NETWORK_ACCESS || this == PhoneFeature.LOCAL_DEVICE_ACCESS) {
+                WebsitePermission.Toggleable(
+                    phoneFeature = this,
+                    status = getActionLabel(context, permissions, settings),
+                    isVisible = settings.isLnaFeatureEnabled && shouldBeVisible(permissions, settings),
+                    isEnabled = shouldBeEnabled(context, permissions, settings),
+                    isBlockedByAndroid = !isAndroidPermissionGranted(context),
                 )
             } else {
                 WebsitePermission.Toggleable(

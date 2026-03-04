@@ -7,10 +7,6 @@ search-header =
     .placeholder = Nana'uì' addons.mozilla.org
     .searchbuttonlabel = Nana'uì'
 
-## Variables
-##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
-
-
 ##
 
 list-empty-installed =
@@ -219,6 +215,8 @@ shortcuts-duplicate-warning-message2 =
 # Variables:
 #   $addon (string) - Name of the add-on
 shortcuts-exists = Nga arajsun sa gu'nàj { $addon }
+# Variables:
+#   $numberToShow (number) - Number of other elements available to show
 shortcuts-card-expand-button =
     { $numberToShow ->
        *[other] Digân { $numberToShow } Doj
@@ -326,6 +324,10 @@ addon-detail-update-check-label = Nana'uì' sa Nahuin nakà doj
 install-update-button = Nagi'iaj nakà
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Màn riña nej bentanâ huìi huaj
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Màn riña nej bentanâ huìi huaj
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -333,15 +335,9 @@ addon-detail-private-browsing-help = Sisi ga'nïn, ekstensiûn nan ga'ue ni'iaj 
 addon-detail-private-browsing-allow = Ga'nïn
 addon-detail-private-browsing-disallow = Si ga'nï'
 
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
-
 ## This is the tooltip text for the recommended badges for an extension in about:addons. The
 ## badge is a small icon displayed next to an extension when it is recommended on AMO.
 
-# This is the tooltip text for the recommended badge for an extension in about:addons. The
-# badge is a small icon displayed next to an extension when it is recommended on AMO.
 addon-badge-recommended2 =
     .title = { -brand-product-name } nadiganj nej ekstensiûn nikò’ si nuguàn’ ñûnj dàj duguminj nī dàj ‘iaj sunj
     .aria-label = { addon-badge-recommended2.title }
@@ -379,7 +375,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } nitaj si aran'anj ngà { -brand-short-name }{ $version }.
 # Variables:
 #   $version (string) - Application version.
@@ -394,12 +390,8 @@ details-notification-unsigned2 =
     .message = { $name } nu ga'ue nari'ij daj 'iaj sun riña { -brand-short-name }. Ahi gache nunt.
 details-notification-unsigned-link = Doj nuguan' a'min rayi'î nan
 details-notification-blocked = { $name } naran riña man dadin' a'ui' yi'ij aga' na si guruhuaj.
-details-notification-blocked2 =
-    .message = { $name } naran riña man dadin' a'ui' yi'ij aga' na si guruhuaj.
 details-notification-blocked-link = Doj nuguan' a'min rayi'î nan
 details-notification-softblocked = { $name } a'ui' yi'ij riña aga' nan ga'ue si nagi'iaj na nej.
-details-notification-softblocked2 =
-    .message = { $name } a'ui' yi'ij riña aga' nan ga'ue si nagi'iaj na nej.
 details-notification-softblocked-link = Doj nuguan' a'min rayi'î nan
 details-notification-gmp-pending = { $name } Akuan' nïn nanunj riña aga' na.
 details-notification-gmp-pending2 =

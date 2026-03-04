@@ -4,10 +4,6 @@
 
 addons-page-title = Papildinājumu pārvaldnieks
 
-## Variables
-##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
-
-
 ##
 
 list-empty-installed =
@@ -160,29 +156,6 @@ addon-install-from-file-filter-name = Papildinājumi
 addon-open-about-debugging = Atkļūdot papildinājumus
     .accesskey = d
 
-## Extension shortcut management
-
-
-## Recommended add-ons page
-
-
-## Add-on actions
-
-
-## Pending uninstall message bar
-
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
-
-## This is the tooltip text for the recommended badges for an extension in about:addons. The
-## badge is a small icon displayed next to an extension when it is recommended on AMO.
-
-
-##
-
-
 ## Page headings
 
 addon-page-options-button =
@@ -193,7 +166,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } nav savietojams ar { -brand-short-name } { $version }.
 # Variables:
 #   $version (string) - Application version.
@@ -208,12 +181,8 @@ details-notification-unsigned2 =
     .message = { $name } nevar pārbaudīt izmantošanai ar { -brand-short-name }. Esiet piesardzīgi.
 details-notification-unsigned-link = Vairāk informācijas
 details-notification-blocked = { $name } ir bloķēts drošības un stabilitātes nolūkos.
-details-notification-blocked2 =
-    .message = { $name } ir bloķēts drošības un stabilitātes nolūkos.
 details-notification-blocked-link = Vairāk informācijas
 details-notification-softblocked = Ir zināms, ka { $name } rada drošības vai stabilitātes problēmas.
-details-notification-softblocked2 =
-    .message = Ir zināms, ka { $name } rada drošības vai stabilitātes problēmas.
 details-notification-softblocked-link = Vairāk informācijas
 details-notification-gmp-pending = { $name } pēc mirkļa tiks instalēts.
 details-notification-gmp-pending2 =

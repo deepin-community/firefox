@@ -5,25 +5,27 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/MIDIPort.h"
+
+#include "MIDILog.h"
+#include "mozilla/dom/Document.h"
+#include "mozilla/dom/MIDIAccess.h"
 #include "mozilla/dom/MIDIConnectionEvent.h"
 #include "mozilla/dom/MIDIPortChild.h"
-#include "mozilla/dom/MIDIAccess.h"
 #include "mozilla/dom/MIDITypes.h"
+#include "mozilla/dom/Promise.h"
+#include "mozilla/ipc/BackgroundChild.h"
 #include "mozilla/ipc/Endpoint.h"
 #include "mozilla/ipc/PBackgroundChild.h"
-#include "mozilla/ipc/BackgroundChild.h"
-#include "mozilla/dom/Document.h"
-#include "mozilla/dom/Promise.h"
 #include "nsContentUtils.h"
 #include "nsISupportsImpl.h"  // for MOZ_COUNT_CTOR, MOZ_COUNT_DTOR
-#include "MIDILog.h"
 
 using namespace mozilla::ipc;
 
 namespace mozilla::dom {
 
 NS_IMPL_CYCLE_COLLECTION_INHERITED(MIDIPort, DOMEventTargetHelper,
-                                   mOpeningPromise, mClosingPromise)
+                                   mMIDIAccessParent, mOpeningPromise,
+                                   mClosingPromise)
 
 NS_IMPL_CYCLE_COLLECTION_TRACE_BEGIN_INHERITED(MIDIPort, DOMEventTargetHelper)
 NS_IMPL_CYCLE_COLLECTION_TRACE_END
@@ -36,9 +38,7 @@ NS_IMPL_ADDREF_INHERITED(MIDIPort, DOMEventTargetHelper)
 NS_IMPL_RELEASE_INHERITED(MIDIPort, DOMEventTargetHelper)
 
 MIDIPort::MIDIPort(nsPIDOMWindowInner* aWindow)
-    : DOMEventTargetHelper(aWindow),
-      mMIDIAccessParent(nullptr),
-      mKeepAlive(false) {
+    : DOMEventTargetHelper(aWindow), mKeepAlive(false) {
   MOZ_ASSERT(aWindow);
 
   if (Document* aDoc = aWindow->GetExtantDoc()) {
@@ -47,10 +47,6 @@ MIDIPort::MIDIPort(nsPIDOMWindowInner* aWindow)
 }
 
 MIDIPort::~MIDIPort() {
-  if (mMIDIAccessParent) {
-    mMIDIAccessParent->RemovePortListener(this);
-    mMIDIAccessParent = nullptr;
-  }
   if (Port()) {
     // If the IPC port channel is still alive at this point, it means we're
     // probably CC'ing this port object. Send the shutdown message to also clean
@@ -182,13 +178,6 @@ already_AddRefed<Promise> MIDIPort::Close(ErrorResult& aError) {
   mClosingPromise = p;
   Port()->SendClose();
   return p.forget();
-}
-
-void MIDIPort::Notify(const void_t& aVoid) {
-  LOG("MIDIPort::notify MIDIAccess shutting down, dropping reference.");
-  // If we're getting notified, it means the MIDIAccess parent object is dead.
-  // Nullify our copy.
-  mMIDIAccessParent = nullptr;
 }
 
 void MIDIPort::FireStateChangeEvent() {

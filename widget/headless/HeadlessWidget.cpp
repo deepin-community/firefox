@@ -2,6 +2,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+#include "InputData.h"
 #include "HeadlessWidget.h"
 #include "ErrorList.h"
 #include "HeadlessCompositorWidget.h"
@@ -14,6 +15,7 @@
 #include "mozilla/Preferences.h"
 #include "mozilla/TextEventDispatcher.h"
 #include "mozilla/TextEvents.h"
+#include "UnitTransforms.h"
 #include "mozilla/WritingModes.h"
 #include "mozilla/widget/HeadlessWidgetTypes.h"
 #include "mozilla/widget/PlatformWidgetTypes.h"
@@ -71,12 +73,12 @@ HeadlessWidget::HeadlessWidget()
       mVisible(false),
       mDestroyed(false),
       mAlwaysOnTop(false),
-      mTopLevel(nullptr),
       mCompositorWidget(nullptr),
       mSizeMode(nsSizeMode_Normal),
       mLastSizeMode(nsSizeMode_Normal),
       mEffectiveSizeMode(nsSizeMode_Normal),
       mRestoreBounds(0, 0, 0, 0) {
+  mWidgetType = WidgetType::Headless;
   if (!sActiveWindows) {
     sActiveWindows = new nsTArray<HeadlessWidget*>();
     ClearOnShutdown(&sActiveWindows);
@@ -111,44 +113,19 @@ void HeadlessWidget::Destroy() {
     }
   }
 
-  nsBaseWidget::OnDestroy();
+  nsIWidget::OnDestroy();
 
-  nsBaseWidget::Destroy();
+  nsIWidget::Destroy();
 }
 
 nsresult HeadlessWidget::Create(nsIWidget* aParent,
-                                nsNativeWidget aNativeParent,
                                 const LayoutDeviceIntRect& aRect,
-                                widget::InitData* aInitData) {
-  MOZ_ASSERT(!aNativeParent, "No native parents for headless widgets.");
-
-  BaseCreate(nullptr, aInitData);
-
+                                const widget::InitData& aInitData) {
+  BaseCreate(aParent, aInitData);
   mBounds = aRect;
   mRestoreBounds = aRect;
-
-  mAlwaysOnTop = aInitData && aInitData->mAlwaysOnTop;
-
-  if (aParent) {
-    mTopLevel = aParent->GetTopLevelWidget();
-  } else {
-    mTopLevel = this;
-  }
-
+  mAlwaysOnTop = aInitData.mAlwaysOnTop;
   return NS_OK;
-}
-
-already_AddRefed<nsIWidget> HeadlessWidget::CreateChild(
-    const LayoutDeviceIntRect& aRect, widget::InitData* aInitData,
-    bool aForceUseIWidgetParent) {
-  nsCOMPtr<nsIWidget> widget = nsIWidget::CreateHeadlessWidget();
-  if (!widget) {
-    return nullptr;
-  }
-  if (NS_FAILED(widget->Create(this, nullptr, aRect, aInitData))) {
-    return nullptr;
-  }
-  return widget.forget();
 }
 
 void HeadlessWidget::GetCompositorWidgetInitData(
@@ -156,8 +133,6 @@ void HeadlessWidget::GetCompositorWidgetInitData(
   *aInitData =
       mozilla::widget::HeadlessCompositorWidgetInitData(GetClientSize());
 }
-
-nsIWidget* HeadlessWidget::GetTopLevelWidget() { return mTopLevel; }
 
 void HeadlessWidget::RaiseWindow() {
   MOZ_ASSERT(
@@ -192,9 +167,10 @@ void HeadlessWidget::Show(bool aState) {
   LOG(("HeadlessWidget::Show [%p] state %d\n", (void*)this, aState));
 
   // Top-level window and dialogs are activated/raised when shown.
-  // NB: alwaysontop windows are generally used for peripheral indicators,
-  //     so we don't focus them by default.
-  if (aState && !mAlwaysOnTop &&
+  // NB: alwaysontop windows are generally used for peripheral indicators.
+  //     So we don't focus them by default unless they are a Document
+  //     Picture-in-Picture.
+  if (aState && (!mAlwaysOnTop || mPiPType == PiPType::DocumentPiP) &&
       (mWindowType == WindowType::TopLevel ||
        mWindowType == WindowType::Dialog)) {
     RaiseWindow();
@@ -215,7 +191,9 @@ void HeadlessWidget::SetFocus(Raise aRaise,
 
     // The toplevel only becomes active if it's currently visible; otherwise, it
     // will be activated anyway when it's shown.
-    if (topLevel->IsVisible()) topLevel->RaiseWindow();
+    if (topLevel->IsVisible()) {
+      topLevel->RaiseWindow();
+    }
   }
 }
 
@@ -223,20 +201,17 @@ void HeadlessWidget::Enable(bool aState) { mEnabled = aState; }
 
 bool HeadlessWidget::IsEnabled() const { return mEnabled; }
 
-void HeadlessWidget::Move(double aX, double aY) {
-  LOG(("HeadlessWidget::Move [%p] %f %f\n", (void*)this, aX, aY));
+void HeadlessWidget::Move(const DesktopPoint& aPoint) {
+  LOG(("HeadlessWidget::Move [%p] %f %f\n", this, aPoint.x.value,
+       aPoint.y.value));
 
-  double scale =
-      BoundsUseDesktopPixels() ? GetDesktopToDeviceScale().scale : 1.0;
-  int32_t x = NSToIntRound(aX * scale);
-  int32_t y = NSToIntRound(aY * scale);
-
+  auto topLeft =
+      LayoutDeviceIntPoint::Round(aPoint * GetDesktopToDeviceScale());
   if (mWindowType == WindowType::TopLevel ||
       mWindowType == WindowType::Dialog) {
     SetSizeMode(nsSizeMode_Normal);
   }
-
-  MoveInternal(x, y);
+  MoveInternal(topLeft.x, topLeft.y);
 }
 
 void HeadlessWidget::MoveInternal(int32_t aX, int32_t aY) {
@@ -248,15 +223,18 @@ void HeadlessWidget::MoveInternal(int32_t aX, int32_t aY) {
   }
 
   mBounds.MoveTo(aX, aY);
-  NotifyWindowMoved(aX, aY);
+  NotifyWindowMoved(mBounds.TopLeft());
 }
 
 LayoutDeviceIntPoint HeadlessWidget::WidgetToScreenOffset() {
-  return mTopLevel->GetBounds().TopLeft();
+  if (mWindowType == WindowType::Popup) {
+    return mBounds.TopLeft();
+  }
+  return GetTopLevelWidget()->GetBounds().TopLeft();
 }
 
 WindowRenderer* HeadlessWidget::GetWindowRenderer() {
-  return nsBaseWidget::GetWindowRenderer();
+  return nsIWidget::GetWindowRenderer();
 }
 
 void HeadlessWidget::SetCompositorWidgetDelegate(
@@ -271,9 +249,9 @@ void HeadlessWidget::SetCompositorWidgetDelegate(
   }
 }
 
-void HeadlessWidget::Resize(double aWidth, double aHeight, bool aRepaint) {
-  int32_t width = NSToIntRound(aWidth);
-  int32_t height = NSToIntRound(aHeight);
+void HeadlessWidget::Resize(const DesktopSize& aSize, bool aRepaint) {
+  int32_t width = NSToIntRound(aSize.width);
+  int32_t height = NSToIntRound(aSize.height);
   ResizeInternal(width, height, aRepaint);
 }
 
@@ -283,22 +261,22 @@ void HeadlessWidget::ResizeInternal(int32_t aWidth, int32_t aHeight,
   mBounds.SizeTo(LayoutDeviceIntSize(aWidth, aHeight));
 
   if (mCompositorWidget) {
-    mCompositorWidget->NotifyClientSizeChanged(
-        LayoutDeviceIntSize(mBounds.Width(), mBounds.Height()));
+    mCompositorWidget->NotifyClientSizeChanged(mBounds.Size());
   }
   if (mWidgetListener) {
-    mWidgetListener->WindowResized(this, mBounds.Width(), mBounds.Height());
+    mWidgetListener->WindowResized(this, mBounds.Size());
   }
   if (mAttachedWidgetListener) {
-    mAttachedWidgetListener->WindowResized(this, mBounds.Width(),
-                                           mBounds.Height());
+    mAttachedWidgetListener->WindowResized(this, mBounds.Size());
   }
 }
 
-void HeadlessWidget::Resize(double aX, double aY, double aWidth, double aHeight,
-                            bool aRepaint) {
-  MoveInternal(NSToIntRound(aX), NSToIntRound(aY));
-  Resize(aWidth, aHeight, aRepaint);
+void HeadlessWidget::Resize(const DesktopRect& aRect, bool aRepaint) {
+  auto tl =
+      LayoutDeviceIntPoint::Round(aRect.TopLeft() * GetDesktopToDeviceScale());
+  // Intentionally to avoid SetSizeMode() call in Move().
+  MoveInternal(tl.x, tl.y);
+  Resize(aRect.Size(), aRepaint);
 }
 
 void HeadlessWidget::SetSizeMode(nsSizeMode aMode) {
@@ -354,7 +332,7 @@ void HeadlessWidget::ApplySizeModeSideEffects() {
     }
     case nsSizeMode_Fullscreen:
       // This will take care of resizing the window.
-      nsBaseWidget::InfallibleMakeFullScreen(true);
+      nsIWidget::InfallibleMakeFullScreen(true);
       break;
     default:
       break;
@@ -423,28 +401,11 @@ bool HeadlessWidget::GetEditCommands(NativeKeyBindingsType aType,
   return true;
 }
 
-nsresult HeadlessWidget::DispatchEvent(WidgetGUIEvent* aEvent,
-                                       nsEventStatus& aStatus) {
-#ifdef DEBUG
-  debug_DumpEvent(stdout, aEvent->mWidget, aEvent, "HeadlessWidget", 0);
-#endif
-
-  aStatus = nsEventStatus_eIgnore;
-
-  if (mAttachedWidgetListener) {
-    aStatus = mAttachedWidgetListener->HandleEvent(aEvent, mUseAttachedEvents);
-  } else if (mWidgetListener) {
-    aStatus = mWidgetListener->HandleEvent(aEvent, mUseAttachedEvents);
-  }
-
-  return NS_OK;
-}
-
 nsresult HeadlessWidget::SynthesizeNativeMouseEvent(
     LayoutDeviceIntPoint aPoint, NativeMouseMessage aNativeMessage,
     MouseButton aButton, nsIWidget::Modifiers aModifierFlags,
-    nsIObserver* aObserver) {
-  AutoObserverNotifier notifier(aObserver, "mouseevent");
+    nsISynthesizedEventCallback* aCallback) {
+  AutoSynthesizedEventCallbackNotifier notifier(aCallback);
   EventMessage msg;
   switch (aNativeMessage) {
     case NativeMouseMessage::Move:
@@ -477,9 +438,8 @@ nsresult HeadlessWidget::SynthesizeNativeMouseEvent(
 nsresult HeadlessWidget::SynthesizeNativeMouseScrollEvent(
     mozilla::LayoutDeviceIntPoint aPoint, uint32_t aNativeMessage,
     double aDeltaX, double aDeltaY, double aDeltaZ, uint32_t aModifierFlags,
-    uint32_t aAdditionalFlags, nsIObserver* aObserver) {
-  AutoObserverNotifier notifier(aObserver, "mousescrollevent");
-  printf(">>> DEBUG_ME: Synth: aDeltaY=%f\n", aDeltaY);
+    uint32_t aAdditionalFlags, nsISynthesizedEventCallback* aCallback) {
+  AutoSynthesizedEventCallbackNotifier notifier(aCallback);
   // The various platforms seem to handle scrolling deltas differently,
   // but the following seems to emulate it well enough.
   WidgetWheelEvent event(true, eWheel, this);
@@ -497,8 +457,8 @@ nsresult HeadlessWidget::SynthesizeNativeMouseScrollEvent(
 nsresult HeadlessWidget::SynthesizeNativeTouchPoint(
     uint32_t aPointerId, TouchPointerState aPointerState,
     LayoutDeviceIntPoint aPoint, double aPointerPressure,
-    uint32_t aPointerOrientation, nsIObserver* aObserver) {
-  AutoObserverNotifier notifier(aObserver, "touchpoint");
+    uint32_t aPointerOrientation, nsISynthesizedEventCallback* aCallback) {
+  AutoSynthesizedEventCallbackNotifier notifier(aCallback);
 
   MOZ_ASSERT(NS_IsMainThread());
   if (aPointerState == TOUCH_HOVER) {
@@ -576,8 +536,8 @@ nsresult HeadlessWidget::SynthesizeNativeTouchPadPinch(
 nsresult HeadlessWidget::SynthesizeNativeTouchpadPan(
     TouchpadGesturePhase aEventPhase, LayoutDeviceIntPoint aPoint,
     double aDeltaX, double aDeltaY, int32_t aModifierFlags,
-    nsIObserver* aObserver) {
-  AutoObserverNotifier notifier(aObserver, "touchpadpanevent");
+    nsISynthesizedEventCallback* aCallback) {
+  AutoSynthesizedEventCallbackNotifier notifier(aCallback);
 
   MOZ_ASSERT(NS_IsMainThread());
 

@@ -196,6 +196,14 @@ migration-safari-password-import-step1 = Safari қолданбасында "Safa
 migration-safari-password-import-step2 = <img data-l10n-name="safari-icon-3dots"/> батырмасын таңдап, "Барлық парольдерді экспорттау" опциясын таңдаңыз.
 migration-safari-password-import-step3 = Парольдер файлын сақтау
 migration-safari-password-import-step4 = Сақталған парольдер файлын таңдау үшін төмендегі "Файлды таңдау" батырмасын пайдаланыңыз
+migration-chrome-windows-password-import-header = Chrome браузерінен парольдерді қалай импорттауға болады
+migration-chrome-windows-password-import-steps-header = Chrome браузерінде:
+migration-chrome-windows-password-import-step1 = <img data-l10n-name="chrome-icon-3dots"/> негізгі мәзірін ашып, Парольдер және автотолтыру > Google парольдер басқарушысы тармағына өтіңіз.
+migration-chrome-windows-password-import-step2 = Мәзірден "Баптаулар" тармағын таңдаңыз.
+migration-chrome-windows-password-import-step3 = "Файлды жүктеп алу" тармағын таңдап, оны құрылғыға сақтаңыз.
+migration-chrome-windows-password-import-step4 = Импорттауды аяқтау үшін осы жерге оралып, «Файлды таңдау» басыңыз.
+migration-manual-password-import-skip-button = Аттап кету
+migration-manual-password-import-select-button = Файлды таңдау
 migration-safari-password-import-skip-button = Аттап кету
 migration-safari-password-import-select-button = Файлды таңдау
 # Shown in the migration wizard after importing bookmarks from another

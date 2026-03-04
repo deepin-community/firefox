@@ -15,6 +15,8 @@ about-logging-set-log-file = Nastavi dnevniško datoteko
 about-logging-set-log-modules = Nastavi dnevniške module
 about-logging-start-logging = Začni beleženje
 about-logging-stop-logging = Končaj beleženje
+about-logging-copy-as-url = Kopiraj trenutne nastavitve kot URL
+about-logging-url-copied = Nastavitve beleženja so bile kopirane v odložišče v obliki prednastavljenega URL
 about-logging-buttons-disabled = Beleženje je nastavljeno prek spremenljivk okolja, dinamična konfiguracija ni na voljo.
 about-logging-some-elements-disabled = Beleženje je nastavljeno prek URL-ja, nekatere možnosti niso na voljo
 about-logging-info = Podatki:
@@ -27,6 +29,9 @@ about-logging-no-log-modules = brez
 about-logging-no-log-file = brez
 about-logging-logging-preset-selector-text = Prednastavitev beleženja:
 about-logging-with-profiler-stacks-checkbox = Omogoči sledi skladov za dnevniška sporočila
+about-logging-with-javascript-tracing-checkbox = Omogoči sledenje JavaScripta
+about-logging-menu =
+    .title = Napredne možnosti
 
 ## Logging presets
 
@@ -44,6 +49,12 @@ about-logging-preset-media-playback-label = Predvajanje predstavnosti
 about-logging-preset-media-playback-description = Beleženje modulov za diagnosticiranje težav s predvajanjem predstavnosti (ne težav z videokonferencami)
 about-logging-preset-webrtc-label = WebRTC
 about-logging-preset-webrtc-description = Beleženje modulov za diagnosticiranje klicev z WebRTC
+about-logging-preset-webcodecs-label = WebCodecs
+about-logging-preset-webcodecs-description = Beleženje modulov za diagnosticiranje težav s kodirniki in dekodirniki zvoka/videa ter dekodirniki slik (WebCodecs)
+about-logging-preset-ml-label = Strojno učenje
+about-logging-preset-ml-description = Beleženje modulov za diagnosticiranje težav s strojnim učenjem
+about-logging-preset-web-compat-label = Spletna združljivost
+about-logging-preset-web-compat-description = Beleženje modulov za diagnosticiranje težav s spletno združljivostjo
 about-logging-preset-webgpu-label = WebGPU
 about-logging-preset-webgpu-description = Beleženje modulov za diagnosticiranje težav z WebGPU
 about-logging-preset-gfx-label = Grafika
@@ -56,9 +67,7 @@ about-logging-preset-custom-description = Beleženje modulov po lastni izbiri
 # Error handling
 about-logging-error = Napaka:
 
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
+##
 
 about-logging-invalid-output = Neveljavna vrednost "{ $v }" za ključ "{ $k }"
 about-logging-unknown-logging-preset = Neznana prednastavitev beleženja "{ $v }"
@@ -66,4 +75,53 @@ about-logging-unknown-profiler-preset = Neznana prednastavitev profilerja "{ $v 
 about-logging-unknown-option = Neznana možnost about:logging: "{ $k }"
 about-logging-configuration-url-ignored = URL z nastavitvami prezrt
 about-logging-file-and-profiler-override = Ni mogoče vsiliti izpisa datoteke in hkrati preglasiti možnosti orodja za spremljanje delovanja
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-unknown-error = Prišlo je do napake: { $errorText }
 about-logging-configured-via-url = Možnost nastavljena prek URL-ja
+
+## The upload interface is shown only with the preference toolkit.aboutLogging.uploadProfileToCloud
+## set to true. It is false by default, except on Android.
+
+about-logging-upload-question = Podatki o profilu so bili zajeti. Jih želite shraniti ali naložiti?
+about-logging-save-button = Shrani
+about-logging-upload-button = Naloži
+# Variables:
+#   $path (string) - The path where the profile can be found.
+about-logging-saved = Shranjeno v { $path }
+# Variables:
+#   $percent (number) - The upload completion progress, to be displayed as a percentage. This is a value between 0 and 1.
+about-logging-uploading-progress = Nalaganje podatkov o profilu: { NUMBER($percent, maximumSignificantDigits: 2, style: "percent") }
+# Variables:
+#   $url (string) - The URL where the profile can be found
+about-logging-uploaded = Naloženo na <a data-l10n-name="uploaded-message-url">{ $url }</a>
+about-logging-share-uploaded-url = <img data-l10n-name="share-image"/> Deli URL
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-upload-error = Pri nalaganju profila je prišlo do napake: { $errorText }
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-profile-storage-error = Pri shranjevanju naloženega profila je prišlo do napake: { $errorText }
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-save-error = Pri shranjevanju datoteke je prišlo do napake: { $errorText }
+
+## Uploaded Profiles section
+
+# This string is used as the default name for performance profiles when they are
+# uploaded from about:logging and saved to the local database. The generated
+# name will appear in the "Uploaded Profiles" section list, allowing users to
+# identify when each profile was captured.
+# Variables:
+#   $date (date) - The date and time when the profile was uploaded
+about-logging-uploaded-profile-name = Profil { DATETIME($date, dateStyle: "short", timeStyle: "medium") }
+about-logging-uploaded-profiles-title = Naloženi profili
+about-logging-no-uploaded-profiles = Naložen ni bil še noben profil.
+about-logging-delete-uploaded-profile = Izbriši
+about-logging-view-uploaded-profile = Prikaži profil
+about-logging-delete-profile-confirm-title = Izbriši profil
+# Confirmation message shown when deleting an uploaded profile.
+# Variables:
+#   $profileName (string) - The name of the profile being deleted.
+about-logging-delete-profile-confirm = Ali ste prepričani, da želite izbrisati profil "{ $profileName }"? Dejanja ni mogoče razveljaviti.
+about-logging-deleting-profile = Brisanje …

@@ -31,13 +31,19 @@ function generateHash(aString, hashAlg) {
   const stringStream = Cc[
     "@mozilla.org/io/string-input-stream;1"
   ].createInstance(Ci.nsIStringInputStream);
-  stringStream.data = aString;
+  stringStream.setByteStringData(aString);
   cryptoHash.updateFromStream(stringStream, -1);
   // base64 allows the '/' char, but we can't use it for filenames.
   return cryptoHash.finish(true).replace(/\//g, "-");
 }
 
 const MANIFESTS_DIR = PathUtils.join(PathUtils.profileDir, "manifests");
+
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["dom.security.https_first", false]],
+  });
+});
 
 add_task(async function () {
   const tabOptions = { gBrowser, url: makeTestURL() };

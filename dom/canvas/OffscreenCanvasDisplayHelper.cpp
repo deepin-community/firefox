@@ -5,6 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "OffscreenCanvasDisplayHelper.h"
+
+#include "mozilla/SVGObserverUtils.h"
+#include "mozilla/StaticPrefs_gfx.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/WorkerRef.h"
 #include "mozilla/dom/WorkerRunnable.h"
@@ -16,8 +19,6 @@
 #include "mozilla/layers/PersistentBufferProvider.h"
 #include "mozilla/layers/TextureClientSharedSurface.h"
 #include "mozilla/layers/TextureWrapperImage.h"
-#include "mozilla/StaticPrefs_gfx.h"
-#include "mozilla/SVGObserverUtils.h"
 #include "nsICanvasRenderingContextInternal.h"
 #include "nsRFPService.h"
 
@@ -32,14 +33,18 @@ OffscreenCanvasDisplayHelper::OffscreenCanvasDisplayHelper(
   mData.mSize.height = aHeight;
 }
 
-OffscreenCanvasDisplayHelper::~OffscreenCanvasDisplayHelper() = default;
+OffscreenCanvasDisplayHelper::~OffscreenCanvasDisplayHelper() {
+  MutexAutoLock lock(mMutex);
+  NS_ReleaseOnMainThread("OffscreenCanvas::mExpandedReader",
+                         mExpandedReader.forget());
+}
 
 void OffscreenCanvasDisplayHelper::DestroyElement() {
   MOZ_ASSERT(NS_IsMainThread());
 
   MutexAutoLock lock(mMutex);
   if (mImageContainer) {
-    mImageContainer->ClearAllImages();
+    mImageContainer->ClearImagesInHost(layers::ClearImagesType::All);
     mImageContainer = nullptr;
   }
   mFrontBufferSurface = nullptr;
@@ -53,12 +58,38 @@ void OffscreenCanvasDisplayHelper::DestroyCanvas() {
 
   MutexAutoLock lock(mMutex);
   if (mImageContainer) {
-    mImageContainer->ClearAllImages();
+    mImageContainer->ClearImagesInHost(layers::ClearImagesType::All);
     mImageContainer = nullptr;
   }
   mFrontBufferSurface = nullptr;
   mOffscreenCanvas = nullptr;
   mWorkerRef = nullptr;
+}
+
+void OffscreenCanvasDisplayHelper::SetWriteOnly(nsIPrincipal* aExpandedReader) {
+  MutexAutoLock lock(mMutex);
+  NS_ReleaseOnMainThread("OffscreenCanvasDisplayHelper::mExpandedReader",
+                         mExpandedReader.forget());
+  mExpandedReader = aExpandedReader;
+  mIsWriteOnly = true;
+}
+
+bool OffscreenCanvasDisplayHelper::CallerCanRead(
+    nsIPrincipal& aPrincipal) const {
+  MutexAutoLock lock(mMutex);
+  if (!mIsWriteOnly) {
+    return true;
+  }
+
+  // If mExpandedReader is set, this canvas was tainted only by
+  // mExpandedReader's resources. So allow reading if the subject
+  // principal subsumes mExpandedReader.
+  if (mExpandedReader && aPrincipal.Subsumes(mExpandedReader)) {
+    return true;
+  }
+
+  return nsContentUtils::PrincipalHasPermission(aPrincipal,
+                                                nsGkAtoms::all_urlsPermission);
 }
 
 bool OffscreenCanvasDisplayHelper::CanElementCaptureStream() const {
@@ -90,19 +121,21 @@ RefPtr<layers::ImageContainer> OffscreenCanvasDisplayHelper::GetImageContainer()
 
 void OffscreenCanvasDisplayHelper::UpdateContext(
     OffscreenCanvas* aOffscreenCanvas, RefPtr<ThreadSafeWorkerRef>&& aWorkerRef,
-    CanvasContextType aType, const Maybe<int32_t>& aChildId) {
-  RefPtr<layers::ImageContainer> imageContainer =
-      MakeRefPtr<layers::ImageContainer>(
-          layers::ImageUsageType::OffscreenCanvas,
-          layers::ImageContainer::ASYNCHRONOUS);
-
+    CanvasContextType aType, const Maybe<mozilla::ipc::ActorId>& aChildId) {
   MutexAutoLock lock(mMutex);
+
+  // Only create ImageContainer if we don't already have one (Bug 2004797).
+  // Recreating it would discard any existing frames, causing flicker.
+  if (!mImageContainer) {
+    mImageContainer = MakeRefPtr<layers::ImageContainer>(
+        layers::ImageUsageType::OffscreenCanvas,
+        layers::ImageContainer::ASYNCHRONOUS);
+  }
 
   mOffscreenCanvas = aOffscreenCanvas;
   mWorkerRef = std::move(aWorkerRef);
   mType = aType;
   mContextChildId = aChildId;
-  mImageContainer = std::move(imageContainer);
 
   if (aChildId) {
     mContextManagerId = Some(gfx::CanvasManagerChild::Get()->Id());
@@ -134,11 +167,10 @@ void OffscreenCanvasDisplayHelper::FlushForDisplay() {
     return;
   }
 
-  class FlushWorkerRunnable final : public WorkerThreadRunnable {
+  class FlushWorkerRunnable final : public MainThreadWorkerRunnable {
    public:
-    FlushWorkerRunnable(WorkerPrivate* aWorkerPrivate,
-                        OffscreenCanvasDisplayHelper* aDisplayHelper)
-        : WorkerThreadRunnable("FlushWorkerRunnable"),
+    explicit FlushWorkerRunnable(OffscreenCanvasDisplayHelper* aDisplayHelper)
+        : MainThreadWorkerRunnable("FlushWorkerRunnable"),
           mDisplayHelper(aDisplayHelper) {}
 
     bool WorkerRun(JSContext*, WorkerPrivate*) override {
@@ -165,7 +197,7 @@ void OffscreenCanvasDisplayHelper::FlushForDisplay() {
 
   // Otherwise we are calling from the main thread during painting to a canvas
   // on a worker thread.
-  auto task = MakeRefPtr<FlushWorkerRunnable>(mWorkerRef->Private(), this);
+  auto task = MakeRefPtr<FlushWorkerRunnable>(this);
   task->Dispatch(mWorkerRef->Private());
 }
 
@@ -192,12 +224,6 @@ bool OffscreenCanvasDisplayHelper::CommitFrameToCompositor(
   if (aData) {
     mData = aData.ref();
     MaybeQueueInvalidateElement();
-  }
-
-  if (mData.mOwnerId.isSome()) {
-    // No need to update the ImageContainer as the presentation itself is
-    // handled in the compositor process.
-    return true;
   }
 
   if (!mImageContainer) {
@@ -316,7 +342,7 @@ bool OffscreenCanvasDisplayHelper::CommitFrameToCompositor(
         image, TimeStamp(), mLastFrameID++, mImageProducerID));
     mImageContainer->SetCurrentImages(imageList);
   } else {
-    mImageContainer->ClearAllImages();
+    mImageContainer->ClearImagesInHost(layers::ClearImagesType::All);
   }
 
   return true;
@@ -433,8 +459,8 @@ OffscreenCanvasDisplayHelper::GetSurfaceSnapshot() {
 
   class SnapshotWorkerRunnable final : public MainThreadWorkerRunnable {
    public:
-    SnapshotWorkerRunnable(WorkerPrivate* aWorkerPrivate,
-                           OffscreenCanvasDisplayHelper* aDisplayHelper)
+    explicit SnapshotWorkerRunnable(
+        OffscreenCanvasDisplayHelper* aDisplayHelper)
         : MainThreadWorkerRunnable("SnapshotWorkerRunnable"),
           mMonitor("SnapshotWorkerRunnable::mMonitor"),
           mDisplayHelper(aDisplayHelper) {}
@@ -513,8 +539,7 @@ OffscreenCanvasDisplayHelper::GetSurfaceSnapshot() {
     originPos = mData.mOriginPos;
     canvasElement = mCanvasElement;
     if (mWorkerRef) {
-      workerRunnable =
-          MakeRefPtr<SnapshotWorkerRunnable>(mWorkerRef->Private(), this);
+      workerRunnable = MakeRefPtr<SnapshotWorkerRunnable>(this);
       workerRunnable->Dispatch(mWorkerRef->Private());
     }
   }
@@ -548,7 +573,8 @@ already_AddRefed<layers::Image> OffscreenCanvasDisplayHelper::GetAsImage() {
 }
 
 UniquePtr<uint8_t[]> OffscreenCanvasDisplayHelper::GetImageBuffer(
-    int32_t* aOutFormat, gfx::IntSize* aOutImageSize) {
+    CanvasUtils::ImageExtraction aExtractionBehavior, int32_t* aOutFormat,
+    gfx::IntSize* aOutImageSize) {
   RefPtr<gfx::SourceSurface> surface = GetSurfaceSnapshot();
   if (!surface) {
     return nullptr;
@@ -567,30 +593,31 @@ UniquePtr<uint8_t[]> OffscreenCanvasDisplayHelper::GetImageBuffer(
     return nullptr;
   }
 
-  bool resistFingerprinting;
+  nsIPrincipal* principal = nullptr;
   nsICookieJarSettings* cookieJarSettings = nullptr;
   {
+    // This function is never called with mOffscreenCanvas set, so we skip
+    // the check for it.
     MutexAutoLock lock(mMutex);
+    MOZ_ASSERT(!mOffscreenCanvas);
+
     if (mCanvasElement) {
-      Document* doc = mCanvasElement->OwnerDoc();
-      resistFingerprinting =
-          doc->ShouldResistFingerprinting(RFPTarget::CanvasRandomization);
-      if (resistFingerprinting) {
-        cookieJarSettings = doc->CookieJarSettings();
-      }
-    } else {
-      resistFingerprinting = nsContentUtils::ShouldResistFingerprinting(
-          "Fallback", RFPTarget::CanvasRandomization);
+      principal = mCanvasElement->NodePrincipal();
+      cookieJarSettings = mCanvasElement->OwnerDoc()->CookieJarSettings();
     }
   }
-
-  if (resistFingerprinting) {
+  nsRFPService::PotentiallyDumpImage(
+      principal, imageBuffer.get(), dataSurface->GetSize().width,
+      dataSurface->GetSize().height,
+      dataSurface->GetSize().width * dataSurface->GetSize().height * 4);
+  if (aExtractionBehavior == CanvasUtils::ImageExtraction::Randomize) {
     nsRFPService::RandomizePixels(
-        cookieJarSettings, imageBuffer.get(), dataSurface->GetSize().width,
-        dataSurface->GetSize().height,
+        cookieJarSettings, principal, imageBuffer.get(),
+        dataSurface->GetSize().width, dataSurface->GetSize().height,
         dataSurface->GetSize().width * dataSurface->GetSize().height * 4,
         gfx::SurfaceFormat::A8R8G8B8_UINT32);
   }
+
   return imageBuffer;
 }
 

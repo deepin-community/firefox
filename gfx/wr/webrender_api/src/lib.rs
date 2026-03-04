@@ -12,8 +12,17 @@
 //! there.
 
 #![cfg_attr(feature = "nightly", feature(nonzero))]
-#![allow(clippy::float_cmp, clippy::too_many_arguments)]
-#![allow(clippy::unreadable_literal, clippy::new_without_default)]
+#![allow(
+    clippy::float_cmp,
+    clippy::too_many_arguments,
+    clippy::unreadable_literal,
+    clippy::new_without_default,
+    clippy::empty_docs,
+    clippy::manual_range_contains,
+    unknown_lints,
+    mismatched_lifetime_syntaxes,
+)]
+
 
 pub extern crate crossbeam_channel;
 pub extern crate euclid;
@@ -29,13 +38,14 @@ extern crate malloc_size_of_derive;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-extern crate time;
 
 extern crate malloc_size_of;
 extern crate peek_poke;
 
 pub mod channel;
 mod color;
+#[cfg(feature = "debugger")]
+pub mod debugger;
 mod display_item;
 mod display_item_cache;
 mod display_list;
@@ -93,7 +103,7 @@ impl Default for QualitySettings {
 /// This is mostly used as a synchronization mechanism to observe how/when particular pipeline
 /// updates propagate through WebRender and are applied at various stages.
 #[repr(C)]
-#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, MallocSizeOf, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct Epoch(pub u32);
 
 impl Epoch {
@@ -110,6 +120,10 @@ impl Epoch {
 #[derive(Clone, Copy, Debug, Default, Eq, MallocSizeOf, PartialEq, Hash, Ord, PartialOrd, PeekPoke)]
 #[derive(Deserialize, Serialize)]
 pub struct IdNamespace(pub u32);
+
+impl IdNamespace {
+    pub const DEBUGGER: IdNamespace = IdNamespace(!0);
+}
 
 /// A key uniquely identifying a WebRender document.
 ///
@@ -228,16 +242,11 @@ pub struct SampledScrollOffset {
 /// See https://firefox-source-docs.mozilla.org/performance/scroll-linked_effects.html
 /// for a definition of scroll-linked effect.
 #[repr(u8)]
-#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Serialize, PeekPoke)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, PartialEq, Serialize, PeekPoke)]
 pub enum HasScrollLinkedEffect {
     Yes,
+    #[default]
     No,
-}
-
-impl Default for HasScrollLinkedEffect {
-    fn default() -> Self {
-        HasScrollLinkedEffect::No
-    }
 }
 
 #[repr(C)]
@@ -257,6 +266,17 @@ pub struct MinimapData {
   pub root_content_scroll_id: u64
 }
 
+#[repr(C)]
+pub struct FrameReadyParams {
+    pub present: bool,
+    pub render: bool,
+    pub scrolled: bool,
+    /// Firefox uses this to indicate that the frame does not participate
+    /// in the frame throttling mechanism.
+    /// Frames from off-screen transactions are not tracked.
+    pub tracked: bool,
+}
+
 /// A handler to integrate WebRender with the thread that contains the `Renderer`.
 pub trait RenderNotifier: Send {
     ///
@@ -268,7 +288,7 @@ pub trait RenderNotifier: Send {
         composite_needed: bool,
     );
     /// Notify the thread containing the `Renderer` that a new frame is ready.
-    fn new_frame_ready(&self, _: DocumentId, scrolled: bool, composite_needed: bool, frame_publish_id: FramePublishId);
+    fn new_frame_ready(&self, _: DocumentId, publish_id: FramePublishId, params: &FrameReadyParams);
     /// A Gecko-specific notification mechanism to get some code executed on the
     /// `Renderer`'s thread, mostly replaced by `NotificationHandler`. You should
     /// probably use the latter instead.
@@ -490,7 +510,7 @@ impl<T> From<T> for PropertyBinding<T> {
 impl From<PropertyBindingKey<ColorF>> for PropertyBindingKey<ColorU> {
     fn from(key: PropertyBindingKey<ColorF>) -> PropertyBindingKey<ColorU> {
         PropertyBindingKey {
-            id: key.id.clone(),
+            id: key.id,
             _phantom: PhantomData,
         }
     }
@@ -499,7 +519,7 @@ impl From<PropertyBindingKey<ColorF>> for PropertyBindingKey<ColorU> {
 impl From<PropertyBindingKey<ColorU>> for PropertyBindingKey<ColorF> {
     fn from(key: PropertyBindingKey<ColorU>) -> PropertyBindingKey<ColorF> {
         PropertyBindingKey {
-            id: key.id.clone(),
+            id: key.id,
             _phantom: PhantomData,
         }
     }
@@ -661,10 +681,10 @@ impl RenderReasons {
 /// Flags to enable/disable various builtin debugging tools.
 #[repr(C)]
 #[derive(Copy, PartialEq, Eq, Clone, PartialOrd, Ord, Hash, Default, Deserialize, MallocSizeOf, Serialize)]
-pub struct DebugFlags(u32);
+pub struct DebugFlags(u64);
 
 bitflags! {
-    impl DebugFlags: u32 {
+    impl DebugFlags: u64 {
         /// Display the frame profiler on screen.
         const PROFILER_DBG          = 1 << 0;
         /// Display intermediate render targets on screen.
@@ -694,8 +714,6 @@ bitflags! {
         const TEXTURE_CACHE_DBG_CLEAR_EVICTED = 1 << 10;
         /// Show picture caching debug overlay
         const PICTURE_CACHING_DBG   = 1 << 11;
-        /// Highlight all primitives with colors based on kind.
-        const PRIMITIVE_DBG = 1 << 12;
         /// Draw a zoom widget showing part of the framebuffer zoomed in.
         const ZOOM_DBG = 1 << 13;
         /// Scale the debug renderer down for a smaller screen. This will disrupt
@@ -723,9 +741,9 @@ bitflags! {
         /// If set, dump picture cache invalidation debug to console.
         const INVALIDATION_DBG = 1 << 23;
         /// Collect and dump profiler statistics to captures.
-        const PROFILER_CAPTURE = (1 as u32) << 25; // need "as u32" until we have cbindgen#556
+        const PROFILER_CAPTURE = 1 << 25;
         /// Invalidate picture tiles every frames (useful when inspecting GPU work in external tools).
-        const FORCE_PICTURE_INVALIDATION = (1 as u32) << 26;
+        const FORCE_PICTURE_INVALIDATION = 1 << 26;
         /// Display window visibility on screen.
         const WINDOW_VISIBILITY_DBG     = 1 << 27;
         /// Render large blobs with at a smaller size (incorrectly). This is a temporary workaround for
@@ -733,6 +751,17 @@ bitflags! {
         const RESTRICT_BLOB_SIZE        = 1 << 28;
         /// Enable surface promotion logging.
         const SURFACE_PROMOTION_LOGGING = 1 << 29;
+        /// Show picture caching debug overlay.
+        const PICTURE_BORDERS           = 1 << 30;
+        /// Panic when a attempting to display a missing stacking context snapshot.
+        const MISSING_SNAPSHOT_PANIC    = (1 as u64) << 31; // need "as u32" until we have cbindgen#556
+        /// Panic when a attempting to display a missing stacking context snapshot.
+        const MISSING_SNAPSHOT_PINK     = (1 as u64) << 32;
+        /// Highlight backdrop filters
+        const HIGHLIGHT_BACKDROP_FILTERS = (1 as u64) << 33;
+        /// Show external composite border rects in debug overlay.
+        /// TODO: Add native compositor support
+        const EXTERNAL_COMPOSITE_BORDERS = (1 as u64) << 34;
     }
 }
 
@@ -750,8 +779,6 @@ impl core::fmt::Debug for DebugFlags {
 /// uniquely identifies a primitive template by key.
 #[derive(Debug, Clone, Eq, MallocSizeOf, PartialEq, Hash, Serialize, Deserialize)]
 pub enum PrimitiveKeyKind {
-    /// Clear an existing rect, used for special effects on some platforms.
-    Clear,
     ///
     Rectangle {
         ///
@@ -776,6 +803,7 @@ pub enum ScrollLocation {
 pub enum CrashAnnotation {
     CompileShader = 0,
     DrawShader = 1,
+    FontFile = 2,
 }
 
 /// Handler to expose support for annotating crash reports.
@@ -819,4 +847,24 @@ impl<'a> Drop for CrashAnnotatorGuard<'a> {
             annotator.clear(self.annotation);
         }
     }
+}
+
+/// A little bit of extra information to make memory reports more useful
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[cfg_attr(feature = "serialize", derive(Serialize))]
+#[cfg_attr(feature = "deserialize", derive(Deserialize))]
+pub enum TextureCacheCategory {
+    Atlas,
+    Standalone,
+    PictureTile,
+    RenderTarget,
+}
+
+/// For debugging purposes
+#[derive(Clone, Debug)]
+#[cfg_attr(feature = "serialize", derive(Serialize))]
+#[cfg_attr(feature = "deserialize", derive(Deserialize))]
+pub enum RenderCommandInfo {
+    RenderTarget { kind: String, size: DeviceIntSize },
+    DrawCall { shader: String, instances: u32 },
 }

@@ -67,10 +67,10 @@ bool DocumentChannelParent::Init(dom::CanonicalBrowsingContext* aContext,
       const DocumentCreationArgs& docArgs = aArgs.elementCreationArgs();
 
       promise = mDocumentLoadListener->OpenDocument(
-          loadState, aArgs.cacheKey(), Some(aArgs.channelId()),
-          aArgs.asyncOpenTime(), aArgs.timing(), std::move(clientInfo),
-          Some(docArgs.uriModified()), Some(docArgs.isEmbeddingBlockedError()),
-          contentParent, &rv);
+          loadState, docArgs.loadFlags(), aArgs.cacheKey(),
+          Some(aArgs.channelId()), aArgs.asyncOpenTime(), aArgs.timing(),
+          std::move(clientInfo), docArgs.uriModified(),
+          Some(docArgs.isEmbeddingBlockedError()), contentParent, &rv);
     } else {
       const ObjectCreationArgs& objectArgs = aArgs.elementCreationArgs();
 
@@ -106,7 +106,7 @@ bool DocumentChannelParent::Init(dom::CanonicalBrowsingContext* aContext,
       },
       [self](DocumentLoadListener::OpenPromiseFailedType&& aRejectValue) {
         if (self->CanSend()) {
-          Unused << self->SendDisconnectChildListeners(
+          (void)self->SendDisconnectChildListeners(
               aRejectValue.mStatus, aRejectValue.mLoadGroupStatus,
               aRejectValue.mContinueNavigating);
         }

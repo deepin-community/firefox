@@ -10,11 +10,11 @@ function run_test() {
   var inStr = Cc["@mozilla.org/io/string-input-stream;1"].createInstance(
     Ci.nsIStringInputStream
   );
-  inStr.setData(testStr, testStr.length);
+  inStr.setByteStringData(testStr);
 
   // Set up our destination stream.  Make sure to use segments a good
   // bit smaller than our data length.
-  Assert.ok(testStr.length > 1024 * 10);
+  Assert.greater(testStr.length, 1024 * 10);
   var pipe = Cc["@mozilla.org/pipe;1"].createInstance(Ci.nsIPipe);
   pipe.init(true, true, 1024, 0xffffffff, null);
 

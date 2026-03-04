@@ -30,6 +30,10 @@ options-context-inspector = 검사기
 options-show-user-agent-styles-label = 브라우저 스타일 보기
 options-show-user-agent-styles-tooltip =
     .title = 이 옵션을 켜면 브라우저가 읽어들이는 기본 스타일을 보여줍니다.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Browser shadow DOM 보기
+options-show-user-agent-shadow-dom-tooltip =
+    .title = 이것을 켜면 브라우저에서 처리하는 shadow DOM 요소를 보여줍니다.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = DOM 속성 줄이기
 options-collapse-attrs-tooltip =
@@ -116,6 +120,8 @@ options-disable-http-cache-label = HTTP 캐시 사용 안 함 (도구상자가 �
 options-disable-http-cache-tooltip =
     .title = 이 옵션을 켜면 도구상자가 열려있는 모든 탭에서 HTTP 캐시를 비활성화합니다. Service Worker는 이 설정의 영향을 받지 않습니다.
 # The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = JavaScript 사용 안 함
+# The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = JavaScript 사용 안 함*
 options-disable-javascript-tooltip =
     .title = 이 옵션을 켜면 현재 탭의 JavaScript가 꺼집니다. 이 탭이나 도구상자가 닫히면 이 설정도 초기화됩니다.
@@ -143,5 +149,11 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = 소스맵 사용
 options-source-maps-tooltip =
     .title = 이 옵션을 사용하면 소스가 도구에서 매핑됩니다.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (현재 세션만 해당되며, 페이지를 새로 고침)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * 현재 세션만 해당되며, 페이지를 새로 고침
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (페이지를 새로 고침)

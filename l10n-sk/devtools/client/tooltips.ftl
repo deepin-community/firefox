@@ -10,14 +10,6 @@ learn-more = <span data-l10n-name="link">Ďalšie informácie</span>
 ## In the Rule View when a CSS property cannot be successfully applied we display
 ## an icon. When this icon is hovered this message is displayed to explain why
 ## the property is not applied.
-## Variables:
-##   $property (string) - A CSS property name e.g. "color".
-##   $display (string) - A CSS display value e.g. "inline-block".
-
-
-## In the Rule View when a CSS property cannot be successfully applied we display
-## an icon. When this icon is hovered this message is displayed to explain why
-## the property is not applied.
 ## The variables are all passed from the same place, in `InactiveCssTooltipHelper#getTemplate`
 ## (devtools/client/shared/widgets/tooltip/inactive-css-tooltip-helper.js#95)
 ## Variables:
@@ -29,6 +21,8 @@ inactive-css-not-grid-or-flex-container-or-multicol-container = Vlastnosť <stro
 inactive-css-not-multicol-container = Vlastnosť <strong>{ $property }</strong> nemá žiadny vplyv na tento prvok, pretože nejde o kontajner s viacerými stĺpcami.
 inactive-css-column-span = Vlastnosť <strong>{ $property }</strong> nemá na tento prvok žiadny vplyv, pretože prvok sa nenachádza v kontajneri s viacerými stĺpcami.
 inactive-css-not-grid-or-flex-item = Vlastnosť <strong>{ $property }</strong> nemá na tento prvok žiadny vplyv, pretože nejde o položku kontajnera typu flex ani kontajnera s mriežkou.
+inactive-css-not-grid-or-flex-or-absolutely-positioned-item = Vlastnosť <strong>{ $property }</strong> nemá na tento prvok žiadny vplyv, pretože nejde o prvok typu grid ani flexibilný prvok, ani o absolútne umiestnený prvok.
+inactive-css-not-grid-or-absolutely-positioned-item = Vlastnosť <strong>{ $property }</strong> nemá na tento prvok žiadny vplyv, pretože nie je položkou mriežky ani absolútne umiestneným prvkom.
 inactive-css-not-grid-item = Vlastnosť <strong>{ $property }</strong> nemá na tento prvok žiadny vplyv, pretože nejde o grid položku.
 inactive-css-not-grid-container = Vlastnosť <strong>{ $property }</strong> nemá na tento prvok žiadny vplyv, pretože nejde o kontajner s mriežkou.
 inactive-css-not-flex-item = Vlastnosť <strong>{ $property }</strong> nemá na tento prvok žiadny vplyv, pretože nejde o položku kontajnera typu flex.
@@ -42,11 +36,14 @@ inactive-css-not-display-block-on-floated = Hodnota vlastnosti <strong>display</
 inactive-css-not-display-block-on-floated-2 = Hodnota vlastnosti <strong>display</strong> bola vykresľovačom zmenená na <strong>{ $display }</strong>, pretože prvok je <strong>plávajúci</strong>.
 inactive-css-only-non-grid-or-flex-item = Vlastnosť <strong>{ $property }</strong> nemá na tento prvok žiadny vplyv, pretože ju nemožno použiť na položky typu flex alebo grid.
 inactive-css-not-block = Vlastnosť <strong>{ $property }</strong> nemá na tento prvok žiadny vplyv, pretože sa vzťahuje iba na prvky na úrovni bloku.
+inactive-css-not-block-container = Vlastnosť <strong>{ $property }</strong> nemá na tento prvok žiadny vplyv, pretože sa vzťahuje iba na prvky blokového kontajnera.
+inactive-css-not-block-flex-grid-container = Vlastnosť <strong>{ $property }</strong> nemá na tento prvok žiadny vplyv, pretože sa vzťahuje iba na kontajnerové prvky typu block, flex a grid.
 inactive-css-not-floated = Vlastnosť <strong>{ $property }</strong> nemá žiadny vplyv, pretože sa vzťahuje iba na pohyblivé prvky.
 inactive-css-property-is-impossible-to-override-in-visited = Nie je možné prepísať vlastnosť <strong>{ $property }</strong> z dôvodu obmedzenia selektorom <strong>:visited</strong>.
 inactive-css-position-property-on-unpositioned-box = Vlastnosť <strong>{ $property }</strong> nemá na tento prvok žiadny vplyv, pretože nejde o prvok s definovanou pozíciou.
 inactive-css-only-replaced-elements = Vlastnosť <strong>{ $property }</strong> nemá na tento prvok žiadny vplyv, pretože ju možno použiť iba na nahradené prvky.
 inactive-text-overflow-when-no-overflow = Vlastnosť <strong>{ $property }</strong> nemá na tento prvok žiadny vplyv, pretože nie je nastavené <strong>overflow: hidden</strong>.
+inactive-css-no-size-containment = Vlastnosť <strong>{ $property }</strong> nemá žiadny vplyv na tento prvok, pretože tento nemá žiadne obmedzenie veľkosti.
 inactive-css-not-for-internal-table-elements = Vlastnosť <strong>{ $property }</strong> nemá žiadny vplyv na interné prvky tabuľky.
 inactive-css-not-for-internal-table-elements-except-table-cells = Vlastnosť <strong>{ $property }</strong> nemá žiadny vplyv na interné prvky tabuľky okrem buniek tabuľky.
 inactive-css-not-table = Vlastnosť <strong>{ $property }</strong> nemá na tento prvok žiadny vplyv, pretože nejde o tabuľku.
@@ -58,11 +55,17 @@ inactive-css-resize = Vlastnosť <strong>{ $property }</strong> nemá na tento p
 inactive-css-ruby-element = Vlastnosť <strong>{ $property }</strong> nemá žiadny vplyv na tento prvok, pretože je to prvok ruby. Jeho veľkosť je určená veľkosťou písma textu prvku ruby.
 
 ## In the Rule View when a CSS property cannot be successfully applied we display
-## an icon. When this icon is hovered this message is displayed to explain how
-## the problem can be solved.
+## an icon. When this icon is hovered this message is displayed to explain why
+## the property is not applied.
+## The variables are all passed from the same place, in `InactiveCssTooltipHelper#getTemplate`
+## (devtools/client/shared/widgets/tooltip/inactive-css-tooltip-helper.js#95)
+## Variables:
+##   $property (string) - A CSS property name e.g. "color".
+##   $display (string) - A CSS display value e.g. "inline-block".
 
 inactive-css-highlight-pseudo-elements-not-supported = <strong>{ $property }</strong> nie je podporované na zvýraznených pseudoprvkoch.
 inactive-css-cue-pseudo-element-not-supported = Vlastnosť <strong>{ $property }</strong> nie je podporovaná na pseudoprvkoch ::cue.
+inactive-css-at-position-try-not-supported = Vlastnosť <strong>{ $property }</strong> nie je podporovaná v pravidlách <strong>@position-try</strong>.
 # Variables:
 #   $lineCount (integer) - The number of lines the element has.
 inactive-css-text-wrap-balance-lines-exceeded =
@@ -74,6 +77,7 @@ inactive-css-text-wrap-balance-lines-exceeded =
     }
 inactive-css-text-wrap-balance-fragmented = Vlastnosť <strong>{ $property }</strong> nemá na tento prvok žiadny vplyv, pretože tento je fragmentovaný, t. j. jeho obsah je rozdelený do viacerých stĺpcov alebo stránok.
 inactive-css-no-width-height = Vlastnosť <strong>{ $property }</strong> nemá na tento prvok žiadny vplyv, pretože jeho šírku a výšku nemožno nastaviť.
+inactive-css-no-principal-box = Vlastnosť <strong>{ $property }</strong> nemá na tento prvok žiadny vplyv, pretože nevytvára hlavný box.
 
 ## In the Rule View when a CSS property cannot be successfully applied we display
 ## an icon. When this icon is hovered this message is displayed to explain how
@@ -85,6 +89,8 @@ inactive-css-not-grid-or-flex-or-block-container-fix = Skúste pridať <strong>d
 inactive-css-not-grid-or-flex-container-or-multicol-container-fix = Skúste pridať <strong>display:grid</strong>, <strong>display:flex</strong> alebo <strong>columns:2</strong>. { learn-more }
 inactive-css-not-multicol-container-fix = Skúste pridať <strong>column-count</strong> alebo <strong>column-width</strong>. { learn-more }
 inactive-css-column-span-fix = Skúste pridať <strong>column-count</strong> alebo <strong>column-width</strong> jednému z jeho predchodcov. { learn-more }
+inactive-css-not-grid-or-flex-or-absolutely-positioned-item-fix = Skúste prvku pridať <strong>position:absolute</strong> alebo jemu nadradenému prvku <strong>display:grid</strong>, <strong>display:flex</strong>, <strong>display:inline-grid</strong> alebo <strong>display:inline-flex</strong>. { learn-more }
+inactive-css-not-grid-or-absolutely-positioned-item-fix = Skúste prvku pridať <strong>position:absolute</strong>, alebo jeho nadradenému prvku pridajte <strong>display:grid</strong> alebo <strong>display:inline-grid</strong>. { learn-more }
 inactive-css-not-grid-or-flex-item-fix-3 = Skúste definovať <strong>display:grid</strong>, <strong>display:flex</strong>, <strong>display:inline-grid</strong> alebo <strong>display:inline-flex</strong> pre rodiča tohto prvku. { learn-more }
 inactive-css-not-grid-item-fix-2 = Skúste pridať <strong>display:grid</strong> alebo <strong>display:inline-grid</strong> do nadradenej položky. { learn-more }
 inactive-css-not-grid-container-fix = Skúste pridať <strong>display:grid</strong> alebo <strong>display:inline-grid</strong>. { learn-more }
@@ -96,10 +102,13 @@ inactive-css-non-replaced-inline-or-table-column-or-column-group-fix = Skúste p
 inactive-css-not-display-block-on-floated-fix = Skúste odstrániť <strong>float</strong> alebo pridať <strong>display:block</strong>. { learn-more }
 inactive-css-only-non-grid-or-flex-item-fix = Skúste zmeniť hodnotu <strong>display</strong> kontajnera prvku na niečo iné ako <strong>flex</strong>, <strong>grid</strong>, <strong>inline-flex</strong>, alebo <strong>inline-grid</strong> alebo odstráňte <strong>float</strong>. { learn-more }
 inactive-css-not-block-fix = Skúste pridať vlastnosti ako <strong>display:block</strong> alebo <strong>float:left</strong>. { learn-more }
+inactive-css-not-block-container-fix = Skúste pridať <strong>display:block</strong>, <strong>display:inline-block</strong> alebo <strong>display:flow-root</strong>. { learn-more }
+inactive-css-not-block-flex-grid-container-fix = Skúste pridať <strong>display:block</strong>, <strong>display:inline-block</strong>, <strong>display:flex</strong>, <strong>display:inline-flex</strong>, <strong>display:grid</strong>, <strong>display:inline-grid</strong> alebo <strong>display:flow-root</strong>. { learn-more }
 inactive-css-not-floated-fix = Skúste pridať vlastnosť <strong>float</strong> s inou hodnotou ako <strong>none</strong>. { learn-more }
 inactive-css-position-property-on-unpositioned-box-fix = Skúste nastaviť vlastnosť <strong>position</strong> na inú hodnotu ako <strong>static</strong>. { learn-more }
 inactive-css-only-replaced-elements-fix = Uistite sa, že vlastnosť pridávate do nahradeného prvku. { learn-more }
 inactive-text-overflow-when-no-overflow-fix = Skúste pridať <strong>overflow:hidden</strong>. { learn-more }
+inactive-css-no-size-containment-fix = Skúste nastaviť jeho vlastnosť <strong>display</strong> na niečo iné ako <strong>none</strong>, <strong>contents</strong>, <strong>table</strong> alebo <strong>inline-table </strong> a uistite sa, že nie je v rámci tabuľky alebo segmentu ruby. { learn-more }
 inactive-css-not-for-internal-table-elements-fix = Skúste nastaviť vlastnosť <strong>display</strong> na inú hodnotu ako <strong>table-cell</strong>, <strong>table-column</strong>, <strong>table-row</strong>, <strong>table-column-group</strong>, <strong>table-row-group</strong> alebo <strong>table-footer-group</strong>. { learn-more }
 inactive-css-not-for-internal-table-elements-except-table-cells-fix = Skúste nastaviť vlastnosť <strong>display</strong> na inú hodnotu ako <strong>table-column</strong>, <strong>table-row</strong>, <strong>table-column-group</strong>, <strong>table-row-group</strong> alebo <strong>table-footer-group</strong>. { learn-more }
 inactive-css-not-table-fix = Skúste pridať <strong>display:table</strong> alebo <strong>display:inline-table</strong>. { learn-more }
@@ -111,6 +120,7 @@ inactive-css-resize-fix = Skúste nastaviť <strong>overflow</strong> na inú ho
 inactive-css-ruby-element-fix = Skúste zmeniť <strong>veľkosť písma</strong> textu prvku ruby. { learn-more }
 inactive-css-text-wrap-balance-lines-exceeded-fix = Skúste znížiť počet riadkov. { learn-more }
 inactive-css-text-wrap-balance-fragmented-fix = Vyhnite sa rozdeleniu obsahu prvku, napr. odstránením stĺpcov alebo použitím <strong>page-break-inside:avoid</strong>. { learn-more }
+inactive-css-no-principal-box-fix = Skúste pridať hodnotu <strong>display</strong>, ktorá vytvorí hlavný box, napríklad <strong>block</strong>, <strong>inline-block</strong>, <strong>flex</strong> alebo <strong>grid</strong>. { learn-more }
 
 ## In the Rule View when a CSS property may have compatibility issues with other browsers
 ## we display an icon. When this icon is hovered this message is displayed to explain why
@@ -134,3 +144,5 @@ css-compatibility-learn-more-message = <span data-l10n-name="link">Ďalšie info
 
 # :has() should not be translated
 css-selector-warning-unconstrained-has = Tento selektor používa nijako neobmedzenú metódu <strong>:has()</strong>, čo môže byť pomalé
+# :scope should not be translated
+css-selector-warning-sibling-combinator-after-scope = Súrodenecké selektory po <strong>:scope</strong> sa nikdy nezhodujú s ničím

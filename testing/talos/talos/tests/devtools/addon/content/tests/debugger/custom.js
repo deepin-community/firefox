@@ -16,7 +16,6 @@ const {
 const {
   createContext,
   findSource,
-  getCM,
   hoverOnToken,
   openDebuggerAndLog,
   pauseDebugger,
@@ -31,12 +30,15 @@ const {
   addBreakpoint,
   waitForPaused,
   waitForState,
+  openEditorContextMenu,
+  selectEditorContextMenuItem,
+  scrollEditorIntoView,
 } = require("./debugger-helpers");
 
 const IFRAME_BASE_URL =
   "http://damp.top.com/tests/devtools/addon/content/pages/";
 const EXPECTED = {
-  sources: 1134,
+  sources: 1149,
   file: "App.js",
   sourceURL: `${IFRAME_BASE_URL}custom/debugger/app-build/static/js/App.js`,
   text: "import React, { Component } from 'react';",
@@ -47,15 +49,46 @@ const EXPECTED_FUNCTION = "window.hitBreakpoint()";
 
 const TEST_URL = PAGES_BASE_URL + "custom/debugger/app-build/index.html";
 const MINIFIED_URL = `${IFRAME_BASE_URL}custom/debugger/app-build/static/js/minified.js`;
+const MAIN_URL = `${IFRAME_BASE_URL}custom/debugger/app-build/static/js/main.js`;
+
+/*
+ * See testing/talos/talos/tests/devtools/addon/content/pages/custom/debugger/app/src for the details
+ * about the pages used for these tests.
+ */
+const STEP_TESTS = [
+  // This steps only once from the App.js into step-in-test.js.
+  // This `stepInNewSource` should always run first to make sure `step-in-test.js` file
+  // is loaded for the first time.
+  {
+    stepCount: 1,
+    location: { line: 22, file: "App.js" },
+    key: "stepInNewSource",
+    stepType: "stepIn",
+  },
+  {
+    stepCount: 2,
+    location: { line: 10194, file: "js/step-in-test.js" },
+    key: "stepIn",
+    stepType: "stepIn",
+  },
+  {
+    stepCount: 2,
+    location: { line: 16, file: "js/step-over-test.js" },
+    key: "stepOver",
+    stepType: "stepOver",
+  },
+  {
+    stepCount: 2,
+    location: { line: 998, file: "js/step-out-test.js" },
+    key: "stepOut",
+    stepType: "stepOut",
+  },
+];
 
 module.exports = async function () {
-  const isCm6Enabled = Services.prefs.getBoolPref(
-    "devtools.debugger.features.codemirror-next"
-  );
-
   const tab = await testSetup(TEST_URL, { disableCache: true });
 
-  const toolbox = await openDebuggerAndLog("custom", EXPECTED, isCm6Enabled);
+  const toolbox = await openDebuggerAndLog("custom", EXPECTED);
 
   dump("Waiting for debugger panel\n");
   const panel = await toolbox.getPanelWhenReady("jsdebugger");
@@ -66,16 +99,19 @@ module.exports = async function () {
   // Reselect App.js as that's the source expected to be selected after page reload
   await selectSource(dbg, EXPECTED.file);
 
-  await reloadDebuggerAndLog("custom", toolbox, EXPECTED, isCm6Enabled);
+  await reloadDebuggerAndLog("custom", toolbox, EXPECTED);
 
   // these tests are only run on custom.jsdebugger
   await pauseDebuggerAndLog(dbg, tab, EXPECTED_FUNCTION);
-  await stepDebuggerAndLog(dbg, tab, EXPECTED_FUNCTION);
+  await stepDebuggerAndLog(dbg, tab, EXPECTED_FUNCTION, STEP_TESTS);
 
   await testProjectSearch(dbg, tab);
-  await testPreview(dbg, tab, EXPECTED_FUNCTION, isCm6Enabled);
-  await testOpeningLargeMinifiedFile(dbg, isCm6Enabled);
-  await testPrettyPrint(dbg, toolbox, isCm6Enabled);
+  await testPreview(dbg, tab, EXPECTED_FUNCTION);
+  await testOpeningLargeMinifiedFile(dbg);
+  await testPrettyPrint(dbg, toolbox);
+  await testLargeFileWithWrapping(dbg, toolbox, tab);
+
+  await testBigBundle(dbg, tab);
 
   await closeToolboxAndLog("custom.jsdebugger", toolbox);
 
@@ -95,42 +131,7 @@ async function pauseDebuggerAndLog(dbg, tab, testFunction) {
   await garbageCollect();
 }
 
-async function stepDebuggerAndLog(dbg, tab, testFunction) {
-  /*
-   * See testing/talos/talos/tests/devtools/addon/content/pages/custom/debugger/app/src for the details
-   * about the pages used for these tests.
-   */
-
-  const stepTests = [
-    // This steps only once from the App.js into step-in-test.js.
-    // This `stepInNewSource` should always run first to make sure `step-in-test.js` file
-    // is loaded for the first time.
-    {
-      stepCount: 1,
-      location: { line: 22, file: "App.js" },
-      key: "stepInNewSource",
-      stepType: "stepIn",
-    },
-    {
-      stepCount: 2,
-      location: { line: 10194, file: "step-in-test.js" },
-      key: "stepIn",
-      stepType: "stepIn",
-    },
-    {
-      stepCount: 2,
-      location: { line: 16, file: "step-over-test.js" },
-      key: "stepOver",
-      stepType: "stepOver",
-    },
-    {
-      stepCount: 2,
-      location: { line: 998, file: "step-out-test.js" },
-      key: "stepOut",
-      stepType: "stepOut",
-    },
-  ];
-
+async function stepDebuggerAndLog(dbg, tab, testFunction, stepTests) {
   for (const stepTest of stepTests) {
     await pauseDebugger(dbg, tab, testFunction, stepTest.location);
     const test = runTest(`custom.jsdebugger.${stepTest.key}.DAMP`);
@@ -194,7 +195,7 @@ async function testProjectSearch(dbg) {
   // Then wait for all results to be fetched and the loader spin to hide
   await waitUntil(() => {
     return !dbg.win.document.querySelector(
-      ".project-text-search .search-field .loader.spin"
+      ".project-text-search .search-field .dbg-img-loader.spin"
     );
   });
   await dbg.actions.closeActiveSearch();
@@ -202,13 +203,13 @@ async function testProjectSearch(dbg) {
   await garbageCollect();
 }
 
-async function testPreview(dbg, tab, testFunction, isCm6Enabled) {
+async function testPreview(dbg, tab, testFunction) {
   dump("Executing preview test ...\n");
   const pauseLocation = { line: 22, file: "App.js" };
 
   let test = runTest("custom.jsdebugger.preview.DAMP");
   await pauseDebugger(dbg, tab, testFunction, pauseLocation);
-  await hoverOnToken(dbg, "window.hitBreakpoint", "window", isCm6Enabled);
+  await hoverOnToken(dbg, "window.hitBreakpoint", "window");
   test.done();
 
   await removeBreakpoints(dbg);
@@ -216,7 +217,7 @@ async function testPreview(dbg, tab, testFunction, isCm6Enabled) {
   await garbageCollect();
 }
 
-async function testOpeningLargeMinifiedFile(dbg, isCm6Enabled) {
+async function testOpeningLargeMinifiedFile(dbg) {
   dump("Executing opening large minified test ...\n");
   const fileFirstMinifiedChars = `(()=>{var e,t,n,r,o={82603`;
 
@@ -226,12 +227,12 @@ async function testOpeningLargeMinifiedFile(dbg, isCm6Enabled) {
   );
   const test = runTest("custom.jsdebugger.open-large-minified-file.DAMP");
   const onSelected = selectSource(dbg, MINIFIED_URL);
-  await waitForText(dbg, fileFirstMinifiedChars, isCm6Enabled);
+  await waitForText(dbg, fileFirstMinifiedChars);
   test.done();
   await onSelected;
   fullTest.done();
 
-  await dbg.actions.closeTabs([findSource(dbg, MINIFIED_URL)]);
+  await dbg.actions.closeTabsForSources([findSource(dbg, MINIFIED_URL)]);
 
   // Also clear to prevent reselecting this source
   await dbg.actions.clearSelectedLocation();
@@ -239,34 +240,59 @@ async function testOpeningLargeMinifiedFile(dbg, isCm6Enabled) {
   await garbageCollect();
 }
 
-async function testPrettyPrint(dbg, toolbox, isCm6Enabled) {
+async function testLargeFileWithWrapping(dbg, toolbox) {
+  await selectSource(dbg, MAIN_URL);
+  dump("Turn on editor wrapping \n");
+  await openEditorContextMenu(dbg, toolbox);
+  await selectEditorContextMenuItem(dbg, toolbox, "editor-wrapping");
+  await waitUntil(() => {
+    return dbg.win.document
+      .querySelector(".cm-content")
+      .classList.contains("cm-lineWrapping");
+  });
+
+  dump("Add breakpoint to main.js with wrap editor switched on\n");
+  const testBreakpoint = runTest(
+    "custom.jsdebugger.with-wrap-editor.add-breakpoint.DAMP"
+  );
+  await addBreakpoint(dbg, 1, MAIN_URL);
+  testBreakpoint.done();
+
+  dump("Scroll main.js with wrap editor switched on\n");
+  const testScroll = runTest("custom.jsdebugger.with-wrap-editor.scroll.DAMP");
+  // Scroll the document until line 2 becomes visible (which is also the bottom of the document)
+  await scrollEditorIntoView(dbg, 2);
+  testScroll.done();
+
+  dump("Turn off editor wrapping \n");
+  await openEditorContextMenu(dbg, toolbox);
+  await selectEditorContextMenuItem(dbg, toolbox, "editor-wrapping");
+  await waitUntil(
+    () => !Services.prefs.getBoolPref("devtools.debugger.ui.editor-wrapping")
+  );
+
+  await removeBreakpoints(dbg);
+  await dbg.actions.closeTabsForSources([findSource(dbg, MAIN_URL)]);
+
+  await garbageCollect();
+}
+
+async function testPrettyPrint(dbg, toolbox) {
   const formattedFileUrl = `${MINIFIED_URL}:formatted`;
   const filePrettyChars = "82603: (e, t, n) => {\n";
 
   dump("Select minified file\n");
   await selectSource(dbg, MINIFIED_URL);
 
-  dump("Wait until CodeMirror highlighting is done\n");
-  const cm = getCM(dbg, isCm6Enabled);
-  await waitUntil(() => {
-    return isCm6Enabled
-      ? cm.isDocumentLoadComplete
-      : // For CM5 highlightFrontier is not documented but is an internal variable indicating the current
-        // line that was just highlighted. This document has only 2 lines, so wait until both
-        // are highlighted. Since there was an other document opened before, we need to do an
-        // exact check to properly wait.
-        cm.doc.highlightFrontier === 2;
-  });
-
   const prettyPrintButton = await waitUntil(() => {
-    return dbg.win.document.querySelector(".source-footer .prettyPrint.active");
+    return dbg.win.document.querySelector(".source-footer .prettyPrint");
   });
 
   dump("Click pretty-print button\n");
   const test = runTest("custom.jsdebugger.pretty-print.DAMP");
   prettyPrintButton.click();
   await waitForSource(dbg, formattedFileUrl);
-  await waitForText(dbg, filePrettyChars, isCm6Enabled);
+  await waitForText(dbg, filePrettyChars);
   test.done();
 
   await addBreakpoint(dbg, 776, formattedFileUrl);
@@ -275,17 +301,12 @@ async function testPrettyPrint(dbg, toolbox, isCm6Enabled) {
   const reloadAndPauseInPrettyPrintedFileTest = runTest(
     "custom.jsdebugger.pretty-print.reload-and-pause.DAMP"
   );
-  await reloadDebuggerAndLog(
-    "custom.pretty-print",
-    toolbox,
-    {
-      sources: 1105,
-      sourceURL: formattedFileUrl,
-      text: filePrettyChars,
-      threadsCount: EXPECTED.threadsCount,
-    },
-    isCm6Enabled
-  );
+  await reloadDebuggerAndLog("custom.pretty-print", toolbox, {
+    sources: 1105,
+    sourceURL: formattedFileUrl,
+    text: filePrettyChars,
+    threadsCount: EXPECTED.threadsCount,
+  });
   await onPaused;
 
   // When reloading, the `togglePrettyPrint` action is called to pretty print the minified source.
@@ -315,6 +336,7 @@ async function testPrettyPrint(dbg, toolbox, isCm6Enabled) {
   await new Promise(r => setTimeout(r, 0));
 
   await removeBreakpoints(dbg);
+  await resume(dbg);
 
   // Clear the selection to avoid the source to be re-pretty printed on next load
   // Clear the selection before closing the tabs, otherwise closeTabs will reselect a random source.
@@ -325,7 +347,54 @@ async function testPrettyPrint(dbg, toolbox, isCm6Enabled) {
   // (because bundle and pretty print sources use almost the same URL except ':formatted' for the pretty printed one)
   // let's close all the tabs.
   const sources = dbg.selectors.getSourceList(dbg.getState());
-  await dbg.actions.closeTabs(sources);
+  await dbg.actions.closeTabsForSources(sources);
+
+  await garbageCollect();
+}
+
+async function testBigBundle(dbg, tab) {
+  const EXPECTED = {
+    sources: 1149,
+    file: "big-bundle/index.js",
+    sourceURL: `${PAGES_BASE_URL}custom/debugger/app-build/static/js/big-bundle/index.js`,
+    text: "import './minified.js';",
+    threadsCount: 2,
+  };
+  const EXPECTED_FUNCTION = "window.hitBreakpointInBigBundle()";
+  const STEP_TESTS = [
+    {
+      stepCount: 1,
+      location: { line: 7, file: "big-bundle/index.js" },
+      key: "stepInNewSource.big-bundle",
+      stepType: "stepIn",
+    },
+    {
+      stepCount: 2,
+      location: { line: 10194, file: "big-bundle/step-in-test.js" },
+      key: "stepIn.big-bundle",
+      stepType: "stepIn",
+    },
+    {
+      stepCount: 2,
+      location: { line: 16, file: "big-bundle/step-over-test.js" },
+      key: "stepOver.big-bundle",
+      stepType: "stepOver",
+    },
+    {
+      stepCount: 2,
+      location: { line: 998, file: "big-bundle/step-out-test.js" },
+      key: "stepOut.big-bundle",
+      stepType: "stepOut",
+    },
+  ];
+
+  await waitForSource(dbg, EXPECTED.sourceURL);
+  await selectSource(dbg, EXPECTED.file);
+
+  await stepDebuggerAndLog(dbg, tab, EXPECTED_FUNCTION, STEP_TESTS);
+
+  const sources = dbg.selectors.getSourceList(dbg.getState());
+  await dbg.actions.closeTabsForSources(sources);
 
   await garbageCollect();
 }

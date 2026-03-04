@@ -22,6 +22,7 @@ class TrampolineNativeFrameLayout;
 }
 
 class ArrayObject;
+class IteratorProperty;
 
 MOZ_ALWAYS_INLINE bool IdIsIndex(jsid id, uint32_t* indexp) {
   if (id.isInt()) {
@@ -77,10 +78,10 @@ extern ArrayObject* NewDenseCopiedArray(JSContext* cx, uint32_t length,
                                         const Value* values,
                                         NewObjectKind newKind = GenericObject);
 
-// Create a dense array from the given (linear)string values, which must be
-// rooted
+// Create a dense array from the given IteratorProperty values, which must be
+// rooted.
 extern ArrayObject* NewDenseCopiedArray(JSContext* cx, uint32_t length,
-                                        JSLinearString** values,
+                                        IteratorProperty* props,
                                         NewObjectKind newKind = GenericObject);
 
 // Like NewDenseCopiedArray, but the array will have |proto| as prototype (or
@@ -111,6 +112,13 @@ extern bool SetLengthProperty(JSContext* cx, HandleObject obj, uint32_t length);
  */
 extern bool GetElements(JSContext* cx, HandleObject aobj, uint32_t length,
                         js::Value* vp);
+
+/*
+ * If the property at the given index exists, get its value into |vp| and set
+ * |*hole| to false. Otherwise set |*hole| to true and |vp| to Undefined.
+ */
+extern bool HasAndGetElement(JSContext* cx, HandleObject obj, uint64_t index,
+                             bool* hole, MutableHandleValue vp);
 
 /* Natives exposed for optimization by the interpreter and JITs. */
 
@@ -179,87 +187,9 @@ extern bool ArrayLengthSetter(JSContext* cx, HandleObject obj, HandleId id,
 extern ArraySortResult ArraySortFromJit(
     JSContext* cx, jit::TrampolineNativeFrameLayout* frame);
 
-class MOZ_NON_TEMPORARY_CLASS ArraySpeciesLookup final {
-  /*
-   * An ArraySpeciesLookup holds the following:
-   *
-   *  Array.prototype (arrayProto_)
-   *      To ensure that the incoming array has the standard proto.
-   *
-   *  Array.prototype's shape (arrayProtoShape_)
-   *      To ensure that Array.prototype has not been modified.
-   *
-   *  Array (arrayConstructor_)
-   *  Array's shape (arrayConstructorShape_)
-   *       To ensure that Array has not been modified.
-   *
-   *  Array.prototype's slot number for constructor (arrayProtoConstructorSlot_)
-   *      To quickly retrieve and ensure that the Array constructor
-   *      stored in the slot has not changed.
-   *
-   *  Array's slot number for the @@species getter. (arraySpeciesGetterSlot_)
-   *  Array's canonical value for @@species (canonicalSpeciesFunc_)
-   *      To quickly retrieve and ensure that the @@species getter for Array
-   *      has not changed.
-   *
-   * MOZ_INIT_OUTSIDE_CTOR fields below are set in |initialize()|.  The
-   * constructor only initializes a |state_| field, that defines whether the
-   * other fields are accessible.
-   */
-
-  // Pointer to canonical Array.prototype and Array.
-  MOZ_INIT_OUTSIDE_CTOR NativeObject* arrayProto_;
-  MOZ_INIT_OUTSIDE_CTOR NativeObject* arrayConstructor_;
-
-  // Shape of matching Array, and slot containing the @@species property, and
-  // the canonical value.
-  MOZ_INIT_OUTSIDE_CTOR Shape* arrayConstructorShape_;
-  MOZ_INIT_OUTSIDE_CTOR uint32_t arraySpeciesGetterSlot_;
-  MOZ_INIT_OUTSIDE_CTOR JSFunction* canonicalSpeciesFunc_;
-
-  // Shape of matching Array.prototype object, and slot containing the
-  // constructor for it.
-  MOZ_INIT_OUTSIDE_CTOR Shape* arrayProtoShape_;
-  MOZ_INIT_OUTSIDE_CTOR uint32_t arrayProtoConstructorSlot_;
-
-  enum class State : uint8_t {
-    // Flags marking the lazy initialization of the above fields.
-    Uninitialized,
-    Initialized,
-
-    // The disabled flag is set when we don't want to try optimizing
-    // anymore because core objects were changed.
-    Disabled
-  };
-
-  State state_ = State::Uninitialized;
-
-  // Initialize the internal fields.
-  void initialize(JSContext* cx);
-
-  // Reset the cache.
-  void reset();
-
-  // Check if the global array-related objects have not been messed with
-  // in a way that would disable this cache.
-  bool isArrayStateStillSane();
-
- public:
-  /** Construct an |ArraySpeciesLookup| in the uninitialized state. */
-  ArraySpeciesLookup() { reset(); }
-
-  // Try to optimize the @@species lookup for an array.
-  bool tryOptimizeArray(JSContext* cx, ArrayObject* array);
-
-  // Purge the cache and all info associated with it.
-  void purge() {
-    if (state_ == State::Initialized) {
-      reset();
-    }
-  }
-};
-
 bool IsArrayConstructor(const JSObject* obj);
+
+bool intrinsic_CanOptimizeArraySpecies(JSContext* cx, unsigned argc, Value* vp);
 
 } /* namespace js */
 

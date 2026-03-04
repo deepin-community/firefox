@@ -9,7 +9,6 @@
 
 #include "ImageContainer.h"
 #include "d3d11.h"
-#include "mozilla/Atomics.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/gfx/Types.h"
 #include "mozilla/layers/TextureClient.h"
@@ -68,13 +67,10 @@ class D3D11RecycleAllocator final : public TextureClientRecycleAllocator {
 // resource is ready to use.
 class D3D11ShareHandleImage final : public Image {
  public:
-  static RefPtr<D3D11ShareHandleImage> MaybeCreateNV12ImageAndSetData(
-      KnowsCompositor* aAllocator, ImageContainer* aContainer,
-      const PlanarYCbCrData& aData);
-
   D3D11ShareHandleImage(const gfx::IntSize& aSize, const gfx::IntRect& aRect,
                         gfx::ColorSpace2 aColorSpace,
-                        gfx::ColorRange aColorRange);
+                        gfx::ColorRange aColorRange,
+                        gfx::ColorDepth aColorDepth);
   virtual ~D3D11ShareHandleImage() = default;
 
   bool AllocateTexture(D3D11RecycleAllocator* aAllocator,
@@ -91,6 +87,8 @@ class D3D11ShareHandleImage final : public Image {
   ID3D11Texture2D* GetTexture() const;
 
   gfx::ColorRange GetColorRange() const { return mColorRange; }
+
+  gfx::ColorDepth GetColorDepth() const override { return mColorDepth; }
 
  private:
   friend class gl::GLBlitHelper;
@@ -109,6 +107,7 @@ class D3D11ShareHandleImage final : public Image {
 
  private:
   gfx::ColorRange mColorRange;
+  gfx::ColorDepth mColorDepth;
   RefPtr<TextureClient> mTextureClient;
   RefPtr<ID3D11Texture2D> mTexture;
 };

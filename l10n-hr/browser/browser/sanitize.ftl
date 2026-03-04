@@ -19,7 +19,7 @@ sanitize-dialog-title-everything =
     .title = Izbriši svu povijest
     .style = min-width: 34em
 clear-data-settings-label = Kad se zatvori, { -brand-short-name } bi automatski trebao sve izbrisati
-sanitize-on-shutdown-description = Automatski obriši sve označene stavke kada se { -brand-short-name } zatvori.
+sanitize-on-shutdown-description = Automatski izbriši sve označene stavke kada se { -brand-short-name } zatvori.
 
 ## clear-time-duration-prefix is followed by a dropdown list, with
 ## values localized using clear-time-duration-value-* messages.
@@ -41,6 +41,10 @@ clear-time-duration-value-last-2-hours =
     .label = zadnja dva sata
 clear-time-duration-value-last-4-hours =
     .label = zadnja četiri sata
+# Variables:
+#   $midnightTime (String) - Time of midnight (00:00 hours) - to inform the user that history will be cleared after midnight
+clear-time-duration-value-since-midnight =
+    .label = Od { $midnightTime }
 clear-time-duration-value-today =
     .label = danas
 clear-time-duration-value-everything =
@@ -55,10 +59,7 @@ history-section-label = Povijest
 item-history-and-downloads =
     .label = Povijest pregledavanja i preuzimanja
     .accesskey = v
-item-history-form-data-downloads =
-    .label = Povijest
-    .accesskey = v
-item-history-form-data-downloads-description = Briše povijest web-stranica i preuzimanja, spremljene podatke obrazaca i pretraživanja
+item-history-and-downloads-description2 = Briše povijest web-stranica i preuzimanja
 item-cookies =
     .label = Kolačići
     .accesskey = K
@@ -71,29 +72,33 @@ item-cookies-site-data-with-size =
 item-cookies-site-data =
     .label = Kolačići i podaci web stranice
     .accesskey = e
-item-cookies-site-data-description = Može te odjaviti s web stranica ili isprazniti košaricu
+item-cookies-site-data-description = Može te odjaviti s web-stranica ili isprazniti košaricu
 item-active-logins =
     .label = Aktivne prijave
     .accesskey = A
 item-cache =
-    .label = Međuspremnik
-    .accesskey = s
+    .label = Predmemorija
+    .accesskey = a
 # Variables:
 #   $amount (Number) - Amount of cached data
 #   $unit (String) - Abbreviation of the unit that $amount is in, e.g. "MB"
 item-cached-content-with-size =
-    .label = Privremeno spremljene datoteke i stranice ({ $amount } { $unit })
+    .label = Privremeno predmemorirane datoteke i stranice ({ $amount } { $unit })
     .accesskey = d
 item-cached-content =
-    .label = Privremeno spremljene datoteke i stranice
+    .label = Privremeno predmemorirane datoteke i stranice
     .accesskey = d
-item-cached-content-description = Briše stavke koje pomažu web stranicama da se brže učitaju
+item-cached-content-description = Briše stavke koje pomažu brže učitati web-stranice
 item-form-search-history =
     .label = Povijest obrazaca i pretraživanja
     .accesskey = P
 item-site-prefs =
     .label = Postavke web stranice
     .accesskey = i
+item-formdata-prefs =
+    .label = Spremljene informacije obrasca
+    .accesskey = o
+item-formdata-description = Briše stvari kao što su imena, e-mail adrese i druge stvari koje upisuješ u obrasce
 item-site-prefs-description = Resetira tvoje dozvole i postavke za web stranicu na izvorne postavke
 data-section-label = Podaci
 item-site-settings =
@@ -102,7 +107,7 @@ item-site-settings =
 item-offline-apps =
     .label = Podaci izvanmrežnih stranica
     .accesskey = n
-sanitize-everything-undo-warning = Ova se radnja ne može poništiti.
+sanitize-everything-undo-warning = Ova se radnja ne može poništitiOvo je nepovratna radnja.
 window-close =
     .key = w
 sanitize-button-ok =
@@ -123,3 +128,6 @@ sanitize-everything-warning = Izbrisat će se sva povijest.
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = Izbrisat će se sve odabrane stavke.
+# Label shown next to the loading spinner while calculating the size of cached data
+# and cookies in the clear data dialog.
+sanitize-calculating-size = Računanje …

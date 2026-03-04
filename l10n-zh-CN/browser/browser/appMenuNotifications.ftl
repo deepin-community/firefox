@@ -29,7 +29,10 @@ appmenu-update-restart2 =
     .buttonaccesskey = U
     .secondarybuttonlabel = 忽略
     .secondarybuttonaccesskey = m
-appmenu-update-restart-message2 = 升级至最新版 { -brand-shorter-name } 。打开的标签页和窗口将在下次启动时恢复。
+appmenu-update-restart-message2 = 升级至最新版 { -brand-shorter-name }。打开的标签页和窗口将在下次启动时恢复。
+appmenu-theme-installed =
+    .secondarybuttonlabel = 撤销
+    .secondarybuttonaccesskey = U
 appmenu-update-other-instance =
     .label = { -brand-shorter-name } 无法自动更新至最新版本。
     .buttonlabel = 仍要更新 { -brand-shorter-name }
@@ -41,6 +44,12 @@ appmenu-addon-private-browsing-installed2 =
     .buttonlabel = 好的
     .buttonaccesskey = O
 appmenu-addon-post-install-message3 = 通过应用程序菜单管理扩展和主题。
+# This string is used in the confirmation popup displayed after an extension
+# has been installed, when the data collection feature is enabled.
+appmenu-addon-post-install-message-with-data-collection = 可随时在<a data-l10n-name="settings-link">扩展设置</a>中更新权限和数据首选项。
+appmenu-addon-post-install-pin-toolbarbutton-checkbox =
+    .label = 将扩展固定到工具栏
+    .accesskey = P
 appmenu-addon-post-install-incognito-checkbox =
     .label = 允许此扩展在隐私窗口中运行
     .accesskey = A

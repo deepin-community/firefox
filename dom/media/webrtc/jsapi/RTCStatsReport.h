@@ -10,18 +10,18 @@
 #include "api/units/timestamp.h"  // webrtc::Timestamp
 #include "js/RootingAPI.h"        // JS::Rooted
 #include "js/Value.h"
-#include "mozilla/dom/AutoEntryScript.h"
+#include "mozilla/ErrorResult.h"
 #include "mozilla/MozPromise.h"
 #include "mozilla/TimeStamp.h"
+#include "mozilla/UniquePtr.h"
+#include "mozilla/dom/AutoEntryScript.h"
 #include "mozilla/dom/PerformanceService.h"
 #include "mozilla/dom/RTCStatsReportBinding.h"  // RTCStatsCollection
 #include "mozilla/dom/ToJSValue.h"
-#include "mozilla/ErrorResult.h"
-#include "mozilla/UniquePtr.h"
 #include "nsCOMPtr.h"
+#include "nsContentUtils.h"
 #include "nsIGlobalObject.h"
 #include "nsPIDOMWindow.h"  // nsPIDOMWindowInner
-#include "nsContentUtils.h"
 #include "nsWrapperCache.h"
 #include "prtime.h"  // PR_Now
 
@@ -54,6 +54,10 @@ struct RTCStatsTimestampState {
   const RTPCallerType mRTPCallerType;
   // Performance.timeOrigin for mStartDomRealtime when the members were sampled.
   const DOMHighResTimeStamp mStartWallClockRaw;
+
+ protected:
+  RTCStatsTimestampState(TimeStamp aStartDomRealtime,
+                         webrtc::Timestamp aStartRealtime);
 };
 
 /**
@@ -114,7 +118,7 @@ class RTCStatsTimestampMaker {
 
   const RTCStatsTimestampState mState;
 
- private:
+ protected:
   explicit RTCStatsTimestampMaker(RTCStatsTimestampState aState);
 };
 

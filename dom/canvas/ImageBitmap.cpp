@@ -5,8 +5,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/ImageBitmap.h"
+
+#include "imgLoader.h"
+#include "imgTools.h"
+#include "jsapi.h"
 #include "mozilla/AppShutdown.h"
 #include "mozilla/CheckedInt.h"
+#include "mozilla/Mutex.h"
+#include "mozilla/ScopeExit.h"
 #include "mozilla/dom/BlobImpl.h"
 #include "mozilla/dom/CanvasRenderingContext2D.h"
 #include "mozilla/dom/CanvasUtils.h"
@@ -18,27 +24,22 @@
 #include "mozilla/dom/ImageBitmapBinding.h"
 #include "mozilla/dom/OffscreenCanvas.h"
 #include "mozilla/dom/Promise.h"
-#include "mozilla/dom/StructuredCloneTags.h"
 #include "mozilla/dom/SVGImageElement.h"
+#include "mozilla/dom/StructuredCloneTags.h"
+#include "mozilla/dom/VideoFrame.h"
 #include "mozilla/dom/WorkerPrivate.h"
 #include "mozilla/dom/WorkerRef.h"
 #include "mozilla/dom/WorkerRunnable.h"
-#include "mozilla/dom/VideoFrame.h"
 #include "mozilla/gfx/2D.h"
 #include "mozilla/gfx/Logging.h"
 #include "mozilla/gfx/Scale.h"
 #include "mozilla/gfx/Swizzle.h"
-#include "mozilla/Mutex.h"
-#include "mozilla/ScopeExit.h"
 #include "nsGlobalWindowInner.h"
 #include "nsIAsyncInputStream.h"
 #include "nsISerialEventTarget.h"
-#include "nsNetUtil.h"
 #include "nsLayoutUtils.h"
+#include "nsNetUtil.h"
 #include "nsStreamUtils.h"
-#include "imgLoader.h"
-#include "imgTools.h"
-#include "jsapi.h"
 
 using namespace mozilla::gfx;
 using namespace mozilla::layers;
@@ -80,8 +81,7 @@ class SendShutdownToWorkerThread : public MainThreadWorkerControlRunnable {
 
   void DispatchToWorker() {
     MOZ_ASSERT(mTarget);
-    Unused << NS_WARN_IF(
-        NS_FAILED(mTarget->Dispatch(this, NS_DISPATCH_NORMAL)));
+    (void)NS_WARN_IF(NS_FAILED(mTarget->Dispatch(this, NS_DISPATCH_NORMAL)));
     mTarget = nullptr;
   }
 
@@ -854,7 +854,9 @@ already_AddRefed<SourceSurface> ImageBitmap::PrepareForDrawTarget(
       cropped = Factory::CreateDrawTarget(BackendType::SKIA,
                                           mPictureRect.Size(), format);
     } else {
-      cropped = aTarget->CreateSimilarDrawTarget(mPictureRect.Size(), format);
+      if (aTarget->CanCreateSimilarDrawTarget(mPictureRect.Size(), format)) {
+        cropped = aTarget->CreateSimilarDrawTarget(mPictureRect.Size(), format);
+      }
     }
 
     if (NS_WARN_IF(!cropped)) {
@@ -950,9 +952,6 @@ UniquePtr<ImageBitmapCloneData> ImageBitmap::ToCloneData() const {
     return nullptr;
   }
 
-  UniquePtr<ImageBitmapCloneData> result(new ImageBitmapCloneData());
-  result->mPictureRect = mPictureRect;
-  result->mAlphaType = mAlphaType;
   RefPtr<SourceSurface> surface = mData->GetAsSourceSurface();
   if (!surface) {
     // It might just not be possible to get/map the surface. (e.g. from another
@@ -960,10 +959,18 @@ UniquePtr<ImageBitmapCloneData> ImageBitmap::ToCloneData() const {
     return nullptr;
   }
 
-  result->mSurface = surface->GetDataSurface();
-  MOZ_ASSERT(result->mSurface);
-  result->mWriteOnly = mWriteOnly;
+  RefPtr<DataSourceSurface> dataSurface = surface->GetDataSurface();
+  if (NS_WARN_IF(!dataSurface)) {
+    // This can reasonably fail in many cases (e.g. canvas state doesn't allow
+    // reading back the snapshot).
+    return nullptr;
+  }
 
+  auto result = MakeUnique<ImageBitmapCloneData>();
+  result->mPictureRect = mPictureRect;
+  result->mAlphaType = mAlphaType;
+  result->mSurface = std::move(dataSurface);
+  result->mWriteOnly = mWriteOnly;
   return result;
 }
 
@@ -1004,7 +1011,7 @@ already_AddRefed<ImageBitmap> ImageBitmap::CreateFromOffscreenCanvas(
   RefPtr<SourceSurface> surface = res.GetSourceSurface();
 
   if (NS_WARN_IF(!surface)) {
-    aRv.Throw(NS_ERROR_NOT_AVAILABLE);
+    aRv.ThrowUnknownError("Failed to create ImageBitmap from OffscreenCanvas");
     return nullptr;
   }
 
@@ -1708,8 +1715,7 @@ NS_IMPL_ISUPPORTS_INHERITED(CreateImageBitmapFromBlob, DiscardableRunnable,
 
 class CreateImageBitmapFromBlobRunnable final : public WorkerThreadRunnable {
  public:
-  explicit CreateImageBitmapFromBlobRunnable(WorkerPrivate* aWorkerPrivate,
-                                             CreateImageBitmapFromBlob* aTask,
+  explicit CreateImageBitmapFromBlobRunnable(CreateImageBitmapFromBlob* aTask,
                                              layers::Image* aImage,
                                              nsresult aStatus)
       : WorkerThreadRunnable("CreateImageBitmapFromBlobRunnable"),
@@ -2299,8 +2305,7 @@ void CreateImageBitmapFromBlob::MimeTypeAndDecodeAndCropBlobCompletedMainThread(
     }
 
     RefPtr<CreateImageBitmapFromBlobRunnable> r =
-        new CreateImageBitmapFromBlobRunnable(mWorkerRef->Private(), this,
-                                              aImage, aStatus);
+        new CreateImageBitmapFromBlobRunnable(this, aImage, aStatus);
     r->Dispatch(mWorkerRef->Private());
     return;
   }

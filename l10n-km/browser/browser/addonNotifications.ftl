@@ -4,15 +4,25 @@
 
 xpinstall-prompt = { -brand-short-name } បាន​រារាំង​តំបន់​បណ្ដាញ​នេះ ពី​ការ​ទាមទារ​ឲ្យ​អ្នក​ដំឡើង​កម្មវិធី​លើ​កុំព្យូទ័រ​របស់​អ្នក ។
 
-## Variables:
-##   $host (String): The hostname of the site the add-on is being installed from.
-
-
 ##
 
 xpinstall-prompt-dont-allow =
     .label = កុំ​អនុញ្ញាត
     .accesskey = D
+xpinstall-prompt-never-allow =
+    .label = កុំ​អនុញ្ញាត
+    .accesskey = N
+# Long text in this context make the dropdown menu extend awkwardly to the left,
+# avoid a localization that's significantly longer than the English version.
+xpinstall-prompt-never-allow-and-report =
+    .label = រាយការណ៍គេហទំព័រគួរឱ្យសង្ស័យ
+    .accesskey = R
+# Accessibility Note:
+# Be sure you do not choose an accesskey that is used elsewhere in the active context (e.g. main menu bar, submenu of the warning popup button)
+# See https://website-archive.mozilla.org/www.mozilla.org/access/access/keyboard/ for details
+xpinstall-prompt-install =
+    .label = បន្តទៅការដំឡើង
+    .accesskey = C
 
 # These messages are shown when a website invokes navigator.requestMIDIAccess.
 
@@ -24,7 +34,6 @@ xpinstall-disabled = ការ​ដំឡើង​កម្មវិធី​�
 xpinstall-disabled-button =
     .label = បើក
     .accesskey = n
-
 # Variables:
 #   $addonName (String): the localized name of the sideloaded add-on.
 webext-perms-sideload-menu-item = { $addonName } បាន​បញ្ចូល​ទៅ​ក្នុង { -brand-short-name }
@@ -35,15 +44,16 @@ webext-perms-update-menu-item = { $addonName } តម្រូវ​ឲ្យ​
 ## Add-on removal warning
 
 # Variables:
+#  $name (String): The name of the add-on that will be removed.
+addon-removal-title = លុប { $name } ចេញ?
+# Variables:
 #   $name (String): the name of the extension which is about to be removed.
 addon-removal-message = លុប { $name } ចេញពី { -brand-shorter-name } មែនទេ?
 addon-removal-button = លុប​ចេញ
-
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying = កំពុង​ទាញ​យក និង​ផ្ទៀងផ្ទាត់​កម្មវិធី​បន្ថែម { $addonCount }...
 addon-download-verifying = កំពុង​ផ្ទៀងផ្ទាត់
-
 addon-install-cancel-button =
     .label = បោះបង់
     .accesskey = C

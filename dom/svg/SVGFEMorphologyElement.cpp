@@ -5,10 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/SVGFEMorphologyElement.h"
-#include "mozilla/dom/SVGFEMorphologyElementBinding.h"
+
 #include "mozilla/SVGFilterInstance.h"
 #include "mozilla/dom/BindContext.h"
 #include "mozilla/dom/Document.h"
+#include "mozilla/dom/SVGFEMorphologyElementBinding.h"
 
 NS_IMPL_NS_NEW_SVG_ELEMENT(FEMorphology)
 
@@ -125,16 +126,16 @@ nsresult SVGFEMorphologyElement::BindToTree(BindContext& aCtx,
 SVGElement::NumberPairAttributesInfo
 SVGFEMorphologyElement::GetNumberPairInfo() {
   return NumberPairAttributesInfo(mNumberPairAttributes, sNumberPairInfo,
-                                  ArrayLength(sNumberPairInfo));
+                                  std::size(sNumberPairInfo));
 }
 
 SVGElement::EnumAttributesInfo SVGFEMorphologyElement::GetEnumInfo() {
-  return EnumAttributesInfo(mEnumAttributes, sEnumInfo, ArrayLength(sEnumInfo));
+  return EnumAttributesInfo(mEnumAttributes, sEnumInfo, std::size(sEnumInfo));
 }
 
 SVGElement::StringAttributesInfo SVGFEMorphologyElement::GetStringInfo() {
   return StringAttributesInfo(mStringAttributes, sStringInfo,
-                              ArrayLength(sStringInfo));
+                              std::size(sStringInfo));
 }
 
 }  // namespace mozilla::dom

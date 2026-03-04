@@ -4,6 +4,7 @@
 
 about-networking-title = Sobre o tráfico da rede
 about-networking-http = HTTP
+about-networking-http-clear-cache-button = Limpar a caché HTTP
 about-networking-sockets = Sóckets
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = Limpar a caché de DNS
@@ -38,6 +39,7 @@ about-networking-dns-lookup = Buscar DNS
 about-networking-dns-lookup-button = Resolución
 about-networking-dns-domain = Dominio:
 about-networking-dns-lookup-table-column = Enderezos IP
+about-networking-dns-https-rrs-lookup-table-column = HTTPS RRs
 about-networking-dns-https-rr-lookup-table-column = RR HTTP
 about-networking-rcwn = Estatísticas RCWN
 about-networking-rcwn-status = Estado RCWN
@@ -63,6 +65,3 @@ about-networking-moved-about-logging = Esta páxina moveuse a <a data-l10n-name=
 
 about-networking-networkid-is-up = A ligazón está activa
 about-networking-networkid-status-known = O estado da ligazón é coñecido
-
-##
-

@@ -10,9 +10,9 @@ import android.graphics.fonts.FontStyle.FONT_WEIGHT_MEDIUM
 import android.os.Build
 import android.os.Bundle
 import android.view.View
-import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import androidx.annotation.VisibleForTesting
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -26,22 +26,16 @@ import mozilla.components.feature.addons.Addon
 import mozilla.components.feature.addons.AddonManager
 import mozilla.components.feature.addons.AddonManagerException
 import mozilla.components.feature.addons.ui.AddonsManagerAdapter
-import mozilla.components.feature.addons.ui.AddonsManagerAdapterDelegate
-import org.mozilla.fenix.BrowserDirection
-import org.mozilla.fenix.BuildConfig
-import org.mozilla.fenix.Config
-import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.R
-import org.mozilla.fenix.components.FenixSnackbar
 import org.mozilla.fenix.databinding.FragmentAddOnsManagementBinding
 import org.mozilla.fenix.ext.components
+import org.mozilla.fenix.ext.openToBrowser
 import org.mozilla.fenix.ext.requireComponents
 import org.mozilla.fenix.ext.runIfFragmentIsAttached
-import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.ext.showToolbar
-import org.mozilla.fenix.settings.SupportUtils
 import org.mozilla.fenix.settings.SupportUtils.AMO_HOMEPAGE_FOR_ANDROID
 import org.mozilla.fenix.theme.ThemeManager
+import mozilla.components.feature.addons.R as addonsR
 
 /**
  * Fragment use for managing add-ons.
@@ -59,11 +53,6 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentAddOnsManagementBinding.bind(view)
         bindRecyclerView()
-        (activity as HomeActivity).webExtensionPromptFeature.onAddonChanged = {
-            runIfFragmentIsAttached {
-                adapter?.updateAddon(it)
-            }
-        }
     }
 
     override fun onResume() {
@@ -76,15 +65,17 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
         // letting go of the resources to avoid memory leak.
         adapter = null
         binding = null
-        (activity as HomeActivity).webExtensionPromptFeature.onAddonChanged = {}
     }
 
+    @Suppress("CognitiveComplexMethod")
     private fun bindRecyclerView() {
         val managementView = AddonsManagementView(
             navController = findNavController(),
             onInstallButtonClicked = ::installAddon,
             onMoreAddonsButtonClicked = ::openAMO,
-            onLearnMoreClicked = ::openLearnMoreLink,
+            onLearnMoreClicked = { link, addon ->
+                binding?.root?.openLearnMoreLink(link, addon)
+            },
         )
 
         val recyclerView = binding?.addOnsList
@@ -94,14 +85,6 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
         lifecycleScope.launch(IO) {
             try {
                 addons = requireContext().components.addonManager.getAddons()
-                // Add-ons that should be excluded in Mozilla Online builds
-                val excludedAddonIDs = if (Config.channel.isMozillaOnline &&
-                    !BuildConfig.MOZILLA_ONLINE_ADDON_EXCLUSIONS.isNullOrEmpty()
-                ) {
-                    BuildConfig.MOZILLA_ONLINE_ADDON_EXCLUSIONS.toList()
-                } else {
-                    emptyList<String>()
-                }
                 lifecycleScope.launch(Dispatchers.Main) {
                     runIfFragmentIsAttached {
                         if (!shouldRefresh) {
@@ -109,7 +92,6 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
                                 addonsManagerDelegate = managementView,
                                 addons = addons,
                                 style = createAddonStyle(requireContext()),
-                                excludedAddonIDs = excludedAddonIDs,
                                 store = requireComponents.core.store,
                             )
                         }
@@ -151,22 +133,13 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
                         binding?.let {
                             showSnackBar(
                                 it.root,
-                                getString(R.string.mozac_feature_addons_failed_to_query_extensions),
+                                getString(addonsR.string.mozac_feature_addons_failed_to_query_extensions),
                             )
                         }
                         binding?.addOnsProgressBar?.isVisible = false
                         binding?.addOnsEmptyMessage?.isVisible = true
                     }
                 }
-            }
-        }
-    }
-
-    @VisibleForTesting
-    internal fun showErrorSnackBar(text: String, anchorView: View? = this.view) {
-        runIfFragmentIsAttached {
-            anchorView?.let {
-                showSnackBar(it, text, FenixSnackbar.LENGTH_LONG)
             }
         }
     }
@@ -188,20 +161,23 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
     }
 
     @VisibleForTesting
-    internal fun provideAddonManger(): AddonManager {
+    internal fun provideAddonManager(): AddonManager {
         return requireContext().components.addonManager
-    }
-
-    internal fun provideAccessibilityServicesEnabled(): Boolean {
-        return requireContext().settings().accessibilityServicesEnabled
     }
 
     internal fun installAddon(addon: Addon) {
         binding?.addonProgressOverlay?.overlayCardView?.visibility = View.VISIBLE
-        if (provideAccessibilityServicesEnabled()) {
-            binding?.let { announceForAccessibility(it.addonProgressOverlay.addOnsOverlayText.text) }
+
+        if (requireComponents.appStore.state.mode.isPrivate) {
+            binding?.addonProgressOverlay?.overlayCardView?.setBackgroundColor(
+                ContextCompat.getColor(
+                    requireContext(),
+                    R.color.fx_mobile_private_layer_color_3,
+                ),
+            )
         }
-        val installOperation = provideAddonManger().installAddon(
+
+        val installOperation = provideAddonManager().installAddon(
             url = addon.downloadUrl,
             installationMethod = InstallationMethod.MANAGER,
             onSuccess = {
@@ -225,44 +201,11 @@ class AddonsManagementFragment : Fragment(R.layout.fragment_add_ons_management) 
         }
     }
 
-    private fun announceForAccessibility(announcementText: CharSequence) {
-        val event = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            AccessibilityEvent(AccessibilityEvent.TYPE_ANNOUNCEMENT)
-        } else {
-            @Suppress("DEPRECATION")
-            AccessibilityEvent.obtain(AccessibilityEvent.TYPE_ANNOUNCEMENT)
-        }
-
-        binding?.addonProgressOverlay?.overlayCardView?.onInitializeAccessibilityEvent(event)
-        event.text.add(announcementText)
-        event.contentDescription = null
-        binding?.addonProgressOverlay?.overlayCardView?.let {
-            it.parent?.requestSendAccessibilityEvent(
-                it,
-                event,
-            )
-        }
-    }
-
     private fun openAMO() {
-        openLinkInNewTab(AMO_HOMEPAGE_FOR_ANDROID)
-    }
-
-    private fun openLearnMoreLink(link: AddonsManagerAdapterDelegate.LearnMoreLinks, addon: Addon) {
-        val url = when (link) {
-            AddonsManagerAdapterDelegate.LearnMoreLinks.BLOCKLISTED_ADDON ->
-                "${BuildConfig.AMO_BASE_URL}/android/blocked-addon/${addon.id}/"
-            AddonsManagerAdapterDelegate.LearnMoreLinks.ADDON_NOT_CORRECTLY_SIGNED ->
-                SupportUtils.getSumoURLForTopic(requireContext(), SupportUtils.SumoTopic.UNSIGNED_ADDONS)
-        }
-        openLinkInNewTab(url)
-    }
-
-    private fun openLinkInNewTab(url: String) {
-        (activity as HomeActivity).openToBrowserAndLoad(
-            searchTermOrURL = url,
+        findNavController().openToBrowser()
+        requireComponents.useCases.fenixBrowserUseCases.loadUrlOrSearch(
+            searchTermOrURL = AMO_HOMEPAGE_FOR_ANDROID,
             newTab = true,
-            from = BrowserDirection.FromAddonsManagementFragment,
         )
     }
 }

@@ -7,11 +7,13 @@
 #ifndef nsIGlobalObject_h__
 #define nsIGlobalObject_h__
 
+#include "js/TypeDecls.h"
 #include "mozilla/LinkedList.h"
 #include "mozilla/Maybe.h"
-#include "mozilla/dom/ClientInfo.h"
-#include "mozilla/dom/ServiceWorkerDescriptor.h"
 #include "mozilla/OriginTrials.h"
+#include "mozilla/dom/ClientInfo.h"
+#include "mozilla/dom/ClientState.h"
+#include "mozilla/dom/ServiceWorkerDescriptor.h"
 #include "nsContentUtils.h"
 #include "nsHashKeys.h"
 #include "nsISupports.h"
@@ -19,18 +21,15 @@
 #include "nsStringFwd.h"
 #include "nsTArray.h"
 #include "nsTHashtable.h"
-#include "js/TypeDecls.h"
 
 // Must be kept in sync with xpcom/rust/xpcom/src/interfaces/nonidl.rs
-#define NS_IGLOBALOBJECT_IID                         \
-  {                                                  \
-    0x11afa8be, 0xd997, 0x4e07, {                    \
-      0xa6, 0xa3, 0x6f, 0x87, 0x2e, 0xc3, 0xee, 0x7f \
-    }                                                \
-  }
+#define NS_IGLOBALOBJECT_IID \
+  {0x11afa8be, 0xd997, 0x4e07, {0xa6, 0xa3, 0x6f, 0x87, 0x2e, 0xc3, 0xee, 0x7f}}
 
 class nsCycleCollectionTraversalCallback;
+class nsICookieJarSettings;
 class nsIPrincipal;
+class nsIURI;
 class nsPIDOMWindowInner;
 
 namespace mozilla {
@@ -41,6 +40,7 @@ template <typename V, typename E>
 class Result;
 enum class StorageAccess;
 namespace dom {
+class WorkerGlobalScopeBase;
 class VoidFunction;
 class DebuggerNotificationManager;
 class FontFaceSet;
@@ -49,9 +49,11 @@ class Report;
 class ReportBody;
 class ReportingObserver;
 class ServiceWorker;
+class ServiceWorkerContainer;
 class ServiceWorkerRegistration;
 class ServiceWorkerRegistrationDescriptor;
 class StorageManager;
+class WebTaskSchedulingState;
 enum class CallerType : uint32_t;
 }  // namespace dom
 namespace ipc {
@@ -77,7 +79,6 @@ class nsIGlobalObject : public nsISupports {
   mozilla::LinkedList<mozilla::GlobalFreezeObserver> mGlobalFreezeObservers;
 
   bool mIsDying;
-  bool mIsScriptForbidden;
 
  protected:
   bool mIsInnerWindow;
@@ -87,7 +88,7 @@ class nsIGlobalObject : public nsISupports {
  public:
   using RTPCallerType = mozilla::RTPCallerType;
   using RFPTarget = mozilla::RFPTarget;
-  NS_DECLARE_STATIC_IID_ACCESSOR(NS_IGLOBALOBJECT_IID)
+  NS_INLINE_DECL_STATIC_IID(NS_IGLOBALOBJECT_IID)
 
   /**
    * This check is added to deal with Promise microtask queues. On the main
@@ -193,7 +194,19 @@ class nsIGlobalObject : public nsISupports {
     return nullptr;
   }
 
+  virtual void SetWebTaskSchedulingState(
+      mozilla::dom::WebTaskSchedulingState* aState) {}
+  virtual mozilla::dom::WebTaskSchedulingState* GetWebTaskSchedulingState()
+      const {
+    return nullptr;
+  }
+
+  // For globals with a concept of a Base URI (windows, workers), the base URI,
+  // nullptr otherwise.
+  virtual nsIURI* GetBaseURI() const;
+
   virtual mozilla::Maybe<mozilla::dom::ClientInfo> GetClientInfo() const;
+  virtual mozilla::Maybe<mozilla::dom::ClientState> GetClientState() const;
 
   virtual mozilla::Maybe<nsID> GetAgentClusterId() const;
 
@@ -203,6 +216,9 @@ class nsIGlobalObject : public nsISupports {
 
   virtual mozilla::Maybe<mozilla::dom::ServiceWorkerDescriptor> GetController()
       const;
+
+  virtual already_AddRefed<mozilla::dom::ServiceWorkerContainer>
+  GetServiceWorkerContainer();
 
   // Get the DOM object for the given descriptor or attempt to create one.
   // Creation can still fail and return nullptr during shutdown, etc.
@@ -230,12 +246,18 @@ class nsIGlobalObject : public nsISupports {
    */
   virtual mozilla::StorageAccess GetStorageAccess();
 
+  // For globals with cookie jars (windows, workers), the cookie jar settings;
+  // will likely be null on other global types.
+  virtual nsICookieJarSettings* GetCookieJarSettings();
+
   // Returns the set of active origin trials for this global.
   virtual mozilla::OriginTrials Trials() const = 0;
 
   // Returns a pointer to this object as an inner window if this is one or
   // nullptr otherwise.
   nsPIDOMWindowInner* GetAsInnerWindow();
+
+  virtual void TriggerUpdateCCFlag() {}
 
   void QueueMicrotask(mozilla::dom::VoidFunction& aCallback);
 
@@ -273,6 +295,9 @@ class nsIGlobalObject : public nsISupports {
 
   RTPCallerType GetRTPCallerType() const;
 
+  bool IsRFPTargetActive(const nsAString& aTargetName,
+                         mozilla::ErrorResult& aRv);
+
   /**
    * Get the module loader to use for this global, if any. By default this
    * returns null.
@@ -300,14 +325,78 @@ class nsIGlobalObject : public nsISupports {
   virtual bool IsBackgroundInternal() const { return false; }
   virtual mozilla::dom::TimeoutManager* GetTimeoutManager() { return nullptr; }
   virtual bool IsRunningTimeout() { return false; }
+  virtual bool IsPlayingAudio() { return false; }
+  // Determine if the window is suspended or frozen.  Outer windows
+  // will forward this call to the inner window for convenience.  If
+  // there is no inner window then the outer window is considered
+  // suspended and frozen by default.
+  virtual bool IsSuspended() const { return false; }
+  virtual bool IsFrozen() const { return false; }
+  MOZ_CAN_RUN_SCRIPT
+  virtual bool RunTimeoutHandler(mozilla::dom::Timeout* aTimeout) {
+    return false;
+  }
+  // Return true if there is any active IndexedDB databases which could block
+  // timeout-throttling.
+  virtual bool HasActiveIndexedDBDatabases() const { return false; }
+  /**
+   * Check whether the active peer connection count is non-zero.
+   */
+  virtual bool HasActivePeerConnections() { return false; }
+  // Return true if there are any open WebSockets that could block
+  // timeout-throttling.
+  virtual bool HasOpenWebSockets() const { return false; }
+
+  virtual bool IsXPCSandbox() { return false; }
+
+  virtual bool HasScheduledNormalOrHighPriorityWebTasks() const {
+    return false;
+  }
+
+  virtual void UpdateWebSocketCount(int32_t aDelta) {};
+  // Increase/Decrease the number of active IndexedDB databases for the
+  // decision making of timeout-throttling.
+  virtual void UpdateActiveIndexedDBDatabaseCount(int32_t aDelta) {}
+
+  /**
+   * Report a localized error message to the error console.  Currently this
+   * amounts to a wrapper around nsContentUtils::ReportToConsole for window
+   * globals and a runnable bounced to the main thread to call
+   * nsContentUtils::ReportToConsole for workers but the intent is to migrate
+   * towards logging the messages to the `dom::Console` for the global.  See
+   * bug 1900706 for more context.
+   *
+   * This method returns void because there is no reasonable action for a caller
+   * for dynamic failure and we can assert on things like erroneous message
+   * names.
+   *
+   *   @param aErrorFlags See nsIScriptError.
+   *   @param aCategory Name of module reporting error.
+   *   @param aFile Properties file containing localized message.
+   *   @param aMessageName Name of localized message.
+   *   @param [aParams=empty-array] (Optional) Parameters to be substituted into
+   *          localized message.
+   *   @param [aURI=nullptr] (Optional) URI of resource containing error; if
+   *          omitted, an attempt will be made to use the URI associated with
+   *          the global (ex: the document URI).
+   *   @param [aSourceLine=u""_ns] (Optional) The text of the line that
+   *          contains the error (may be empty).
+   *   @param [aLineNumber=0] (Optional) Line number within resource
+   *          containing error.
+   *   @param [aColumnNumber=0] (Optional) Column number within resource
+   *          containing error.
+   */
+  virtual void ReportToConsole(
+      uint32_t aErrorFlags, const nsCString& aCategory,
+      nsContentUtils::PropertiesFile aFile, const nsCString& aMessageName,
+      const nsTArray<nsString>& aParams = nsTArray<nsString>(),
+      const mozilla::SourceLocation& aLocation =
+          mozilla::JSCallingLocation::Get());
 
  protected:
   virtual ~nsIGlobalObject();
 
   void StartDying() { mIsDying = true; }
-
-  void StartForbiddingScript() { mIsScriptForbidden = true; }
-  void StopForbiddingScript() { mIsScriptForbidden = false; }
 
   void DisconnectGlobalTeardownObservers();
   void DisconnectGlobalFreezeObservers();
@@ -317,9 +406,14 @@ class nsIGlobalObject : public nsISupports {
   size_t ShallowSizeOfExcludingThis(mozilla::MallocSizeOf aSizeOf) const;
 
  private:
+  void ClearReports();
+
+ private:
   // List of Report objects for ReportingObservers.
   nsTArray<RefPtr<mozilla::dom::ReportingObserver>> mReportingObservers;
-  nsTArray<RefPtr<mozilla::dom::Report>> mReportRecords;
+  // https://w3c.github.io/reporting/#windoworworkerglobalscope-report-buffer
+  nsTArray<RefPtr<mozilla::dom::Report>> mReportBuffer;
+  nsTHashMap<nsString, uint32_t> mReportPerTypeCount;
 
   // https://streams.spec.whatwg.org/#count-queuing-strategy-size-function
   RefPtr<mozilla::dom::Function> mCountQueuingStrategySizeFunction;
@@ -327,7 +421,5 @@ class nsIGlobalObject : public nsISupports {
   // https://streams.spec.whatwg.org/#byte-length-queuing-strategy-size-function
   RefPtr<mozilla::dom::Function> mByteLengthQueuingStrategySizeFunction;
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(nsIGlobalObject, NS_IGLOBALOBJECT_IID)
 
 #endif  // nsIGlobalObject_h__

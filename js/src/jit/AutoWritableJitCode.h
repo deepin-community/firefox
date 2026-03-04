@@ -9,7 +9,6 @@
 
 #include "mozilla/Assertions.h"
 #include "mozilla/Attributes.h"
-#include "mozilla/ScopeExit.h"
 #include "mozilla/TimeStamp.h"
 
 #include <stddef.h>
@@ -37,36 +36,18 @@ class MOZ_RAII AutoWritableJitCodeFallible {
   AutoMarkJitCodeWritableForThread writableForThread_;
 
  public:
-  AutoWritableJitCodeFallible(JSRuntime* rt, void* addr, size_t size)
-      : rt_(rt), addr_(addr), size_(size) {
+  explicit AutoWritableJitCodeFallible(JitCode* code)
+      : rt_(code->runtimeFromMainThread()),
+        addr_(code->allocatedMemory()),
+        size_(code->allocatedSize()) {
     rt_->toggleAutoWritableJitCodeActive(true);
   }
-
-  AutoWritableJitCodeFallible(void* addr, size_t size)
-      : AutoWritableJitCodeFallible(TlsContext.get()->runtime(), addr, size) {}
-
-  explicit AutoWritableJitCodeFallible(JitCode* code)
-      : AutoWritableJitCodeFallible(code->runtimeFromMainThread(), code->raw(),
-                                    code->bufferSize()) {}
 
   [[nodiscard]] bool makeWritable() {
     return ExecutableAllocator::makeWritable(addr_, size_);
   }
 
   ~AutoWritableJitCodeFallible() {
-    // Taking TimeStamps frequently can be expensive, and there's no point
-    // measuring this if write protection is disabled.
-    const bool measuringTime = JitOptions.writeProtectCode;
-    const mozilla::TimeStamp startTime =
-        measuringTime ? mozilla::TimeStamp::Now() : mozilla::TimeStamp();
-    auto timer = mozilla::MakeScopeExit([&] {
-      if (measuringTime) {
-        if (Realm* realm = rt_->mainContextFromOwnThread()->realm()) {
-          realm->timers.protectTime += mozilla::TimeStamp::Now() - startTime;
-        }
-      }
-    });
-
     if (!ExecutableAllocator::makeExecutableAndFlushICache(addr_, size_)) {
       MOZ_CRASH();
     }
@@ -78,20 +59,13 @@ class MOZ_RAII AutoWritableJitCodeFallible {
 // construction
 class MOZ_RAII AutoWritableJitCode : private AutoWritableJitCodeFallible {
  public:
-  AutoWritableJitCode(JSRuntime* rt, void* addr, size_t size)
-      : AutoWritableJitCodeFallible(rt, addr, size) {
+  explicit AutoWritableJitCode(JitCode* code)
+      : AutoWritableJitCodeFallible(code) {
     AutoEnterOOMUnsafeRegion oomUnsafe;
     if (!makeWritable()) {
       oomUnsafe.crash("Failed to mmap. Likely no mappings available.");
     }
   }
-
-  AutoWritableJitCode(void* addr, size_t size)
-      : AutoWritableJitCode(TlsContext.get()->runtime(), addr, size) {}
-
-  explicit AutoWritableJitCode(JitCode* code)
-      : AutoWritableJitCode(code->runtimeFromMainThread(), code->raw(),
-                            code->bufferSize()) {}
 };
 
 }  // namespace js::jit

@@ -23,7 +23,7 @@ about-reader-estimated-read-time =
        *[other] විනාඩි { $range }
     }
 
-## These are used as tooltips in Type Control
+## Reader View text and layout menu
 
 about-reader-toolbar-minus =
     .title = රුවකුර කුඩා කරන්න

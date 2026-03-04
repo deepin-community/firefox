@@ -7,9 +7,8 @@
 #ifndef mozilla_ServoStyleRuleMap_h
 #define mozilla_ServoStyleRuleMap_h
 
-#include "mozilla/dom/CSSStyleRule.h"
 #include "mozilla/StyleSheet.h"
-
+#include "mozilla/css/Rule.h"
 #include "nsTHashMap.h"
 
 struct StyleLockedStyleRule;
@@ -23,15 +22,15 @@ class Rule;
 namespace dom {
 class ShadowRoot;
 }
-class ServoStyleRuleMap {
+class ServoStyleRuleMap final {
  public:
   ServoStyleRuleMap() = default;
 
   void EnsureTable(ServoStyleSet&);
   void EnsureTable(dom::ShadowRoot&);
 
-  dom::CSSStyleRule* Lookup(const StyleLockedStyleRule* aRawRule) const {
-    return mTable.Get(aRawRule);
+  css::Rule* Lookup(const StyleLockedDeclarationBlock* aDecls) const {
+    return mTable.Get(aDecls);
   }
 
   void SheetAdded(StyleSheet&);
@@ -40,6 +39,9 @@ class ServoStyleRuleMap {
 
   void RuleAdded(StyleSheet& aStyleSheet, css::Rule&);
   void RuleRemoved(StyleSheet& aStyleSheet, css::Rule&);
+  void RuleDeclarationsChanged(css::Rule&,
+                               const StyleLockedDeclarationBlock* aOld,
+                               const StyleLockedDeclarationBlock* aNew);
 
   size_t SizeOfIncludingThis(MallocSizeOf aMallocSizeOf) const;
 
@@ -49,14 +51,14 @@ class ServoStyleRuleMap {
   // Since we would never have a document which contains no style rule,
   // we use IsEmpty as an indication whether we need to walk through
   // all stylesheets to fill the table.
-  bool IsEmpty() const { return mTable.Count() == 0; }
+  bool IsEmpty() const { return mTable.IsEmpty(); }
 
   void FillTableFromRule(css::Rule&);
   void FillTableFromRuleList(ServoCSSRuleList&);
   void FillTableFromStyleSheet(StyleSheet&);
 
-  using Hashtable = nsTHashMap<nsPtrHashKey<const StyleLockedStyleRule>,
-                               WeakPtr<dom::CSSStyleRule>>;
+  using Hashtable = nsTHashMap<nsPtrHashKey<const StyleLockedDeclarationBlock>,
+                               WeakPtr<css::Rule>>;
   Hashtable mTable;
 };
 

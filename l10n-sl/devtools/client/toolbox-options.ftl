@@ -30,6 +30,10 @@ options-context-inspector = Pregledovalnik
 options-show-user-agent-styles-label = Prikaži sloge brskalnika
 options-show-user-agent-styles-tooltip =
     .title = Če vključite to možnost, boste prikazali privzete sloge, ki jih naloži brskalnik.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Prikaži brskalnikov DOM v senci
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Z vklopom te možnosti prikažete elemente DOM v senci, s katerimi upravlja brskalnik.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = Skrajšaj atribute DOM
 options-collapse-attrs-tooltip =
@@ -45,7 +49,7 @@ options-inspector-simplified-highlighters-tooltip =
     .title = Omogoči poenostavljene označevalnike, ko je vključena možnost prefers-reduced-motion. Okoli označenih elementov se bo izrisal očrtan pravokotnik namesto izpolnjenega, da prepreči pojav utripanja.
 # The label for the checkbox option to make the Enter key move the focus to the next input
 # when editing a property name or value in the Inspector rules view
-options-inspector-rules-focus-next-on-enter-label = Osredotoči se na naslednji vnos ob pritisku tipke <kbd>Enter</kbd>
+options-inspector-rules-focus-next-on-enter-label = Ob pritisku tipke <kbd>Enter</kbd> se osredotoči na naslednji vnos
 options-inspector-rules-focus-next-on-enter-tooltip =
     .title = Ko je omogočeno, s pritiskom na tipko Enter med urejanjem izbirnika, imena ali vrednosti lastnosti premaknete žarišče na naslednji vnos.
 
@@ -116,6 +120,8 @@ options-disable-http-cache-label = Onemogoči predpomnilnik HTTP (ko so razvojna
 options-disable-http-cache-tooltip =
     .title = Vklop te možnosti bo onemogočil predpomnilnik HTTP za vse zavihke, ki imajo odrta razvojna orodja. Ta možnost ne vpliva na Service Workerje.
 # The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = Onemogoči JavaScript
+# The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = Onemogoči JavaScript *
 options-disable-javascript-tooltip =
     .title = Če vključite to možnost, boste onemogočili JavaScript v trenutnem zavihku. Če zaprete zavihek ali razvojna orodja, bo nastavitev pozabljena.
@@ -143,5 +149,11 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Omogoči preslikave virov
 options-source-maps-tooltip =
     .title = Če omogočite to možnost, bodo viri v orodjih preslikani.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (samo za to sejo, ponovno naloži stran)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Samo za to sejo, ponovno naloži stran
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (ponovno naloži stran)

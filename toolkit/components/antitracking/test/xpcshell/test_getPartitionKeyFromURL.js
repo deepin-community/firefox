@@ -77,7 +77,7 @@ const TEST_CASES = [
   },
   {
     url: "http://127.0.0.1:8080/",
-    partitionKeySite: "(http,127.0.0.1,8080)",
+    partitionKeySite: "(http,127.0.0.1)",
     partitionKeyWithoutSite: "127.0.0.1",
   },
   {
@@ -87,7 +87,7 @@ const TEST_CASES = [
   },
   {
     url: "http://[2001:db8::ff00:42:8329]:8080",
-    partitionKeySite: "(http,[2001:db8::ff00:42:8329],8080)",
+    partitionKeySite: "(http,[2001:db8::ff00:42:8329])",
     partitionKeyWithoutSite: "[2001:db8::ff00:42:8329]",
   },
   // Tests for moz-extension
@@ -109,10 +109,12 @@ const TEST_CASES = [
   },
   {
     url: "http://com:8080",
-    partitionKeySite: "(http,com,8080)",
+    partitionKeySite: "(http,com)",
     partitionKeyWithoutSite: "com",
   },
 ];
+
+const SUBRESOURCE_URL = "https://example.net/";
 
 const TEST_INVALID_URLS = [
   "",
@@ -126,7 +128,10 @@ const TEST_INVALID_URLS = [
 add_task(async function test_get_partition_key_from_url() {
   for (const test of TEST_CASES) {
     info(`Testing url: ${test.url}`);
-    let partitionKey = ChromeUtils.getPartitionKeyFromURL(test.url);
+    let partitionKey = ChromeUtils.getPartitionKeyFromURL(
+      test.url,
+      SUBRESOURCE_URL
+    );
 
     Assert.equal(
       partitionKey,
@@ -141,7 +146,10 @@ add_task(async function test_get_partition_key_from_url_without_site() {
 
   for (const test of TEST_CASES) {
     info(`Testing url: ${test.url}`);
-    let partitionKey = ChromeUtils.getPartitionKeyFromURL(test.url);
+    let partitionKey = ChromeUtils.getPartitionKeyFromURL(
+      test.url,
+      SUBRESOURCE_URL
+    );
 
     Assert.equal(
       partitionKey,
@@ -194,7 +202,10 @@ add_task(async function test_blob_url() {
     return blob_url;
   });
 
-  let partitionKey = ChromeUtils.getPartitionKeyFromURL(blobUrl);
+  let partitionKey = ChromeUtils.getPartitionKeyFromURL(
+    blobUrl,
+    SUBRESOURCE_URL
+  );
 
   // The partitionKey of the blob url is empty because the principal of the
   // blob url is the JS principal of the global, which doesn't have
@@ -214,7 +225,7 @@ add_task(async function test_throw_with_invalid_URL() {
 
     Assert.throws(
       () => {
-        ChromeUtils.getPartitionKeyFromURL(invalidURL);
+        ChromeUtils.getPartitionKeyFromURL(invalidURL, SUBRESOURCE_URL);
       },
       /NS_ERROR_MALFORMED_URI/,
       "It should fail on invalid URLs."

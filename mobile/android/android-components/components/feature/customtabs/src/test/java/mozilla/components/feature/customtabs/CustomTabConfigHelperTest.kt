@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.browser.customtabs.TrustedWebUtils
+import androidx.core.graphics.toColorInt
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import mozilla.components.browser.menu.BrowserMenuBuilder
 import mozilla.components.browser.menu.item.BrowserMenuCheckbox
@@ -31,6 +32,7 @@ import mozilla.components.browser.state.state.ContentState
 import mozilla.components.browser.state.state.CustomTabConfig
 import mozilla.components.browser.state.state.CustomTabMenuItem
 import mozilla.components.browser.state.state.CustomTabSessionState
+import mozilla.components.browser.state.state.ExternalAppType
 import mozilla.components.browser.state.state.TabSessionState
 import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.support.test.mock
@@ -430,7 +432,7 @@ class CustomTabConfigHelperTest {
             customTabMenuInsertIndex = 1,
         )
 
-        assertEquals(5, customTabMenu!!.items.size)
+        assertEquals(5, customTabMenu.items.size)
         assertEquals(defaultItems[0], customTabMenu.items[0])
         assertTrue(customTabMenu.items[1] is SimpleBrowserMenuItem)
         assertTrue(customTabMenu.items[2] is SimpleBrowserMenuItem)
@@ -676,10 +678,77 @@ class CustomTabConfigHelperTest {
     }
 
     @Test
+    fun `WHEN ColorSchemeParams has some properties and app is in private mode THEN getToolbarBackgroundColor returns null`() {
+        val colorSchemeParams = ColorSchemeParams(
+            toolbarColor = Color.BLACK,
+            navigationBarDividerColor = Color.YELLOW,
+        )
+        val expected = null
+
+        val result = colorSchemeParams.getToolbarBackgroundColor(false)
+
+        assertEquals(expected, result)
+    }
+
+    @Test
+    fun `WHEN ColorSchemeParams has some properties and app is in normal mode THEN getToolbarBackgroundColor returns toolbarColor`() {
+        val toolbarColor = Color.BLACK
+        val colorSchemeParams = ColorSchemeParams(
+            toolbarColor = toolbarColor,
+            navigationBarDividerColor = Color.YELLOW,
+        )
+
+        val result = colorSchemeParams.getToolbarBackgroundColor(true)
+
+        assertEquals(toolbarColor, result)
+    }
+
+    @Test
+    fun `WHEN ColorSchemeParams has some properties THEN getToolbarContrastColorDisabled returns the correct color`() {
+        val colorSchemeParams = ColorSchemeParams(
+            toolbarColor = Color.BLACK,
+            navigationBarDividerColor = Color.YELLOW,
+        )
+        val expected = LIGHT_GRAY_HEX.toColorInt()
+
+        val result = colorSchemeParams.getToolbarContrastColorDisabled(
+            true,
+            fallbackColor = Color.WHITE,
+        )
+
+        assertEquals(expected, result)
+    }
+
+    @Test
     fun `WHEN ColorSchemeParams has no properties THEN withDefault returns all default ColorSchemeParams`() {
         val result = ColorSchemeParams().withDefault(defaultColorSchemeParams)
 
         assertEquals(defaultColorSchemeParams, result)
+    }
+
+    @Test
+    fun `WHEN externalAppType is default THEN createCustomTabConfigFromIntent sets the external app type to custom tab`() {
+        val customTabsIntent = CustomTabsIntent.Builder().build()
+
+        val result = createCustomTabConfigFromIntent(
+            intent = customTabsIntent.intent,
+            resources = testContext.resources,
+        )
+
+        assertEquals(ExternalAppType.CUSTOM_TAB, result.externalAppType)
+    }
+
+    @Test
+    fun `WHEN externalAppType is onboarding custom tab THEN createCustomTabConfigFromIntent sets the external app type to onboarding custom tab`() {
+        val customTabsIntent = CustomTabsIntent.Builder().build()
+
+        val result = createCustomTabConfigFromIntent(
+            intent = customTabsIntent.intent,
+            resources = testContext.resources,
+            externalAppType = ExternalAppType.ONBOARDING_CUSTOM_TAB,
+        )
+
+        assertEquals(ExternalAppType.ONBOARDING_CUSTOM_TAB, result.externalAppType)
     }
 
     private fun createColorSchemeParams() = ColorSchemeParams(

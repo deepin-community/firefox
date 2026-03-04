@@ -3,9 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Požiadať webové stránky pomocou príznaku “Do Not Track”, aby vás nesledovali
-do-not-track-description2 =
-    .label = Odosielať webovým stránkam požiadavku “Nesledovať” (Do Not Track).
-    .accesskey = w
+do-not-track-removal = Príznak “Nesledovať” (Do Not Track) už nie je podporovaný
 do-not-track-learn-more = Ďalšie informácie
 do-not-track-option-default-content-blocking-known =
     .label = Len ak je zapnuté blokovanie známych sledovacích prvkov
@@ -14,7 +12,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Požiadať webové stránky, aby nepredávali ani nezdieľali moje údaje
     .accesskey = i
+non-technical-privacy-group =
+    .label = Predvoľby ochrany súkromia na webových stránkach
 non-technical-privacy-header = Predvoľby ochrany súkromia na webových stránkach
+non-technical-privacy-label =
+    .aria-label = { non-technical-privacy-header }
 # Do not translate.
 # "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
 # included to facilitate power-user search of the about:preferences page.
@@ -31,7 +33,7 @@ settings-page-title = Nastavenia
 search-input-box2 =
     .style = width: 15.4em
     .placeholder = Hľadať v nastaveniach
-managed-notice = Váš prehliadač spravuje vaša organizácia.
+managed-notice = Váš prehliadač je spravovaný vašou organizáciou.
 managed-notice-info-icon =
     .alt = Informácia
 category-list =
@@ -51,6 +53,9 @@ category-privacy =
 pane-sync-title3 = Synchronizácia
 category-sync3 =
     .tooltiptext = { pane-sync-title3 }
+pane-ai-controls-title = Nastavenia AI
+category-ai-controls =
+    .tooltiptext = { pane-ai-controls-title }
 pane-experimental-title = Experimenty { -brand-short-name(case: "gen") }
 category-experimental =
     .tooltiptext = Experimenty prehliadača { -brand-short-name }
@@ -60,23 +65,26 @@ pane-experimental-description2 = Zmeny v pokročilej konfigurácii môžu ovplyv
 settings-pane-labs-title = { -firefoxlabs-brand-name }
 settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description4 = Vyskúšajte naše experimentálne funkcie! Keďže sú stále vo vývoji, mohli by ovplyvniť fungovanie { -brand-short-name(case: "gen") }. Údaje o vašom používaní týchto funkcií dostávame iba v prípade, že máte zapnuté odosielanie <a data-l10n-name="data-collection">technických údajov a údajov o interakciách</a>.
 pane-experimental-description3 = Vyskúšajte naše experimentálne funkcie! Tieto funkcie sú vo vývoji a mohli by ovplyvniť fungovanie prehliadača { -brand-short-name }.
 pane-experimental-reset =
     .label = Obnoviť predvolené nastavenia
     .accesskey = O
-help-button-label = Podpora pre { -brand-short-name }
+help-button-label = Podpora pre { -brand-short-name(case: "acc") }
 addons-button-label = Rozšírenia a témy vzhľadu
 focus-search =
     .key = f
 close-button =
     .aria-label = Zavrieť
+do-not-track-removal2 =
+    .label = Príznak “Nesledovať” (Do Not Track) už nie je podporovaný
 
 ## Browser Restart Dialog
 
 feature-enable-requires-restart = Aby bolo možné použiť túto funkciu, { -brand-short-name } musí byť reštartovaný.
 feature-disable-requires-restart = Aby bolo možné vypnúť túto funkciu, { -brand-short-name } musí byť reštartovaný.
-should-restart-title = Reštartovať { -brand-short-name }
-should-restart-ok = Reštartovať { -brand-short-name } teraz
+should-restart-title = Reštartovať { -brand-short-name(case: "acc") }
+should-restart-ok = Reštartovať { -brand-short-name(case: "acc") } teraz
 cancel-no-restart-button = Zrušiť
 restart-later = Reštartovať neskôr
 
@@ -111,6 +119,10 @@ extension-controlling-proxy-config = <img data-l10n-name ="icon"/> <strong>{ $na
 # <img data-l10n-name="addons-icon"/> will be replaced with Add-ons icon
 # <img data-l10n-name="menu-icon"/> will be replaced with Menu icon
 extension-controlled-enable = Ak chcete toto rozšírenie povoliť, prejdite do sekcie <img data-l10n-name="addons-icon"/> Doplnky v ponuku <img data-l10n-name="menu-icon"/>.
+extension-controlled-enable-2 = Ak chcete toto rozšírenie znova povoliť, navštívte stránku <a data-l10n-name="addons-link">Rozšírenia a témy</a>.
+# This string is shown to notify the user that their home page or new tab preferences
+# are being controlled by an extension.
+extension-controlling-homepage = Rozšírenie { $name } ovláda niektoré nastavenia vašej domovskej stránky.
 
 ## Preferences UI Search Results
 
@@ -125,6 +137,10 @@ startup-header = Spustenie
 always-check-default =
     .label = Vždy kontrolovať, či je { -brand-short-name } predvoleným prehliadačom
     .accesskey = r
+is-default-browser =
+    .message = { -brand-short-name } je nastavený ako predvolený prehliadač
+is-not-default-browser =
+    .message = { -brand-short-name } nie je vaším predvoleným prehliadačom
 is-default = { -brand-short-name } je nastavený ako predvolený prehliadač
 is-not-default = { -brand-short-name } nie je vaším predvoleným prehliadačom
 set-as-my-default-browser =
@@ -133,19 +149,63 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Načítať naposledy otvorené okná a karty
     .accesskey = o
+startup-windows-launch-on-login-profile-disabled =
+    .message = Povoľte túto predvoľbu začiarknutím položky “{ profile-manager-use-selected.label }” v okne “Výber používateľského profilu”.
 windows-launch-on-login =
-    .label = Spustiť { -brand-short-name } automaticky po spustení počítača
+    .label = Spustiť { -brand-short-name(case: "acc") } automaticky po spustení počítača
     .accesskey = S
 windows-launch-on-login-disabled = Táto predvoľba bola v systéme Windows zakázaná. Ak to chcete zmeniť, navštívte stránku <a data-l10n-name="startup-link">Aplikácie pri spustení</a> v nastaveniach systému.
+windows-launch-on-login-profile-disabled = Povoľte túto predvoľbu začiarknutím položky “{ profile-manager-use-selected.label }” v okne “Výber používateľského profilu”.
 startup-restore-warn-on-quit =
     .label = Upozorniť pri ukončení prehliadača
 disable-extension =
     .label = Zakázať rozšírenie
+preferences-data-migration-group =
+    .label = Import údajov prehliadača
+    .description = Preneste si záložky, heslá, históriu, rozšírenia a údaje automatického dopĺňania z iného prehliadača.
 preferences-data-migration-header = Import údajov prehliadača
 preferences-data-migration-description = Importujte záložky, heslá, históriu a údaje automatického dopĺňania formulárov do svojho { -brand-short-name(case: "gen") }.
 preferences-data-migration-button =
     .label = Importovať údaje
     .accesskey = m
+preferences-profiles-group-header =
+    .heading = Profily
+preferences-profiles-subpane-description =
+    .description = Každý profil má samostatné údaje a nastavenia prehliadania vrátane histórie, hesiel a ďalších.
+preferences-profiles-section-header =
+    .label = Profily
+    .description = Každý profil má samostatné údaje a nastavenia prehliadania vrátane histórie, hesiel a ďalších.
+preferences-profiles-header = Profily
+preferences-manage-profiles-description = Každý profil má samostatné údaje a nastavenia prehliadania vrátane histórie, hesiel a ďalších.
+preferences-manage-profiles-learn-more = Ďalšie informácie
+preferences-manage-profiles-button =
+    .label = Spravovať profily
+preferences-profiles-settings-button =
+    .label = Nastavenia
+# This string labels the entire copy profile section in the profiles sub-pane.
+preferences-copy-profile-header =
+    .label = Kopírovať existujúci profil
+    .description = Do nového profilu sa skopírujú vaše nastavenia, doplnky, históriu a uložené údaje, ako sú záložky a heslá – ale nie váš účet ani synchronizačné informácie.
+# This string sits next to the copy controls, both the copy-profile-select
+# drop-down and the copy-profile-button, so that the user understands they
+# need to first pick a profile to copy, and then click the copy button.
+preferences-profile-to-copy =
+    .label = Profil na kopírovanie
+# This string is a placeholder that will be shown in a drop-down list of
+# profiles. The user will select a profile, then click the copy button
+# to make a copy of that profile.
+preferences-copy-profile-select = Vybrať profil
+preferences-copy-profile-button = Kopírovať
+tabs-group-header2 =
+    .label = Karty
+tabs-opening-heading =
+    .label = Otváranie
+tabs-interaction-heading =
+    .label = Interakcia
+tabs-containers-heading =
+    .label = Kontajnery
+tabs-closing-heading =
+    .label = Zatváranie
 tabs-group-header = Karty
 ctrl-tab-recently-used-order =
     .label = Prepínať karty pomocou Ctrl+Tab v poradí podľa posledného otvorenia
@@ -153,6 +213,19 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Otvárať odkazy v kartách namiesto okien
     .accesskey = r
+open-external-link-next-to-active-tab =
+    .label = Odkazy z aplikácií otvárať vedľa aktívnej karty
+ask-on-close-multiple-tabs =
+    .label = Opýtať sa pred zatvorením viacerých kariet naraz
+    .accesskey = v
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = Opýtať sa pred ukončením pomocou skratky { $quitKey }
+    .accesskey = u
 confirm-on-close-multiple-tabs =
     .label = Vyžadovať potvrdenie pred zatvorením viacerých kariet naraz
     .accesskey = V
@@ -181,6 +254,8 @@ browser-containers-settings =
     .label = Nastavenia…
     .accesskey = i
 containers-disable-alert-title = Zavrieť všetky kontajnerové karty?
+startup-group =
+    .label = Spustenie
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -215,12 +290,49 @@ containers-remove-cancel-button = Neodstraňovať tento kontajner
 settings-tabs-show-image-in-preview =
     .label = Zobrazovať obrázok s náhľadom pri prejdení myši nad kartou
     .accessKey = h
+browser-layout-header2 =
+    .label = Rozloženie prehliadača
+browser-layout-horizontal-tabs2 =
+    .label = Horizontálne karty
+    .title = Karty v hornej časti
+    .description = Karty v hornej časti
+browser-layout-vertical-tabs2 =
+    .label = Vertikálne karty
+    .title = Karty na boku, v bočnom paneli
+    .description = Karty na boku, v bočnom paneli
+browser-layout-show-sidebar2 =
+    .label = Zobraziť bočný panel
+    .description = Získajte rýchly prístup k záložkám, kartám z telefónu, AI chatbotom a ďalším bez toho, aby ste opustili hlavné okno.
+browser-layout-header = Rozloženie prehliadača
+browser-layout-horizontal-tabs =
+    .label = Karty v hornej časti
+browser-layout-horizontal-tabs-desc = Zobrazujú sa v hornej časti prehliadača
+browser-layout-vertical-tabs =
+    .label = Vertikálne karty
+browser-layout-vertical-tabs-desc = Zobrazujú sa v bočnom paneli
+browser-layout-show-sidebar =
+    .label = Zobraziť bočný panel
+browser-layout-show-sidebar-desc = Získajte rýchly prístup k záložkám, kartám z telefónu, AI chatbotom a ďalším bez toho, aby ste opustili hlavné okno.
 
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Jazyk a vzhľad stránok
+appearance-group =
+    .label = Vzhľad webových stránok
+    .description = Niektoré webové stránky prispôsobujú svoju farebnú schému podľa vašich preferencií. Vyberte farebnú schému, ktorú chcete použiť pre tieto stránky.
 preferences-web-appearance-header = Vzhľad webových stránok
 preferences-web-appearance-description = Niektoré webové stránky prispôsobujú svoju farebnú schému podľa vašich preferencií. Vyberte farebnú schému, ktorú chcete použiť pre tieto stránky.
+preferences-web-appearance-choice-auto2 =
+    .label = Automatická
+    .title = Automaticky meniť pozadie a obsah webových stránok na základe vašich systémových nastavení a témy vzhľadu prehliadača { -brand-short-name }.
+preferences-web-appearance-choice-light2 =
+    .label = Svetlá
+    .title = Svetlá téma vzhľadu pre pozadie a obsah webových stránok
+preferences-web-appearance-choice-dark2 =
+    .label = Tmavá
+    .title = Tmavá téma vzhľadu pre pozadie a obsah webových stránok
+web-appearance-group =
+    .aria-label = Vzhľad webových stránok
 preferences-web-appearance-choice-auto = Automatická
 preferences-web-appearance-choice-light = Svetlá
 preferences-web-appearance-choice-dark = Tmavá
@@ -238,19 +350,45 @@ preferences-web-appearance-choice-input-dark =
     .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
-preferences-web-appearance-override-warning = Váš výber farieb má prednosť pred vzhľadom webových stránok. <a data-l10n-name="colors-link">Spravovať farby</a>
+preferences-web-appearance-override-warning3 =
+    .message = Vaše nastavenia kontrastu majú prednosť pred nastaveniami vzhľadu vo webovej stránke.
+preferences-web-appearance-link =
+    .label = Témy vzhľadu { -brand-short-name(case: "gen") } môžete spravovať v okne Správcu doplnkov.
+preferences-contrast-control-group =
+    .label = Kontrast webových stránok
+    .description = Webové stránky používajú rôzne farby popredia a pozadia. Pre dosiahnutie konzistentného kontrastu môžete na všetkých webových stránkach použiť rovnaké farby.
+preferences-contrast-control-radio-group =
+    .label = Prepísať farby
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
-preferences-web-appearance-override-warning2 =
-    .message = Váš výber farieb má prednosť pred vzhľadom webových stránok.
+preferences-web-appearance-override-warning = Váš výber farieb má prednosť pred vzhľadom webových stránok. <a data-l10n-name="colors-link">Spravovať farby</a>
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = Témy vzhľadu { -brand-short-name(case: "gen") } môžete spravovať v okne <a data-l10n-name="themes-link">Správcu doplnkov</a>.
+preferences-contrast-control-header = Nastavenie kontrastu
+preferences-contrast-control-description = Webové stránky majú rôzne farby popredia a pozadia. Nakonfigurujte si { -brand-short-name(case: "acc") } tak, aby používal rovnaké farby na webových stránkach pre ich lepšiu čitateľnosť.
+preferences-contrast-control-use-platform-settings =
+    .label = Automaticky (použiť systémové nastavenia)
+    .accesskey = A
+preferences-contrast-control-off =
+    .label = Vypnuté
+    .accesskey = V
+preferences-contrast-control-custom =
+    .label = Vlastné
+    .accesskey = l
 preferences-colors-header = Farby
 preferences-colors-description = Umožňuje zmeniť predvolené farby textu, pozadia webových stránok a odkazov vo { -brand-short-name(case: "loc") }.
 preferences-colors-manage-button =
     .label = Spravovať farby…
     .accesskey = f
+preferences-fonts-header2 =
+    .label = Písma
+default-font-2 =
+    .label = Predvolené písmo
+    .accesskey = d
+default-font-size-2 =
+    .label = Veľkosť
+    .accesskey = s
 preferences-fonts-header = Písma
 default-font = Predvolené písmo
     .accesskey = d
@@ -259,6 +397,12 @@ default-font-size = Veľkosť
 advanced-fonts =
     .label = Pokročilé…
     .accesskey = o
+# Zoom is a noun, and the message is used as header for a group of options
+preferences-zoom-header2 =
+    .label = Veľkosť stránky
+preferences-default-zoom-label =
+    .label = Predvolená veľkosť
+    .accesskey = d
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Veľkosť stránky
 preferences-default-zoom = Predvolená veľkosť
@@ -274,6 +418,28 @@ preferences-text-zoom-override-warning =
     .message = Upozornenie: ak vyberiete možnosť “Meniť iba veľkosť textu” a vaše predvolené priblíženie nie je nastavené na 100 %, môže to spôsobiť nesprávne zobrazenie niektorých stránok alebo obsahu.
 language-header = Jazyk
 choose-language-description = Vyberte jazyky pre zobrazovanie webových stránok
+website-language-heading =
+    .label = Jazyk webovej stránky
+    .description = Niektoré webové stránky je možné zobraziť vo viacerých jazykoch. Vyberte si jazyky a zoraďte ich podľa vašej preferencie.
+website-preferred-language =
+    .label = Preferované jazyky
+website-add-language =
+    .label = Pridať jazyk
+website-add-language-button =
+    .aria-label = Pridať vybraný jazyk
+    .title = Pridať vybraný jazyk
+# The pattern used to generate strings presented to the user in the
+# website languages selection list.
+#
+# Example:
+#   Icelandic
+#   Spanish (Chile)
+#
+# Variables:
+#   $locale (String) - A name of the locale (for example: "Icelandic", "Spanish (Chile)")
+website-remove-language-button =
+    .aria-label = Odstrániť jazyk { $locale }
+    .title = Odstrániť jazyk { $locale }
 choose-button =
     .label = Vybrať…
     .accesskey = V
@@ -281,7 +447,7 @@ choose-browser-language-description = Vyberte si jazyk, v ktorom sa majú zobraz
 manage-browser-languages-button =
     .label = Vybrať alternatívy
     .accesskey = a
-confirm-browser-language-change-description = Ak chcete použiť tieto zmeny, reštartujte { -brand-short-name }
+confirm-browser-language-change-description = Ak chcete použiť tieto zmeny, reštartujte { -brand-short-name(case: "acc") }
 confirm-browser-language-change-button = Použiť a reštartovať
 translate-web-pages =
     .label = Prekladať webový obsah do iného jazyka
@@ -293,6 +459,68 @@ translate-attribution = Preložené pomocou služby <img data-l10n-name="logo"/>
 translate-exceptions =
     .label = Výnimky…
     .accesskey = m
+settings-translations-header =
+    .label = Preklady
+    .aria-label = Preklady
+    .description = Preklad stránok alebo vybraného textu. Z dôvodu ochrany vášho súkromia zostávajú preklady vo vašom zariadení.
+settings-translations-offer-to-translate-label =
+    .label = Ponúkať preklad celej stránky
+settings-translations-more-settings-button =
+    .label = Ďalšie nastavenia prekladu
+    .description = Nastavte si predvoľby pre jazyky, webové stránky a offline preklad.
+settings-translations-subpage-header =
+    .heading = Ďalšie nastavenia prekladu
+settings-translations-subpage-speed-up-translation-header =
+    .label = Zrýchliť preklad
+    .description = Ak chcete rýchlejšie preklady alebo preklady offline, musíte si stiahnuť kompletné jazykové balíky.
+settings-translations-subpage-automatic-translation-header =
+    .label = Automatický preklad
+settings-translations-subpage-always-translate-header =
+    .label = Vždy prekladať z týchto jazykov
+settings-translations-subpage-never-translate-header =
+    .label = Nikdy neprekladať z týchto jazykov
+settings-translations-subpage-never-translate-sites-header =
+    .label = Neprekladať tieto stránky
+# The icon placeholders show the translations button and the settings gear in the urlbar panel.
+settings-translations-subpage-never-translate-sites-description = Ak chcete pridať stránku, otvorte <img data-l10n-name="translations-icon"/> panel prekladov, vyberte <img data-l10n-name="settings-icon"/> nastavenia prekladov a potom vyberte možnosť “Nikdy neprekladať túto stránku”.
+settings-translations-subpage-language-select-option =
+    .label = Pridať jazyk
+settings-translations-subpage-language-add-button =
+    .aria-label = Pridať jazyk
+    .title = Pridať jazyk
+settings-translations-subpage-download-languages-header =
+    .label = Stiahnuť jazyky
+settings-translations-subpage-download-languages-select-option =
+    .label = Zvoľte jazyk
+settings-translations-subpage-download-languages-button =
+    .aria-label = Stiahnuť jazyk
+    .title = Stiahnuť jazyk
+# Variables:
+#   $language (string) - Localized name of the language to download.
+#   $size (string) - Download size in megabytes, formatted for the locale.
+settings-translations-subpage-download-language-option = { $language } ({ $size } MB)
+    .label = { $language } ({ $size } MB)
+settings-translations-subpage-no-languages-downloaded =
+    .label = Neboli stiahnuté žiadne jazyky
+settings-translations-subpage-no-languages-added =
+    .label = Neboli pridané žiadne jazyky
+settings-translations-subpage-download-progress = Prebieha sťahovanie…
+# Variables:
+#   $language (string) - The localized display name of the language.
+#   $size (string) - The download size of the language in megabytes.
+settings-translations-subpage-download-error = Nepodarilo sa stiahnuť jazyk { $language } ({ $size } MB)
+settings-translations-subpage-download-retry-button =
+    .label = Skúsiť znova
+# Variables:
+#   $language (string) - The localized display name of the language.
+#   $size (string) - The download size of the language in megabytes.
+settings-translations-subpage-download-delete-confirm = Odstrániť jazyk { $language } ({ $size } MB)?
+settings-translations-subpage-download-delete-button =
+    .label = Odstrániť
+settings-translations-subpage-download-cancel-button =
+    .label = Zrušiť
+settings-translations-subpage-no-sites-added =
+    .label = Neboli pridané žiadne stránky
 # Variables:
 #    $localeName (string) - Localized name of the locale to be used.
 use-system-locale =
@@ -304,6 +532,11 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = Súbory a aplikácie
+downloads-header-2 =
+    .label = Sťahovanie súborov
+download-save-where-2 =
+    .label = Všetky súbory ukladať do
+    .accesskey = v
 download-header = Sťahovanie súborov
 download-save-where = Všetky súbory ukladať do
     .accesskey = v
@@ -321,6 +554,9 @@ download-choose-folder =
 download-always-ask-where =
     .label = Vždy sa opýtať, kam uložiť súbory
     .accesskey = k
+download-private-browsing-delete =
+    .label = Odstrániť súbory stiahnuté v režime súkromného prehliadania po zatvorení všetkých súkromných okien
+    .accesskey = r
 applications-header = Aplikácie
 applications-description = Čo má { -brand-short-name } urobiť so súbormi stiahnutými z webu alebo s aplikáciami, ktoré používate pri prehliadaní.
 applications-filter =
@@ -403,6 +639,8 @@ applications-save-for-new-types =
 applications-ask-before-handling =
     .label = Opýtať sa, či chcete súbory otvoriť alebo uložiť
     .accesskey = O
+drm-group =
+    .label = Obsah chránený pomocou Digital Rights Management (DRM)
 drm-content-header = Obsah chránený pomocou Digital Rights Management (DRM)
 play-drm-content =
     .label = Prehrávať obsah chránený pomocou DRM
@@ -452,6 +690,16 @@ update-in-progress-ok-button = &Zrušiť
 # method of closing the UI will not discard the update.
 update-in-progress-cancel-button = &Pokračovať
 
+## Firefox support
+
+support-application-heading =
+    .label = Podpora pre { -brand-short-name(case: "acc") }
+    .description = Riešenie problémov alebo zdieľanie nápadov s komunitou.
+support-get-help =
+    .label = Získať pomoc
+support-share-ideas =
+    .label = Zdieľať nápady a spätnú väzbu
+
 ## General Section - Performance
 
 performance-title = Výkon
@@ -471,10 +719,14 @@ performance-limit-content-process-blocked-desc = Zmena počtu procesov s obsahom
 #   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (predvolená)
+performance-group =
+    .label = Výkon
 
 ## General Section - Browsing
 
 browsing-title = Prehliadanie
+browsing-group-label =
+    .aria-label = Prehliadanie
 browsing-use-autoscroll =
     .label = Použiť automatický posun
     .accesskey = a
@@ -502,6 +754,9 @@ browsing-search-on-start-typing =
 browsing-picture-in-picture-toggle-enabled =
     .label = Povoliť ovládanie videa v režime Obraz v obraze
     .accesskey = o
+browsing-picture-in-picture-enable-when-switching-tabs =
+    .label = Pokračovať v prehrávaní videí v režime Obraz v obraze pri prepínaní kariet
+    .accesskey = O
 browsing-picture-in-picture-learn-more = Ďalšie informácie
 browsing-media-control =
     .label = Ovládať médiá pomocou klávesnice, náhlavnej súpravy alebo virtuálneho rozhrania
@@ -514,6 +769,8 @@ browsing-cfr-features =
     .label = Odporúčať funkcie počas prehliadania
     .accesskey = f
 browsing-cfr-recommendations-learn-more = Ďalšie informácie
+browsing-group =
+    .label = Prehliadanie
 
 ## General Section - Proxy
 
@@ -523,16 +780,36 @@ network-proxy-connection-learn-more = Ďalšie informácie
 network-proxy-connection-settings =
     .label = Nastavenia…
     .accesskey = N
+network-proxy-group =
+    .label = Nastavenia siete
+    .description = Konfigurovať, ako sa aplikácia { -brand-short-name } pripája k internetu.
 
 ## Home Section
 
 home-new-windows-tabs-header = Nové okná a karty
 home-new-windows-tabs-description2 = Vyberte si domovskú stránku a stránku zobrazovanú pri otvorení nových okien a kariet.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+home-default-browser-title =
+    .label = Predvolený prehliadač
+is-default-browser-2 =
+    .message = { -brand-short-name } je vaším predvoleným prehliadačom. Dobrá voľba.
+is-not-default-browser-2 =
+    .message = Psst, { -brand-short-name } nie je vaším predvoleným prehliadačom.
+set-as-my-default-browser-2 =
+    .label = Nastaviť ako predvolený
+    .accesskey = d
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = Domovská stránka a nové okná
+home-homepage-new-windows =
+    .label = Nové okná
+home-homepage-mode-label2 = Nové okná
 home-newtabs-mode-label = Nové karty
+home-homepage-new-tabs =
+    .label = Nové karty
 home-restore-defaults =
     .label = Obnoviť predvolené
     .accesskey = r
@@ -544,6 +821,14 @@ home-mode-choice-blank =
     .label = Prázdna stránka
 home-homepage-custom-url =
     .placeholder = Zadajte URL adresu…
+# This button is shown when the homepage is managed by an extension and is placed below extension-controlling-homepage.
+home-homepage-manage-extension-button =
+    .label = Spravovať rozšírenie
+# This option leads to the "Custom Homepage" subpage
+home-homepage-custom-homepage-button =
+    .label = Vyberte konkrétnu stránku
+# This option leads to the "Custom Homepage" subpage
+home-homepage-custom-homepage-url = Vyberte konkrétnu stránku
 # This string has a special case for '1' and [other] (default). If necessary for
 # your language, you can add {$tabCount} to your translations and use the
 # standard CLDR forms, or only use the form for [other] if both strings should
@@ -558,6 +843,44 @@ use-current-pages =
 choose-bookmark =
     .label = Použiť záložku…
     .accesskey = z
+home-homepage-header = Domovská stránka
+
+## Home Section - Home Page Customization
+
+home-homepage-title =
+    .label = Domovská stránka
+
+## Custom Homepage subpage
+
+home-custom-homepage-header = Vlastná domovská stránka
+home-custom-homepage-subpage =
+    .heading = Vlastná domovská stránka
+# Subheader on the Custom Homepage subpage. Followed by a form to enter URLs and a list of URLs already saved, if any.
+home-custom-homepage-card-header =
+    .label = Adresy webových stránok
+# Subheader on the Custom Homepage subpage. Followed by a form to enter URLs and a list of URLs already saved, if any.
+home-custom-homepage-subheader = Adresy webových stránok
+home-custom-homepage-address =
+    .placeholder = Zadajte adresu
+home-custom-homepage-address-button =
+    .label = Pridať adresu
+# Shown when no custom websites/URLs to use as a homepage have been added yet
+home-custom-homepage-no-results =
+    .label = Zatiaľ neboli pridané žiadne webové stránky.
+home-custom-homepage-delete-address-button =
+    .aria-label = Odstrániť adresu
+    .title = Odstrániť adresu
+# Shown when no custom websites/URLs to use as a homepage have been added yet
+home-custom-homepage-no-websites-yet = Zatiaľ neboli pridané žiadne webové stránky.
+# Further options to use when setting the home page. Two action buttons are placed in line with this prompt
+# to replace the current home page with a currently open page or bookmark.
+home-custom-homepage-replace-with = Nahradiť s
+# Button that appears in-line after text "Replace with" (home-custom-homepage-replace-with)
+home-custom-homepage-current-pages-button =
+    .label = Aktuálne otvorené stránky
+# Button that appears in-line after text "Replace with" (home-custom-homepage-replace-with)
+home-custom-homepage-bookmarks-button =
+    .label = Záložky…
 
 ## Home Section - Firefox Home Content Customization
 
@@ -565,14 +888,17 @@ home-prefs-content-header2 = Obsah na { -firefox-home-brand-name(case: "loc") }
 home-prefs-content-description2 = Zvoľte, aký obsah chcete mať dostupný na svojej { -firefox-home-brand-name(case: "loc") }.
 home-prefs-search-header =
     .label = Vyhľadávanie na webe
+home-prefs-search-header2 =
+    .label = Vyhľadávanie
 home-prefs-shortcuts-header =
     .label = Skratky
 home-prefs-shortcuts-description = Stránky, ktoré si uložíte alebo navštívite
 home-prefs-shortcuts-by-option-sponsored =
     .label = Sponzorované skratky
+home-prefs-content-header =
+    .label = { -firefox-home-brand-name }
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Odporúča { $provider }
@@ -580,6 +906,12 @@ home-prefs-recommended-by-description-new = Výnimočný obsah vybraný službou
 home-prefs-recommended-by-header-generic =
     .label = Odporúčané príbehy
 home-prefs-recommended-by-description-generic = Výnimočný obsah spravovaný rodinou { -brand-product-name }
+home-prefs-stories-header =
+    .label = Príbehy
+home-prefs-stories-description = Prispôsobené príbehy na základe vašej aktivity
+home-prefs-stories-header2 =
+    .label = Príbehy
+    .description = Výnimočný obsah spravovaný rodinou { -brand-product-name }
 
 ##
 
@@ -610,6 +942,27 @@ home-prefs-weather-header =
     .label = Počasie
 home-prefs-weather-description = Dnešná predpoveď v skratke
 home-prefs-weather-learn-more-link = Ďalšie informácie
+home-prefs-widgets-header =
+    .label = Miniaplikácie
+# Lists is a widget on New Tab, similar to a to-do widget
+home-prefs-lists-header =
+    .label = Zoznamy
+# Timer is a widget on New Tab, similar to the Pomodoro timer.
+home-prefs-timer-header =
+    .label = Časovač
+# "Support" here means to help sustain or contribute to something, especially through funding or sponsorship.
+home-prefs-support-firefox-header =
+    .label = Podporiť { -brand-product-name }
+home-prefs-mission-message = Naši sponzori podporujú našu misiu budovať lepší web.
+home-prefs-mission-message-learn-more-link = Pozrite sa ako
+home-prefs-mission-message2 =
+    .message = Naši sponzori podporujú našu misiu budovať lepší web.
+home-prefs-manage-topics-link = Spravovať témy
+home-prefs-manage-topics-link2 =
+    .label = Spravovať témy
+home-prefs-choose-wallpaper-link = Vyberte si tapetu
+home-prefs-choose-wallpaper-link2 =
+    .label = Vyberte si tapetu
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -644,6 +997,35 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Zobrazovať návrhy vyhľadávania vo výsledkoch panela s adresou
     .accesskey = a
+# This string describes what the user will observe when the system
+# prioritizes search suggestions over browsing history in the results
+# that extend down from the address bar. In the original English string,
+# "before" refers to location (appearing most proximate to), not time
+# (appearing before).
+search-show-suggestions-above-history-option-2 =
+    .label = Zobrazovať návrhy vyhľadávania v paneli s adresou pred históriou prehliadania
+search-show-suggestions-private-windows-2 =
+    .label = Návrhy vyhľadávania v súkromnom prehliadaní
+search-suggestions-cant-show-2 =
+    .message = Návrhy vyhľadávania nebudú zobrazené vo výsledkoch panela s adresou, pretože ste { -brand-short-name(case: "acc") } nastavili tak, aby si nepamätal históriu.
+addressbar-header-1 =
+    .label = Panel s adresou
+    .description = Zvoľte, aké návrhy sa zobrazujú v paneli s adresou
+# When Firefox Suggest is enabled, this replaces `addressbar-header-1`.
+addressbar-header-firefox-suggest-2 =
+    .label = { -firefox-suggest-brand-name }
+    .description = Návrhy { -brand-short-name(case: "gen") } a našich partnerov vo vašom adresnom riadku.
+# With this option enabled, while on a SERP, the URL normally displayed in the
+# address bar will be replaced with the search term used to generate that SERP.
+search-show-search-term-option-2 =
+    .label = Na stránkach s výsledkami zobrazovať v paneli s adresou hľadané výrazy
+search-separate-default-engine-2 =
+    .label = Používať iný predvolený vyhľadávací nástroj v súkromných oknách
+    .accesskey = h
+search-separate-default-engine-dropdown =
+    .aria-label = Predvolený vyhľadávač v súkromných oknách
+search-suggestions-header-2 =
+    .label = Návrhy z vyhľadávačov
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -659,9 +1041,12 @@ search-show-suggestions-above-history-option =
 search-show-suggestions-private-windows =
     .label = Zobrazovať návrhy vyhľadávania v súkromnom prehliadaní
 suggestions-addressbar-settings-generic2 = Zmeniť nastavenia návrhov v paneli s adresou
-search-suggestions-cant-show = Návrhy vyhľadávania nebudú zobrazené vo výsledkoch panela s adresou, pretože ste { -brand-short-name } nastavili tak, aby si nepamätal históriu.
+search-suggestions-cant-show = Návrhy vyhľadávania nebudú zobrazené vo výsledkoch panela s adresou, pretože ste { -brand-short-name(case: "acc") } nastavili tak, aby si nepamätal históriu.
 search-one-click-header2 = Skratky vyhľadávania
 search-one-click-desc = Vyberte ďalšie vyhľadávacie moduly, ktoré sa zobrazia v ponuke panela s adresou a vyhľadávacieho panela.
+search-one-click-header-3 =
+    .label = Ďalšie vyhľadávače
+    .description = Vyberte, ktoré vyhľadávače a skratky sa zobrazujú v paneli s adresou.
 search-choose-engine-column =
     .label = Vyhľadávací modul
 search-choose-keyword-column =
@@ -675,6 +1060,12 @@ search-remove-engine =
 search-add-engine =
     .label = Pridať
     .accesskey = P
+search-add-engine-2 =
+    .label = Pridať vyhľadávací modul
+    .accesskey = r
+search-edit-engine =
+    .label = Upraviť
+    .accesskey = U
 search-find-more-link = Nájsť ďalšie vyhľadávacie moduly
 # This warning is displayed when the chosen keyword is already in use
 # ('Duplicate' is an adjective)
@@ -683,12 +1074,25 @@ search-keyword-warning-title = Duplicitné kľúčové slovo
 #   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Zadali ste kľúčové slovo, ktoré je v súčasnosti používané modulom "{ $name }". Vyberte nejaké iné.
 search-keyword-warning-bookmark = Zadali ste kľúčové slovo, ktoré je v súčasnosti používané jednou zo záložiek. Vyberte nejaké iné.
+# This warning is displayed when the chosen name is already in use.
+# Variables:
+#   $name (string) - Name of a search engine.
+edit-engine-name-warning-duplicate = Vyhľadávač s názvom “{ $name }” už existuje. Vyberte si iný názov.
+remove-engine-confirmation = Naozaj chcete odstrániť tento vyhľadávací modul?
+remove-engine-remove = Odstrániť
+remove-addon-engine-alert = Ak chcete odstrániť tento vyhľadávací modul, odstráňte príslušný doplnok.
+search-engine-group =
+    .label = Predvolený vyhľadávací modul
+search-default-engine =
+    .aria-label = Predvolený vyhľadávací modul
 
 ## Containers Section
 
 containers-back-button2 =
     .aria-label = Späť na nastavenia
 containers-header = Kontajnerové karty
+containers-section-header =
+    .heading = Kontajnerové karty
 containers-add-button =
     .label = Pridať nový kontajner
     .accesskey = P
@@ -700,6 +1104,16 @@ containers-settings-button =
 containers-remove-button =
     .label = Odstrániť
 
+## Account and sync
+
+sync-group-label =
+    .label = Synchronizácia
+account-group-label =
+    .label = Účet { -vendor-short-name }
+account-placeholder =
+    .label = Nie ste prihlásený
+    .description = Prihláste sa, aby vaše údaje zostali súkromné, šifrované a synchronizované medzi zariadeniami.
+
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
@@ -708,6 +1122,12 @@ sync-signedout-description2 = Synchronizujte si svoje záložky, históriu, kart
 sync-signedout-account-signin3 =
     .label = Prihlásiť sa a synchronizovať…
     .accesskey = P
+sync-signedout-account-signin-4 =
+    .label = Prihláste sa do svojho účtu a spustite synchronizáciu
+    .accesskey = r
+sync-signedout-account-short =
+    .label = Prihlásiť sa
+    .accesskey = r
 # This message contains two links and two icon images.
 #   `<img data-l10n-name="android-icon"/>` - Android logo icon
 #   `<a data-l10n-name="android-link">` - Link to Android Download
@@ -732,14 +1152,37 @@ fxa-login-rejected-warning =
 sync-sign-out =
     .label = Odhlásiť sa…
     .accesskey = h
+sync-sign-out2 =
+    .label = Odhlásiť sa
+    .accesskey = h
 sync-manage-account = Spravovať účet
+    .accesskey = p
+sync-manage-account2 =
+    .label = Spravovať účet
     .accesskey = p
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = Adresa { $email } nie je overená.
+sync-signedin-unverified2 =
+    .label = Adresa { $email } ešte nie je potvrdená
+    .description = Skontrolujte si schránku s doručenou poštou, aby ste potvrdili svoj účet a oficiálne ho registrovali.
 sync-signedin-login-failure = Ak sa chcete pripojiť k účtu { $email }, musíte sa prihlásiť.
+sync-signedin-login-failure2 =
+    .label = Ste odhlásený/á z { $email }
+    .description = Znova sa prihláste, aby ste sa znova pripojili a spustili synchronizáciu údajov.
+
+## Variables
+## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
+
+sync-account-signed-in =
+    .label = { $email }
+sync-account-signed-in-display-name =
+    .label = { $name }
+    .description = { $email }
 
 ##
 
@@ -759,9 +1202,17 @@ sync-sign-in =
 ## Sync section - enabling or disabling sync.
 
 prefs-syncing-on = Synchronizácia je zapnutá
+prefs-syncing-on-2 =
+    .label = Synchronizácia je zapnutá
 prefs-syncing-off = Synchronizácia je vypnutá
+prefs-syncing-off-2 =
+    .label = Synchronizácia je vypnutá
+    .description = Zapnite synchronizáciu a získajte svoje záložky, heslá, históriu a ďalšie údaje na akomkoľvek zariadení.
 prefs-sync-turn-on-syncing =
     .label = Zapnúť synchronizáciu…
+    .accesskey = Z
+prefs-sync-turn-on-syncing-2 =
+    .label = Zapnúť synchronizáciu
     .accesskey = Z
 prefs-sync-offer-setup-label2 = Synchronizujte si svoje záložky, históriu, karty, heslá, doplnky a nastavenia so všetkými svojimi zariadeniami.
 prefs-sync-now =
@@ -771,12 +1222,22 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = Synchronizovať
     .accesskey = n
+prefs-sync-now-button-2 =
+    .label = Synchronizovať
+    .accesskey = n
 prefs-syncing-button =
     .label = Synchronizuje sa…
+prefs-syncing-button-2 =
+    .label = Synchronizuje sa…
+    .title = Synchronizovať
 
 ## The list of things currently syncing.
 
 sync-syncing-across-devices-heading = Synchronizujete tieto položky vo všetkých pripojených zariadeniach:
+sync-syncing-across-devices-heading-2 = Údaje synchronizované medzi zariadeniami
+sync-syncing-across-devices-empty-state =
+    .label = Zatiaľ nič nesynchronizujete…
+    .description = Spustite synchronizáciu, aby ste mali všetky svoje údaje na všetkých svojich zariadeniach.
 sync-currently-syncing-bookmarks = Záložky
 sync-currently-syncing-history = História
 sync-currently-syncing-tabs = Otvorené karty
@@ -787,6 +1248,12 @@ sync-currently-syncing-creditcards = Platobné karty
 sync-currently-syncing-payment-methods = Spôsoby platby
 sync-currently-syncing-addons = Doplnky
 sync-currently-syncing-settings = Nastavenia
+sync-manage-options =
+    .label = Spravovať synchronizáciu…
+    .accesskey = S
+sync-manage-options-2 =
+    .label = Spravovať synchronizované údaje
+    .accesskey = r
 sync-change-options =
     .label = Zmeniť…
     .accesskey = Z
@@ -839,10 +1306,27 @@ sync-engine-settings =
     .label = Nastavenia
     .tooltiptext = Zmenené nastavenia v sekciách Všeobecné, Súkromie a bezpečnosť
     .accesskey = a
+sync-choose-what-to-sync-dialog4 =
+    .title = Spravujte, čo sa synchronizuje na všetkých vašich pripojených zariadeniach
+    .style = min-width: 40em;
+    .buttonlabelaccept = Uložiť
+    .buttonaccesskeyaccept = U
+    .buttonlabelextra2 = Odpojiť…
+    .buttonaccesskeyextra2 = O
 
 ## The device name controls.
 
 sync-device-name-header = Názov zariadenia
+sync-device-name-header-2 =
+    .label = Názov zariadenia
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Názov zariadenia
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Zmeniť názov zariadenia
+    .accesskey = m
 sync-device-name-change =
     .label = Zmeniť názov zariadenia…
     .accesskey = m
@@ -853,6 +1337,8 @@ sync-device-name-save =
     .label = Uložiť
     .accesskey = U
 sync-connect-another-device = Pripojiť ďalšie zariadenie
+sync-connect-another-device-2 =
+    .label = Pripojiť ďalšie zariadenie
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -884,10 +1370,16 @@ forms-ask-to-save-logins =
 # by searching for the former term "logins". It's not displayed in the UI.
 pane-privacy-passwords-header = Heslá
     .searchkeywords = prihlasovacie údaje
+forms-passwords-header =
+    .label = Heslá
+    .aria-label = Heslá
 # Checkbox to control whether UI is shown to users to save or fill logins/passwords.
 forms-ask-to-save-passwords =
     .label = Ponúkať možnosť uložiť heslá
     .accesskey = u
+forms-manage-password-exceptions =
+    .label = Spravovať výnimky pre heslá
+    .accesskey = h
 forms-exceptions =
     .label = Výnimky…
     .accesskey = m
@@ -918,15 +1410,40 @@ forms-saved-logins =
 forms-fill-usernames-and-passwords =
     .label = Automaticky dopĺňať používateľské mená a heslá
     .accesskey = u
+forms-fill-usernames-and-passwords-2 =
+    .label = Ukladať a automaticky dopĺňať používateľské mená a heslá
+    .accesskey = U
 forms-saved-passwords =
     .label = Uložené heslá
     .accesskey = s
+forms-saved-passwords-2 =
+    .label = Spravovať uložené heslá
+    .accesskey = r
+forms-saved-passwords-searchkeywords = Nasledujúce prihlasovacie údaje boli uložené do vášho počítača
+# Header for additional protections when managing password settings.
+forms-additional-protections-header =
+    .label = Dodatočná ochrana
 forms-primary-pw-use =
     .label = Používať hlavné heslo
     .accesskey = h
+forms-primary-pw-use-2 =
+    .label = Používať hlavné heslo
+    .description = Pridáva ďalšiu vrstvu zabezpečenia na ochranu vašich uložených hesiel.
+    .accesskey = h
+forms-primary-pw-set =
+    .label = Nastaviť hlavné heslo
+forms-primary-pw-on =
+    .label = Hlavné heslo je ZAPNUTÉ
+forms-primary-pw-change-2 =
+    .label = Zmeniť hlavné heslo
+# Label for button to disable primary password.
+forms-primary-pw-turn-off =
+    .label = Vypnúť
 # This operation requires the user to authenticate with the operating system (device sign-in)
 forms-os-reauth =
     .label = Vyžadovať heslo k účtu na zariadení na vyplnenie a správu hesiel
+forms-os-reauth-2 =
+    .label = Na správu hesiel vyžadovať heslo k účtu na zariadení
 forms-primary-pw-learn-more-link = Ďalšie informácie
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -983,10 +1500,95 @@ autofill-saved-payment-methods-button = Uložené spôsoby platby
 # This operation requires the user to authenticate with the operating system (device sign-in)
 autofill-reauth-payment-methods-checkbox = Vyžadovať heslo k účtu na zariadení na vyplnenie a správu spôsobov platby
     .accesskey = u
+autofill-payment-methods-title = Spôsoby platby
+autofill-payment-methods-header =
+    .aria-label = Spôsoby platby
+autofill-payment-methods-checkbox-message-2 =
+    .label = Ukladať a automaticky dopĺňať platobné informácie
+    .accesskey = f
+autofill-payment-methods-manage-payments-title =
+    .heading = Spravovať spôsoby platby
+autofill-payment-methods-manage-payments-button =
+    .label = Spravovať spôsoby platby
+    .accesskey = l
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox-2 =
+    .label = Vyžadovať heslo k účtu na zariadení na automatické vyplnenie a správu spôsobov platby
+    .accesskey = t
+autofill-payment-methods-add-button = Pridať nový spôsob platby
+payments-list-header =
+    .label = Spôsoby platby
+payments-list-item-label = <strong>Spôsoby platby</strong>
+payments-delete-payment-prompt-title = Odstrániť tento spôsob platby?
+payments-delete-payment-prompt-confirm-button = Odstrániť
+payments-delete-payment-prompt-cancel-button = Zrušiť
+payments-delete-payment-button-label =
+    .aria-label = Odstrániť
+payments-edit-payment-button-label =
+    .aria-label = Upraviť
+# This message is displayed when no payment methods such as credit card are stored in Firefox
+payments-no-payments-stored-message =
+    .label = Zatiaľ nebol pridaný žiadny spôsob platby
+payments-remove-payment-prompt-title = Odstrániť tento spôsob platby?
+payments-remove-payment-prompt-confirm-button = Odstrániť
+payments-remove-payment-prompt-cancel-button = Zrušiť
+autofill-addresses-title = Adresy a ďalšie
+autofill-addresses-header =
+    .aria-label = Adresy a ďalšie
+autofill-addresses-checkbox-message =
+    .label = Ukladať a automaticky dopĺňať adresy
+    .accesskey = d
+autofill-addresses-manage-addresses-button =
+    .label = Spravovať adresy a ďalšie
+    .accesskey = a
+addresses-list-header =
+    .label = Adresy
+addreses-delete-address-button-label =
+    .aria-label = Odstrániť
+addreses-edit-address-button-label =
+    .aria-label = Upraviť
+addresses-delete-address-prompt-title = Chcete odstrániť túto adresu?
+addresses-delete-address-prompt-confirm-button = Odstrániť
+addresses-delete-address-prompt-cancel-button = Zrušiť
+autofill-addresses-add-button = Pridať novú adresu
+autofill-addresses-manage-addresses-title =
+    .heading = Spravovať adresy a ďalšie
+# This message is displayed when no addresses are stored in Firefox
+addresses-no-addresses-stored-message =
+    .label = Zatiaľ neboli pridané žiadne adresy
+# These values are displayed for each address record listed on the "Manage addresses and more" subpage.
+# Variables:
+#   $name (string) - The name associated with the address
+#   $address (string) - The address
+address-moz-box-item =
+    .label = { $name }
+    .description = { $address }
+# These values are displayed for each credit card record listed on the Manage Payment methods
+# settings page.
+# Variables:
+#   $cardNumber (string) - The obscured credit card number (for example: ********* 2423)
+#   $expDate (string) - The obscured expiry date of the credit card (for example: XX/2027)
+payment-moz-box-item =
+    .label = { $cardNumber }
+    .description = { $expDate }
+addresses-group =
+    .label = Adresy a ďalšie
+payments-group =
+    .label = Spôsoby platby
 
 ## Privacy Section - History
 
 history-header = História
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label2 = Uchovávanie histórie:
 # This label is followed, on the same line, by a dropdown list of options
 # (Remember history, etc.).
 # In English it visually creates a full sentence, e.g.
@@ -1004,6 +1606,24 @@ history-remember-option-never =
     .label = Nikdy neukladať históriu prehliadania
 history-remember-option-custom =
     .label = Použiť vlastné nastavenia
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } si bude pamätať históriu vášho prehliadania, sťahovania, formulárov a vyhľadávania.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } použije totožné nastavenia s režimom súkromného prehliadania a nebude si pamätať žiadnu históriu prehliadania webu.
+history-custom-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } použije vlastné nastavenia pre vašu históriu prehliadania, sťahovania, formulárov a vyhľadávania.
+history-remember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } si bude pamätať históriu vášho prehliadania, sťahovania, formulárov a vyhľadávania.
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } použije totožné nastavenia s režimom súkromného prehliadania a nebude si pamätať žiadnu históriu prehliadania webu.
+history-custom-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } použije vlastné nastavenia pre vašu históriu prehliadania, sťahovania, formulárov a vyhľadávania.
 history-remember-description = { -brand-short-name } si bude pamätať históriu vášho prehliadania, sťahovania, formulárov a vyhľadávania.
 history-dontremember-description = { -brand-short-name } použije totožné nastavenia s režimom súkromného prehliadania a nebude si pamätať žiadnu históriu prehliadania webu.
 history-private-browsing-permanent =
@@ -1024,11 +1644,19 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = Vymazať históriu…
     .accesskey = s
+history-group =
+    .label = História
 
 ## Privacy Section - Site Data
 
 sitedata-header = Cookies a údaje stránok
+sitedata-label =
+    .aria-label = { sitedata-header }
 sitedata-total-size-calculating = Výpočet veľkosti údajov stránky a vyrovnávacej pamäte…
+# Variables:
+#   $value (number) - Value of the unit (for example: 4.6, 500)
+#   $unit (string) - Name of the unit (for example: "bytes", "KB")
+sitedata-total-size2 = Vaše uložené súbory cookie, história, údaje stránok a vyrovnávacia pamäť momentálne využívajú <strong>{ $value } { $unit }</strong> miesta na disku.
 # Variables:
 #   $value (number) - Value of the unit (for example: 4.6, 500)
 #   $unit (string) - Name of the unit (for example: "bytes", "KB")
@@ -1037,6 +1665,8 @@ sitedata-learn-more = Ďalšie informácie
 sitedata-delete-on-close =
     .label = Odstrániť cookies a údaje stránok pri zatvorení aplikácie { -brand-short-name }
     .accesskey = c
+sitedata-delete-on-close-private-browsing3 =
+    .message = Na základe vašich nastavení histórie { -brand-short-name } odstráni súbory cookie a údaje stránok z vašej relácie, keď zatvoríte prehliadač.
 sitedata-delete-on-close-private-browsing = Pri trvalom režime súkromného prehliadania sa cookies a údaje stránok vymažú ihneď po uzavretí aplikácie { -brand-short-name }.
 sitedata-delete-on-close-private-browsing2 = Na základe vašich nastavení histórie { -brand-short-name } odstráni súbory cookie a údaje stránok z vašej relácie, keď zatvoríte prehliadač.
 sitedata-allow-cookies-option =
@@ -1053,6 +1683,8 @@ sitedata-option-block-cross-site-trackers =
     .label = Sledovacie prvky
 sitedata-option-block-cross-site-tracking-cookies =
     .label = Sledovacie cookies tretích strán
+sitedata-option-block-cross-site-cookies2 =
+    .label = Izolovať súbory cookie tretích strán
 sitedata-option-block-cross-site-cookies =
     .label = Sledovacie cookies tretích strán, izolovať ostatné cookies tretích strán
 sitedata-option-block-unvisited =
@@ -1061,6 +1693,12 @@ sitedata-option-block-all-cross-site-cookies =
     .label = Všetky súbory cookie tretích strán (môže spôsobiť nefunkčnosť niektorých stránok)
 sitedata-option-block-all =
     .label = Všetky cookies (obmedzí fungovanie niektorých stránok)
+sitedata-clear2 =
+    .label = Vymazať údaje prehliadania
+    .accesskey = m
+sitedata-settings2 =
+    .label = Spravovať údaje prehliadania
+    .accesskey = S
 sitedata-clear =
     .label = Vymazať údaje…
     .accesskey = m
@@ -1070,6 +1708,12 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = Spravovať výnimky…
     .accesskey = v
+sitedata-cookies-exceptions2 =
+    .label = Spravovať výnimky
+    .accesskey = r
+    .description = Môžete určiť, ktoré webové stránky môžu vždy alebo nesmú nikdy používať súbory cookie a údaje stránok.
+cookies-site-data-group =
+    .label = Cookies a údaje stránok
 
 ## Privacy Section - Cookie Banner Handling
 
@@ -1086,35 +1730,63 @@ forms-handle-cookie-banners =
 cookie-banner-blocker-checkbox-label =
     .label = Automaticky odmietať žiadosti o povolenie súborov cookie
 
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = Panel s adresou
+addressbar-suggest-1 = Zvoľte, aké návrhy sa zobrazujú v paneli s adresou
+# When Firefox Suggest is enabled, this replaces `addressbar-header`.
+addressbar-header-firefox-suggest-1 = { -firefox-suggest-brand-name }
+# When Firefox Suggest is enabled, this replaces `addressbar-suggest`.
+addressbar-suggest-firefox-suggest-1 = Návrhy { -brand-short-name(case: "gen") } a našich partnerov vo vašom adresnom riadku.
 addressbar-suggest = Pri používaní panela s adresou ponúkať
+# When Firefox Suggest is enabled, this replaces `addressbar-header`.
+addressbar-header-firefox-suggest = Panel s adresou — { -firefox-suggest-brand-name }
+# When Firefox Suggest is enabled, this replaces `addressbar-suggest`.
+addressbar-suggest-firefox-suggest = Vyberte typ návrhov, ktoré sa zobrazia v paneli s adresou.
+# When Firefox Suggest is enabled, a "Learn more" link appears at the end of
+# `addressbar-suggest-firefox-suggest`.
+addressbar-locbar-firefox-suggest-learn-more = Ďalšie informácie
 addressbar-locbar-history-option =
-    .label = históriu prehliadania
-    .accesskey = h
+    .label = História prehliadania
+    .accesskey = H
 addressbar-locbar-bookmarks-option =
-    .label = záložky
-    .accesskey = z
+    .label = Záložky
+    .accesskey = Z
 addressbar-locbar-clipboard-option =
     .label = Schránka
     .accesskey = c
 addressbar-locbar-openpage-option =
-    .label = otvorené karty
-    .accesskey = e
+    .label = Otvorené karty
+    .accesskey = O
 # Shortcuts refers to the shortcut tiles on the new tab page, previously known as top sites. Translation should be consistent.
 addressbar-locbar-shortcuts-option =
-    .label = skratky
+    .label = Skratky
     .accesskey = S
 addressbar-locbar-topsites-option =
-    .label = top stránky
-    .accesskey = t
+    .label = Top stránky
+    .accesskey = T
+addressbar-locbar-engines-option-1 =
+    .label = Návrhy vyhľadávačov, ktoré je možné použiť
+    .accesskey = N
 addressbar-locbar-engines-option =
-    .label = vyhľadávacie moduly
-    .accesskey = v
+    .label = Vyhľadávacie moduly
+    .accesskey = V
 addressbar-locbar-quickactions-option =
-    .label = rýchle akcie
-    .accesskey = r
+    .label = Rýchle akcie
+    .accesskey = R
+addressbar-locbar-showrecentsearches-option-2 =
+    .label = Nedávne vyhľadávania
+    .accesskey = e
+addressbar-locbar-showtrendingsuggestions-option-2 =
+    .label = Návrhy populárnych vyhľadávaní
+    .accesskey = h
+# Toggles whether suggestions are obtained from Firefox Suggest or not (local or online).
+addressbar-locbar-suggest-all-option-2 =
+    .label = Návrhy od { -brand-short-name(case: "gen") }
+    .description = Získajte návrhy z webu súvisiace s vaším vyhľadávaním.
+addressbar-locbar-suggest-sponsored-option-2 =
+    .label = Návrhy od sponzorov
+    .description = Podporte { -brand-short-name(case: "acc") } príležitostnými sponzorovanými návrhmi.
 addressbar-suggestions-settings = Zmeniť nastavenia pre návrhy vyhľadávania
 addressbar-locbar-showrecentsearches-option =
     .label = Zobrazovať nedávne vyhľadávania
@@ -1122,7 +1794,35 @@ addressbar-locbar-showrecentsearches-option =
 addressbar-locbar-showtrendingsuggestions-option =
     .label = Zobrazovať návrhy populárnych vyhľadávaní
     .accesskey = n
+# Toggles whether suggestions are obtained from Firefox Suggest or not (local or online).
+addressbar-locbar-suggest-all-option =
+    .label = Návrhy od { -brand-short-name(case: "gen") }
+addressbar-locbar-suggest-all-option-desc = Získajte návrhy z webu súvisiace s vaším vyhľadávaním.
+# Nonsponsored suggestions refers to Firefox Suggest suggestions like Wikipedia.
+addressbar-locbar-suggest-nonsponsored-option =
+    .label = Návrhy od { -brand-short-name(case: "gen") }
+addressbar-locbar-suggest-nonsponsored-desc = Získajte návrhy z webu súvisiace s vaším vyhľadávaním.
+addressbar-locbar-suggest-sponsored-option =
+    .label = Návrhy od sponzorov
+addressbar-locbar-suggest-sponsored-desc = Podporte { -brand-short-name(case: "acc") } príležitostnými sponzorovanými návrhmi.
+# This string is used for a checkbox in the settings UI that opts the
+# user into "online" Firefox Suggest, allowing them to receive suggestions from
+# Mozilla's Merino server.
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since the online suggest is created and maintained
+# by Mozilla.
+addressbar-firefox-suggest-online =
+    .label = Získavať návrhy od Mozilly počas písania
+addressbar-dismissed-suggestions-label-2 =
+    .label = Odmietnuté návrhy
+    .description = Obnovte odmietnuté návrhy od sponzorov a { -brand-short-name(case: "gen") }.
+addressbar-restore-dismissed-suggestions-button-2 =
+    .label = Obnoviť návrhy
 addressbar-quickactions-learn-more = Ďalšie informácie
+addressbar-dismissed-suggestions-label = Odmietnuté návrhy
+addressbar-restore-dismissed-suggestions-description = Obnovte odmietnuté návrhy od sponzorov a { -brand-short-name(case: "gen") }.
+addressbar-restore-dismissed-suggestions-button =
+    .label = Obnoviť
 
 ## Privacy Section - Content Blocking
 
@@ -1159,6 +1859,7 @@ content-blocking-private-windows = Sledovací obsah v súkromných oknách
 content-blocking-cross-site-cookies-in-all-windows2 = Cookies tretích strán vo všetkých oknách
 content-blocking-cross-site-tracking-cookies = Sledovacie cookies
 content-blocking-all-cross-site-cookies-private-windows = Cookies tretích strán v súkromných oknách
+content-blocking-isolate-cross-site-cookies = Izolovať súbory cookie tretích strán
 content-blocking-cross-site-tracking-cookies-plus-isolate = Sledovacie cookies tretích strán, ostatné izolovať
 content-blocking-social-media-trackers = Sledovacie prvky sociálnych sietí
 content-blocking-all-cookies = Všetky cookies
@@ -1179,8 +1880,23 @@ content-blocking-etp-standard-tcp-rollout-description = Úplná ochrana súborov
 content-blocking-etp-standard-tcp-rollout-learn-more = Ďalšie informácie
 content-blocking-etp-standard-tcp-title = Zahŕňa Úplnú ochranu súborov cookie, našu najvýkonnejšiu funkciu ochrany súkromia vôbec
 content-blocking-warning-title = Pozor!
+content-blocking-warning-title-2 = Niektoré stránky nemusia fungovať správne s prísnou ochranou pred sledovaním
+content-blocking-warning-title-custom = Niektoré stránky nemusia fungovať správne s vlastnou ochranou pred sledovaním
+# “Fix site issues” references the string content-blocking-exceptions-subheader
+content-blocking-and-isolating-etp-warning-description-4 = { -brand-short-name } odporúča použiť nastavenia v sekcii “Oprava problémov so stránkami” na zníženie počtu nefunkčných funkcií a obsahu stránok. Ak sa stránka zdá byť nefunkčná, skúste pre túto stránku vypnúť ochranu pred sledovaním, aby sa načítal všetok obsah.
 content-blocking-and-isolating-etp-warning-description-2 = Toto nastavenie môže ovplyvniť fungovanie niektorých stránok. Ak sa vám stránka zdá rozbitá, vypnutie ochrany pred sledovaním by vám mohlo pomôcť načítať všetok obsah.
 content-blocking-warning-learn-how = Ďalšie informácie
+content-blocking-baseline-exceptions-3 =
+    .label = Opraviť hlavné problémy so stránkami (odporúčané)
+    .description = Pomáha načítavať stránky a funkcie odblokovaním iba základných prvkov, ktoré môžu obsahovať sledovacie programy. Zahŕňa najbežnejšie problémy.
+# This option to fix minor site issues must be used with the option to fix major site issues (string content-blocking-baseline-exceptions-3)
+content-blocking-convenience-exceptions-3 =
+    .label = Opraviť menšie problémy so stránkami
+    .description = Obnovuje veci ako videá v článku alebo sekcie komentárov odblokovaním prvkov, ktoré môžu obsahovať sledovacie prvky. Toto môže znížiť problémy so stránkou, ale ponúka menšiu ochranu. Musí sa použiť s opravami závažných problémov.
+content-blocking-baseline-uncheck-warning-dialog-title = Naozaj chcete vypnúť opravy?
+content-blocking-baseline-uncheck-warning-dialog-body = Toto nastavenie pomáha riešiť najčastejšie problémy so stránkami. Ak ho vypnete, niektoré stránky nemusia fungovať a { -brand-short-name } vám nebude vedieť pomôcť s riešením týchto problémov.
+content-blocking-baseline-uncheck-warning-dialog-ok-button = Vypnúť opravy
+content-blocking-baseline-uncheck-warning-dialog-cancel-button = Ponechať opravy zapnuté
 content-blocking-reload-description = Aby sa zmeny prejavili, musíte obnoviť vaše karty.
 content-blocking-reload-tabs-button =
     .label = Obnoviť všetky karty
@@ -1260,10 +1976,27 @@ permissions-notification-link = Ďalšie informácie
 permissions-notification-pause =
     .label = Pozastaviť upozornenia do reštartu aplikácie { -brand-short-name }
     .accesskey = n
+permissions-autoplay2 =
+    .label = Automatické prehrávanie
 permissions-autoplay = Automatické prehrávanie
 permissions-autoplay-settings =
     .label = Nastavenia…
     .accesskey = N
+permissions-block-popups2 =
+    .label = Blokovať vyskakovacie okná a presmerovania tretích strán
+    .accesskey = B
+# "popup" is a misspelling that is more popular than the correct spelling of
+# "pop-up" so it's included as a search keyword, not displayed in the UI.
+permissions-block-popups-exceptions-button2 =
+    .label = Spravovať výnimky pre vyskakovacie okná a presmerovania tretích strán…
+    .accesskey = m
+    .searchkeywords = vyskakovacie okná
+permissions-addon-install-warning2 =
+    .label = Upozorniť, keď sa webové stránky pokúšajú nainštalovať rozšírenia
+    .accesskey = w
+permissions-addon-exceptions2 =
+    .label = Vyberte, ktoré webové stránky môžu inštalovať rozšírenia
+    .accesskey = e
 permissions-block-popups =
     .label = Blokovať nevyžiadané vyskakovacie okná
     .accesskey = B
@@ -1279,23 +2012,71 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = Výnimky…
     .accesskey = V
+permissions-header2 =
+    .label = Oprávnenia
+    .description = Oprávnenia, ktoré udeľujete webovým stránkam, ktoré prehliadate.
+permissions-location2 =
+    .label = Poloha
+permissions-localhost2 =
+    .label = Aplikácie a služby v zariadení
+permissions-local-network2 =
+    .label = Zariadenia v lokálnej sieti
+permissions-xr2 =
+    .label = Virtuálna realita
+permissions-camera2 =
+    .label = Kamera
+permissions-microphone2 =
+    .label = Mikrofón
+# Privacy permission for sound output devices.
+permissions-speaker2 =
+    .label = Reproduktor
+permissions-notification2 =
+    .label = Upozornenia
 
 ## Privacy Section - Data Collection
 
 collection-header = Zber a použitie údajov o aplikácii { -brand-short-name }
 collection-header2 = Zber a použitie údajov o aplikácii { -brand-short-name }
     .searchkeywords = telemetria
+preferences-collection-description = Snažíme sa poskytnúť vám možnosti a zhromažďovať len minimum údajov potrebných na zlepšenie { -brand-product-name(case: "gen") } pre každého.
+preferences-collection-privacy-notice = Zobraziť Vyhlásenie o ochrane osobných údajov
+preferences-across-profiles = Tieto nastavenia platia pre každý profil { -brand-product-name(case: "gen") } na tomto zariadení.
+preferences-view-profiles = Zobraziť všetky profily
 collection-description = Keď sa jedná o údaje, dávame vám vždy na výber. Zbierame len údaje, ktoré nám pomôžu aplikáciu { -brand-short-name } naďalej zlepšovať. Pred odoslaním osobných údajov vždy žiadame o váš súhlas.
 collection-privacy-notice = Vyhlásenie o ochrane osobných údajov
-collection-health-report-telemetry-disabled = Odosielanie technických údajov a údajov o interakcii spoločnosti { -vendor-short-name } nie je naďalej povolené. Všetky historické údaje budú odstránené v priebehu 30 dní.
+collection-health-report-telemetry-disabled = Odosielanie technických údajov a údajov o interakciách spoločnosti { -vendor-short-name } nie je naďalej povolené. Všetky historické údaje budú odstránené v priebehu 30 dní.
 collection-health-report-telemetry-disabled-link = Ďalšie informácie
+collection-usage-ping =
+    .label = Odosielať ping denného používania { -vendor-short-name(case: "gen") }
+    .accesskey = l
+collection-usage-ping-description = Toto pomáha spoločnosti { -vendor-short-name } odhadnúť počet aktívnych používateľov.
+collection-health-report2 =
+    .label = Odosielať { -vendor-short-name(case: "dat") } technické údaje a údaje o interakciách
+    .accesskey = t
 collection-health-report =
     .label = Povoliť { -brand-short-name(case: "dat") } odosielať technické údaje a údaje o interakciách spoločnosti { -vendor-short-name }
     .accesskey = o
 collection-health-report-link = Ďalšie informácie
+collection-health-report-description = Pomáha nám to zlepšovať funkcie, výkon a stabilitu { -brand-product-name(case: "gen") }.
+collection-studies2 =
+    .label = Inštalovať a spúšťať štúdie
+collection-studies-description = Vyskúšajte funkcie a nápady skôr, ako budú zverejnené pre všetkých.
 collection-studies =
     .label = Povoliť { -brand-short-name(case: "dat") } inštalovať a spúšťať štúdie
 collection-studies-link = Zobraziť štúdie aplikácie { -brand-short-name }
+nimbus-rollouts-enabled =
+    .label = Povoliť { -brand-short-name(case: "dat") } vylepšovať funkcie, výkon a stabilitu medzi aktualizáciami
+nimbus-rollouts-enabled-description = Zmeny budú aplikované na diaľku.
+addon-recommendations2 =
+    .label = Povoliť prispôsobené odporúčania rozšírení
+addon-recommendations-description = Získajte odporúčania na rozšírenia, ktoré zlepšujú zážitok z prehliadania.
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = Odosielanie údajov je v konfigurácii tohto zostavenia zakázané.
+collection-backlogged-crash-reports2 =
+    .label = Automaticky odosielať správy o zlyhaní
+    .accesskey = A
+collection-backlogged-crash-reports-description = Toto umožňuje { -vendor-short-name(case: "dat") } diagnostikovať a opraviť problémy s prehliadačom. Hlásenia môžu obsahovať osobné alebo citlivé údaje.
 addon-recommendations =
     .label = Povoliť { -brand-short-name(case: "dat") } odporúčať rozšírenia vybrané priamo pre mňa
 addon-recommendations-link = Ďalšie informácie
@@ -1303,8 +2084,6 @@ addon-recommendations-link = Ďalšie informácie
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Odosielanie údajov je v konfigurácii tohto zostavenia zakázané
 collection-backlogged-crash-reports-with-link = Povoliť { -brand-short-name(case: "dat") } odosielať vo vašom mene správy o zlyhaní <a data-l10n-name="crash-reports-link">Ďalšie informácie</a>
-    .accesskey = P
-collection-backlogged-crash-reports = Povoliť { -brand-short-name(case: "dat") } odosielať vo vašom mene správy o zlyhaní
     .accesskey = P
 privacy-segmentation-section-header = Nové funkcie, ktoré vylepšujú vaše prehliadanie
 privacy-segmentation-section-description = Keď ponúkame funkcie, ktoré využívajú vaše údaje, aby vám poskytli ešte lepšiu skúsenosť:
@@ -1327,6 +2106,8 @@ website-advertising-private-attribution-description = Toto pomáha webom pochopi
 ## https://developers.google.com/safe-browsing/developers_guide_v2#AcceptableUsage
 
 security-header = Bezpečnosť
+browsing-protection-group =
+    .label = Ochrana pred podvodným obsahom a nebezpečným softvérom
 security-browsing-protection = Ochrana pred podvodným obsahom a nebezpečným softvérom
 security-enable-safe-browsing =
     .label = Blokovať nebezpečný a podvodný obsah
@@ -1354,34 +2135,46 @@ certs-devices =
 certs-thirdparty-toggle =
     .label = Povoliť { -brand-short-name(case: "dat") } automaticky dôverovať koreňovým certifikátom tretích strán, ktoré nainštalujete
     .accesskey = f
+certs-devices-enable-fips = Povoliť FIPS
 space-alert-over-5gb-settings-button =
     .label = Otvoriť nastavenia
     .accesskey = O
 space-alert-over-5gb-message2 = <strong>Aplikácii { -brand-short-name } dochádza miesto na disku.</strong> Obsah webovej stránky sa nemusí zobrazovať správne. Uložené údaje stránok môžete odstrániť v ponuke Možnosti > Súkromie a bezpečnosť > Cookies a údaje stránok.
 space-alert-under-5gb-message2 = <strong>Aplikácii { -brand-short-name } dochádza miesto na disku.</strong> Obsah webovej stránky sa nemusí zobrazovať správne. Kliknutím na “Ďalšie informácie” sa dozviete viac o optimalizovaní vyžitia disku pre lepší zážitok z prehliadania.
+certs-description2 =
+    .label = Certifikáty
+    .description = Nakonfigurujte certifikáty, ktoré { -brand-short-name } používa na overovanie.
 
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = Režim "Len HTTPS"
+httpsonly-label =
+    .aria-label = { httpsonly-header }
+    .description = Umožňuje iba zabezpečené pripojenie k webovým stránkam. { -brand-short-name } sa opýta pred použitím nezabezpečeného pripojenia.
+httpsonly-description3 = Umožňuje iba zabezpečené pripojenie k webovým stránkam. { -brand-short-name } sa opýta pred použitím nezabezpečeného pripojenia.
+httpsonly-learn-more2 = Ako funguje režim Len HTTPS
 httpsonly-description = Protokol HTTPS poskytuje bezpečné a šifrované spojenie medzi aplikáciou { -brand-short-name } a webmi, ktoré navštevujete. Väčšina webových stránok podporuje protokol HTTPS a ak je povolený režim "Len HTTPS", { -brand-short-name } zmení všetky pripojenia na zabezpečené.
-httpsonly-description2 = { -brand-short-name } vytvára bezpečné a šifrované pripojenia k stránkam, ktoré navštevujete. { -brand-short-name } vás upozorní v prípade, že pripojenie nie je zabezpečené a vy chcete používať len HTTPS.
 httpsonly-learn-more = Ďalšie informácie
 httpsonly-radio-enabled =
     .label = Povoliť režim "Len HTTPS" vo všetkých oknách
-httpsonly-radio-enabled2 =
-    .label = Používať výhradne HTTPS vo všetkých oknách
 httpsonly-radio-enabled-pbm =
     .label = Povoliť režim "Len HTTPS" iba v súkromných oknách
-httpsonly-radio-enabled-pbm2 =
-    .label = Používať HTTPS iba v súkromných oknách
+httpsonly-radio-disabled3 =
+    .label = Nezapínať režim "Len HTTPS"
+    .description = { -brand-short-name } môže stále zmeniť niektoré pripojenia
 httpsonly-radio-disabled =
     .label = Nezapínať režim "Len HTTPS"
-httpsonly-radio-disabled2 =
-    .label = Najprv vyskúšať HTTPS, ale povoliť pripojenia, ktoré nie sú zabezpečené
+httpsonly-group =
+    .label = Režim "Len HTTPS"
+    .description = Umožňuje iba zabezpečené pripojenie k webovým stránkam. { -brand-short-name } sa opýta pred použitím nezabezpečeného pripojenia.
+httpsonly-label2 =
+    .aria-label = { httpsonly-group.label }
 
 ## DoH Section
 
 preferences-doh-header = DNS cez HTTPS
+dns-over-https-group =
+    .label = DNS cez HTTPS
 preferences-doh-description = Systém názvov domén (Domain Name System, skr. DNS) cez HTTPS odošle vašu požiadavku na názov domény cez šifrované pripojenie, čím vytvorí zabezpečené DNS a sťaží tým ostatným, aby videli, na ktorú webovú stránku sa chystáte vstúpiť.
 preferences-doh-description2 = Systém názvov domén (Domain Name System, skr. DNS) cez HTTPS odošle vašu požiadavku na názov domény cez šifrované pripojenie, čím zabezpečí DNS a sťaží tým ostatným, aby videli, na ktorú webovú stránku sa chystáte vstúpiť.
 # Variables:
@@ -1443,3 +2236,62 @@ preferences-doh-manage-exceptions =
 desktop-folder-name = Pracovná plocha
 downloads-folder-name = Stiahnuté súbory
 choose-download-folder-title = Vyberte priečinok pre stiahnuté súbory:
+
+## AI controls page
+
+preferences-ai-controls-header =
+    .heading = { pane-ai-controls-title }
+preferences-ai-controls-description = Vo { -brand-short-name(case: "loc") } máte vždy na výber, vrátane toho, či chcete používať funkcie vylepšené umelou inteligenciou. Čoskoro pribudnú ďalšie ovládacie prvky.
+preferences-ai-controls-block-ai-label = Blokovať vylepšenia pomocou AI
+preferences-ai-controls-block-ai =
+    .label = { preferences-ai-controls-block-ai-label }
+preferences-ai-controls-block-ai-description = Blokovanie znamená, že vo { -brand-short-name(case: "loc") } neuvidíte nové ani aktuálne vylepšenia umelej inteligencie, ani kontextové okná o nich. <a data-l10n-name="link">Tu nájdete viac informácií</a> o tom, čo je zahrnuté a ako ovládať tradičné funkcie strojového učenia, ako sú návrhy a odporúčania vyhľadávania.
+preferences-ai-controls-blocked-message =
+    .message = Nové a aktuálne vylepšenia umelej inteligencie sú štandardne blokované. Ak chcete odblokovať konkrétnu funkciu, použite ovládacie prvky nižšie.
+preferences-ai-controls-on-device-group =
+    .label = Umelá inteligencia v zariadení
+    .description = Tieto funkcie používajú malé modely umelej inteligencie, ktoré sa stiahnu do vášho zariadenia, ak danú funkciu používate. Tento prístup pomáha chrániť vaše súkromie.
+preferences-ai-controls-translations-control =
+    .label = Preklady
+    .description = Bezproblémovo prehliadajte web vo vami preferovanom jazyku.
+preferences-ai-controls-translations-more-link = Ďalšie nastavenia prekladov
+preferences-ai-controls-pdfjs-control =
+    .label = Alternatívny text obrázka v prehliadači PDF vo { -brand-short-name(case: "loc") }
+    .description = Keď do súborov PDF pridáte obrázky, pridajú sa k nim popisy, aby boli prístupnejšie.
+preferences-ai-controls-tab-group-suggestions-control =
+    .label = Návrhy pre skupiny kariet
+    .description = Získajte návrhy na pomenovanie a usporiadanie kariet.
+preferences-ai-controls-key-points-control =
+    .label = Kľúčové body v ukážkach odkazov
+    .description = Pred otvorením odkazu si pozrite stručný súhrn.
+preferences-ai-controls-sidebar-chatbot-group =
+    .label = Poskytovatelia chatbotov s umelou inteligenciou v bočnom paneli
+    .description = Počas prehliadania webu majte pri sebe chatbota. Vyberte si z možností Anthropic Claude, ChatGPT, Copilot, Google Gemini a Le Chat Mistral.
+preferences-ai-controls-sidebar-chatbot-control =
+    .label = Chatbot v bočnom paneli
+# This option means that a user will see the feature and can use it.
+preferences-ai-controls-state-available =
+    .label = Dostupné
+# This option means a user has opted in to use the feature.
+preferences-ai-controls-state-enabled =
+    .label = Povolené
+# This option means the user won't see and can't use the feature. For on-device AI, any models already downloaded are removed.
+preferences-ai-controls-state-blocked =
+    .label = Blokované
+preferences-ai-controls-state-description-before = Čo znamenajú tieto možnosti:
+preferences-ai-controls-state-description-available = <strong>Dostupné:</strong> Funkciu uvidíte a budete ju môcť používať.
+preferences-ai-controls-state-description-enabled = <strong>Povolené:</strong> Prihlásili ste sa na používanie funkcie.
+preferences-ai-controls-state-description-blocked = <strong>Blokované:</strong> Funkciu neuvidíte a nebudete ju môcť používať. V prípade umelej inteligencie v zariadení sa odstránia všetky už stiahnuté modely.
+preferences-ai-controls-block-confirmation-heading = Zablokovať vylepšenia umelej inteligencie?
+preferences-ai-controls-block-confirmation-description = Vo { -brand-short-name(case: "loc") } sa nezobrazia nové ani aktuálne vylepšenia umelej inteligencie, ani kontextové okná o nich. Následne môžete odblokovať čokoľvek, čo chcete naďalej používať.
+preferences-ai-controls-block-confirmation-features-start = Čo bude blokované:
+preferences-ai-controls-block-confirmation-translations = Preklady
+preferences-ai-controls-block-confirmation-pdfjs = Alternatívny text obrázka v prehliadači PDF vo { -brand-short-name(case: "loc") }
+preferences-ai-controls-block-confirmation-tab-group-suggestions = Návrhy pre skupiny kariet
+preferences-ai-controls-block-confirmation-key-points = Kľúčové body v ukážkach odkazov
+preferences-ai-controls-block-confirmation-sidebar-chatbot = Poskytovatelia chatbotov v bočnom paneli
+preferences-ai-controls-block-confirmation-features-after = Blokovanie ovplyvňuje aj rozšírenia, ktoré používajú umelú inteligenciu poskytovanú { -brand-short-name(case: "ins") }.
+preferences-ai-controls-block-confirmation-cancel =
+    .label = Zrušiť
+preferences-ai-controls-block-confirmation-confirm =
+    .label = Blokovať

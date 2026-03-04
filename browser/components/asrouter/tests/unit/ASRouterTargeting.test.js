@@ -2,11 +2,10 @@ import {
   ASRouterTargeting,
   CachedTargetingGetter,
   getSortedMessages,
-  QueryCache,
 } from "modules/ASRouterTargeting.sys.mjs";
 import { OnboardingMessageProvider } from "modules/OnboardingMessageProvider.sys.mjs";
 import { ASRouterPreferences } from "modules/ASRouterPreferences.sys.mjs";
-import { GlobalOverrider } from "test/unit/utils";
+import { GlobalOverrider } from "tests/unit/utils";
 
 // Note that tests for the ASRouterTargeting environment can be found in
 // test/functional/mochitest/browser_asrouter_targeting.js
@@ -273,55 +272,6 @@ describe("#isTriggerMatch", () => {
     assert.isTrue(Boolean(ASRouterTargeting.isTriggerMatch(trigger, message)));
   });
 });
-describe("#CacheListAttachedOAuthClients", () => {
-  const fourHours = 4 * 60 * 60 * 1000;
-  let sandbox;
-  let clock;
-  let fakeFxAccount;
-  let authClientsCache;
-  let globals;
-
-  beforeEach(() => {
-    globals = new GlobalOverrider();
-    sandbox = sinon.createSandbox();
-    clock = sinon.useFakeTimers();
-    fakeFxAccount = {
-      listAttachedOAuthClients: () => {},
-    };
-    globals.set("fxAccounts", fakeFxAccount);
-    authClientsCache = QueryCache.queries.ListAttachedOAuthClients;
-    sandbox
-      .stub(global.fxAccounts, "listAttachedOAuthClients")
-      .returns(Promise.resolve({}));
-  });
-
-  afterEach(() => {
-    authClientsCache.expire();
-    sandbox.restore();
-    clock.restore();
-  });
-
-  it("should only make additional request every 4 hours", async () => {
-    clock.tick(fourHours);
-
-    await authClientsCache.get();
-    assert.calledOnce(global.fxAccounts.listAttachedOAuthClients);
-
-    clock.tick(fourHours);
-    await authClientsCache.get();
-    assert.calledTwice(global.fxAccounts.listAttachedOAuthClients);
-  });
-
-  it("should not make additional request before 4 hours", async () => {
-    clock.tick(fourHours);
-
-    await authClientsCache.get();
-    assert.calledOnce(global.fxAccounts.listAttachedOAuthClients);
-
-    await authClientsCache.get();
-    assert.calledOnce(global.fxAccounts.listAttachedOAuthClients);
-  });
-});
 describe("ASRouterTargeting", () => {
   let evalStub;
   let sandbox;
@@ -372,7 +322,10 @@ describe("ASRouterTargeting", () => {
       false
     );
     assert.calledOnce(fakeTargetingContext.evalWithDefault);
-    assert.calledWithExactly(fakeTargetingContext.evalWithDefault, "true");
+    assert.include(
+      fakeTargetingContext.evalWithDefault.firstCall.args[0],
+      "!isAIWindow"
+    );
     assert.calledWithExactly(
       fakeTargetingContext.setTelemetrySource,
       "message"
@@ -453,6 +406,53 @@ describe("ASRouterTargeting", () => {
     );
 
     assert.calledTwice(evalStub);
+  });
+  it("defaults to Classic-only targeting when no targeting is specified", async () => {
+    evalStub.resolves(true);
+    const targetingContext = new global.TargetingContext();
+    const message = { id: "test-message" };
+
+    await ASRouterTargeting.checkMessageTargeting(
+      message,
+      targetingContext,
+      null,
+      false
+    );
+
+    assert.calledOnce(fakeTargetingContext.evalWithDefault);
+    assert.calledWith(fakeTargetingContext.evalWithDefault, "!isAIWindow");
+  });
+  it("blocks messages in AI windows by default via !isAIWindow", async () => {
+    evalStub.resolves(true);
+    const targetingContext = new global.TargetingContext();
+    targetingContext.isAIWindow = false;
+    const message = { id: "test-message" };
+
+    await ASRouterTargeting.checkMessageTargeting(
+      message,
+      targetingContext,
+      null,
+      false
+    );
+
+    assert.calledOnce(fakeTargetingContext.evalWithDefault);
+    assert.calledWith(fakeTargetingContext.evalWithDefault, "!isAIWindow");
+  });
+  it("does not modify targeting that explicitly references isAIWindow", async () => {
+    evalStub.resolves(true);
+    const targetingContext = new global.TargetingContext();
+    targetingContext.isAIWindow = true;
+    const message = { id: "test-message", targeting: "isAIWindow" };
+
+    await ASRouterTargeting.checkMessageTargeting(
+      message,
+      targetingContext,
+      null,
+      false
+    );
+
+    assert.calledOnce(fakeTargetingContext.evalWithDefault);
+    assert.calledWith(fakeTargetingContext.evalWithDefault, "isAIWindow");
   });
 
   describe("#findMatchingMessage", () => {

@@ -29,12 +29,11 @@ const char* const js::jit::LIROpNames[] = {
 LIRGraph::LIRGraph(MIRGraph* mir)
     : constantPool_(mir->alloc()),
       constantPoolMap_(mir->alloc()),
-      safepoints_(mir->alloc()),
-      nonCallSafepoints_(mir->alloc()),
       numVirtualRegisters_(0),
       numInstructions_(1),  // First id is 1.
       localSlotsSize_(0),
       argumentSlotCount_(0),
+      extraSafepointUses_(0),
       mir_(*mir) {}
 
 bool LIRGraph::addConstantToPool(const Value& v, uint32_t* index) {
@@ -45,15 +44,6 @@ bool LIRGraph::addConstantToPool(const Value& v, uint32_t* index) {
   }
   *index = constantPool_.length();
   return constantPool_.append(v) && constantPoolMap_.add(p, v, *index);
-}
-
-bool LIRGraph::noteNeedsSafepoint(LInstruction* ins) {
-  // Instructions with safepoints must be in linear order.
-  MOZ_ASSERT_IF(!safepoints_.empty(), safepoints_.back()->id() < ins->id());
-  if (!ins->isCall() && !nonCallSafepoints_.append(ins)) {
-    return false;
-  }
-  return safepoints_.append(ins);
 }
 
 #ifdef JS_JITSPEW
@@ -72,8 +62,17 @@ void LIRGraph::dump() {
 #endif
 
 LBlock::LBlock(MBasicBlock* from)
-    : block_(from), entryMoveGroup_(nullptr), exitMoveGroup_(nullptr) {
+    : block_(from),
+      entryMoveGroup_(nullptr),
+      exitMoveGroup_(nullptr),
+      isOutOfLine_(false) {
   from->assignLir(this);
+
+  // If branch hinting is enabled, and this block is unlikely to be executed,
+  // it will be generated out of line.
+  if (from->info().branchHintingEnabled() && from->isUnlikelyFrequency()) {
+    isOutOfLine_ = true;
+  }
 }
 
 bool LBlock::init(TempAllocator& alloc) {
@@ -162,14 +161,38 @@ LMoveGroup* LBlock::getExitMoveGroup(TempAllocator& alloc) {
   return exitMoveGroup_;
 }
 
+LBlock* LBlock::isMoveGroupsThenGoto() {
+  if (mir()->isLoopHeader()) {
+    return nullptr;
+  }
+  auto riter = rbegin();
+  if (!riter->isGoto()) {
+    return nullptr;
+  }
+  riter++;
+  // This loop doesn't iterate much.  Its highest trip-count for all of
+  // JetStream3 is 3.
+  while (riter != rend()) {
+    if (!(*riter)->isMoveGroup()) {
+      return nullptr;
+    }
+    riter++;
+  }
+  LGoto* ins = rbegin()->toGoto();
+  MOZ_ASSERT(ins->numSuccessors() == 1);
+  return ins->getSuccessor(0)->lir();
+}
+
 #ifdef JS_JITSPEW
 void LBlock::dump(GenericPrinter& out) {
   out.printf("block%u:\n", mir()->id());
   for (size_t i = 0; i < numPhis(); ++i) {
+    out.printf("  ");
     getPhi(i)->dump(out);
     out.printf("\n");
   }
   for (LInstructionIterator iter = begin(); iter != end(); iter++) {
+    out.printf("  ");
     iter->dump(out);
     if (iter->safepoint()) {
       out.printf(" SAFEPOINT(0x%p) ", iter->safepoint());
@@ -368,6 +391,10 @@ static const char* DefTypeName(LDefinition::Type type) {
       return "s";
     case LDefinition::WASM_ANYREF:
       return "wr";
+    case LDefinition::WASM_STRUCT_DATA:
+      return "wsd";
+    case LDefinition::WASM_ARRAY_DATA:
+      return "wad";
     case LDefinition::FLOAT32:
       return "f";
     case LDefinition::DOUBLE:
@@ -462,7 +489,7 @@ UniqueChars LAllocation::toString() const {
               if (!spr.init()) {
                 oomUnsafe.crash("LAllocation::toString()");
               }
-              spr.putString(cx, c->toString());
+              spr.putString(cx, c->toString()->unwrap());
               buf = spr.release();
             } else {
               buf = JS_smprintf("string");
@@ -493,7 +520,8 @@ UniqueChars LAllocation::toString() const {
         buf = JS_smprintf("%s", toFloatReg()->reg().name());
         break;
       case LAllocation::STACK_SLOT:
-        buf = JS_smprintf("stack:%u", toStackSlot()->slot());
+        buf = JS_smprintf("stack:%u(%u)", toStackSlot()->slot(),
+                          LStackSlot::ByteWidth(toStackSlot()->width()));
         break;
       case LAllocation::ARGUMENT_SLOT:
         buf = JS_smprintf("arg:%u", toArgument()->index());
@@ -654,7 +682,7 @@ void LNode::dump(GenericPrinter& out) {
       out.printf(" s=(");
       for (size_t i = 0; i < numSuccessors; i++) {
         MBasicBlock* succ = GetSuccessor(ins, i);
-        out.printf("block%u", succ->id());
+        out.printf("block %u", succ->id());
         if (i != numSuccessors - 1) {
           out.printf(", ");
         }
@@ -688,6 +716,55 @@ void LInstruction::initSafepoint(TempAllocator& alloc) {
   MOZ_ASSERT(!safepoint_);
   safepoint_ = new (alloc) LSafepoint(alloc);
   MOZ_ASSERT(safepoint_);
+}
+
+bool LSafepoint::addGCAllocation(uint32_t vregId, LDefinition* def,
+                                 LAllocation a) {
+  switch (def->type()) {
+    case LDefinition::OBJECT:
+      return addGcPointer(a);
+
+    case LDefinition::SLOTS:
+      return addSlotsOrElementsPointer(a);
+
+    case LDefinition::WASM_ANYREF:
+      return addWasmAnyRef(a);
+    case LDefinition::WASM_STRUCT_DATA:
+      return addWasmStructDataPointer(a);
+    case LDefinition::WASM_ARRAY_DATA:
+      return addWasmArrayDataPointer(a);
+
+#ifdef JS_NUNBOX32
+    case LDefinition::TYPE:
+      return addNunboxPart(/* isType = */ true, vregId, a);
+
+    case LDefinition::PAYLOAD:
+      return addNunboxPart(/* isType = */ false, vregId, a);
+#else
+    case LDefinition::BOX:
+      return addBoxedValue(a);
+#endif
+
+    case LDefinition::STACKRESULTS: {
+      MOZ_ASSERT(a.isStackArea());
+      for (auto iter = a.toStackArea()->results(); iter; iter.next()) {
+        if (iter.isWasmAnyRef()) {
+          if (!addWasmAnyRef(iter.alloc())) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
+    case LDefinition::GENERAL:
+    case LDefinition::INT32:
+    case LDefinition::FLOAT32:
+    case LDefinition::DOUBLE:
+    case LDefinition::SIMD128:
+      break;
+  }
+  MOZ_CRASH("Bad register type");
 }
 
 bool LMoveGroup::add(LAllocation from, LAllocation to, LDefinition::Type type) {

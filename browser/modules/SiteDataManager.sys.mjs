@@ -56,7 +56,7 @@ export var SiteDataManager = {
    *        updated. This can be used to e.g. fill a UI that lists sites without
    *        blocking on the entire update to finish.
    * @returns a Promise that resolves when updating is done.
-   **/
+   */
   async updateSites(entryUpdatedCallback) {
     Services.obs.notifyObservers(null, "sitedatamanager:updating-sites");
     // Clear old data and requests first
@@ -68,6 +68,7 @@ export var SiteDataManager = {
 
   /**
    * Get the base domain of a host on a best-effort basis.
+   *
    * @param {string} host - Host to convert.
    * @returns {string} Computed base domain. If the base domain cannot be
    * determined, because the host is an IP address or does not have enough
@@ -115,9 +116,9 @@ export var SiteDataManager = {
    * Insert site with specific params into the SiteDataManager
    * Currently used for testing purposes
    *
-   * @param {String} baseDomainOrHost
-   * @param {Object} Site info params
-   * @returns {Object} site object
+   * @param {string} baseDomainOrHost
+   * @param {object} Site info params
+   * @returns {object} site object
    */
   _testInsertSite(
     baseDomainOrHost,
@@ -323,8 +324,8 @@ export var SiteDataManager = {
    * in that order. This function is meant to be fast, and thus will
    * end searching and return true once the first trace of site data is found.
    *
-   * @param {String} the ASCII host to check
-   * @returns {Boolean} whether the site has any data associated with it
+   * @param {string} the ASCII host to check
+   * @returns {boolean} whether the site has any data associated with it
    */
   async hasSiteData(asciiHost) {
     if (Services.cookies.countCookiesFromHost(asciiHost)) {
@@ -387,7 +388,7 @@ export var SiteDataManager = {
    *
    * @param {string[]} timeSpanArr - Array of timespan options to get quota usage
    *              from Sanitizer, e.g. ["TIMESPAN_HOUR", "TIMESPAN_2HOURS"]
-   * @returns {Object} bytes used for each timespan
+   * @returns {object} bytes used for each timespan
    */
   async getQuotaUsageForTimeRanges(timeSpanArr) {
     let usage = {};
@@ -454,9 +455,9 @@ export var SiteDataManager = {
    * {@link updateSites} before you can use this method for the first time (and
    * whenever you want to get an updated set of list.)
    *
-   * @param {String} baseDomainOrHost - Base domain or host of the site to get.
+   * @param {string} baseDomainOrHost - Base domain or host of the site to get.
    *
-   * @returns {Promise<Object|null>} Promise that resolves with the site object
+   * @returns {Promise<object | null>} Promise that resolves with the site object
    * or null if no site with given base domain or host stores data.
    */
   async getSite(baseDomainOrHost) {
@@ -505,9 +506,9 @@ export var SiteDataManager = {
   },
 
   /**
-   * Removes all site data for the specified list of domains and hosts.
-   * This includes site data of subdomains belonging to the domains or hosts and
-   * partitioned storage. Data is cleared per storage jar, which means if we
+   * Removes all site data and caches for the specified list of domains and
+   * hosts. This includes data of subdomains belonging to the domains or hosts
+   * and partitioned storage. Data is cleared per storage jar, which means if we
    * clear "example.com", we will also clear third parties embedded on
    * "example.com". Additionally we will clear all data of "example.com" (as a
    * third party) from other jars.
@@ -528,39 +529,27 @@ export var SiteDataManager = {
 
     let promises = [];
     for (let domainOrHost of domainsOrHosts) {
-      const kFlags =
-        Ci.nsIClearDataService.CLEAR_COOKIES |
-        Ci.nsIClearDataService.CLEAR_DOM_STORAGES |
-        Ci.nsIClearDataService.CLEAR_EME |
-        Ci.nsIClearDataService.CLEAR_ALL_CACHES |
-        Ci.nsIClearDataService.CLEAR_COOKIE_BANNER_EXECUTED_RECORD |
-        Ci.nsIClearDataService.CLEAR_FINGERPRINTING_PROTECTION_STATE |
-        Ci.nsIClearDataService.CLEAR_BOUNCE_TRACKING_PROTECTION_STATE |
-        Ci.nsIClearDataService.CLEAR_STORAGE_PERMISSIONS;
       promises.push(
         new Promise(function (resolve) {
           const { clearData } = Services;
           if (domainOrHost) {
-            // First try to clear by base domain for aDomainOrHost. If we can't
-            // get a base domain, fall back to clearing by just host.
-            try {
-              clearData.deleteDataFromBaseDomain(
-                domainOrHost,
-                true,
-                kFlags,
-                resolve
-              );
-            } catch (e) {
-              if (
-                e.result != Cr.NS_ERROR_HOST_IS_IP_ADDRESS &&
-                e.result != Cr.NS_ERROR_INSUFFICIENT_DOMAIN_LEVELS
-              ) {
-                throw e;
-              }
-              clearData.deleteDataFromHost(domainOrHost, true, kFlags, resolve);
-            }
+            let schemelessSite =
+              Services.eTLD.getSchemelessSiteFromHost(domainOrHost);
+            clearData.deleteDataFromSite(
+              schemelessSite,
+              {},
+              true,
+              Ci.nsIClearDataService.CLEAR_COOKIES_AND_SITE_DATA |
+                Ci.nsIClearDataService.CLEAR_ALL_CACHES,
+              resolve
+            );
           } else {
-            clearData.deleteDataFromLocalFiles(true, kFlags, resolve);
+            clearData.deleteDataFromLocalFiles(
+              true,
+              Ci.nsIClearDataService.CLEAR_COOKIES_AND_SITE_DATA |
+                Ci.nsIClearDataService.CLEAR_ALL_CACHES,
+              resolve
+            );
           }
         })
       );

@@ -43,6 +43,41 @@ add_task(async function home_button_context() {
   await hiddenPromise;
 });
 
+// Right-click on the sidebar button should show a context
+// menu with options to toggle vertical tabs and customize.
+add_task(async function sidebar_button_context() {
+  let contextMenu = document.getElementById("toolbar-context-menu");
+  let shownPromise = popupShown(contextMenu);
+  CustomizableUI.addWidgetToArea("sidebar-button", "nav-bar");
+  let sidebarButton = document.getElementById("sidebar-button");
+  EventUtils.synthesizeMouse(sidebarButton, 2, 2, {
+    type: "contextmenu",
+    button: 2,
+  });
+  await shownPromise;
+
+  let expectedEntries = [
+    ["#toolbar-context-toggle-vertical-tabs", true],
+    ["---"],
+    [".customize-context-moveToPanel", true],
+    [".customize-context-removeFromToolbar", true],
+    ["---"],
+  ];
+  if (!isOSX) {
+    expectedEntries.push(["#toggle_toolbar-menubar", true]);
+  }
+  expectedEntries.push(
+    ["#toggle_PersonalToolbar", true],
+    ["---"],
+    [".viewCustomizeToolbar", true]
+  );
+  checkContextMenu(contextMenu, expectedEntries);
+
+  let hiddenPromise = popupHidden(contextMenu);
+  contextMenu.hidePopup();
+  await hiddenPromise;
+});
+
 // Right-click on an empty bit of tabstrip should
 // show a context menu without options to move it,
 // but with tab-specific options instead.
@@ -72,6 +107,8 @@ add_task(async function tabstrip_context() {
     ["#toolbar-context-selectAllTabs", true],
     ["#toolbar-context-undoCloseTab", !closedTabsAvailable],
     ["---"],
+    ["#toolbar-context-toggle-vertical-tabs", true],
+    ["---"],
   ];
   if (!isOSX) {
     expectedEntries.push(["#toggle_toolbar-menubar", true]);
@@ -92,7 +129,7 @@ add_task(async function tabstrip_context() {
 // Right-click on the title bar spacer before the tabstrip should show a
 // context menu without options to move it and no tab-specific options.
 add_task(async function titlebar_spacer_context() {
-  if (!TabsInTitlebar.enabled) {
+  if (!CustomTitlebar.enabled) {
     info("Skipping test that requires tabs in the title bar.");
     return;
   }
@@ -102,6 +139,7 @@ add_task(async function titlebar_spacer_context() {
   let spacer = document.querySelector(
     "#TabsToolbar .titlebar-spacer[type='pre-tabs']"
   );
+  await waitForElementShown(spacer);
   EventUtils.synthesizeMouseAtCenter(spacer, {
     type: "contextmenu",
     button: 2,
@@ -109,8 +147,7 @@ add_task(async function titlebar_spacer_context() {
   await shownPromise;
 
   let expectedEntries = [
-    [".customize-context-moveToPanel", false],
-    [".customize-context-removeFromToolbar", false],
+    ["#toolbar-context-toggle-vertical-tabs", true],
     ["---"],
   ];
   if (!isOSX) {
@@ -143,11 +180,7 @@ add_task(async function empty_toolbar_context() {
   });
   await shownPromise;
 
-  let expectedEntries = [
-    [".customize-context-moveToPanel", false],
-    [".customize-context-removeFromToolbar", false],
-    ["---"],
-  ];
+  let expectedEntries = [];
   if (!isOSX) {
     expectedEntries.push(["#toggle_toolbar-menubar", true]);
   }
@@ -178,11 +211,7 @@ add_task(async function urlbar_context() {
   });
   await shownPromise;
 
-  let expectedEntries = [
-    [".customize-context-moveToPanel", false],
-    [".customize-context-removeFromToolbar", false],
-    ["---"],
-  ];
+  let expectedEntries = [];
   if (!isOSX) {
     expectedEntries.push(["#toggle_toolbar-menubar", true]);
   }
@@ -614,17 +643,181 @@ add_task(async function flexible_space_context_menu() {
   await shownPromise;
 
   let expectedEntries = [
-    ["#toggle_PersonalToolbar", true],
+    ["#toolbar-context-toggle-vertical-tabs", true],
     ["---"],
-    [".viewCustomizeToolbar", true],
   ];
 
   if (!isOSX) {
-    expectedEntries.unshift(["#toggle_toolbar-menubar", true]);
+    expectedEntries.push(["#toggle_toolbar-menubar", true]);
   }
+
+  expectedEntries.push(
+    ["#toggle_PersonalToolbar", true],
+    ["---"],
+    [".viewCustomizeToolbar", true]
+  );
 
   checkContextMenu(contextMenu, expectedEntries);
   contextMenu.hidePopup();
   gCustomizeMode.removeFromArea(lastSpring);
   ok(!lastSpring.parentNode, "Spring should have been removed successfully.");
+});
+
+// Right-click on the downloads button should show a context
+// menu with options specific to downloads.
+add_task(async function downloads_button_context() {
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.download.autohideButton", false]],
+  });
+  let contextMenu = document.getElementById("toolbar-context-menu");
+  let shownPromise = popupShown(contextMenu);
+  CustomizableUI.addWidgetToArea("downloads-button", "nav-bar");
+  let downloadsButton = document.getElementById("downloads-button");
+  EventUtils.synthesizeMouse(downloadsButton, 2, 2, {
+    type: "contextmenu",
+    button: 2,
+  });
+  await shownPromise;
+
+  let expectedEntries = [
+    [".customize-context-moveToPanel", true],
+    ["#toolbar-context-autohide-downloads-button", true],
+    [".customize-context-removeFromToolbar", true],
+    ["---"],
+    ["#toolbar-context-always-open-downloads-panel", true],
+    ["---"],
+  ];
+  if (!isOSX) {
+    expectedEntries.push(["#toggle_toolbar-menubar", true]);
+  }
+  expectedEntries.push(
+    ["#toggle_PersonalToolbar", true],
+    ["---"],
+    [".viewCustomizeToolbar", true]
+  );
+  checkContextMenu(contextMenu, expectedEntries);
+
+  let hiddenPromise = popupHidden(contextMenu);
+  contextMenu.hidePopup();
+  await hiddenPromise;
+  await SpecialPowers.popPrefEnv();
+});
+
+// Bug 1992031 - During customization mode, a separator should be shown
+// between "Remove from toolbar" and "Menu Bar" for flexible spaces
+add_task(async function flexible_space_context_menu_customize_mode() {
+  await startCustomizing();
+  CustomizableUI.addWidgetToArea("spring", "nav-bar");
+  let springs = document.querySelectorAll("#nav-bar toolbarspring");
+  let lastSpring = springs[springs.length - 1];
+  ok(lastSpring, "we added a spring");
+  let contextMenu = document.getElementById("toolbar-context-menu");
+  let shownPromise = popupShown(contextMenu);
+  EventUtils.synthesizeMouse(lastSpring, 2, 2, {
+    type: "contextmenu",
+    button: 2,
+  });
+  await shownPromise;
+
+  let expectedEntries = [
+    ["#toolbar-context-toggle-vertical-tabs", true],
+    ["---"],
+    [".customize-context-moveToPanel", false],
+    [".customize-context-removeFromToolbar", true],
+    ["---"],
+  ];
+
+  if (!isOSX) {
+    expectedEntries.push(["#toggle_toolbar-menubar", true]);
+  }
+
+  expectedEntries.push(
+    ["#toggle_PersonalToolbar", true],
+    ["---"],
+    [".viewCustomizeToolbar", false]
+  );
+
+  checkContextMenu(contextMenu, expectedEntries);
+  contextMenu.hidePopup();
+  gCustomizeMode.removeFromArea(lastSpring);
+  ok(!lastSpring.parentNode, "Spring should have been removed successfully.");
+  await endCustomizing();
+});
+
+// Menu Bar spacer context menu
+add_task(async function menubar_spacer_context_menu() {
+  if (isOSX) {
+    info("Skipping test that requires menu bar.");
+    return;
+  }
+
+  let menubar = document.getElementById("toolbar-menubar");
+  menubar.removeAttribute("autohide");
+  ok(!menubar.hasAttribute("autohide"), "Menu bar is visible");
+  let spacer = menubar.querySelector("spacer");
+  ok(spacer, "Found menubar spacer");
+  await waitForElementShown(spacer);
+  let contextMenu = document.getElementById("toolbar-context-menu");
+  let shownPromise = popupShown(contextMenu);
+  EventUtils.synthesizeMouseAtCenter(spacer, {
+    type: "contextmenu",
+    button: 2,
+  });
+  await shownPromise;
+
+  let expectedEntries = [
+    ["#toolbar-context-toggle-vertical-tabs", true],
+    ["---"],
+    ["#toggle_toolbar-menubar", true],
+    ["#toggle_PersonalToolbar", true],
+    ["---"],
+    [".viewCustomizeToolbar", true],
+  ];
+
+  checkContextMenu(contextMenu, expectedEntries);
+  let hiddenPromise = popupHidden(contextMenu);
+  contextMenu.hidePopup();
+  await hiddenPromise;
+  menubar.setAttribute("autohide", "true");
+  ok(menubar.hasAttribute("autohide"), "Menu bar is hidden");
+});
+
+//  Menu Bar spacer context menu in customization mode
+add_task(async function menu_bar_spacer_context_menu_customize_mode() {
+  if (isOSX) {
+    info("Skipping test that requires menu bar.");
+    return;
+  }
+
+  await startCustomizing();
+  let menubar = document.getElementById("toolbar-menubar");
+  menubar.removeAttribute("autohide");
+  ok(!menubar.hasAttribute("autohide"), "Menu bar is visible");
+  let spacer = menubar.querySelector("spacer");
+  ok(spacer, "Found menubar spacer");
+  await waitForElementShown(spacer);
+  let contextMenu = document.getElementById("toolbar-context-menu");
+  let shownPromise = popupShown(contextMenu);
+  EventUtils.synthesizeMouseAtCenter(spacer, {
+    type: "contextmenu",
+    button: 2,
+  });
+  await shownPromise;
+
+  let expectedEntries = [
+    ["#toolbar-context-toggle-vertical-tabs", true],
+    ["---"],
+    ["#toggle_toolbar-menubar", true],
+    ["#toggle_PersonalToolbar", true],
+    ["---"],
+    [".viewCustomizeToolbar", false],
+  ];
+
+  checkContextMenu(contextMenu, expectedEntries);
+  let hiddenPromise = popupHidden(contextMenu);
+  contextMenu.hidePopup();
+  await hiddenPromise;
+  menubar.setAttribute("autohide", "true");
+  ok(menubar.hasAttribute("autohide"), "Menu bar is hidden");
+  await endCustomizing();
 });

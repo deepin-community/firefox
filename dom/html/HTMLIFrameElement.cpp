@@ -4,20 +4,23 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/dom/DOMIntersectionObserver.h"
 #include "mozilla/dom/HTMLIFrameElement.h"
-#include "mozilla/dom/ContentChild.h"
-#include "mozilla/dom/Document.h"
-#include "mozilla/dom/HTMLIFrameElementBinding.h"
-#include "mozilla/dom/FeaturePolicy.h"
+
 #include "mozilla/MappedDeclarationsBuilder.h"
 #include "mozilla/NullPrincipal.h"
 #include "mozilla/StaticPrefs_dom.h"
-#include "nsSubDocumentFrame.h"
-#include "nsError.h"
+#include "mozilla/dom/ContentChild.h"
+#include "mozilla/dom/DOMIntersectionObserver.h"
+#include "mozilla/dom/Document.h"
+#include "mozilla/dom/FeaturePolicy.h"
+#include "mozilla/dom/HTMLIFrameElementBinding.h"
+#include "mozilla/dom/TrustedTypeUtils.h"
+#include "mozilla/dom/TrustedTypesConstants.h"
 #include "nsContentUtils.h"
-#include "nsSandboxFlags.h"
+#include "nsError.h"
 #include "nsNetUtil.h"
+#include "nsSandboxFlags.h"
+#include "nsSubDocumentFrame.h"
 
 NS_IMPL_NS_NEW_HTML_ELEMENT_CHECK_PARSER(IFrame)
 
@@ -68,6 +71,8 @@ NS_IMPL_ELEMENT_CLONE(HTMLIFrameElement)
 
 void HTMLIFrameElement::BindToBrowsingContext(BrowsingContext*) {
   RefreshFeaturePolicy(true /* parse the feature policy attribute */);
+  RefreshEmbedderReferrerPolicy(
+      ReferrerPolicyFromAttr(GetParsedAttr(nsGkAtoms::referrerpolicy)));
 }
 
 bool HTMLIFrameElement::ParseAttribute(int32_t aNamespaceID, nsAtom* aAttribute,
@@ -195,6 +200,13 @@ void HTMLIFrameElement::AfterSetAttr(int32_t aNameSpaceID, nsAtom* aName,
     }
   }
 
+  if (aName == nsGkAtoms::referrerpolicy) {
+    const auto newValue = ReferrerPolicyFromAttr(aValue);
+    if (newValue != ReferrerPolicyFromAttr(aOldValue)) {
+      RefreshEmbedderReferrerPolicy(newValue);
+    }
+  }
+
   return nsGenericHTMLFrameElement::AfterSetAttr(
       aNameSpaceID, aName, aValue, aOldValue, aMaybeScriptedPrincipal, aNotify);
 }
@@ -255,7 +267,7 @@ void HTMLIFrameElement::MaybeStoreCrossOriginFeaturePolicy() {
   }
 
   if (ContentChild* cc = ContentChild::GetSingleton()) {
-    Unused << cc->SendSetContainerFeaturePolicy(
+    (void)cc->SendSetContainerFeaturePolicy(
         browsingContext, Some(mFeaturePolicy->ToFeaturePolicyInfo()));
   }
 }
@@ -309,6 +321,17 @@ void HTMLIFrameElement::RefreshFeaturePolicy(bool aParseAllowAttribute) {
   MaybeStoreCrossOriginFeaturePolicy();
 }
 
+void HTMLIFrameElement::RefreshEmbedderReferrerPolicy(ReferrerPolicy aPolicy) {
+  auto* browsingContext = GetExtantBrowsingContext();
+  if (!browsingContext || !browsingContext->IsContentSubframe()) {
+    return;
+  }
+
+  if (ContentChild* cc = ContentChild::GetSingleton()) {
+    (void)cc->SendSetReferrerPolicyForEmbedderFrame(browsingContext, aPolicy);
+  }
+}
+
 void HTMLIFrameElement::UpdateLazyLoadState() {
   // Store current base URI and referrer policy in the lazy load state.
   mLazyLoadState.mBaseURI = GetBaseURI();
@@ -331,10 +354,6 @@ void HTMLIFrameElement::SetLazyLoading() {
     return;
   }
 
-  if (!StaticPrefs::dom_iframe_lazy_loading_enabled()) {
-    return;
-  }
-
   // https://html.spec.whatwg.org/multipage/urls-and-fetching.html#will-lazy-load-element-steps
   // "If scripting is disabled for element, then return false."
   Document* doc = OwnerDoc();
@@ -349,16 +368,7 @@ void HTMLIFrameElement::SetLazyLoading() {
 }
 
 void HTMLIFrameElement::StopLazyLoading() {
-  if (!mLazyLoading) {
-    return;
-  }
-
-  mLazyLoading = false;
-
-  Document* doc = OwnerDoc();
-  if (auto* obs = doc->GetLazyLoadObserver()) {
-    obs->Unobserve(*this);
-  }
+  CancelLazyLoading(false /* aClearLazyLoadState */);
 
   LoadSrc();
 
@@ -379,6 +389,44 @@ void HTMLIFrameElement::NodeInfoChanged(Document* aOldDoc) {
   if (LoadingState() == Loading::Lazy) {
     SetLazyLoading();
   }
+}
+
+void HTMLIFrameElement::CancelLazyLoading(bool aClearLazyLoadState) {
+  if (!mLazyLoading) {
+    return;
+  }
+
+  Document* doc = OwnerDoc();
+  if (auto* obs = doc->GetLazyLoadObserver()) {
+    obs->Unobserve(*this);
+  }
+
+  mLazyLoading = false;
+
+  if (aClearLazyLoadState) {
+    mLazyLoadState.Clear();
+  }
+}
+
+void HTMLIFrameElement::GetSrcdoc(OwningTrustedHTMLOrString& aSrcdoc) {
+  GetHTMLAttr(nsGkAtoms::srcdoc, aSrcdoc.SetAsString());
+}
+
+void HTMLIFrameElement::SetSrcdoc(const TrustedHTMLOrString& aSrcdoc,
+                                  nsIPrincipal* aSubjectPrincipal,
+                                  ErrorResult& aError) {
+  constexpr nsLiteralString sink = u"HTMLIFrameElement srcdoc"_ns;
+
+  Maybe<nsAutoString> compliantStringHolder;
+  const nsAString* compliantString =
+      TrustedTypeUtils::GetTrustedTypesCompliantString(
+          aSrcdoc, sink, kTrustedTypesOnlySinkGroup, *this, aSubjectPrincipal,
+          compliantStringHolder, aError);
+  if (aError.Failed()) {
+    return;
+  }
+
+  SetHTMLAttr(nsGkAtoms::srcdoc, *compliantString, aError);
 }
 
 }  // namespace mozilla::dom

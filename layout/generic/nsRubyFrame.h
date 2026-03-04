@@ -9,8 +9,8 @@
 #ifndef nsRubyFrame_h___
 #define nsRubyFrame_h___
 
-#include "nsInlineFrame.h"
 #include "RubyUtils.h"
+#include "nsInlineFrame.h"
 
 namespace mozilla {
 class PresShell;
@@ -28,9 +28,9 @@ class nsRubyFrame final : public nsInlineFrame {
   NS_DECL_FRAMEARENA_HELPERS(nsRubyFrame)
   NS_DECL_QUERYFRAME
 
-  void AddInlineMinISize(gfxContext* aRenderingContext,
+  void AddInlineMinISize(const mozilla::IntrinsicSizeInput& aInput,
                          InlineMinISizeData* aData) override;
-  void AddInlinePrefISize(gfxContext* aRenderingContext,
+  void AddInlinePrefISize(const mozilla::IntrinsicSizeInput& aInput,
                           InlinePrefISizeData* aData) override;
   void Reflow(nsPresContext* aPresContext, ReflowOutput& aDesiredSize,
               const ReflowInput& aReflowInput,
@@ -41,6 +41,12 @@ class nsRubyFrame final : public nsInlineFrame {
 #endif
 
   mozilla::RubyBlockLeadings GetBlockLeadings() const { return mLeadings; }
+
+  mozilla::RubyMetrics RubyMetrics(float aRubyMetricsFactor) const override {
+    // aRubyMetricsFactor is ignored here; it was already accounted for in
+    // accumulating mRubyMetrics.
+    return mRubyMetrics;
+  }
 
  protected:
   friend nsContainerFrame* NS_NewRubyFrame(mozilla::PresShell* aPresShell,
@@ -60,6 +66,9 @@ class nsRubyFrame final : public nsInlineFrame {
   // The leadings required to put the annotations. They are dummy-
   // initialized to 0, and get meaningful values at first reflow.
   mozilla::RubyBlockLeadings mLeadings;
+
+  // Accumulated normalized-ascent/descent metrics used for ruby positioning.
+  mozilla::RubyMetrics mRubyMetrics;
 };
 
 #endif /* nsRubyFrame_h___ */

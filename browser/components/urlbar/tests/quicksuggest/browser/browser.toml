@@ -19,7 +19,9 @@ prefs = ["browser.bookmarks.testing.skipDefaultBookmarksImport=true"]
 
 ["browser_quicksuggest_configuration.js"]
 
-["browser_quicksuggest_fakespot.js"]
+["browser_quicksuggest_contextual_optin.js"]
+
+["browser_quicksuggest_dynamicSuggestions.js"]
 
 ["browser_quicksuggest_indexes.js"]
 
@@ -27,39 +29,38 @@ prefs = ["browser.bookmarks.testing.skipDefaultBookmarksImport=true"]
 
 ["browser_quicksuggest_merinoSessions.js"]
 
-["browser_quicksuggest_onboardingDialog.js"]
-skip-if = ["os == 'linux' && bits == 64"] # Bug 1773830
-
-["browser_quicksuggest_pocket.js"]
+["browser_quicksuggest_ping_amp.js"]
 tags = "search-telemetry"
+
+["browser_quicksuggest_ping_deletionRequest.js"]
+tags = "search-telemetry"
+
+["browser_quicksuggest_ping_merinoAndNullValues.js"]
+tags = "search-telemetry"
+
+["browser_quicksuggest_realtime_flight_status.js"]
+
+["browser_quicksuggest_realtime_market.js"]
+
+["browser_quicksuggest_realtime_optin.js"]
+
+["browser_quicksuggest_realtime_yelp.js"]
+
+["browser_quicksuggest_sports.js"]
 
 ["browser_quicksuggest_yelp.js"]
 
-["browser_telemetry_dynamicWikipedia.js"]
+["browser_telemetry_environment.js"]
 tags = "search-telemetry"
 
-["browser_telemetry_gleanEmptyStrings.js"]
+["browser_telemetry_suggestMetrics.js"]
 tags = "search-telemetry"
-
-["browser_telemetry_impressionEdgeCases.js"]
-tags = "search-telemetry"
-
-["browser_telemetry_ingestTime.js"]
-tags = "search-telemetry"
-
-["browser_telemetry_navigationalSuggestions.js"]
-tags = "search-telemetry"
-
-["browser_telemetry_nonsponsored.js"]
-tags = "search-telemetry"
-
-["browser_telemetry_other.js"]
-tags = "search-telemetry"
-
-["browser_telemetry_sponsored.js"]
-tags = "search-telemetry"
-
-["browser_telemetry_weather.js"]
-tags = "search-telemetry"
+skip-if = [
+  "os == 'linux' && os_version == '24.04' && arch == 'x86_64' && display == 'x11'", # Bug 1971091
+  "os == 'win' && os_version == '11.26100'", # Bug 1971091
+]
 
 ["browser_weather.js"]
+skip-if = [
+  "os == 'win' && os_version == '11.26100'", # Bug 1885264
+]

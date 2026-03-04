@@ -12,6 +12,8 @@ neterror-blocked-by-policy-page-title = Pagjine blocade
 neterror-captive-portal-page-title = Jentre te rêt
 neterror-dns-not-found-title = Servidôr no cjatât
 neterror-malformed-uri-page-title = URL no valit
+general-body-title = Sta atent. Alc nol è just.
+problem-with-this-site-title = Al somee che al sedi vignût fûr un probleme cun chest sît
 
 ## Error page actions
 
@@ -41,6 +43,9 @@ neterror-generic-error = { -brand-short-name } nol rive a cjamâ cheste pagjine 
 neterror-load-error-try-again = Il sît al podarès jessi no disponibil pal moment opûr masse impegnât. Torne prove chi di pôc.
 neterror-load-error-connection = Se no tu rivis a cjariâ nissune pagjine, controle la conession di rêt dal computer.
 neterror-load-error-firewall = Se il computer o la rêt a son protets di un firewall o di un proxy, verifiche che { -brand-short-name } al vedi i permès di acès al Web.
+# This warning is only shown on macOS Sequoia and later (see bug 1929377)
+neterror-load-osx-permission = Se tu stâs cirint di cjariâ une pagjine de rêt locâl, controle che a { -brand-short-name } a sedin stadis concedûts i permès pe rêt locâl tes impostazions di riservatece e sigurece di macOS.
+neterror-http-error-page = Verifiche di vê scrite juste la direzion dal sît web.
 neterror-captive-portal = Tu scugnis jentrâ in cheste rêt prime di podê acedi a Internet.
 # Variables:
 # $hostAndPath (String) - a suggested site (e.g. "www.example.com") that the user may have meant instead.
@@ -49,6 +54,10 @@ neterror-dns-not-found-hint-header = <strong>Se tu âs inserît la direzion just
 neterror-dns-not-found-hint-try-again = Tornâ a provâ plui indenant
 neterror-dns-not-found-hint-check-network = Controlâ la conession di rêt
 neterror-dns-not-found-hint-firewall = Controlâ che { -brand-short-name } al vedi i permès par lâ sul web (tu podaressis jessi conetût ma daûr di un firewall)
+neterror-dns-not-found-offline-hint-header = <strong>Ce puedio fâ par risolvi?</strong>
+neterror-dns-not-found-offline-hint-different-device = Prove a conetiti doprant un altri dispositîf.
+neterror-dns-not-found-offline-hint-modem = Controle il modem o il router.
+neterror-dns-not-found-offline-hint-reconnect = Disconetiti e torne conetiti al Wi-Fi.
 
 ## TRR-only specific messages
 ## Variables:
@@ -72,7 +81,6 @@ neterror-dns-not-found-trr-unknown-problem = Probleme inspietât.
 ##   $trrDomain (String) - Hostname of the DNS over HTTPS server that is currently in use.
 
 neterror-dns-not-found-native-fallback-reason = { -brand-short-name } nol rive a protezi la richieste relative ae direzion di chest sît doprant il nestri afidabil servizi di risoluzion dai nons (DNS). Chi al è il motîf:
-neterror-dns-not-found-native-fallback-reason2 = { -brand-short-name } nol pues protezi, midiant il nestri servizi sigûr di risoluzion nons (DNS), la richieste relative ae direzion di chest sît. Chest al è il motîf:
 neterror-dns-not-found-native-fallback-heuristic = DNS vie HTTPs al è stât disabilitât te tô rêt.
 neterror-dns-not-found-native-fallback-not-confirmed2 = { -brand-short-name } nol è rivât a conetisi a { $trrDomain }.
 
@@ -96,6 +104,9 @@ neterror-proxy-connect-failure-settings = Controle lis impostazions dal proxy pa
 neterror-proxy-connect-failure-contact-admin = Contate l'aministradôr de rêt par verificâ che il servidôr al funzioni.
 neterror-content-encoding-error = Contate par plasê i proprietaris dal sît par informâju di chest probleme.
 neterror-unsafe-content-type = Par plasê contate i proprietaris dal sît par informâju di chest probleme.
+# Variables:
+# $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-basic-http-auth = { -brand-short-name } nol considere { $hostname } afidabil parcè che la conession no je sigure. Prove modifiche la direzion doprant HTTPS.
 neterror-nss-failure-not-verified = No si pues visualizâ la pagjine che tu stâs cirint di viodi parcè che no si à podût verificâ la autenticitât dai dâts ricevûts.
 neterror-nss-failure-contact-website = Par plasê contate i proprietaris dal sît web par informâju di chest probleme.
 # Variables:
@@ -117,7 +128,7 @@ neterror-corrupted-content-contact-website = Par plasê contate i proprietaris d
 neterror-sslv3-used = Informazions avanzadis: SSL_ERROR_UNSUPPORTED_VERSION
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
-neterror-inadequate-security-intro = <b>{ $hostname }</b> al dopre  une tecnologjie di sigurece sorpassade e vulnerabile ai atacs. Un malintenzionât al pues rivelâ un facilitât informazions che tu pensavis che a fossin al sigûr. L'aministradôr dal sît web al varà bisugne di comedâ il servidôr prime che tu podeis visitâ il sît.
+neterror-inadequate-security-intro = <b>{ $hostname }</b> al dopre  une tecnologjie di sigurece sorpassade e vulnerabile ai atacs. Un malintenzionât al pues palesâ cun facilitât informazions che tu pensavis che a fossin al sigûr. L'aministradôr dal sît web al varà bisugne di comedâ il servidôr prime che tu podeis visitâ il sît.
 # Do not translate "NS_ERROR_NET_INADEQUATE_SECURITY".
 neterror-inadequate-security-code = Error code: NS_ERROR_NET_INADEQUATE_SECURITY
 # Variables:
@@ -148,3 +159,35 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = Se no tu cognossis <b>{ $mi
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = <b>{ $hostname }</b> al à une politiche di sigurece clamade HTTP Strict Transport Security (HSTS), par furlan sigurece rigorose di traspuart HTTP, che al significhe che { -brand-short-name } i pues conetisi dome in maniere sigure. No tu puedis zontâ une ecezion par visitâ chest sît.
+cert-error-trust-certificate-transparency-what-can-you-do-about-it = Forsit nuie, viodût che al è probabil che al sedi un probleme cul sît stes.
+certerror-blocked-by-corp-headers-description = Cualchi volte i sîts web si protezin, e a protezin personis come te, da lis interazions malvoludis cun altris sîts.
+certerror-coop-learn-more = Altris informazions su lis politichis COOP (Cross Origin Opener Policies)
+certerror-coep-learn-more = Altris informazions su lis politichis COEP (Cross Origin Embedder Policies)
+# Variables:
+#   $responsestatus (string) - HTTP response status code (e.g., 500).
+#   $responsestatustext (string) - HTTP response status text (e.g., "Internal Server Error").
+neterror-response-status-code = Codiç di erôr: { $responsestatus } { $responsestatustext }
+
+## Felt Privacy V1 Strings
+
+fp-neterror-offline-body-title = Al somee che al sedi presint un probleme cu la conession a internet
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-neterror-connection-intro = { -brand-short-name } nol rive a creâ une conession sigure cul servidôr { $hostname }.
+fp-neterror-offline-intro = { -brand-short-name } nol rive a conetisi al servidôr <strong>{ $hostname }</strong>
+fp-neterror-coop-coep-intro = { -brand-short-name } nol à cjariât cheste pagjine parcè che al somee che la configurazion di sigurece no corispuint ae pagjine di prime.
+fp-neterror-http-auth-disabled-intro = Cualchidun che al fâs fente di jessi il sît al podarès cirî di robâ detais come il non utent, la password o la direzion e-mail.
+fp-neterror-http-auth-disabled-secure-connection = Chest sît al domande une conession sigure e no tu puedis zontâ une ecezion par visitâlu.
+fp-neterror-why-did-this-happen = Parcè isal sucedût?
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-neterror-cypher-overlap-why-dangerous-body = Al somee che chest sît al dopri un software vieri cun problemis di sigurece cognossûts.
+fp-neterror-http-auth-disabled-why-dangerous-body = { -brand-short-name } nol considere { $hostname } atendibil parcè che la conession no je sigure.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-neterror-cypher-overlap-what-can-you-do-body = Verifiche di doprâ la version plui resinte di { -brand-short-name }. Va su Jutori > Informazions su { -brand-short-name } tal menù. Se tu stâs doprant la version plui resinte di { -brand-short-name }, al è facil che il probleme al sedi il sît stes.
+fp-neterror-offline-what-can-you-do-body = Prove a conetiti di un altri dispositîf, controle il modem o il router. Disconetiti e torne a conetiti al Wi-Fi.
+fp-neterror-http-auth-disabled-what-can-you-do-body = Prove a cambiâ l’URL doprant HTTPS. Ma al è probabil che il probleme al sedi il sît stes.
+# This string appears after the following string: "Why did this happen?" (fp-neterror-why-did-this-happen)
+fp-neterror-coop-coep-why-did-this-happen-body = Cualchi volte i sîts web si protezin da lis interazions malvoludis, cun altris sîts.
+fp-learn-more-about-https-connections = Altris informazions su lis conessions HTTPS

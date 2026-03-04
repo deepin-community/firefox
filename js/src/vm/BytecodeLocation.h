@@ -7,15 +7,21 @@
 #ifndef vm_BytecodeLocation_h
 #define vm_BytecodeLocation_h
 
+#include <compare>  // std::strong_ordering
+
 #include "frontend/NameAnalysisTypes.h"
 #include "js/TypeDecls.h"
 #include "vm/BuiltinObjectKind.h"
-#include "vm/BytecodeUtil.h"
-#include "vm/CheckIsObjectKind.h"   // CheckIsObjectKind
-#include "vm/CompletionKind.h"      // CompletionKind
-#include "vm/FunctionPrefixKind.h"  // FunctionPrefixKind
+#include "vm/BytecodeUtil.h"            // GET_ENVCOORD_HOPS
+#include "vm/CheckIsObjectKind.h"       // CheckIsObjectKind
+#include "vm/CompletionKind.h"          // CompletionKind
+#include "vm/ConstantCompareOperand.h"  // ConstantCompareOperand
+#include "vm/FunctionPrefixKind.h"      // FunctionPrefixKind
 #include "vm/GeneratorResumeKind.h"
 #include "vm/TypeofEqOperand.h"  // TypeofEqOperand
+#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
+#  include "vm/UsingHint.h"
+#endif
 
 namespace js {
 
@@ -136,21 +142,9 @@ class BytecodeLocation {
     return !(other == *this);
   }
 
-  bool operator<(const BytecodeLocation& other) const {
+  auto operator<=>(const BytecodeLocation& other) const {
     MOZ_ASSERT(this->debugOnlyScript_ == other.debugOnlyScript_);
-    return rawBytecode_ < other.rawBytecode_;
-  }
-
-  // It is traditional to represent the rest of the relational operators
-  // using operator<, so we don't need to assert for these.
-  bool operator>(const BytecodeLocation& other) const { return other < *this; }
-
-  bool operator<=(const BytecodeLocation& other) const {
-    return !(other < *this);
-  }
-
-  bool operator>=(const BytecodeLocation& other) const {
-    return !(*this < other);
+    return rawBytecode_ <=> other.rawBytecode_;
   }
 
   // Return the next bytecode
@@ -257,7 +251,7 @@ class BytecodeLocation {
 
   uint32_t getEnvCalleeNumHops() const {
     MOZ_ASSERT(is(JSOp::EnvCallee));
-    return GET_UINT8(rawBytecode_);
+    return GET_ENVCOORD_HOPS(rawBytecode_);
   }
 
   EnvironmentCoordinate getEnvironmentCoordinate() const {
@@ -284,6 +278,11 @@ class BytecodeLocation {
     return TypeofEqOperand::fromRawValue(GET_UINT8(rawBytecode_));
   }
 
+  ConstantCompareOperand getConstantCompareOperand() const {
+    MOZ_ASSERT(is(JSOp::StrictConstantEq) || is(JSOp::StrictConstantNe));
+    return ConstantCompareOperand::fromRawValue(GET_UINT16(rawBytecode_));
+  }
+
   FunctionPrefixKind getFunctionPrefixKind() const {
     MOZ_ASSERT(is(JSOp::SetFunName));
     return FunctionPrefixKind(GET_UINT8(rawBytecode_));
@@ -303,6 +302,13 @@ class BytecodeLocation {
     MOZ_ASSERT(is(JSOp::CloseIter));
     return CompletionKind(GET_UINT8(rawBytecode_));
   }
+
+#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
+  UsingHint getUsingHint() const {
+    MOZ_ASSERT(is(JSOp::AddDisposable));
+    return UsingHint(GET_UINT8(rawBytecode_));
+  }
+#endif
 
   uint32_t getNewArrayLength() const {
     MOZ_ASSERT(is(JSOp::NewArray));

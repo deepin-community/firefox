@@ -64,7 +64,8 @@ DcompSurfaceImage::DcompSurfaceImage(HANDLE aHandle, gfx::IntSize aSize,
   // Dcomp surface supports DXGI_FORMAT_B8G8R8A8_UNORM,
   // DXGI_FORMAT_R8G8B8A8_UNORM and DXGI_FORMAT_R16G16B16A16_FLOAT
   MOZ_ASSERT(aFormat == gfx::SurfaceFormat::B8G8R8A8 ||
-             aFormat == gfx::SurfaceFormat::R8G8B8A8);
+             aFormat == gfx::SurfaceFormat::R8G8B8A8 ||
+             aFormat == gfx::SurfaceFormat::R16G16B16A16F);
 }
 
 TextureClient* DcompSurfaceImage::GetTextureClient(
@@ -125,7 +126,7 @@ void DcompSurfaceHandleHost::PushResourceUpdates(
       this, wr::AsUint64(aExternalImageId),
       policy == TextureHost::NativeTexturePolicy::REQUIRE ? "rect" : "ext");
   (aResources.*method)(aImageKeys[0], descriptor, aExternalImageId, imageType,
-                       0);
+                       0, /* aNormalizedUvs */ false);
 }
 
 void DcompSurfaceHandleHost::PushDisplayItems(

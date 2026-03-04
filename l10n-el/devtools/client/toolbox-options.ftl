@@ -27,9 +27,13 @@ options-select-dev-tools-theme-label = Θέματα
 # The heading
 options-context-inspector = Επιθεώρηση
 # The label for the checkbox option to show user agent styles
-options-show-user-agent-styles-label = Εμφάνιση στυλ προγράμματος περιήγησης
+options-show-user-agent-styles-label = Εμφάνιση μορφοποιήσεων προγράμματος περιήγησης
 options-show-user-agent-styles-tooltip =
-    .title = Η ενεργοποίηση αυτού θα εμφανίσει τα προεπιλεγμένα στυλ που φορτώνονται από το πρόγραμμα περιήγησης.
+    .title = Η ενεργοποίηση αυτού θα εμφανίσει τις προεπιλεγμένες μορφοποιήσεις που φορτώνονται από το πρόγραμμα περιήγησης.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Εμφάνιση στοιχείων Shadow DOM προγράμματος περιήγησης
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Η ενεργοποίηση αυτής της ρύθμισης θα εμφανίζει τα στοιχεία Shadow DOM που διαχειρίζεται το πρόγραμμα περιήγησης.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = Κόψιμο ιδιοτήτων DOM
 options-collapse-attrs-tooltip =
@@ -75,7 +79,7 @@ options-styleeditor-label = Επεξεργασία στυλ
 # The label for the checkbox that toggles autocompletion of css in the Style Editor
 options-stylesheet-autocompletion-label = Αυτόματη συμπλήρωση CSS
 options-stylesheet-autocompletion-tooltip =
-    .title = Αυτόματη συμπλήρωση ιδιοτήτων CSS, τιμών και επιλογέων στην Επεξεργασία Στυλ καθώς πληκτρολογείτε
+    .title = Αυτόματη συμπλήρωση ιδιοτήτων CSS, τιμών και επιλογέων στην Επεξεργασία μορφοποίησης καθώς πληκτρολογείτε
 
 ## Screenshot section
 
@@ -116,6 +120,8 @@ options-disable-http-cache-label = Απενεργοποίηση κρυφής μ�
 options-disable-http-cache-tooltip =
     .title = Η ενεργοποίηση αυτής της επιλογής θα απενεργοποιήσει την κρυφή μνήμη HTTP για όλες τις καρτέλες που έχουν ανοικτή την εργαλειοθήκη. Τα service worker δεν επηρεάζονται από αυτήν την επιλογή.
 # The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = Απενεργοποίηση JavaScript
+# The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = Απενεργοποίηση JavaScript *
 options-disable-javascript-tooltip =
     .title = Η ενεργοποίηση αυτής της επιλογής θα απενεργοποιήσει το JavaScript για την τρέχουσα καρτέλα. Αν η καρτέλα ή η εργαλειοθήκη είναι κλειστή, τότε αυτή η ρύθμιση θα ξεχαστεί.
@@ -143,5 +149,11 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Ενεργοποίηση χαρτών πηγής
 options-source-maps-tooltip =
     .title = Αν ενεργοποιήσετε αυτήν την επιλογή, οι πηγές θα αντιστοιχηθούν στα εργαλεία.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (μόνο στην τρέχουσα συνεδρία, ανανεώνει τη σελίδα)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Τρέχουσα συνεδρία μόνο, επαναφορτώνει τη σελίδα
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (ανανεώνει τη σελίδα)

@@ -36,6 +36,9 @@ certificate-viewer-key-size = Dimension de clave
 certificate-viewer-inc-locality = Loco del interprisa
 certificate-viewer-locality = Loco
 certificate-viewer-location = Position
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Nomine de registro
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = ID log
 certificate-viewer-method = Methodo
 certificate-viewer-modulus = Modulo
@@ -46,7 +49,7 @@ certificate-viewer-organization = Organisation
 certificate-viewer-organizational-unit = Unitate organisative
 certificate-viewer-policy = Criterio
 certificate-viewer-protocol = Protocollo
-certificate-viewer-public-value = Valor del criterio
+certificate-viewer-public-value = Valor public
 certificate-viewer-purposes = Propositos
 certificate-viewer-qualifier = Qualificator
 certificate-viewer-qualifiers = Qualificatores
@@ -81,7 +84,6 @@ certificate-viewer-authority-info-aia = Info del autoritate (AIA)
 certificate-viewer-certificate-policies = Politicas de certificato
 certificate-viewer-embedded-scts = SCT incorporate
 certificate-viewer-crl-endpoints = Punctos final CRL
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Discargar
@@ -101,7 +103,6 @@ certificate-viewer-download-pem = PEM (certificato)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (catena)
     .download = { $fileName }-catena.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Iste extension era marcate como critic, lo que significa que le clientes debe rejectar le certificato si non lo comprende.
@@ -112,6 +113,8 @@ certificate-viewer-export = Exportar
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (incognite)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = certificato
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

@@ -385,6 +385,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = ᱯᱨᱟᱭᱣᱮᱴ ᱣᱤᱱᱰᱳ ᱨᱮ ᱜᱚᱱᱚᱜᱼᱟ
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = ᱯᱨᱟᱭᱣᱮᱴ ᱣᱤᱱᱰᱳ ᱨᱮ ᱜᱚᱱᱚᱜᱼᱟ
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -424,6 +428,10 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = ᱱᱚᱶᱟ ᱮᱠᱥᱴᱮᱱᱥᱚᱱ ᱫᱚ ᱟᱞᱮᱭᱟᱜ ᱨᱩᱭᱠᱷᱤᱭᱟᱹ ᱟᱨ ᱠᱟᱹᱢᱤᱦᱚᱨᱟ ᱢᱟᱱᱚᱠ ᱮ ᱢᱟᱱᱟᱣ ᱮᱫᱟᱭ
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Mozilla ᱵᱮᱱᱟᱣ ᱟᱠᱟᱱ ᱚᱫᱷᱤᱠᱟᱨᱤᱠ ᱮᱠᱥᱴᱮᱱᱥᱚᱱ ᱠᱟᱱᱟ ᱾ ᱱᱚᱶᱟ ᱫᱚ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱟᱨ ᱠᱟᱹᱢᱤᱦᱚᱨᱟ ᱢᱟᱱᱚᱠ ᱮ ᱢᱟᱱᱚᱣᱟᱭ
 
 ##
 
@@ -482,12 +490,8 @@ details-notification-unsigned2 =
     .message = { $name } ᱫᱚ { -brand-short-name } ᱨᱮ ᱵᱮᱵᱷᱟᱨ ᱞᱟᱹᱜᱤᱫ ᱵᱟᱭ ᱯᱩᱥᱴᱟᱹᱣ ᱫᱟᱲᱮᱭᱟᱫᱼᱟ ᱾ ᱦᱩᱥᱤᱭᱟᱹᱨ ᱥᱟᱹᱦᱤᱡ ᱪᱟᱞᱟᱜ ᱢᱮ ᱾
 details-notification-unsigned-link = ᱵᱟᱹᱲᱛᱤ ᱞᱟᱹᱭ ᱥᱚᱫᱚᱨ
 details-notification-blocked = { $name } ᱫᱚ ᱡᱟᱹᱯᱛᱤ ᱟᱨ ᱵᱟᱝ ᱛᱤᱸᱜᱩ ᱛᱷᱤᱨ ᱠᱟᱛᱷᱟ ᱠᱚ ᱠᱟᱨᱚᱱ ᱛᱮ ᱵᱟᱝ ᱦᱩᱭ ᱦᱚᱪᱚ ᱟᱠᱟᱱᱟ
-details-notification-blocked2 =
-    .message = { $name } ᱫᱚ ᱡᱟᱹᱯᱛᱤ ᱟᱨ ᱵᱟᱝ ᱛᱤᱸᱜᱩ ᱛᱷᱤᱨ ᱠᱟᱛᱷᱟ ᱠᱚ ᱠᱟᱨᱚᱱ ᱛᱮ ᱵᱟᱝ ᱦᱩᱭ ᱦᱚᱪᱚ ᱟᱠᱟᱱᱟ
 details-notification-blocked-link = ᱰᱷᱮᱨ ᱞᱟᱹᱭ ᱥᱚᱫᱚᱨ
 details-notification-softblocked = { $name }ᱫᱚ ᱡᱟᱹᱯᱛᱤ ᱟᱨ ᱵᱟᱝ ᱛᱤᱸᱜᱩ ᱛᱷᱤᱨ ᱠᱟᱛᱷᱟ ᱠᱚ ᱠᱟᱨᱚᱱ ᱛᱮ ᱵᱟᱰᱟᱭᱟ ᱠᱟᱱᱟ᱾
-details-notification-softblocked2 =
-    .message = { $name }ᱫᱚ ᱡᱟᱹᱯᱛᱤ ᱟᱨ ᱵᱟᱝ ᱛᱤᱸᱜᱩ ᱛᱷᱤᱨ ᱠᱟᱛᱷᱟ ᱠᱚ ᱠᱟᱨᱚᱱ ᱛᱮ ᱵᱟᱰᱟᱭᱟ ᱠᱟᱱᱟ᱾
 details-notification-softblocked-link = ᱰᱷᱮᱨ ᱞᱟᱹᱭ ᱥᱚᱫᱚᱨ
 details-notification-gmp-pending = { $name } ᱫᱚ ᱠᱷᱟᱴᱚ ᱚᱠᱛᱚ ᱨᱮ ᱵᱚᱦᱟᱞᱚᱜᱼᱟ ᱾
 details-notification-gmp-pending2 =

@@ -165,7 +165,6 @@ bool wasm::IonAvailable(JSContext* cx) {
   MOZ_ALWAYS_TRUE(IonDisabledByFeatures(cx, &isDisabled));
   return !isDisabled;
 }
-
 bool wasm::WasmCompilerForAsmJSAvailable(JSContext* cx) {
   return IonAvailable(cx);
 }
@@ -198,13 +197,17 @@ bool wasm::IonDisabledByFeatures(JSContext* cx, bool* isDisabled,
                                  JSStringBuilder* reason) {
   // Ion has no debugging support.
   bool debug = WasmDebuggerActive(cx);
+  bool customPageSizes = WasmCustomPageSizesFlag(cx);
   if (reason) {
     char sep = 0;
     if (debug && !Append(reason, "debug", &sep)) {
       return false;
     }
+    if (customPageSizes && !Append(reason, "custom-page-sizes", &sep)) {
+      return false;
+    }
   }
-  *isDisabled = debug;
+  *isDisabled = debug || customPageSizes;
   return true;
 }
 
@@ -227,7 +230,7 @@ bool wasm::AnyCompilerAvailable(JSContext* cx) {
 JS_FOR_WASM_FEATURES(WASM_FEATURE)
 #undef WASM_FEATURE
 
-bool wasm::IsSimdPrivilegedContext(JSContext* cx) {
+bool wasm::IsPrivilegedContext(JSContext* cx) {
   // This may be slightly more lenient than we want in an ideal world, but it
   // remains safe.
   return cx->realm() && cx->realm()->principals() &&
@@ -251,7 +254,7 @@ bool wasm::HasPlatformSupport() {
     return false;
   }
 
-  if (gc::SystemPageSize() > wasm::PageSize) {
+  if (gc::SystemPageSize() > wasm::StandardPageSizeBytes) {
     return false;
   }
 
@@ -303,8 +306,8 @@ bool wasm::CodeCachingAvailable(JSContext* cx) {
   return false;
 #else
 
-  // We temporarily don't support caching with our new compile pipeline
-  if (ExperimentalCompilePipelineAvailable(cx)) {
+  // TODO(bug 1913109): lazy tiering doesn't support serialization
+  if (JS::Prefs::wasm_lazy_tiering() || JS::Prefs::wasm_lazy_tiering_for_gc()) {
     return false;
   }
 

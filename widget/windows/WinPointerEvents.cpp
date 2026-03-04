@@ -85,7 +85,7 @@ bool WinPointerEvents::GetPointerType(uint32_t aPointerId,
 POINTER_INPUT_TYPE
 WinPointerEvents::GetPointerType(uint32_t aPointerId) {
   POINTER_INPUT_TYPE pointerType = PT_POINTER;
-  Unused << GetPointerType(aPointerId, &pointerType);
+  (void)GetPointerType(aPointerId, &pointerType);
   return pointerType;
 }
 
@@ -103,6 +103,21 @@ bool WinPointerEvents::GetPointerPenInfo(uint32_t aPointerId,
     return false;
   }
   return getPointerPenInfo(aPointerId, aPenInfo);
+}
+
+void WinPointerEvents::GetPointerFrameTouchInfo(
+    uint32_t pointerId, nsTArray<POINTER_TOUCH_INFO>& aTouchInfoArray) {
+  uint32_t pointerCount = 0;
+  if (!::GetPointerFrameTouchInfo(pointerId, &pointerCount, nullptr)) {
+    return;
+  }
+  if (!pointerCount) {
+    return;
+  }
+
+  aTouchInfoArray.SetLength(pointerCount);
+  ::GetPointerFrameTouchInfo(pointerId, &pointerCount,
+                             aTouchInfoArray.Elements());
 }
 
 bool WinPointerEvents::ShouldRollupOnPointerEvent(UINT aMsg, WPARAM aWParam) {

@@ -5,12 +5,12 @@
 #ifndef DOM_MEDIA_MEDIASESSION_MEDIASESSIONIPCUTILS_H_
 #define DOM_MEDIA_MEDIASESSION_MEDIASESSIONIPCUTILS_H_
 
-#include "ipc/EnumSerializer.h"
-#include "mozilla/dom/BindingIPCUtils.h"
 #include "MediaMetadata.h"
+#include "ipc/EnumSerializer.h"
+#include "mozilla/Maybe.h"
+#include "mozilla/dom/BindingIPCUtils.h"
 #include "mozilla/dom/MediaSession.h"
 #include "mozilla/dom/MediaSessionBinding.h"
-#include "mozilla/Maybe.h"
 
 namespace mozilla {
 namespace dom {
@@ -50,6 +50,7 @@ struct ParamTraits<mozilla::dom::MediaMetadataBase> {
     WriteParam(aWriter, aParam.mTitle);
     WriteParam(aWriter, aParam.mArtist);
     WriteParam(aWriter, aParam.mAlbum);
+    WriteParam(aWriter, aParam.mUrl);
     WriteParam(aWriter, aParam.mArtwork);
   }
 
@@ -57,6 +58,7 @@ struct ParamTraits<mozilla::dom::MediaMetadataBase> {
     if (!ReadParam(aReader, &(aResult->mTitle)) ||
         !ReadParam(aReader, &(aResult->mArtist)) ||
         !ReadParam(aReader, &(aResult->mAlbum)) ||
+        !ReadParam(aReader, &(aResult->mUrl)) ||
         !ReadParam(aReader, &(aResult->mArtwork))) {
       return false;
     }

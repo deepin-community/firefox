@@ -37,6 +37,7 @@ class WorkerDescriptorFront extends DescriptorMixin(
     // Do not use `form` name to avoid colliding with protocol.js's `form` method
     this.targetForm = json;
     this._url = json.url;
+    this.origin = json.origin;
     this.type = json.type;
     this.scope = json.scope;
     this.fetch = json.fetch;
@@ -103,6 +104,8 @@ class WorkerDescriptorFront extends DescriptorMixin(
       this.targetForm.threadActor = workerTargetForm.threadActor;
       this.targetForm.tracerActor = workerTargetForm.tracerActor;
 
+      this.targetForm.targetType = workerTargetForm.targetType;
+
       if (this.isDestroyedOrBeingDestroyed()) {
         return this;
       }
@@ -142,5 +145,4 @@ class WorkerDescriptorFront extends DescriptorMixin(
   }
 }
 
-exports.WorkerDescriptorFront = WorkerDescriptorFront;
-registerFront(exports.WorkerDescriptorFront);
+registerFront(WorkerDescriptorFront);

@@ -60,7 +60,7 @@ class nsTextControlFrame : public nsContainerFrame,
 
   mozilla::ScrollContainerFrame* GetScrollTargetFrame() const override;
 
-  nscoord IntrinsicISize(gfxContext* aContext,
+  nscoord IntrinsicISize(const mozilla::IntrinsicSizeInput& aInput,
                          mozilla::IntrinsicISizeType aType) override;
 
   void Reflow(nsPresContext* aPresContext, ReflowOutput& aDesiredSize,
@@ -117,10 +117,7 @@ class nsTextControlFrame : public nsContainerFrame,
                                                   mozilla::SelectionDirection);
   NS_IMETHOD GetOwnedSelectionController(nsISelectionController** aSelCon);
   nsFrameSelection* GetOwnedFrameSelection() {
-    return ControlElement()->GetConstFrameSelection();
-  }
-  nsISelectionController* GetSelectionController() {
-    return ControlElement()->GetSelectionController();
+    return ControlElement()->GetIndependentFrameSelection();
   }
 
   void PlaceholderChanged(const nsAttrValue* aOld, const nsAttrValue* aNew);
@@ -145,7 +142,7 @@ class nsTextControlFrame : public nsContainerFrame,
 
   /** handler for attribute changes to mContent */
   MOZ_CAN_RUN_SCRIPT_BOUNDARY nsresult AttributeChanged(
-      int32_t aNameSpaceID, nsAtom* aAttribute, int32_t aModType) override;
+      int32_t aNameSpaceID, nsAtom* aAttribute, AttrModType aModType) override;
   void ElementStateChanged(mozilla::dom::ElementState aStates) override;
 
   nsresult PeekOffset(mozilla::PeekOffsetStruct* aPos) override;
@@ -248,8 +245,7 @@ class nsTextControlFrame : public nsContainerFrame,
    * value. This should only be called when we have no editor yet.
    * @throws NS_ERROR_UNEXPECTED if the div has no text content
    */
-  nsresult UpdateValueDisplay(bool aNotify, bool aBeforeEditorInit = false,
-                              const nsAString* aValue = nullptr);
+  nsresult UpdateValueDisplay(bool aNotify);
 
   /**
    * Find out whether an attribute exists on the content or not.

@@ -3,18 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -145,8 +133,6 @@ menu-view-history-button =
     .label = 历史
 menu-view-synced-tabs-sidebar =
     .label = 同步的标签页
-menu-view-megalist-sidebar =
-    .label = 密码
 menu-view-full-zoom =
     .label = 缩放
     .accesskey = Z
@@ -239,20 +225,36 @@ menu-bookmarks-menu =
 menu-bookmarks-manage =
     .label = 管理书签
 menu-bookmark-tab =
-    .label = 将当前标签页加入书签…
+    .label = 为当前标签页添加书签…
 menu-edit-bookmark =
     .label = 编辑此书签…
 # "Search" is a verb, as in "Search in bookmarks"
 menu-bookmarks-search =
     .label = 搜索书签
 menu-bookmarks-all-tabs =
-    .label = 将所有标签页加入书签…
+    .label = 为所有标签页添加书签…
 menu-bookmarks-toolbar =
     .label = 书签工具栏
 menu-bookmarks-other =
     .label = 其他书签
 menu-bookmarks-mobile =
     .label = 移动设备上的书签
+
+## Profiles Menu
+
+menu-profiles =
+    .label = 配置文件
+menu-profiles-manage-profiles =
+    .label = 管理配置文件
+menu-profiles-new-profile =
+    .label = 新建配置文件
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName }（当前）
+menu-profiles-menu =
+    .label = 配置文件
+    .accesskey = P
 
 ## Tools Menu
 
@@ -262,6 +264,9 @@ menu-tools =
 menu-tools-downloads =
     .label = 下载
     .accesskey = D
+menu-tools-extensions-and-themes =
+    .label = 扩展和主题
+    .accesskey = E
 menu-tools-addons-and-themes =
     .label = 扩展和主题
     .accesskey = A

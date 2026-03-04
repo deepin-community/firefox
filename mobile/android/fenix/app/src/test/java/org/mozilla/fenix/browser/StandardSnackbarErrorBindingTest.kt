@@ -4,136 +4,97 @@
 
 package org.mozilla.fenix.browser
 
-import android.app.Activity
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.content.ContextCompat
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
-import io.mockk.mockkStatic
-import io.mockk.unmockkStatic
 import io.mockk.verify
-import mozilla.components.support.test.libstate.ext.waitUntilIdle
-import mozilla.components.support.test.robolectric.testContext
-import mozilla.components.support.test.rule.MainCoroutineRule
-import org.junit.After
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.mozilla.fenix.R
 import org.mozilla.fenix.components.AppStore
-import org.mozilla.fenix.components.FenixSnackbar
 import org.mozilla.fenix.components.appstate.AppAction
-import org.mozilla.fenix.ext.getRootView
-import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
+import org.mozilla.fenix.compose.snackbar.Snackbar
+import org.mozilla.fenix.compose.snackbar.SnackbarFactory
 
-@RunWith(FenixRobolectricTestRunner::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class StandardSnackbarErrorBindingTest {
 
-    @get:Rule
-    val coroutinesTestRule = MainCoroutineRule()
-
-    private lateinit var activity: Activity
+    private val testDispatcher = StandardTestDispatcher()
     private lateinit var snackbarContainer: ViewGroup
-    private lateinit var snackbar: FenixSnackbar
+    private lateinit var snackbar: Snackbar
+    private lateinit var snackbarFactory: SnackbarFactory
     private lateinit var rootView: View
 
     @Before
     fun setup() {
         MockKAnnotations.init(this)
-        mockkObject(FenixSnackbar)
-
-        mockkStatic(AppCompatResources::class)
-        every { AppCompatResources.getDrawable(any(), any()) } returns mockk(relaxed = true)
 
         snackbarContainer = mockk()
         snackbar = mockk(relaxed = true)
-        every { FenixSnackbar.make(any(), any(), any()) } returns snackbar
+        snackbarFactory = mockk()
+        every {
+            snackbarFactory.make(
+                snackBarParentView = any(),
+                snackbarState = any(),
+            )
+        } returns snackbar
+
         rootView = mockk<ViewGroup>(relaxed = true)
-        activity = mockk(relaxed = true) {
-            every { findViewById<View>(android.R.id.content) } returns rootView
-            every { getRootView() } returns rootView
-        }
-    }
-
-    @After
-    fun teardown() {
-        unmockkStatic(AppCompatResources::class)
     }
 
     @Test
-    fun `WHEN show standard snackbar error action dispatched THEN fenix snackbar should appear`() {
+    fun `WHEN show standard snackbar error action dispatched THEN snackbar should appear`() = runTest(testDispatcher) {
         val appStore = AppStore()
         val standardSnackbarError = StandardSnackbarErrorBinding(
-            activity,
             snackbarContainer,
             appStore,
+            snackbarFactory,
+            "Dismiss",
+            testDispatcher,
         )
 
         standardSnackbarError.start()
         appStore.dispatch(
             AppAction.UpdateStandardSnackbarErrorAction(
                 StandardSnackbarError(
-                    testContext.getString(R.string.unable_to_save_to_pdf_error),
+                    "Unable to generate PDF",
                 ),
             ),
         )
-        appStore.waitUntilIdle()
+        testDispatcher.scheduler.advanceUntilIdle()
 
-        verify {
-            snackbar.setText(testContext.getString(R.string.unable_to_save_to_pdf_error))
-            snackbar.setButtonTextColor(
-                ContextCompat.getColor(
-                    activity,
-                    R.color.fx_mobile_text_color_primary,
-                ),
-            )
-            snackbar.setBackground(
-                any(),
-            )
-            snackbar.setSnackBarTextColor(
-                ContextCompat.getColor(
-                    activity,
-                    R.color.fx_mobile_text_color_critical,
-                ),
-            )
-            snackbar.setAction(
-                text = activity.getString(R.string.standard_snackbar_error_dismiss),
-                any(),
-            )
-            snackbar.show()
-        }
+        verify { snackbar.show() }
     }
 
     @Test
-    fun `WHEN show standard snackbar error action dispatched and binding is stopped THEN fenix snackbar should appear when binding is again started`() {
+    fun `WHEN show standard snackbar error action dispatched and binding is stopped THEN snackbar should appear when binding is again started`() = runTest(testDispatcher) {
         val appStore = AppStore()
         val standardSnackbarError = StandardSnackbarErrorBinding(
-            activity,
             snackbarContainer,
             appStore,
+            snackbarFactory,
+            "Dismiss",
+            testDispatcher,
         )
 
         standardSnackbarError.start()
         appStore.dispatch(
             AppAction.UpdateStandardSnackbarErrorAction(
                 StandardSnackbarError(
-                    testContext.getString(R.string.unable_to_save_to_pdf_error),
+                    "Unable to generate PDF",
                 ),
             ),
         )
-        appStore.waitUntilIdle()
+        testDispatcher.scheduler.advanceUntilIdle()
 
         standardSnackbarError.stop()
 
         standardSnackbarError.start()
 
-        verify {
-            snackbar.show()
-        }
+        verify { snackbar.show() }
     }
 }

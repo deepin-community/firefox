@@ -15,7 +15,6 @@ from marionette_driver.addons import Addons
 from marionette_driver.errors import MarionetteException
 from marionette_driver.marionette import Marionette
 from marionette_driver.wait import Wait
-from six import reraise
 from telemetry_harness.ping_server import PingServer
 
 CANARY_CLIENT_ID = "c0ffeec0-ffee-c0ff-eec0-ffeec0ffeec0"
@@ -93,36 +92,22 @@ def fixture_ping_server():
     server.stop()
 
 
-class Browser(object):
+class Browser:
     def __init__(self, marionette, ping_server):
         self.marionette = marionette
         self.ping_server = ping_server
         self.addon_ids = []
 
     def disable_telemetry(self):
-        self.marionette.instance.profile.set_persistent_preferences(
-            {"datareporting.healthreport.uploadEnabled": False}
-        )
+        self.marionette.instance.profile.set_persistent_preferences({
+            "datareporting.healthreport.uploadEnabled": False
+        })
         self.marionette.set_pref("datareporting.healthreport.uploadEnabled", False)
 
-    def enable_search_events(self):
-        """
-        Event Telemetry categories are disabled by default.
-        Search events are in the "navigation" category and are not enabled by
-        default in builds of Firefox, so we enable them here.
-        """
-
-        script = """\
-        Services.telemetry.setEventRecordingEnabled("navigation", true);
-        """
-
-        with self.marionette.using_context(self.marionette.CONTEXT_CHROME):
-            self.marionette.execute_script(textwrap.dedent(script))
-
     def enable_telemetry(self):
-        self.marionette.instance.profile.set_persistent_preferences(
-            {"datareporting.healthreport.uploadEnabled": True}
-        )
+        self.marionette.instance.profile.set_persistent_preferences({
+            "datareporting.healthreport.uploadEnabled": True
+        })
         self.marionette.set_pref("datareporting.healthreport.uploadEnabled", True)
 
     def get_client_id(self):
@@ -149,7 +134,7 @@ class Browser(object):
             """
             )
 
-    def get_default_search_engine(self):
+    def get_default_search_engine_telemetry_id(self):
         """Retrieve the identifier of the default search engine.
 
         We found that it's required to initialize the search service before
@@ -164,7 +149,7 @@ class Browser(object):
                 "@mozilla.org/browser/search-service;1"]
             .getService(Components.interfaces.nsISearchService);
         return searchService.init().then(function () {
-          resolve(searchService.defaultEngine.identifier);
+          resolve(searchService.defaultEngine.telemetryId);
         });
         """
 
@@ -192,7 +177,7 @@ class Browser(object):
             addons = Addons(self.marionette)
             addon_id = addons.install(addon_path, temp=True)
         except MarionetteException as e:
-            pytest.fail("{} - Error installing addon: {} - ".format(e.cause, e))
+            pytest.fail(f"{e.cause} - Error installing addon: {e} - ")
         else:
             self.addon_ids.append(addon_id)
 
@@ -222,11 +207,9 @@ class Browser(object):
                 )
         except Exception:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            reraise(
-                exc_type,
-                exc_type("Failed to trigger opening a new tab: {}".format(exc_value)),
-                exc_traceback,
-            )
+            raise exc_type(
+                f"Failed to trigger opening a new tab: {exc_value}"
+            ).with_traceback(exc_traceback)
         else:
             Wait(self.marionette).until(
                 lambda mn: len(mn.window_handles) == len(current_tabs) + 1,
@@ -286,7 +269,7 @@ def fixture_browser(marionette, ping_server):
     browser.quit()
 
 
-class Helpers(object):
+class Helpers:
     def __init__(self, ping_server, marionette):
         self.ping_server = ping_server
         self.marionette = marionette
@@ -326,7 +309,7 @@ class Helpers(object):
         try:
             Wait(self.marionette, 60).until(wait_func)
         except Exception as e:
-            pytest.fail("Error waiting for ping: {}".format(e))
+            pytest.fail(f"Error waiting for ping: {e}")
 
         return filtered_pings[:count]
 

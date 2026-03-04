@@ -9,7 +9,6 @@
 #include "mozilla/CheckedInt.h"
 #include "mozilla/EventForwards.h"
 #include "mozilla/NativeKeyBindingsType.h"
-#include "mozilla/ToString.h"
 
 #include "nsCOMPtr.h"
 #include "nsIURI.h"
@@ -425,6 +424,7 @@ struct InputContext final {
     mHTMLInputMode.Truncate();
     mActionHint.Truncate();
     mAutocapitalize.Truncate();
+    mAutocorrect = true;
   }
 
   bool IsPasswordEditor() const {
@@ -467,6 +467,11 @@ struct InputContext final {
            // enterkeyhint is only supported by Android IME API and iOS API.
            mActionHint != aOldContext.mActionHint ||
 #endif
+#if defined(ANDROID) || defined(XP_DARWIN)
+           // autocorrect is only supported by Android IME API, macOS text
+           // substitution and iOS API.
+           mAutocorrect != aOldContext.mAutocorrect ||
+#endif
            false;
   }
 
@@ -486,6 +491,9 @@ struct InputContext final {
 
   /* A hint for autocapitalize */
   nsString mAutocapitalize;
+
+  /* A hint for autocorrect */
+  bool mAutocorrect = true;  // on-by-default
 
   /**
    * mOrigin indicates whether this focus event refers to main or remote
@@ -520,7 +528,7 @@ struct InputContext final {
   }
 };
 
-// FYI: Implemented in nsBaseWidget.cpp
+// FYI: Implemented in nsIWidget.cpp
 const char* ToChar(InputContext::Origin aOrigin);
 
 struct InputContextAction final {
@@ -669,7 +677,7 @@ enum IMEMessage : IMEMessageType {
   REQUEST_TO_CANCEL_COMPOSITION
 };
 
-// FYI: Implemented in nsBaseWidget.cpp
+// FYI: Implemented in nsIWidget.cpp
 const char* ToChar(IMEMessage aIMEMessage);
 
 struct IMENotification final {
@@ -988,6 +996,23 @@ struct IMENotification final {
       return *this;
     }
 
+    [[nodiscard]] uint32_t ComputeNewOffset(uint32_t aOldOffset) const {
+      // If mStartOffset equals or greater than aOldOffset, the text after
+      // aOldOffset is changed, i.e., the preceding text is not changed.  So,
+      // aOldOffset is not changed.
+      if (mStartOffset >= aOldOffset) {
+        return aOldOffset;
+      }
+      // If mRemovedEndOffset equals or less than aOldOffset, only the preceding
+      // text is changed.  So, add the difference to aOldOffset.
+      if (mRemovedEndOffset <= aOldOffset) {
+        return aOldOffset + Difference();
+      }
+      // If the character at aOldOffset is changed, the new offset should be the
+      // end of the changed text.
+      return mAddedEndOffset;
+    }
+
 #ifdef DEBUG
     void Test();
 #endif  // #ifdef DEBUG
@@ -1053,17 +1078,6 @@ struct IMENotification final {
     MOZ_RELEASE_ASSERT(mMessage == NOTIFY_IME_OF_TEXT_CHANGE);
     mTextChangeData = aTextChangeData;
   }
-};
-
-struct CandidateWindowPosition {
-  // Upper left corner of the candidate window if mExcludeRect is false.
-  // Otherwise, the position currently interested.  E.g., caret position.
-  LayoutDeviceIntPoint mPoint;
-  // Rect which shouldn't be overlapped with the candidate window.
-  // This is valid only when mExcludeRect is true.
-  LayoutDeviceIntRect mRect;
-  // See explanation of mPoint and mRect.
-  bool mExcludeRect;
 };
 
 std::ostream& operator<<(std::ostream& aStream, const IMEEnabled& aEnabled);

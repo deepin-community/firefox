@@ -16,7 +16,7 @@ def test_search_counts(browser, helpers):
     # - Open new tab
     # - Perform search (awesome bar or search bar)
     # - Restart browser in new session
-    search_engine = browser.get_default_search_engine()
+    search_engine_telemetry_id = browser.get_default_search_engine_telemetry_id()
     browser.search_in_new_tab("mozilla firefox")
     ping1 = helpers.wait_for_ping(browser.restart, MAIN_SHUTDOWN_PING)
 
@@ -58,7 +58,7 @@ def test_search_counts(browser, helpers):
 
     keyed_histograms1 = ping1["payload"]["keyedHistograms"]
     search_counts1 = keyed_histograms1["SEARCH_COUNTS"][
-        "{}.urlbar".format(search_engine)
+        f"{search_engine_telemetry_id}.urlbar"
     ]
 
     assert search_counts1 == {
@@ -154,7 +154,7 @@ def test_search_counts(browser, helpers):
 
     keyed_histograms3 = ping3["payload"]["keyedHistograms"]
     search_counts3 = keyed_histograms3["SEARCH_COUNTS"][
-        "{}.urlbar".format(search_engine)
+        f"{search_engine_telemetry_id}.urlbar"
     ]
     assert search_counts3 == {
         "range": [1, 2],

@@ -30,4 +30,46 @@ webext-perms-description-sessions = Aliri ĵuse fermitajn langetojn
 webext-perms-description-tabs = Aliri retumilajn langetojn
 webext-perms-description-tabHide = Kaŝi kaj montri langetojn de retumilo
 webext-perms-description-topSites = Aliri la retuman historion
+webext-perms-description-trialML = Elŝuti kaj ruli modelon de AI en via aparato
+webext-perms-description-userScripts = Permesi al nekontrolitaj skriptoj de aliaj la aliron al viaj datumoj
 webext-perms-description-webNavigation = Aliri la agojn de la retumilo dum retumo
+
+## The userScripts permission includes an additional explanation that is
+## displayed prominently near the usual permission description.
+
+webext-perms-extra-warning-userScripts-long = Nekontrolitaj skriptoj povas prezenti sekurecajn kaj privatecajn riskojn, kiel la ruladon de danĝera kodo aŭ la spurado de agado en retejoj. Nur rulu skriptojn de etendaĵoj aŭ fontoj, kiujn vi fidas.
+# A shorter warning is displayed in UI surfaces with little room, such as a permission prompt.
+webext-perms-extra-warning-userScripts-short = Nekontrolitaj skriptoj povas prezenti sekurecajn kaj privatecajn riskojn. Nur rulu skriptojn de etendaĵoj aŭ fontoj, kiujn vi fidas.
+
+## Short form to be used in lists or in a string (`webext-perms-description-data-some`)
+## that formats some of the data collection permissions below using `Intl.ListFormat`.
+##
+## This is used when the data collection permissions are required.
+
+webext-perms-description-data-short-authenticationInfo = aŭtentiga informo
+webext-perms-description-data-short-bookmarksInfo = legosignoj
+webext-perms-description-data-short-browsingActivity = retumo
+webext-perms-description-data-short-financialAndPaymentInfo = financa kaj paga informo
+webext-perms-description-data-short-healthInfo = sana informo
+webext-perms-description-data-short-locationInfo = loko
+webext-perms-description-data-short-personalCommunications = persona komunikado
+webext-perms-description-data-short-personallyIdentifyingInfo = personaj datumoj
+webext-perms-description-data-short-searchTerms = serĉaj tekstoj
+webext-perms-description-data-short-technicalAndInteraction = teknikaj kaj interagaj datumoj
+webext-perms-description-data-short-websiteActivity = retumo en retejoj
+webext-perms-description-data-short-websiteContent = enhavo de retumoj
+
+## Long form to be used in `about:addons` when these data collection permissions are optional.
+
+webext-perms-description-data-long-authenticationInfo = Dividi aŭtentigan informon kun la programisto de la etendaĵo
+webext-perms-description-data-long-bookmarksInfo = Divid legosignan informon kun la programisto de la etendaĵo
+webext-perms-description-data-long-browsingActivity = Dividi retumon kun la programisto de la etendaĵo
+webext-perms-description-data-long-financialAndPaymentInfo = Dividi financan kaj pagan informon kun la programisto de la etendaĵo
+webext-perms-description-data-long-healthInfo = Dividi sanan informon kun la programisto de la etendaĵo
+webext-perms-description-data-long-locationInfo = Dividi informon pri loko kun la programisto de la etendaĵo
+webext-perms-description-data-long-personalCommunications = Dividi personan komunikadon kun la programisto de la etendaĵo
+webext-perms-description-data-long-personallyIdentifyingInfo = Dividi personajn datumojn kun la programisto de la etendaĵo
+webext-perms-description-data-long-searchTerms = Dividi serĉajn tekstojn kun la programisto de la etendaĵo
+webext-perms-description-data-long-technicalAndInteraction = Dividi teknikajn kaj interagajn datumojn kun la programisto de la etendaĵo
+webext-perms-description-data-long-websiteActivity = Dividi retumon en retejoj kun la programisto de la etendaĵo
+webext-perms-description-data-long-websiteContent = Dividi enhavon de retejoj kun la programisto de la etendaĵo

@@ -149,9 +149,7 @@ main-context-menu-save-link-to-pocket =
     .label = Shrani povezavo v { -pocket-brand-name }
     .accesskey = e
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Kopiraj e-poštni naslov
@@ -162,11 +160,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Kopiraj povezavo
     .accesskey = i
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Kopiraj povezavo brez sledilnih parametrov
-    .accesskey = z
+main-context-menu-preview-link =
+    .label = Predogled povezave
+    .accesskey = e
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Kopiraj očiščeno povezavo
+    .accesskey = č
 
 ## Media (video/audio) controls
 ##
@@ -268,6 +270,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Pokaži opis
     .accesskey = S
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Išči sliko z { $engine }
+    .accesskey = č
 main-context-menu-video-save-as =
     .label = Shrani video kot …
     .accesskey = v
@@ -283,6 +290,9 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Pošlji zvok po e-pošti …
     .accesskey = o
+main-context-menu-send-to-device-2 =
+    .label = Pošlji na napravo
+    .accesskey = n
 main-context-menu-save-to-pocket =
     .label = Shrani stran v { -pocket-brand-name }
     .accesskey = s
@@ -290,9 +300,7 @@ main-context-menu-send-to-device =
     .label = Pošlji stran na napravo
     .accesskey = N
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Uporabi shranjeno prijavo
@@ -319,6 +327,9 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Dodaj ključno besedo k iskanju …
     .accesskey = K
+main-context-menu-add-engine =
+    .label = Dodaj iskalnik
+    .accesskey = D
 main-context-menu-link-send-to-device =
     .label = Pošlji povezavo na napravo
     .accesskey = N
@@ -389,3 +400,5 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Razkrij geslo
     .accesskey = k
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Novo

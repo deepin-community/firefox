@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Ver
 download-cert-view-text = Examinar certificado da CA
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -85,8 +82,13 @@ client-auth-cert-details-issued-by = Emitido por: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Armazenado em: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Memorizar esta decisão
+client-auth-cert-remember-label = Memorizar esta decisão:
+client-auth-cert-remember-never =
+    .label = Uma vez
+client-auth-cert-remember-always =
+    .label = Permanentemente
+client-auth-cert-remember-temporarily =
+    .label = Nesta sessão
 
 ## Set password (p12) dialog
 

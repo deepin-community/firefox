@@ -21,7 +21,7 @@ def indented(s):
 
 
 def cpp(v):
-    if type(v) == bool:
+    if type(v) is bool:
         return "true" if v else "false"
     return str(v)
 
@@ -273,7 +273,7 @@ def link_to_cpp(interfaces, fd, header_fd):
             return "%s[size_is=%d]" % (describe_type(type["element"]), type["size_is"])
         elif tag == "array":
             return "Array<%s>" % describe_type(type["element"])
-        elif tag == "interface_type" or tag == "domobject":
+        elif tag in {"interface_type", "domobject"}:
             return type["name"]
         elif tag == "interface_is_type":
             return "iid_is(%d)" % type["iid_is"]
@@ -584,7 +584,7 @@ namespace detail {
 
     fd.write(
         """
-const uint16_t sInterfacesSize = mozilla::ArrayLength(sInterfaces);
+const uint16_t sInterfacesSize = std::size(sInterfaces);
 
 } // namespace detail
 } // namespace xpt
@@ -595,7 +595,7 @@ const uint16_t sInterfacesSize = mozilla::ArrayLength(sInterfaces);
 def link_and_write(files, outfile, outheader):
     interfaces = []
     for file in files:
-        with open(file, "r") as fd:
+        with open(file) as fd:
             interfaces += json.load(fd)
 
     iids = set()

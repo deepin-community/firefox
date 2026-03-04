@@ -15,10 +15,10 @@
   font: menu;
   background-color: var(--background-color-box);
   color: var(--text-color);
-  border-radius: 4px;
+  border-radius: var(--border-radius-small);
   padding: 6px 0;
   margin-bottom: 16px;
-  box-shadow: var(--shadow-30);
+  box-shadow: var(--box-shadow-popup);
   min-width: 12em;
   z-index: var(--z-index-popup, 10);
   white-space: nowrap;
@@ -31,7 +31,7 @@
   overflow-y: visible;
 }
 
-:host(:not([slot=submenu])) {
+:host(:not([slot="submenu"])) {
   max-height: 100%;
 }
 

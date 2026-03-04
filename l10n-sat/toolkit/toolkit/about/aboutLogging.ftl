@@ -47,9 +47,7 @@ about-logging-preset-custom-description = ᱛᱤᱛᱮᱭᱟᱜ ᱵᱟᱪᱷᱟ�
 # Error handling
 about-logging-error = ᱵᱷᱩᱞ :
 
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
+##
 
 about-logging-invalid-output = ᱵᱷᱩᱞ ᱮᱞ “{ $v }“ ᱪᱟᱹᱵᱤ “{ $k }“ ᱞᱟᱹᱜᱤᱫ
 about-logging-unknown-logging-preset = ᱵᱟᱝᱵᱟᱲᱟᱭ ᱵᱚᱞᱚ ᱥᱩᱦᱤ ᱢᱮᱱᱟᱜᱼᱟ “{ $v }“

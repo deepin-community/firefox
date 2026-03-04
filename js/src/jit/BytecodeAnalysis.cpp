@@ -6,6 +6,8 @@
 
 #include "jit/BytecodeAnalysis.h"
 
+#include "mozilla/PodOperations.h"
+
 #include "jit/JitSpewer.h"
 #include "jit/WarpBuilder.h"
 #include "vm/BytecodeIterator.h"
@@ -313,17 +315,17 @@ bool BytecodeAnalysis::init(TempAllocator& alloc) {
   }
 
   if (!normallyReachableReturn) {
-    script_->setUninlineable();
+    disableInlining();
   }
 
   if (!analyzer.canIon()) {
-    if (script_->canIonCompile()) {
+    if (!ionDisabled()) {
       JitSpew(
           JitSpew_IonAbort,
           "Disabling Warp support for %s:%d:%d due to Yield being in a loop",
           script_->filename(), script_->lineno(),
           script_->column().oneOriginValue());
-      script_->disableIon();
+      disableIon();
     }
   }
 
@@ -335,11 +337,11 @@ void BytecodeAnalysis::checkWarpSupport(JSOp op) {
 #define DEF_CASE(OP) case JSOp::OP:
     WARP_UNSUPPORTED_OPCODE_LIST(DEF_CASE)
 #undef DEF_CASE
-    if (script_->canIonCompile()) {
+    if (!ionDisabled()) {
       JitSpew(JitSpew_IonAbort, "Disabling Warp support for %s:%d:%d due to %s",
               script_->filename(), script_->lineno(),
               script_->column().oneOriginValue(), CodeName(op));
-      script_->disableIon();
+      disableIon();
     }
     break;
     default:

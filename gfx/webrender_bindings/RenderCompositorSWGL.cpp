@@ -76,11 +76,12 @@ bool RenderCompositorSWGL::AllocateMappedBuffer(
     const wr::DeviceIntRect* aOpaqueRects, size_t aNumOpaqueRects) {
   // Request a new draw target to use from the widget...
   MOZ_ASSERT(!mDT);
-  layers::BufferMode bufferMode = layers::BufferMode::BUFFERED;
-  mDT = mWidget->StartRemoteDrawingInRegion(mDirtyRegion, &bufferMode);
+  mDT = mWidget->StartRemoteDrawingInRegion(mDirtyRegion);
   if (!mDT) {
+#if !defined(MOZ_WAYLAND)
     gfxCriticalNoteOnce
         << "RenderCompositorSWGL failed mapping default framebuffer, no dt";
+#endif
     return false;
   }
   // Attempt to lock the underlying buffer directly from the draw target.
@@ -90,8 +91,7 @@ bool RenderCompositorSWGL::AllocateMappedBuffer(
   gfx::IntSize size;
   int32_t stride = 0;
   gfx::SurfaceFormat format = gfx::SurfaceFormat::UNKNOWN;
-  if (bufferMode != layers::BufferMode::BUFFERED && !mSurface &&
-      mDT->LockBits(&data, &size, &stride, &format) &&
+  if (!mSurface && mDT->LockBits(&data, &size, &stride, &format) &&
       (format != gfx::SurfaceFormat::B8G8R8A8 &&
        format != gfx::SurfaceFormat::B8G8R8X8)) {
     // We tried to lock the DT and it succeeded, but the size or format
@@ -265,18 +265,19 @@ RenderedFrameId RenderCompositorSWGL::EndFrame(
 }
 
 bool RenderCompositorSWGL::RequestFullRender() {
-#ifdef MOZ_WIDGET_ANDROID
+#if defined(MOZ_WIDGET_ANDROID)
   // XXX Add partial present support.
   return true;
-#endif
-#ifdef MOZ_WIDGET_GTK
+#elif defined(MOZ_WIDGET_GTK)
   // We're requested to do full render after Resume() on Wayland.
   if (mRequestFullRender) {
     mRequestFullRender = false;
     return true;
   }
-#endif
   return false;
+#else
+  return false;
+#endif
 }
 
 void RenderCompositorSWGL::Pause() {}

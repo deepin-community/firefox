@@ -3,9 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Ուղարկել կայքերին “Չհետագծել“ ազդանշանը, որ դուք չեք ցանկանում հետագծվել
-do-not-track-description2 =
-    .label = Կայքերին ուղարկել «Չհետևել» հարցումը
-    .accesskey = d
+do-not-track-removal = Մենք այլևս չենք աջակցում «Չհետևել» ազդանշանը
 do-not-track-learn-more = Իմանալ ավելին
 do-not-track-option-default-content-blocking-known =
     .label = Միայն երբ { -brand-short-name }-ը սահմանված է արգելափակել հայտնի վնասները։
@@ -14,7 +12,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Կայքերին հաղորդել, որ չտարածեն և չվաճառեն իմ տվյալները
     .accesskey = չ
+non-technical-privacy-group =
+    .label = Կայքի գաղտնիության նախընտրանքներ
 non-technical-privacy-header = Կայքի գաղտնիության նախընտրանքներ
+non-technical-privacy-label =
+    .aria-label = { non-technical-privacy-header }
 # Do not translate.
 # "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
 # included to facilitate power-user search of the about:preferences page.
@@ -51,6 +53,9 @@ category-privacy =
 pane-sync-title3 = Համաժամեցում
 category-sync3 =
     .tooltiptext = { pane-sync-title3 }
+pane-ai-controls-title = ԱԲ կառավարում
+category-ai-controls =
+    .tooltiptext = { pane-ai-controls-title }
 pane-experimental-title = { -brand-short-name } Փորձեր
 category-experimental =
     .tooltiptext = { -brand-short-name } Փորձեր
@@ -59,11 +64,12 @@ pane-experimental-search-results-header = { -brand-short-name }-ի փորձեր.
 settings-pane-labs-title = { -firefoxlabs-brand-name }
 settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Փորձեք մեր փորձարարական գործառույթները: Դրանք մշավումյ և զարգանում են, ինչը կարող է ազդել { -brand-short-name }-ի աշխատանքի վրա:
 pane-experimental-reset =
     .label = Վերականգնել սկզբնադիրը
     .accesskey = R
 help-button-label = { -brand-short-name }-ի աջակցում
-addons-button-label = Ընդլայնումներ և Ոճեր
+addons-button-label = Ընդլայնումներ և ոճեր
 focus-search =
     .key = f
 close-button =
@@ -88,6 +94,15 @@ restart-later = Վերամեկնարկել հետո
 ## Variables:
 ##   $name (string) - Name of the extension
 
+# This string is shown to notify the user that the password manager setting
+# is being controlled by an extension
+extension-controlling-password-saving = <img data-l10n-name="icon"/> <strong>{ $name }-ը</strong> կառավարում է այս կարգավորումը։
+# This string is shown to notify the user that their notifications permission
+# is being controlled by an extension.
+extension-controlling-web-notifications = <img data-l10n-name="icon"/> <strong>{ $name }-ը</strong> կառավարում է այս կարգավորումը։
+# This string is shown to notify the user that their content blocking "All Detected Trackers"
+# preferences are being controlled by an extension.
+extension-controlling-websites-content-blocking-all-trackers = <img data-l10n-name="icon"/> <strong>{ $name }-ը</strong> կառավարում է այս կարգավորումը։
 # This string is shown to notify the user that their proxy configuration preferences
 # are being controlled by an extension.
 extension-controlling-proxy-config = <img data-l10n-name="icon"/> <strong>{ $name }-ը</strong> կառավարում է, թե ինչպես { -brand-short-name }-ը միանա համացանցին:
@@ -97,20 +112,29 @@ extension-controlling-proxy-config = <img data-l10n-name="icon"/> <strong>{ $nam
 # <img data-l10n-name="addons-icon"/> will be replaced with Add-ons icon
 # <img data-l10n-name="menu-icon"/> will be replaced with Menu icon
 extension-controlled-enable = Ընդլայնումը միացնելու համար անցեք <img data-l10n-name="addons-icon"/> Հավելումներին <img data-l10n-name="menu-icon"/> ցանկում:
+# This string is shown to notify the user that their home page or new tab preferences
+# are being controlled by an extension.
+extension-controlling-homepage = { $name }-ը կառավարում է Ձեր տնէջի որոշ կարգավորումներ։
 
 ## Preferences UI Search Results
 
 search-results-header = Որոնման արդյունքներ
+# `<span data-l10n-name="query"></span>` will be replaced by the search term.
+search-results-empty-message2 = Կներե՛ք։ Կարգավորումներում «<span data-l10n-name="query"></span>»-ի համար արդյունքներ չկան։
 search-results-help-link = Օգնությու՞ն է պետք: Այցելեք <a data-l10n-name="url">{ -brand-short-name } աջակցում</a>
 
 ## General Section
 
-startup-header = Մեկնարկը
+startup-header = Մեկնարկ
 always-check-default =
-    .label = Միշտ ստուգել, թե արդյոք { -brand-short-name }-ը ձեր հիմնական դիտարկիչն է
+    .label = Միշտ ստուգել, թե արդյոք { -brand-short-name }-ը Ձեր սկզբնադիր դիտարկիչն է
     .accesskey = շ
+is-default-browser =
+    .message = { -brand-short-name }-ը այժմ ձեր հիմնական դիտարկիչն է
+is-not-default-browser =
+    .message = { -brand-short-name }-ը Ձեր սկզբնադիր դիտարկիչը չէ
 is-default = { -brand-short-name }-ը այժմ ձեր հիմնական դիտարկիչն է
-is-not-default = { -brand-short-name }-ը այժմ ձեր հիմնական դիտարկիչը չէ
+is-not-default = { -brand-short-name }-ը Ձեր սկզբնադիր դիտարկիչը չէ
 set-as-my-default-browser =
     .label = Դարձնել սկզբնադիր...
     .accesskey = Ս
@@ -129,16 +153,62 @@ preferences-data-migration-description = Ներմուծեք էջանիշները
 preferences-data-migration-button =
     .label = Ներմուծել տվյալները
     .accesskey = մ
+preferences-profiles-group-header =
+    .heading = Պրոֆիլներ
+preferences-profiles-subpane-description =
+    .description = Յուրաքանչյուր պրոֆիլ ունի առանձին դիտարկման տվյալներ և կարգավորումներ, ներառյալ պատմությունը, գաղտնաբառերը և այլն։
+preferences-profiles-section-header =
+    .label = Պրոֆիլներ
+    .description = Յուրաքանչյուր պրոֆիլը ունի դիտարկումների առանձին տվյալներ և կարգավորումներ, ներառյալ՝ պատմությունը, գաղտնաբառերը և ավելին:
+preferences-profiles-header = Պրոֆիլներ
+preferences-manage-profiles-learn-more = Իմանալ ավելին
+preferences-manage-profiles-button =
+    .label = Կառավարել պրոֆիլները
+preferences-profiles-settings-button =
+    .label = Կարգավորումներ
+# This string sits next to the copy controls, both the copy-profile-select
+# drop-down and the copy-profile-button, so that the user understands they
+# need to first pick a profile to copy, and then click the copy button.
+preferences-profile-to-copy =
+    .label = Պատճենելու համար նախատեսված պրոֆիլ
+# This string is a placeholder that will be shown in a drop-down list of
+# profiles. The user will select a profile, then click the copy button
+# to make a copy of that profile.
+preferences-copy-profile-select = Ընտրեք պրոֆիլ
+preferences-copy-profile-button = Պատճենել
+tabs-group-header2 =
+    .label = Ներդիրներ
+tabs-opening-heading =
+    .label = Բացում
+tabs-interaction-heading =
+    .label = Փոխազդեցություն
+tabs-containers-heading =
+    .label = Պարունակներ
+tabs-closing-heading =
+    .label = Փակում
 tabs-group-header = Ներդիրներ
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab՝ պտտվում է ներդիրների միջև՝ ըստ վերջին օգտագործածի
     .accesskey = T
 open-new-link-as-tabs =
-    .label = Հղումները բացել նոր ներդիրներում՝ նոր պատուհանների փոխարեն
-    .accesskey = w
+    .label = Բացել հղումները ներդիրներում՝ նոր պատուհանների փոխարեն
+    .accesskey = պ
+open-external-link-next-to-active-tab =
+    .label = Բացել հղումները հավելվածներից՝ Ձեր ակտիվ ներդիրի կողքին
+ask-on-close-multiple-tabs =
+    .label = Հարցնել բազում ներդիրներ փակելուց առաջ
+    .accesskey = բ
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = Հարցնել նախքան { $quitKey }-ով լքելը
+    .accesskey = ն
 confirm-on-close-multiple-tabs =
-    .label = Զգուշացնել բազմակի ներդիրները փակելիս
-    .accesskey = m
+    .label = Հաստատել բազում ներդիրներ փակելուց առաջ
+    .accesskey = բ
 # This string is used for the confirm before quitting preference.
 # Variables:
 #   $quitKey (string) - the quit keyboard shortcut, and formatted
@@ -151,8 +221,8 @@ warn-on-open-many-tabs =
     .label = Զգուշացնել բազմակի ներդիրներ բացելիս, ինչը կարող է դանդաղեցնել { -brand-short-name }-ը:
     .accesskey = դ
 switch-to-new-tabs =
-    .label = Հղումը, պատկերը կամ մեդիան բոր ներդիրում բացելիս միանգամից անցնել դրան
-    .accesskey = h
+    .label = Հղումը, պատկերը կամ մեդիան նոր ներդիրում բացելիս անմիջապես փոխարկվել դեպի այն
+    .accesskey = ս
 show-tabs-in-taskbar =
     .label = Ցուցադրել ներդիրների նախադիտումը Windows taskbar-ում
     .accesskey = k
@@ -164,6 +234,8 @@ browser-containers-settings =
     .label = Կարգավորումներ...
     .accesskey = ր
 containers-disable-alert-title = Փակե՞լ պարունակի բոլոր ներդիրները:
+startup-group =
+    .label = Մեկնարկ
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -192,23 +264,93 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = Հեռացնել այս Պարունակը
 containers-remove-cancel-button = Չհեռացնել այս Պարունակը
+settings-tabs-show-image-in-preview =
+    .label = Ցուցադրել նախադիտման նկարը՝ երբ սահում եք ներդիրի վրա
+    .accessKey = ս
+browser-layout-header2 =
+    .label = Դիտարկիչի դասավորությունը
+browser-layout-horizontal-tabs2 =
+    .label = Հորիզոնական ներդիրներ
+    .title = Ներդիրները վերևում
+    .description = Ներդիրները վերևում
+browser-layout-vertical-tabs2 =
+    .label = Ուղղահայաց ներդիրներ
+    .title = Ներդիրները կողքից, կողագոտիում
+    .description = Ներդիրները կողքից, կողագոտիում
+browser-layout-show-sidebar2 =
+    .label = Ցուցադրել կողագոտի
+    .description = Արագորեն մատչեք Ձեր էջանիշերը, ներդիրները հեռապխոսից, ԱԲ չաթ-բոթերը և ավելին՝ առանց լքելու հիմնական տեսքը:
+browser-layout-header = Դիտարկիչի դասավորությունը
+browser-layout-horizontal-tabs =
+    .label = Հորիզոնական ներդիրներ
+browser-layout-horizontal-tabs-desc = Ցուցադրել դիտարկիչի վերևում
+browser-layout-vertical-tabs =
+    .label = Ուղղահայաց ներդիրներ
+browser-layout-vertical-tabs-desc = Ցուցադրել կողքի վրա, կողագոտիում
+browser-layout-show-sidebar =
+    .label = Ցուցադրել կողագոտի
+browser-layout-show-sidebar-desc = Արագորեն մատչեք Ձեր էջանիշերը, ներդիրները հեռապխոսից, ԱԲ չաթ-բոթերը և ավելին՝ առանց լքելու հիմնական տեսքը:
 
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Լեզուն և տեսքը
+appearance-group =
+    .label = Կայքի արտաքին տեսքը
+    .description = Որոշ կայքեր հարմարեցնում են իրենց գույնային սխեման ըստ ձեր նախապատվությունների: Ընտրեք, թե որ գույնային սխեման եք ցանկանում օգտագործել այդպիսի կայքերի համար:
 preferences-web-appearance-header = Կայքի արտաքին տեսքը
 preferences-web-appearance-description = Որոշ կայքեր հարմարեցնում են իրենց գույնային սխեման ըստ ձեր նախապատվությունների: Ընտրեք, թե որ գույնային սխեման եք ցանկանում օգտագործել այդպիսի կայքերի համար:
+preferences-web-appearance-choice-light2 =
+    .label = Լուսավոր
+    .title = Օգտագործել լուսավոր տեսք՝ կայքի խորապատկերների և բովանդակության համար:
+preferences-web-appearance-choice-dark2 =
+    .label = Մութ
+    .title = Օգտագործել մութ տեսք՝ կայքի խորապատկերների և բովանդակության համար:
+web-appearance-group =
+    .aria-label = Վեբ-կայքի տեսքը
 preferences-web-appearance-choice-auto = Ինքնաշխատ
 preferences-web-appearance-choice-light = Լուսավոր
 preferences-web-appearance-choice-dark = Մուգ
+preferences-web-appearance-choice-input-auto =
+    .aria-description = { preferences-web-appearance-choice-tooltip-auto.title }
+preferences-web-appearance-choice-input-light =
+    .aria-description = { preferences-web-appearance-choice-tooltip-light.title }
+preferences-web-appearance-choice-input-dark =
+    .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
+# This can appear when using windows HCM or "Override colors: always" without
+# system colors.
+preferences-web-appearance-override-warning3 =
+    .message = Ձեր ցայտնության կառավարման կարգավորումները գերակշռում են կայքի տեսքի վրա։
+preferences-web-appearance-link =
+    .label = Կառավարեք { -brand-short-name } ձևավորումները Ընդլայնումներ և Ձևավորումներում
+preferences-contrast-control-radio-group =
+    .label = Գույների փոխարինում
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = Կառավարեք { -brand-short-name } ձևավորումները <a data-l10n-name="themes-link">Ընդլայնումներ և Ձևավորումներում</a>
+preferences-contrast-control-header = Ցայտնության կառավարում
+preferences-contrast-control-description = Կայքերն ունեն առաջնային և խորքային գույների բազմազանություն։ Կարգավորեք { -brand-short-name }-ը՝ կայքերում նույն գույներն օգտագործելու համար՝ ընթերցելիությունը բարելավելու համար։
+preferences-contrast-control-use-platform-settings =
+    .label = Ինքնաշխատ (օգտագործել համակարգի կարգավորումները)
+    .accesskey = A
+preferences-contrast-control-off =
+    .label = Անջ.
+    .accesskey = O
+preferences-contrast-control-custom =
+    .label = Հարմարեցված
+    .accesskey = C
 preferences-colors-header = Գույներ
 preferences-colors-description = Չեղարկել { -brand-short-name }-ի սկզբնադիր գույները տեքստի, կայքի խորքի և հղումների համար:
 preferences-colors-manage-button =
     .label = Կառավարել գույները…
     .accesskey = C
+preferences-fonts-header2 =
+    .label = Տառատեսակներ
+default-font-2 =
+    .label = Սկզբնադիր տառատեսակը
+    .accesskey = Ս
+default-font-size-2 =
+    .label = Չափը
+    .accesskey = Չ
 preferences-fonts-header = Տառատեսակներ
 default-font = Սկզբնադիր տառատեսակը
     .accesskey = Ս
@@ -217,6 +359,12 @@ default-font-size = Չափը
 advanced-fonts =
     .label = Լրացուցիչ…
     .accesskey = Լ
+# Zoom is a noun, and the message is used as header for a group of options
+preferences-zoom-header2 =
+    .label = Դիտափոխել
+preferences-default-zoom-label =
+    .label = Սկզբնադիր դիտափոխում
+    .accesskey = դ
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Դիտափոխել
 preferences-default-zoom = Սկզբնադիր դիտափոխում
@@ -229,13 +377,35 @@ preferences-zoom-text-only =
     .label = Դիտափոխել միայն գրվածքը
     .accesskey = t
 preferences-text-zoom-override-warning =
-    .message = Զգուշացում. Եթե ընտրեք «Դիտափոխել միայն գրվածքը» և Ձեր լռելյայն դիտափոխումը դրված չէ 100%, այն կարող է հանգեցնել որոշ կայքերի կամ բովանդակության խոտանի:
+    .message = Զգուշացում. Եթե ընտրեք «Դիտափոխել միայն գրվածքը» և Ձեր սկզբնադիր դիտափոխումը դրված չէ 100%, այն կարող է հանգեցնել որոշ կայքերի կամ բովանդակության խոտանի:
 language-header = Լեզուն
 choose-language-description = Ընտրեք ձեր նախընտրելի լեզուն՝ էջերը ցուցադրելու համար
+website-language-heading =
+    .label = Կայքի լեզուն
+    .description = Որոշ վեբ էջեր ցուցադրված են բազմակի լեզուներով: Ընտրեք լեզուները ըստ ձեր նախընտրած հերթականության:
+website-preferred-language =
+    .label = Նախընտրելի լեզուներ
+website-add-language =
+    .label = Ավելացնել լեզու
+website-add-language-button =
+    .aria-label = Ավելացնել ընտրված լեզուն
+    .title = Ավելացնել ընտրված լեզուն
+# The pattern used to generate strings presented to the user in the
+# website languages selection list.
+#
+# Example:
+#   Icelandic
+#   Spanish (Chile)
+#
+# Variables:
+#   $locale (String) - A name of the locale (for example: "Icelandic", "Spanish (Chile)")
+website-remove-language-button =
+    .aria-label = Հեռացնել { $locale }-ը:
+    .title = Հեռացնել { $locale }-ը:
 choose-button =
     .label = Ընտրել…
     .accesskey = տ
-choose-browser-language-description = Ընտրեք օգտագործված լեզուները ցանկերը, նամակները և ծանուցումները { -brand-short-name }-ից ցուցադրելու համար։
+choose-browser-language-description = Ընտրեք { -brand-short-name }-ից ցուցադրվող ցանկերի, նամակների և ծանուցումների լեզուները:
 manage-browser-languages-button =
     .label = Կայել այլընտրանքներ...
     .accesskey = l
@@ -251,6 +421,68 @@ translate-attribution = Թարգմանել է՝ <img data-l10n-name="logo"/>
 translate-exceptions =
     .label = Բացառություններ…
     .accesskey = ա
+settings-translations-header =
+    .label = Թարգմանություններ
+    .aria-label = Թարգմանություններ
+    .description = Թարգմանեք էջերը կամ ընտրված տեքստը: Ձեր գաղտնիությունը պաշտպանելու համար թարգմանությունները մնում են սարքում:
+settings-translations-offer-to-translate-label =
+    .label = Առաջարկել ամբողջական էջի թարգմանություն
+settings-translations-more-settings-button =
+    .label = Թարգմանության ավելի շատ կարգավորումներ
+    .description = Սահմանեք լեզուների, կայքերի և անցանց թարգմանության նախապատվությունները:
+settings-translations-subpage-header =
+    .heading = Թարգմանության ավելի շատ կարգավորումներ
+settings-translations-subpage-speed-up-translation-header =
+    .label = Արագացնել թարգմանությունը
+    .description = Ներբեռնեք ամբողջական լեզուներ՝ ավելի արագ և անցանց թարգմանելու համար:
+settings-translations-subpage-automatic-translation-header =
+    .label = Ինքնաշխատ թարգմանություն
+settings-translations-subpage-always-translate-header =
+    .label = Միշտ թարգմանեք այս լեզուները
+settings-translations-subpage-never-translate-header =
+    .label = Երբեք չթարգմանել այս լեզուները
+settings-translations-subpage-never-translate-sites-header =
+    .label = Երբեք մի թարգմանեք այս կայքերը
+# The icon placeholders show the translations button and the settings gear in the urlbar panel.
+settings-translations-subpage-never-translate-sites-description = Կայք ավելացնելու համար բացեք <img data-l10n-name="translations-icon"/> թարգմանության վահանակը, ընտրեք <img data-l10n-name="settings-icon"/> թարգմանության կարգավորումները, ապա ընտրեք «Երբեք չթարգմանել այս կայքը»
+settings-translations-subpage-language-select-option =
+    .label = Ավելացնել լեզու
+settings-translations-subpage-language-add-button =
+    .aria-label = Ավելացնել լեզու
+    .title = Ավելացնել լեզու
+settings-translations-subpage-download-languages-header =
+    .label = Լեզուների ներբեռնում
+settings-translations-subpage-download-languages-select-option =
+    .label = Ընտրեք լեզուն
+settings-translations-subpage-download-languages-button =
+    .aria-label = Ներբեռնեք լեզուն
+    .title = Ներբեռնեք լեզուն
+# Variables:
+#   $language (string) - Localized name of the language to download.
+#   $size (string) - Download size in megabytes, formatted for the locale.
+settings-translations-subpage-download-language-option = { $language } ({ $size } ՄԲ)
+    .label = { $language } ({ $size } ՄԲ)
+settings-translations-subpage-no-languages-downloaded =
+    .label = Լեզուներ չեն ներբեռնվել
+settings-translations-subpage-no-languages-added =
+    .label = Լեզուներ չեն ավելացվել
+settings-translations-subpage-download-progress = Ներբեռնումն ընթացքի մեջ է…
+# Variables:
+#   $language (string) - The localized display name of the language.
+#   $size (string) - The download size of the language in megabytes.
+settings-translations-subpage-download-error = Հնարավոր չէ ներբեռնել { $language }-ը ({ $size } ՄԲ)
+settings-translations-subpage-download-retry-button =
+    .label = Կրկին փորձել
+# Variables:
+#   $language (string) - The localized display name of the language.
+#   $size (string) - The download size of the language in megabytes.
+settings-translations-subpage-download-delete-confirm = Ջնջե՞լ { $language }-ը ({ $size } ՄԲ):
+settings-translations-subpage-download-delete-button =
+    .label = Ջնջել
+settings-translations-subpage-download-cancel-button =
+    .label = Չեղարկել
+settings-translations-subpage-no-sites-added =
+    .label = Կայքեր չեն ավելացվել
 # Variables:
 #    $localeName (string) - Localized name of the locale to be used.
 use-system-locale =
@@ -262,8 +494,13 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = Ֆայլեր և հավելվածներ
+downloads-header-2 =
+    .label = Ներբեռնումներ
+download-save-where-2 =
+    .label = Ֆայլերը պահպանել`
+    .accesskey = ե
 download-header = Ներբեռնումներ
-download-save-where = Ֆայլերը պահպանել`
+download-save-where = Ֆայլերի պահպանման վայրը
     .accesskey = ե
 download-choose-folder =
     .label =
@@ -279,6 +516,9 @@ download-choose-folder =
 download-always-ask-where =
     .label = Միշտ հարցնել ֆայլերը պահպանելու տեղը
     .accesskey = A
+download-private-browsing-delete =
+    .label = Ջնջել գաղտնի դիտարկման մեջ ներբեռնված ֆայլերը, երբ բոլոր գաղտնի պատուհանները փակվեն
+    .accesskey = Ջ
 applications-header = Ծրագրեր
 applications-description = Ընտրեք, թե ինչպես { -brand-short-name }-ը վարվի ձեր ներբեռնած ֆայլերի կամ դիտարկումների ժամանակ ձեր կողմից օգտագործվող հավելվածների հետ:
 applications-filter =
@@ -301,13 +541,13 @@ applications-use-app =
 # Variables:
 #   $app-name (String) - Name of an application (e.g Adobe Acrobat)
 applications-use-app-default =
-    .label = Օգտագործել { $app-name }-ը (լռելյայն)
+    .label = Օգտագործել { $app-name }-ը (սկզբնադիր)
 applications-use-os-default =
     .label =
         { PLATFORM() ->
-            [macos] Օգտագործել macOS կանխադրված հավելվածը
-            [windows] Օգտագործել Windows կանխադրված հավելվածը
-           *[other] Օգտագործել համակարգի կանխադրված հավելվածը
+            [macos] Օգտագործել macOS-ի սկզբնադիր հավելվածը
+            [windows] Օգտագործել Windows-ի սկզբնադիր հավելվածը
+           *[other] Օգտագործել համակարգի սկզբնադիր հավելվածը
         }
 applications-use-other =
     .label = Օգտագործել մեկ ուրիշը…
@@ -354,13 +594,15 @@ applications-use-os-default-label =
 
 ##
 
-applications-handle-new-file-types-description = Ի՞նչ պիտի անի { -brand-short-name }-­ն այլ ֆայլերի հետ:
+applications-handle-new-file-types-description = Ի՞նչ պետք է անի { -brand-short-name }-­ն այլ ֆայլերի հետ:
 applications-save-for-new-types =
-    .label = Պահի ֆայլերը
+    .label = Պահել ֆայլերը
     .accesskey = S
 applications-ask-before-handling =
     .label = Հարցնի՝ բացել, թե պահել ֆայլերը
     .accesskey = A
+drm-group =
+    .label = Թվային իրավունքների կառավարման (DRM) բովանդակություն
 drm-content-header = Թվային իրավունքների կառավարման (DRM) բովանդակություն
 play-drm-content =
     .label = Նվագարկել DRM-ղեկավարվող բովանդակությունը
@@ -391,7 +633,18 @@ update-application-warning-cross-user-setting = Այս կարգավորումը 
 update-application-use-service =
     .label = Թարմացումները տեղադրելիս օգտվել խորքային ծառայությունից
     .accesskey = խ
-update-setting-write-failure-title2 = Թարմացման կարգավորումների պահպանման սխալ
+update-application-suppress-prompts =
+    .label = Ցուցադրել ավելի քիչ թարմացման ծանուցումներ
+    .accesskey = n
+update-setting-write-failure-title2 = Թարմացման կարգավորումների պահման սխալ
+# Variables:
+#   $path (string) - Path to the configuration file
+# The newlines between the main text and the line containing the path is
+# intentional so the path is easier to identify.
+update-setting-write-failure-message2 =
+    { -brand-short-name }-ը բախվել է սխալի և չի պահպանել այս փոփոխությունը։ Նկատի ունեցեք, որ այս թարմացման նախընտրանքի կարգավորումը պահանջում է թույլատվություն ստորին ֆայլում գրելու համար։ Դուք կամ համակարգի վարիչը կարող եք լուծել սխալը օգտագործողների խմբին շնորհելով այս ֆայլի ողջ կառավարումը։ 
+    
+    Հնարավոր չէ գրել ֆայլում՝ { $path }
 update-in-progress-title = Արդիացվում է
 update-in-progress-message = Ցանկանո՞ւմ եք,որ { -brand-short-name }-ը շարունակի այս արդիացմամբ:
 update-in-progress-ok-button = &Հրաժարվել
@@ -399,13 +652,23 @@ update-in-progress-ok-button = &Հրաժարվել
 # method of closing the UI will not discard the update.
 update-in-progress-cancel-button = &Շարունակել
 
+## Firefox support
+
+support-application-heading =
+    .label = { -brand-short-name }-ի աջակցություն
+    .description = Խափանազերծեք խնդիրները կամ համօգտագործեք գաղափարներ համայնքի հետ:
+support-get-help =
+    .label = Ստանալ օգնություն
+support-share-ideas =
+    .label = Կիսվեք գաղափարներով և արձագանքներով
+
 ## General Section - Performance
 
 performance-title = Արտադրողականություն
 performance-use-recommended-settings-checkbox =
     .label = Օգտագործել արտադրողականության հանձնարարելի կարգավորումները
     .accesskey = Օ
-performance-use-recommended-settings-desc = Այս կարգավորումները հարմարեցված են ձեր համակարգչի սարքաշարին և օպերացիոն համակարգին:
+performance-use-recommended-settings-desc = Այս կարգավորումները հարմարեցված են Ձեր համակարգչի սարքային ապահովմանը և օպերացիոն համակարգին:
 performance-settings-learn-more = Իմանալ ավելին
 performance-allow-hw-accel =
     .label = Հնարավորության դեպքում օգտագործել սարքակազմի արագացումը
@@ -418,10 +681,14 @@ performance-limit-content-process-blocked-desc = Հնարավոր է փոփոխ�
 #   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (սկզբնադիր)
+performance-group =
+    .label = Արտադրողականություն
 
 ## General Section - Browsing
 
 browsing-title = Դիտարկում
+browsing-group-label =
+    .aria-label = Դիտարկում
 browsing-use-autoscroll =
     .label = Օգտվել ինքնաոլորումից
     .accesskey = ի
@@ -438,47 +705,75 @@ browsing-use-onscreen-keyboard =
     .label = Անհրաժեշտության դեպքում ցուցադրել հպաստեղնաշարը
     .accesskey = հ
 browsing-use-cursor-navigation =
-    .label = Էջերում ուղղորդման համար միշտ օգտագործել կուրսորի սեղմակները:
-    .accesskey = կ
+    .label = Միշտ օգտագործել նշորդային ստեղները՝ էջերի ներսում նավարկելու համար
+    .accesskey = ս
+browsing-use-full-keyboard-navigation =
+    .label = Օգտագործեք Tab ստեղնը՝ ձևի կառավարման տարրերի և հղումների միջև ֆոկուսը տեղափոխելու համար
+    .accesskey = t
 browsing-search-on-start-typing =
-    .label = Տեքստ մուտքագրելու դեպքում փնտրել այն
+    .label = Որոնել տեքստը, երբ կսկսեք մուտքագրել
     .accesskey = ք
 browsing-picture-in-picture-toggle-enabled =
-    .label = Միացնում է նկարում-պատկերված տեսանյութի կառավարները
+    .label = Միացնում է Նկարը նկարում տեսանյութի կառավարները
     .accesskey = E
+browsing-picture-in-picture-enable-when-switching-tabs =
+    .label = Շարունակեք տեսանյութերի նվագարկումը «Նկար նկարի մեջ» ռեժիմում՝ ներդիրները փոխելիս
+    .accesskey = s
 browsing-picture-in-picture-learn-more = Իմանալ ավելին
 browsing-media-control =
-    .label = Մեդիայի կառավարում ստեղնաշարի, ականջակալների կամ վիրտուալ միջերեսով
-    .accesskey = v
+    .label = Կառավարել մեդիան ստեղնաշարի, ականջակալների կամ վիրտուալ միջերեսի միջոցով
+    .accesskey = վ
 browsing-media-control-learn-more = Իմանալ ավելին
 browsing-cfr-recommendations =
-    .label = Զննարկելիս առաջարկել հավելումներ
+    .label = Դիտարկելիս առաջարկել ընդլայնումներ
     .accesskey = R
 browsing-cfr-features =
-    .label = Զննարկելիս առաջարկել յուրահատկություններ
+    .label = Դիտարկելիս առաջարկել յուրահատկություններ
     .accesskey = f
 browsing-cfr-recommendations-learn-more = Իմանալ ավելին
+browsing-group =
+    .label = Դիտարկում
 
 ## General Section - Proxy
 
 network-settings-title = Ցանցի կարգավորումներ
-network-proxy-connection-description = Կազմաձևեք, թե ինչպես { -brand-short-name }-ը կապակցվի համացանցին:
+network-proxy-connection-description = Կարգավորեք, թե ինչպես { -brand-short-name }-ը միանա համացանցին:
 network-proxy-connection-learn-more = Իմանալ ավելին
 network-proxy-connection-settings =
-    .label = Կարգավորել...
+    .label = Կարգավորումներ…
     .accesskey = ա
+network-proxy-group =
+    .label = Ցանցի կարգավորումներ
+    .description = Կարգավորեք, թե ինչպես { -brand-short-name }-ը միանա համացանցին:
 
 ## Home Section
 
-home-new-windows-tabs-header = Նոր Պատուհաններ և Ներդիրներ
+home-new-windows-tabs-header = Նոր պատուհաններ և ներդիրներ
 home-new-windows-tabs-description2 = Ընտրեք, թե ինչը տեսնել՝ տուն էջը, նոր պատուհաններ և նոր ներդիրներ բացելիս:
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
 
-home-homepage-mode-label = Տուն էջ և նոր պատուհաններ
-home-newtabs-mode-label = Նոր Ներդիրներ
+home-default-browser-title =
+    .label = Սկզբնադիր դիտարկիչ
+is-default-browser-2 =
+    .message = { -brand-short-name }-ը ձեր սկզբնադիր դիտարկիչն է։ Լավ ընտրություն է։
+is-not-default-browser-2 =
+    .message = Պահո՜, { -brand-short-name }-ը սկզբնադիրը չէ:
+set-as-my-default-browser-2 =
+    .label = Դարձնել սկզբնադիր
+    .accesskey = Ս
+
+## Custom Homepage subpage
+
+home-homepage-mode-label = Տնէջ և նոր պատուհաններ
+home-homepage-new-windows =
+    .label = Նոր պատուհաններ
+home-homepage-mode-label2 = Նոր պատուհաններ
+home-newtabs-mode-label = Նոր ներդիրներ
+home-homepage-new-tabs =
+    .label = Նոր ներդիրներ
 home-restore-defaults =
-    .label = Վերականգնել ծրագրայինը
+    .label = Վերականգնել սկզբնադիրը
     .accesskey = R
 home-mode-choice-default-fx =
     .label = { -firefox-home-brand-name } (սկզբնադիր)
@@ -488,6 +783,14 @@ home-mode-choice-blank =
     .label = Դատարկ էջ
 home-homepage-custom-url =
     .placeholder = Փակցրեք URL...
+# This button is shown when the homepage is managed by an extension and is placed below extension-controlling-homepage.
+home-homepage-manage-extension-button =
+    .label = Կառավարել ընդլայնումը
+# This option leads to the "Custom Homepage" subpage
+home-homepage-custom-homepage-button =
+    .label = Ընտրեք որոշակի կայք
+# This option leads to the "Custom Homepage" subpage
+home-homepage-custom-homepage-url = Ընտրեք որոշակի կայք
 # This string has a special case for '1' and [other] (default). If necessary for
 # your language, you can add {$tabCount} to your translations and use the
 # standard CLDR forms, or only use the form for [other] if both strings should
@@ -502,24 +805,72 @@ use-current-pages =
 choose-bookmark =
     .label = Օգտագործել էջանիշ...
     .accesskey = է
+home-homepage-header = Տնային էջ
+
+## Home Section - Home Page Customization
+
+home-homepage-title =
+    .label = Տնային էջ
+
+## Custom Homepage subpage
+
+home-custom-homepage-header = Հարմարեցված տնէջ
+home-custom-homepage-subpage =
+    .heading = Հարմարեցված տնէջ
+# Subheader on the Custom Homepage subpage. Followed by a form to enter URLs and a list of URLs already saved, if any.
+home-custom-homepage-card-header =
+    .label = Վեբ-կայքի հասցե(ներ)
+# Subheader on the Custom Homepage subpage. Followed by a form to enter URLs and a list of URLs already saved, if any.
+home-custom-homepage-subheader = Վեբ-կայքի հասցե(ներ)
+home-custom-homepage-address =
+    .placeholder = Մուտքագրեք հասցե
+home-custom-homepage-address-button =
+    .label = Ավելացնել հասցե
+# Shown when no custom websites/URLs to use as a homepage have been added yet
+home-custom-homepage-no-results =
+    .label = Դեռևս կայքեր չեն ավելացվել։
+home-custom-homepage-delete-address-button =
+    .aria-label = Ջնջել հասցեն
+    .title = Ջնջել հասցեն
+# Shown when no custom websites/URLs to use as a homepage have been added yet
+home-custom-homepage-no-websites-yet = Դեռևս կայքեր չեն ավելացվել։
+# Further options to use when setting the home page. Two action buttons are placed in line with this prompt
+# to replace the current home page with a currently open page or bookmark.
+home-custom-homepage-replace-with = Փոխարինել՝
+# Button that appears in-line after text "Replace with" (home-custom-homepage-replace-with)
+home-custom-homepage-current-pages-button =
+    .label = Բացված էջեր
+# Button that appears in-line after text "Replace with" (home-custom-homepage-replace-with)
+home-custom-homepage-bookmarks-button =
+    .label = Էջանիշներ…
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header2 = { -firefox-home-brand-name } բովանդակություն
+home-prefs-content-header2 = { -firefox-home-brand-name }-ի բովանդակություն
 home-prefs-content-description2 = Ընտրեք, թե ինչ բովանդակություն պետք է ունենա { -firefox-home-brand-name }-ի էկրանը:
 home-prefs-search-header =
     .label = Վեբ որոնում
+home-prefs-search-header2 =
+    .label = Որոնում
 home-prefs-shortcuts-header =
     .label = Դյուրանցումներ
-home-prefs-shortcuts-description = Ձեր պահպանած կամ այցելած կայքերը
+home-prefs-shortcuts-description = Ձեր պահած կամ այցելած կայքերը
 home-prefs-shortcuts-by-option-sponsored =
     .label = Հովանավորված դյուրանցումներ
+home-prefs-content-header =
+    .label = { -firefox-home-brand-name }
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Առաջարկվում է { $provider }
+home-prefs-recommended-by-description-new = Բացառիկ բովանդակություն, որը կազմվել է { $provider }-ի կողմից, որը { -brand-product-name } ընտանիքի մաս է կազմում։
+home-prefs-recommended-by-header-generic =
+    .label = Առաջարկվող պատմություններ
+home-prefs-recommended-by-description-generic = { -brand-product-name } ընտանիքի կողմից ընտրված բացառիկ բովանդակություն
+home-prefs-stories-header =
+    .label = Պատմություններ
+home-prefs-stories-description = Անհատականացված պատմություններ՝ հիմնված ձեր գործունեության վրա
 
 ##
 
@@ -538,7 +889,7 @@ home-prefs-highlights-option-saved-to-pocket =
     .label = { -pocket-brand-name }-ում պահված էջեր
 home-prefs-recent-activity-header =
     .label = Վերջին ակտիվություն
-home-prefs-recent-activity-description = Վերջին կայքերի և բովանդակության ընտրում
+home-prefs-recent-activity-description = Վերջին կայքերի և բովանդակության ընտրանին
 # For the "Snippets" feature traditionally on about:home.
 # Alternative translation options: "Small Note" or something that
 # expresses the idea of "a small message, shortened from something else,
@@ -546,6 +897,31 @@ home-prefs-recent-activity-description = Վերջին կայքերի և բովա
 home-prefs-snippets-header =
     .label = Հատվածներ
 home-prefs-snippets-description-new = Հուշումներ, նորություններ { -vendor-short-name }-ից և { -brand-product-name }-ից
+home-prefs-weather-header =
+    .label = Եղանակ
+home-prefs-weather-description = Այսօրվա կանխատեսումը համառոտ
+home-prefs-weather-learn-more-link = Իմանալ ավելին
+home-prefs-widgets-header =
+    .label = Վիջեթներ
+# Lists is a widget on New Tab, similar to a to-do widget
+home-prefs-lists-header =
+    .label = Ցանկեր
+# Timer is a widget on New Tab, similar to the Pomodoro timer.
+home-prefs-timer-header =
+    .label = Ժամաչափ
+# "Support" here means to help sustain or contribute to something, especially through funding or sponsorship.
+home-prefs-support-firefox-header =
+    .label = { -brand-product-name }-ի աջակցում
+home-prefs-mission-message = Մեր հովանավորները աջակցում են ավելի լավ համացանց կերտելու մեր առաքելությանը
+home-prefs-mission-message-learn-more-link = Իմացեք, թե ինչպես
+home-prefs-mission-message2 =
+    .message = Մեր հովանավորները աջակցում են մեր առաքելությանը՝ ստեղծել ավելի լավ կայք։
+home-prefs-manage-topics-link = Կառավարել թեմաները
+home-prefs-manage-topics-link2 =
+    .label = Կառավարել թեմաները
+home-prefs-choose-wallpaper-link = Ընտրեք պաստառ
+home-prefs-choose-wallpaper-link2 =
+    .label = Ընտրեք պաստառ
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -563,22 +939,51 @@ search-bar-hidden =
 search-bar-shown =
     .label = Ավելացնել որոնման գոտին գործիքագոտիում
 search-engine-default-header = Սկզբնադիր որոնիչ
-search-engine-default-desc-2 = Սա ձեր լռելյայն որոնման միջոցն է հասցեագոտում և որոնման գոտում։ Դուք կարող եք փոխել այն ցանկացած ժամանակ։
-search-engine-default-private-desc-2 = Ընտրեք այլ լռելյայն որոնման միջոց անձնական պատուհանների համար միայն
+search-engine-default-desc-2 = Սա Ձեր սկզբնադիր որոնիչն է հասցեագոտում և որոնման գոտում։ Դուք կարող եք փոխել այն ցանկացած ժամանակ։
+search-engine-default-private-desc-2 = Ընտրեք այլ որոնիչ՝ գաղտնի պատուհանների համար միայն
 search-separate-default-engine =
-    .label = Անձնական պատուհաններում օգտագործեք այս որոնիչը
-    .accesskey = U
+    .label = Օգտագործել այս որոնիչը գաղտնի պատուհաններում
+    .accesskey = Օ
 search-suggestions-header = Որոնել առաջարկություն
-search-suggestions-desc = Ընտրեք, թե ինչպես են որոնման առաջարկները երևում։
+search-suggestions-desc = Ընտրեք, թե ինչպես հայտնվեն որոնման առաջարկները։
 search-suggestions-option =
-    .label = Ցուցադրել որոնման հուշումներ
-    .accesskey = ո
+    .label = Տրամադրել որոնման առաջարկները
+    .accesskey = s
 search-show-suggestions-option =
     .label = Ցուցադրել որոնման առաջարկները
     .accesskey = S
 search-show-suggestions-url-bar-option =
     .label = Ցուցադրել որոնման առաջարկները հասցեի գոտու արդյունքներում
     .accesskey = l
+# This string describes what the user will observe when the system
+# prioritizes search suggestions over browsing history in the results
+# that extend down from the address bar. In the original English string,
+# "before" refers to location (appearing most proximate to), not time
+# (appearing before).
+search-show-suggestions-above-history-option-2 =
+    .label = Ցուցադրել որոնման առաջարկները նախքան որոնման պատմությունը հասցեների տողի արդյունքներում
+search-show-suggestions-private-windows-2 =
+    .label = Որոնման առաջարկներ գաղտնի պատուհաններում
+search-suggestions-cant-show-2 =
+    .message = Որոնման առաջարկությունները չեն ցուցադրվի գտնման վայրի տողի արդյունքներում, քանի որ դուք կազմաձևել եք { -brand-short-name }-ը, որ երբեք չհիշի պատմությունը։
+addressbar-header-1 =
+    .label = Հասցեագոտի
+    .description = Ընտրեք Ձեր հասցեագոտում ցուցադրվող առաջարկները
+# When Firefox Suggest is enabled, this replaces `addressbar-header-1`.
+addressbar-header-firefox-suggest-2 =
+    .label = { -firefox-suggest-brand-name }
+    .description = Առաջարկներ { -brand-short-name }-ից և մեր գործընկերներից ձեր հասցեագոտիում:
+# With this option enabled, while on a SERP, the URL normally displayed in the
+# address bar will be replaced with the search term used to generate that SERP.
+search-show-search-term-option-2 =
+    .label = Ցուցադրել որոնման եզրույթները արդյունքների էջերի վրայի հասցեագոտում
+search-separate-default-engine-2 =
+    .label = Օգտագործեք այլ սկզբնադիր որոնիչ գաղտնի պատուհաններում
+    .accesskey = U
+search-separate-default-engine-dropdown =
+    .aria-label = Սկզբնադիր որոնիչ գաղտնի պատուհաններում
+search-suggestions-header-2 =
+    .label = Որոնիչների առաջարկներ
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -590,13 +995,16 @@ search-show-search-term-option =
 # "ahead" refers to location (appearing most proximate to), not time
 # (appearing before).
 search-show-suggestions-above-history-option =
-    .label = Ցուցադրել որոնման առաջարկները հասցեի գոտու արդյունքների ամենավերևում
+    .label = Ցուցադրել որոնման առաջարկները հասցեագոտու արդյունքներում դիտարկման պատմության առջև
 search-show-suggestions-private-windows =
     .label = Ցուցադրել որոնման առաջարկները գաղտնի պատուհաններում
 suggestions-addressbar-settings-generic2 = Փոխել այլ հասցեագոտիների առաջարկությունների կարգավորումները
 search-suggestions-cant-show = Որոնման առաջարկությունները չեն ցուցադրվի գտնման վայրի տողի արդյունքներում, քանի որ դուք կազմաձևել եք { -brand-short-name }-ը, որ երբեք չհիշի պատմությունը։
 search-one-click-header2 = Որոնման դյուրանցումներ
 search-one-click-desc = Ընտրեք այլընտրանքային որոնիչներ, որոնք կերևան ստորև հասցեի գոտում և որոնման գոտիում, երբ մուտքագրեք հիմնաբառ:
+search-one-click-header-3 =
+    .label = Լրացուցիչ որոնողական համակարգեր
+    .description = Ընտրեք, թե որ որոնիչը և դյուրանցումները երևան ձեր հասցեագոտիում:
 search-choose-engine-column =
     .label = Որոնիչներ
 search-choose-keyword-column =
@@ -610,6 +1018,12 @@ search-remove-engine =
 search-add-engine =
     .label = Ավելացնել
     .accesskey = A
+search-add-engine-2 =
+    .label = Ավելացնել որոնիչ
+    .accesskey = A
+search-edit-engine =
+    .label = Խմբագրել
+    .accesskey = E
 search-find-more-link = Գտնել լրացուցիչ որոնիչներ
 # This warning is displayed when the chosen keyword is already in use
 # ('Duplicate' is an adjective)
@@ -618,12 +1032,25 @@ search-keyword-warning-title = Կրկնել հիմաբառը
 #   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Դուք ընտրել եք կրկնվող հիմաբառ, որը արդեն օգտագործվում է "{ $name }" -ի կողմից: Խնդրում ենք ընտրել մեկ ուրիշը:
 search-keyword-warning-bookmark = Դուք ընտրեցիք հիմնաբառ, որը այս պահին օգտագործվում է էջանիշի կողմից: Խնդրում եմ ընտրեք մեկ ուրիշը:
+# This warning is displayed when the chosen name is already in use.
+# Variables:
+#   $name (string) - Name of a search engine.
+edit-engine-name-warning-duplicate = Արդեն կա որոնողական համակարգ՝ «{ $name }» անվամբ։ Խնդրում ենք ընտրել մեկ այլ անուն։
+remove-engine-confirmation = Վստա՞հ եք, որ ուզում եք հեռացնել այս որոնիչը:
+remove-engine-remove = Հեռացնել
+remove-addon-engine-alert = Այս որոնիչը հեռացնելու համար հեռացրեք հարակցված հավելումը:
+search-engine-group =
+    .label = Սկզբնադիր որոնիչ
+search-default-engine =
+    .aria-label = Սկզբնադիր որոնիչ
 
 ## Containers Section
 
 containers-back-button2 =
     .aria-label = Վերադառնալ կարգավորումներին
 containers-header = Պարունակ ներդիրներ
+containers-section-header =
+    .heading = Պարունակ ներդիրներ
 containers-add-button =
     .label = Ավելացել նոր պարունակ
     .accesskey = Ա
@@ -635,6 +1062,13 @@ containers-settings-button =
 containers-remove-button =
     .label = Հեռացնել
 
+## Account and sync
+
+sync-group-label =
+    .label = Համաժամեցում
+account-group-label =
+    .label = { -vendor-short-name }-ի հաշիվ
+
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
@@ -642,6 +1076,12 @@ sync-signedout-caption = Ձեր վեբը Ձեզ հետ է
 sync-signedout-description2 = Համաժամեցրեք ձեր բոլոր էջանիշերը, պատմությունը, ներդիրները, գաղտնաբառերը, հավելումները և կարգավորումները ձեր բոլոր սարքերի միջև:
 sync-signedout-account-signin3 =
     .label = Մուտք գործեք՝ համաժամեցնելու համար…
+    .accesskey = i
+sync-signedout-account-signin-4 =
+    .label = Մուտք գործեք ձեր հաշիվ՝ համաժամեցումը սկսելու համար
+    .accesskey = i
+sync-signedout-account-short =
+    .label = Մուտք գործել
     .accesskey = i
 # This message contains two links and two icon images.
 #   `<img data-l10n-name="android-icon"/>` - Android logo icon
@@ -660,19 +1100,38 @@ sync-profile-picture =
 sync-profile-picture-with-alt =
     .tooltiptext = Փոխել պրոֆիլի նկարը
     .alt = Փոխել պրոֆիլի նկարը
+sync-profile-picture-account-problem =
+    .alt = Հաշվի պրոֆիլի նկար
 fxa-login-rejected-warning =
     .alt = Նախագուշացում
 sync-sign-out =
     .label = Դուրս գալ…
     .accesskey = g
+sync-sign-out2 =
+    .label = Դուրս գալ
+    .accesskey = g
 sync-manage-account = Կառավարել հաշիվը
+    .accesskey = o
+sync-manage-account2 =
+    .label = Կառավարել հաշիվը
     .accesskey = o
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } նույնականացրած չէ:
 sync-signedin-login-failure = Նախ մուտք գործեք { $email }
+
+## Variables
+## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
+
+sync-account-signed-in =
+    .label = { $email }
+sync-account-signed-in-display-name =
+    .label = { $name }
+    .description = { $email }
 
 ##
 
@@ -692,9 +1151,14 @@ sync-sign-in =
 ## Sync section - enabling or disabling sync.
 
 prefs-syncing-on = Համաժամեցում։ ՄԻԱՑՎԱԾ
+prefs-syncing-on-2 =
+    .label = Համաժամեցումը միացված է
 prefs-syncing-off = Համաժամեցում։ ԱՆՋԱՏՎԱԾ
 prefs-sync-turn-on-syncing =
     .label = Միացնել համաժամեցումը…
+    .accesskey = s
+prefs-sync-turn-on-syncing-2 =
+    .label = Միացնել համաժամեցումը
     .accesskey = s
 prefs-sync-offer-setup-label2 = Համաժամեցրեք ձեր բոլոր էջանիշերը, պատմությունը, ներդիրները, գաղտնաբառերը, հավելումները և կարգավորումները ձեր բոլոր սարքերի միջև:
 prefs-sync-now =
@@ -704,11 +1168,22 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = Համաժամեցնել հիմա
     .accesskey = N
+prefs-sync-now-button-2 =
+    .label = Համաժամեցնել հիմա
+    .accesskey = N
 prefs-syncing-button =
     .label = Համաժամեցում․․․
+prefs-syncing-button-2 =
+    .label = Համաժամեցում․․․
+    .title = Համաժամեցնել հիմա
 
 ## The list of things currently syncing.
 
+sync-syncing-across-devices-heading = Դուք համաժամեցնում եք այս միույթները կապակցված ձեր բոլոր սարքերի միջև.
+sync-syncing-across-devices-heading-2 = Տվյալները համաժամեցված են տարբեր սարքերի միջև
+sync-syncing-across-devices-empty-state =
+    .label = Դուք դեռ ոչինչ չեք համաժամեցնում:
+    .description = Սկսեք համաժամեցումը՝ ձեր բոլոր տվյալները բոլոր սարքերում ունենալու համար:
 sync-currently-syncing-bookmarks = Էջանիշեր
 sync-currently-syncing-history = Պատմություն
 sync-currently-syncing-tabs = Բաց ներդիրներ
@@ -719,6 +1194,9 @@ sync-currently-syncing-creditcards = Բանկային քարտեր
 sync-currently-syncing-payment-methods = Վճարամիջոցներ
 sync-currently-syncing-addons = Հավելումներ
 sync-currently-syncing-settings = Կարգավորումներ
+sync-manage-options =
+    .label = Կառավարել համաժամացումը…
+    .accesskey = M
 sync-change-options =
     .label = Փոխել…
     .accesskey = C
@@ -728,23 +1206,24 @@ sync-change-options =
 sync-choose-what-to-sync-dialog3 =
     .title = Ընրեք, թե ինչը համաժամեցնել
     .style = min-width: 36em;
-    .buttonlabelaccept = Պահպանել փոփոխությունները
+    .buttonlabelaccept = Պահել փոփոխությունները
     .buttonaccesskeyaccept = S
     .buttonlabelextra2 = Անջատված…
     .buttonaccesskeyextra2 = D
+sync-choose-dialog-subtitle = Համաժամեցվող տարրերի ցանկի փոփոխությունները կարտացոլվեն ձեր բոլոր միացված սարքերում։
 sync-engine-bookmarks =
     .label = Էջանիշերը
     .accesskey = ն
 sync-engine-history =
-    .label = Պատմությունը
+    .label = Պատմություն
     .accesskey = թ
 sync-engine-tabs =
-    .label = Բացել ներդիրներ
-    .tooltiptext = Համաժամեցված բոլոր սարքերում բացվածների ցանկը
-    .accesskey = T
+    .label = Բաց ներդիրներ
+    .tooltiptext = Ցանկ, թե ինչ է բացված բոլոր համաժամեցված սարքերում
+    .accesskey = ն
 sync-engine-logins-passwords =
     .label = Մուտքանուններ և գաղտնաբառեր
-    .tooltiptext = Ձեր պահպանած օգտվողի անուններ և գաղտնաբառեր
+    .tooltiptext = Ձեր պահած օգտվողի անուններ և գաղտնաբառեր
     .accesskey = L
 sync-engine-passwords =
     .label = Գաղտնաբառեր
@@ -752,7 +1231,7 @@ sync-engine-passwords =
     .accesskey = P
 sync-engine-addresses =
     .label = Հասցեներ
-    .tooltiptext = Փոստային հասցեներ, որոնք դուք պահպանել եք (միայն դեսքթոփում)
+    .tooltiptext = Փոստային հասցեներ, որոնք դուք պահել եք (միայն դեսքթոփում)
     .accesskey = e
 sync-engine-creditcards =
     .label = Բանկային քարտեր
@@ -770,10 +1249,27 @@ sync-engine-settings =
     .label = Կարգավորումներ
     .tooltiptext = Գլխավոր, գաղտնիության և անվտանգութփյան կարգավորումները, որ փոխել եք
     .accesskey = s
+sync-choose-what-to-sync-dialog4 =
+    .title = Կառավարեք այն, ինչը համաժամանել ձեր բոլոր միացված սարքերում
+    .style = min-width: 36em;
+    .buttonlabelaccept = Պահել
+    .buttonaccesskeyaccept = S
+    .buttonlabelextra2 = Անջատում…
+    .buttonaccesskeyextra2 = D
 
 ## The device name controls.
 
 sync-device-name-header = Սարքի անունը
+sync-device-name-header-2 =
+    .label = Սարքի անունը
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Սարքի անունը
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Փոխել սարքի անունը
+    .accesskey = ո
 sync-device-name-change =
     .label = Փոխել սարքի անունը…
     .accesskey = ո
@@ -781,9 +1277,11 @@ sync-device-name-cancel =
     .label = Չեղարկել
     .accesskey = ա
 sync-device-name-save =
-    .label = Պահպանել
+    .label = Պահել
     .accesskey = պ
-sync-connect-another-device = Միացնել այլ սարքի
+sync-connect-another-device = Կապվել այլ սարքի
+sync-connect-another-device-2 =
+    .label = Կապվել այլ սարքի
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -806,7 +1304,7 @@ pane-privacy-logins-and-passwords-header = Մուտքանուններ և Գաղ�
     .searchkeywords = { -lockwise-brand-short-name }
 # Checkbox to control whether UI is shown to users to save or fill logins/passwords.
 forms-ask-to-save-logins =
-    .label = Հարցնել և պահպանել մուտքագրումները և գաղտնաբառերը կայքերի համար
+    .label = Հարցնել և պահել մուտքագրումները և գաղտնաբառերը կայքերի համար
     .accesskey = r
 
 ## Privacy Section - Passwords
@@ -815,10 +1313,16 @@ forms-ask-to-save-logins =
 # by searching for the former term "logins". It's not displayed in the UI.
 pane-privacy-passwords-header = Գաղտնաբառեր
     .searchkeywords = մուտքեր
+forms-passwords-header =
+    .label = Գաղտնաբառեր
+    .aria-label = Գաղտնաբառեր
 # Checkbox to control whether UI is shown to users to save or fill logins/passwords.
 forms-ask-to-save-passwords =
-    .label = Խնդրել գաղտնաբառների պահպանում
+    .label = Խնդրել գաղտնաբառների պահում
     .accesskey = Խ
+forms-manage-password-exceptions =
+    .label = Կառավարել գաղտնաբառի բացառությունները
+    .accesskey = M
 forms-exceptions =
     .label = Բացառություններ…
     .accesskey = ա
@@ -833,7 +1337,7 @@ forms-breach-alerts =
     .accesskey = b
 forms-breach-alerts-learn-more-link = Իմանալ ավելին
 preferences-relay-integration-checkbox =
-    .label = Առաջարկեում է { -relay-brand-name } էլ. փոստի դիմակներ՝ պաշտպանելու ձեր էլ. փոստի հասցեն
+    .label = Առաջարկել { -relay-brand-name }-ին էլ. փոստի դիմակներ՝ Ձեր էլ. հասցեն պաշտպանելու համար
 preferences-relay-integration-checkbox2 =
     .label = Առաջարկել { -relay-brand-name }-ին էլ. փոստի դիմակներ՝ Ձեր էլ. հասցեն պաշտպանելու համար
     .accesskey = r
@@ -845,12 +1349,38 @@ forms-fill-logins-and-passwords =
 forms-saved-logins =
     .label = Պահված մուտքանուններ...
     .accesskey = մ
+# Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
+forms-fill-usernames-and-passwords =
+    .label = Լրացնել օգտվողի անունները և գաղտնաբառերն ինքնաբերաբար
+    .accesskey = F
 forms-saved-passwords =
     .label = Պահված գաղտնաբառեր
     .accesskey = d
+forms-saved-passwords-2 =
+    .label = Կառավարեք պահված գաղտնաբառերը
+    .accesskey = d
+# Header for additional protections when managing password settings.
+forms-additional-protections-header =
+    .label = Լրացուցիչ պաշտպանություններ
 forms-primary-pw-use =
     .label = Հիմնական գաղտնաբառի օգտագործում
     .accesskey = U
+forms-primary-pw-use-2 =
+    .label = Օգտագործել հիմնական գաղտնաբառ
+    .description = Ավելացնում է հավելյալ անվտանգություն՝ ձեր գաղտնաբառերը պաշտպանելու համար:
+    .accesskey = U
+forms-primary-pw-set =
+    .label = Սահմանել հիմնական գաղտնաբառը
+forms-primary-pw-on =
+    .label = Հիմնական գաղտնաբառը միացված է
+forms-primary-pw-change-2 =
+    .label = Փոխել հիմնական գաղտնաբառը
+# Label for button to disable primary password.
+forms-primary-pw-turn-off =
+    .label = Անջատել այն
+# This operation requires the user to authenticate with the operating system (device sign-in)
+forms-os-reauth =
+    .label = Գաղտնաբառերը լրացնելու և կառավարելու համար պահանջել սարքի մուտք գործում
 forms-primary-pw-learn-more-link = Իմանալ ավելին
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -865,11 +1395,13 @@ forms-primary-pw-change =
 # "Master Password" in your language. If you're editing the FTL file directly,
 # use { "" } as the value.
 forms-primary-pw-former-name = Նախկինում հայտնի էր որպես Հիմնական գաղտնաբառ
-forms-master-pw-fips-desc = Գաղտնաբառի Փոփոխությունը Չհաջողվեց
+forms-primary-pw-fips-title = Դուք այժմ գտնվում եք FIPS կերպում: FIPS-ը պահանջում է ոչ դատարկ հիմնական գաղտնաբառ:
+forms-master-pw-fips-desc = Գաղտնաբառը չհաջողվեց փոխել
 forms-windows-sso =
     .label = Թույլատրել Windows եզակի գրանցում Microsoft-ում, աշխատանքային և դպրոցական հաշիվներում:
 forms-windows-sso-learn-more-link = Իմանալ ավելին
 forms-windows-sso-desc = Կառավարել հաշիվը ձեր սարքի կարգավորումներում
+windows-passkey-settings-label = Կառավարել անցանիշերը համակարգի կարգավորումներում
 
 ## OS Authentication dialog
 
@@ -881,20 +1413,89 @@ primary-password-os-auth-dialog-message-win = Հիմնական գաղտնաբա�
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = ստեղծել Հիմնական գաղտնաբառ
 master-password-os-auth-dialog-caption = { -brand-full-name }
+# The macOS string is preceded by the operating system with "Firefox is trying to ".
+autofill-creditcard-os-dialog-message =
+    { PLATFORM() ->
+        [macos] փոխել սկզբնադիր վճարամիջոցները
+       *[other] { -brand-short-name }-ը փորձում է փոխել վճարման եղանակների կարգավորումները: Մուտք գործեք ձեր սարքի միջոցով՝ դա թույլատրելու համար:
+    }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
 pane-privacy-autofill-header = Ինքնալրացում
-autofill-addresses-checkbox = Պահպանել և լրացնել հասցեները
+autofill-addresses-checkbox = Պահել և լրացնել հասցեները
     .accesskey = a
 autofill-saved-addresses-button = Պահված հասցեներ
     .accesskey = Պ
-autofill-payment-methods-checkbox-message = Պահպանել և լրացնել վճարամիջոցները
+autofill-payment-methods-checkbox-message = Պահել և լրացնել վճարամիջոցները
     .accesskey = m
 autofill-payment-methods-checkbox-submessage = Ներառում է կրեդիտ և դեբետային քարտերը
     .accesskey = Ն
 autofill-saved-payment-methods-button = Պահված վճարամիջոցներ
     .accesskey = v
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Պահանջել մուտք գործել սարք՝ լրացնելու և կառավարելու համար վճարամիջոցները
+    .accesskey = o
+autofill-payment-methods-title = Վճարամիջոցներ
+autofill-payment-methods-header =
+    .aria-label = Վճարամիջոցներ
+autofill-payment-methods-manage-payments-title =
+    .heading = Կառավարել վճարամիջոցները
+autofill-payment-methods-add-button = Ավելացնել նոր վճարամիջոց
+payments-list-header =
+    .label = Վճարամիջոցներ
+payments-list-item-label = <strong>Վճարամիջոցներ</strong>
+payments-delete-payment-prompt-title = Ջնջե՞լ այս վճարամիջոցը:
+payments-delete-payment-prompt-confirm-button = Ջնջել
+payments-delete-payment-prompt-cancel-button = Չեղարկել
+payments-delete-payment-button-label =
+    .aria-label = Ջնջել
+payments-edit-payment-button-label =
+    .aria-label = Խմբագրել
+# This message is displayed when no payment methods such as credit card are stored in Firefox
+payments-no-payments-stored-message =
+    .label = Վճարամիջոցներ չեն ավելացվել
+payments-remove-payment-prompt-title = Հեռացնե՞լ այս վճարամիջոցը:
+payments-remove-payment-prompt-confirm-button = Հեռացնել
+payments-remove-payment-prompt-cancel-button = Չեղարկել
+autofill-addresses-title = Հասցեներ և այլն
+autofill-addresses-header =
+    .aria-label = Հասցեներ և այլն
+addresses-list-header =
+    .label = Հասցեներ
+addreses-delete-address-button-label =
+    .aria-label = Ջնջել
+addreses-edit-address-button-label =
+    .aria-label = Խմբագրել
+addresses-delete-address-prompt-title = Ջնջե՞լ այս հասցեն:
+addresses-delete-address-prompt-confirm-button = Ջնջել
+addresses-delete-address-prompt-cancel-button = Չեղարկել
+autofill-addresses-add-button = Ավելացնել նոր հասցե
+autofill-addresses-manage-addresses-title =
+    .heading = Կառավարեք հասցեները և այլն
+# This message is displayed when no addresses are stored in Firefox
+addresses-no-addresses-stored-message =
+    .label = Հասցեներ չեն ավելացվել
+# These values are displayed for each address record listed on the "Manage addresses and more" subpage.
+# Variables:
+#   $name (string) - The name associated with the address
+#   $address (string) - The address
+address-moz-box-item =
+    .label = { $name }
+    .description = { $address }
+# These values are displayed for each credit card record listed on the Manage Payment methods
+# settings page.
+# Variables:
+#   $cardNumber (string) - The obscured credit card number (for example: ********* 2423)
+#   $expDate (string) - The obscured expiry date of the credit card (for example: XX/2027)
+payment-moz-box-item =
+    .label = { $cardNumber }
+    .description = { $expDate }
+addresses-group =
+    .label = Հասցեներ և այլն
+payments-group =
+    .label = Վճարամիջոցներ
 
 ## Privacy Section - History
 
@@ -908,19 +1509,41 @@ history-header = Պատմություն
 #   - Simply as "Firefox", moving the verb into each option.
 #     This will result in "Firefox" + "Will remember history", etc.
 #   - As a stand-alone message, for example "Firefox history settings:".
-history-remember-label = { -brand-short-name }-ը կսկսի`
-    .accesskey = կ
+history-remember-label2 = { -brand-short-name }-ը
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label = { -brand-short-name }-ը
+    .accesskey = ը
 history-remember-option-all =
-    .label = Հիշել պատմությունը
+    .label = կհիշի պատմությունը
 history-remember-option-never =
-    .label = Երբեք չհիշել այցելությունները
+    .label = երբեք չի հիշի պատմությունը
 history-remember-option-custom =
-    .label = Պատմության համար օգտագործել սեփական կարգավորումները
+    .label = կօգտվի պատմության համար հարմարեցված կարգավորումներից
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name }-ը կհիշի դիտարկումների, ներբեռնումների, ձևերի և որոնումների պատմությունը:
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name }ը կօգտագործի գաղտնի դիտարկման կարգավումները և չի հիշի համացանցում ձեր դիտարկումների պատմությունը:
+history-remember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name }-ը կհիշի դիտարկումների, ներբեռնումների, ձևերի և որոնումների պատմությունը:
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name }ը կօգտագործի գաղտնի դիտարկման կարգավումները և չի հիշի համացանցում ձեր դիտարկումների պատմությունը:
 history-remember-description = { -brand-short-name }-ը կհիշի դիտարկումների, ներբեռնումների, ձևերի և որոնումների պատմությունը:
 history-dontremember-description = { -brand-short-name }ը կօգտագործի գաղտնի դիտարկման կարգավումները և չի հիշի համացանցում ձեր դիտարկումների պատմությունը:
 history-private-browsing-permanent =
-    .label = Միշտ օգտագործել Գաղտնի Դիտարկումը
-    .accesskey = Գ
+    .label = Միշտ օգտագործել գաղտնի դիտարկումը
+    .accesskey = p
 history-remember-browser-option =
     .label = Հիշել դիտարկումները և ներբեռնումների պատմությունը
     .accesskey = b
@@ -936,18 +1559,26 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = Մաքրել պատմությունը…
     .accesskey = s
+history-group =
+    .label = Պատմություն
 
 ## Privacy Section - Site Data
 
 sitedata-header = Cookie-ներ և կայքի տվյալներ
+sitedata-label =
+    .aria-label = { sitedata-header }
 sitedata-total-size-calculating = Հաշվում է կայքի տվյալները և շտեմի չափը…
+# Variables:
+#   $value (number) - Value of the unit (for example: 4.6, 500)
+#   $unit (string) - Name of the unit (for example: "bytes", "KB")
+sitedata-total-size2 = Ձեր պահված թխուկները, պատմությունը, կայքի տվյալները և շտեմը ներկայումս զբաղեցնում են <strong>{ $value } { $unit } </strong> սկավառակի տարածք։
 # Variables:
 #   $value (number) - Value of the unit (for example: 4.6, 500)
 #   $unit (string) - Name of the unit (for example: "bytes", "KB")
 sitedata-total-size = Ձեր cookie-ները, կայքի տվյալները և շտեմը այժմ զբաղեցնում են { $value } { $unit } տեղ:
 sitedata-learn-more = Իմանալ ավելին
 sitedata-delete-on-close =
-    .label = Ջնջել թխուկներ և կայքի տվյալները երբ { -brand-short-name }-ը փակված է
+    .label = Ջնջել թխուկներ և կայքի տվյալները երբ { -brand-short-name }-ը փակելիս
     .accesskey = c
 sitedata-delete-on-close-private-browsing = Մշտական կողպված զննարկման աշխատատեսակում, թխուկների և կայքերի տվյալները միշտ կլինեն մաքրված երբ { -brand-short-name }-ը փակված է։
 sitedata-allow-cookies-option =
@@ -964,10 +1595,18 @@ sitedata-option-block-cross-site-trackers =
     .label = Միջակայքային հետևումներ
 sitedata-option-block-cross-site-tracking-cookies =
     .label = Միջակայքային հետևող թխուկներ
+sitedata-option-block-cross-site-cookies2 =
+    .label = Մեկուսացնել միջկայքային թխուկները
 sitedata-option-block-unvisited =
     .label = Նշոցիկներ չայցելած վեբ կայքերից
 sitedata-option-block-all =
     .label = Բոլոր թխուկները (վեբ կայքերի կոտրման պատճառ կլինեն)
+sitedata-clear2 =
+    .label = Մաքրել դիտարկման տվյալները
+    .accesskey = ա
+sitedata-settings2 =
+    .label = Կառավարել դիտարկման տվյալները
+    .accesskey = Կ
 sitedata-clear =
     .label = Մաքրել տվյալները…
     .accesskey = l
@@ -977,18 +1616,40 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = Կառավարել բացառությունները...
     .accesskey = x
+sitedata-cookies-exceptions2 =
+    .label = Կառավարել բացառությունները...
+    .accesskey = x
+    .description = Կարող եք հատկորոշել, թե որ կայքերը մշտապես կամ երբեք օգտագործեն թխուկներ և կայքի տվյալներ:
+cookies-site-data-group =
+    .label = Cookie-ներ և կայքի տվյալներ
 
 ## Privacy Section - Cookie Banner Handling
 
+cookie-banner-handling-header = Թխուկների դրոշակի կրճատում
 
 ## Privacy Section - Cookie Banner Blocking
 
+cookie-banner-blocker-header = Թխուկների ազդերիզի արգելափակիչ
 cookie-banner-learn-more = Իմանալ ավելին
+forms-handle-cookie-banners =
+    .label = Նվազեցնել թխուկների ազդերիզները
 
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = Հասցեագոտի
+addressbar-suggest-1 = Ընտրեք Ձեր հասցեագոտում ցուցադրվող առաջարկները
+# When Firefox Suggest is enabled, this replaces `addressbar-header`.
+addressbar-header-firefox-suggest-1 = { -firefox-suggest-brand-name }
+# When Firefox Suggest is enabled, this replaces `addressbar-suggest`.
+addressbar-suggest-firefox-suggest-1 = Առաջարկներ { -brand-short-name }-ից և մեր գործընկերներից Ձեր հասցեագոտում։
 addressbar-suggest = Հասցեագոտին օգտագործելիս առաջարկել
+# When Firefox Suggest is enabled, this replaces `addressbar-header`.
+addressbar-header-firefox-suggest = Հասցեագոտի․ { -firefox-suggest-brand-name }
+# When Firefox Suggest is enabled, this replaces `addressbar-suggest`.
+addressbar-suggest-firefox-suggest = Ընտրեք Ձեր հասցեագոտում հայտնվող առաջարկների տեսակը։
+# When Firefox Suggest is enabled, a "Learn more" link appears at the end of
+# `addressbar-suggest-firefox-suggest`.
+addressbar-locbar-firefox-suggest-learn-more = Իմանալ ավելին
 addressbar-locbar-history-option =
     .label = Դիտարկման պատմություն
     .accesskey = H
@@ -999,7 +1660,7 @@ addressbar-locbar-clipboard-option =
     .label = Սեղմատախտակ
     .accesskey = Ս
 addressbar-locbar-openpage-option =
-    .label = Բացել ներդիրները
+    .label = Բաց ներդիրներ
     .accesskey = Բ
 # Shortcuts refers to the shortcut tiles on the new tab page, previously known as top sites. Translation should be consistent.
 addressbar-locbar-shortcuts-option =
@@ -1008,23 +1669,51 @@ addressbar-locbar-shortcuts-option =
 addressbar-locbar-topsites-option =
     .label = Լավագույն կայքեր
     .accesskey = T
+addressbar-locbar-engines-option-1 =
+    .label = Առաջարկել որոնիչներ
+    .accesskey = a
 addressbar-locbar-engines-option =
     .label = Որոնիչներ
-    .accesskey = a
+    .accesskey = հ
 addressbar-locbar-quickactions-option =
     .label = Արագ գործողություններ
     .accesskey = Ա
+addressbar-locbar-showrecentsearches-option-2 =
+    .label = Վերջին որոնումները
+    .accesskey = r
+addressbar-locbar-showtrendingsuggestions-option-2 =
+    .label = Թրենդային որոնման առաջարկներ
+    .accesskey = t
 addressbar-suggestions-settings = Փոխել որոնիչների նախապատվությունները
 addressbar-locbar-showrecentsearches-option =
     .label = Ցուցադրել վերջին որոնումները
     .accesskey = վ
+# Toggles whether suggestions are obtained from Firefox Suggest or not (local or online).
+addressbar-locbar-suggest-all-option =
+    .label = Առաջարկներ { -brand-short-name }-ից
+addressbar-locbar-suggest-all-option-desc = Ստացեք առաջարկներ համացանցից՝ կապված ձեր որոնման հետ։
+addressbar-locbar-suggest-nonsponsored-desc = Ստացեք առաջարկներ համացանցից՝ կապված ձեր որոնման հետ։
+addressbar-locbar-suggest-sponsored-option =
+    .label = Առաջարկություններ հովանավորներից
+# This string is used for a checkbox in the settings UI that opts the
+# user into "online" Firefox Suggest, allowing them to receive suggestions from
+# Mozilla's Merino server.
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since the online suggest is created and maintained
+# by Mozilla.
+addressbar-firefox-suggest-online =
+    .label = Ստանալ առաջարկներ Mozilla-ից՝ մուտքագրելիս
 addressbar-quickactions-learn-more = Իմանալ ավելին
+addressbar-dismissed-suggestions-label = Մերժված առաջարկներ
+addressbar-restore-dismissed-suggestions-button =
+    .label = Վերականգնել
 
 ## Privacy Section - Content Blocking
 
-content-blocking-enhanced-tracking-protection = Կատարելագործում է Հետևման պաշտպանությունը
+content-blocking-enhanced-tracking-protection = Բարելավվում է հետագծման պաշտպանությունը
 content-blocking-section-top-level-description = Հետևողները հետևում են ձեզ առցանց ձեր զննարկման հատկությունների և հետաքրքրությունների մասին տեղեկություն հավաքելու համար։ { -brand-short-name }-ը արգելափակում է այս հետևումներից և այլ վնասարար գրվածքներից շատերը։
 content-blocking-learn-more = Իմանալ ավելին
+content-blocking-fpi-incompatibility-warning = Դուք օգտագործում եք առաջին կողմի մեկուսացումը (FPI), որը չեղարկում է { -brand-short-name }-ի որոշ cookie կարգավորումներ։
 
 ## These strings are used to define the different levels of
 ## Enhanced Tracking Protection.
@@ -1042,22 +1731,27 @@ enhanced-tracking-protection-setting-custom =
 
 ##
 
-content-blocking-etp-standard-desc = Հավասարակշռված է պաշտպանության և կատարման համար։Էջերը կբեռնվեն կանոնակարգված կերպով։
+content-blocking-etp-standard-desc = Հավասարակշռված է պաշտպանության և արտադրողականության համար։ Էջերը կբեռնվեն սովորական կերպով։
 content-blocking-etp-strict-desc = Ավելի ուժեղ պաշտպանություն, բայց կարող է որոշ կայքերի կամ բովանդակությունների կոտրման պատճառ դառնալ։
 content-blocking-etp-custom-desc = Ընտրեք, որ հետևումները և գրվածքները արգելափակել։
 content-blocking-etp-blocking-desc = { -brand-short-name }-ը արգելափակում է հետևյալը՝
-content-blocking-private-windows = Անձնական պատուհաններում բովանդակության հետևում
+content-blocking-private-windows = Գաղտնի պատուհաններում հսկիչ բովանդակություն
 content-blocking-cross-site-cookies-in-all-windows2 = Միջկայքային թխուկները բոլոր պատուհաններում
 content-blocking-cross-site-tracking-cookies = Միջակայքային հետևող նշոցիկներ
 content-blocking-all-cross-site-cookies-private-windows = Միջկայքային թխուկները գաղտնի պատուհաններում
+content-blocking-isolate-cross-site-cookies = Մեկուսացրեք միջկայքային թխուկները
 content-blocking-cross-site-tracking-cookies-plus-isolate = Խաչաձև կայքերի հետագծումների թխուկներ, և մեկուսացնում է մնացած թխուկները
-content-blocking-social-media-trackers = Սոցիալական մեդիայի հետագծումներ
+content-blocking-social-media-trackers = Սոցիալական մեդիայի հետևիչներ
 content-blocking-all-cookies = Բոլոր նշոցիկները
 content-blocking-unvisited-cookies = Նշոցիկներ չստուգված կայքերից
 content-blocking-all-windows-tracking-content = Հետևում են բովանդակությանը բոլոր պատուհաններում
 content-blocking-all-cross-site-cookies = Բոլոր միջկայքային թխուկները
 content-blocking-cryptominers = Գաղտնազերծիչներ
 content-blocking-fingerprinters = Մատնահետքեր
+# The known fingerprinters are those that are known for collecting browser fingerprints from user devices. And
+# the suspected fingerprinters are those that we are uncertain about browser fingerprinting activities. But they could
+# possibly acquire browser fingerprints because of the behavior on accessing APIs that expose browser fingerprints.
+content-blocking-known-and-suspected-fingerprinters = Հայտնի և կասկածելի մատնահետքեր
 
 # The tcp-rollout strings are no longer used for the rollout but for tcp-by-default in the standard section
 
@@ -1067,6 +1761,9 @@ content-blocking-etp-standard-tcp-rollout-learn-more = Իմանալ ավելին
 content-blocking-etp-standard-tcp-title = Ներառում է Թխուկների ամբողջական պաշտպանությունը, գաղտնիության մեր ամենահզոր յուրահատկությունը
 content-blocking-warning-title = Ուշադրություն։
 content-blocking-warning-learn-how = Իմանալ ինչպես
+content-blocking-baseline-uncheck-warning-dialog-title = Վստա՞հ եք, որ ցանկանում եք անջատել ուղղումները։
+content-blocking-baseline-uncheck-warning-dialog-ok-button = Անջատել ուղղումները
+content-blocking-baseline-uncheck-warning-dialog-cancel-button = Պահել շտկումները միացված
 content-blocking-reload-description = Ձեզ հարկավոր կլինի վերբեռնել ձեր ներդիրները այս փոփոխությունները հաստատելու համար։
 content-blocking-reload-tabs-button =
     .label = Վերբեռնել բոլոր ներդիրները
@@ -1095,6 +1792,18 @@ content-blocking-cryptominers-label =
 content-blocking-fingerprinters-label =
     .label = Մատնահետքեր
     .accesskey = F
+# Browser fingerprinting is a method of tracking users by the configuration and settings information (their "digital fingerprint")
+# that is visible to websites they browse, rather than traditional tracking methods such as IP addresses and unique cookies.
+#
+# The known fingerprinters are those that are known for collecting browser fingerprints from user devices.
+content-blocking-known-fingerprinters-label =
+    .label = Հայտնի մատնահետքեր
+    .accesskey = K
+# The suspected fingerprinters are those that we are uncertain about browser fingerprinting activities. But they could
+# possibly acquire browser fingerprints because of the behavior on accessing APIs that expose browser fingerprints.
+content-blocking-suspected-fingerprinters-label =
+    .label = Կասկածելի մատնահետքեր
+    .accesskey = S
 
 ## Privacy Section - Tracking
 
@@ -1134,12 +1843,17 @@ permissions-notification-link = Իմանալ ավելին
 permissions-notification-pause =
     .label = Դադարեցնել ծանուցումները մինչև { -brand-short-name }-ը վերամեկնարկելը
     .accesskey = n
+permissions-autoplay2 =
+    .label = Ինքնանվագարկում
 permissions-autoplay = Ինքնանվագարկում
 permissions-autoplay-settings =
     .label = Կարգավորումներ...
     .accesskey = t
+permissions-addon-exceptions2 =
+    .label = Ընտրեք, թե որ կայքերը կարող են տեղադրել ընդլայնումներ
+    .accesskey = E
 permissions-block-popups =
-    .label = Կանխել Pop-up պատուհանները
+    .label = Կանխել ելնող պատուհանները
     .accesskey = Կ
 # "popup" is a misspelling that is more popular than the correct spelling of
 # "pop-up" so it's included as a search keyword, not displayed in the UI.
@@ -1153,23 +1867,67 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = Բացառություններ…
     .accesskey = Բ
+permissions-header2 =
+    .label = Թույլտվություններ
+    .description = Թույլտվություններ, որոնք տալիս եք կայքերին, որոնք դիտարկում եք:
+permissions-location2 =
+    .label = Տեղադրություն
+permissions-localhost2 =
+    .label = Սարքի հավելվածներ և ծառայություններ
+permissions-local-network2 =
+    .label = Տեղական ցանցային սարքեր
+permissions-xr2 =
+    .label = Թվացյալ իրականություն
+permissions-camera2 =
+    .label = Տեսախցիկ
+permissions-microphone2 =
+    .label = Խոսափող
+# Privacy permission for sound output devices.
+permissions-speaker2 =
+    .label = Բարձրախոս
+permissions-notification2 =
+    .label = Ծանուցումներ
 
 ## Privacy Section - Data Collection
 
 collection-header = { -brand-short-name }-ի տվյալների հավաքում և օգտագործում
 collection-header2 = { -brand-short-name }-ի տվյալների հավաքում և օգտագործում
     .searchkeywords = հեռաչափություն
+preferences-collection-description = Մենք փորձում ենք տրամադրել ձեզ ընտրություն և հավաքել նվազագույն տվյալներ, որոնք անհրաժեշտ են լավարկել { -brand-product-name }-ը բոլորի համար:
+preferences-collection-privacy-notice = Դիտեք Գաղտնիության ծանուցումը
+preferences-view-profiles = Դիտել բոլոր պրոֆիլները
 collection-description = Մենք փորձում ենք տրամադրել ձեզ ընտրություն և հավաքել միայն այն ժամանակ, երբ մեզ պետք է տրամադրել և լավարկել { -brand-short-name }-ը բոլորի համար: ՄԵնք միշտ հարցնում ենք թույլտվությյուն՝ մինչև անձնական տեղեկություններ ստանալը:
 collection-privacy-notice = Գաղտնիության ծանուցում
 collection-health-report-telemetry-disabled = Դուք այլևս թույլ չեք տալիս՝{ -vendor-short-name }֊ին գրավել տեխնիկական և միջազգային միջնորդության տվյալները։ Անցյալ բոլոր տվյալները կջնջվեն 30 օրվա ընթացքում։
 collection-health-report-telemetry-disabled-link = Իմանալ ավելին
+collection-usage-ping =
+    .label = Ուղարկեք ամենօրյա օգտագործման պինգ { -vendor-short-name }-ին
+    .accesskey = u
+collection-usage-ping-description = Սա օգնում է { -vendor-short-name }-ին գնահատել ակտիվ օգտվողներին:
+collection-health-report2 =
+    .label = Ուղարկել տեխնիկական և փոխազդեցության տվյալները { -vendor-short-name }-ին
+    .accesskey = r
 collection-health-report =
     .label = Թույլատրել { -brand-short-name }-ին ուղարկել տեխնիկական և փոխազդելու տվյալներ { -vendor-short-name }-ին
     .accesskey = r
 collection-health-report-link = Իմանալ ավելին
+collection-health-report-description = Սա օգնում է մեզ բարելավել { -brand-product-name }-ի յուրահատկությունները, կատարողականությունը և կայունությունը:
+collection-studies2 =
+    .label = Տեղադրել և գործարկել ուսումնասիրությունները
+collection-studies-description = Փորձեք առանձնահատկությունները և գաղափարները, նախքան դրանք բոլորին հասանելի լինեն:
 collection-studies =
     .label = Թույլատրել { -brand-short-name }-ին տեղադրել և կատարել հետազոտություններ
 collection-studies-link = Դիտել { -brand-short-name }-ի հետազոտությունները
+addon-recommendations2 =
+    .label = Թույլատրել անհատականացված ընդլայնման առաջարկությունները
+addon-recommendations-description = Ստացեք ընդլայնման առաջարկներ՝ դիտարկումների փորձը բարելավելու համար:
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = Տվյալների հաղորդումը անջատված է այս կառուցման կարգավորման համար։
+collection-backlogged-crash-reports2 =
+    .label = Ինքնաբար ուղարկել խափանումների մասին զեկույցը
+    .accesskey = c
+collection-backlogged-crash-reports-description = Սա օգնում է { -vendor-short-name }-ին ախտորոշել և շտկել դիտարկիչի հետ կապված խնդիրները: Զեկույցները կարող են ներառել անձնական կամ զգայուն տվյալներ:
 addon-recommendations =
     .label = Թույլատրել { -brand-short-name } ֊ին կատարել անհատականացված ընդլայնման առաջարկություններ
 addon-recommendations-link = Իմանալ ավելին
@@ -1178,13 +1936,19 @@ addon-recommendations-link = Իմանալ ավելին
 collection-health-report-disabled = Տվյալների զեկուցումը անջատված է կազմաձևի այս կառուցման համար
 collection-backlogged-crash-reports-with-link = Թույլատրել { -brand-short-name }-ին ուղարկել հետաձգված վթարի զեկույցներ առանց ձեր գիտության <a data-l10n-name="crash-reports-link">Իմացեք ավելին</a>
     .accesskey = c
-collection-backlogged-crash-reports = Թույլատրել { -brand-short-name }-ին ուղարկել հետաձգված վթարի զեկույցներ առանց ձեր գիտության
-    .accesskey = c
+privacy-segmentation-section-header = Նոր հնարավորություններ, որոնք կբարելավեն ձեր զննարկիչը
+privacy-segmentation-radio-off =
+    .label = Օգտվել { -brand-product-name }-ի խորհուրդներից
 privacy-segmentation-radio-on =
     .label = Ցուցադրել մանրամասն տեղեկություն
 
 ## Privacy Section - Website Advertising Preferences
 
+website-advertising-header = Կայքի գովազդի նախապատվություններ
+website-advertising-private-attribution =
+    .label = Թույլատրել կայքերին կատարել գաղտնիության պահպանման գովազդի չափումներ
+    .accesskey = a
+website-advertising-private-attribution-description = Սա օգնում է կայքերին հասկանալ, թե ինչպես են իրենց գովազդները գործում՝ առանց ձեր մասին տվյալներ հավաքելու:
 
 ## Privacy Section - Security
 ##
@@ -1192,6 +1956,8 @@ privacy-segmentation-radio-on =
 ## https://developers.google.com/safe-browsing/developers_guide_v2#AcceptableUsage
 
 security-header = Անվտանգություն
+browsing-protection-group =
+    .label = Խաբուսիկ բովանդակություն և պաշտպանություն վտանգավոր ծրագրերից
 security-browsing-protection = Խաբուսիկ բովանդակություն և պաշտպանություն վտանգավոր ծրագրերից
 security-enable-safe-browsing =
     .label = Արգելափակել վտանգավոր և խաբուսիկ բովանդակությունը
@@ -1216,6 +1982,10 @@ certs-view =
 certs-devices =
     .label = Անվտանգության սարքեր...
     .accesskey = D
+certs-thirdparty-toggle =
+    .label = Թույլատրել { -brand-short-name }-ին ավտոմատ կերպով վստահել ձեր տեղադրած երրորդ կողմի root վկայականներին
+    .accesskey = t
+certs-devices-enable-fips = FIPS-ը միացնել
 space-alert-over-5gb-settings-button =
     .label = Բացել կարգավորումները
     .accesskey = Բ
@@ -1223,23 +1993,38 @@ space-alert-over-5gb-settings-button =
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = Միայն HTTPS կերպ
+httpsonly-label =
+    .aria-label = { httpsonly-header }
+    .description = Թույլատրում է միայն անվտանգ միացումները վեբ կայքերին։ Չպաշտպանված միացումից առաջ՝ { -brand-short-name }-ը կհարցնի։
+httpsonly-description3 = Թույլատրում է միայն անվտանգ միացումները վեբ կայքերին։ Չպաշտպանված միացումից առաջ՝ { -brand-short-name }-ը կհարցնի։
+httpsonly-learn-more2 = Ինչպես է աշխատում միայն HTTPS-ը
 httpsonly-description = HTTPS-ը տրամադրում է անվտանգ, գաղտնագրված կապակցում { -brand-short-name }-ի և ձեր այցելած կայքերի միջև: Կայքերի մեծամասնությունը աջակցում է HTTPS և եթե միացված է Միայն HTTPS կերպը, ապա { -brand-short-name }-ը կարդիացնի բոլոր կապակցումները HTTPS-ի:
 httpsonly-learn-more = Իմանալ ավելին
 httpsonly-radio-enabled =
     .label = Միացնել Միայն HTTPS կերպը բոլոր պատուհաններում
 httpsonly-radio-enabled-pbm =
     .label = Միացնել Միայն HTTPS կերպը միայն գաղտնի պատուհաններում
+httpsonly-radio-disabled3 =
+    .label = Չմիացնել Միայն HTTPS կերպը
+    .description = { -brand-short-name }-ը դեռ կարող է արդիացնել որոշ կապակցումներ
 httpsonly-radio-disabled =
     .label = Չմիացնել Միայն HTTPS կերպը
+httpsonly-group =
+    .label = Միայն HTTPS կերպ
+    .description = Թույլատրում է միայն անվտանգ միացումները վեբ կայքերին։ Չպաշտպանված միացումից առաջ՝ { -brand-short-name }-ը կհարցնի։
+httpsonly-label2 =
+    .aria-label = { httpsonly-group.label }
 
 ## DoH Section
 
 preferences-doh-header = DNS-ը HTTPS-ի միջով
-preferences-doh-description = Տիրույթի անվան համակարգը (DNS) HTTPS-ի միջոցով ուղարկում է ձեր հարցումները տիրույթի անվան համար գաղտնագրված կապակցմամբ՝ ստեղծելով անվտանգ DNS և ուրիշների համար դժավացնելով տեսնել այն կայքը, որը դուք ցանկանում եք բացել:
+dns-over-https-group =
+    .label = DNS-ը HTTPS-ի միջով
+preferences-doh-description = Տիրույթի անվան համակարգը (DNS) HTTPS-ի միջով ուղարկում է Ձեր հարցումները տիրույթի անվան համար գաղտնագրված կապով՝ ստեղծելով անվտանգ DNS և ուրիշների համար դժարացնելով տեսնել այն կայքը, որին հասանելիություն ունենալու շեմին եք:
 preferences-doh-description2 = Տիրույթի անվան համակարգը (DNS) HTTPS-ի միջով ուղարկում է Ձեր հարցումները տիրույթի անվան համար գաղտնագրված կապով՝ ստեղծելով անվտանգ DNS և ուրիշների համար դժարացնելով տեսնել այն կայքը, որին հասանելիություն ունենալու շեմին եք:
 # Variables:
 #   $status (string) - The status of the DoH connection
-preferences-doh-status = Վիճակը՝ { $status }
+preferences-doh-status = Կարգավիճակը՝ { $status }
 # Variables:
 #   $name (string) - The name of the DNS over HTTPS resolver. If a custom resolver is used, the name will be the domain of the URL.
 preferences-doh-resolver = Մատակարար՝ { $name }
@@ -1247,7 +2032,7 @@ preferences-doh-resolver = Մատակարար՝ { $name }
 # when the DoH URL is not a valid URL
 preferences-doh-bad-url = Անվավեր URL
 preferences-doh-steering-status = Օգտվելով տեղական մատակարարից
-preferences-doh-status-active = Ակտիվ
+preferences-doh-status-active = Գործող
 preferences-doh-status-disabled = Անջ.
 # Variables:
 #   $reason (string) - A string representation of the reason DoH is not active. For example NS_ERROR_UNKNOWN_HOST or TRR_RCODE_FAIL.
@@ -1261,7 +2046,7 @@ preferences-doh-setting-default =
     .accesskey = D
 preferences-doh-default-desc = { -brand-short-name }-ն է որոշում, թե երբ օգտագործել անվտանգ DNS՝ ձեր գաղտնիությունը պաշտպանելու համար:
 preferences-doh-default-detailed-desc-1 = Օգտագործել անվտանգ DNS  այն տարածքներում, որտեղ դա մաստելի է
-preferences-doh-default-detailed-desc-2 = Օգտագործել ձեր սկզբնադիր DNS լուծումը, եթե առկա է խնդիր անվտանգ DNS մատակարարի հետ
+preferences-doh-default-detailed-desc-2 = Օգտագործել Ձեր սկզբնադիր DNS լուծողը, եթե առկա է խնդիր անվտանգ DNS մատակարարի հետ
 preferences-doh-default-detailed-desc-3 = Օգտագործել տեղային մատակարարի, եթե հնարավոր է
 preferences-doh-default-detailed-desc-4 = Անջատել, երբ VPN-ը, ծնողական հսկումը կամ ձեռնարկության քաղաքականությունը ակտիվ են
 preferences-doh-default-detailed-desc-5 = Անջատել, երբ ցանցը { -brand-short-name }-ին ասում է, որ չպետք է օգտագործվի անվտանգ DNS
@@ -1281,7 +2066,7 @@ preferences-doh-strict-detailed-desc-3 = Եթե ապահով DNS հասանել�
 preferences-doh-setting-off =
     .label = Անջատել
     .accesskey = Ա
-preferences-doh-off-desc = Օգտագործել ձեր սկզբնադիր DNS լուծումը
+preferences-doh-off-desc = Օգտագործել Ձեր սկզբնադիր DNS լուծողը
 preferences-doh-checkbox-warn =
     .label = Զգուշացնել, եթե երրորդ կողմն ակտիվորեն կանխում է անվտանգ DNS-ը
     .accesskey = Զ
@@ -1296,3 +2081,19 @@ preferences-doh-manage-exceptions =
 desktop-folder-name = Աշխատասեղան
 downloads-folder-name = Ներբեռնումներ
 choose-download-folder-title = Ընտրել ներբեռնումների թղթապանակը.
+
+## AI controls page
+
+preferences-ai-controls-header =
+    .heading = { pane-ai-controls-title }
+preferences-ai-controls-block-ai-label = Արգելափակել ԱԲ բարելավումները
+preferences-ai-controls-block-ai =
+    .label = { preferences-ai-controls-block-ai-label }
+preferences-ai-controls-translations-control =
+    .label = Թարգմանություններ
+    .description = Աննկատ դիտարկել վեբը ձեր նախընտրած լեզվով:
+preferences-ai-controls-translations-more-link = Թարգմանության ավելի շատ կարգավորումներ
+preferences-ai-controls-block-confirmation-cancel =
+    .label = Չեղարկել
+preferences-ai-controls-block-confirmation-confirm =
+    .label = Արգելափակել

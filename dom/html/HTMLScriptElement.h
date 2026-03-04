@@ -7,8 +7,8 @@
 #ifndef mozilla_dom_HTMLScriptElement_h
 #define mozilla_dom_HTMLScriptElement_h
 
-#include "mozilla/dom/FetchPriority.h"
 #include "mozilla/Attributes.h"
+#include "mozilla/dom/FetchPriority.h"
 #include "mozilla/dom/ScriptElement.h"
 #include "nsGenericHTMLElement.h"
 #include "nsStringFwd.h"
@@ -17,10 +17,17 @@ class nsDOMTokenList;
 
 namespace mozilla::dom {
 
+class OwningTrustedScriptOrNullIsEmptyString;
+class OwningTrustedScriptOrString;
+class OwningTrustedScriptURLOrUSVString;
+class TrustedScriptOrNullIsEmptyString;
+class TrustedScriptOrString;
+class TrustedScriptURLOrUSVString;
+
 class HTMLScriptElement final : public nsGenericHTMLElement,
                                 public ScriptElement {
  public:
-  using Element::GetText;
+  using Element::GetCharacterDataBuffer;
 
   HTMLScriptElement(already_AddRefed<mozilla::dom::NodeInfo>&& aNodeInfo,
                     FromParser aFromParser);
@@ -33,10 +40,12 @@ class HTMLScriptElement final : public nsGenericHTMLElement,
                                            nsGenericHTMLElement)
 
   void GetInnerHTML(nsAString& aInnerHTML, OOMReporter& aError) override;
-  virtual void SetInnerHTML(const nsAString& aInnerHTML,
-                            nsIPrincipal* aSubjectPrincipal,
-                            mozilla::ErrorResult& aError) override;
 
+  void SetInnerHTMLTrusted(const nsAString& aInnerHTML,
+                           nsIPrincipal* aSubjectPrincipal,
+                           mozilla::ErrorResult& aError) override;
+
+ public:
   // nsIScriptElement
   virtual void GetScriptText(nsAString& text) const override;
   virtual void GetScriptCharset(nsAString& charset) override;
@@ -64,7 +73,30 @@ class HTMLScriptElement final : public nsGenericHTMLElement,
   // WebIDL
   void GetText(nsAString& aValue, ErrorResult& aRv) const;
 
-  void SetText(const nsAString& aValue, ErrorResult& aRv);
+  // @param aValue will always be of type `String`.
+  MOZ_CAN_RUN_SCRIPT void GetText(OwningTrustedScriptOrString& aValue,
+                                  ErrorResult& aRv) const;
+
+  MOZ_CAN_RUN_SCRIPT void SetText(const TrustedScriptOrString& aValue,
+                                  nsIPrincipal* aSubjectPrincipal,
+                                  ErrorResult& aRv);
+
+  // @param aValue will always be of type `NullIsEmptyString`.
+  MOZ_CAN_RUN_SCRIPT void GetInnerText(
+      OwningTrustedScriptOrNullIsEmptyString& aValue, ErrorResult& aError);
+
+  MOZ_CAN_RUN_SCRIPT void SetInnerText(
+      const TrustedScriptOrNullIsEmptyString& aValue,
+      nsIPrincipal* aSubjectPrincipal, ErrorResult& aError);
+
+  // @param aTextContent will always be of type `String`.
+  MOZ_CAN_RUN_SCRIPT void GetTrustedScriptOrStringTextContent(
+      Nullable<OwningTrustedScriptOrString>& aTextContent,
+      mozilla::OOMReporter& aError);
+
+  MOZ_CAN_RUN_SCRIPT void SetTrustedScriptOrStringTextContent(
+      const Nullable<TrustedScriptOrString>& aTextContent,
+      nsIPrincipal* aSubjectPrincipal, mozilla::ErrorResult& aError);
 
   void GetCharset(nsAString& aCharset) {
     GetHTMLAttr(nsGkAtoms::charset, aCharset);
@@ -78,11 +110,12 @@ class HTMLScriptElement final : public nsGenericHTMLElement,
     SetHTMLBoolAttr(nsGkAtoms::defer, aDefer, aRv);
   }
 
-  void GetSrc(nsAString& aSrc) { GetURIAttr(nsGkAtoms::src, nullptr, aSrc); }
-  void SetSrc(const nsAString& aSrc, nsIPrincipal* aTriggeringPrincipal,
-              ErrorResult& aRv) {
-    SetHTMLAttr(nsGkAtoms::src, aSrc, aTriggeringPrincipal, aRv);
-  }
+  // @param aSrc will always be of type `String`.
+  void GetSrc(OwningTrustedScriptURLOrUSVString& aSrc);
+
+  MOZ_CAN_RUN_SCRIPT void SetSrc(const TrustedScriptURLOrUSVString& aSrc,
+                                 nsIPrincipal* aSubjectPrincipal,
+                                 ErrorResult& aRv);
 
   void GetType(nsAString& aType) { GetHTMLAttr(nsGkAtoms::type, aType); }
   void SetType(const nsAString& aType, ErrorResult& aRv) {
@@ -158,7 +191,7 @@ class HTMLScriptElement final : public nsGenericHTMLElement,
   nsIContent* GetAsContent() override { return this; }
 
   // ScriptElement
-  virtual bool HasScriptContent() override;
+  virtual bool HasExternalScriptContent() override;
 
   RefPtr<nsDOMTokenList> mBlocking;
 };

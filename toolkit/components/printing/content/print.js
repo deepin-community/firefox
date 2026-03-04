@@ -163,7 +163,7 @@ var PrintEventHandler = {
   _noPreviewUpdateSettings: new Set(["numCopies", "printDuplex"]),
 
   async init() {
-    Services.telemetry.scalarAdd("printing.preview_opened_tm", 1);
+    Glean.printing.previewOpenedTm.add(1);
 
     this.printPreviewEl =
       ourBrowser.parentElement.querySelector("print-preview");
@@ -298,17 +298,14 @@ var PrintEventHandler = {
       // system dialog the title will be used to generate the prepopulated
       // filename in the file picker.
       settings.title = this.activeTitle;
-      Services.telemetry.scalarAdd("printing.dialog_opened_via_preview_tm", 1);
+      Glean.printing.dialogOpenedViaPreviewTm.add(1);
       const doPrint = await this._showPrintDialog(
         window,
         this.hasSelection,
         settings
       );
       if (!doPrint) {
-        Services.telemetry.scalarAdd(
-          "printing.dialog_via_preview_cancelled_tm",
-          1
-        );
+        Glean.printing.dialogViaPreviewCancelledTm.add(1);
         window.close();
         return;
       }
@@ -450,7 +447,7 @@ var PrintEventHandler = {
   },
 
   cancelPrint() {
-    Services.telemetry.scalarAdd("printing.preview_cancelled_tm", 1);
+    Glean.printing.previewCancelledTm.add(1);
     window.close();
   },
 
@@ -458,9 +455,8 @@ var PrintEventHandler = {
     this.currentPrinterName = printerName;
     let currentPrinter;
     try {
-      currentPrinter = await PrintSettingsViewProxy.resolvePropertiesForPrinter(
-        printerName
-      );
+      currentPrinter =
+        await PrintSettingsViewProxy.resolvePropertiesForPrinter(printerName);
     } catch (e) {
       this.reportPrintingError("PRINTER_PROPERTIES");
       throw e;
@@ -626,11 +622,7 @@ var PrintEventHandler = {
   async onUserSettingsChange(changedSettings = {}) {
     let previewableChange = false;
     for (let [setting, value] of Object.entries(changedSettings)) {
-      Services.telemetry.keyedScalarAdd(
-        "printing.settings_changed",
-        setting,
-        1
-      );
+      Glean.printing.settingsChanged[setting].add(1);
       // Update the list of user-changed settings, which we attempt to maintain
       // across printer changes.
       this._userChangedSettings[setting] = value;
@@ -837,6 +829,10 @@ var PrintEventHandler = {
       // This resolves with a PrintPreviewSuccessInfo dictionary.
       let { sourceVersion } = this.viewSettings;
       let sourceURI = this.activeURI;
+      // The printing backend can't generate a title for the selection document
+      // since it is only a fragment of the page, give it the active title.
+      settings.title =
+        this.viewSettings.sourceVersion == "selection" ? this.activeTitle : "";
       this._lastPrintPreviewSettings = settings;
       ({
         totalPageCount,
@@ -1049,7 +1045,7 @@ var PrintEventHandler = {
 
   reportPrintingError(aMessage) {
     logger.debug("reportPrintingError:", aMessage);
-    Services.telemetry.keyedScalarAdd("printing.error", aMessage, 1);
+    Glean.printing.error[aMessage].add(1);
   },
 
   /**
@@ -1301,7 +1297,7 @@ var PrintSettingsViewProxy = {
         return paperId && this.availablePaperSizes[paperId];
       }
 
-      case "marginPresets":
+      case "marginPresets": {
         let paperWrapper = this.get(target, "currentPaper");
         return {
           none: PrintEventHandler.getMarginPresets("none", paperWrapper),
@@ -1309,6 +1305,7 @@ var PrintSettingsViewProxy = {
           default: PrintEventHandler.getMarginPresets("default", paperWrapper),
           custom: PrintEventHandler.getMarginPresets("custom", paperWrapper),
         };
+      }
 
       case "marginOptions": {
         let allMarginPresets = this.get(target, "marginPresets");
@@ -1327,7 +1324,7 @@ var PrintSettingsViewProxy = {
         return marginsEnabled;
       }
 
-      case "margins":
+      case "margins": {
         let marginSettings = {
           marginTop: target.marginTop,
           marginLeft: target.marginLeft,
@@ -1367,6 +1364,7 @@ var PrintSettingsViewProxy = {
 
         // Fall back to custom for other values
         return "custom";
+      }
 
       case "defaultMargins":
         return PrintEventHandler.getMarginPresets(
@@ -1443,7 +1441,7 @@ var PrintSettingsViewProxy = {
 
   set(target, name, value) {
     switch (name) {
-      case "margins":
+      case "margins": {
         if (!["default", "minimum", "none", "custom"].includes(value)) {
           logger.warn("Unexpected margin preset name: ", value);
           value = "default";
@@ -1459,6 +1457,7 @@ var PrintSettingsViewProxy = {
         target.honorPageRuleMargins = value == "default";
         target.ignoreUnwriteableMargins = value == "none";
         break;
+      }
 
       case "paperId": {
         let paperId = value;
@@ -1536,7 +1535,7 @@ var PrintSettingsViewProxy = {
       case "customMarginTop":
       case "customMarginBottom":
       case "customMarginLeft":
-      case "customMarginRight":
+      case "customMarginRight": {
         let customMarginName = "margin" + name.substring(12);
         this.set(
           target,
@@ -1546,6 +1545,7 @@ var PrintSettingsViewProxy = {
           })
         );
         break;
+      }
 
       case "sourceVersion":
         this._sourceVersion = value;
@@ -2048,7 +2048,7 @@ class ScaleInput extends PrintUIControlMixin(HTMLElement) {
     // we repopulate the scale field with the stored, valid scaling value.
     let isValid = this._percentScale.checkValidity();
     if (
-      !this._percentScale.value ||
+      this._percentScale.value != parseInt(scaling * 100, 10) ||
       (this._shrinkToFitChoice.checked && !isValid) ||
       (this.printerName != printerName && !isValid)
     ) {

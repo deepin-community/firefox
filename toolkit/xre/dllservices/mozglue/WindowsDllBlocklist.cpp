@@ -12,13 +12,12 @@
 #pragma warning(pop)
 
 #include "Authenticode.h"
-#include "BaseProfiler.h"
 #include "nsWindowsDllInterceptor.h"
+#include "mozilla/BaseProfiler.h"
 #include "mozilla/CmdLineAndEnvUtils.h"
 #include "mozilla/StackWalk_windows.h"
 #include "mozilla/TimeStamp.h"
 #include "mozilla/UniquePtr.h"
-#include "mozilla/Vector.h"
 #include "mozilla/WindowsProcessMitigations.h"
 #include "mozilla/WindowsVersion.h"
 #include "mozilla/WinHeaderOnlyUtils.h"
@@ -56,7 +55,7 @@ static uint32_t sInitFlags;
 static bool sBlocklistInitAttempted;
 static bool sBlocklistInitFailed;
 static bool sUser32BeforeBlocklist;
-static WritableBuffer sBlocklistWriter;
+MOZ_RUNINIT static WritableBuffer sBlocklistWriter;
 
 typedef MOZ_NORETURN_PTR void(__fastcall* BaseThreadInitThunk_func)(
     BOOL aIsInitialThread, void* aStartAddress, void* aThreadParam);
@@ -332,6 +331,11 @@ static bool ShouldBlockBasedOnBlockInfo(const DllBlockInfo& info,
     return false;
   }
 
+  if ((info.mFlags & DllBlockInfoFlags::RDD_PROCESSES_ONLY) &&
+      !(sInitFlags & eDllBlocklistInitFlagIsRDDProcess)) {
+    return false;
+  }
+
   *fVersion = DllBlockInfo::ALL_VERSIONS;
 
   if (info.mMaxVersion != DllBlockInfo::ALL_VERSIONS) {
@@ -553,7 +557,7 @@ static bool ShouldBlockThread(void* aStartAddress) {
 // case there's any magic there that we shouldn't skip.
 static DWORD WINAPI NopThreadProc(void* /* aThreadParam */) { return 0; }
 
-static MOZ_NORETURN void __fastcall patched_BaseThreadInitThunk(
+[[noreturn]] static void __fastcall patched_BaseThreadInitThunk(
     BOOL aIsInitialThread, void* aStartAddress, void* aThreadParam) {
   if (ShouldBlockThread(aStartAddress)) {
     aStartAddress = (void*)NopThreadProc;
@@ -562,13 +566,13 @@ static MOZ_NORETURN void __fastcall patched_BaseThreadInitThunk(
   stub_BaseThreadInitThunk(aIsInitialThread, aStartAddress, aThreadParam);
 }
 
-static WindowsDllInterceptor NtDllIntercept;
-static WindowsDllInterceptor Kernel32Intercept;
+MOZ_RUNINIT static WindowsDllInterceptor NtDllIntercept;
+MOZ_RUNINIT static WindowsDllInterceptor Kernel32Intercept;
 
 static void GetNativeNtBlockSetWriter();
 
 static glue::LoaderObserver gMozglueLoaderObserver;
-static nt::WinLauncherServices gWinLauncher;
+MOZ_RUNINIT static nt::WinLauncherServices gWinLauncher;
 
 MFBT_API void DllBlocklist_Initialize(uint32_t aInitFlags) {
   if (sBlocklistInitAttempted) {

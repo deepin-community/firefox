@@ -4,26 +4,30 @@
 
 //! Computed types for box properties.
 
+use crate::derives::*;
 use crate::values::animated::{Animate, Procedure, ToAnimatedValue};
-use crate::values::computed::font::FixedPoint;
 use crate::values::computed::length::{LengthPercentage, NonNegativeLength};
 use crate::values::computed::{Context, Integer, Number, ToComputedValue};
 use crate::values::generics::box_::{
-    GenericContainIntrinsicSize, GenericLineClamp, GenericPerspective, GenericVerticalAlign,
+    GenericContainIntrinsicSize, GenericLineClamp, GenericOverflowClipMargin, GenericPerspective,
+    GenericVerticalAlign,
 };
 use crate::values::specified::box_ as specified;
 use std::fmt;
 use style_traits::{CssWriter, ToCss};
 
 pub use crate::values::specified::box_::{
-    Appearance, BaselineSource, BreakBetween, BreakWithin, Clear as SpecifiedClear, Contain,
-    ContainerName, ContainerType, ContentVisibility, Display, Float as SpecifiedFloat, Overflow,
-    OverflowAnchor, OverflowClipBox, OverscrollBehavior, ScrollSnapAlign, ScrollSnapAxis,
-    ScrollSnapStop, ScrollSnapStrictness, ScrollSnapType, ScrollbarGutter, TouchAction, WillChange,
+    Appearance, BaselineSource, BreakBetween, BreakWithin, Clear, Contain, ContainerName,
+    ContainerType, ContentVisibility, Display, Float, Overflow, OverflowAnchor, OverscrollBehavior,
+    PositionProperty, ScrollSnapAlign, ScrollSnapAxis, ScrollSnapStop, ScrollSnapStrictness,
+    ScrollSnapType, ScrollbarGutter, TouchAction, WillChange, WritingModeProperty,
 };
 
 /// A computed value for the `vertical-align` property.
 pub type VerticalAlign = GenericVerticalAlign<LengthPercentage>;
+
+/// A computed value for the `overflow-clip-margin` property.
+pub type OverflowClipMargin = GenericOverflowClipMargin<NonNegativeLength>;
 
 /// A computed value for the `contain-intrinsic-size` property.
 pub type ContainIntrinsicSize = GenericContainIntrinsicSize<NonNegativeLength>;
@@ -58,160 +62,12 @@ impl Animate for LineClamp {
 /// A computed value for the `perspective` property.
 pub type Perspective = GenericPerspective<NonNegativeLength>;
 
-#[allow(missing_docs)]
-#[cfg_attr(feature = "servo", derive(Deserialize, Serialize))]
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    FromPrimitive,
-    Hash,
-    MallocSizeOf,
-    Parse,
-    PartialEq,
-    SpecifiedValueInfo,
-    ToCss,
-    ToResolvedValue,
-)]
-#[repr(u8)]
-/// A computed value for the `float` property.
-pub enum Float {
-    Left,
-    Right,
-    None,
-}
-
-impl Float {
-    /// Returns true if `self` is not `None`.
-    pub fn is_floating(self) -> bool {
-        self != Self::None
-    }
-}
-
-impl ToComputedValue for SpecifiedFloat {
-    type ComputedValue = Float;
-
-    #[inline]
-    fn to_computed_value(&self, context: &Context) -> Self::ComputedValue {
-        let ltr = context.style().writing_mode.is_bidi_ltr();
-        // https://drafts.csswg.org/css-logical-props/#float-clear
-        match *self {
-            SpecifiedFloat::InlineStart => {
-                context
-                    .rule_cache_conditions
-                    .borrow_mut()
-                    .set_writing_mode_dependency(context.builder.writing_mode);
-                if ltr {
-                    Float::Left
-                } else {
-                    Float::Right
-                }
-            },
-            SpecifiedFloat::InlineEnd => {
-                context
-                    .rule_cache_conditions
-                    .borrow_mut()
-                    .set_writing_mode_dependency(context.builder.writing_mode);
-                if ltr {
-                    Float::Right
-                } else {
-                    Float::Left
-                }
-            },
-            SpecifiedFloat::Left => Float::Left,
-            SpecifiedFloat::Right => Float::Right,
-            SpecifiedFloat::None => Float::None,
-        }
-    }
-
-    #[inline]
-    fn from_computed_value(computed: &Self::ComputedValue) -> SpecifiedFloat {
-        match *computed {
-            Float::Left => SpecifiedFloat::Left,
-            Float::Right => SpecifiedFloat::Right,
-            Float::None => SpecifiedFloat::None,
-        }
-    }
-}
-
-#[allow(missing_docs)]
-#[cfg_attr(feature = "servo", derive(Deserialize, Serialize))]
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    FromPrimitive,
-    Hash,
-    MallocSizeOf,
-    Parse,
-    PartialEq,
-    SpecifiedValueInfo,
-    ToCss,
-    ToResolvedValue,
-)]
-/// A computed value for the `clear` property.
-#[repr(u8)]
-pub enum Clear {
-    None,
-    Left,
-    Right,
-    Both,
-}
-
-impl ToComputedValue for SpecifiedClear {
-    type ComputedValue = Clear;
-
-    #[inline]
-    fn to_computed_value(&self, context: &Context) -> Self::ComputedValue {
-        let ltr = context.style().writing_mode.is_bidi_ltr();
-        // https://drafts.csswg.org/css-logical-props/#float-clear
-        match *self {
-            SpecifiedClear::InlineStart => {
-                context
-                    .rule_cache_conditions
-                    .borrow_mut()
-                    .set_writing_mode_dependency(context.builder.writing_mode);
-                if ltr {
-                    Clear::Left
-                } else {
-                    Clear::Right
-                }
-            },
-            SpecifiedClear::InlineEnd => {
-                context
-                    .rule_cache_conditions
-                    .borrow_mut()
-                    .set_writing_mode_dependency(context.builder.writing_mode);
-                if ltr {
-                    Clear::Right
-                } else {
-                    Clear::Left
-                }
-            },
-            SpecifiedClear::None => Clear::None,
-            SpecifiedClear::Left => Clear::Left,
-            SpecifiedClear::Right => Clear::Right,
-            SpecifiedClear::Both => Clear::Both,
-        }
-    }
-
-    #[inline]
-    fn from_computed_value(computed: &Self::ComputedValue) -> SpecifiedClear {
-        match *computed {
-            Clear::None => SpecifiedClear::None,
-            Clear::Left => SpecifiedClear::Left,
-            Clear::Right => SpecifiedClear::Right,
-            Clear::Both => SpecifiedClear::Both,
-        }
-    }
-}
-
 /// A computed value for the `resize` property.
 #[allow(missing_docs)]
 #[cfg_attr(feature = "servo", derive(Deserialize, Serialize))]
-#[derive(Clone, Copy, Debug, Eq, Hash, MallocSizeOf, Parse, PartialEq, ToCss, ToResolvedValue)]
+#[derive(
+    Clone, Copy, Debug, Eq, Hash, MallocSizeOf, Parse, PartialEq, ToCss, ToResolvedValue, ToTyped,
+)]
 #[repr(u8)]
 pub enum Resize {
     None,
@@ -267,29 +123,21 @@ impl ToComputedValue for specified::Resize {
     }
 }
 
-/// We use an unsigned 10.6 fixed-point value (range 0.0 - 1023.984375).
-pub const ZOOM_FRACTION_BITS: u16 = 6;
-
-/// This is an alias which is useful mostly as a cbindgen / C++ inference workaround.
-pub type ZoomFixedPoint = FixedPoint<u16, ZOOM_FRACTION_BITS>;
-
-/// The computed `zoom` property value. We store it as a 16-bit fixed point because we need to
-/// store it efficiently in the ComputedStyle representation. The assumption being that zooms over
-/// 1000 aren't quite useful.
+/// The computed `zoom` property value.
 #[derive(
     Clone,
     ComputeSquaredDistance,
     Copy,
     Debug,
-    Hash,
     MallocSizeOf,
     PartialEq,
     PartialOrd,
     ToResolvedValue,
+    ToTyped,
 )]
 #[cfg_attr(feature = "servo", derive(Deserialize, Serialize))]
 #[repr(C)]
-pub struct Zoom(ZoomFixedPoint);
+pub struct Zoom(f32);
 
 impl ToComputedValue for specified::Zoom {
     type ComputedValue = Zoom;
@@ -305,7 +153,7 @@ impl ToComputedValue for specified::Zoom {
             // For legacy reasons, zoom: 0 (and 0%) computes to 1. ¯\_(ツ)_/¯
             return Zoom::ONE;
         }
-        Zoom(ZoomFixedPoint::from_float(n))
+        Zoom(n)
     }
 
     #[inline]
@@ -337,19 +185,17 @@ impl ToAnimatedValue for Zoom {
 
     #[inline]
     fn from_animated_value(animated: Self::AnimatedValue) -> Self {
-        Zoom(ZoomFixedPoint::from_float(animated.max(0.0)))
+        Zoom(animated.max(0.0))
     }
 }
 
 impl Zoom {
     /// The value 1. This is by far the most common value.
-    pub const ONE: Zoom = Zoom(ZoomFixedPoint {
-        value: 1 << ZOOM_FRACTION_BITS,
-    });
+    pub const ONE: Zoom = Zoom(1.0);
 
     /// The `document` value. This can appear in the computed zoom property value, but not in the
     /// `effective_zoom` field.
-    pub const DOCUMENT: Zoom = Zoom(ZoomFixedPoint { value: 0 });
+    pub const DOCUMENT: Zoom = Zoom(0.0);
 
     /// Returns whether we're the number 1.
     #[inline]
@@ -357,10 +203,25 @@ impl Zoom {
         self == Self::ONE
     }
 
+    /// Returns whether we're the `document` keyword.
+    #[inline]
+    pub fn is_document(self) -> bool {
+        self == Self::DOCUMENT
+    }
+
+    /// Returns the inverse of our value.
+    #[inline]
+    pub fn inverted(&self) -> Option<Self> {
+        if self.0 == 0.0 {
+            return None;
+        }
+        Some(Self(1. / self.0))
+    }
+
     /// Returns the value as a float.
     #[inline]
     pub fn value(&self) -> f32 {
-        self.0.to_float()
+        self.0
     }
 
     /// Computes the effective zoom for a given new zoom value in rhs.
@@ -389,7 +250,8 @@ impl Zoom {
     /// Returns the un-zoomed value.
     #[inline]
     pub fn unzoom(self, value: f32) -> f32 {
-        if self == Self::ONE {
+        // Avoid division by zero if our effective zoom computation ends up being zero.
+        if self == Self::ONE || self.0 == 0.0 {
             return value;
         }
         value / self.value()

@@ -25,6 +25,8 @@ return-to-amo-subtitle = Ben, xa ten o { -brand-short-name }
 return-to-amo-addon-title = Agora imos obter <img data-l10n-name="icon"/> <b>{ $addon-name }</b>.
 return-to-amo-add-extension-label = Engadir a extensión
 return-to-amo-add-theme-label = Engadir o tema
+return-to-amo-theme-install-complete-label = Tema instalado
+return-to-amo-extension-install-complete-label = Extensión instalada
 
 ##  Variables: $addon-name (String) - Name of the add-on to be installed
 
@@ -53,8 +55,6 @@ mr1-onboarding-import-primary-button-label-attribution = Importar desde { $previ
 mr1-onboarding-theme-header = Fágao seu
 mr1-onboarding-theme-subtitle = Personalice o { -brand-short-name } cun tema.
 mr1-onboarding-theme-secondary-button-label = Agora non
-newtab-wallpaper-onboarding-title = Probar un toque de cor
-newtab-wallpaper-onboarding-primary-button-label = Establecer fondo de pantalla
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Tema do sistema
 mr1-onboarding-theme-label-light = Claro
@@ -188,6 +188,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Manter { -brand-short-name } na doca
        *[other] Fixar { -brand-short-name } na barra de tarefas
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Fixar { -brand-short-name } na barra de tarefas e no menú de inicio
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -223,7 +225,9 @@ mr2022-onboarding-set-default-subtitle = Use un navegador apoiado por unha organ
 mr2022-onboarding-get-started-primary-subtitle = A nosa última versión está construída pensando en ti, polo que é máis fácil que nunca navegar pola web. Está chea de funcións que che encantarán.
 mr2022-onboarding-get-started-primary-button-label = Configurar en segundos
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Configuración ultrarrápida
 mr2022-onboarding-import-subtitle = Configura { -brand-short-name } como che guste. Engade os teus marcadores, contrasinais e moito máis desde o teu navegador anterior.
@@ -332,11 +336,13 @@ onboarding-device-migration-image-alt =
     .aria-label = Un raposo saudando na pantalla dun ordenador portátil. O portátil ten un rato conectado.
 onboarding-device-migration-title = Benvido de novo!
 onboarding-device-migration-subtitle = Inicie sesión no seu { -fxaccount-brand-name(capitalization: "sentence") } para recuperar os seus marcadores, contrasinais e historial consigo no seu novo dispositivo.
+onboarding-device-migration-subtitle2 = Inicia sesión na túa conta para levar contigo os teus marcadores, contrasinais e historial no teu novo dispositivo.
 onboarding-device-migration-primary-button-label = Acceder
 
 ## Add-ons Picker screen
 
 amo-picker-title = Personalizar o seu { -brand-short-name }
+amo-picker-subtitle = As extensións son como aplicacións para o teu navegador e permítenche protexer contrasinais, descargar vídeos, buscar ofertas, bloquear anuncios molestos, cambiar o aspecto do teu navegador e moito máis.
 amo-picker-install-button-label = Engadir a { -brand-short-name }
 amo-picker-install-complete-label = Instalado
 amo-picker-collection-link = Explore máis complementos
@@ -348,18 +354,140 @@ onboarding-easy-setup-security-and-privacy-title = Encántanos telo seguro
 onboarding-easy-setup-security-and-privacy-subtitle = O noso navegador sen ánimo de lucro axuda a evitar que as empresas o sigan en segredo pola web.
 # Mobile download screen
 onboarding-mobile-download-security-and-privacy-title = Manteña todo cifrado cando salte entre dispositivos
+onboarding-mobile-download-security-and-privacy-subtitle = Cando esteas sincronizado, { -brand-short-name } cifra os teus contrasinais, marcadores e moito máis. Ademais, podes traer pestanas dos teus outros dispositivos.
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } protéxeo
+onboarding-gratitude-security-and-privacy-subtitle = Grazas por usar { -brand-short-name }, apoiado pola Fundación Mozilla. Co teu apoio, traballamos para que Internet sexa máis seguro e accesible para todos.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Sincroniza os teus datos entre dispositivos
+onboarding-sign-up-description = Rexístrate para obter unha conta e toda a túa información importante (contrasinais, marcadores e moito máis) almacenarase de forma segura e estará dispoñible cando inicies sesión en calquera dispositivo.
+onboarding-sign-up-button = Rexístrate ou inicia sesión
+onboarding-sign-up-secondary-button = Iniciar a navegación
 
 ## New user time and familiarity survey strings
 
+onboarding-new-user-time-based-survey-title = Canto tempo levas usando { -brand-short-name }?
+onboarding-new-user-familiarity-based-survey-title = Como estás de familiarizado con { -brand-short-name }?
+onboarding-new-user-survey-subtitle = Os teus comentarios axudan a mellorar aínda máis { -brand-short-name }.
 # When translating "next" it means the next screen in onboarding.
 onboarding-new-user-survey-next-button-label = Seguinte
+onboarding-new-user-survey-legal-link-label = Ao seleccionar «{ onboarding-new-user-survey-next-button-label },» aceptas o <a data-l10n-name="privacy_notice">aviso de privacidade</a> de { -brand-product-name }
 # When translating "brand new" it means completely new.
 onboarding-new-user-survey-time-based-option-1 = Son novo
 onboarding-new-user-survey-time-based-option-2 = Menos de 1 mes
 onboarding-new-user-survey-time-based-option-3 = Máis de 1 mes, regularmente
+onboarding-new-user-survey-time-based-option-4 = Máis de 1 mes, ocasionalmente
 # When translating "brand new" it means completely new.
 onboarding-new-user-survey-familiarity-based-option-1 = Son novo
 onboarding-new-user-survey-familiarity-based-option-2 = Useino algo
 onboarding-new-user-survey-familiarity-based-option-3 = Estou moi familiarizado con iso
+onboarding-new-user-survey-familiarity-based-option-4 = Useino no pasado, pero hai un tempo
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Dinos onde queres as túas pestanas
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Cámbiao cando queiras na configuración da barra lateral.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = As túas pestanas, ao teu xeito
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Mantés moitas pestanas abertas? Proba a colocalas no lateral para obter unha vista máis sinxela. Ou mantén o estilo clásico con pestanas na parte superior. Cambia en calquera momento.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Escolle o deseño das túas pestanas
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Para unha vista simplificada que che axude a manterte concentrado, proba as túas pestanas laterais. Ou mantén o estilo clásico con pestanas na parte superior. Cambia en calquera momento.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Pestanas na parte lateral
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Pestanas na parte superior
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = As pestanas verticais están aquí
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Presentamos as pestanas verticais
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Proba as túas pestanas no lateral. Cámbiao cando queiras na configuración da barra lateral.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Proba as pestanas verticais
+onboarding-flair-text = Novo!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Manter as pestanas horizontais
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Unha ventá do navegador que mostra pestanas ao longo do lateral da pantalla como parte da barra lateral de { -brand-shorter-name }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Unha ventá do navegador que mostra pestanas ao longo do lateral da pantalla como parte da barra lateral de { -brand-shorter-name }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Unha ventá do navegador que mostra pestanas na parte superior.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Unha ventá do navegador que mostra pestanas na parte superior.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Proba un chatbot de IA na barra lateral
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Resume o contido web, xera unha tormenta de ideas, redacta borradores de mensaxes, todo mentres navegas. Escolle entre varios provedores. Cámbiaos en calquera momento. <a data-l10n-name="learn-more">Máis información</a>
+onboarding-genai-sidebar-primary-button = Escoller un chatbot
+onboarding-genai-sidebar-secondary-button = Iniciar a navegación
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Rematar de configurar { -brand-short-name }
+onboarding-checklist-subtitle = Completa estes pasos para sacar o máximo proveito á túa experiencia de navegación.
+onboarding-checklist-set-default = Establece { -brand-short-name } como navegador predeterminado
+onboarding-checklist-pin = Fixar { -brand-short-name } na barra de tarefas
+onboarding-checklist-import = Importar desde un navegador anterior
+onboarding-checklist-extension = Engadir unha extensión
+onboarding-checklist-sign-up = Rexístrate ou inicia sesión na túa conta
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Proba os grupos de pestanas para ter menos desorde e máis concentración
+tab-groups-onboarding-feature-callout-subtitle = Organízate arrastrando unha pestana enriba doutra para crear o teu primeiro grupo.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-create-group-title-3 = Busca os teus grupos de pestanas no menú «Listar todas as pestanas» en calquera momento.
+tab-groups-onboarding-create-group-title-2 = Atopa aquí os teus grupos de pestanas en calquera momento.
+tab-groups-onboarding-create-group-no-alltabs-button-title = Atopa os teus grupos buscándoos na barra de enderezos.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-saved-groups-title-3 = Cando pechas un grupo de pestanas, ábreo de novo desde o menú «Listar todas as pestanas» en calquera momento.
+tab-groups-onboarding-saved-groups-title-2 = Cando pechas un grupo de pestanas, podes reabrilo aquí en calquera momento.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title-2 = Atopa os teus grupos pechados buscándoos na barra de enderezos.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-session-restore-title-2 = Volve abrir os teus grupos de pestanas desde o menú «Listar todas as pestanas» en calquera momento.
+tab-groups-onboarding-session-restore-title = Volver abrir aquí os teus grupos de pestanas en calquera momento.
+tab-groups-onboarding-dismiss = Aceptar
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Saluda aos perfís de { -brand-product-name }
+multi-profile-spotlight-body = Cambia facilmente entre a navegación por traballo e diversión. Os perfís manteñen a túa información de navegación, incluído o historial de busca e os contrasinais, totalmente separados para que poidas manterte organizado.
+multi-profile-spotlight-cta = Crear un perfil
+multi-profile-callout-title = Crear diferentes perfís para traballo e diversión
+multi-profile-callout-subtitle = Os perfís permítenche manter a túa información de navegación, como o historial de busca e os contrasinais, totalmente separados.
+multi-profile-callout-cta = Crear un perfil
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Descargar, sincronizar e listo!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Escanea o código QR para descargar { -brand-product-name } para móbiles. Unha vez instalado, selecciona «Sincronizar co móbil» para acceder aos teus contrasinais, marcadores e moito máis en calquera lugar.
+dismiss-button-label = Rexeitar
+sync-to-mobile-button-label = Sincronizar co móbil
+desktop-to-mobile-qr-code-alt =
+    .aria-label = Código QR para descargar { -brand-product-name } para móbiles
+
+## Restore from Backup Flow about:welcome screens
+
+restore-from-backup-secondary-top-button = Restaurar desde a copia de seguranza
+restore-from-backup-secondary-button = Non restaurar
+
+## Restored from Backup spotlight
+
+restored-from-backup-success-title = Xa estamos de volta! Os teus datos de { -brand-short-name } restauráronse.
+restored-from-backup-success-with-checklist-primary-button = Gardar e continuar
+restored-from-backup-success-with-checklist-secondary-button = Ignorar este paso
+restored-from-backup-success-no-checklist-primary-button = Continuar
+restored-from-backup-error-title = Hmm, houbo un problema co ficheiro de copia de seguranza.
+restored-from-backup-error-primary-button = Pechar

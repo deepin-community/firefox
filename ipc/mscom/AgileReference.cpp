@@ -6,36 +6,8 @@
 
 #include "mozilla/mscom/AgileReference.h"
 
-#include <utility>
 #include "mozilla/Assertions.h"
 #include "mozilla/mscom/Utils.h"
-
-#if defined(__MINGW32__)
-
-// Declarations from Windows SDK specific to Windows 8.1
-
-enum AgileReferenceOptions {
-  AGILEREFERENCE_DEFAULT = 0,
-  AGILEREFERENCE_DELAYEDMARSHAL = 1,
-};
-
-HRESULT WINAPI RoGetAgileReference(AgileReferenceOptions options, REFIID riid,
-                                   IUnknown* pUnk,
-                                   IAgileReference** ppAgileReference);
-
-// Unfortunately, at time of writing, MinGW doesn't know how to statically link
-// to RoGetAgileReference. On these builds only, we substitute a runtime-linked
-// function pointer.
-
-#  include "mozilla/DynamicallyLinkedFunctionPtr.h"
-
-static const mozilla::StaticDynamicallyLinkedFunctionPtr<
-    decltype(&::RoGetAgileReference)>
-    pRoGetAgileReference(L"ole32.dll", "RoGetAgileReference");
-
-#  define RoGetAgileReference pRoGetAgileReference
-
-#endif  // defined(__MINGW32__)
 
 namespace mozilla::mscom::detail {
 

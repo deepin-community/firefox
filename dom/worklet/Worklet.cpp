@@ -5,8 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "Worklet.h"
-#include "WorkletThread.h"
 
+#include "WorkletThread.h"
 #include "mozilla/dom/WorkletFetchHandler.h"
 #include "mozilla/dom/WorkletImpl.h"
 #include "xpcprivate.h"
@@ -67,7 +67,7 @@ static bool LoadLocalizedStrings(nsTArray<nsString>& aStrings) {
                            ResolveError::InvalidBareSpecifier};
 
   static_assert(
-      ArrayLength(errors) == static_cast<size_t>(ResolveError::Length),
+      std::size(errors) == static_cast<size_t>(ResolveError::Length),
       "The array 'errors' has missing entries in the enum class ResolveError.");
 
   for (auto i : errors) {

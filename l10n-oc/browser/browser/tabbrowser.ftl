@@ -162,6 +162,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
     .label = Listar los { $tabCount } onglets
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = Rendre l'onglet mut
@@ -169,3 +172,80 @@ tabbrowser-manager-unmute-tab =
     .tooltiptext = Restablir lo son de l’onglets
 tabbrowser-manager-close-tab =
     .tooltiptext = Tampar l’onglet
+
+##
+
+tab-group-editor-title-create = Crear un grop d’onglets
+tab-group-editor-title-edit = Gerir lo grop d’onglets
+tab-group-editor-name-label = Nom
+tab-group-editor-name-field =
+    .placeholder = Exemple : crompas
+tab-group-editor-cancel =
+    .label = Anullar
+    .accesskey = A
+tab-group-editor-color-selector2-blue = Blau
+    .title = Blau
+tab-group-editor-color-selector2-purple = Violet
+    .title = Violet
+tab-group-editor-color-selector2-cyan = Cian
+    .title = Cian
+tab-group-editor-color-selector2-yellow = Jaune
+    .title = Jaune
+tab-group-editor-color-selector2-pink = Ròse
+    .title = Ròse
+tab-group-editor-color-selector2-green = Verd
+    .title = Verd
+tab-group-editor-color-selector2-gray = Gris
+    .title = Gris
+tab-group-editor-color-selector2-red = Roge
+    .title = Roge
+tab-group-label-tooltip-expanded = { $tabGroupName } — Espandit
+tab-context-unnamed-group =
+    .label = Grop sens nom
+tab-group-name-default = Grop sens nom
+
+##
+
+tab-context-move-tab-to-new-group =
+    .label =
+        { $tabCount ->
+            [1] Apondre l’onglet a un grop novèl
+            [one] Apondre l’onglet a un grop novèl
+           *[other] Apondre los onglets a un grop novèl
+        }
+    .accesskey = A
+tab-context-move-tab-to-group =
+    .label =
+        { $tabCount ->
+            [1] Apondre l’onglet a un grop
+            [one] Apondre l’onglet a un grop
+           *[other] Apondre los onglets a un grop
+        }
+    .accesskey = A
+tab-context-move-tab-to-group-saved-groups =
+    .label = Grops tampats
+tab-group-editor-action-new-tab =
+    .label = Onglet novèl dins lo grop
+tab-group-editor-action-new-window =
+    .label = Desplaçar lo grop cap a una fenèstra novèla
+tab-group-editor-action-save =
+    .label = Enregistrar e tampar lo grop
+tab-group-editor-action-ungroup =
+    .label = Dissociar los onglets
+tab-group-editor-action-delete =
+    .label = Suprimir lo grop
+tab-group-editor-done =
+    .label = Acabat
+    .accessKey = A
+tab-context-reopen-tab-group =
+    .label = Tornar dobrir lo grop d’onglets
+# Variables:
+#  $groupCount (Number): the number of tab groups that are affected by the action.
+tab-context-ungroup-tab =
+    .label =
+        { $groupCount ->
+            [1] Tirar del grop
+            [one] Tirar del grop
+           *[other] Tirar del grop
+        }
+    .accesskey = T

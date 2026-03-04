@@ -2,12 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// This file is loaded into the browser window scope.
-/* eslint-env mozilla/browser-window */
-
 ChromeUtils.defineESModuleGetters(this, {
   BrowserUsageTelemetry: "resource:///modules/BrowserUsageTelemetry.sys.mjs",
-  TabsPanel: "resource:///modules/TabsList.sys.mjs",
+  GroupsPanel: "moz-src:///browser/components/tabbrowser/GroupsList.sys.mjs",
+  NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
+  TabsPanel: "moz-src:///browser/components/tabbrowser/TabsList.sys.mjs",
 });
 
 var gTabsPanel = {
@@ -19,6 +18,10 @@ var gTabsPanel = {
     containerTabsView: "allTabsMenu-containerTabsView",
     hiddenTabsButton: "allTabsMenu-hiddenTabsButton",
     hiddenTabsView: "allTabsMenu-hiddenTabsView",
+    hiddenTabsViewTabs: "allTabsMenu-hiddenTabsView-tabs",
+    hiddenAudioTabs: "allTabsMenu-allTabsView-hiddenAudio-tabs",
+    groupsView: "allTabsMenu-groupsView",
+    groupsSubView: "allTabsMenu-groupsSubView",
   },
   _initialized: false,
   _initializedElements: false,
@@ -37,14 +40,10 @@ var gTabsPanel = {
   },
 
   hasHiddenTabsExcludingFxView() {
-    const hiddenTabCount = gBrowser.tabs.length - gBrowser.visibleTabs.length;
-
-    // If there's only 1 hidden tab, check if it's Firefox View to exclude it.
-    // See Bug 1880138.
-    if (hiddenTabCount == 1) {
-      return !FirefoxViewHandler.tab?.hidden;
-    }
-    return hiddenTabCount > 0;
+    // Exclude Firefox View, see Bug 1880138.
+    return gBrowser.tabs.some(
+      tab => tab.hidden && tab != FirefoxViewHandler.tab
+    );
   },
 
   init() {
@@ -56,14 +55,25 @@ var gTabsPanel = {
 
     this.hiddenAudioTabsPopup = new TabsPanel({
       view: this.allTabsView,
-      insertBefore: document.getElementById("allTabsMenu-tabsSeparator"),
-      filterFn: tab => tab.hidden && tab.soundPlaying,
+      containerNode: this.hiddenAudioTabs,
+      filterFn: tab => tab.soundPlaying,
+      onlyHiddenTabs: true,
     });
     this.allTabsPanel = new TabsPanel({
       view: this.allTabsView,
       containerNode: this.allTabsViewTabs,
       filterFn: tab => !tab.hidden,
       dropIndicator: this.dropIndicator,
+      onlyHiddenTabs: false,
+    });
+    this.groupsPanel = new GroupsPanel({
+      view: this.allTabsView,
+      containerNode: this.groupsView,
+    });
+    this.showAllGroupsPanel = new GroupsPanel({
+      view: this.groupsSubView,
+      containerNode: document.getElementById("allTabsMenu-groupsSubView-body"),
+      showAll: true,
     });
 
     this.allTabsView.addEventListener("ViewShowing", () => {
@@ -90,6 +100,10 @@ var gTabsPanel = {
       closeDuplicateTabsItem.hidden = !closeDuplicateEnabled;
       closeDuplicateTabsItem.disabled =
         !closeDuplicateEnabled || !gBrowser.getAllDuplicateTabsToClose().length;
+
+      let syncedTabs = document.getElementById("allTabsMenu-syncedTabs");
+      syncedTabs.hidden =
+        !PlacesUIUtils.shouldShowTabsFromOtherComputersMenuitem();
     });
 
     this.allTabsView.addEventListener("ViewShown", () =>
@@ -103,9 +117,13 @@ var gTabsPanel = {
       let { PanelUI } = target.ownerGlobal;
       switch (target.id) {
         case "allTabsMenu-searchTabs":
+          Glean.browserUiInteraction.listAllTabsAction.search_tabs.add(1);
           this.searchTabs();
           break;
         case "allTabsMenu-closeDuplicateTabs":
+          Glean.browserUiInteraction.listAllTabsAction.close_all_duplicates.add(
+            1
+          );
           gBrowser.removeAllDuplicateTabs();
           break;
         case "allTabsMenu-containerTabsButton":
@@ -113,6 +131,13 @@ var gTabsPanel = {
           break;
         case "allTabsMenu-hiddenTabsButton":
           PanelUI.showSubView(this.kElements.hiddenTabsView, target);
+          break;
+        case "allTabsMenu-syncedTabs":
+          Glean.browserUiInteraction.listAllTabsAction.tabs_from_devices.add(1);
+          SidebarController.show("viewTabsSidebar");
+          break;
+        case "allTabsMenu-groupsViewShowMore":
+          PanelUI.showSubView(this.kElements.groupsSubView, target);
           break;
       }
     });
@@ -161,7 +186,9 @@ var gTabsPanel = {
 
     this.hiddenTabsPopup = new TabsPanel({
       view: this.hiddenTabsView,
-      filterFn: tab => tab.hidden && tab != FirefoxViewHandler.tab,
+      containerNode: this.hiddenTabsViewTabs,
+      filterFn: tab => tab != FirefoxViewHandler.tab,
+      onlyHiddenTabs: true,
     });
 
     this._initialized = true;
@@ -181,11 +208,7 @@ var gTabsPanel = {
     }
     this.init();
     if (this.canOpen) {
-      Services.telemetry.keyedScalarAdd(
-        "browser.ui.interaction.all_tabs_panel_entrypoint",
-        entrypoint,
-        1
-      );
+      Glean.browserUiInteraction.allTabsPanelEntrypoint[entrypoint].add(1);
       BrowserUsageTelemetry.recordInteractionEvent(
         entrypoint,
         "all-tabs-panel-entrypoint"
@@ -199,8 +222,9 @@ var gTabsPanel = {
   },
 
   hideAllTabsPanel() {
-    if (this.allTabsView) {
-      PanelMultiView.hidePopup(this.allTabsView.closest("panel"));
+    let panel = this.allTabsView?.closest("panel");
+    if (panel) {
+      PanelMultiView.hidePopup(panel);
     }
   },
 

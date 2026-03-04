@@ -8,42 +8,31 @@
 #define mozilla_dom_page_load_event_utils_h__
 
 #include "ipc/IPCMessageUtils.h"
-#include "mozilla/glean/GleanMetrics.h"
+#include "mozilla/PageloadEvent.h"
 
 namespace IPC {
 
+// Helper functions for serializing the parts of PageLoadExtra that come from
+// the content process before we send it over to the parent process.
 template <>
-struct ParamTraits<mozilla::glean::perf::PageLoadExtra> {
-  typedef mozilla::glean::perf::PageLoadExtra paramType;
+struct ParamTraits<mozilla::performance::pageload_event::PageloadEventData> {
+  typedef mozilla::performance::pageload_event::PageloadEventData paramType;
 
   static void Write(MessageWriter* aWriter, const paramType& aParam) {
-    WriteParam(aWriter, aParam.fcpTime);
-    WriteParam(aWriter, aParam.lcpTime);
-    WriteParam(aWriter, aParam.jsExecTime);
-    WriteParam(aWriter, aParam.loadTime);
-    WriteParam(aWriter, aParam.loadType);
-    WriteParam(aWriter, aParam.responseTime);
-    WriteParam(aWriter, aParam.httpVer);
-    WriteParam(aWriter, aParam.redirectCount);
-    WriteParam(aWriter, aParam.redirectTime);
-    WriteParam(aWriter, aParam.sameOriginNav);
-    WriteParam(aWriter, aParam.trrDomain);
-    WriteParam(aWriter, aParam.dnsLookupTime);
+#define WRITE_METRIC_PARAM(name, type) WriteParam(aWriter, aParam.name);
+    FOR_EACH_PAGELOAD_METRIC(WRITE_METRIC_PARAM)
+#undef WRITE_METRIC_PARAM
+    WriteParam(aWriter, aParam.mDomain);
   }
 
   static bool Read(MessageReader* aReader, paramType* aResult) {
-    return ReadParam(aReader, &aResult->fcpTime) &&
-           ReadParam(aReader, &aResult->lcpTime) &&
-           ReadParam(aReader, &aResult->jsExecTime) &&
-           ReadParam(aReader, &aResult->loadTime) &&
-           ReadParam(aReader, &aResult->loadType) &&
-           ReadParam(aReader, &aResult->responseTime) &&
-           ReadParam(aReader, &aResult->httpVer) &&
-           ReadParam(aReader, &aResult->redirectCount) &&
-           ReadParam(aReader, &aResult->redirectTime) &&
-           ReadParam(aReader, &aResult->sameOriginNav) &&
-           ReadParam(aReader, &aResult->trrDomain) &&
-           ReadParam(aReader, &aResult->dnsLookupTime);
+    bool ok = true;
+#define READ_METRIC_PARAM(name, type) \
+  ok = ok && ReadParam(aReader, &aResult->name);
+    FOR_EACH_PAGELOAD_METRIC(READ_METRIC_PARAM)
+#undef READ_METRIC_PARAM
+    ok = ok && ReadParam(aReader, &aResult->mDomain);
+    return ok;
   }
 };
 

@@ -4,7 +4,10 @@
 
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
+  PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
   SyncedTabsController: "resource:///modules/SyncedTabsController.sys.mjs",
+  SidebarTreeView:
+    "moz-src:///browser/components/sidebar/SidebarTreeView.sys.mjs",
 });
 
 import {
@@ -24,45 +27,101 @@ class SyncedTabsInSidebar extends SidebarPage {
 
   static queries = {
     cards: { all: "moz-card" },
+    lists: { all: "sidebar-tab-list" },
+    searchTextbox: "moz-input-search",
   };
 
   constructor() {
     super();
     this.onSearchQuery = this.onSearchQuery.bind(this);
+    this.onSecondaryAction = this.onSecondaryAction.bind(this);
+    this.treeView = new lazy.SidebarTreeView(this, { multiSelect: false });
   }
 
   connectedCallback() {
     super.connectedCallback();
     this.controller.addSyncObservers();
-    this.controller.updateStates();
+    this.controller.updateStates().then(() =>
+      Glean.syncedTabs.sidebarToggle.record({
+        opened: true,
+        synced_tabs_loaded: this.controller.isSyncedTabsLoaded,
+        version: "new",
+      })
+    );
     this.addContextMenuListeners();
+    this.addSidebarFocusedListeners();
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     this.controller.removeSyncObservers();
+    Glean.syncedTabs.sidebarToggle.record({
+      opened: false,
+      synced_tabs_loaded: this.controller.isSyncedTabsLoaded,
+      version: "new",
+    });
     this.removeContextMenuListeners();
+    this.removeSidebarFocusedListeners();
   }
 
   handleContextMenuEvent(e) {
-    this.triggerNode = this.findTriggerNode(e, "fxview-tab-row");
+    this.triggerNode =
+      this.findTriggerNode(e, "sidebar-tab-row") ||
+      this.findTriggerNode(e, "moz-input-search");
     if (!this.triggerNode) {
       e.preventDefault();
+      return;
     }
+    const contextMenu = this._contextMenu;
+    const closeTabMenuItem = contextMenu.querySelector(
+      "#sidebar-context-menu-close-remote-tab"
+    );
+    closeTabMenuItem.setAttribute(
+      "data-l10n-args",
+      this.triggerNode.secondaryL10nArgs
+    );
+    // Enable the feature only if the device supports it
+    closeTabMenuItem.disabled = !this.triggerNode.canClose;
+
+    let privateWindowMenuItem = contextMenu.querySelector(
+      "#sidebar-synced-tabs-context-open-in-private-window"
+    );
+    privateWindowMenuItem.hidden = !lazy.PrivateBrowsingUtils.enabled;
   }
 
   handleCommandEvent(e) {
     switch (e.target.id) {
-      case "sidebar-synced-tabs-context-bookmark-tab":
-        this.topWindow.PlacesCommandHook.bookmarkLink(
+      case "sidebar-context-menu-close-remote-tab":
+        this.requestOrRemoveTabToClose(
           this.triggerNode.url,
-          this.triggerNode.title
+          this.triggerNode.fxaDeviceId,
+          this.triggerNode.secondaryActionClass
         );
         break;
       default:
         super.handleCommandEvent(e);
         break;
     }
+  }
+
+  handleSidebarFocusedEvent() {
+    this.searchTextbox?.focus();
+  }
+
+  onSecondaryAction(e) {
+    const { url, fxaDeviceId, secondaryActionClass } = e.originalTarget;
+    this.requestOrRemoveTabToClose(url, fxaDeviceId, secondaryActionClass);
+  }
+
+  requestOrRemoveTabToClose(url, fxaDeviceId, secondaryActionClass) {
+    if (secondaryActionClass === "dismiss-button") {
+      // Set new pending close tab
+      this.controller.requestCloseRemoteTab(fxaDeviceId, url);
+    } else if (secondaryActionClass === "undo-button") {
+      // User wants to undo
+      this.controller.removePendingTabToClose(fxaDeviceId, url);
+    }
+    this.requestUpdate();
   }
 
   /**
@@ -74,9 +133,7 @@ class SyncedTabsInSidebar extends SidebarPage {
    * @param {string} options.buttonLabel
    * @param {string[]} options.descriptionArray
    * @param {string} options.descriptionLink
-   * @param {boolean} options.error
    * @param {string} options.header
-   * @param {string} options.headerIconUrl
    * @param {string} options.mainImageUrl
    * @returns {TemplateResult}
    */
@@ -85,9 +142,7 @@ class SyncedTabsInSidebar extends SidebarPage {
     buttonLabel,
     descriptionArray,
     descriptionLink,
-    error,
     header,
-    headerIconUrl,
     mainImageUrl,
   }) {
     return html`
@@ -97,19 +152,17 @@ class SyncedTabsInSidebar extends SidebarPage {
         .descriptionLink=${ifDefined(descriptionLink)}
         class="empty-state synced-tabs error"
         isSelectedTab
-        mainImageUrl="${ifDefined(mainImageUrl)}"
-        ?errorGrayscale=${error}
-        headerIconUrl="${ifDefined(headerIconUrl)}"
+        mainImageUrl=${ifDefined(mainImageUrl)}
         id="empty-container"
       >
-        <button
-          class="primary"
+        <moz-button
+          type="primary"
           slot="primary-action"
           ?hidden=${!buttonLabel}
-          data-l10n-id="${ifDefined(buttonLabel)}"
-          data-action="${action}"
+          data-l10n-id=${ifDefined(buttonLabel)}
+          data-action=${action}
           @click=${e => this.controller.handleEvent(e)}
-        ></button>
+        ></moz-button>
       </fxview-empty-state>
     `;
   }
@@ -127,16 +180,20 @@ class SyncedTabsInSidebar extends SidebarPage {
       type="accordion"
       expanded
       .heading=${deviceName}
-      icon
+      .iconSrc=${this.getDeviceIconSrc(deviceType)}
       class=${deviceType}
+      @keydown=${e => this.treeView.handleCardKeydown(e)}
     >
-      <fxview-tab-list
+      <sidebar-tab-list
         compactRows
-        .tabItems=${ifDefined(tabItems)}
+        maxTabsLength="-1"
+        .tabItems=${tabItems}
+        .multiSelect=${false}
         .updatesPaused=${false}
         .searchQuery=${this.controller.searchQuery}
         @fxview-tab-list-primary-action=${navigateToLink}
-      />
+        @fxview-tab-list-secondary-action=${this.onSecondaryAction}
+      ></sidebar-tab-list>
     </moz-card>`;
   }
 
@@ -150,7 +207,7 @@ class SyncedTabsInSidebar extends SidebarPage {
   noDeviceTabsTemplate(deviceName, deviceType) {
     return html`<moz-card
       .heading=${deviceName}
-      icon
+      .iconSrc=${this.getDeviceIconSrc(deviceType)}
       class=${deviceType}
       data-l10n-id="firefoxview-syncedtabs-device-notabs"
     >
@@ -168,7 +225,7 @@ class SyncedTabsInSidebar extends SidebarPage {
   noSearchResultsTemplate(deviceName, deviceType) {
     return html`<moz-card
       .heading=${deviceName}
-      icon
+      .iconSrc=${this.getDeviceIconSrc(deviceType)}
       class=${deviceType}
       data-l10n-id="firefoxview-search-results-empty"
       data-l10n-args=${JSON.stringify({
@@ -185,15 +242,78 @@ class SyncedTabsInSidebar extends SidebarPage {
    */
   deviceListTemplate() {
     return Object.values(this.controller.getRenderInfo()).map(
-      ({ name: deviceName, deviceType, tabItems, tabs }) => {
+      ({ name: deviceName, deviceType, tabItems, canClose, tabs }) => {
         if (tabItems.length) {
-          return this.deviceTemplate(deviceName, deviceType, tabItems);
+          return this.deviceTemplate(
+            deviceName,
+            deviceType,
+            this.getTabItems(tabItems, deviceName, canClose)
+          );
         } else if (tabs.length) {
           return this.noSearchResultsTemplate(deviceName, deviceType);
         }
         return this.noDeviceTabsTemplate(deviceName, deviceType);
       }
     );
+  }
+
+  getTabItems(items, deviceName, canClose) {
+    return items
+      .map(item => {
+        // We always show the option to close remotely on right-click but
+        // disable it if the device doesn't support actually closing it
+        let secondaryL10nId = "synced-tabs-context-close-tab-title";
+        let secondaryL10nArgs = JSON.stringify({ deviceName });
+        if (!canClose) {
+          return {
+            ...item,
+            canClose,
+            secondaryL10nId,
+            secondaryL10nArgs,
+          };
+        }
+
+        // Default show the close/dismiss button
+        let secondaryActionClass = "dismiss-button";
+        item.closeRequested = false;
+
+        // If this item has been requested to be closed, show
+        // the undo instead
+        if (item.url === this.controller.lastClosedURL) {
+          secondaryActionClass = "undo-button";
+          secondaryL10nId = "text-action-undo";
+          secondaryL10nArgs = null;
+          item.closeRequested = true;
+        }
+
+        return {
+          ...item,
+          canClose,
+          secondaryActionClass,
+          secondaryL10nId,
+          secondaryL10nArgs,
+        };
+      })
+      .filter(
+        item =>
+          !this.controller.isURLQueuedToClose(item.fxaDeviceId, item.url) ||
+          item.url === this.controller.lastClosedURL
+      );
+  }
+
+  getDeviceIconSrc(deviceType) {
+    const phone = "chrome://browser/skin/device-phone.svg";
+    const desktop = "chrome://browser/skin/device-desktop.svg";
+    const tablet = "chrome://browser/skin/device-tablet.svg";
+
+    const deviceIcons = {
+      desktop,
+      mobile: phone,
+      phone,
+      tablet,
+    };
+
+    return deviceIcons[deviceType] || null;
   }
 
   render() {
@@ -206,19 +326,19 @@ class SyncedTabsInSidebar extends SidebarPage {
           data-l10n-attrs="heading"
           view="viewTabsSidebar"
         >
+          <moz-input-search
+            data-l10n-id="firefoxview-search-text-box-tabs"
+            data-l10n-attrs="placeholder"
+            @MozInputSearch:search=${this.onSearchQuery}
+          ></moz-input-search>
         </sidebar-panel-header>
-        <fxview-search-textbox
-          autofocus
-          data-l10n-id="firefoxview-search-text-box-syncedtabs"
-          data-l10n-attrs="placeholder"
-          @fxview-search-textbox-query=${this.onSearchQuery}
-          size="15"
-        ></fxview-search-textbox>
-        ${when(
-          messageCard,
-          () => this.messageCardTemplate(messageCard),
-          () => html`${this.deviceListTemplate()}`
-        )}
+        <div class="sidebar-panel-scrollable-content">
+          ${when(
+            messageCard,
+            () => this.messageCardTemplate(messageCard),
+            () => html`${this.deviceListTemplate()}`
+          )}
+        </div>
       </div>
     `;
   }

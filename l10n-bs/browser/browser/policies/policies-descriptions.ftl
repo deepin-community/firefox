@@ -130,6 +130,8 @@ policy-SearchSuggestEnabled = Omogućite ili onemogućite prijedloge za pretraž
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = Dodajte ili izbrišite PKCS #11 module.
 policy-ShowHomeButton = Prikaži početno dugme na traci sa alatima.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = Ne prikazujte Uslove korištenja i Policu privatnosti prilikom pokretanja. Izjavljujete da prihvatate i imate ovlaštenje da prihvatite Uslove korištenja u ime svih osoba kojima omogućavate pristup ovom pregledniku.
 policy-SSLVersionMax = Postavite maksimalnu SSL verziju.
 policy-SSLVersionMin = Postavite minimalnu SSL verziju.
 policy-StartDownloadsInTempDirectory = Natjerajte preuzimanja da počnu na lokalnoj, privremenoj lokaciji umjesto na zadanom direktoriju za preuzimanje.
@@ -140,3 +142,5 @@ policy-UseSystemPrintDialog = Štampajte pomoću sistemskog dijaloga za štampan
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Blokirajte posjećivanje web stranica. Pogledajte dokumentaciju za više detalja o formatu.
 policy-Windows10SSO = Dozvolite Windows jednokratnu prijavu za Microsoft, poslovne i školske račune.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Dozvolite jedinstvenu prijavu za Microsoft Entra račune.

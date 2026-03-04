@@ -19,7 +19,6 @@ enum MozContentPolicyType {
   "script",
   "image",
   "object",
-  "object_subrequest",
   "xmlhttprequest",
   "xslt",
   "ping",
@@ -32,6 +31,7 @@ enum MozContentPolicyType {
   "imageset",
   "web_manifest",
   "speculative",
+  "json",
   "other"
 };
 
@@ -56,7 +56,9 @@ enum MozUrlClassificationFlags {
   "socialtracking_twitter",
   "any_basic_tracking",
   "any_strict_tracking",
-  "any_social_tracking"
+  "any_social_tracking",
+  "consentmanager",
+  "antifraud"
 };
 
 /**

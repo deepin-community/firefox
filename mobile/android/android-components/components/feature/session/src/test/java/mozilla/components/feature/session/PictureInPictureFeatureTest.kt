@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import mozilla.components.browser.state.action.ContentAction
+import mozilla.components.browser.state.selector.selectedTab
 import mozilla.components.browser.state.state.BrowserState
 import mozilla.components.browser.state.state.MediaSessionState
 import mozilla.components.browser.state.state.SessionState
@@ -47,24 +48,8 @@ class PictureInPictureFeatureTest {
     }
 
     @Test
-    @Config(sdk = [Build.VERSION_CODES.M])
-    fun `on home pressed without system feature on android m and lower`() {
-        val store = mock<BrowserStore>()
-        whenever(activity.packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE))
-            .thenReturn(false)
-
-        val pictureInPictureFeature =
-            spy(PictureInPictureFeature(store, activity, crashReporting))
-
-        assertFalse(pictureInPictureFeature.onHomePressed())
-        verifyNoInteractions(store)
-        verifyNoInteractions(activity.packageManager)
-        verify(pictureInPictureFeature, never()).enterPipModeCompat()
-    }
-
-    @Test
-    @Config(sdk = [Build.VERSION_CODES.N])
-    fun `on home pressed without system feature on android n and above`() {
+    @Config(sdk = [Build.VERSION_CODES.O])
+    fun `on home pressed without system feature`() {
         val store = mock<BrowserStore>()
         whenever(activity.packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE))
             .thenReturn(false)
@@ -211,15 +196,6 @@ class PictureInPictureFeatureTest {
     }
 
     @Test
-    @Config(sdk = [Build.VERSION_CODES.M])
-    fun `enter pip mode compat on android m and below`() {
-        val store = mock<BrowserStore>()
-        val pictureInPictureFeature = PictureInPictureFeature(store, activity, crashReporting)
-
-        assertFalse(pictureInPictureFeature.enterPipModeCompat())
-    }
-
-    @Test
     @Config(sdk = [Build.VERSION_CODES.O])
     fun `enter pip mode compat without system feature on android o`() {
         whenever(activity.packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE))
@@ -274,18 +250,12 @@ class PictureInPictureFeatureTest {
     }
 
     @Test
-    @Config(sdk = [Build.VERSION_CODES.N])
-    fun `enter pip mode compat on android n and above`() {
-        val pictureInPictureFeature =
-            PictureInPictureFeature(mock(), activity, crashReporting)
-
-        assertTrue(pictureInPictureFeature.enterPipModeCompat())
-        verifyDeprecatedPictureInPictureMode(activity)
-    }
-
-    @Test
     fun `on pip mode changed`() {
         val store = mock<BrowserStore>()
+        val browserState = mock<BrowserState>().apply {
+            whenever(selectedTab).thenReturn(null)
+        }
+        whenever(store.state).thenReturn(browserState)
         val pipFeature = PictureInPictureFeature(
             store,
             activity,

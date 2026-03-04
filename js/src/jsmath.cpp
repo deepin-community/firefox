@@ -24,13 +24,16 @@
 
 #include "jit/InlinableNatives.h"
 #include "js/Class.h"
+#include "js/ForOfIterator.h"
 #include "js/Prefs.h"
 #include "js/PropertySpec.h"
 #include "util/DifferentialTesting.h"
 #include "vm/Float16.h"
+#include "vm/Interpreter.h"
 #include "vm/JSContext.h"
 #include "vm/Realm.h"
 #include "vm/Time.h"
+#include "xsum/xsum.h"
 
 #include "vm/JSObject-inl.h"
 
@@ -57,6 +60,17 @@ static inline bool UseFdlibmForSinCosTan(const CallArgs& args) {
   return math_use_fdlibm_for_sin_cos_tan() ||
          args.callee().nonCCWRealm()->creationOptions().alwaysUseFdlibm();
 }
+
+// Stack alignment on x86 Windows is 4 byte. Align to 16 bytes when calling
+// rounding functions with double parameters.
+//
+// See |ABIStackAlignment| in "js/src/jit/x86/Assembler-x86.h".
+#if defined(JS_CODEGEN_X86) && (!defined(__GNUC__) || defined(__MINGW32__))
+#  define ALIGN_STACK_FOR_ROUNDING_FUNCTION \
+    __attribute__((force_align_arg_pointer))
+#else
+#  define ALIGN_STACK_FOR_ROUNDING_FUNCTION
+#endif
 
 template <UnaryMathFunctionType F>
 static bool math_function(JSContext* cx, CallArgs& args) {
@@ -152,9 +166,10 @@ static bool math_atan2(JSContext* cx, unsigned argc, Value* vp) {
   return true;
 }
 
+ALIGN_STACK_FOR_ROUNDING_FUNCTION
 double js::math_ceil_impl(double x) {
   AutoUnsafeCallWithABI unsafe;
-  return fdlibm_ceil(x);
+  return std::ceil(x);
 }
 
 static bool math_ceil(JSContext* cx, unsigned argc, Value* vp) {
@@ -225,9 +240,10 @@ static bool math_exp(JSContext* cx, unsigned argc, Value* vp) {
   return math_function<math_exp_impl>(cx, args);
 }
 
+ALIGN_STACK_FOR_ROUNDING_FUNCTION
 double js::math_floor_impl(double x) {
   AutoUnsafeCallWithABI unsafe;
-  return fdlibm_floor(x);
+  return std::floor(x);
 }
 
 bool js::math_floor(JSContext* cx, unsigned argc, Value* vp) {
@@ -577,40 +593,25 @@ T js::GetBiggestNumberLessThan(T x) {
 template double js::GetBiggestNumberLessThan<>(double x);
 template float js::GetBiggestNumberLessThan<>(float x);
 
+ALIGN_STACK_FOR_ROUNDING_FUNCTION
 double js::math_round_impl(double x) {
   AutoUnsafeCallWithABI unsafe;
 
-  int32_t ignored;
-  if (NumberEqualsInt32(x, &ignored)) {
-    return x;
+  double result = std::ceil(x);
+  if (x < result - 0.5) {
+    result -= 1.0;
   }
-
-  /* Some numbers are so big that adding 0.5 would give the wrong number. */
-  if (ExponentComponent(x) >=
-      int_fast16_t(FloatingPoint<double>::kExponentShift)) {
-    return x;
-  }
-
-  double add = (x >= 0) ? GetBiggestNumberLessThan(0.5) : 0.5;
-  return std::copysign(fdlibm_floor(x + add), x);
+  return result;
 }
 
 float js::math_roundf_impl(float x) {
   AutoUnsafeCallWithABI unsafe;
 
-  int32_t ignored;
-  if (NumberEqualsInt32(x, &ignored)) {
-    return x;
+  float result = std::ceil(x);
+  if (x < result - 0.5f) {
+    result -= 1.0f;
   }
-
-  /* Some numbers are so big that adding 0.5 would give the wrong number. */
-  if (ExponentComponent(x) >=
-      int_fast16_t(FloatingPoint<float>::kExponentShift)) {
-    return x;
-  }
-
-  float add = (x >= 0) ? GetBiggestNumberLessThan(0.5f) : 0.5f;
-  return std::copysign(fdlibm_floorf(x + add), x);
+  return result;
 }
 
 /* ES5 15.8.2.15. */
@@ -873,14 +874,10 @@ bool js::math_hypot_handle(JSContext* cx, HandleValueArray args,
   return true;
 }
 
+ALIGN_STACK_FOR_ROUNDING_FUNCTION
 double js::math_trunc_impl(double x) {
   AutoUnsafeCallWithABI unsafe;
-  return fdlibm_trunc(x);
-}
-
-float js::math_truncf_impl(float x) {
-  AutoUnsafeCallWithABI unsafe;
-  return fdlibm_truncf(x);
+  return std::trunc(x);
 }
 
 bool js::math_trunc(JSContext* cx, unsigned argc, Value* vp) {
@@ -909,7 +906,7 @@ double js::math_sign_impl(double x) {
   return x == 0 ? x : x < 0 ? -1 : 1;
 }
 
-static bool math_sign(JSContext* cx, unsigned argc, Value* vp) {
+bool js::math_sign(JSContext* cx, unsigned argc, Value* vp) {
   CallArgs args = CallArgsFromVp(argc, vp);
   if (args.length() == 0) {
     args.rval().setNaN();
@@ -938,6 +935,161 @@ static bool math_cbrt(JSContext* cx, unsigned argc, Value* vp) {
 static bool math_toSource(JSContext* cx, unsigned argc, Value* vp) {
   CallArgs args = CallArgsFromVp(argc, vp);
   args.rval().setString(cx->names().Math);
+  return true;
+}
+
+enum class SumPreciseState : uint8_t {
+  MinusZero,
+  Finite,
+  PlusInfinity,
+  MinusInfinity,
+  NotANumber,
+};
+
+/**
+ * Math.sumPrecise ( items )
+ *
+ * https://tc39.es/proposal-math-sum/#sec-math.sumprecise
+ */
+static bool math_sumPrecise(JSContext* cx, unsigned argc, Value* vp) {
+  constexpr int64_t MaxCount = int64_t(1) << 53;
+
+  // Step 1. Perform ? RequireObjectCoercible(items).
+  CallArgs args = CallArgsFromVp(argc, vp);
+  if (!args.requireAtLeast(cx, "Math.sumPrecise", 1)) {
+    return false;
+  }
+
+  // Step 2. Let iteratorRecord be ? GetIterator(items, sync).
+  JS::ForOfIterator iterator(cx);
+  if (!iterator.init(args[0], JS::ForOfIterator::ThrowOnNonIterable)) {
+    return false;
+  }
+
+  // Step 3. Let state be minus-zero.
+  SumPreciseState state = SumPreciseState::MinusZero;
+
+  // Step 4. Let sum be 0.
+  xsum_small_accumulator sum;
+  xsum_small_init(&sum);
+
+  // Step 5. Let count be 0.
+  int64_t count = 0;
+
+  // Step 6. Let next be not-started.
+  // (implicit)
+
+  JS::Rooted<JS::Value> value(cx);
+
+  // Step 7. Repeat, while next is not done,
+  while (true) {
+    // Step 7.a. Set next to ? IteratorStepValue(iteratorRecord).
+    bool done;
+    if (!iterator.next(&value, &done)) {
+      return false;
+    }
+
+    // Step 7.b. If next is not done, then
+    if (done) {
+      break;
+    }
+
+    // Step 7.b.i. Set count to count + 1.
+    count += 1;
+
+    // Step 7.b.ii. If count ≥ 2**53, then
+    if (count >= MaxCount) {
+      // Step 7.b.ii.1. Let error be ThrowCompletion(a newly created RangeError
+      // object).
+      JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
+                                JSMSG_SUMPRECISE_TOO_MANY_VALUES);
+
+      // Step 7.b.ii.2. Return ? IteratorClose(iteratorRecord, error).
+      iterator.closeThrow();
+      return false;
+    }
+
+    // Step 7.b.iv. If next is not a Number, then
+    if (!value.isNumber()) {
+      // Step 7.b.iv.1. Let error be ThrowCompletion(a newly created TypeError
+      // object).
+      JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
+                                JSMSG_SUMPRECISE_EXPECTED_NUMBER);
+
+      // Step 7.b.iv.2. Return ? IteratorClose(iteratorRecord, error).
+      iterator.closeThrow();
+      return false;
+    }
+
+    // Step 7.b.v. Let n be next.
+    double n = value.toNumber();
+
+    // Step 7.b.vi. If state is not not-a-number, then
+    if (state == SumPreciseState::NotANumber) {
+      continue;
+    }
+
+    // Step 7.b.vi.1. If n is NaN, then
+    if (std::isnan(n)) {
+      // Step 7.b.vi.1.a. Set state to not-a-number.
+      state = SumPreciseState::NotANumber;
+    } else if (n == PositiveInfinity<double>()) {
+      // Step 7.b.vi.2. Else if n is +∞𝔽, then
+      if (state == SumPreciseState::MinusInfinity) {
+        // Step 7.b.vi.2.a. If state is minus-infinity, set state to
+        //                  not-a-number.
+        state = SumPreciseState::NotANumber;
+      } else {
+        // Step 7.b.vi.2.b. Else, set state to plus-infinity.
+        state = SumPreciseState::PlusInfinity;
+      }
+    } else if (n == NegativeInfinity<double>()) {
+      // Step 7.b.vi.3. Else if n is -∞𝔽, then
+      if (state == SumPreciseState::PlusInfinity) {
+        // Step 7.b.vi.3.a. If state is plus-infinity, set state to
+        //                  not-a-number.
+        state = SumPreciseState::NotANumber;
+      } else {
+        // Step 7.b.vi.3.b. Else, set state to minus-infinity.
+        state = SumPreciseState::MinusInfinity;
+      }
+    } else if (!IsNegativeZero(n) && (state == SumPreciseState::MinusZero ||
+                                      state == SumPreciseState::Finite)) {
+      // Step 7.b.vi.4. Else if n is not -0𝔽 and state is either minus-zero or
+      //                finite, then
+      // Step 7.b.vi.4.a. Set state to finite.
+      state = SumPreciseState::Finite;
+
+      // Step 7.b.vi.4.b. Set sum to sum + ℝ(n).
+      xsum_small_add1(&sum, n);
+    }
+  }
+
+  double rval;
+  switch (state) {
+    case SumPreciseState::NotANumber:
+      // Step 8. If state is not-a-number, return NaN.
+      rval = GenericNaN();
+      break;
+    case SumPreciseState::PlusInfinity:
+      // Step 9. If state is plus-infinity, return +∞𝔽.
+      rval = PositiveInfinity<double>();
+      break;
+    case SumPreciseState::MinusInfinity:
+      // Step 10. If state is minus-infinity, return -∞𝔽.
+      rval = NegativeInfinity<double>();
+      break;
+    case SumPreciseState::MinusZero:
+      // Step 11. If state is minus-zero, return -0𝔽.
+      rval = -0.0;
+      break;
+    case SumPreciseState::Finite:
+      // Step 12. Return 𝔽(sum).
+      rval = xsum_small_round(&sum);
+      break;
+  }
+
+  args.rval().setNumber(rval);
   return true;
 }
 
@@ -999,20 +1151,20 @@ UnaryMathFunctionType js::GetUnaryMathFunctionPtr(UnaryMathFunction fun) {
   MOZ_CRASH("Unknown function");
 }
 
-const char* js::GetUnaryMathFunctionName(UnaryMathFunction fun) {
+const char* js::GetUnaryMathFunctionName(UnaryMathFunction fun, bool enumName) {
   switch (fun) {
     case UnaryMathFunction::SinNative:
-      return "Sin (native)";
+      return enumName ? "SinNative" : "Sin (native)";
     case UnaryMathFunction::SinFdlibm:
-      return "Sin (fdlibm)";
+      return enumName ? "SinFdlibm" : "Sin (fdlibm)";
     case UnaryMathFunction::CosNative:
-      return "Cos (native)";
+      return enumName ? "CosNative" : "Cos (native)";
     case UnaryMathFunction::CosFdlibm:
-      return "Cos (fdlibm)";
+      return enumName ? "CosFdlibm" : "Cos (fdlibm)";
     case UnaryMathFunction::TanNative:
-      return "Tan (native)";
+      return enumName ? "TanNative" : "Tan (native)";
     case UnaryMathFunction::TanFdlibm:
-      return "Tan (fdlibm)";
+      return enumName ? "TanFdlibm" : "Tan (fdlibm)";
     case UnaryMathFunction::Log:
       return "Log";
     case UnaryMathFunction::Exp:
@@ -1095,6 +1247,7 @@ static const JSFunctionSpec math_static_methods[] = {
     JS_INLINABLE_FN("trunc", math_trunc, 1, 0, MathTrunc),
     JS_INLINABLE_FN("sign", math_sign, 1, 0, MathSign),
     JS_INLINABLE_FN("cbrt", math_cbrt, 1, 0, MathCbrt),
+    JS_FN("sumPrecise", math_sumPrecise, 1, 0),
     JS_FS_END,
 };
 
@@ -1133,3 +1286,5 @@ const JSClass js::MathClass = {
     JS_NULL_CLASS_OPS,
     &MathClassSpec,
 };
+
+#undef ALIGN_STACK_FOR_ROUNDING_FUNCTION

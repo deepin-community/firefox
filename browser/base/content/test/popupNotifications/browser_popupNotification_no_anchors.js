@@ -11,10 +11,6 @@ function test() {
   setup();
 }
 
-const FALLBACK_ANCHOR = gURLBar.searchButton
-  ? "urlbar-search-button"
-  : "identity-icon";
-
 var tests = [
   // Test that popupnotifications are anchored to the fallback anchor on
   // about:blank, where anchor icons are hidden.
@@ -28,7 +24,7 @@ var tests = [
       this.notifyObj.anchorID = "geo-notification-icon";
       this.notification = showNotification(this.notifyObj);
     },
-    onShown(popup) {
+    async onShown(popup) {
       checkPopup(popup, this.notifyObj);
       is(
         document.getElementById("geo-notification-icon").getBoundingClientRect()
@@ -36,11 +32,7 @@ var tests = [
         0,
         "geo anchor shouldn't be visible"
       );
-      is(
-        popup.anchorNode.id,
-        FALLBACK_ANCHOR,
-        "notification anchored to fallback anchor"
-      );
+      assertFallbackAnchorNode(popup.anchorNode);
       dismissNotification(popup);
     },
     onHidden() {
@@ -69,7 +61,10 @@ var tests = [
       this.notification = showNotification(this.notifyObj);
     },
     async onShown(popup) {
-      await promiseTabLoadEvent(gBrowser.selectedTab, "about:blank");
+      await BrowserTestUtils.loadURIString({
+        browser: gBrowser.selectedTab.linkedBrowser,
+        uriString: "about:blank",
+      });
 
       checkPopup(popup, this.notifyObj);
       is(
@@ -78,11 +73,7 @@ var tests = [
         0,
         "geo anchor shouldn't be visible"
       );
-      is(
-        popup.anchorNode.id,
-        FALLBACK_ANCHOR,
-        "notification anchored to fallback anchor"
-      );
+      assertFallbackAnchorNode(popup.anchorNode);
       dismissNotification(popup);
     },
     onHidden() {
@@ -115,7 +106,11 @@ var tests = [
       );
 
       // eslint-disable-next-line @microsoft/sdl/no-insecure-url
-      await promiseTabLoadEvent(gBrowser.selectedTab, "http://example.com/");
+      await BrowserTestUtils.loadURIString({
+        browser: gBrowser.selectedTab.linkedBrowser,
+        // eslint-disable-next-line @microsoft/sdl/no-insecure-url
+        uriString: "http://example.com/",
+      });
 
       isnot(
         document.getElementById("geo-notification-icon").getBoundingClientRect()
@@ -179,11 +174,7 @@ var tests = [
         EventUtils.synthesizeKey("KEY_Tab");
         await shown;
 
-        is(
-          PopupNotifications.panel.anchorNode.id,
-          FALLBACK_ANCHOR,
-          "notification anchored to fallback anchor"
-        );
+        assertFallbackAnchorNode(PopupNotifications.panel.anchorNode);
 
         // Moving focus to the location bar should hide the notification again.
         hidden = waitForNotificationPanelHidden();
@@ -286,3 +277,15 @@ var tests = [
     },
   },
 ];
+
+function assertFallbackAnchorNode(anchorNode) {
+  if (anchorNode.classList.contains("searchmode-switcher-icon")) {
+    Assert.ok(true, "The anchor is searchmode-switcher-icon");
+  } else if (anchorNode.id == "identity-icon") {
+    Assert.ok(true, "The anchor is identity-icon");
+  } else if (anchorNode.id == "remote-control-icon") {
+    Assert.ok(true, "The anchor is remote-control-icon");
+  } else {
+    Assert.ok(false, "The anchor is unexpected element");
+  }
+}

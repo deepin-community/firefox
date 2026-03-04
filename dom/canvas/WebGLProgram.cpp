@@ -6,19 +6,20 @@
 #include "WebGLProgram.h"
 
 #include "GLContext.h"
-#include "mozilla/CheckedInt.h"
-#include "mozilla/dom/WebGL2RenderingContextBinding.h"
-#include "mozilla/dom/WebGLRenderingContextBinding.h"
-#include "mozilla/gfx/Logging.h"
-#include "mozilla/RefPtr.h"
-#include "nsPrintfCString.h"
 #include "WebGLBuffer.h"
 #include "WebGLContext.h"
+#include "WebGLFormats.h"
 #include "WebGLShader.h"
 #include "WebGLShaderValidator.h"
 #include "WebGLTransformFeedback.h"
 #include "WebGLValidateStrings.h"
 #include "WebGLVertexArray.h"
+#include "mozilla/CheckedInt.h"
+#include "mozilla/RefPtr.h"
+#include "mozilla/dom/WebGL2RenderingContextBinding.h"
+#include "mozilla/dom/WebGLRenderingContextBinding.h"
+#include "mozilla/gfx/Logging.h"
+#include "nsPrintfCString.h"
 
 namespace mozilla {
 

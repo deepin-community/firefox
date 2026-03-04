@@ -6,58 +6,35 @@
 #ifndef TRANSFRMX_TXEXECUTIONSTATE_H
 #define TRANSFRMX_TXEXECUTIONSTATE_H
 
-#include "txCore.h"
-#include "txStack.h"
-#include "txXMLUtils.h"
-#include "txIXPathContext.h"
-#include "txVariableMap.h"
-#include "nsTHashtable.h"
-#include "nsHashKeys.h"
-#include "txKey.h"
-#include "txStylesheet.h"
-#include "txXPathTreeWalker.h"
-#include "nsTArray.h"
 #include "mozilla/Result.h"
+#include "nsHashKeys.h"
+#include "nsTArray.h"
+#include "nsTHashtable.h"
+#include "txCore.h"
+#include "txIXPathContext.h"
+#include "txKey.h"
+#include "txStack.h"
+#include "txStylesheet.h"
+#include "txVariableMap.h"
+#include "txXMLUtils.h"
+#include "txXPathTreeWalker.h"
 
 class txAOutputHandlerFactory;
 class txAXMLEventHandler;
 class txInstruction;
 
-class txLoadedDocumentEntry : public nsStringHashKey {
+using txLoadedDocumentEntry = mozilla::Variant<txXPathNode, nsresult>;
+
+class txLoadedDocumentsHash
+    : public nsTHashMap<nsString, txLoadedDocumentEntry> {
  public:
-  explicit txLoadedDocumentEntry(KeyTypePointer aStr)
-      : nsStringHashKey(aStr), mLoadResult(NS_OK) {}
-  txLoadedDocumentEntry(txLoadedDocumentEntry&& aOther)
-      : nsStringHashKey(std::move(aOther)),
-        mDocument(std::move(aOther.mDocument)),
-        mLoadResult(std::move(aOther.mLoadResult)) {
-    NS_ERROR("We're horked.");
-  }
-  ~txLoadedDocumentEntry() {
-    if (mDocument) {
-      txXPathNodeUtils::release(mDocument.get());
-    }
-  }
-  bool LoadingFailed() {
-    NS_ASSERTION(NS_SUCCEEDED(mLoadResult) || !mDocument,
-                 "Load failed but we still got a document?");
+  txLoadedDocumentsHash() : nsTHashMap<nsString, txLoadedDocumentEntry>(4) {}
 
-    return NS_FAILED(mLoadResult);
-  }
-
-  mozilla::UniquePtr<txXPathNode> mDocument;
-  nsresult mLoadResult;
-};
-
-class txLoadedDocumentsHash : public nsTHashtable<txLoadedDocumentEntry> {
- public:
-  txLoadedDocumentsHash() : nsTHashtable<txLoadedDocumentEntry>(4) {}
-  ~txLoadedDocumentsHash();
   [[nodiscard]] nsresult init(const txXPathNode& aSource);
 
  private:
   friend class txExecutionState;
-  mozilla::UniquePtr<txXPathNode> mSourceDocument;
+  mozilla::Maybe<txXPathNode> mSourceDocument;
 };
 
 class txExecutionState : public txIMatchContext {

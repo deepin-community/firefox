@@ -12,14 +12,19 @@ pub use instance::{DynExposedAdapter, DynInstance};
 pub use queue::DynQueue;
 pub use surface::{DynAcquiredSurfaceTexture, DynSurface};
 
-use std::any::Any;
+use alloc::boxed::Box;
+use core::{
+    any::{Any, TypeId},
+    fmt,
+};
 
 use wgt::WasmNotSendSync;
 
 use crate::{
     AccelerationStructureAABBs, AccelerationStructureEntries, AccelerationStructureInstances,
     AccelerationStructureTriangleIndices, AccelerationStructureTriangleTransform,
-    AccelerationStructureTriangles, BufferBinding, ProgrammableStage, TextureBinding,
+    AccelerationStructureTriangles, BufferBinding, ExternalTextureBinding, ProgrammableStage,
+    TextureBinding,
 };
 
 /// Base trait for all resources, allows downcasting via [`Any`].
@@ -33,11 +38,11 @@ macro_rules! impl_dyn_resource {
     ($($type:ty),*) => {
         $(
             impl crate::DynResource for $type {
-                fn as_any(&self) -> &dyn ::std::any::Any {
+                fn as_any(&self) -> &dyn ::core::any::Any {
                     self
                 }
 
-                fn as_any_mut(&mut self) -> &mut dyn ::std::any::Any {
+                fn as_any_mut(&mut self) -> &mut dyn ::core::any::Any {
                     self
                 }
             }
@@ -80,9 +85,9 @@ impl<R: DynResource + ?Sized> DynResourceExt for R {
 
     unsafe fn unbox<T: DynResource + 'static>(self: Box<Self>) -> T {
         debug_assert!(
-            <Self as Any>::type_id(self.as_ref()) == std::any::TypeId::of::<T>(),
+            <Self as Any>::type_id(self.as_ref()) == TypeId::of::<T>(),
             "Resource doesn't have the expected type, expected {:?}, got {:?}",
-            std::any::TypeId::of::<T>(),
+            TypeId::of::<T>(),
             <Self as Any>::type_id(self.as_ref())
         );
 
@@ -100,25 +105,25 @@ impl<R: DynResource + ?Sized> DynResourceExt for R {
     }
 }
 
-pub trait DynAccelerationStructure: DynResource + std::fmt::Debug {}
-pub trait DynBindGroup: DynResource + std::fmt::Debug {}
-pub trait DynBindGroupLayout: DynResource + std::fmt::Debug {}
-pub trait DynBuffer: DynResource + std::fmt::Debug {}
-pub trait DynCommandBuffer: DynResource + std::fmt::Debug {}
-pub trait DynComputePipeline: DynResource + std::fmt::Debug {}
-pub trait DynFence: DynResource + std::fmt::Debug {}
-pub trait DynPipelineCache: DynResource + std::fmt::Debug {}
-pub trait DynPipelineLayout: DynResource + std::fmt::Debug {}
-pub trait DynQuerySet: DynResource + std::fmt::Debug {}
-pub trait DynRenderPipeline: DynResource + std::fmt::Debug {}
-pub trait DynSampler: DynResource + std::fmt::Debug {}
-pub trait DynShaderModule: DynResource + std::fmt::Debug {}
+pub trait DynAccelerationStructure: DynResource + fmt::Debug {}
+pub trait DynBindGroup: DynResource + fmt::Debug {}
+pub trait DynBindGroupLayout: DynResource + fmt::Debug {}
+pub trait DynBuffer: DynResource + fmt::Debug {}
+pub trait DynCommandBuffer: DynResource + fmt::Debug {}
+pub trait DynComputePipeline: DynResource + fmt::Debug {}
+pub trait DynFence: DynResource + fmt::Debug {}
+pub trait DynPipelineCache: DynResource + fmt::Debug {}
+pub trait DynPipelineLayout: DynResource + fmt::Debug {}
+pub trait DynQuerySet: DynResource + fmt::Debug {}
+pub trait DynRenderPipeline: DynResource + fmt::Debug {}
+pub trait DynSampler: DynResource + fmt::Debug {}
+pub trait DynShaderModule: DynResource + fmt::Debug {}
 pub trait DynSurfaceTexture:
-    DynResource + std::borrow::Borrow<dyn DynTexture> + std::fmt::Debug
+    DynResource + core::borrow::Borrow<dyn DynTexture> + fmt::Debug
 {
 }
-pub trait DynTexture: DynResource + std::fmt::Debug {}
-pub trait DynTextureView: DynResource + std::fmt::Debug {}
+pub trait DynTexture: DynResource + fmt::Debug {}
+pub trait DynTextureView: DynResource + fmt::Debug {}
 
 impl<'a> BufferBinding<'a, dyn DynBuffer> {
     pub fn expect_downcast<B: DynBuffer>(self) -> BufferBinding<'a, B> {
@@ -136,6 +141,16 @@ impl<'a> TextureBinding<'a, dyn DynTextureView> {
             view: self.view.expect_downcast_ref(),
             usage: self.usage,
         }
+    }
+}
+
+impl<'a> ExternalTextureBinding<'a, dyn DynBuffer, dyn DynTextureView> {
+    pub fn expect_downcast<B: DynBuffer, T: DynTextureView>(
+        self,
+    ) -> ExternalTextureBinding<'a, B, T> {
+        let planes = self.planes.map(|plane| plane.expect_downcast());
+        let params = self.params.expect_downcast();
+        ExternalTextureBinding { planes, params }
     }
 }
 

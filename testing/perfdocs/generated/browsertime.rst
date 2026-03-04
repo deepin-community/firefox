@@ -6,7 +6,7 @@ Raptor Browsertime
    :depth: 2
    :local:
 
-Browsertime is a harness for running performance tests, similar to Mozilla's Raptor testing framework. Browsertime is written in Node.js and uses Selenium WebDriver to drive multiple browsers including Safari, Safari Technology Preview, Chrome, Chrome for Android, Firefox, and Firefox for Android and GeckoView-based vehicles.
+Browsertime is a harness for running performance tests, similar to Mozilla's Raptor testing framework. Browsertime is written in Node.js and uses Selenium WebDriver to drive multiple browsers including Safari, Safari Technology Preview, Chrome, Chrome for Android, Firefox, and Firefox for Android and GeckoView-based browsers.
 
 Source code:
 
@@ -18,7 +18,7 @@ Running Locally
 
 **Prerequisites**
 
-- A local mozilla repository clone with a `successful Firefox build </setup>`_ completed
+- A local Mozilla Repository clone with a `successful Firefox build </setup>`_ completed
 
 Running on Firefox Desktop
 --------------------------
@@ -68,7 +68,7 @@ Benchmark tests
 
 Running on Android
 ------------------
-To run on android, the device needs to have Geckoview or Fenix installed on it. Our tests will only work with physical devices, and `bug 1881570 <https://bugzilla.mozilla.org/show_bug.cgi?id=1881570>`__ tracks progress for enabling virtual devices (emulators). Running either of the commands below will attempt to install locally built APKs to the device **while uninstalling/removing any existing APKs of the package on the device**, but this can be skipped by setting ``MOZ_DISABLE_ADB_INSTALL=1`` in your environment. When that environment variable exists, we expect the APK to be pre-installed on the device.
+To run on Android, the device needs to have Geckoview or Fenix installed on it. Our tests will only work with physical devices, and `bug 1881570 <https://bugzilla.mozilla.org/show_bug.cgi?id=1881570>`__ tracks progress for enabling virtual devices (emulators). Running either of the commands below will attempt to install locally built APKs to the device **while uninstalling/removing any existing APKs of the package on the device**, but this can be skipped by setting ``MOZ_DISABLE_ADB_INSTALL=1`` in your environment. When that environment variable exists, we expect the APK to be pre-installed on the device.
 
 Running on Raptor-Browsertime (recommended):
 
@@ -137,7 +137,7 @@ Running on Safari Technology Preview
 
 Safari Technology Preview comes bundled with an appropriate ``safaridriver`` binary, and browsertime (via selenium) automatically launches this.
 
-You will need to have installed the most up to date application version either by updating an existing installation on your MacOS or downloading it from https://developer.apple.com/safari/resources/ and ensure you download the one appropriate to your MacOS version
+You will need to have installed the most up-to-date application version either by updating an existing installation on your MacOS or downloading it from https://developer.apple.com/safari/resources/ and ensure you download the one appropriate to your MacOS version
 
 You can launch vanilla Browsertime with Safari Technology Preview as follows:
 
@@ -179,13 +179,13 @@ list the jobs selected by the try perf query) to run all tp6 page-load webextens
 
 ::
 
-   ./mach try perf --show-all -q "'tp6 'webextensions"
+   ./mach try perf --full -q "'tp6 'webextensions"
 
 Similarly for running tp6m (equivalent to tp6 but for mobile) on Firefox for Android builds:
 
 ::
 
-   ./mach try perf --show-all -q "'tp6m 'webextensions"
+   ./mach try perf --full -q "'tp6m 'webextensions"
 
 The set of extensions installed are the ones listed in the ``"addons"`` property of the condprof customization file
 `webext.json`_ from the ``testing/condprofile/condprof/customization/`` directory.
@@ -194,10 +194,10 @@ All extensions listed in the ``webext.json`` file are expected to have been pred
 defined in the CI fetch config named `firefox-addons`_, but they will be automatically downloaded from the url specified in the ``webext.json``
 file if they are not.
 
-In a try push we allow to run jobs on new extension xpi files not part of the firefox-addons.tar archive, the new extension needs to be just
+In a try push we allow to run jobs on new extension XPI files not part of the firefox-addons.tar archive, the new extension needs to be just
 added in the `webext.json`_ condprof customization file in a patch part of the same stack of patches being pushed to try.
 
-On the contrary new extensions added to the `webext.json`_ condprof customization file on mozilla-central patches will require the xpi file to be
+On the contrary new extensions added to the `webext.json`_ condprof customization file on mozilla-central patches will require the XPI file to be
 added to the ``firefox-addons.tar`` archive and the `firefox-addons`_ CI fetch config updated accordingly (missing to update the archive will
 trigger explicit linter errors, :doc:`see condprof-addons linter docs </code-quality/lint/linters/condprof-addons>`).
 
@@ -250,13 +250,7 @@ For example, the following will select all ``Pageload`` categories to run on des
 
 ::
 
-  ./mach try perf -q "'Pageload"
-
-If you need to target android tasks, include the ``--android`` flag like so (remove the ``'android`` from the query string to target desktop tests at the same time):
-
-::
-
-  ./mach try perf --android -q "'Pageload 'android"
+  ./mach try perf -q "'Pageload 'desktop"
 
 If you exclude the ``-q "..."`` option, an interface similar to the fuzzy interface will open, and show all available categories.
 
@@ -275,6 +269,8 @@ To run gecko profiling using Raptor-Browsertime you can add the ``--gecko-profil
 ::
 
   ./mach raptor -t amazon --gecko-profile
+
+It's also possible to specify more configuration such as the profiled threads, the sampling interval or the profiler features being enabled. The parameters used in a profiling run can be copied directly from the about:profiling page in any Nightly build: click the button at the top of the page, then pick the option "Copy parameters for performance tests".
 
 Note that vanilla Browsertime does support Gecko Profiling but **it does not symbolicate the profiles** so it is **not recommended** to use for debugging performance regressions/improvements.
 

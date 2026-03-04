@@ -6,7 +6,6 @@
 ## Subframe crash notification
 
 crashed-subframe-message = <strong>Bu sayfanın bir kısmı çöktü.</strong> Bize rapor göndererek sorunu bildirirseniz { -brand-product-name } tarayıcınızı daha hızlı düzeltebiliriz.
-
 # The string for crashed-subframe-title.title should match crashed-subframe-message,
 # but without any markup.
 crashed-subframe-title =
@@ -32,3 +31,20 @@ pending-crash-reports-send =
     .label = Gönder
 pending-crash-reports-always-send =
     .label = Her zaman gönder
+# Variables:
+#   $reportCount (Number): the number of pending crash reports
+requested-crash-reports-message-new =
+    { $reportCount ->
+        [one] Araştırdığımız çökmelerle ilgili gönderilmemiş bir çökme raporunuz var. Raporunuzu göndererek { -brand-product-name } tarayıcısını geliştirmemize yardımcı olabilirsiniz. Bu bildirimi kapatırsanız bu rapor görmezden gelinecektir.
+       *[other] Araştırdığımız çökmelerle ilgili { $reportCount } gönderilmemiş çökme raporunuz var. Raporlarınızı göndererek { -brand-product-name } tarayıcısını geliştirmemize yardımcı olabilirsiniz. Bu bildirimi kapatırsanız raporlar görmezden gelinecektir.
+    }
+# Variables:
+#   $reportCount (Number): the number of pending crash reports
+requested-crash-reports-message =
+    { $reportCount ->
+        [one] Araştırdığımız çökmelerle eşleşen gönderilmemiş bir çökme raporunuz var. Raporunuzu göndererek { -brand-product-name } tarayıcısını geliştirmemize yardımcı olabilirsiniz. Bu bildirimi kapatırsanız bu rapor görmezden gelinecektir.
+       *[other] Araştırdığımız çökmelerle eşleşen { $reportCount } gönderilmemiş çökme raporunuz var. Raporlarınızı göndererek { -brand-product-name } tarayıcısını geliştirmemize yardımcı olabilirsiniz. Bu bildirimi kapatırsanız raporlar görmezden gelinecektir.
+    }
+requested-crash-reports-dont-show-again =
+    .label = Bir daha gösterme
+    .accesskey = B

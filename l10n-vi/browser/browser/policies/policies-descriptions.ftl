@@ -21,6 +21,7 @@ policy-AutofillAddressEnabled = Bật tính năng tự động điền địa ch
 policy-AutofillCreditCardEnabled = Bật tính năng tự động điền phương thức thanh toán.
 policy-AutoLaunchProtocolsFromOrigins = Xác định danh sách các giao thức bên ngoài có thể được sử dụng từ các origin được liệt kê mà không cần nhắc người dùng.
 policy-BackgroundAppUpdate2 = Kích hoạt hoặc vô hiệu hóa trình cập nhật nền.
+policy-Backup = Vô hiệu hóa sao lưu hoặc khôi phục dữ liệu hồ sơ.
 policy-BlockAboutAddons = Chặn quyền truy cập vào trình quản lý tiện ích (about: addons).
 policy-BlockAboutConfig = Chặn truy cập vào trang about:config.
 policy-BlockAboutProfiles = Chặn truy cập vào trang about:profiles.
@@ -28,6 +29,7 @@ policy-BlockAboutSupport = Chặn truy cập vào trang about:support.
 policy-Bookmarks = Tạo dấu trang trong thanh công cụ dấu trang, menu dấu trang hoặc một thư mục xác định bên trong chúng.
 policy-CaptivePortal = Kích hoạt hoặc vô hiệu hóa hỗ trợ kiểm soát truy cập.
 policy-CertificatesDescription = Thêm chứng chỉ hoặc sử dụng chứng chỉ có sẵn.
+policy-ContentAnalysis = Bật hoặc tắt kết nối với tác nhân chống mất dữ liệu.
 policy-Cookies = Cho phép hoặc từ chối các trang web lưu cookie.
 # Containers in this context is referring to container tabs in Firefox.
 policy-Containers = Đặt các chính sách liên quan đến ngăn chứa.
@@ -54,6 +56,7 @@ policy-DisablePocket2 = Tắt tính năng lưu trang web vào { -pocket-brand-na
 policy-DisablePrivateBrowsing = Vô hiệu hóa duyệt web riêng tư.
 policy-DisableProfileImport = Vô hiệu hóa lệnh nhập dữ liệu từ trình duyệt khác trên bảng chọn.
 policy-DisableProfileRefresh = Vô hiệu hóa nút khôi phục { -brand-short-name } trong trang about:support.
+policy-DisableRemoteImprovements = Ngăn chặn { -brand-short-name } áp dụng các thay đổi về hiệu năng, độ ổn định và tính năng giữa các bản cập nhật.
 policy-DisableSafeMode = Tắt tính năng này để khởi động lại ở chế độ an toàn. Lưu ý: phím Shift để vào chế độ an toàn chỉ có thể tắt trên Windows bằng Group Policy.
 policy-DisableSecurityBypass = Ngăn người dùng bỏ qua một số cảnh báo bảo mật nhất định.
 policy-DisableSetAsDesktopBackground = Vô hiệu hóa lệnh đặt làm hình nền desktop trong menu.
@@ -78,6 +81,7 @@ policy-ExtensionSettings = Quản lý các cài đặt cài đặt khác nhau ch
 policy-ExtensionUpdate = Bật hoặc tắt cập nhật tiện ích mở rộng tự động.
 policy-FirefoxHome2 = Định cấu hình { -firefox-home-brand-name }.
 policy-FirefoxSuggest = Định cấu hình { -firefox-suggest-brand-name }.
+policy-GenerativeAI = Cấu hình các tính năng AI tạo ra.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Buộc điều hướng trực tiếp trang web nội bộ thay vì tìm kiếm khi nhập các mục từ đơn lẻ vào thanh địa chỉ.
 policy-Handlers = Cấu hình trình xử lý ứng dụng mặc định.
 policy-HardwareAcceleration = Nếu không đúng, hãy tắt chế độ tăng tốc phần cứng.
@@ -96,6 +100,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Hoàn nguyên hành vi
 ##
 
 policy-LocalFileLinks = Cho phép các trang web cụ thể để liên kết đến các tập tin cục bộ.
+policy-LocalNetworkAccess = Bật hoặc tắt kiểm tra quyền truy cập mạng cục bộ.
 policy-ManagedBookmarks = Định cấu hình danh sách các dấu trang do quản trị viên quản lý mà người dùng không thể thay đổi.
 policy-ManualAppUpdateOnly = Chỉ cho phép cập nhật thủ công và không thông báo cho người dùng về các bản cập nhật.
 policy-PrimaryPassword = Yêu cầu hoặc ngăn không sử dụng mật khẩu chính.
@@ -109,10 +114,14 @@ policy-OverrideFirstRunPage = Ghi đè trang chạy đầu tiên. Bỏ trống c
 policy-OverridePostUpdatePage = Ghi đè lên trang cập nhật "Có gì mới". Bỏ trống chính sách này nếu bạn muốn tắt trang cập nhật sau.
 policy-PasswordManagerEnabled = Cho phép lưu mật khẩu vào trình quản lý mật khẩu.
 policy-PasswordManagerExceptions = Ngăn { -brand-short-name } lưu mật khẩu cho các trang web cụ thể.
+# Post-quantum refers to cryptography that is safe from attacks by quantum
+# computers. See https://en.wikipedia.org/wiki/Post-quantum_cryptography
+policy-PostQuantumKeyAgreementEnabled = Kích hoạt post-quantum key agreement cho TLS.
 # PDF.js and PDF should not be translated
 policy-PDFjs = Vô hiệu hóa hoặc cấu hình PDF.js, trình xem PDF tích hợp trong { -brand-short-name }.
 policy-Permissions2 = Cấu hình quyền truy cập cho máy ảnh, micrô, vị trí, thông báo và tự động phát.
 policy-PictureInPicture = Kích hoạt hoặc vô hiệu hóa hình trong hình.
+policy-PopupBlocking2 = Cho phép một số trang web hiển thị cửa sổ bật lên và được chuyển hướng bởi khung của bên thứ ba.
 policy-PopupBlocking = Cho phép các trang web nhất định hiển thị cửa sổ bật lên theo mặc định.
 policy-Preferences = Đặt và khóa giá trị cho một tập hợp con ưu tiên.
 policy-PrivateBrowsingModeAvailability = Đặt tính khả dụng của chế độ duyệt web riêng tư.
@@ -126,6 +135,8 @@ policy-SearchSuggestEnabled = Kích hoạt hoặc vô hiệu hóa các đề xu�
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = Thêm hoặc xóa module PKCS #11.
 policy-ShowHomeButton = Hiển thị nút trang chủ trên thanh công cụ.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = Không hiển thị điều khoản sử dụng và thông báo về quyền riêng tư khi khởi động. Bạn tuyên bố rằng bạn chấp nhận và có thẩm quyền chấp nhận diều khoản sử dụng thay mặt cho tất cả các cá nhân mà bạn cung cấp quyền truy cập vào trình duyệt này.
 policy-SSLVersionMax = Chỉnh phiên bản SSL tối đa.
 policy-SSLVersionMin = Chỉnh phiên bản SSL tối thiểu.
 policy-StartDownloadsInTempDirectory = Buộc bắt đầu tải xuống ở một vị trí cục bộ, tạm thời thay vì thư mục tải xuống mặc định.
@@ -133,6 +144,9 @@ policy-SupportMenu = Thêm một mục menu hỗ trợ tùy chỉnh vào menu tr
 policy-TranslateEnabled = Bật hoặc tắt dịch trang web.
 policy-UserMessaging = Không hiển thị một số thông điệp nhất định cho người dùng.
 policy-UseSystemPrintDialog = In bằng hộp thoại in hệ thống.
+policy-VisualSearchEnabled = Bật hoặc tắt tìm kiếm trực quan (visual search).
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Chặn các trang web không được truy cập. Xem tài liệu để biết thêm chi tiết về định dạng.
-policy-Windows10SSO = Cho phép Windows đăng nhập một lần cho tài khoản Microsoft, cơ quan và trường học.
+policy-Windows10SSO = Cho phép Windows đăng nhập một lần (SSO) cho tài khoản Microsoft, cơ quan và trường học.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Cho phép đăng nhập một lần (SSO) cho tài khoản Microsoft Entra.

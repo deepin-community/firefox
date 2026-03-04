@@ -71,6 +71,7 @@ const SECOND_TOGGLE_EXPECTED_EVENTS = [
 /**
  * This function will open the PiP window by clicking the toggle
  * and then close the PiP window
+ *
  * @param browser The current browser
  * @param videoID The video element id
  */
@@ -158,6 +159,7 @@ async function openAndClosePipWithToggle(browser, videoID) {
 
 /**
  * This function will open the PiP window by with the context menu
+ *
  * @param browser The current browser
  * @param videoID The video element id
  */
@@ -223,7 +225,6 @@ add_task(async function test_eventTelemetry() {
       url: TEST_PAGE,
     },
     async browser => {
-      Services.telemetry.setEventRecordingEnabled("pictureinpicture", true);
       let videoID = "no-controls";
 
       const PIP_PREF =

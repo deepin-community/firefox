@@ -67,10 +67,10 @@ detail-private-disallowed-description2 = ਇਹ ਇਕਟੈਨਸ਼ਨ ਪ੍ਰ�
 detail-private-required-label = ਪ੍ਰਾਈਵੇਟ ਵਿੰਡੋਆਂ ਲਈ ਪਹੁੰਚ ਦੀ ਲੋੜ ਹੈ
 detail-private-required-description2 = ਇਹ ਇਕਸਟੈਨਸ਼ਨ ਨੂੰ ਪ੍ਰਾਈਵੇਟ ਬਰਾਊਜ਼ ਕਰਨ ਦੌਰਾਨ ਤੁਹਾਡੀਆਂ ਆਨਲਾਈਨ ਸਰਗਰਮੀਆਂ ਲਈ ਪਹੁੰਚ ਹੈ। <a data-l10n-name="learn-more">ਹੋਰ ਜਾਣੋ</a>
 detail-private-browsing-on =
-    .label = ਇਜਾਜ਼ਤ ਹੈ
+    .label = ਮਨਜ਼ੂਰ
     .tooltiptext = ਪ੍ਰਾਈਵੇਟ ਬਰਾਊਜ਼ ਕਰਨ ‘ਚ ਸਮਰੱਥ ਹੈ
 detail-private-browsing-off =
-    .label = ਇਜਾਜ਼ਤ ਨਾ ਦਿਓ
+    .label = ਨਾ-ਮਨਜ਼ੂਰ ਕਰੋ
     .tooltiptext = ਪ੍ਰਾਈਵੇਟ ਬਰਾਊਜ਼ਰ ਵਿੱਚ ਅਸਮਰੱਥ
 detail-home =
     .label = ਮੁੱਖ ਸਫ਼ਾ
@@ -115,7 +115,7 @@ legacy-extensions =
     .value = ਪੁਰਾਣੀਆਂ ਇਕਟੈਨਸ਼ਨਾਂ
 legacy-extensions-description = ਇਹ ਇਕਟੈਸ਼ਨਾਂ ਮੌਜੂਦਾ { -brand-short-name } ਸਟੈਂਡਰਡਾਂ ਨੂੰ ਪੂਰਾ ਨਹੀਂ ਕਰਦੀਆਂ ਹਨ ਇਸਕਰਕੇ ਇਹਨਾਂ ਨੂੰ ਨਾ-ਸਰਗਰਮ ਕੀਤਾ ਗਿਆ ਹੈ। <label data-l10n-name="legacy-learn-more">ਐਡ-ਆਨ 'ਚ ਤਬਦੀਲੀਆਂ ਬਾਰੇ ਜਾਣੋ</label>
 private-browsing-description2 =
-    { -brand-short-name } ਪਰਾਈਵੇਟ ਬਰਾਊਜ਼ ਕਰਨ ਵਾਲੇ ਇਕਸਟੈਨਸ਼ਨਾਂ ਦੇ ਕੰਮ ਕਰਨ ਦੇ ਢੰਗ ਨੂੰ ਬਦਲ ਰਿਹਾ ਹੈ। ਤੁਹਾਡੇ { -brand-short-name } ਵਿੱਚ ਜੋੜੀ ਗਈ ਕੋਈ ਵੀ ਨਵੀਂ ਇਕਸਟੈਨਸ਼ਨ ਆਪਣੇ-ਆਪ ਪਰਾਈਵੇਟ ਵਿੰਡੋ ਵਿੱਚ ਨਹੀਂ ਚੱਲੇਗੀ। ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਉਸ ਨੂੰ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਇਜਾਜ਼ਤ ਨਹੀਂ ਦਿਉਂਗੇ, ਇਕਸਟੈਨਸ਼ਨ ਪਰਾਈਵੇਟ ਬਰਾਊਜ਼ ਕਰਨ ਦੌਰਾਨ ਕੰਮ ਨਹੀਂ ਕਰੇਗੀ ਅਤੇ ਤੁਹਾੀਡਆਂ ਆਨਲਾਈਨ ਸਰਗਰਮੀਆਂ ਲਈ ਪਹੁੰਚ ਨਹੀਂ ਕਰ ਸਕੇਗੀ। ਅਸੀਂ ਇਹ ਤਬਦੀਲੀ ਤੁਹਾਡੀ ਪਰਾਈਵੇਟ ਬਰਾਊਜ਼ਿੰਗ ਨੂੰ ਨਿੱਜੀ ਬਣਾਈ ਰੱਖਣ ਲਈ ਕੀਤੀ ਹੈ।
+    { -brand-short-name } ਪ੍ਰਾਈਵੇਟ ਬਰਾਊਜ਼ ਕਰਨ ਵਾਲੇ ਇਕਸਟੈਨਸ਼ਨਾਂ ਦੇ ਕੰਮ ਕਰਨ ਦੇ ਢੰਗ ਨੂੰ ਬਦਲ ਰਿਹਾ ਹੈ। ਤੁਹਾਡੇ { -brand-short-name } ਵਿੱਚ ਜੋੜੀ ਗਈ ਕੋਈ ਵੀ ਨਵੀਂ ਇਕਸਟੈਨਸ਼ਨ ਆਪਣੇ-ਆਪ ਪ੍ਰਾਈਵੇਟ ਵਿੰਡੋ ਵਿੱਚ ਨਹੀਂ ਚੱਲੇਗੀ। ਜਦੋਂ ਤੱਕ ਤੁਸੀਂ ਉਸ ਨੂੰ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਇਜਾਜ਼ਤ ਨਹੀਂ ਦਿਉਂਗੇ, ਇਕਸਟੈਨਸ਼ਨ ਪ੍ਰਾਈਵੇਟ ਬਰਾਊਜ਼ ਕਰਨ ਦੌਰਾਨ ਕੰਮ ਨਹੀਂ ਕਰੇਗੀ ਅਤੇ ਤੁਹਾੀਡਆਂ ਆਨਲਾਈਨ ਸਰਗਰਮੀਆਂ ਲਈ ਪਹੁੰਚ ਨਹੀਂ ਕਰ ਸਕੇਗੀ। ਅਸੀਂ ਇਹ ਤਬਦੀਲੀ ਤੁਹਾਡੀ ਪ੍ਰਾਈਵੇਟ ਬਰਾਊਜ਼ਿੰਗ ਨੂੰ ਨਿੱਜੀ ਬਣਾਈ ਰੱਖਣ ਲਈ ਕੀਤੀ ਹੈ।
     <label data-l10n-name="private-browsing-learn-more">ਇਕਸਟੈਨਸ਼ਨ ਸੈਟਿੰਗਾਂ ਦਾ ਇੰਤਜ਼ਾਮ ਕਰਨ ਬਾਰੇ ਹੋਰ ਜਾਣੋ</label>
 addon-category-discover = ਸਿਫਾਰਸ਼
 addon-category-discover-title =
@@ -167,6 +167,8 @@ extensions-warning-update-security-button = ਚਾਲੂ
 extensions-warning-imported-addons2 =
     .message = { -brand-short-name } ਲਈ ਦਰਾਮਦ ਕੀਤੀਆਂ ਇਕਸਟੈਨਸ਼ਨਾਂ ਦੀ ਇੰਸਟਾਲੇਸ਼ਨ ਪੂਰੀ ਕਰੋ।
 extensions-warning-imported-addons-button = ਇਕਸਟੈਨਸ਼ਨਾਂ ਇੰਸਟਾਲ ਕਰੋ
+extensions-warning-safe-mode3 =
+    .message = ਸਮੱਸਿਆ ਨਿਪਟਾਰੇ ਦੌਰਾਨ ਸਾਰੀਆਂ ਐਡ-ਆਨਾਂ ਨੂੰ ਅਸਮਰੱਥ ਕੀਤਾ ਗਿਆ ਹੈ।
 
 ## Strings connected to add-on updates
 
@@ -202,6 +204,10 @@ addon-updates-manual-updates-found = ਉਪਲੱਬਧ ਅੱਪਡੇਟ ਵ�
 ## Add-on install/debug strings for page options menu
 
 addon-install-from-file = …ਐਡ-ਆਨ ਫਾਈਲ ਤੋਂ ਇੰਸਟਾਲ ਕਰੋ
+    .accesskey = I
+# Like `addon-install-from-file` but used when the `extensions.webextensions.prefer-update-over-install-for-existing-addon`
+# pref is set.
+addon-install-or-update-from-file = …ਫ਼ਾਇਲ ਤੋਂ ਐਡ-ਆਨ ਨੂੰ ਇੰਸਟਾਲ ਜਾਂ ਅੱਪਡੇਟ ਕਰੋ
     .accesskey = I
 addon-install-from-file-dialog-title = ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਐਡ-ਆਨ ਚੁਣੋ
 addon-install-from-file-filter-name = ਐਡ-ਆਨ
@@ -271,6 +277,16 @@ discopane-notice-recommendations2 =
         ਇਹਨਾਂ ਸਿਫਾਰਸ਼ਾਂ ਵਿੱਚੋਂ ਕੁਝ ਨਿੱਜੀ ਬਣਾਈਆਂ ਹਨ। ਇਹ ਤੁਹਾਡੇ ਵਲੋਂ ਇੰਸਟਾਲ ਇਕਸਟੈਨਸ਼ਨਾਂ, ਪਰੋਫਾਈਲ ਪਸੰਦਾਂ
          ਅਤੇ ਵਰਤੋਂ ਅੰਕੜਿਆਂ ਦੇ ਉੱਤੇ ਅਧਾਰਿਤ ਹਨ।
 discopane-notice-learn-more = ਹੋਰ ਸਿੱਖੋ
+# Notice for the colorway theme removal
+colorway-removal-notice-message =
+    .heading = ਤੁਹਾਡੇ ਰੰਗ-ਢੰਗ ਥੀਮਾਂ ਨੂੰ ਹਟਾਇਆ ਗਿਆ ਸੀ।
+    .message = { -brand-product-name } ਨੇ ਆਪਣੇ ਰੰਗ-ਢੰਗ ਭੰਡਾਰ ਨੂੰ ਅੱਪਡੇਟ ਕੀਤਾ ਹੈ। ਅਸੀਂ ਤੁਹਾਡੇ “ਸੰਭਾਲੇ ਥੀਮ” ਦੇ ਪੁਰਾਣੇ ਵਰਜ਼ਨਾਂ ਨੂੰ ਹਟਾਇਆ ਹੈ। ਐਡ-ਆਨ ਸਾਈਟ ਤੋਂ ਨਵੇਂ ਵਰਜ਼ਨ ਲਵੋ।
+colorway-removal-notice-learn-more = ਹੋਰ ਜਾਣੋ
+colorway-removal-notice-button = ਅੱਪਡੇਟ ਕੀਤੇ ਰੰਗ-ਢੰਗ ਥੀਮਾਂ ਨੂੰ ਲਵੋ
+# Notice to make user aware that themes are not applied in forced colors mode.
+# This notice is only visible on Windows.
+forced-colors-theme-notice =
+    .message = ਤੁਹਾਡੀਆਂ Windows ਕਨਟਰਾਸਟ ਸੈਟਿੰਗਾਂ { -brand-short-name } ਨੂੰ ਅਣਡਿੱਠਾ ਕਰ ਰਹੀਆਂ ਹਨ। { -brand-short-name } ਵਿੱਚ ਥੀਮਾਂ ਨੂੰ ਵਰਤਣ ਲਈ ਉਹਨਾਂ ਸੈਟਿੰਗਾਂ ਨੂੰ ਬੰਦ ਕਰੋ।
 privacy-policy = ਪਰਦੇਦਾਰੀ ਨੀਤੀ
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
@@ -291,6 +307,11 @@ find-more-themes = ਹੋਰ ਥੀਮ ਲੱਭੋ
 # used for screen readers.
 addon-options-button =
     .aria-label = ਹੋਰ ਚੋਣਾਂ
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+# We hard code "Firefox" because we do not want to imply that a Firefox fork is
+# making this recommendation.
+discopane-intro3 = ਇਕਸਟੈਨਸ਼ਨ ਅਤੇ ਥੀਮ ਤੁਹਾਨੂੰ { -brand-product-name } ਕਸਟਮਾਈਜ਼ ਕਰਨ ਦਿੰਦੇ ਹਨ। ਇਹ ਪਰਦੇਦਾਰੀ ਵਧਾਉਣ, ਕਾਰਗੁਜ਼ਾਰੀ ਵਿੱਚ ਵਾਧਾ, ਮੀਡੀਏ ਨੂੰ ਵਧੀਆ ਬਣਾਉਣ, { -brand-product-name } ਦੀ ਦਿੱਖ ਨੂੰ ਬਦਲਣ, ਅਤੇ ਕੋਈ ਕੁਝ ਹੋਰ ਕਰਨ ਸਕਦੇ ਹਨ। ਇਹਨਾਂ ਛੋਟੇ ਸਾਫਟਵੇਅਰਾਂ ਨੂੰ ਅਕਸਰ ਸੁਤੰਤਰ ਧਿਰਾਂ ਵਲੋਂ ਤਿਆਰ ਕੀਤਾ ਜਾਂਦਾ ਹੈ। ਸ਼ਾਨਦਾਰ ਸੁਰੱਖਿਆ, ਕਾਰਗੁਜ਼ਾਰੀ ਅਤੇ ਕਾਰਜ ਸਮਰੱਥਾ ਲਈ Firefox <a data-l10n-name="learn-more-trigger">ਸਿਫਾਰਸ਼ਾਂ</a> ਇਹ ਹਨ।
 
 ## Add-on actions
 
@@ -377,6 +398,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = ਪ੍ਰਾਈਵੇਟ ਵਿੰਡੋ ਵਿੱਚ ਇਜਾਜ਼ਤ ਦਿਓ
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = ਪ੍ਰਾਈਵੇਟ ਵਿੰਡੋ ਵਿੱਚ ਇਜਾਜ਼ਤ ਦਿਓ
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -416,6 +441,24 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = ਸੁਰੱਖਿਆ ਅਤੇ ਕਾਰਗੁਜ਼ਾਰੀ ਲਈ ਸਾਡੇ ਮਿਆਰਾਂ ਉੱਤੇ ਖ਼ਰ੍ਹਾ ਉਤਰਨ ਲਈ ਇਸ ਇਕਸਟੈਨਸ਼ਨ ਦੀ ਜਾਂਚ ਕੀਤੀ ਜਾ ਚੁੱਕੀ ਹੈ
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = ਅਧਿਕਾਰਿਤ ਇਕਸਟੈਨਸ਼ਨ Mozilla ਵਲੋਂ ਬਣਾਈ ਹੈ। ਸਾਰੇ ਸੁਰੱਖਿਆ ਅਤੇ ਕਾਰਗੁਜ਼ਾਰੀ ਮਿਆਰਾਂ ਉੱਤੇ ਖ਼ਰਾ ਉਤਰਦੀ ਹੈ।
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are performing the
+# security or performance reviews. As such, we avoid personalising language
+# like the words "our" or "we".
+addon-badge-verified4 =
+    .title = ਸੁਰੱਖਿਆ ਅਤੇ ਕਾਰਗੁਜ਼ਾਰੀ ਲਈ ਮਿਆਰਾਂ ਉੱਤੇ ਖ਼ਰ੍ਹਾ ਉਤਰਨ ਲਈ ਇਸ ਇਕਸਟੈਨਸ਼ਨ ਦੀ ਜਾਂਚ ਕੀਤੀ ਜਾ ਚੁੱਕੀ ਹੈ
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are making the
+# recommendation. As such, we hard code "Firefox" and avoid personalising
+# language like the words "our" or "we".
+addon-badge-recommended4 =
+    .title = Firefox ਉਹ ਇਕਸਟੈਨਸ਼ਨਾਂ ਦੀ ਸਿਫਾਰਸ਼ ਕਰਦਾ ਹੈ, ਜੋ ਸੁਰੱਖਿਆ ਅਤੇ ਕਾਰਗੁਜ਼ਾਰੀ ਲਈ ਮਿਆਰ ਉੱਤੇ ਖ਼ਰ੍ਹਾਂ ਉੱਤਰਦੀਆਂ ਹਨ।
 
 ##
 
@@ -423,6 +466,10 @@ available-updates-heading = ਉਪਲੱਬਧ ਅੱਪਡੇਟ
 recent-updates-heading = ਤਾਜ਼ਾ ਅੱਪਡੇਟ
 release-notes-loading = …ਲੋਡ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ
 release-notes-error = ਅਫਸੋਸ, ਪਰ ਰੀਲਿਜ਼ ਨੋਟਿਸ ਡਾਊਨਲੋਡ ਕਰਨ ਦੌਰਾਨ ਸਮੱਸਿਆ ਆਈ ਹੈ।
+addon-permissions-heading = ਇਜਾਜ਼ਤਾਂ
+addon-permissions-empty2 = ਇਸ ਇਕਸਟੈਨਸ਼ਨ ਲਈ ਕਿਸੇ ਇਜਾਜ਼ਤ ਦੀ ਲੋੜ ਨਹੀਂ ਹੈ।
+addon-permissions-required-label = ਲੋੜੀਂਦੇ:
+addon-permissions-optional-label = ਚੋਣਵੇਂ:
 addon-permissions-empty = ਇਸ ਇਕਸਟੈਨਸ਼ਨ ਲਈ ਕਿਸੇ ਇਜਾਜ਼ਤ ਦੀ ਲੋੜ ਨਹੀਂ ਹੈ
 addon-permissions-required = ਮੂਲ ਕੰਮਾਂ ਲਈ ਚਾਹੀਦੀਆਂ ਇਜਾਜ਼ਤਾਂ:
 addon-permissions-optional = ਵਾਧੂ ਕੰਮਾਂ ਲਈ ਚੋਣਵੀਆਂ ਇਜਾਜ਼ਤਾਂ:
@@ -450,6 +497,9 @@ shortcuts-heading = ਇਕਸਟੈਨਸ਼ਨ ਸ਼ਾਰਟਕੱਟਾਂ ਦਾ 
 default-heading-search-label = ਹੋਰ ਐਡ-ਆਨ ਲੱਭੋ
 addons-heading-search-input =
     .placeholder = addons.mozilla.org ਨੂੰ ਖੋਜੋ
+addons-heading-search-button =
+    .title = addons.mozilla.org ਉੱਤੇ ਖੋਜੋ
+    .aria-label = addons.mozilla.org ਉੱਤੇ ਖੋਜੋ
 addon-page-options-button =
     .title = ਸਭ ਐਡ-ਆਨ ਲਈ ਟੂਲ
 
@@ -472,14 +522,32 @@ details-notification-unsigned-and-disabled-link = ਹੋਰ ਜਾਣਕਾਰ�
 details-notification-unsigned = { $name } ਨੂੰ { -brand-short-name } ਵਿੱਚ ਵਰਤਣ ਲਈ ਤਸਦੀਕ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ। ਧਿਆਨ ਨਾਲ ਵਰਤੋਂ।
 details-notification-unsigned2 =
     .message = { $name } ਨੂੰ { -brand-short-name } ਵਿੱਚ ਵਰਤਣ ਲਈ ਤਸਦੀਕ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ। ਧਿਆਨ ਨਾਲ ਵਰਤੋਂ।
+details-notification-hard-blocked-extension =
+    .message = ਇਸ ਇਕਸਟੈਨਸ਼ਨ ਨੂੰ Mozilla ਦੀਆਂ ਪਾਲਸੀਆਂ ਦਾ ਉਲੰਘਣ ਕਰਨ ਕਰਕੇ ਪਾਬੰਦੀ ਲਾਈ ਹੈ ਅਤੇ ਅਸਮਰੱਥ ਕੀਤਾ ਗਿਆ ਹੈ।
+details-notification-hard-blocked-other =
+    .message = ਇਸ ਐਡ-ਆਨ ਨੂੰ Mozilla ਦੀਆਂ ਪਾਲਸੀਆਂ ਦਾ ਉਲੰਘਣ ਕਰਨ ਕਰਕੇ ਪਾਬੰਦੀ ਲਾਈ ਹੈ ਅਤੇ ਅਸਮਰੱਥ ਕੀਤਾ ਗਿਆ ਹੈ।
 details-notification-unsigned-link = ਹੋਰ ਜਾਣਕਾਰੀ
 details-notification-blocked = { $name } ਨੂੰ ਸੁਰੱਖਿਆ ਜਾਂ ਸਥਿਰਤਾ ਸਮੱਸਿਆਵਾਂ ਕਰਕੇ ਬੰਦ ਕੀਤਾ ਗਿਆ ਹੈ।
-details-notification-blocked2 =
-    .message = { $name } ਨੂੰ ਸੁਰੱਖਿਆ ਜਾਂ ਸਥਿਰਤਾ ਸਮੱਸਿਆਵਾਂ ਕਰਕੇ ਬੰਦ ਕੀਤਾ ਗਿਆ ਹੈ।
+details-notification-blocked-link2 = ਵੇਰਵੇ ਵੇਖੋ
+details-notification-soft-blocked-extension-disabled2 =
+    .message = ਇਹ ਇਕਸਟੈਨਸ਼ਨ ਉੱਤੇ ਪਾਬੰਦੀ ਲਾਈ ਹੈ ਅਤੇ ਇਸ ਨੂੰ ਅਸਮਰੱਥ ਕੀਤਾ ਹੈ। ਤੁਸੀਂ ਇਸ ਨੂੰ ਸਮਰੱਥ ਕਰ ਸਕਦੇ ਹੋ, ਪਰ ਇਸ ਖ਼ਤਰਾ ਹੋ ਸਕਦਾ ਹੈ।
+details-notification-soft-blocked-extension-enabled2 =
+    .message = ਇਸ ਇਕਸਟੈਨਸ਼ਨ ਉੱਤੇ ਪਾਬੰਦੀ ਲੱਗੀ ਹੈ। ਇਸ ਨੂੰ ਵਰਤਣਾ ਖ਼ਤਰਨਾਕ ਹੋ ਸਕਦਾ ਹੈ।
+details-notification-soft-blocked-other-disabled2 =
+    .message = ਇਹ ਐਡ-ਆਨ ਉੱਤੇ ਪਾਬੰਦੀ ਲਾਈ ਹੈ ਅਤੇ ਇਸ ਨੂੰ ਅਸਮਰੱਥ ਕੀਤਾ ਹੈ। ਤੁਸੀਂ ਇਸ ਨੂੰ ਸਮਰੱਥ ਕਰ ਸਕਦੇ ਹੋ, ਪਰ ਇਸ ਖ਼ਤਰਾ ਹੋ ਸਕਦਾ ਹੈ।
+details-notification-soft-blocked-other-enabled2 =
+    .message = ਇਸ ਐਡ-ਆਨ ਉੱਤੇ ਪਾਬੰਦੀ ਲੱਗੀ ਹੈ। ਇਸ ਨੂੰ ਵਰਤਣਾ ਖ਼ਤਰਨਾਕ ਹੋ ਸਕਦਾ ਹੈ।
+details-notification-soft-blocked-extension-disabled =
+    .message = ਇਸ ਇਕਸਟੈਨਸ਼ਨ ਨੂੰ Mozilla ਦੀਆਂ ਪਾਲਸੀਆਂ ਦਾ ਉਲੰਘਣ ਕਰਕੇ ਸੀਮਿਤ ਅਤੇ ਅਸਮਰੱਥ ਕੀਤਾ ਹੈ। ਤੁਸੀਂ ਇਸ ਨੂੰ ਸਮਰੱਥ ਕਰ ਸਕਦੇ ਹੋ, ਪਰ ਇਸ ਖ਼ਤਰਾ ਹੋ ਸਕਦਾ ਹੈ।
+details-notification-soft-blocked-extension-enabled =
+    .message = ਇਹ ਇਕਸਟੈਨਸ਼ਨ Mozilla ਦੀਆਂ ਪਾਲਸੀਆਂ ਦਾ ਉਲੰਘਣ ਕਰਦੀ ਹੈ। ਇਸ ਨੂੰ ਵਰਤਣਾ ਖ਼ਤਰਨਾਕ ਹੋ ਸਕਦਾ ਹੈ।
+details-notification-soft-blocked-other-disabled =
+    .message = ਇਸ ਐਡ-ਆਨ ਨੂੰ Mozilla ਦੀਆਂ ਪਾਲਸੀਆਂ ਦਾ ਉਲੰਘਣ ਕਰਕੇ ਸੀਮਿਤ ਅਤੇ ਅਸਮਰੱਥ ਕੀਤਾ ਹੈ। ਤੁਸੀਂ ਇਸ ਨੂੰ ਸਮਰੱਥ ਕਰ ਸਕਦੇ ਹੋ, ਪਰ ਇਸ ਖ਼ਤਰਾ ਹੋ ਸਕਦਾ ਹੈ।
+details-notification-soft-blocked-other-enabled =
+    .message = ਇਹ ਐਡ-ਆਨ Mozilla ਦੀਆਂ ਪਾਲਸੀਆਂ ਦਾ ਉਲੰਘਣ ਕਰਦੀ ਹੈ। ਇਸ ਨੂੰ ਵਰਤਣਾ ਖ਼ਤਰਨਾਕ ਹੋ ਸਕਦਾ ਹੈ।
+details-notification-softblocked-link2 = ਵੇਰਵੇ ਵੇਖੋ
 details-notification-blocked-link = ਹੋਰ ਜਾਣਕਾਰੀ
 details-notification-softblocked = { $name } ਨੂੰ ਸੁਰੱਖਿਆ ਜਾਂ ਸਥਿਰਤਾ ਸਮੱਸਿਆ ਦਾ ਕਾਰਨ ਮੰਨਿਆ ਗਿਆ ਹੈ।
-details-notification-softblocked2 =
-    .message = { $name } ਨੂੰ ਸੁਰੱਖਿਆ ਜਾਂ ਸਥਿਰਤਾ ਸਮੱਸਿਆ ਦਾ ਕਾਰਨ ਮੰਨਿਆ ਗਿਆ ਹੈ।
 details-notification-softblocked-link = ਹੋਰ ਜਾਣਕਾਰੀ
 details-notification-gmp-pending = { $name } ਨੂੰ ਛੇਤੀ ਹੀ ਇੰਸਟਾਲ ਕੀਤਾ ਜਾਵੇਗਾ।
 details-notification-gmp-pending2 =
@@ -493,3 +561,45 @@ plugins-openh264-name = OpenH264 ਵਿਡੀਓ ਕੋਡਕ Cisco Systems, Inc
 plugins-openh264-description = ਇਹ ਪਲੱਗਇਨ ਨੂੰ ਮੋਜ਼ੀਲਾ ਵਲੋਂ WebRTC ਸੇਦਾਂ ਦੇ ਮੁਤਾਬਕ ਤਿਆਰ ਕਰਕੇ ਆਪਣੇ-ਆਪ ਇੰਸਟਾਲ ਕੀਤਾ ਜਾਂਦਾ ਹੈ ਅਤੇ ਡਿਵਾਈਸਾਂ ਨਾਲ WebRTC ਕਾਲਾਂ ਲਈ ਸਮਰੱਥ ਕਰਦੀ ਹੈ, ਜਿਨਾਂ ਨੂੰ H.264 ਵਿਡੀਓ ਕੋਡਕ ਚਾਹੀਦਾ ਹੈ। ਕੋਡਕ ਸਰੋਤ ਕੋਡ ਵੇਖਣ ਅਤੇ ਸਥਾਪਤ ਕਰਨ ਲਈ ਹੋਰ ਸਿੱਖਣ ਵਾਸਤੇ https://www.openh264.org/ ਨੂੰ ਵੇਖੋ।
 plugins-widevine-name = Widevine ਸਮੱਗਰੀ ਡਿਕ੍ਰਿਪਸ਼ਨ ਮੋਡੀਊਲ ਨੂੰ Google Inc ਵਲੋਂ ਦਿੱਤਾ ਗਿਆ ਹੈ।
 plugins-widevine-description = ਇਹ ਪਲੱਗਇਨ ਇੰਕ੍ਰਿਪਟਡ ਮੀਡਿਆ ਇਕਸਟੈਨਸ਼ਨਾਂ ਸੇਧਾਂ ਨਾਲ ਅਨੁਕੂਲ ਇੰਕ੍ਰਿਪਟ ਕੀਤੇ ਮੀਡਿਆ ਨੂੰ ਚਲਾਉਣ ਦੇ ਸਮਰੱਥ ਕਰਦੀ ਹੈ। ਇੰਕ੍ਰਿਪਟ ਕੀਤੇ ਮੀਡਿਆ ਨੂੰ ਅਕਸਰ ਪ੍ਰੀਮੀਅਮ ਮੀਡਿਆ ਸਮੱਗਰੀ ਨੂੰ ਕਾਪੀ ਕਰਨ ਤੋਂ ਰੋਕਣ ਲਈ ਸੁਰੱਖਿਆ ਵਾਸਤੇ ਅਕਸਰ ਸਾਈਟਾਂ ਵਲੋਂ ਵਰਤਿਆ ਜਾਂਦਾ ਹੈ। ਇੰਕ੍ਰਿਪਟ ਕੀਤੀਆਂ ਮੀਡਿਆ ਇਕਸਟੈਨਸ਼ਨਾਂ ਬਾਰੇ ਹੋਰ ਜਾਣਕਾਰੀ ਲਈ https://www.w3.org/TR/encrypted-media/ ਵੇਖੋ।
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-permissions-required-data-collection = ਲੋੜੀਂਦੀ ਡਾਟਾ ਇਕੱਤਰਤਾ:
+addon-permissions-optional-data-collection = ਚੋਣਵੀਂ ਡਾਟਾ ਇਕੱਤਰਤਾ:
+# Name of the Permissions tab in `about:addons` when the data collection feature is enabled.
+permissions-data-addon-button = ਇਜਾਜ਼ਤਾਂ ਅਤੇ ਡਾਟਾ
+# This is a description for extension that use this AI model
+# Variables:
+#   $extensionName (String) - Name of the extension
+mlmodel-extension-label = { $extensionName } ਇਕਸਟੈਨਸ਼ਨ ਵਲੋਂ ਵਰਤਿਆ
+addon-permissions-data-collection-heading = ਡਾਟਾ ਇਕੱਤਰ ਕਰਨਾ
+addon-permissions-data-collection-empty = ਡਿਵੈਲਪਰ ਮੁਤਾਬਕ ਇਹ ਇਕਸਟੈਨਸ਼ਨ ਨੂੰ ਕੋਈ ਡਾਟਾ ਇਕੱਤਰ ਕਰਨ ਦੀ ਲੋੜ ਨਹੀਂ ਹੈ।
+addon-data-collection-provided = ਇਕਸਟੈਨਸ਼ਨ ਡਿਵੈਲਪਰ ਵਜੋਂ ਦਿੱਤੀ ਗਈ ਜਾਣਕਾਰੀ
+addon-data-collection-learnmore = ਡਾਟਾ ਇਕੱਤਰ ਕਰਨ ਬਾਰੇ ਹੋਰ ਜਾਣੋ
+
+## Mapping Engine IDs from AI models to how that feature represented by the engine Id is described in the used by section in local model management
+
+mlmodel-about-inference = { -brand-short-name } ਇਸ ਨੂੰ about:inference ਉੱਤੇ ਵਰਤਦਾ ਹੈ
+mlmodel-link-preview = ਜਦੋਂ ਤੁਸੀਂ ਲਿੰਕਾਂ ਦੀ ਝਲਕ ਵੇਖਦੇ ਹੋ ਤਾਂ { -brand-short-name } ਇਸ ਨੂੰ ਪ੍ਰਮੁੱਖ ਨੁਕਤੇ ਤਿਆਰ ਕਰਨ ਲਈ ਵਰਤਦਾ ਹੈ
+mlmodel-pdfjs = ਤੁਹਾਡੇ ਵਲੋਂ PDF ਵਿੱਚ ਜੋੜੇ ਗਏ ਚਿੱਤਰਾਂ ਲਈ ਬਦਲਵੀਂ ਲਿਖਤ ਲਈ { -brand-short-name } ਇਸ ਨੂੰ ਵਰਤਦਾ ਹੈ
+mlmodel-smart-tab-topic-engine = { -brand-short-name } ਤੁਹਾਡੇ ਟੈਬ ਗਰੁੱਪਾਂ ਲਈ ਨਾਂ ਦਾ ਸੁਝਾਅ ਦੇਣ ਲਈ ਵਰਤਦਾ ਹੈ
+mlmodel-smart-tab-embedding-engine = { -brand-short-name } ਤੁਹਾਡੇ ਟੈਬ ਗਰੁੱਪਾਂ ਲਈ ਟੈਬਾਂ ਦਾ ਸੁਝਾਅ ਦੇਣ ਲਈ ਵਰਤਦਾ ਹੈ
+# AI Model will be downloaded on the users device and used locally
+addon-category-mlmodel = ਡਿਵਾਈਸ ਉੱਤੇ AI
+addon-category-mlmodel-title =
+    .title = ਡਿਵਾਈਸ ਉੱਤੇ AI
+mlmodel-heading = ਡਿਵਾਈਸ ਉੱਤੇ AI ਮਾਡਲਾਂ ਦਾ ਇੰਤਜ਼ਾਮ
+mlmodel-description = { -brand-short-name } ਵਿੱਚ ਕੁਝ ਫ਼ੀਚਰ ਅਤੇ ਇਕਸਟੈਨਸ਼ਨਾਂ AI ਮਾਡਲਾਂ ਵਲੋਂ ਤਿਆਰ ਕੀਤੇ ਹਨ, ਜੋ ਕਿ ਤੁਹਾਡੇ ਡਿਵਾਈਸ ਉੱਤੇ ਲੋਕਲ ਹੀ ਕੰਮ ਕਰਦੇ ਹਨ। ਇਹ ਢੰਗ ਤੁਹਾਡੀ ਪਰਦੇਦਾਰੀ ਬਣਾਈ ਰੱਖਦੀ ਹੈ ਅਤੇ ਕਈ ਹਾਲਤਾਂ ਵਿੱਚ ਕਾਰਗੁਜ਼ਾਰੀ ਵੀ ਤੇਜ਼ ਹੁੰਦੀ ਹੈ। <a data-l10n-name="learn-more">ਹੋਰ ਜਾਣੋ</a>
+# Label for button that when clicked removed local model
+mlmodel-remove-addon-button =
+    .aria-label = ਹਟਾਓ
+# Label for the aggregated value of all files for a model
+mlmodel-addon-detail-totalsize-label = ਫ਼ਾਇਲ ਦਾ ਆਕਾਰ
+mlmodel-addon-detail-last-used-label = ਆਖਰੀ ਵਰਤੋਂ
+# This is a section label to describe what extensions or features use a specific local AI model
+mlmodel-addon-detail-used-by-label = ਵਲੋਂ ਵਰਤਿਆ
+# This is a section label to describe the link to the model card on the Hugging Face website
+mlmodel-addon-detail-model-card = ਮਾਡਲ ਕਾਰਡ
+# This is a label for the Model Card link to Hugging face
+mlmodel-addon-detail-model-card-link-label = Hugging Face ਉੱਤੇ ਵੇਖੋ

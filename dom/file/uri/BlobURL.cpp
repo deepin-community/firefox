@@ -4,14 +4,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "nsIClassInfoImpl.h"
-#include "nsIObjectInputStream.h"
-#include "nsIObjectOutputStream.h"
-
 #include "mozilla/dom/BlobURL.h"
+
 #include "mozilla/dom/BlobURLProtocolHandler.h"
 #include "mozilla/ipc/BackgroundUtils.h"
 #include "mozilla/ipc/URIUtils.h"
+#include "nsIClassInfoImpl.h"
+#include "nsIObjectInputStream.h"
+#include "nsIObjectOutputStream.h"
 
 using namespace mozilla::dom;
 
@@ -110,27 +110,6 @@ nsresult BlobURL::SetScheme(const nsACString& aScheme) {
 }
 
 // nsIURI methods:
-nsresult BlobURL::CloneInternal(
-    mozilla::net::nsSimpleURI::RefHandlingEnum aRefHandlingMode,
-    const nsACString& newRef, nsIURI** aClone) {
-  nsCOMPtr<nsIURI> simpleClone;
-  nsresult rv = mozilla::net::nsSimpleURI::CloneInternal(
-      aRefHandlingMode, newRef, getter_AddRefs(simpleClone));
-  NS_ENSURE_SUCCESS(rv, rv);
-
-#ifdef DEBUG
-  RefPtr<BlobURL> uriCheck;
-  rv = simpleClone->QueryInterface(kHOSTOBJECTURICID, getter_AddRefs(uriCheck));
-  MOZ_ASSERT(NS_SUCCEEDED(rv) && uriCheck);
-#endif
-
-  BlobURL* u = static_cast<BlobURL*>(simpleClone.get());
-  u->mRevoked = mRevoked;
-
-  simpleClone.forget(aClone);
-  return NS_OK;
-}
-
 /* virtual */
 nsresult BlobURL::EqualsInternal(
     nsIURI* aOther, mozilla::net::nsSimpleURI::RefHandlingEnum aRefHandlingMode,

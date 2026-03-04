@@ -5,6 +5,7 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "AnimationTimeline.h"
+
 #include "mozilla/dom/Animation.h"
 
 namespace mozilla::dom {
@@ -40,17 +41,18 @@ AnimationTimeline::~AnimationTimeline() { mAnimationOrder.clear(); }
 bool AnimationTimeline::Tick(TickState& aState) {
   bool needsTicks = false;
 
-  AutoTArray<RefPtr<Animation>, 32> animationsToTick;
+#ifdef DEBUG
   for (Animation* animation : mAnimationOrder) {
     MOZ_ASSERT(mAnimations.Contains(animation),
                "The sampling order list should be a subset of the hashset");
     MOZ_ASSERT(!animation->IsHiddenByContentVisibility(),
                "The sampling order list should not contain any animations "
                "that are hidden by content-visibility");
-    animationsToTick.AppendElement(animation);
   }
+#endif
 
-  for (Animation* animation : animationsToTick) {
+  for (Animation* animation :
+       ToTArray<AutoTArray<RefPtr<Animation>, 32>>(mAnimationOrder)) {
     // Skip any animations that are longer need associated with this timeline.
     if (animation->GetTimeline() != this) {
       RemoveAnimation(animation);

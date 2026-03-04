@@ -30,6 +30,10 @@ options-context-inspector = Инспектор
 options-show-user-agent-styles-label = Отображать стили браузера
 options-show-user-agent-styles-tooltip =
     .title = Включение приведёт к отображению стилей по умолчанию, применяемых браузером.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Показать теневую DOM браузера
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Включение приведёт к отображению элементов теневого DOM, обрабатываемых браузером.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = Обрезать атрибуты DOM
 options-collapse-attrs-tooltip =
@@ -42,7 +46,7 @@ options-inspector-draggable-properties-tooltip =
 # within the inspector for users who enabled prefers-reduced-motion = reduce
 options-inspector-simplified-highlighters-label = Использовать более простые маркеры с prefers-reduced-motion
 options-inspector-simplified-highlighters-tooltip =
-    .title = Включает упрощенные маркеры, когда включена функция prefers-reduced-motion. Рисует линии вместо закрашенных прямоугольников вокруг выделенных элементов, чтобы избежать эффекта мерцания.
+    .title = Включает упрощённые маркеры, когда включена функция prefers-reduced-motion. Рисует линии вместо закрашенных прямоугольников вокруг выделенных элементов, чтобы избежать эффекта мерцания.
 # The label for the checkbox option to make the Enter key move the focus to the next input
 # when editing a property name or value in the Inspector rules view
 options-inspector-rules-focus-next-on-enter-label = Сфокусировать следующий ввод на <kbd>Enter</kbd>
@@ -116,13 +120,15 @@ options-disable-http-cache-label = Отключить HTTP-кеш (когда о
 options-disable-http-cache-tooltip =
     .title = Включение этой опции отключит HTTP-кеш для всех вкладок, в которых открыта панель инструментов. Эта опция не влияет на Service Worker'ы.
 # The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = Отключить JavaScript
+# The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = Отключить JavaScript *
 options-disable-javascript-tooltip =
     .title = Включение этой опции приведёт к отключению JavaScript для текущей вкладки. Если вкладка или панель инструментов будут закрыты, то этот параметр будет сброшен.
 # The label for checkbox that toggles chrome debugging, i.e. the devtools.chrome.enabled preference
 options-enable-chrome-label = Включить инструменты отладки browser chrome и дополнений
 options-enable-chrome-tooltip =
-    .title = Включение этой опции позволит вам использовать различные инструменты разработчика в контексте браузера (через Инструменты > Веб-разработка > Инструменты браузера) и отлаживать дополнения из окна Управления дополнениями
+    .title = Включение этого параметра позволит вам использовать различные инструменты разработчика в контексте браузера (через «Инструменты» > «Веб-разработка» > «Инструменты браузера») и отлаживать дополнения из окна управления дополнениями
 # The label for checkbox that toggles remote debugging, i.e. the devtools.debugger.remote-enabled preference
 options-enable-remote-label = Включить удалённую отладку
 options-enable-remote-tooltip2 =
@@ -140,8 +146,14 @@ options-enable-service-workers-http-label = Включить Service Worker'ы �
 options-enable-service-workers-http-tooltip =
     .title = Включение этой опции включит service worker'ы поверх HTTP для всех вкладок, в которых открыта панель инструментов.
 # The label for the checkbox that toggles source maps in all tools.
-options-source-maps-label = Включить Карты Исходников
+options-source-maps-label = Включить карты исходников
 options-source-maps-tooltip =
     .title = Если вы включите эту настройку, исходники будут картированы в инструментах.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (только текущая сессия, перезагружает страницу)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Только текущая сессия, перезагружает страницу
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (перезагружает страницу)

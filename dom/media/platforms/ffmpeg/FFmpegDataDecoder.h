@@ -15,6 +15,10 @@
 #include "FFmpegLibs.h"
 
 namespace mozilla {
+#if defined(MOZ_WIDGET_ANDROID) && defined(USING_MOZFFVPX)
+class MediaDrmCrypto;
+class MediaDrmRemoteCDMParent;
+#endif
 
 template <int V>
 class FFmpegDataDecoder : public MediaDataDecoder {};
@@ -30,7 +34,8 @@ class FFmpegDataDecoder<LIBAV_VER>
  public:
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(FFmpegDataDecoder, final);
 
-  FFmpegDataDecoder(FFmpegLibWrapper* aLib, AVCodecID aCodecID);
+  FFmpegDataDecoder(const FFmpegLibWrapper* aLib, AVCodecID aCodecID,
+                    PRemoteCDMActor* aCDM);
 
   static bool Link();
 
@@ -40,9 +45,12 @@ class FFmpegDataDecoder<LIBAV_VER>
   RefPtr<FlushPromise> Flush() override;
   RefPtr<ShutdownPromise> Shutdown() override;
 
-  static AVCodec* FindAVCodec(FFmpegLibWrapper* aLib, AVCodecID aCodec);
-#ifdef MOZ_WIDGET_GTK
-  static AVCodec* FindHardwareAVCodec(FFmpegLibWrapper* aLib, AVCodecID aCodec);
+  static AVCodec* FindSoftwareAVCodec(const FFmpegLibWrapper* aLib,
+                                      AVCodecID aCodec);
+#ifdef MOZ_USE_HWDECODE
+  static AVCodec* FindHardwareAVCodec(
+      const FFmpegLibWrapper* aLib, AVCodecID aCodec,
+      AVHWDeviceType aDeviceType = AV_HWDEVICE_TYPE_NONE);
 #endif
 
  protected:
@@ -50,19 +58,33 @@ class FFmpegDataDecoder<LIBAV_VER>
   virtual RefPtr<FlushPromise> ProcessFlush();
   virtual void ProcessShutdown();
   virtual void InitCodecContext() MOZ_REQUIRES(sMutex) {}
+  void ReleaseCodecContext() MOZ_REQUIRES(sMutex);
   AVFrame* PrepareFrame();
-  MediaResult InitDecoder(AVDictionary** aOptions);
+  MediaResult InitSWDecoder(AVDictionary** aOptions);
+  MediaResult InitDecoder(AVCodec* aCodec, AVDictionary** aOptions);
   MediaResult AllocateExtraData();
   MediaResult DoDecode(MediaRawData* aSample, bool* aGotFrame,
                        DecodedData& aResults);
 
-  FFmpegLibWrapper* mLib;  // set in constructor
+#if defined(MOZ_WIDGET_ANDROID) && defined(USING_MOZFFVPX)
+  static void CryptoInfoAddRef(void* aCryptoInfo);
+  static void CryptoInfoRelease(void* aCryptoInfo);
+  MediaResult MaybeAttachCryptoInfo(MediaRawData* aSample, AVPacket* aPacket);
+  MediaResult MaybeAttachCDM();
+  void MaybeDetachCDM();
+#endif
+
+  const FFmpegLibWrapper* mLib;  // set in constructor
 
   // mCodecContext is accessed on taskqueue only, no locking needed
   AVCodecContext* mCodecContext;
   AVCodecParserContext* mCodecParser;
   AVFrame* mFrame;
   RefPtr<MediaByteBuffer> mExtraData;
+#if defined(MOZ_WIDGET_ANDROID) && defined(FFVPX_VERSION)
+  RefPtr<MediaDrmCrypto> mCrypto;
+  RefPtr<MediaDrmRemoteCDMParent> mCDM;
+#endif
   AVCodecID mCodecID;  // set in constructor
   bool mVideoCodec;
 
@@ -73,9 +95,11 @@ class FFmpegDataDecoder<LIBAV_VER>
                               // for calls into ffmpeg
   const RefPtr<TaskQueue> mTaskQueue;  // set in constructor
 
+  RefPtr<DecodePromise> ProcessDrain();
+  MozPromiseHolder<DecodePromise> mDrainPromise;
+
  private:
   RefPtr<DecodePromise> ProcessDecode(MediaRawData* aSample);
-  RefPtr<DecodePromise> ProcessDrain();
   virtual MediaResult DoDecode(MediaRawData* aSample, uint8_t* aData, int aSize,
                                bool* aGotFrame,
                                MediaDataDecoder::DecodedData& aOutResults) = 0;

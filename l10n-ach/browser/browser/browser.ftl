@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # This gets set as the initial title, and is overridden as soon as we start
 # updating the titlebar based on loaded tabs or private browsing state.
 # This should match the `data-title-default` attribute in both
@@ -98,9 +95,6 @@ urlbar-star-edit-bookmark =
 urlbar-star-add-bookmark =
     .tooltiptext = Ket alama buk i pot buk man ({ $shortcut })
 
-## Page Action Context Menu
-
-
 ## Auto-hide Context Menu
 
 full-screen-autohide =
@@ -144,14 +138,6 @@ search-one-offs-add-engine =
 # submenu using this as its label.
 search-one-offs-add-engine-menu =
     .label = Med injin me yeny
-
-## Local search mode one-off buttons
-## Variables:
-##  $restrict (String): The restriction token corresponding to the search mode.
-##    Restriction tokens are special characters users can type in the urlbar to
-##    restrict their searches to certain sources (e.g., "*" to search only
-##    bookmarks).
-
 
 ## QuickActions are shown in the urlbar as the user types a matching string
 ## The -cmd- strings are comma separated list of keywords that will match
@@ -249,17 +235,6 @@ browser-window-minimize-button =
 browser-window-close-button =
     .tooltiptext = Lor
 
-## Tab actions
-
-
-## These labels should be written in all capital letters if your locale supports them.
-## Variables:
-##  $count (number): number of affected tabs
-
-
-## Bookmarks toolbar items
-
-
 ## WebRTC Pop-up notifications
 
 popup-all-windows-shared = Ki binywako dirica weng ma nen i wang kompiuta ni.
@@ -269,9 +244,6 @@ popup-all-windows-shared = Ki binywako dirica weng ma nen i wang kompiuta ni.
 sharing-warning-window = Itye ka nywako { -brand-short-name }. Jo mukene twero neno kacce iloke i dirica matidi manyen.
 sharing-warning-proceed-to-tab =
     .label = Mede i Dirica matidi
-
-## DevTools F12 popup
-
 
 ## URL Bar
 
@@ -334,6 +306,15 @@ urlbar-result-action-before-tabtosearch-other = Dii Dirica matidi me yenyo { $en
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## Strings used for buttons in the urlbar
+
+urlbar-searchmode-bookmarks =
+    .label = Alama buk
+urlbar-searchmode-tabs =
+    .label = Dirica matino
+urlbar-searchmode-history =
+    .label = Gin mukato
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -357,11 +338,6 @@ reader-view-enter-button =
 # This should match menu-view-close-readerview in menubar.ftl
 reader-view-close-button =
     .aria-label = Lor Neno me Kwan
-
-## Picture-in-Picture urlbar button
-## Variables:
-##   $shortcut (String) - Keyboard shortcut to execute the command.
-
 
 ## Full Screen and Pointer Lock UI
 
@@ -446,9 +422,6 @@ save-to-pocket-button =
     .label = Gwok i { -pocket-brand-name }
     .tooltiptext = Gwok i { -pocket-brand-name }
 
-## Repair text encoding toolbar button
-
-
 ## Customize Toolbar Buttons
 
 toolbar-overflow-customize-button =
@@ -480,9 +453,6 @@ toolbar-button-new-private-window =
 
 eme-notifications-drm-content-playing = Dwon ki vidio mogo i kakube man tiyo ki purugram me DRM, ma romo gengo { -brand-short-name } mene ma weko itiyo kwede.
 
-## Password save/update panel
-
-
 ##
 
 # "More" item in macOS share menu
@@ -506,10 +476,6 @@ popups-infobar-block =
 popups-infobar-dont-show-message =
     .label = Pe inyut kwena man kace kigengo pye-malo woko
     .accesskey = D
-
-## Since the default position for PiP controls does not change for RTL layout,
-## right-to-left languages should use "Left" and "Right" as in the English strings,
-
 
 ##
 
@@ -555,20 +521,6 @@ data-reporting-notification-button =
     .label = Yer ngo ma anywako
     .accesskey = Y
 
-## Unified extensions (toolbar) button
-
-
-## Unified extensions button when permission(s) are needed.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Unified extensions button when some extensions are quarantined.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Private browsing reset button
-
-
 ## Autorefresh blocker
 
 refresh-blocked-refresh-label = { -brand-short-name } ogengo pot buk man me cane odoco pire kene.
@@ -576,9 +528,6 @@ refresh-blocked-redirect-label = { -brand-short-name } ogengo pot buk man me wir
 refresh-blocked-allow =
     .label = Ye
     .accesskey = A
-
-## Firefox Relay integration
-
 
 ## Add-on Pop-up Notifications
 

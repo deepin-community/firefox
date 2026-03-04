@@ -46,25 +46,3 @@ experimental-features-js-warp-description = 開啟改善 JavaScript 效能與記
 experimental-features-ime-search =
     .label = 網址列：於輸入法未選字時就顯示搜尋引擎回傳的結果
 experimental-features-ime-search-description = 東亞與印度語系使用者須使用輸入法才能在標準鍵盤輸入各種文字。開啟此實驗功能後將在輸入字根的過程中保持開啟網址列面板，並在還沒有決定文字時，就依照輸入內容顯示搜尋結果與建議。請注意：某些輸入法可能會顯示輸入面板，蓋過網址列顯示的結果，因此建議您只在使用的輸入法不會顯示輸入面板，或顯示的面板不會覆蓋搜尋框時，開啟此設定。
-# Auto Picture-in-Picture
-experimental-features-auto-pip =
-    .label = 子母畫面：切換分頁時自動開啟
-experimental-features-auto-pip-description = 切換分頁時，於播放中的影片開啟子母畫面。
-genai-settings-chat-title =
-    .label = AI 聊天機器人
-# Updated sidebar settings
-sidebar-title =
-    .label = 側邊欄
-sidebar-description = 輕鬆存取您的瀏覽紀錄、其他裝置上的分頁、側邊欄擴充套件，並且隨您上網新增更多內容。<a data-l10n-name="connect">分享意見回饋</a>
-vertical-tabs-title =
-    .label = 垂直分頁標籤
-vertical-tabs-description = 將您的分頁從瀏覽器頂端移到側邊，需要您也試用側邊欄功能。<a data-l10n-name="connect">分享意見回饋</a>
-experimental-features-group-browsing =
-    .label = 瀏覽
-experimental-features-group-developer-tools =
-    .label = 開發者工具
-experimental-features-group-webpage-display =
-    .label = 網頁顯示
-experimental-features-group-customize-browsing =
-    .label = 自訂您的上網體驗
-experimental-features-group-customize-browsing-description = 若您試用完這些功能，歡迎到 <a data-l10n-name="connect">Connect 分享您的想法</a>

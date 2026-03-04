@@ -3,18 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -145,8 +133,6 @@ menu-view-history-button =
     .label = Lịch sử
 menu-view-synced-tabs-sidebar =
     .label = Các thẻ đã đồng bộ
-menu-view-megalist-sidebar =
-    .label = Mật khẩu
 menu-view-full-zoom =
     .label = Thu phóng
     .accesskey = Z
@@ -254,6 +240,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Dấu trang trên di động
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Hồ sơ
+menu-profiles-manage-profiles =
+    .label = Quản lý hồ sơ
+menu-profiles-new-profile =
+    .label = Hồ sơ mới
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (hiện tại)
+menu-profiles-menu =
+    .label = Hồ sơ
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -262,6 +264,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Tải xuống
     .accesskey = D
+menu-tools-extensions-and-themes =
+    .label = Tiện ích mở rộng và chủ đề
+    .accesskey = E
 menu-tools-addons-and-themes =
     .label = Tiện ích mở rộng và chủ đề
     .accesskey = A

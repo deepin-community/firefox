@@ -8,17 +8,18 @@ crashreporter-crashed-and-restore = { -brand-short-name } ਨੂੰ ਸਮੱਸ
 crashreporter-plea = ਸਾਨੂੰ ਇਹ ਦੀ ਜਾਂਚ ਕਰਨ ਅਤੇ ਸਮੱਸਿਆ ਠੀਕ ਕਰਨ ਲਈ ਤੁਸੀਂ ਸਾਨੂੰ ਇੱਕ ਕਰੈਸ਼ ਰਿਪੋਰਟ ਭੇਜ ਸਕਦੇ ਹੋ।
 crashreporter-information = ਇਹ ਐਪਲੀਕੇਸ਼ਨ { -vendor-short-name } ਨੂੰ ਸਮੱਸਿਆ ਬਾਰੇ ਇੱਕ ਕਰੈਸ਼ ਰਿਪੋਰਟ ਦੇ ਬਾਅਦ ਕਰੈਸ਼ ਹੋਈ ਹੈ। ਕੀ ਇਸ ਨੂੰ ਸਿੱਧਾ ਨਹੀਂ ਚਲਾਉਣਾ ਚਾਹੀਦਾ।
 crashreporter-error = { -brand-short-name } ਨੂੰ ਸਮੱਸਿਆ ਆਈ ਅਤੇ ਕਰੈਸ਼ ਹੋ ਗਿਆ। ਅਫ਼ਸੋਸ ਹੈ ਕਿ ਕਰੈਸ਼ ਰਿਪੋਰਟਰ ਇਸ ਕਰੈਸ਼ ਵਾਸਤੇ ਰਿਪੋਰਟ ਭੇਜਣ ਲਈ ਅਸਮਰੱਥ ਹੈ।
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = ਵੇਰਵਾ: { $details }
+crashreporter-error-details-header = ਵੇਰਵੇ:
 crashreporter-no-run-message = ਇਹ ਐਪਲੀਕੇਸ਼ਨ ਐਪਲੀਕੇਸ਼ਨ ਵੇਂਡਰ ਨੂੰ ਸਮੱਸਿਆ ਬਾਰੇ ਇੱਕ ਕਰੈਸ਼ ਰਿਪੋਰਟ ਦੇ ਬਾਅਦ ਕਰੈਸ਼ ਹੋਈ ਹੈ। ਕੀ ਇਸ ਨੂੰ ਸਿੱਧਾ ਨਹੀਂ ਚਲਾਉਣਾ ਚਾਹੀਦਾ।
 crashreporter-button-details = ਵੇਰਵਾ…
 crashreporter-loading-details = …ਲੋਡ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ
 crashreporter-view-report-title = ਰਿਪੋਰਟ ਸਮੱਗਰੀ
 crashreporter-comment-prompt = ਇੱਕ ਟਿੱਪਣੀ ਸ਼ਾਮਲ ਕਰੋ। ਨੋਟ: ਟਿੱਪਣੀਆਂ ਪਬਲਿਕ ਹਨ
 crashreporter-report-info = ਇਸ ਰਿਪੋਰਟ ਵਿੱਚ ਐਪਲੀਕੇਸ਼ਨ ਦੀ ਹਾਲਤ ਬਾਰੇ ਡਾਟਾ ਹੈ, ਜਦੋਂ ਕਿ ਇਹ ਕਰੈਸ਼ ਹੋਈ ਸੀ।
-crashreporter-send-report = { -vendor-short-name } ਨੂੰ ਇਸ ਕਰੈਸ਼ ਬਾਰੇ ਜਾਣਕਾਰੀ ਦਿਓ ਤਾਂ ਕਿ ਉਹ ਇਸ ਨੂੰ ਠੀਕ ਕਰ ਸਕਣ।
-crashreporter-include-url = ਜੋ ਸਫ਼ਾ ਮੈਂ ਖੋਲ੍ਹਿਆ ਸੀ, ਉਸ ਦੇ ਸਿਰਨਾਵੇਂ ਸ਼ਾਮਲ ਕਰੋ।
+crashreporter-checkbox-test-hardware = ਮੇਰੇ ਡਿਵਾਈਸ ਉੱਤੇ ਹਾਰਡਵੇਅਰ ਅਤੇ ਸੰਰਚਨਾ ਸਮੱਸਿਆਵਾਂ ਲਈ ਜਾਂਚ ਕਰੋ।
+crashreporter-checkbox-send-report = { -vendor-short-name } ਨੂੰ ਇਸ ਕਰੈਸ਼ ਬਾਰੇ ਜਾਣਕਾਰੀ ਦਿਓ ਤਾਂ ਕਿ ਉਹ ਇਸ ਨੂੰ ਠੀਕ ਕਰ ਸਕਣ।
+crashreporter-checkbox-include-url = ਜੋ ਸਫ਼ਾ ਮੈਂ ਖੋਲ੍ਹਿਆ ਸੀ, ਉਸ ਦੇ ਸਿਰਨਾਵੇਂ ਸ਼ਾਮਲ ਕਰੋ।
 crashreporter-submit-status = ਤੁਹਾਡੇ ਬੰਦ ਕਰਨ ਜਾਂ ਮੁੜ-ਚਾਲੂ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਤੁਹਾਡੀ ਕਰੈਸ਼  ਰਿਪੋਰਟ ਭੇਜੀ ਜਾਵੇਗੀ।
+crashreporter-submit-waiting-hardware-tests = ਹਾਰਡਵੇਅਰ ਅਤੇ ਸੰਰਚਨਾ ਸਮੱਸਿਆਵਾਂ ਲਈ ਜਾਂਚ ਕਰੋ…
 crashreporter-submit-in-progress = ਤੁਹਾਡੀ ਰਿਪੋਰਟ ਭੇਜੀ ਜਾ ਰਹੀ ਹੈ...
 crashreporter-submit-success = ਰਿਪੋਰਟ ਠੀਕ ਤਰ੍ਹਾਂ ਭੇਜੀ ਗਈ
 crashreporter-submit-failure = ਤੁਹਾਡੀ ਰਿਪੋਰਟ ਭੇਜਣ ਦੌਰਾਨ ਸਮੱਸਿਆ ਹੈ।
@@ -34,7 +35,6 @@ crashreporter-crash-details = ਇਸ ਕਰੈਸ਼ ਦੇ ਵੇਰਵਿਆਂ �
 
 # Error strings
 
-crashreporter-error-minidump-analyzer = ਮਿੰਨੀ-ਡੰਪ-ਵਿਸ਼ਲੇਸ਼ਕ ਚਲਾਉਣ ਲਈ ਅਸਫ਼ਲ
 # $path (String) - the file path
 crashreporter-error-opening-file = ਫ਼ਾਇਲ ({ $path }) ਨੂੰ ਖੋਲ੍ਹਣ ਲਈ ਅਸਫ਼ਲ ਹੈ
 # $path (String) - the file path
@@ -46,3 +46,4 @@ crashreporter-error-no-home-dir = ਹੋਮ ਡਾਇਰੈਕਟਰੀ ਗੁ�
 # $to (String) - the destination path
 crashreporter-error-moving-path = { $from } ਤੋਂ { $to } ਲਈ ਭੇਜਣ ਲਈ ਅਸਫ਼ਲ ਹੈ
 crashreporter-error-version-eol = ਵਰਜ਼ਨ ਗ਼ੈਰ-ਸਹਾਇਕ: ਕਰੈਸ਼ ਰਿਪੋਰਟਾਂ ਹੁਣ ਮਨਜ਼ੂਰ ਨਹੀਂ ਕੀਤੀਆਂ ਜਾਂਦੀਆਂ ਹਨ।
+crashreporter-error-failed-to-generate-minidump = ਐਪਲੀਕੇਸ਼ਨ ਕਰੈਸ਼ ਜਾਣਕਾਰੀ ਤਿਆਰ ਕਰਨ ਲਈ ਅਸਫ਼ਲ ਹੈ।

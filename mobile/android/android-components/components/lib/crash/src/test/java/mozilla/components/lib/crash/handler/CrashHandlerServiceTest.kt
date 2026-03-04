@@ -7,7 +7,6 @@ package mozilla.components.lib.crash.handler
 import android.content.ComponentName
 import android.content.Intent
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import mozilla.components.lib.crash.CrashReporter
 import mozilla.components.support.test.any
 import mozilla.components.support.test.mock
@@ -19,6 +18,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito.doAnswer
 import org.mockito.Mockito.doNothing
 import org.mockito.Mockito.never
 import org.mockito.Mockito.spy
@@ -26,7 +26,6 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.robolectric.Robolectric
 
-@ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
 class CrashHandlerServiceTest {
     private var service: CrashHandlerService? = null
@@ -47,7 +46,6 @@ class CrashHandlerServiceTest {
                 services = listOf(mock()),
                 nonFatalCrashIntent = mock(),
                 scope = scope,
-                notificationsDelegate = mock(),
             ),
         ).install(testContext)
 
@@ -67,7 +65,6 @@ class CrashHandlerServiceTest {
             "extrasPath",
             "/data/data/org.mozilla.samples.browser/files/mozilla/Crash Reports/pending/3ba5f665-8422-dc8e-a88e-fc65c081d304.extra",
         )
-        intent.putExtra("minidumpSuccess", true)
 
         service!!.startService(intent)
     }
@@ -80,9 +77,9 @@ class CrashHandlerServiceTest {
 
     @Test
     fun `CrashHandlerService forwards main process native code crash to crash reporter`() = runTestOnMain {
-        doNothing().`when`(reporter)!!.sendCrashReport(any(), any())
+        doAnswer {}.`when`(reporter)!!.sendCrashReport(any(), any())
 
-        intent.putExtra("processType", "MAIN")
+        intent.putExtra("processVisibility", "MAIN")
         service!!.handleCrashIntent(intent, coroutinesTestRule.scope)
         verify(reporter)!!.onCrash(any(), any())
         verify(reporter)!!.sendCrashReport(any(), any())
@@ -91,9 +88,9 @@ class CrashHandlerServiceTest {
 
     @Test
     fun `CrashHandlerService forwards foreground child process native code crash to crash reporter`() = runTestOnMain {
-        doNothing().`when`(reporter)!!.sendCrashReport(any(), any())
+        doAnswer {}.`when`(reporter)!!.sendCrashReport(any(), any())
 
-        intent.putExtra("processType", "FOREGROUND_CHILD")
+        intent.putExtra("processVisibility", "FOREGROUND_CHILD")
         service!!.handleCrashIntent(intent, coroutinesTestRule.scope)
         verify(reporter)!!.onCrash(any(), any())
         verify(reporter)!!.sendNonFatalCrashIntent(any(), any())
@@ -102,9 +99,9 @@ class CrashHandlerServiceTest {
 
     @Test
     fun `CrashHandlerService forwards background child process native code crash to crash reporter`() = runTestOnMain {
-        doNothing().`when`(reporter)!!.sendCrashReport(any(), any())
+        doAnswer {}.`when`(reporter)!!.sendCrashReport(any(), any())
 
-        intent.putExtra("processType", "BACKGROUND_CHILD")
+        intent.putExtra("processVisibility", "BACKGROUND_CHILD")
         service!!.handleCrashIntent(intent, coroutinesTestRule.scope)
         verify(reporter)!!.onCrash(any(), any())
         verify(reporter)!!.sendCrashReport(any(), any())

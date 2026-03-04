@@ -21,6 +21,7 @@ policy-AutofillAddressEnabled = Omogoči samodejno izpolnjevanje naslovov.
 policy-AutofillCreditCardEnabled = Omogoči samodejno izpolnjevanje plačilnih sredstev.
 policy-AutoLaunchProtocolsFromOrigins = Določi seznam zunanjih protokolov, ki jih je mogoče uporabiti z navedenih virov brez poziva uporabniku.
 policy-BackgroundAppUpdate2 = Omogoči ali onemogoči storitev za posodobitve v ozadju.
+policy-Backup = Onemogoči varnostno kopiranje ali obnovitev podatkov profila.
 policy-BlockAboutAddons = Zavrni dostop do upravitelja dodatkov (about:addons).
 policy-BlockAboutConfig = Zavrni dostop do strani about:config.
 policy-BlockAboutProfiles = Zavrni dostop do strani about:profiles.
@@ -55,6 +56,7 @@ policy-DisablePocket2 = Onemogoči možnost shranjevanja spletnih strani v { -po
 policy-DisablePrivateBrowsing = Onemogoči zasebno brskanje.
 policy-DisableProfileImport = Onemogoči menijski ukaz Uvozi podatke drugega brskalnika.
 policy-DisableProfileRefresh = Onemogoči gumb Osveži { -brand-short-name } na strani about:support.
+policy-DisableRemoteImprovements = { -brand-short-name(sklon: "dajalnik") } prepreči uveljavljanje sprememb učinkovitosti delovanja, zanesljivosti in funkcij med posodobitvami.
 policy-DisableSafeMode = Onemogoči možnost za ponovni zagon v varnem načinu. Opomba: zagon varnega načina s tipko Shift lahko v sistemu Windows onemogočite le z uporabo pravilnika skupine.
 policy-DisableSecurityBypass = Uporabniku prepreči, da zaobide določena varnostna opozorila.
 policy-DisableSetAsDesktopBackground = Onemogoči menijski ukaz Nastavi kot ozadje namizja za slike.
@@ -79,6 +81,7 @@ policy-ExtensionSettings = Upravljaj vse vidike namestitve razširitve.
 policy-ExtensionUpdate = Omogoči ali onemogoči samodejno posodabljanje razširitev.
 policy-FirefoxHome2 = Nastavi { -firefox-home-brand-name(sklon: "tozilnik") }.
 policy-FirefoxSuggest = Nastavi { -firefox-suggest-brand-name }.
+policy-GenerativeAI = Nastavi funkcije generativne UI.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Ob vnosu ene besede v naslovno vrstico prisili neposredno krmarjenje na intranetno stran namesto iskanja.
 policy-Handlers = Nastavite privzete upravljalce aplikacij.
 policy-HardwareAcceleration = Če je "false", izklopi strojno pospeševanje.
@@ -97,6 +100,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Ponastavi zastarelo ve
 ##
 
 policy-LocalFileLinks = Določenim spletnim mestom dovoli povezovanje na krajevne datoteke.
+policy-LocalNetworkAccess = Omogoči ali onemogoči preverjanje dostopa do lokalnega omrežja.
 policy-ManagedBookmarks = Nastavi seznam zaznamkov, ki jih upravlja skrbnik in jih uporabnik ne more spremeniti.
 policy-ManualAppUpdateOnly = Dovoli samo ročne posodobitve in ne obveščaj uporabnika o posodobitvah.
 policy-PrimaryPassword = Zahtevaj ali prepreči uporabo glavnega gesla.
@@ -117,6 +121,7 @@ policy-PostQuantumKeyAgreementEnabled = Omogoči post-kvanten dogovor o ključu 
 policy-PDFjs = Onemogoči ali nastavi PDF.js, pregledovalnik PDF brskalnika { -brand-short-name }.
 policy-Permissions2 = Nastavi dovoljenja za kamero, mikrofon, lokacijo, obvestila in samodejno predvajanje.
 policy-PictureInPicture = Omogoči ali onemogoči sliko v sliki
+policy-PopupBlocking2 = Določenim spletnim mestom dovoli prikazovanje pojavnih oken in jih preusmerjajo okvirji tretjih strani.
 policy-PopupBlocking = Določenim spletnim mestom privzeto dovoli prikazovanje pojavnih oken.
 policy-Preferences = Nastavi in zakleni vrednost podnabora nastavitev.
 policy-PrivateBrowsingModeAvailability = Nastavi razpoložljivost zasebnega brskanja.
@@ -130,6 +135,8 @@ policy-SearchSuggestEnabled = Omogoči ali onemogoči predloge iskanja.
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = Dodaj ali izbriši module PKCS #11.
 policy-ShowHomeButton = Prikaži gumb Domov v orodni vrstici.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = Ob zagonu ne prikaži pogojev uporabe in obvestila o zasebnosti. S tem sprejemate pogoje uporabe v svojem in v imenu vseh posameznikov, ki jim omogočite dostop do tega brskalnika.
 policy-SSLVersionMax = Nastavi najnovejšo dovoljeno različico SSL.
 policy-SSLVersionMin = Nastavi najstarejšo dovoljeno različico SSL.
 policy-StartDownloadsInTempDirectory = Vsili shranjevanje prenosov na lokalno začasno mesto namesto v privzeto mapo za prenose.
@@ -137,6 +144,9 @@ policy-SupportMenu = Dodaj poljubno povezavo za podporo v meni Pomoč.
 policy-TranslateEnabled = Omogoči ali onemogoči prevajanje spletnih strani.
 policy-UserMessaging = Uporabniku ne prikazuj določenih sporočil.
 policy-UseSystemPrintDialog = Tiskaj s pomočjo pogovornega okna sistema.
+policy-VisualSearchEnabled = Omogoči ali onemogoči vizualno iskanje.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Prepreči obisk določenih spletnih mest. Za več podrobnosti o obliki glejte dokumentacijo.
 policy-Windows10SSO = Dovoli enotno prijavo v sistem Windows za Microsoftove, službene in šolske račune.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Dovoli enotno prijavo za račune Microsoft Entra.

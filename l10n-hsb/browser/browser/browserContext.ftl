@@ -135,10 +135,10 @@ main-context-menu-open-link-container-tab =
     .accesskey = o
 main-context-menu-open-link-new-window =
     .label = Wotkaz w nowym woknje wočinić
-    .accesskey = k
+    .accesskey = n
 main-context-menu-open-link-new-private-window =
     .label = Wotkaz w nowym priwatnym woknje wočinić
-    .accesskey = o
+    .accesskey = p
 main-context-menu-bookmark-link-2 =
     .label = Wotkaz jako zapołožku składować …
     .accesskey = z
@@ -149,24 +149,26 @@ main-context-menu-save-link-to-pocket =
     .label = Wotkaz do { -pocket-brand-name } składować
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = E-mejlowu adresu kopěrować
-    .accesskey = E
+    .accesskey = a
 main-context-menu-copy-phone =
     .label = Telefonowe čisło kopěrować
     .accesskey = T
 main-context-menu-copy-link-simple =
     .label = Wotkaz kopěrować
-    .accesskey = z
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Wotkaz bjez slědowanja sydła kopěrować
-    .accesskey = o
+    .accesskey = k
+main-context-menu-preview-link =
+    .label = Wotkazowy přehlad
+    .accesskey = k
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Čisty wotkaz kopěrować
+    .accesskey = t
 
 ## Media (video/audio) controls
 ##
@@ -246,7 +248,7 @@ main-context-menu-image-copy-link =
     .accesskey = b
 main-context-menu-video-copy-link =
     .label = Widejowotkaz kopěrować
-    .accesskey = i
+    .accesskey = d
 main-context-menu-audio-copy-link =
     .label = Awdiowotkaz kopěrować
     .accesskey = A
@@ -268,6 +270,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Wopisanje pokazać
     .accesskey = o
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Wobraz z { $engine } pytać
+    .accesskey = b
 main-context-menu-video-save-as =
     .label = Widejo składować jako…
     .accesskey = d
@@ -283,6 +290,9 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Awdiodataju e-mejlować…
     .accesskey = i
+main-context-menu-send-to-device-2 =
+    .label = Na grat pósłać
+    .accesskey = s
 main-context-menu-save-to-pocket =
     .label = Stronu pola { -pocket-brand-name } składować
     .accesskey = k
@@ -290,9 +300,7 @@ main-context-menu-send-to-device =
     .label = Stronu na grat pósłać
     .accesskey = S
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Składowane přizjewjenje wužiwać
@@ -319,6 +327,9 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Hesło za tute pytanje přidać…
     .accesskey = H
+main-context-menu-add-engine =
+    .label = Pytawu přidać
+    .accesskey = P
 main-context-menu-link-send-to-device =
     .label = Wotkaz na grat pósłać
     .accesskey = W
@@ -389,3 +400,5 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Hesło pokazać
     .accesskey = s
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Nowy

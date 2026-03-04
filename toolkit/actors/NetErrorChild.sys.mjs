@@ -7,6 +7,7 @@ const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   AppInfo: "chrome://remote/content/shared/AppInfo.sys.mjs",
+  BrowserUtils: "resource://gre/modules/BrowserUtils.sys.mjs",
 });
 
 import { RemotePageChild } from "resource://gre/actors/RemotePageChild.sys.mjs";
@@ -19,31 +20,34 @@ export class NetErrorChild extends RemotePageChild {
     // to allow content-privileged about:neterror or about:certerror to use it.
     const exportableFunctions = [
       "RPMGetAppBuildID",
-      "RPMGetInnerMostURI",
-      "RPMAddToHistogram",
-      "RPMRecordTelemetryEvent",
+      "RPMGetHostForDisplay",
+      "RPMGetInnermostAsciiHost",
+      "RPMRecordGleanEvent",
       "RPMCheckAlternateHostAvailable",
       "RPMGetHttpResponseHeader",
       "RPMIsTRROnlyFailure",
       "RPMIsFirefox",
-      "RPMIsNativeFallbackFailure",
       "RPMOpenPreferences",
+      "RPMHasConnectivity",
       "RPMGetTRRSkipReason",
       "RPMGetTRRDomain",
       "RPMIsSiteSpecificTRRError",
       "RPMSetTRRDisabledLoadFlags",
       "RPMGetCurrentTRRMode",
+      "RPMShowOSXLocalNetworkPermissionWarning",
     ];
     this.exportFunctions(exportableFunctions);
   }
 
-  getFailedCertChain(docShell) {
+  getHandshakeCertificates(docShell) {
     let securityInfo =
       docShell.failedChannel && docShell.failedChannel.securityInfo;
     if (!securityInfo) {
       return [];
     }
-    return securityInfo.failedCertChain.map(cert => cert.getBase64DERString());
+    return securityInfo.handshakeCertificates.map(cert =>
+      cert.getBase64DERString()
+    );
   }
 
   handleEvent(aEvent) {
@@ -51,39 +55,51 @@ export class NetErrorChild extends RemotePageChild {
     let doc = aEvent.originalTarget.ownerDocument || aEvent.originalTarget;
 
     switch (aEvent.type) {
-      case "click":
+      case "click": {
         let elem = aEvent.originalTarget;
         if (elem.id == "viewCertificate") {
           // Call through the superclass to avoid the security check.
           this.sendAsyncMessage("Browser:CertExceptionError", {
             location: doc.location.href,
             elementId: elem.id,
-            failedCertChain: this.getFailedCertChain(doc.defaultView.docShell),
+            handshakeCertificates: this.getHandshakeCertificates(
+              doc.defaultView.docShell
+            ),
           });
         }
         break;
+      }
     }
   }
 
-  RPMGetInnerMostURI(uriString) {
-    let uri = Services.io.newURI(uriString);
+  RPMGetHostForDisplay(document) {
+    // Note: not document.documentURIObject, which will be the network error
+    // page's URI - we want the URI of the page that failed to load.
+    let uri = document.mozDocumentURIIfNotForErrorPages;
+    return lazy.BrowserUtils.formatURIForDisplay(uri);
+  }
+
+  /**
+   * Use this to get the ascii host for the load that showed an error.
+   * Do NOT rely on `document.location.href` or similar as it will not work
+   * reliably for nested URLs like view-source.
+   *
+   * @returns {string} ASCII (potentially punycode) version of the hostname.
+   */
+  RPMGetInnermostAsciiHost() {
+    let uri = this.contentWindow.document.mozDocumentURIIfNotForErrorPages;
     if (uri instanceof Ci.nsINestedURI) {
       uri = uri.QueryInterface(Ci.nsINestedURI).innermostURI;
     }
-
-    return uri.spec;
+    return uri.asciiHost;
   }
 
   RPMGetAppBuildID() {
     return Services.appinfo.appBuildID;
   }
 
-  RPMAddToHistogram(histID, bin) {
-    Services.telemetry.getHistogramById(histID).add(bin);
-  }
-
-  RPMRecordTelemetryEvent(category, event, object, value, extra) {
-    Services.telemetry.recordEvent(category, event, object, value, extra);
+  RPMRecordGleanEvent(category, name, extra) {
+    Glean[category]?.[name]?.record(extra);
   }
 
   RPMCheckAlternateHostAvailable() {
@@ -134,11 +150,15 @@ export class NetErrorChild extends RemotePageChild {
       },
     };
 
-    Services.uriFixup.checkHost(
-      info.fixedURI,
-      onLookupCompleteListener,
-      this.document.nodePrincipal.originAttributes
-    );
+    try {
+      Services.uriFixup.checkHost(
+        info.fixedURI,
+        onLookupCompleteListener,
+        this.document.nodePrincipal.originAttributes
+      );
+    } catch (ex) {
+      // Ignore errors.
+    }
   }
 
   // Get the header from the http response of the failed channel. This function
@@ -176,45 +196,16 @@ export class NetErrorChild extends RemotePageChild {
     return lazy.AppInfo.isFirefox;
   }
 
+  RPMHasConnectivity() {
+    // Whether the browser has active network interfaces or not.
+    return Services.io.connectivity;
+  }
+
   _getTRRSkipReason() {
     let channel = this.contentWindow?.docShell?.failedChannel?.QueryInterface(
       Ci.nsIHttpChannelInternal
     );
     return channel?.trrSkipReason ?? Ci.nsITRRSkipReason.TRR_UNSET;
-  }
-
-  RPMIsNativeFallbackFailure() {
-    if (!this.contentWindow?.navigator.onLine) {
-      return false;
-    }
-
-    let skipReason = this._getTRRSkipReason();
-
-    if (
-      Services.dns.currentTrrMode === Ci.nsIDNSService.MODE_TRRFIRST &&
-      skipReason === Ci.nsITRRSkipReason.TRR_NOT_CONFIRMED
-    ) {
-      return true;
-    }
-
-    const warningReasons = new Set([
-      Ci.nsITRRSkipReason.TRR_HEURISTIC_TRIPPED_GOOGLE_SAFESEARCH,
-      Ci.nsITRRSkipReason.TRR_HEURISTIC_TRIPPED_YOUTUBE_SAFESEARCH,
-      Ci.nsITRRSkipReason.TRR_HEURISTIC_TRIPPED_ZSCALER_CANARY,
-      Ci.nsITRRSkipReason.TRR_HEURISTIC_TRIPPED_CANARY,
-      Ci.nsITRRSkipReason.TRR_HEURISTIC_TRIPPED_MODIFIED_ROOTS,
-      Ci.nsITRRSkipReason.TRR_HEURISTIC_TRIPPED_PARENTAL_CONTROLS,
-      Ci.nsITRRSkipReason.TRR_HEURISTIC_TRIPPED_THIRD_PARTY_ROOTS,
-      Ci.nsITRRSkipReason.TRR_HEURISTIC_TRIPPED_ENTERPRISE_POLICY,
-      Ci.nsITRRSkipReason.TRR_HEURISTIC_TRIPPED_VPN,
-      Ci.nsITRRSkipReason.TRR_HEURISTIC_TRIPPED_PROXY,
-      Ci.nsITRRSkipReason.TRR_HEURISTIC_TRIPPED_NRPT,
-    ]);
-
-    return (
-      Services.dns.currentTrrMode === Ci.nsIDNSService.MODE_NATIVEONLY &&
-      warningReasons.has(skipReason)
-    );
   }
 
   RPMGetTRRSkipReason() {
@@ -240,5 +231,19 @@ export class NetErrorChild extends RemotePageChild {
   RPMSetTRRDisabledLoadFlags() {
     this.contentWindow.docShell.browsingContext.defaultLoadFlags |=
       Ci.nsIRequest.LOAD_TRR_DISABLED_MODE;
+  }
+
+  RPMShowOSXLocalNetworkPermissionWarning() {
+    if (!lazy.AppInfo.isMac) {
+      return false;
+    }
+
+    // Ideally we'd only show this error for local network loads
+    // but right now it's difficult to determine if the socket
+    // was blocked by the OS or if the target port was closed. (bug 1919889)
+    // For now we err on the side of displaying the warning message.
+    let version = parseInt(Services.sysinfo.getProperty("version"));
+    // We only show this error on Sequoia or later
+    return version >= 24;
   }
 }

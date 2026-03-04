@@ -55,6 +55,13 @@ GtkCompositorWidget::GtkCompositorWidget(
 GtkCompositorWidget::~GtkCompositorWidget() {
   LOG("GtkCompositorWidget::~GtkCompositorWidget [%p]\n", (void*)mWidget.get());
   CleanupResources();
+#ifdef MOZ_WAYLAND
+  if (mNativeLayerRoot) {
+    NS_DispatchToMainThread(NS_NewRunnableFunction(
+        "~GtkCompositorWidget::NativeLayerRootWayland::Shutdown()",
+        [root = RefPtr{mNativeLayerRoot}]() -> void { root->Shutdown(); }));
+  }
+#endif
   RefPtr<nsIWidget> widget = mWidget.forget();
   NS_ReleaseOnMainThread("GtkCompositorWidget::mWidget", widget.forget());
 }
@@ -66,9 +73,8 @@ void GtkCompositorWidget::EndRemoteDrawing() {}
 
 already_AddRefed<gfx::DrawTarget>
 GtkCompositorWidget::StartRemoteDrawingInRegion(
-    const LayoutDeviceIntRegion& aInvalidRegion,
-    layers::BufferMode* aBufferMode) {
-  return mProvider.StartRemoteDrawingInRegion(aInvalidRegion, aBufferMode);
+    const LayoutDeviceIntRegion& aInvalidRegion) {
+  return mProvider.StartRemoteDrawingInRegion(aInvalidRegion);
 }
 
 void GtkCompositorWidget::EndRemoteDrawingInRegion(
@@ -87,30 +93,18 @@ void GtkCompositorWidget::NotifyClientSizeChanged(
   *size = aClientSize;
 }
 
+void GtkCompositorWidget::NotifyFullscreenChanged(bool aIsFullscreen) {
+#ifdef MOZ_WAYLAND
+  if (mNativeLayerRoot) {
+    LOG("GtkCompositorWidget::NotifyFullscreenChanged() [%d]", aIsFullscreen);
+    mNativeLayerRoot->NotifyFullscreenChanged(aIsFullscreen);
+  }
+#endif
+}
+
 LayoutDeviceIntSize GtkCompositorWidget::GetClientSize() {
   auto size = mClientSize.Lock();
   return *size;
-}
-
-void GtkCompositorWidget::RemoteLayoutSizeUpdated(
-    const LayoutDeviceRect& aSize) {
-  if (!mWidget || !mWidget->IsWaitingForCompositorResume()) {
-    return;
-  }
-
-  LOG("GtkCompositorWidget::RemoteLayoutSizeUpdated() %d x %d",
-      (int)aSize.width, (int)aSize.height);
-
-  // We're waiting for layout to match widget size.
-  auto clientSize = mClientSize.Lock();
-  if (clientSize->width != (int)aSize.width ||
-      clientSize->height != (int)aSize.height) {
-    LOG("quit, client size doesn't match (%d x %d)", clientSize->width,
-        clientSize->height);
-    return;
-  }
-
-  mWidget->ResumeCompositorFromCompositorThread();
 }
 
 EGLNativeWindowType GtkCompositorWidget::GetEGLNativeWindow() {
@@ -128,14 +122,14 @@ EGLNativeWindowType GtkCompositorWidget::GetEGLNativeWindow() {
   return window;
 }
 
-bool GtkCompositorWidget::SetEGLNativeWindowSize(
+void GtkCompositorWidget::SetEGLNativeWindowSize(
     const LayoutDeviceIntSize& aEGLWindowSize) {
 #if defined(MOZ_WAYLAND)
-  if (mWidget) {
-    return mWidget->SetEGLNativeWindowSize(aEGLWindowSize);
+  // We explicitly need to set EGL window size on Wayland only.
+  if (mWidget && mWidget->GetWaylandSurface()) {
+    mWidget->GetWaylandSurface()->ApplyEGLWindowSize(aEGLWindowSize);
   }
 #endif
-  return true;
 }
 
 LayoutDeviceIntRegion GtkCompositorWidget::GetTransparentRegion() {
@@ -148,13 +142,15 @@ LayoutDeviceIntRegion GtkCompositorWidget::GetTransparentRegion() {
 }
 
 #ifdef MOZ_WAYLAND
-RefPtr<mozilla::layers::NativeLayerRoot>
-GtkCompositorWidget::GetNativeLayerRoot() {
+mozilla::layers::NativeLayerRoot* GtkCompositorWidget::GetNativeLayerRoot() {
   if (gfx::gfxVars::UseWebRenderCompositor()) {
     if (!mNativeLayerRoot) {
+      LOG("GtkCompositorWidget::GetNativeLayerRoot [%p] create",
+          (void*)mWidget.get());
       MOZ_ASSERT(mWidget && mWidget->GetMozContainer());
-      mNativeLayerRoot = NativeLayerRootWayland::CreateForMozContainer(
-          mWidget->GetMozContainer());
+      mNativeLayerRoot = layers::NativeLayerRootWayland::Create(
+          MOZ_WL_SURFACE(mWidget->GetMozContainer()));
+      mNativeLayerRoot->Init();
     }
     return mNativeLayerRoot;
   }
@@ -208,7 +204,7 @@ bool GtkCompositorWidget::IsPopup() {
 }
 #endif
 
-UniquePtr<MozContainerSurfaceLock> GtkCompositorWidget::LockSurface() {
+UniquePtr<WaylandSurfaceLock> GtkCompositorWidget::LockSurface() {
   return mWidget ? mWidget->LockSurface() : nullptr;
 }
 

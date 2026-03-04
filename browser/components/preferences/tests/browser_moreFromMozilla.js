@@ -11,7 +11,7 @@ let { TelemetryTestUtils } = ChromeUtils.importESModule(
   "resource://testing-common/TelemetryTestUtils.sys.mjs"
 );
 
-const TOTAL_PROMO_CARDS_COUNT = 4;
+const TOTAL_PROMO_CARDS_COUNT = 6;
 
 async function clearPolicies() {
   // Ensure no active policies are set
@@ -141,7 +141,6 @@ add_task(async function testwhenPrefDisabled() {
 
 add_task(async function test_aboutpreferences_event_telemetry() {
   Services.telemetry.clearEvents();
-  Services.telemetry.setEventRecordingEnabled("aboutpreferences", true);
 
   await SpecialPowers.pushPrefEnv({
     set: [["browser.preferences.moreFromMozilla", true]],
@@ -172,7 +171,7 @@ add_task(async function test_aboutpreferences_event_telemetry() {
     { category: "aboutpreferences", method: "show", object: "click" },
     { clear: false }
   );
-  TelemetryTestUtils.assertNumberOfEvents(2);
+  TelemetryTestUtils.assertNumberOfEvents(2, { category: "aboutpreferences" });
   BrowserTestUtils.removeTab(gBrowser.selectedTab);
 });
 
@@ -391,5 +390,56 @@ add_task(async function test_aboutpreferences_clickBtnRelay() {
 
   await tabOpened;
   BrowserTestUtils.removeTab(gBrowser.selectedTab);
+  BrowserTestUtils.removeTab(tab);
+});
+
+add_task(async function show_solo_more_from_mozilla() {
+  await clearPolicies();
+  await SpecialPowers.pushPrefEnv({
+    set: [
+      ["browser.preferences.moreFromMozilla", true],
+      ["browser.preferences.moreFromMozilla.template", "simple"],
+    ],
+  });
+  await openPreferencesViaOpenPreferencesAPI("paneMoreFromMozilla", {
+    leaveOpen: true,
+  });
+
+  let doc = gBrowser.contentDocument;
+  let tab = gBrowser.selectedTab;
+
+  const soloCard = doc.getElementById("solo-ai");
+  let soloBtn = doc.getElementById("simple-soloAI");
+
+  Assert.ok(BrowserTestUtils.isVisible(soloCard), "Solo card is shown");
+  Assert.ok(
+    BrowserTestUtils.isVisible(soloBtn),
+    "Solo button rendered on page"
+  );
+
+  BrowserTestUtils.removeTab(tab);
+});
+
+add_task(async function show_mdn_more_from_mozilla() {
+  await clearPolicies();
+  await SpecialPowers.pushPrefEnv({
+    set: [
+      ["browser.preferences.moreFromMozilla", true],
+      ["browser.preferences.moreFromMozilla.template", "simple"],
+    ],
+  });
+  await openPreferencesViaOpenPreferencesAPI("paneMoreFromMozilla", {
+    leaveOpen: true,
+  });
+
+  let doc = gBrowser.contentDocument;
+  let tab = gBrowser.selectedTab;
+
+  const mdnCard = doc.getElementById("mdn");
+  let mdnBtn = doc.getElementById("simple-mdn");
+
+  Assert.ok(BrowserTestUtils.isVisible(mdnCard), "MDN card is shown");
+  Assert.ok(BrowserTestUtils.isVisible(mdnBtn), "MDN button rendered on page");
+
   BrowserTestUtils.removeTab(tab);
 });

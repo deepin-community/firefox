@@ -200,7 +200,7 @@ about-debugging-browser-version-too-old-fennec = Toś ta wersija Firefox njamó�
 # { $localID } is the build ID of the current Firefox instance (same format)
 # { $runtimeVersion } is the version of the remote browser (for instance "67.0a1")
 # { $localVersion } is the version of your current browser (same format)
-about-debugging-browser-version-too-recent = Zwězany wobglědowak jo aktualnjejšy ({ $runtimeVersion }, buildID { $runtimeID }) lěc waš { -brand-shorter-name } ({ $localVersion }, buildID { $localID }). To jo njepódpěrana konfiguracija a móžo zawinowaś, až wuwijaŕske rědy njefunkcioněruju. Pšosym aktualizěrujśo Firefox. <a>Rozwězanje problemow</a>
+about-debugging-browser-version-too-recent = Zwězany wobglědowak jo aktualnjejšy ({ $runtimeVersion }, buildID { $runtimeID }) ako waš { -brand-shorter-name } ({ $localVersion }, buildID { $localID }). To jo njepódpěrana konfiguracija a móžo zawinowaś, až wuwijaŕske rědy njefunkcioněruju. Pšosym aktualizěrujśo Firefox. <a>Rozwězanje problemow</a>
 # Displayed for runtime info in runtime pages.
 # { $name } is brand name such as "Firefox Nightly"
 # { $version } is version such as "64.0a1"
@@ -215,7 +215,7 @@ about-debugging-connection-prompt-enable-button = Zwiskowe napominanje zmóžni�
 # "devtools.debugger.prompt-connection" is true on the target runtime.
 about-debugging-connection-prompt-disable-button = Zwiskowe napominanje znjemóžniś
 # Title of a modal dialog displayed on remote runtime pages after clicking on the Profile Runtime button.
-about-debugging-profiler-dialog-title2 = Profilowaŕ
+about-debugging-profiler-dialog-title2 = Wugbaśowa analyza
 # Clicking on the header of a debug target category will expand or collapse the debug
 # target items in the category. This text is used as ’title’ attribute of the header,
 # to describe this feature.
@@ -313,6 +313,9 @@ about-debugging-worker-scope =
 # of a worker
 about-debugging-worker-push-service =
     .label = Słužba za eksterne powěsći
+# Displayed for service workers in runtime pages, to label the origin of a worker.
+about-debugging-worker-origin =
+    .label = Póchad
 # Displayed as title of the inspect button when service worker debugging is disabled.
 about-debugging-worker-inspect-action-disabled =
     .title = Pśeglědanje service worker jo tuchylu znjemóžnjone za multiprocesowy { -brand-shorter-name }

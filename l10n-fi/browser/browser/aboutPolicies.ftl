@@ -3,15 +3,14 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 about-policies-title = Yrityskäytännöt
-
+aboutpolicies-page-heading =
+    .heading = Tietoja käytännöistä
 # 'Active' is used to describe the policies that are currently active
 active-policies-tab = Aktiiviset
 errors-tab = Virheet
 documentation-tab = Dokumentaatio
-
 no-specified-policies-message = Yrityskäytäntöpalvelu on aktiivinen, mutta käytäntöjä ei ole käytössä.
 inactive-message = Yrityskäytäntöpalvelu ei ole aktiivinen.
-
 policy-name = Käytännön nimi
 policy-value = Käytännön arvo
 policy-errors = Käytäntövirheet

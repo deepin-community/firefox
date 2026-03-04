@@ -69,6 +69,14 @@ perftools-button-add-directory = Προσθήκη καταλόγου
 perftools-button-remove-directory = Αφαίρεση επιλεγμένων
 perftools-button-edit-settings = Επεξεργασία ρυθμίσεων…
 
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Περισσότερες ενέργειες
+perftools-menu-more-actions-restart-with-profiling = Επανεκκίνηση του { -brand-shorter-name } με ενεργή τη δημιουργία προφίλ εκκίνησης
+perftools-menu-more-actions-copy-for-startup = Αντιγραφή μεταβλητών περιβάλλοντος για τη δημιουργία προφίλ εκκίνησης
+perftools-menu-more-actions-copy-for-perf-tests = Αντιγραφή παραμέτρων για δοκιμές επιδόσεων
+
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
 perftools-thread-gecko-main =
@@ -84,7 +92,7 @@ perftools-thread-render-backend =
 perftools-thread-timer =
     .title = Τα χρονόμετρα χειρισμού νημάτων (setTimeout, setInterval, nsITimer)
 perftools-thread-style-thread =
-    .title = Ο υπολογισμός στυλ διαχωρίζεται σε πολλά νήματα
+    .title = Ο υπολογισμός μορφοποίησης διαχωρίζεται σε πολλά νήματα
 pref-thread-stream-trans =
     .title = Μεταφορά της ροής δικτύου
 perftools-thread-socket-thread =
@@ -138,17 +146,18 @@ perftools-presets-web-developer-description = Προτεινόμενη προε�
 perftools-presets-firefox-label = { -brand-shorter-name }
 perftools-presets-firefox-description = Προτεινόμενη προεπιλογή για την καταγραφή προφίλ στο { -brand-shorter-name }.
 perftools-presets-graphics-label = Γραφικά
-perftools-presets-graphics-description = Προτεινόμενη προεπιλογή για τη διερεύνηση σφαλμάτων γραφικών στο { -brand-shorter-name }.
+perftools-presets-graphics-description = Προεπιλογή για τη διερεύνηση σφαλμάτων γραφικών στο { -brand-shorter-name }.
 perftools-presets-media-label = Πολυμέσα
-perftools-presets-media-description2 = Προτεινόμενη προεπιλογή για τη διερεύνηση σφαλμάτων ήχου και βίντεο στο { -brand-shorter-name }.
+perftools-presets-media-description2 = Προεπιλογή για τη διερεύνηση σφαλμάτων ήχου και βίντεο στο { -brand-shorter-name }.
+perftools-presets-ml-label = Μηχανική μάθηση
+perftools-presets-ml-description2 = Προεπιλογή για τη διερεύνηση σφαλμάτων μηχανικής μάθησης στο { -brand-shorter-name }.
 perftools-presets-networking-label = Δικτύωση
-perftools-presets-networking-description = Προτεινόμενη προεπιλογή για τη διερεύνηση σφαλμάτων δικτύωσης στο { -brand-shorter-name }.
+perftools-presets-networking-description = Προεπιλογή για τη διερεύνηση σφαλμάτων δικτύωσης στο { -brand-shorter-name }.
 # "Power" is used in the sense of energy (electricity used by the computer).
 perftools-presets-power-label = Ενέργεια
 perftools-presets-power-description = Προκαθορισμένη ρύθμιση για τη διερεύνηση σφαλμάτων χρήσης ενέργειας στο { -brand-shorter-name }, με μικρή επιβάρυνση.
 perftools-presets-debug-label = Έλεγχος σφαλμάτων
 perftools-presets-debug-description = Προκαθορισμένη ρύθμιση για έλεγχο σφαλμάτων στο { -brand-shorter-name }. Υψηλός φόρτος, μην τη χρησιμοποιείτε για εργασίες υψηλών επιδόσεων, αλλά για την εστίαση στην κατανόηση της συμπεριφοράς του προγράμματος περιήγησης.
+perftools-presets-web-compat-label = Συμβατότητα ιστού
+perftools-presets-web-compat-description = Προτεινόμενη προεπιλογή για τον έλεγχο σφαλμάτων συμβατότητας ιστοτόπων, αντί για την καταγραφή επιδόσεων.
 perftools-presets-custom-label = Προσαρμογή
-
-##
-

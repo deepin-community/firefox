@@ -33,9 +33,6 @@ download-cert-view-cert =
     .label = Bekyk
 download-cert-view-text = Ondersoek SO-sertifikaat
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -65,8 +62,6 @@ client-auth-cert-details-issued-by = Uitgereik deur: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Gestoor op: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Onthou hierdie besluit
 
 ## Set password (p12) dialog
 
@@ -78,6 +73,3 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = Rugsteunsertifikaat-wagwoord (weer):
 set-password-reminder = Belangrik: Indien u u sertifikaat-rugsteunwagwoord vergeet, sal u nie hierdie rugsteuning later kan terugkopieer nie.  Teken dit op 'n veilige plek aan.
-
-## Protected authentication alert
-

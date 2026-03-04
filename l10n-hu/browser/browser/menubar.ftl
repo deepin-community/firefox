@@ -3,18 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -146,8 +134,6 @@ menu-view-history-button =
     .label = Előzmények
 menu-view-synced-tabs-sidebar =
     .label = Szinkronizált lapok
-menu-view-megalist-sidebar =
-    .label = Jelszavak
 menu-view-full-zoom =
     .label = Nagyítás
     .accesskey = N
@@ -247,13 +233,29 @@ menu-edit-bookmark =
 menu-bookmarks-search =
     .label = Könyvjelzők keresése
 menu-bookmarks-all-tabs =
-    .label = Minden lap egy könyvjelzőbe…
+    .label = Összes lap egy könyvjelzőbe…
 menu-bookmarks-toolbar =
     .label = Könyvjelző eszköztár
 menu-bookmarks-other =
     .label = Más könyvjelzők
 menu-bookmarks-mobile =
     .label = Mobilos könyvjelzők
+
+## Profiles Menu
+
+menu-profiles =
+    .label = Profilok
+menu-profiles-manage-profiles =
+    .label = Profilok kezelése
+menu-profiles-new-profile =
+    .label = Új profil
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (jelenlegi)
+menu-profiles-menu =
+    .label = Profilok
+    .accesskey = P
 
 ## Tools Menu
 
@@ -263,6 +265,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Letöltések
     .accesskey = L
+menu-tools-extensions-and-themes =
+    .label = Kiegészítők és témák
+    .accesskey = K
 menu-tools-addons-and-themes =
     .label = Kiegészítők és témák
     .accesskey = K

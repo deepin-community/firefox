@@ -13,7 +13,7 @@
 #include "nsHttpConnectionInfo.h"
 #include "nsHttpHandler.h"
 #include "nsITLSSocketControl.h"
-#include "mozilla/glean/GleanMetrics.h"
+#include "mozilla/glean/NetwerkProtocolHttpMetrics.h"
 
 #define TLS_EARLY_DATA_NOT_AVAILABLE 0
 #define TLS_EARLY_DATA_AVAILABLE_BUT_NOT_USED 1
@@ -35,7 +35,7 @@ NS_IMETHODIMP
 TlsHandshaker::CertVerificationDone() {
   LOG(("TlsHandshaker::CertVerificationDone mOwner=%p", mOwner.get()));
   if (mOwner) {
-    Unused << mOwner->ResumeSend();
+    (void)mOwner->ResumeSend();
   }
   return NS_OK;
 }
@@ -44,7 +44,7 @@ NS_IMETHODIMP
 TlsHandshaker::ClientAuthCertificateSelected() {
   LOG(("TlsHandshaker::ClientAuthCertificateSelected mOwner=%p", mOwner.get()));
   if (mOwner) {
-    Unused << mOwner->ResumeSend();
+    (void)mOwner->ResumeSend();
   }
   return NS_OK;
 }
@@ -103,7 +103,6 @@ void TlsHandshaker::SetupSSL(bool aInSpdyTunnel, bool aForcePlainText) {
     bool usingHttpsProxy = mConnInfo->UsingHttpsProxy();
     rv = InitSSLParams(usingHttpsProxy, usingHttpsProxy);
   }
-  MOZ_ASSERT(NS_SUCCEEDED(rv));
 }
 
 nsresult TlsHandshaker::InitSSLParams(bool connectingToProxy,
@@ -119,6 +118,7 @@ nsresult TlsHandshaker::InitSSLParams(bool connectingToProxy,
   nsCOMPtr<nsITLSSocketControl> ssl;
   mOwner->GetTLSSocketControl(getter_AddRefs(ssl));
   if (!ssl) {
+    LOG(("Can't find tls socket control"));
     return NS_ERROR_FAILURE;
   }
 
@@ -139,6 +139,7 @@ nsresult TlsHandshaker::InitSSLParams(bool connectingToProxy,
       NS_SUCCEEDED(ssl->SetHandshakeCallbackListener(this))) {
     LOG(("InitSSLParams Setting up SPDY Negotiation OK mOwner=%p",
          mOwner.get()));
+    ReportSecureConnectionStart();
     mNPNComplete = false;
   }
 
@@ -210,18 +211,9 @@ bool TlsHandshaker::EnsureNPNComplete() {
     return true;
   }
 
-  if (!m0RTTChecked) {
-    // We reuse m0RTTChecked. We want to send this status only once.
-    RefPtr<nsAHttpTransaction> transaction = mOwner->Transaction();
-    nsCOMPtr<nsISocketTransport> transport = mOwner->Transport();
-    if (transaction && transport) {
-      transaction->OnTransportStatus(transport,
-                                     NS_NET_STATUS_TLS_HANDSHAKE_STARTING, 0);
-    }
-  }
-
   LOG(("TlsHandshaker::EnsureNPNComplete [mOwner=%p] drive TLS handshake",
        mOwner.get()));
+  ReportSecureConnectionStart();
   nsresult rv = ssl->DriveHandshake();
   if (NS_FAILED(rv) && rv != NS_BASE_STREAM_WOULD_BLOCK) {
     FinishNPNSetup(false, true);
@@ -297,7 +289,7 @@ void TlsHandshaker::Check0RttEnabled(nsITLSSocketControl* ssl) {
         mEarlyDataState = EarlyData::CANNOT_BE_USED;
         // Poll for read now. Polling for write will cause us to busy wait.
         // When the handshake is done the polling flags will be set correctly.
-        Unused << mOwner->ResumeRecv();
+        (void)mOwner->ResumeRecv();
       }
     } else {
       // We have h2, we can at least 0-RTT the preamble and opening
@@ -312,6 +304,29 @@ void TlsHandshaker::Check0RttEnabled(nsITLSSocketControl* ssl) {
   }
 }
 
+void TlsHandshaker::ReportSecureConnectionStart() {
+  if (mSecureConnectionStartReported) {
+    return;
+  }
+
+  RefPtr<nsAHttpTransaction> transaction = mOwner->Transaction();
+  LOG(("ReportSecureConnectionStart transaction=%p", transaction.get()));
+  if (!transaction || transaction->QueryNullTransaction()) {
+    // When we don't have a transaction or have a NullTransaction, we need to
+    // store `secureConnectionStart` in nsHttpConnection::mBootstrappedTimings.
+    mOwner->SetEvent(NS_NET_STATUS_TLS_HANDSHAKE_STARTING);
+    mSecureConnectionStartReported = true;
+    return;
+  }
+
+  nsCOMPtr<nsISocketTransport> transport = mOwner->Transport();
+  if (transport) {
+    transaction->OnTransportStatus(transport,
+                                   NS_NET_STATUS_TLS_HANDSHAKE_STARTING, 0);
+    mSecureConnectionStartReported = true;
+  }
+}
+
 #ifndef ANDROID
 void TlsHandshaker::EarlyDataTelemetry(int16_t tlsVersion,
                                        bool earlyDataAccepted,
@@ -319,19 +334,19 @@ void TlsHandshaker::EarlyDataTelemetry(int16_t tlsVersion,
   // Send the 0RTT telemetry only for tls1.3
   if (tlsVersion > nsITLSSocketControl::TLS_VERSION_1_2) {
     if (mEarlyDataState == EarlyData::NOT_AVAILABLE) {  // not possible
-      Telemetry::Accumulate(Telemetry::TLS_EARLY_DATA_NEGOTIATED,
-                            TLS_EARLY_DATA_NOT_AVAILABLE);
+      glean::http::tls_early_data_negotiated.AccumulateSingleSample(
+          TLS_EARLY_DATA_NOT_AVAILABLE);
       mozilla::glean::network::tls_early_data_negotiated.Get("not_available"_ns)
           .Add(1);
     } else if (mEarlyDataState == EarlyData::USED) {  // possible and used
-      Telemetry::Accumulate(Telemetry::TLS_EARLY_DATA_NEGOTIATED,
-                            TLS_EARLY_DATA_AVAILABLE_AND_USED);
+      glean::http::tls_early_data_negotiated.AccumulateSingleSample(
+          TLS_EARLY_DATA_AVAILABLE_AND_USED);
       mozilla::glean::network::tls_early_data_negotiated
           .Get("available_and_used"_ns)
           .Add(1);
     } else {  // possible but not used
-      Telemetry::Accumulate(Telemetry::TLS_EARLY_DATA_NEGOTIATED,
-                            TLS_EARLY_DATA_AVAILABLE_BUT_NOT_USED);
+      glean::http::tls_early_data_negotiated.AccumulateSingleSample(
+          TLS_EARLY_DATA_AVAILABLE_BUT_NOT_USED);
       mozilla::glean::network::tls_early_data_negotiated
           .Get("available_but_not_used"_ns)
           .Add(1);
@@ -339,8 +354,10 @@ void TlsHandshaker::EarlyDataTelemetry(int16_t tlsVersion,
 
     // TLS early data was used and it was accepted/rejected by the remote host.
     if (EarlyDataUsed()) {
-      Telemetry::Accumulate(Telemetry::TLS_EARLY_DATA_ACCEPTED,
-                            earlyDataAccepted);
+      glean::http::tls_early_data_accepted
+          .EnumGet(static_cast<glean::http::TlsEarlyDataAcceptedLabel>(
+              earlyDataAccepted))
+          .Add();
       mozilla::glean::network::tls_early_data_accepted
           .Get(earlyDataAccepted ? "accepted"_ns : "not_accepted"_ns)
           .Add(1);

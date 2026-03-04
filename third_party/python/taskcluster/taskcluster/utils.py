@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 import re
 import json
 import datetime
+from datetime import timezone
 import base64
 import logging
 import os
@@ -10,7 +11,6 @@ import requests
 import requests.exceptions
 import slugid
 import time
-import six
 import random
 
 import taskcluster_urls as liburls
@@ -55,7 +55,7 @@ def calculateSleepTime(attempt):
 
 
 def toStr(obj, encoding='utf-8'):
-    if six.PY3 and isinstance(obj, six.binary_type):
+    if isinstance(obj, bytes):
         obj = obj.decode(encoding)
     else:
         obj = str(obj)
@@ -110,7 +110,7 @@ def fromNow(offset, dateObj=None):
     )
 
     if not dateObj:
-        dateObj = datetime.datetime.utcnow()
+        dateObj = datetime.datetime.now(timezone.utc)
 
     return dateObj + delta if future else dateObj - delta
 
@@ -123,11 +123,11 @@ def fromNowJSON(offset):
 
 
 def dumpJson(obj, **kwargs):
-    """ Match JS's JSON.stringify.  When using the default seperators,
+    """ Match JS's JSON.stringify.  When using the default separators,
     base64 encoding JSON results in \n sequences in the output.  Hawk
     barfs in your face if you have that in the text"""
     def handleDateAndBinaryForJs(x):
-        if six.PY3 and isinstance(x, six.binary_type):
+        if isinstance(x, bytes):
             x = x.decode()
         if isinstance(x, datetime.datetime) or isinstance(x, datetime.date):
             return stringDate(x)
@@ -154,7 +154,7 @@ def stringDate(date):
 
 def makeB64UrlSafe(b64str):
     """ Make a base64 string URL Safe """
-    if isinstance(b64str, six.text_type):
+    if isinstance(b64str, str):
         b64str = b64str.encode()
     # see RFC 4648, sec. 5
     return b64str.replace(b'+', b'-').replace(b'/', b'_')
@@ -162,7 +162,7 @@ def makeB64UrlSafe(b64str):
 
 def makeB64UrlUnsafe(b64str):
     """ Make a base64 string URL Unsafe """
-    if isinstance(b64str, six.text_type):
+    if isinstance(b64str, str):
         b64str = b64str.encode()
     # see RFC 4648, sec. 5
     return b64str.replace(b'-', b'+').replace(b'_', b'/')
@@ -170,12 +170,9 @@ def makeB64UrlUnsafe(b64str):
 
 def encodeStringForB64Header(s):
     """ HTTP Headers can't have new lines in them, let's """
-    if isinstance(s, six.text_type):
+    if isinstance(s, str):
         s = s.encode()
-    if six.PY3:
-        b64str = base64.encodebytes(s)
-    else:
-        b64str = base64.encodestring(s)
+    b64str = base64.encodebytes(s)
     return b64str.strip().replace(b'\n', b'')
 
 
@@ -220,10 +217,10 @@ def scopeMatch(assumedScopes, requiredScopeSets):
         for requiredScope in scopeSet:
             for scope in assumedScopes:
                 if scope == requiredScope:
-                    # requiredScope satisifed, no need to check more scopes
+                    # requiredScope satisfied, no need to check more scopes
                     break
                 if scope.endswith("*") and requiredScope.startswith(scope[:-1]):
-                    # requiredScope satisifed, no need to check more scopes
+                    # requiredScope satisfied, no need to check more scopes
                     break
             else:
                 # requiredScope not satisfied, stop checking scopeSet
@@ -265,7 +262,7 @@ def makeHttpRequest(method, url, payload, headers, retries=MAX_RETRIES, session=
             response = makeSingleHttpRequest(method, url, payload, headers, session)
         except requests.exceptions.RequestException as rerr:
             if retry < retries:
-                log.warn('Retrying because of: %s' % rerr)
+                log.warning('Retrying because of: %s' % rerr)
                 continue
             # raise a connection exception
             raise rerr
@@ -277,7 +274,7 @@ def makeHttpRequest(method, url, payload, headers, retries=MAX_RETRIES, session=
         status = response.status_code
         if 500 <= status and status < 600 and retry < retries:
             if retry < retries:
-                log.warn('Retrying because of: %d status' % status)
+                log.warning('Retrying because of: %d status' % status)
                 continue
             else:
                 raise exceptions.TaskclusterRestFailure("Unknown Server Error", superExc=None)
@@ -293,7 +290,7 @@ def makeSingleHttpRequest(method, url, payload, headers, session=None):
     log.debug('HTTP Headers: %s' % str(headers))
     log.debug('HTTP Payload: %s (limit 100 char)' % str(payload)[:100])
     obj = session if session else requests
-    response = obj.request(method.upper(), url, data=payload, headers=headers, allow_redirects=False)
+    response = obj.request(method.upper(), url, data=payload, headers=headers, allow_redirects=True)
     log.debug('Received HTTP Status:    %s' % response.status_code)
     log.debug('Received HTTP Headers: %s' % str(response.headers))
 
@@ -319,7 +316,7 @@ def decryptMessage(message, privateKey):
 
 def isExpired(certificate):
     """ Check if certificate is expired """
-    if isinstance(certificate, six.string_types):
+    if isinstance(certificate, str):
         certificate = json.loads(certificate)
     expiry = certificate.get('expiry', 0)
     return expiry < int(time.time() * 1000) + 20 * 60

@@ -10,15 +10,16 @@
  */
 
 #include "nsStyleTransformMatrix.h"
-#include "nsLayoutUtils.h"
-#include "nsPresContext.h"
+
+#include "gfxMatrix.h"
+#include "gfxQuaternion.h"
 #include "mozilla/MotionPathUtils.h"
+#include "mozilla/SVGUtils.h"
 #include "mozilla/ServoBindings.h"
 #include "mozilla/StaticPrefs_layout.h"
 #include "mozilla/StyleAnimationValue.h"
-#include "mozilla/SVGUtils.h"
-#include "gfxMatrix.h"
-#include "gfxQuaternion.h"
+#include "nsLayoutUtils.h"
+#include "nsPresContext.h"
 
 using namespace mozilla;
 using namespace mozilla::gfx;
@@ -82,12 +83,6 @@ static nsRect GetSVGBox(const nsIFrame* aFrame) {
               bboxInAppUnits.height};
     }
     case StyleTransformBox::BorderBox:
-      if (!StaticPrefs::layout_css_transform_box_content_stroke_enabled()) {
-        // If stroke-box is disabled, we shouldn't use it and fall back to
-        // view-box.
-        return computeViewBox();
-      }
-      [[fallthrough]];
     case StyleTransformBox::StrokeBox: {
       // We are using SVGUtils::PathExtentsToMaxStrokeExtents() to compute the
       // bbox contribution for stroke box (if it doesn't have simple bounds),
@@ -260,7 +255,7 @@ class Accumulate {
       return aOne.ToMatrix();
     }
 
-    double theta = acos(mozilla::clamped(aTwo.w, -1.0, 1.0));
+    double theta = acos(std::clamp(aTwo.w, -1.0, 1.0));
     double scale = (theta != 0.0) ? 1.0 / sin(theta) : 0.0;
     theta *= aCoeff;
     scale *= sin(theta);
@@ -280,7 +275,7 @@ class Accumulate {
   static Matrix4x4 operateByServo(const Matrix4x4& aMatrix1,
                                   const Matrix4x4& aMatrix2, double aCount) {
     Matrix4x4 result;
-    Servo_MatrixTransform_Operate(MatrixTransformOperator::Accumulate,
+    Servo_MatrixTransform_Operate(/* aInterpolate = */ false,
                                   &aMatrix1.components, &aMatrix2.components,
                                   aCount, &result.components);
     return result;
@@ -318,7 +313,7 @@ class Interpolate {
   static Matrix4x4 operateByServo(const Matrix4x4& aMatrix1,
                                   const Matrix4x4& aMatrix2, double aProgress) {
     Matrix4x4 result;
-    Servo_MatrixTransform_Operate(MatrixTransformOperator::Interpolate,
+    Servo_MatrixTransform_Operate(/* aInterpolate = */ true,
                                   &aMatrix1.components, &aMatrix2.components,
                                   aProgress, &result.components);
     return result;

@@ -10,11 +10,12 @@ transforms:
     - gecko_taskgraph.transforms.task:transforms
 
 task-defaults:
+    run-on-repo-type: [hg]
     name: secondary-update-verify-config
     run-on-projects: []  # to make sure this never runs as part of CI
     shipping-product: firefox
     shipping-phase: promote
-    worker-type: b-linux-gcp
+    worker-type: b-linux
     worker:
         docker-image:
             in-tree: "update-verify"
@@ -28,6 +29,7 @@ task-defaults:
     extra:
         app-name: browser
         branch-prefix: mozilla
+        last-linux-bz2-version: "134.99.0"  # Bug 1710599: Last version to use bz2 compression on Linux builds
         product: firefox
         archive-prefix:
             by-release-level:
@@ -46,23 +48,14 @@ task-defaults:
                 staging: dep
                 production: null
         include-version: beta
-        last-watershed: "72.0.2"
+        last-watershed:
+            by-platform:
+                linux64-aarch64.*: "136.0"
+                default: "72.0.2"
         mar-channel-id-override: beta
         channel: "beta-localtest"
 
 tasks:
-    firefox-secondary-linux:
-        treeherder:
-            symbol: UVCS
-            platform: linux-shippable/opt
-            kind: test
-            tier: 1
-        attributes:
-            build_platform: linux-shippable
-        extra:
-            platform: linux-i686
-            updater-platform: linux-x86_64
-
     firefox-secondary-linux64:
         treeherder:
             symbol: UVCS
@@ -75,10 +68,22 @@ tasks:
             platform: linux-x86_64
             updater-platform: linux-x86_64
 
+    firefox-secondary-linux64-aarch64:
+        treeherder:
+            symbol: UVCS
+            platform: linux64-aarch64-shippable/opt
+            kind: test
+            tier: 1
+        attributes:
+            build_platform: linux64-aarch64-shippable
+        extra:
+            platform: linux-aarch64
+            updater-platform: linux-x86_64
+
     firefox-secondary-macosx64:
         treeherder:
             symbol: UVCS
-            platform: macosx64/opt
+            platform: osx-shippable/opt
             kind: test
             tier: 1
         attributes:

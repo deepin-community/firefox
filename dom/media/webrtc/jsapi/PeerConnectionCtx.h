@@ -8,23 +8,23 @@
 #include <map>
 #include <string>
 
+#include "MediaTransportHandler.h"  // Mostly for IceLogPromise
+#include "PeerConnectionImpl.h"
 #include "api/field_trials_view.h"
 #include "call/audio_state.h"
-#include "MediaTransportHandler.h"  // Mostly for IceLogPromise
 #include "mozIGeckoMediaPluginService.h"
+#include "mozilla/StaticPrefs_media.h"
 #include "mozilla/StaticPtr.h"
 #include "nsIRunnable.h"
-#include "PeerConnectionImpl.h"
 
 class WebrtcLogSinkHandle;
 
 namespace webrtc {
 class AudioDecoderFactory;
 
-// Used for testing in mediapipeline_unittest.cpp, MockCall.h
-class NoTrialsConfig : public FieldTrialsView {
+class MozTrialsConfig : public FieldTrialsView {
  public:
-  NoTrialsConfig() = default;
+  MozTrialsConfig() = default;
   std::string Lookup(absl::string_view key) const override {
     // Upstream added a new default field trial string for
     // CongestionWindow, that we don't want.  In
@@ -39,6 +39,11 @@ class NoTrialsConfig : public FieldTrialsView {
     // See Bug 1780620.
     if ("WebRTC-CongestionWindow" == key) {
       return std::string("MinBitrate:30000,DropFrame:true");
+    }
+    if ("WebRTC-VP9-SvcForSimulcast" == key) {
+      return mozilla::StaticPrefs::media_webrtc_simulcast_vp9_enabled()
+                 ? "Enabled"
+                 : "Disabled";
     }
     return std::string();
   }
@@ -110,8 +115,6 @@ class PeerConnectionCtx {
 
   void queueJSEPOperation(nsIRunnable* aJSEPOperation);
   void onGMPReady();
-
-  bool gmpHasH264();
 
   static void UpdateNetworkState(bool online);
 

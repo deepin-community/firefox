@@ -30,47 +30,54 @@ DIRS += [
     "about",
     "aboutlogins",
     "aboutwelcome",
+    "aiwindow",
     "asrouter",
     "attribution",
     "backup",
     "contentanalysis",
     "contextualidentity",
     "customizableui",
-    "doh",
+    "customkeys",
     "downloads",
     "enterprisepolicies",
     "extensions",
     "firefoxview",
     "genai",
-    "ion",
+    "ipprotection",
     "messagepreview",
     "migration",
+    "mozcachedohttp",
+    "multilineeditor",
     "newtab",
     "originattributes",
     "pagedata",
+    "permissions",
     "places",
-    "pocket",
     "preferences",
     "privatebrowsing",
     "prompts",
     "protections",
     "protocolhandler",
+    "qrcode",
     "reportbrokensite",
     "resistfingerprinting",
     "screenshots",
     "search",
+    "security",
     "sessionstore",
     "shell",
-    "shopping",
     "sidebar",
     "syncedtabs",
     "tabbrowser",
+    "tabnotes",
     "tabunloader",
+    "taskbartabs",
     "textrecognition",
     "topsites",
     "translations",
     "uitour",
     "urlbar",
+    "webrtc",
 ]
 
 DIRS += ["build"]
@@ -93,14 +100,22 @@ XPCOM_MANIFESTS += [
     "components.conf",
 ]
 
-EXTRA_COMPONENTS += [
+EXTRA_PP_COMPONENTS += [
     "BrowserComponents.manifest",
 ]
 
 EXTRA_JS_MODULES += [
+    "AccountsGlue.sys.mjs",
     "BrowserContentHandler.sys.mjs",
     "BrowserGlue.sys.mjs",
     "distribution.sys.mjs",
+]
+
+MOZ_SRC_FILES += [
+    "DefaultBrowserCheck.sys.mjs",
+    "DesktopActorRegistry.sys.mjs",
+    "ProfileDataUpgrader.sys.mjs",
+    "StartupTelemetry.sys.mjs",
 ]
 
 if CONFIG["MOZ_DEBUG"] or CONFIG["MOZ_DEV_EDITION"] or CONFIG["NIGHTLY_BUILD"]:
@@ -111,6 +126,7 @@ if CONFIG["MOZ_DEBUG"] or CONFIG["MOZ_DEV_EDITION"] or CONFIG["NIGHTLY_BUILD"]:
 BROWSER_CHROME_MANIFESTS += [
     "safebrowsing/content/test/browser.toml",
     "tests/browser/browser.toml",
+    "tests/browser/eval/browser.toml",
 ]
 
 if CONFIG["MOZ_UPDATER"]:

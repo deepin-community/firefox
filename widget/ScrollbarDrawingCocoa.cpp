@@ -7,7 +7,6 @@
 #include "ScrollbarDrawingCocoa.h"
 
 #include "mozilla/RelativeLuminanceUtils.h"
-#include "nsAlgorithm.h"
 #include "nsIFrame.h"
 #include "nsLayoutUtils.h"
 #include "nsNativeTheme.h"
@@ -83,9 +82,7 @@ LayoutDeviceIntSize ScrollbarDrawingCocoa::GetMinimumWidgetSize(
       case StyleAppearance::ScrollbarthumbVertical:
         return {0, 26};
       case StyleAppearance::ScrollbarVertical:
-      case StyleAppearance::ScrollbarHorizontal:
-      case StyleAppearance::ScrollbartrackVertical:
-      case StyleAppearance::ScrollbartrackHorizontal: {
+      case StyleAppearance::ScrollbarHorizontal: {
         ComputedStyle* style = nsLayoutUtils::StyleForScrollbar(aFrame);
         auto scrollbarWidth = style->StyleUIReset()->ScrollbarWidth();
         auto size = GetCSSScrollbarSize(
@@ -168,7 +165,7 @@ static ThumbRect GetThumbRect(const LayoutDeviceRect& aRect,
     // For the default alpha of 128 we want to end up with 48 in the outline.
     constexpr float kAlphaScaling = 48.0f / 128.0f;
     const uint8_t strokeAlpha =
-        uint8_t(clamped(NS_GET_A(faceColor) * kAlphaScaling, 0.0f, 48.0f));
+        uint8_t(std::clamp(NS_GET_A(faceColor) * kAlphaScaling, 0.0f, 48.0f));
     if (strokeAlpha) {
       strokeOutset = (aParams.isDark ? 0.3f : 0.5f) * aScale;
       strokeWidth = (aParams.isDark ? 0.6f : 0.8f) * aScale;
@@ -212,11 +209,6 @@ static ScrollbarTrackDecorationColors ComputeScrollbarTrackDecorationColors(
 static bool GetScrollbarTrackRects(const LayoutDeviceRect& aRect,
                                    const ScrollbarParams& aParams, float aScale,
                                    ScrollbarTrackRects& aRects) {
-  if (aParams.isOverlay && !aParams.isRolledOver) {
-    // Non-hovered overlay scrollbars don't have a track. Draw nothing.
-    return false;
-  }
-
   nscolor trackColor;
   if (aParams.isCustom) {
     trackColor = aParams.trackColor;
@@ -341,8 +333,8 @@ template <typename PaintBackendData>
 void ScrollbarDrawingCocoa::DoPaintScrollbarThumb(
     PaintBackendData& aPaintData, const LayoutDeviceRect& aRect,
     ScrollbarKind aScrollbarKind, nsIFrame* aFrame, const ComputedStyle& aStyle,
-    const ElementState& aElementState, const DocumentState& aDocumentState,
-    const Colors& aColors, const DPIRatio& aDpiRatio) {
+    const ElementState& aElementState, const Colors& aColors,
+    const DPIRatio& aDpiRatio) {
   ScrollbarParams params =
       ComputeScrollbarParams(aFrame, aStyle, aColors, aScrollbarKind);
   auto thumb = GetThumbRect(aRect, params, aDpiRatio.scale);
@@ -370,57 +362,66 @@ void ScrollbarDrawingCocoa::DoPaintScrollbarThumb(
 bool ScrollbarDrawingCocoa::PaintScrollbarThumb(
     DrawTarget& aDt, const LayoutDeviceRect& aRect,
     ScrollbarKind aScrollbarKind, nsIFrame* aFrame, const ComputedStyle& aStyle,
-    const ElementState& aElementState, const DocumentState& aDocumentState,
-    const Colors& aColors, const DPIRatio& aDpiRatio) {
+    const ElementState& aElementState, const Colors& aColors,
+    const DPIRatio& aDpiRatio) {
   DoPaintScrollbarThumb(aDt, aRect, aScrollbarKind, aFrame, aStyle,
-                        aElementState, aDocumentState, aColors, aDpiRatio);
+                        aElementState, aColors, aDpiRatio);
   return true;
 }
 
 bool ScrollbarDrawingCocoa::PaintScrollbarThumb(
     WebRenderBackendData& aWrData, const LayoutDeviceRect& aRect,
     ScrollbarKind aScrollbarKind, nsIFrame* aFrame, const ComputedStyle& aStyle,
-    const ElementState& aElementState, const DocumentState& aDocumentState,
-    const Colors& aColors, const DPIRatio& aDpiRatio) {
+    const ElementState& aElementState, const Colors& aColors,
+    const DPIRatio& aDpiRatio) {
   DoPaintScrollbarThumb(aWrData, aRect, aScrollbarKind, aFrame, aStyle,
-                        aElementState, aDocumentState, aColors, aDpiRatio);
+                        aElementState, aColors, aDpiRatio);
   return true;
 }
 
 template <typename PaintBackendData>
-void ScrollbarDrawingCocoa::DoPaintScrollbarTrack(
+void ScrollbarDrawingCocoa::DoPaintScrollbar(
     PaintBackendData& aPaintData, const LayoutDeviceRect& aRect,
     ScrollbarKind aScrollbarKind, nsIFrame* aFrame, const ComputedStyle& aStyle,
-    const DocumentState& aDocumentState, const Colors& aColors,
+    const ElementState& aElementState, const Colors& aColors,
     const DPIRatio& aDpiRatio) {
   ScrollbarParams params =
       ComputeScrollbarParams(aFrame, aStyle, aColors, aScrollbarKind);
+  if (params.isOverlay && !params.isRolledOver) {
+    // Non-hovered overlay scrollbars don't have a track. Draw nothing.
+    return;
+  }
+
+  // Paint our track.
+  const auto color = ComputeScrollbarTrackColor(aFrame, aStyle, aColors);
+  ThemeDrawing::FillRect(aPaintData, aRect, color);
+
+  // Paint our decorations.
   ScrollbarTrackRects rects;
-  if (GetScrollbarTrackRects(aRect, params, aDpiRatio.scale, rects)) {
-    for (const auto& rect : rects) {
-      ThemeDrawing::FillRect(aPaintData, rect.mRect,
-                             sRGBColor::FromABGR(rect.mColor));
-    }
+  GetScrollbarTrackRects(aRect, params, aDpiRatio.scale, rects);
+  for (const auto& rect : rects) {
+    ThemeDrawing::FillRect(aPaintData, rect.mRect,
+                           sRGBColor::FromABGR(rect.mColor));
   }
 }
 
-bool ScrollbarDrawingCocoa::PaintScrollbarTrack(
-    DrawTarget& aDt, const LayoutDeviceRect& aRect,
+bool ScrollbarDrawingCocoa::PaintScrollbar(
+    DrawTarget& aDrawTarget, const LayoutDeviceRect& aRect,
     ScrollbarKind aScrollbarKind, nsIFrame* aFrame, const ComputedStyle& aStyle,
-    const DocumentState& aDocumentState, const Colors& aColors,
+    const ElementState& aElementState, const Colors& aColors,
     const DPIRatio& aDpiRatio) {
-  DoPaintScrollbarTrack(aDt, aRect, aScrollbarKind, aFrame, aStyle,
-                        aDocumentState, aColors, aDpiRatio);
+  DoPaintScrollbar(aDrawTarget, aRect, aScrollbarKind, aFrame, aStyle,
+                   aElementState, aColors, aDpiRatio);
   return true;
 }
 
-bool ScrollbarDrawingCocoa::PaintScrollbarTrack(
+bool ScrollbarDrawingCocoa::PaintScrollbar(
     WebRenderBackendData& aWrData, const LayoutDeviceRect& aRect,
     ScrollbarKind aScrollbarKind, nsIFrame* aFrame, const ComputedStyle& aStyle,
-    const DocumentState& aDocumentState, const Colors& aColors,
+    const ElementState& aElementState, const Colors& aColors,
     const DPIRatio& aDpiRatio) {
-  DoPaintScrollbarTrack(aWrData, aRect, aScrollbarKind, aFrame, aStyle,
-                        aDocumentState, aColors, aDpiRatio);
+  DoPaintScrollbar(aWrData, aRect, aScrollbarKind, aFrame, aStyle,
+                   aElementState, aColors, aDpiRatio);
   return true;
 }
 
@@ -428,8 +429,7 @@ template <typename PaintBackendData>
 void ScrollbarDrawingCocoa::DoPaintScrollCorner(
     PaintBackendData& aPaintData, const LayoutDeviceRect& aRect,
     ScrollbarKind aScrollbarKind, nsIFrame* aFrame, const ComputedStyle& aStyle,
-    const DocumentState& aDocumentState, const Colors& aColors,
-    const DPIRatio& aDpiRatio) {
+    const Colors& aColors, const DPIRatio& aDpiRatio) {
   ScrollbarParams params =
       ComputeScrollbarParams(aFrame, aStyle, aColors, aScrollbarKind);
   ScrollCornerRects rects;
@@ -444,20 +444,18 @@ void ScrollbarDrawingCocoa::DoPaintScrollCorner(
 bool ScrollbarDrawingCocoa::PaintScrollCorner(
     DrawTarget& aDt, const LayoutDeviceRect& aRect,
     ScrollbarKind aScrollbarKind, nsIFrame* aFrame, const ComputedStyle& aStyle,
-    const DocumentState& aDocumentState, const Colors& aColors,
-    const DPIRatio& aDpiRatio) {
-  DoPaintScrollCorner(aDt, aRect, aScrollbarKind, aFrame, aStyle,
-                      aDocumentState, aColors, aDpiRatio);
+    const Colors& aColors, const DPIRatio& aDpiRatio) {
+  DoPaintScrollCorner(aDt, aRect, aScrollbarKind, aFrame, aStyle, aColors,
+                      aDpiRatio);
   return true;
 }
 
 bool ScrollbarDrawingCocoa::PaintScrollCorner(
     WebRenderBackendData& aWrData, const LayoutDeviceRect& aRect,
     ScrollbarKind aScrollbarKind, nsIFrame* aFrame, const ComputedStyle& aStyle,
-    const DocumentState& aDocumentState, const Colors& aColors,
-    const DPIRatio& aDpiRatio) {
-  DoPaintScrollCorner(aWrData, aRect, aScrollbarKind, aFrame, aStyle,
-                      aDocumentState, aColors, aDpiRatio);
+    const Colors& aColors, const DPIRatio& aDpiRatio) {
+  DoPaintScrollCorner(aWrData, aRect, aScrollbarKind, aFrame, aStyle, aColors,
+                      aDpiRatio);
   return true;
 }
 

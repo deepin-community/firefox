@@ -1,7 +1,6 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-/* eslint-env mozilla/browser-window */
 
 "use strict";
 
@@ -44,12 +43,12 @@
 
       let visibleButton = shadowRoot.getElementById("visible-page");
       visibleButton.onclick = function () {
-        ScreenshotsUtils.takeScreenshot(gBrowser.selectedBrowser, "visible");
+        ScreenshotsUtils.takeScreenshot(gBrowser.selectedBrowser, "Visible");
       };
 
       let fullpageButton = shadowRoot.getElementById("full-page");
       fullpageButton.onclick = function () {
-        ScreenshotsUtils.takeScreenshot(gBrowser.selectedBrowser, "full_page");
+        ScreenshotsUtils.takeScreenshot(gBrowser.selectedBrowser, "FullPage");
       };
     }
 
@@ -60,7 +59,8 @@
     /**
      * Focus the last used button.
      * This will default to the visible page button.
-     * @param {String} buttonToFocus
+     *
+     * @param {string} buttonToFocus
      */
     async focusButton(buttonToFocus) {
       await this.shadowRoot.querySelector("moz-button-group").updateComplete;

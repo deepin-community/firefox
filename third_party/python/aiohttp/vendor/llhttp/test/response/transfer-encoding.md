@@ -22,6 +22,8 @@ and this is the second one
 
 ```log
 off=0 message begin
+off=0 len=4 span[protocol]="HTTP"
+off=4 protocol complete
 off=5 len=3 span[version]="1.1"
 off=8 version complete
 off=13 len=2 span[status]="OK"
@@ -35,7 +37,7 @@ off=61 header_field complete
 off=62 len=7 span[header_value]="chunked"
 off=71 header_value complete
 off=73 headers complete status=200 v=1/1 flags=208 content_length=0
-off=75 error code=12 reason="Invalid character in chunk size"
+off=76 error code=12 reason="Invalid character in chunk size"
 ```
 
 ## `chunked` before other transfer-encoding
@@ -51,6 +53,8 @@ World
 
 ```log
 off=0 message begin
+off=0 len=4 span[protocol]="HTTP"
+off=4 protocol complete
 off=5 len=3 span[version]="1.1"
 off=8 version complete
 off=13 len=2 span[status]="OK"
@@ -81,6 +85,8 @@ World
 
 ```log
 off=0 message begin
+off=0 len=4 span[protocol]="HTTP"
+off=4 protocol complete
 off=5 len=3 span[version]="1.1"
 off=8 version complete
 off=13 len=2 span[status]="OK"
@@ -120,6 +126,8 @@ OK
 
 ```log
 off=0 message begin
+off=0 len=4 span[protocol]="HTTP"
+off=4 protocol complete
 off=5 len=3 span[version]="1.1"
 off=8 version complete
 off=13 len=2 span[status]="OK"
@@ -165,6 +173,8 @@ hello
 
 ```log
 off=0 message begin
+off=0 len=4 span[protocol]="HTTP"
+off=4 protocol complete
 off=5 len=3 span[version]="1.1"
 off=8 version complete
 off=13 len=2 span[status]="OK"
@@ -216,6 +226,8 @@ aa
 
 ```log
 off=0 message begin
+off=0 len=4 span[protocol]="HTTP"
+off=4 protocol complete
 off=5 len=3 span[version]="1.1"
 off=8 version complete
 off=13 len=2 span[status]="OK"
@@ -229,7 +241,7 @@ off=52 header_field complete
 off=53 len=7 span[header_value]="chunked"
 off=62 header_value complete
 off=64 headers complete status=200 v=1/1 flags=208 content_length=0
-off=65 error code=12 reason="Invalid character in chunk size"
+off=66 error code=12 reason="Invalid character in chunk size"
 ```
 
 
@@ -250,6 +262,8 @@ aa
 
 ```log
 off=0 message begin
+off=0 len=4 span[protocol]="HTTP"
+off=4 protocol complete
 off=5 len=3 span[version]="1.1"
 off=8 version complete
 off=13 len=2 span[status]="OK"
@@ -285,6 +299,8 @@ hello
 
 ```log
 off=0 message begin
+off=0 len=4 span[protocol]="HTTP"
+off=4 protocol complete
 off=5 len=3 span[version]="1.1"
 off=8 version complete
 off=13 len=2 span[status]="OK"
@@ -344,6 +360,8 @@ hello
 
 ```log
 off=0 message begin
+off=0 len=4 span[protocol]="HTTP"
+off=4 protocol complete
 off=5 len=3 span[version]="1.1"
 off=8 version complete
 off=13 len=2 span[status]="OK"
@@ -370,7 +388,7 @@ off=101 error code=2 reason="Invalid character in chunk extensions quoted value"
 
 ## Invalid OBS fold after chunked value
 
-<!-- meta={"type": "response" } -->
+<!-- meta={"type": "response-lenient-headers" } -->
 ```http
 HTTP/1.1 200 OK
 Transfer-Encoding: chunked
@@ -385,6 +403,8 @@ World
 
 ```log
 off=0 message begin
+off=0 len=4 span[protocol]="HTTP"
+off=4 protocol complete
 off=5 len=3 span[version]="1.1"
 off=8 version complete
 off=13 len=2 span[status]="OK"

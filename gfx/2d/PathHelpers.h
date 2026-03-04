@@ -15,47 +15,6 @@
 namespace mozilla {
 namespace gfx {
 
-struct PathOp {
-  ~PathOp() = default;
-
-  enum OpType {
-    OP_MOVETO = 0,
-    OP_LINETO,
-    OP_BEZIERTO,
-    OP_QUADRATICBEZIERTO,
-    OP_ARC,
-    OP_CLOSE
-  };
-
-  OpType mType;
-  Point mP1;
-#if (!defined(__GNUC__) || __GNUC__ >= 7) && defined(__clang__)
-  PathOp() {}
-
-  union {
-    struct {
-      Point mP2;
-      Point mP3;
-    };
-    struct {
-      float mRadius;
-      float mStartAngle;
-      float mEndAngle;
-      bool mAntiClockwise;
-    };
-  };
-#else
-  PathOp() = default;
-
-  Point mP2;
-  Point mP3;
-  float mRadius;
-  float mStartAngle;
-  float mEndAngle;
-  bool mAntiClockwise;
-#endif
-};
-
 const int32_t sPointCount[] = {1, 1, 3, 2, 0, 0};
 
 // Kappa constant for 90-degree angle
@@ -194,8 +153,13 @@ void EllipseToBezier(T* aSink, const Point& aOrigin, const Size& aRadius) {
   }
 }
 
+inline already_AddRefed<Path> MakeEmptyPath(const DrawTarget& aDrawTarget) {
+  RefPtr<PathBuilder> builder = aDrawTarget.CreatePathBuilder();
+  return builder->Finish();
+}
+
 /**
- * Appends a path represending a rectangle to the path being built by
+ * Appends a path representing a rectangle to the path being built by
  * aPathBuilder.
  *
  * aRect           The rectangle to append.
@@ -216,7 +180,7 @@ inline already_AddRefed<Path> MakePathForRect(const DrawTarget& aDrawTarget,
 }
 
 /**
- * Appends a path represending a rounded rectangle to the path being built by
+ * Appends a path representing a rounded rectangle to the path being built by
  * aPathBuilder.
  *
  * aRect           The rectangle to append.
@@ -240,7 +204,7 @@ inline already_AddRefed<Path> MakePathForRoundedRect(
 }
 
 /**
- * Appends a path represending an ellipse to the path being built by
+ * Appends a path representing an ellipse to the path being built by
  * aPathBuilder.
  *
  * The ellipse extends aDimensions.width / 2.0 in the horizontal direction

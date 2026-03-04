@@ -6,37 +6,24 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    defaultConfig {
-        minSdkVersion config.minSdkVersion
-        compileSdk config.compileSdkVersion
-        targetSdkVersion config.targetSdkVersion
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-
-    namespace 'mozilla.components.feature.webcompat.reporter'
+    namespace = 'mozilla.components.feature.webcompat.reporter'
 }
 
 dependencies {
-    implementation project(':concept-engine')
-    implementation project(':support-webextensions')
+    implementation project(':components:concept-engine')
+    implementation project(':components:support-webextensions')
 
-    implementation ComponentsDependencies.androidx_core_ktx
+    implementation libs.androidx.core.ktx
+    implementation libs.kotlinx.coroutines
 
-    implementation ComponentsDependencies.kotlin_coroutines
+    testImplementation project(':components:support-test')
 
-    testImplementation project(':support-test')
-    testImplementation ComponentsDependencies.androidx_test_core
-    testImplementation ComponentsDependencies.androidx_test_junit
-    testImplementation ComponentsDependencies.testing_robolectric
-    testImplementation ComponentsDependencies.testing_coroutines
+    testImplementation libs.androidx.test.core
+    testImplementation libs.androidx.test.junit
+    testImplementation libs.kotlinx.coroutines.test
+    testImplementation libs.robolectric
 }
 
-apply from: '../../../android-lint.gradle'
+apply from: '../../../common-config.gradle'
 apply from: '../../../publish.gradle'
-ext.configurePublish(config.componentsGroupId, archivesBaseName, project.ext.description)
+ext.configurePublish(config.componentsGroupId, project.name, project.ext.description)

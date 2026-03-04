@@ -3,18 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -146,8 +134,6 @@ menu-view-history-button =
     .label = Historial
 menu-view-synced-tabs-sidebar =
     .label = Pestanyes sincronitzades
-menu-view-megalist-sidebar =
-    .label = Contrasenyes
 menu-view-full-zoom =
     .label = Mida de la pàgina
     .accesskey = d
@@ -255,6 +241,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Adreces del mòbil
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Perfils
+menu-profiles-manage-profiles =
+    .label = Gestiona els perfils
+menu-profiles-new-profile =
+    .label = Perfil nou
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (actual)
+menu-profiles-menu =
+    .label = Perfils
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -263,6 +265,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Baixades
     .accesskey = d
+menu-tools-extensions-and-themes =
+    .label = Extensions i temes
+    .accesskey = E
 menu-tools-addons-and-themes =
     .label = Complements i temes
     .accesskey = C

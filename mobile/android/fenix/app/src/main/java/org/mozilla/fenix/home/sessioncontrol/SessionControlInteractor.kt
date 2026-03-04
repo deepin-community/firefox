@@ -11,28 +11,25 @@ import mozilla.components.service.nimbus.messaging.Message
 import mozilla.components.service.pocket.PocketStory
 import org.mozilla.fenix.browser.browsingmode.BrowsingMode
 import org.mozilla.fenix.components.appstate.AppState
+import org.mozilla.fenix.components.appstate.setup.checklist.ChecklistItem
 import org.mozilla.fenix.home.bookmarks.Bookmark
 import org.mozilla.fenix.home.bookmarks.controller.BookmarksController
-import org.mozilla.fenix.home.bookmarks.interactor.BookmarksInteractor
+import org.mozilla.fenix.home.interactor.HomepageInteractor
 import org.mozilla.fenix.home.pocket.PocketRecommendedStoriesCategory
-import org.mozilla.fenix.home.pocket.PocketStoriesController
-import org.mozilla.fenix.home.pocket.PocketStoriesInteractor
+import org.mozilla.fenix.home.pocket.controller.PocketStoriesController
 import org.mozilla.fenix.home.privatebrowsing.controller.PrivateBrowsingController
-import org.mozilla.fenix.home.privatebrowsing.interactor.PrivateBrowsingInteractor
 import org.mozilla.fenix.home.recentsyncedtabs.RecentSyncedTab
 import org.mozilla.fenix.home.recentsyncedtabs.controller.RecentSyncedTabController
-import org.mozilla.fenix.home.recentsyncedtabs.interactor.RecentSyncedTabInteractor
 import org.mozilla.fenix.home.recenttabs.RecentTab
 import org.mozilla.fenix.home.recenttabs.controller.RecentTabController
-import org.mozilla.fenix.home.recenttabs.interactor.RecentTabInteractor
 import org.mozilla.fenix.home.recentvisits.RecentlyVisitedItem.RecentHistoryGroup
 import org.mozilla.fenix.home.recentvisits.RecentlyVisitedItem.RecentHistoryHighlight
 import org.mozilla.fenix.home.recentvisits.controller.RecentVisitsController
-import org.mozilla.fenix.home.recentvisits.interactor.RecentVisitsInteractor
+import org.mozilla.fenix.home.search.HomeSearchController
+import org.mozilla.fenix.home.termsofuse.PrivacyNoticeBannerController
 import org.mozilla.fenix.home.toolbar.ToolbarController
-import org.mozilla.fenix.home.toolbar.ToolbarInteractor
+import org.mozilla.fenix.home.topsites.controller.TopSiteController
 import org.mozilla.fenix.search.toolbar.SearchSelectorController
-import org.mozilla.fenix.search.toolbar.SearchSelectorInteractor
 import org.mozilla.fenix.search.toolbar.SearchSelectorMenu
 import org.mozilla.fenix.wallpapers.WallpaperState
 
@@ -129,68 +126,6 @@ interface CollectionInteractor {
     fun onRemoveCollectionsPlaceholder()
 }
 
-interface CustomizeHomeIteractor {
-    /**
-     * Opens the customize home settings page.
-     */
-    fun openCustomizeHomePage()
-}
-
-/**
- * Interface for top site related actions in the [SessionControlInteractor].
- */
-interface TopSiteInteractor {
-    /**
-     * Opens the given top site in private mode. Called when an user clicks on the "Open in private
-     * tab" top site menu item.
-     *
-     * @param topSite The top site that will be open in private mode.
-     */
-    fun onOpenInPrivateTabClicked(topSite: TopSite)
-
-    /**
-     * Opens a dialog to edit the given top site. Called when an user clicks on the "Edit" top site menu item.
-     *
-     * @param topSite The top site that will be edited.
-     */
-    fun onEditTopSiteClicked(topSite: TopSite)
-
-    /**
-     * Removes the given top site. Called when an user clicks on the "Remove" top site menu item.
-     *
-     * @param topSite The top site that will be removed.
-     */
-    fun onRemoveTopSiteClicked(topSite: TopSite)
-
-    /**
-     * Selects the given top site. Called when a user clicks on a top site.
-     *
-     * @param topSite The top site that was selected.
-     * @param position The position of the top site.
-     */
-    fun onSelectTopSite(topSite: TopSite, position: Int)
-
-    /**
-     * Navigates to the Homepage Settings. Called when an user clicks on the "Settings" top site
-     * menu item.
-     */
-    fun onSettingsClicked()
-
-    /**
-     * Opens the sponsor privacy support articles. Called when an user clicks on the
-     * "Our sponsors & your privacy" top site menu item.
-     */
-    fun onSponsorPrivacyClicked()
-
-    /**
-     * Handles long click event for the given top site. Called when an user long clicks on a top
-     * site.
-     *
-     * @param topSite The top site that was long clicked.
-     */
-    fun onTopSiteLongClicked(topSite: TopSite)
-}
-
 interface MessageCardInteractor {
     /**
      * Called when a [Message]'s button is clicked
@@ -218,6 +153,21 @@ interface WallpaperInteractor {
 }
 
 /**
+ * Interface for setup checklist feature related actions.
+ */
+interface SetupChecklistInteractor {
+    /**
+     * Gets invoked when the user clicks a check list item.
+     */
+    fun onChecklistItemClicked(item: ChecklistItem)
+
+    /**
+     * Invoked when the remove button is clicked.
+     */
+    fun onRemoveChecklistButtonClicked()
+}
+
+/**
  * Interactor for the Home screen. Provides implementations for the CollectionInteractor,
  * OnboardingInteractor, TopSiteInteractor, TabSessionInteractor, ToolbarInteractor,
  * ExperimentCardInteractor, RecentTabInteractor, RecentBookmarksInteractor
@@ -234,20 +184,10 @@ class SessionControlInteractor(
     private val privateBrowsingController: PrivateBrowsingController,
     private val searchSelectorController: SearchSelectorController,
     private val toolbarController: ToolbarController,
-) : CollectionInteractor,
-    TopSiteInteractor,
-    TabSessionInteractor,
-    ToolbarInteractor,
-    MessageCardInteractor,
-    RecentTabInteractor,
-    RecentSyncedTabInteractor,
-    BookmarksInteractor,
-    RecentVisitsInteractor,
-    CustomizeHomeIteractor,
-    PocketStoriesInteractor,
-    PrivateBrowsingInteractor,
-    SearchSelectorInteractor,
-    WallpaperInteractor {
+    private val homeSearchController: HomeSearchController,
+    private val topSiteController: TopSiteController,
+    private val privacyNoticeBannerController: PrivacyNoticeBannerController,
+) : HomepageInteractor {
 
     override fun onCollectionAddTabTapped(collection: TabCollection) {
         controller.handleCollectionAddTabTapped(collection)
@@ -274,15 +214,15 @@ class SessionControlInteractor(
     }
 
     override fun onOpenInPrivateTabClicked(topSite: TopSite) {
-        controller.handleOpenInPrivateTabClicked(topSite)
+        topSiteController.handleOpenInPrivateTabClicked(topSite)
     }
 
     override fun onEditTopSiteClicked(topSite: TopSite) {
-        controller.handleEditTopSiteClicked(topSite)
+        topSiteController.handleEditTopSiteClicked(topSite)
     }
 
     override fun onRemoveTopSiteClicked(topSite: TopSite) {
-        controller.handleRemoveTopSiteClicked(topSite)
+        topSiteController.handleRemoveTopSiteClicked(topSite)
     }
 
     override fun onRenameCollectionTapped(collection: TabCollection) {
@@ -290,23 +230,43 @@ class SessionControlInteractor(
     }
 
     override fun onSelectTopSite(topSite: TopSite, position: Int) {
-        controller.handleSelectTopSite(topSite, position)
+        topSiteController.handleSelectTopSite(topSite, position)
+    }
+
+    override fun onTopSiteImpression(topSite: TopSite.Provided, position: Int) {
+        topSiteController.handleTopSiteImpression(topSite, position)
     }
 
     override fun onSettingsClicked() {
-        controller.handleTopSiteSettingsClicked()
+        topSiteController.handleTopSiteSettingsClicked()
     }
 
     override fun onSponsorPrivacyClicked() {
-        controller.handleSponsorPrivacyClicked()
+        topSiteController.handleSponsorPrivacyClicked()
     }
 
     override fun onTopSiteLongClicked(topSite: TopSite) {
-        controller.handleTopSiteLongClicked(topSite)
+        topSiteController.handleTopSiteLongClicked(topSite)
+    }
+
+    override fun onShowAllTopSitesClicked() {
+        topSiteController.handleShowAllTopSitesClicked()
+    }
+
+    override fun onShortcutsLibraryViewed() {
+        topSiteController.handleShortcutsLibraryViewed()
     }
 
     override fun showWallpapersOnboardingDialog(state: WallpaperState): Boolean {
         return controller.handleShowWallpapersOnboardingDialog(state)
+    }
+
+    override fun onChecklistItemClicked(item: ChecklistItem) {
+        controller.onChecklistItemClicked(item)
+    }
+
+    override fun onRemoveChecklistButtonClicked() {
+        controller.onRemoveChecklistButtonClicked()
     }
 
     override fun onToggleCollectionExpanded(collection: TabCollection, expand: Boolean) {
@@ -335,6 +295,10 @@ class SessionControlInteractor(
 
     override fun onNavigateSearch() {
         toolbarController.handleNavigateSearch()
+    }
+
+    override fun onHomeContentFocusedWhileSearchIsActive() {
+        homeSearchController.handleHomeContentFocusedWhileSearchIsActive()
     }
 
     override fun onRemoveCollectionsPlaceholder() {
@@ -399,11 +363,7 @@ class SessionControlInteractor(
         recentVisitsController.handleRemoveRecentHistoryHighlight(highlightUrl)
     }
 
-    override fun openCustomizeHomePage() {
-        controller.handleCustomizeHomeTapped()
-    }
-
-    override fun onStoryShown(storyShown: PocketStory, storyPosition: Pair<Int, Int>) {
+    override fun onStoryShown(storyShown: PocketStory, storyPosition: Triple<Int, Int, Int>) {
         pocketStoriesController.handleStoryShown(storyShown, storyPosition)
     }
 
@@ -415,16 +375,16 @@ class SessionControlInteractor(
         pocketStoriesController.handleCategoryClick(categoryClicked)
     }
 
-    override fun onStoryClicked(storyClicked: PocketStory, storyPosition: Pair<Int, Int>) {
+    override fun onStoryClicked(storyClicked: PocketStory, storyPosition: Triple<Int, Int, Int>) {
         pocketStoriesController.handleStoryClicked(storyClicked, storyPosition)
     }
 
-    override fun onLearnMoreClicked(link: String) {
-        pocketStoriesController.handleLearnMoreClicked(link)
+    override fun onDiscoverMoreClicked() {
+        pocketStoriesController.handleDiscoverMoreClicked()
     }
 
-    override fun onDiscoverMoreClicked(link: String) {
-        pocketStoriesController.handleDiscoverMoreClicked(link)
+    override fun onDiscoverMoreScreenViewed() {
+        pocketStoriesController.handleDiscoverMoreScreenViewed()
     }
 
     override fun reportSessionMetrics(state: AppState) {
@@ -441,5 +401,21 @@ class SessionControlInteractor(
 
     override fun onMenuItemTapped(item: SearchSelectorMenu.Item) {
         searchSelectorController.handleMenuItemTapped(item)
+    }
+
+    override fun onPrivacyNoticeBannerCloseClicked() {
+        privacyNoticeBannerController.onBannerCloseClicked()
+    }
+
+    override fun onPrivacyNoticeBannerPrivacyNoticeClicked() {
+        privacyNoticeBannerController.onBannerPrivacyNoticeClicked()
+    }
+
+    override fun onPrivacyNoticeBannerLearnMoreClicked() {
+        privacyNoticeBannerController.onBannerLearnMoreClicked()
+    }
+
+    override fun onPrivacyNoticeBannerDisplayed() {
+        privacyNoticeBannerController.onBannerDisplayed()
     }
 }

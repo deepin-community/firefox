@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/SVGTextElement.h"
+
 #include "mozilla/dom/SVGTextElementBinding.h"
 
 NS_IMPL_NS_NEW_SVG_ELEMENT(Text)
@@ -24,12 +25,12 @@ SVGTextElement::SVGTextElement(
     : SVGTextElementBase(std::move(aNodeInfo)) {}
 
 SVGElement::EnumAttributesInfo SVGTextElement::GetEnumInfo() {
-  return EnumAttributesInfo(mEnumAttributes, sEnumInfo, ArrayLength(sEnumInfo));
+  return EnumAttributesInfo(mEnumAttributes, sEnumInfo, std::size(sEnumInfo));
 }
 
 SVGElement::LengthAttributesInfo SVGTextElement::GetLengthInfo() {
   return LengthAttributesInfo(mLengthAttributes, sLengthInfo,
-                              ArrayLength(sLengthInfo));
+                              std::size(sLengthInfo));
 }
 
 //----------------------------------------------------------------------

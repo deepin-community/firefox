@@ -70,7 +70,7 @@ async function testBreadcrumbTransitions(hostWindow, inspector) {
 
   // So just need to wait for a duration
   await breadcrumbsUpdated;
-  const initialCrumb = container.querySelector("button[checked]");
+  const initialCrumb = container.querySelector(`button[aria-pressed="true"]`);
   is(
     isElementInViewport(hostWindow, initialCrumb),
     true,
@@ -107,8 +107,3 @@ function isElementInViewport(window, el) {
     rect.right <= window.innerWidth
   );
 }
-
-registerCleanupFunction(function () {
-  // Restore the host type for other tests.
-  Services.prefs.clearUserPref("devtools.toolbox.host");
-});

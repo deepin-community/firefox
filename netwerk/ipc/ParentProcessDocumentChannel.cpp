@@ -165,7 +165,7 @@ NS_IMETHODIMP ParentProcessDocumentChannel::AsyncOpen(
 
   if (isDocumentLoad) {
     // Return value of setting synced field should be checked. See bug 1656492.
-    Unused << GetDocShell()->GetBrowsingContext()->SetCurrentLoadIdentifier(
+    (void)GetDocShell()->GetBrowsingContext()->SetCurrentLoadIdentifier(
         Some(mLoadState->GetLoadIdentifier()));
   }
 
@@ -175,8 +175,8 @@ NS_IMETHODIMP ParentProcessDocumentChannel::AsyncOpen(
   RefPtr<DocumentLoadListener::OpenPromise> promise;
   if (isDocumentLoad) {
     promise = mDocumentLoadListener->OpenDocument(
-        mLoadState, mCacheKey, Some(mChannelId), TimeStamp::Now(), mTiming,
-        std::move(initialClientInfo), Some(mUriModified),
+        mLoadState, mLoadFlags, mCacheKey, Some(mChannelId), TimeStamp::Now(),
+        mTiming, std::move(initialClientInfo), mUriModified,
         Some(mIsEmbeddingBlockedError), nullptr /* ContentParent */, &rv);
   } else {
     promise = mDocumentLoadListener->OpenObject(

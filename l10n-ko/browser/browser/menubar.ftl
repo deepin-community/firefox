@@ -3,18 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -145,8 +133,6 @@ menu-view-history-button =
     .label = 기록
 menu-view-synced-tabs-sidebar =
     .label = 동기화된 탭
-menu-view-megalist-sidebar =
-    .label = 비밀번호
 menu-view-full-zoom =
     .label = 확대/축소
     .accesskey = Z
@@ -254,6 +240,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = 모바일 북마크
 
+## Profiles Menu
+
+menu-profiles =
+    .label = 프로필
+menu-profiles-manage-profiles =
+    .label = 프로필 관리
+menu-profiles-new-profile =
+    .label = 새 프로필
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (현재)
+menu-profiles-menu =
+    .label = 프로필
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -262,6 +264,9 @@ menu-tools =
 menu-tools-downloads =
     .label = 다운로드
     .accesskey = D
+menu-tools-extensions-and-themes =
+    .label = 확장 기능 및 테마
+    .accesskey = E
 menu-tools-addons-and-themes =
     .label = 부가 기능 및 테마
     .accesskey = A
@@ -325,12 +330,12 @@ menu-get-help =
     .label = 도움 받기
     .accesskey = H
 menu-help-more-troubleshooting-info =
-    .label = 추가 문제 해결 정보
+    .label = 문제 해결 정보
     .accesskey = T
 menu-help-report-site-issue =
     .label = 사이트 문제 보고…
 menu-help-share-ideas =
-    .label = 아이디어 공유 및 의견 보내기…
+    .label = 아이디어 및 의견 공유…
     .accesskey = S
 menu-help-enter-troubleshoot-mode2 =
     .label = 문제 해결 모드…

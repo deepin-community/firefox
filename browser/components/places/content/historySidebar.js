@@ -10,7 +10,7 @@ var { XPCOMUtils } = ChromeUtils.importESModule(
 
 ChromeUtils.defineESModuleGetters(this, {
   PlacesTransactions: "resource://gre/modules/PlacesTransactions.sys.mjs",
-  PlacesUIUtils: "resource:///modules/PlacesUIUtils.sys.mjs",
+  PlacesUIUtils: "moz-src:///browser/components/places/PlacesUIUtils.sys.mjs",
   PlacesUtils: "resource://gre/modules/PlacesUtils.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
 });
@@ -33,23 +33,35 @@ var gHistoryGrouping = "";
 var gCumulativeSearches = 0;
 var gCumulativeFilterCount = 0;
 
-function HistorySidebarInit() {
+window.addEventListener("load", () => {
   let uidensity = window.top.document.documentElement.getAttribute("uidensity");
   if (uidensity) {
     document.documentElement.setAttribute("uidensity", uidensity);
   }
 
   gHistoryTree = document.getElementById("historyTree");
-  gSearchBox = document.getElementById("search-box");
-
-  gHistoryGrouping = document
-    .getElementById("viewButton")
-    .getAttribute("selectedsort");
-
-  this.groupHistogram = Services.telemetry.getHistogramById(
-    "PLACES_SEARCHBAR_FILTER_TYPE"
+  gHistoryTree.addEventListener("click", event =>
+    PlacesUIUtils.onSidebarTreeClick(event)
   );
-  this.groupHistogram.add(gHistoryGrouping);
+  gHistoryTree.addEventListener("keypress", event =>
+    PlacesUIUtils.onSidebarTreeKeyPress(event)
+  );
+  gHistoryTree.addEventListener("mousemove", event =>
+    PlacesUIUtils.onSidebarTreeMouseMove(event)
+  );
+  gHistoryTree.addEventListener("mouseout", () =>
+    PlacesUIUtils.setMouseoverURL("", window)
+  );
+
+  gSearchBox = document.getElementById("search-box");
+  gSearchBox.addEventListener("MozInputSearch:search", () =>
+    searchHistory(gSearchBox.value)
+  );
+
+  let viewButton = document.getElementById("viewButton");
+  gHistoryGrouping = viewButton.getAttribute("selectedsort");
+
+  Glean.historySidebar.filterType[gHistoryGrouping].add(1);
 
   if (gHistoryGrouping == "site") {
     document.getElementById("bysite").setAttribute("checked", "true");
@@ -63,12 +75,28 @@ function HistorySidebarInit() {
     document.getElementById("byday").setAttribute("checked", "true");
   }
 
+  document
+    .querySelector("#viewButton > menupopup")
+    .addEventListener("command", event => {
+      let by = event.target.id.slice(2);
+      viewButton.setAttribute("selectedsort", by);
+      GroupBy(by);
+    });
+
+  let bhTooltip = document.getElementById("bhTooltip");
+  bhTooltip.addEventListener("popupshowing", event => {
+    window.top.BookmarksEventHandler.fillInBHTooltip(bhTooltip, event);
+  });
+  bhTooltip.addEventListener("popuphiding", () =>
+    bhTooltip.removeAttribute("position")
+  );
+
   searchHistory("");
-}
+});
 
 function GroupBy(groupingType) {
   if (groupingType != gHistoryGrouping) {
-    this.groupHistogram.add(groupingType);
+    Glean.historySidebar.filterType[groupingType].add(1);
   }
   gHistoryGrouping = groupingType;
   gCumulativeFilterCount++;
@@ -76,21 +104,15 @@ function GroupBy(groupingType) {
 }
 
 function updateTelemetry(urlsOpened = []) {
-  let searchesHistogram = Services.telemetry.getHistogramById(
-    "PLACES_SEARCHBAR_CUMULATIVE_SEARCHES"
+  Glean.historySidebar.cumulativeSearches.accumulateSingleSample(
+    gCumulativeSearches
   );
-  searchesHistogram.add(gCumulativeSearches);
-  let filterCountHistogram = Services.telemetry.getHistogramById(
-    "PLACES_SEARCHBAR_CUMULATIVE_FILTER_COUNT"
+  Glean.historySidebar.cumulativeFilterCount.accumulateSingleSample(
+    gCumulativeFilterCount
   );
-  filterCountHistogram.add(gCumulativeFilterCount);
   clearCumulativeCounters();
 
-  Services.telemetry.keyedScalarAdd(
-    "sidebar.link",
-    "history",
-    urlsOpened.length
-  );
+  Glean.sidebar.link.history.add(urlsOpened.length);
 }
 
 function searchHistory(aInput) {
@@ -135,8 +157,9 @@ function searchHistory(aInput) {
   options.resultType = resultType;
   options.includeHidden = !!aInput;
 
+  let timerId;
   if (gHistoryGrouping == "lastvisited") {
-    TelemetryStopwatch.start("HISTORY_LASTVISITED_TREE_QUERY_TIME_MS");
+    timerId = Glean.historySidebar.lastvisitedTreeQueryTime.start();
   }
 
   // call load() on the tree manually
@@ -149,12 +172,12 @@ function searchHistory(aInput) {
   // Since we're trying to measure how often the searchbar was used, we should first
   // check if there's an input string before collecting telemetry.
   if (aInput) {
-    Services.telemetry.keyedScalarAdd("sidebar.search", "history", 1);
+    Glean.sidebar.search.history.add(1);
     gCumulativeSearches++;
   }
 
   if (gHistoryGrouping == "lastvisited") {
-    TelemetryStopwatch.finish("HISTORY_LASTVISITED_TREE_QUERY_TIME_MS");
+    Glean.historySidebar.lastvisitedTreeQueryTime.stopAndAccumulate(timerId);
   }
 }
 
@@ -163,9 +186,9 @@ function clearCumulativeCounters() {
   gCumulativeFilterCount = 0;
 }
 
-function unloadHistorySidebar() {
+window.addEventListener("unload", () => {
   clearCumulativeCounters();
   PlacesUIUtils.setMouseoverURL("", window);
-}
+});
 
 window.addEventListener("SidebarFocused", () => gSearchBox.focus());

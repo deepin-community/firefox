@@ -6,10 +6,10 @@
 #ifndef GPU_SupportedLimits_H_
 #define GPU_SupportedLimits_H_
 
-#include "nsWrapperCache.h"
-#include "ObjectModel.h"
-
 #include <memory>
+
+#include "ObjectModel.h"
+#include "nsWrapperCache.h"
 
 namespace mozilla::webgpu {
 namespace ffi {
@@ -40,7 +40,6 @@ enum class Limit : uint8_t {
   MaxBufferSize,
   MaxVertexAttributes,
   MaxVertexBufferArrayStride,
-  MaxInterStageShaderComponents,
   MaxInterStageShaderVariables,
   MaxColorAttachments,
   MaxColorAttachmentBytesPerSample,
@@ -88,7 +87,6 @@ class SupportedLimits final : public nsWrapperCache, public ChildOf<Adapter> {
   _(MaxBufferSize)
   _(MaxVertexAttributes)
   _(MaxVertexBufferArrayStride)
-  _(MaxInterStageShaderComponents)
   _(MaxInterStageShaderVariables)
   _(MaxColorAttachments)
   _(MaxColorAttachmentBytesPerSample)
@@ -104,8 +102,7 @@ class SupportedLimits final : public nsWrapperCache, public ChildOf<Adapter> {
   SupportedLimits(Adapter* const aParent, const ffi::WGPULimits&);
 
  private:
-  ~SupportedLimits();
-  void Cleanup() {}
+  virtual ~SupportedLimits();
 };
 
 }  // namespace mozilla::webgpu

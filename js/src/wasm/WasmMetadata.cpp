@@ -11,6 +11,8 @@
 
 #include "jsnum.h"  // Int32ToCStringBuf
 
+#include "vm/Logging.h"
+
 using mozilla::CheckedInt;
 
 using namespace js;
@@ -182,6 +184,19 @@ uint32_t CodeMetadata::findFuncExportIndex(uint32_t funcIndex) const {
   return (uint32_t)match;
 }
 
+uint32_t CodeTailMetadata::findFuncIndex(uint32_t bytecodeOffset) const {
+  size_t funcDefIndex;
+  if (!mozilla::BinarySearchIf(
+          funcDefRanges, 0, funcDefRanges.length(),
+          [bytecodeOffset](const BytecodeRange& range) {
+            return range.compareOffset(bytecodeOffset);
+          },
+          &funcDefIndex)) {
+    MOZ_CRASH("missing function definition");
+  }
+  return codeMeta->numFuncImports + funcDefIndex;
+}
+
 // CodeMetadata helpers -- getting function names.
 
 static bool AppendName(const Bytes& namePayload, const Name& name,
@@ -209,9 +224,11 @@ static bool AppendFunctionIndexName(uint32_t funcIndex, UTF8Bytes* bytes) {
 }
 
 bool CodeMetadata::getFuncNameForWasm(NameContext ctx, uint32_t funcIndex,
+                                      const ShareableBytes* nameSectionPayload,
                                       UTF8Bytes* name) const {
-  if (moduleName && moduleName->length != 0) {
-    if (!AppendName(namePayload->bytes, *moduleName, name)) {
+  if (nameSection && nameSection->moduleName.length != 0) {
+    if (!AppendName(nameSectionPayload->vector, nameSection->moduleName,
+                    name)) {
       return false;
     }
     if (!name->append('.')) {
@@ -219,8 +236,10 @@ bool CodeMetadata::getFuncNameForWasm(NameContext ctx, uint32_t funcIndex,
     }
   }
 
-  if (funcIndex < funcNames.length() && funcNames[funcIndex].length != 0) {
-    return AppendName(namePayload->bytes, funcNames[funcIndex], name);
+  if (nameSection && funcIndex < nameSection->funcNames.length() &&
+      nameSection->funcNames[funcIndex].length != 0) {
+    return AppendName(nameSectionPayload->vector,
+                      nameSection->funcNames[funcIndex], name);
   }
 
   if (ctx == NameContext::BeforeLocation) {
@@ -239,12 +258,27 @@ size_t CodeMetadata::sizeOfExcludingThis(
          globals.sizeOfExcludingThis(mallocSizeOf) +
          tags.sizeOfExcludingThis(mallocSizeOf) +
          tables.sizeOfExcludingThis(mallocSizeOf) +
-         namePayload->sizeOfExcludingThis(mallocSizeOf) +
-         funcNames.sizeOfExcludingThis(mallocSizeOf) +
+         SizeOfMaybeExcludingThis(nameSection, mallocSizeOf) +
          funcs.sizeOfExcludingThis(mallocSizeOf) +
          elemSegmentTypes.sizeOfExcludingThis(mallocSizeOf) +
          asmJSSigToTableIndex.sizeOfExcludingThis(mallocSizeOf) +
          customSectionRanges.sizeOfExcludingThis(mallocSizeOf);
+}
+
+CodeTailMetadata::CodeTailMetadata()
+    : codeMeta(nullptr),
+      debugEnabled(false),
+      debugHash(),
+      inliningBudget(mutexid::WasmInliningBudget, 0),
+      callRefHints(nullptr),
+      numCallRefMetrics(UINT32_MAX),
+      numAllocSites(UINT32_MAX) {}
+
+CodeTailMetadata::CodeTailMetadata(const CodeMetadata& codeMeta)
+    : js::wasm::CodeTailMetadata() {
+  this->codeMeta = &codeMeta;
+  inliningBudget.lock().get() =
+      InliningHeuristics::moduleInliningBudget(codeMeta.codeSectionSize());
 }
 
 // ModuleMetadata helpers -- memory accounting.

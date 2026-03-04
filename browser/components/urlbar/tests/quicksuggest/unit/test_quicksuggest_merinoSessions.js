@@ -6,20 +6,13 @@
 
 "use strict";
 
-// `UrlbarProviderQuickSuggest.#merino` is lazily created on the first Merino
-// fetch, so it's easiest to create `gClient` lazily too.
-ChromeUtils.defineLazyGetter(
-  this,
-  "gClient",
-  () => UrlbarProviderQuickSuggest._test_merino
-);
-
 add_setup(async () => {
   await MerinoTestUtils.server.start();
   await QuickSuggestTestUtils.ensureQuickSuggestInit({
     prefs: [
       ["suggest.quicksuggest.sponsored", true],
-      ["quicksuggest.dataCollection.enabled", true],
+      ["quicksuggest.online.available", true],
+      ["quicksuggest.online.enabled", true],
     ],
   });
 });
@@ -154,18 +147,21 @@ function endEngagement({ controller, context = null, state = "engagement" }) {
     isPrivate: false,
   });
   let details = { selIndex: -1, result: { payload: {} } };
+  let quickSuggestProviderInstance = UrlbarProvidersManager.getProvider(
+    UrlbarProviderQuickSuggest.name
+  );
 
   switch (state) {
     case "engagement":
-      UrlbarProviderQuickSuggest.onEngagement(context, controller, details);
-      UrlbarProviderQuickSuggest.onSearchSessionEnd(
+      quickSuggestProviderInstance.onEngagement(context, controller, details);
+      quickSuggestProviderInstance.onSearchSessionEnd(
         context,
         controller,
         details
       );
       break;
     case "abandonment":
-      UrlbarProviderQuickSuggest.onSearchSessionEnd(
+      quickSuggestProviderInstance.onSearchSessionEnd(
         context,
         controller,
         details
@@ -176,13 +172,17 @@ function endEngagement({ controller, context = null, state = "engagement" }) {
   }
 
   Assert.strictEqual(
-    gClient.sessionID,
+    merinoClient().sessionID,
     null,
     "sessionID is null after engagement"
   );
   Assert.strictEqual(
-    gClient._test_sessionTimer,
+    merinoClient()._test_sessionTimer,
     null,
     "sessionTimer is null after engagement"
   );
+}
+
+function merinoClient() {
+  return QuickSuggest.getFeature("SuggestBackendMerino")?.client;
 }

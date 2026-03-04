@@ -39,7 +39,7 @@ site-permission-install-first-prompt-midi-message = Αυτή η πρόσβαση
 
 ##
 
-xpinstall-disabled-locked = Η εγκατάσταση λογισμικού έχει απενεργοποιηθεί από τον διαχειριστή του συστήματος σας.
+xpinstall-disabled-locked = Η εγκατάσταση λογισμικού έχει απενεργοποιηθεί από τον διαχειριστή του συστήματός σας.
 xpinstall-disabled-by-policy = Η εγκατάσταση λογισμικού έχει απενεργοποιηθεί από τον οργανισμό σας.
 xpinstall-disabled = Η εγκατάσταση λογισμικού είναι απενεργοποιημένη αυτήν τη στιγμή. Κάντε κλικ στο «Ενεργοποίηση» και δοκιμάστε ξανά.
 xpinstall-disabled-button =
@@ -51,7 +51,7 @@ xpinstall-disabled-button =
 #   $addonId (String): the ID of add-on.
 addon-install-blocked-by-policy = Το { $addonName } ({ $addonId }) έχει αποκλειστεί από τον διαχειριστή του συστήματός σας.
 # This message is shown when the installation of add-ons from a domain is blocked by enterprise policy.
-addon-domain-blocked-by-policy = Ο διαχειριστής του συστήματός σας εμπόδισε την ερώτηση αυτού του ιστοτόπου για εγκατάσταση λογισμικού στον υπολογιστή σας.
+addon-domain-blocked-by-policy = Ο διαχειριστής του συστήματός σας εμπόδισε αυτόν τον ιστότοπο από το να ζητήσει την εγκατάσταση λογισμικού στον υπολογιστή σας.
 # This message is shown when the installation of an add-on is blocked by enterprise policy.
 # Variables:
 #   $addonName (String): the name of the add-on.
@@ -81,6 +81,8 @@ addon-removal-title = Αφαίρεση του { $name };
 addon-removal-message = Αφαίρεση του { $name } από το { -brand-shorter-name };
 addon-removal-button = Αφαίρεση
 addon-removal-abuse-report-checkbox = Αναφορά επέκτασης στη { -vendor-short-name }
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Αν χρησιμοποιήσετε τις λειτουργίες ή τις επεκτάσεις που αξιοποιούν αυτό το μοντέλο, θα προστεθεί ξανά.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -123,14 +125,19 @@ addon-install-error-corrupt-file = Δεν ήταν δυνατή η εγκατά�
 addon-install-error-file-access = Δεν ήταν δυνατή η εγκατάσταση του { $addonName } επειδή το { -brand-short-name } δεν μπόρεσε να τροποποιήσει το απαραίτητο αρχείο.
 addon-install-error-not-signed = Το { -brand-short-name } εμπόδισε την εγκατάσταση ενός μη επαληθευμένου προσθέτου από αυτόν τον ιστότοπο.
 addon-install-error-invalid-domain = Το πρόσθετο «{ $addonName }» δεν μπορεί να εγκατασταθεί από αυτήν την τοποθεσία.
+addon-install-error-no-addon-name-file-access = Δεν ήταν δυνατή η εγκατάσταση του προσθέτου επειδή το { -brand-short-name } δεν μπόρεσε να τροποποιήσει το απαραίτητο αρχείο.
 addon-local-install-error-network-failure = Δεν ήταν δυνατή η εγκατάσταση αυτού του προσθέτου λόγω σφάλματος στο σύστημα αρχείων.
 addon-local-install-error-incorrect-hash = Δεν ήταν δυνατή η εγκατάσταση αυτού του προσθέτου επειδή δεν αντιστοιχεί στο πρόσθετο που περίμενε το { -brand-short-name }.
 addon-local-install-error-corrupt-file = Δεν ήταν δυνατή η εγκατάσταση αυτού του προσθέτου επειδή φαίνεται να είναι κατεστραμμένο.
 addon-local-install-error-file-access = Δεν ήταν δυνατή η εγκατάσταση του { $addonName } επειδή το { -brand-short-name } δεν μπόρεσε να τροποποιήσει το απαραίτητο αρχείο.
 addon-local-install-error-not-signed = Δεν ήταν δυνατή η εγκατάσταση αυτού του προσθέτου επειδή δεν έχει επαληθευτεί.
+addon-local-install-no-addon-name-error-file-access = Δεν ήταν δυνατή η εγκατάσταση του προσθέτου επειδή το { -brand-short-name } δεν μπόρεσε να τροποποιήσει το απαραίτητο αρχείο.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = Δεν ήταν δυνατή η εγκατάσταση του { $addonName } επειδή δεν είναι συμβατό με το { -brand-short-name } { $appVersion }.
+addon-install-error-hard-blocked = Το { $addonName } παραβιάζει τις πολιτικές της Mozilla και δεν είναι δυνατή η εγκατάστασή του στο { -brand-short-name }.
+addon-install-error-soft-blocked2 = Το { $addonName } είναι περιορισμένο και δεν είναι δυνατή η εγκατάστασή του στο { -brand-short-name }.
 addon-install-error-blocklisted = Δεν ήταν δυνατή η εγκατάσταση του { $addonName } επειδή υπάρχει μεγάλος κίνδυνος πρόκλησης προβλημάτων σταθερότητας ή ασφάλειας.
+addon-install-error-soft-blocked = Το { $addonName } παραβιάζει τις πολιτικές της Mozilla και δεν είναι δυνατή η εγκατάστασή του στο { -brand-short-name }.
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = Δεν μπορείτε να εγκαταστήσετε το { $addonName } ως τελικός χρήστης, καθώς μπορεί να εγκατασταθεί μόνο από έναν οργανισμό που χρησιμοποιεί εταιρικές πολιτικές.

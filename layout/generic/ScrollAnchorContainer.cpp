@@ -5,15 +5,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "ScrollAnchorContainer.h"
+
 #include <cstddef>
 
-#include "mozilla/dom/Text.h"
-#include "mozilla/ScopeExit.h"
 #include "mozilla/PresShell.h"
 #include "mozilla/ProfilerLabels.h"
+#include "mozilla/ScopeExit.h"
 #include "mozilla/ScrollContainerFrame.h"
 #include "mozilla/StaticPrefs_layout.h"
 #include "mozilla/ToString.h"
+#include "mozilla/dom/Text.h"
 #include "nsBlockFrame.h"
 #include "nsIFrame.h"
 #include "nsIFrameInlines.h"
@@ -303,7 +304,8 @@ void ScrollAnchorContainer::SelectAnchor() {
   // Calculate the position to use for scroll adjustments
   if (mAnchorNode) {
     mLastAnchorOffset = FindScrollAnchoringBoundingOffset(Frame(), mAnchorNode);
-    ANCHOR_LOG("Using last anchor offset = %d.\n", mLastAnchorOffset);
+    ANCHOR_LOG("Using last anchor offset = %s.\n",
+               ToString(CSSPixel::FromAppUnits(mLastAnchorOffset)).c_str());
   } else {
     mLastAnchorOffset = 0;
   }
@@ -496,7 +498,9 @@ void ScrollAnchorContainer::ApplyAdjustments() {
   nscoord logicalAdjustment = current - mLastAnchorOffset;
   WritingMode writingMode = Frame()->GetWritingMode();
 
-  ANCHOR_LOG("Anchor has moved from %d to %d.\n", mLastAnchorOffset, current);
+  ANCHOR_LOG("Anchor has moved from %s to %s.\n",
+             ToString(CSSPixel::FromAppUnits(mLastAnchorOffset)).c_str(),
+             ToString(CSSPixel::FromAppUnits(current)).c_str());
 
   auto maybeInvalidate = MakeScopeExit([&] {
     if (mAnchorMightBeSubOptimal &&
@@ -521,8 +525,9 @@ void ScrollAnchorContainer::ApplyAdjustments() {
     return;
   }
 
-  ANCHOR_LOG("Applying anchor adjustment of %d in %s with anchor %p.\n",
-             logicalAdjustment, ToString(writingMode).c_str(), mAnchorNode);
+  ANCHOR_LOG("Applying anchor adjustment of %s in %s with anchor %p.\n",
+             ToString(CSSPixel::FromAppUnits(logicalAdjustment)).c_str(),
+             ToString(writingMode).c_str(), mAnchorNode);
 
   AdjustmentMade(logicalAdjustment);
 
@@ -656,8 +661,7 @@ ScrollAnchorContainer::ExamineAnchorCandidate(nsIFrame* aFrame) const {
 
   // Find the scroll anchoring bounding rect.
   nsRect rect = FindScrollAnchoringBoundingRect(Frame(), aFrame);
-  ANCHOR_LOG("\t\trect = [%d %d x %d %d].\n", rect.x, rect.y, rect.width,
-             rect.height);
+  ANCHOR_LOG("\t\trect = %s.\n", ToString(CSSRect::FromAppUnits(rect)).c_str());
 
   // Check if this frame is visible in the scroll port. This will exclude rects
   // with zero sized area. The specification is ambiguous about this [1], but

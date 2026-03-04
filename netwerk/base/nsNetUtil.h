@@ -23,7 +23,6 @@
 #include "nsIURI.h"
 #include "mozilla/NotNull.h"
 #include "mozilla/Services.h"
-#include "mozilla/Unused.h"
 #include "nsNetCID.h"
 #include "nsReadableUtils.h"
 #include "nsServiceManagerUtils.h"
@@ -192,8 +191,7 @@ nsresult NS_NewChannelInternal(
     nsILoadGroup* aLoadGroup = nullptr,
     nsIInterfaceRequestor* aCallbacks = nullptr,
     nsLoadFlags aLoadFlags = nsIRequest::LOAD_NORMAL,
-    nsIIOService* aIoService = nullptr, uint32_t aSandboxFlags = 0,
-    bool aSkipCheckForBrokenURLOrZeroSized = false);
+    nsIIOService* aIoService = nullptr, uint32_t aSandboxFlags = 0);
 
 // See NS_NewChannelInternal for usage and argument description
 nsresult NS_NewChannelInternal(
@@ -250,8 +248,7 @@ nsresult NS_NewChannel(
     nsILoadGroup* aLoadGroup = nullptr,
     nsIInterfaceRequestor* aCallbacks = nullptr,
     nsLoadFlags aLoadFlags = nsIRequest::LOAD_NORMAL,
-    nsIIOService* aIoService = nullptr, uint32_t aSandboxFlags = 0,
-    bool aSkipCheckForBrokenURLOrZeroSized = false);
+    nsIIOService* aIoService = nullptr, uint32_t aSandboxFlags = 0);
 
 // See NS_NewChannelInternal for usage and argument description
 nsresult NS_NewChannel(
@@ -262,8 +259,7 @@ nsresult NS_NewChannel(
     nsILoadGroup* aLoadGroup = nullptr,
     nsIInterfaceRequestor* aCallbacks = nullptr,
     nsLoadFlags aLoadFlags = nsIRequest::LOAD_NORMAL,
-    nsIIOService* aIoService = nullptr, uint32_t aSandboxFlags = 0,
-    bool aSkipCheckForBrokenURLOrZeroSized = false);
+    nsIIOService* aIoService = nullptr, uint32_t aSandboxFlags = 0);
 
 // See NS_NewChannelInternal for usage and argument description
 nsresult NS_NewChannel(
@@ -276,8 +272,7 @@ nsresult NS_NewChannel(
     nsILoadGroup* aLoadGroup = nullptr,
     nsIInterfaceRequestor* aCallbacks = nullptr,
     nsLoadFlags aLoadFlags = nsIRequest::LOAD_NORMAL,
-    nsIIOService* aIoService = nullptr, uint32_t aSandboxFlags = 0,
-    bool aSkipCheckForBrokenURLOrZeroSized = false);
+    nsIIOService* aIoService = nullptr, uint32_t aSandboxFlags = 0);
 
 nsresult NS_GetIsDocumentChannel(nsIChannel* aChannel, bool* aIsDocument);
 
@@ -516,9 +511,6 @@ nsresult NS_CheckPortSafety(int32_t port, const char* scheme,
 // Determine if this URI is using a safe port.
 nsresult NS_CheckPortSafety(nsIURI* uri);
 
-nsresult NS_NewProxyInfo(const nsACString& type, const nsACString& host,
-                         int32_t port, uint32_t flags, nsIProxyInfo** result);
-
 nsresult NS_GetFileProtocolHandler(nsIFileProtocolHandler** result,
                                    nsIIOService* ioService = nullptr);
 
@@ -668,12 +660,12 @@ inline void NS_QueryNotificationCallbacks(T* channel, const nsIID& iid,
   *result = nullptr;
 
   nsCOMPtr<nsIInterfaceRequestor> cbs;
-  mozilla::Unused << channel->GetNotificationCallbacks(getter_AddRefs(cbs));
+  (void)channel->GetNotificationCallbacks(getter_AddRefs(cbs));
   if (cbs) cbs->GetInterface(iid, result);
   if (!*result) {
     // try load group's notification callbacks...
     nsCOMPtr<nsILoadGroup> loadGroup;
-    mozilla::Unused << channel->GetLoadGroup(getter_AddRefs(loadGroup));
+    (void)channel->GetLoadGroup(getter_AddRefs(loadGroup));
     if (loadGroup) {
       loadGroup->GetNotificationCallbacks(getter_AddRefs(cbs));
       if (cbs) cbs->GetInterface(iid, result);
@@ -687,8 +679,7 @@ inline void NS_QueryNotificationCallbacks(T* channel, const nsIID& iid,
 
 template <class C, class T>
 inline void NS_QueryNotificationCallbacks(C* channel, nsCOMPtr<T>& result) {
-  NS_QueryNotificationCallbacks(channel, NS_GET_TEMPLATE_IID(T),
-                                getter_AddRefs(result));
+  NS_QueryNotificationCallbacks(channel, NS_GET_IID(T), getter_AddRefs(result));
 }
 
 /**
@@ -765,7 +756,7 @@ template <class T>
 inline void NS_QueryNotificationCallbacks(nsIInterfaceRequestor* callbacks,
                                           nsILoadGroup* loadGroup,
                                           nsCOMPtr<T>& result) {
-  NS_QueryNotificationCallbacks(callbacks, loadGroup, NS_GET_TEMPLATE_IID(T),
+  NS_QueryNotificationCallbacks(callbacks, loadGroup, NS_GET_IID(T),
                                 getter_AddRefs(result));
 }
 
@@ -951,6 +942,12 @@ bool NS_IsAboutBlankAllowQueryAndFragment(nsIURI* uri);
  */
 bool NS_IsAboutSrcdoc(nsIURI* uri);
 
+/**
+ * Test whether a URI has an "about", "blob", "data", "file", or an HTTP(S)
+ * scheme.
+ */
+bool NS_IsFetchScheme(nsIURI* uri);
+
 nsresult NS_GenerateHostPort(const nsCString& host, int32_t port,
                              nsACString& hostLine);
 
@@ -1036,10 +1033,16 @@ nsresult NS_GetSecureUpgradedURI(nsIURI* aURI, nsIURI** aUpgradedURI);
 
 nsresult NS_CompareLoadInfoAndLoadContext(nsIChannel* aChannel);
 
+// The type of classification to perform.
+enum class ClassifyType : uint8_t {
+  SafeBrowsing,  // Perform Safe Browsing classification.
+  ETP,           // Perform URL Classification for Enhanced Tracking Protection.
+};
+
 /**
  * Return true if this channel should be classified by the URL classifier.
  */
-bool NS_ShouldClassifyChannel(nsIChannel* aChannel);
+bool NS_ShouldClassifyChannel(nsIChannel* aChannel, ClassifyType aType);
 
 /**
  * Helper to set the blocking reason on loadinfo of the channel.
@@ -1089,21 +1092,9 @@ nsresult GetParameterHTTP(const nsACString& aHeaderVal, const char* aParamName,
 bool ChannelIsPost(nsIChannel* aChannel);
 
 /**
- * Convenience functions for verifying nsIURI schemes. These functions simply
- * wrap aURI->SchemeIs(), but specify the protocol as part of the function name.
+ * Convenience function for verifying nsIURI scheme is either HTTP or HTTPS.
  */
-
-bool SchemeIsHTTP(nsIURI* aURI);
-bool SchemeIsHTTPS(nsIURI* aURI);
-bool SchemeIsJavascript(nsIURI* aURI);
-bool SchemeIsChrome(nsIURI* aURI);
-bool SchemeIsAbout(nsIURI* aURI);
-bool SchemeIsBlob(nsIURI* aURI);
-bool SchemeIsFile(nsIURI* aURI);
-bool SchemeIsData(nsIURI* aURI);
-bool SchemeIsViewSource(nsIURI* aURI);
-bool SchemeIsResource(nsIURI* aURI);
-bool SchemeIsFTP(nsIURI* aURI);
+bool SchemeIsHttpOrHttps(nsIURI* aURI);
 
 // Helper functions for SetProtocol methods to follow
 // step 2.1 in https://url.spec.whatwg.org/#scheme-state
@@ -1160,7 +1151,8 @@ enum ASDestination : uint8_t {
   DESTINATION_VIDEO,
   DESTINATION_WORKER,
   DESTINATION_XSLT,
-  DESTINATION_FETCH
+  DESTINATION_FETCH,
+  DESTINATION_JSON
 };
 
 void ParseAsValue(const nsAString& aValue, nsAttrValue& aResult);
@@ -1171,6 +1163,13 @@ bool CheckPreloadAttrs(const nsAttrValue& aAs, const nsAString& aType,
                        const nsAString& aMedia,
                        mozilla::dom::Document* aDocument);
 void WarnIgnoredPreload(const mozilla::dom::Document&, nsIURI&);
+
+// Implements parsing of Use-As-Dictionary headers for Compression Dictionary
+// support.
+bool NS_ParseUseAsDictionary(const nsACString& aValue, nsACString& aMatch,
+                             nsACString& aMatchId,
+                             nsTArray<nsCString>& aMatchDestItems,
+                             nsACString& aType);
 
 /**
  * Returns true if the |aInput| in is part of the root domain of |aHost|.
@@ -1189,6 +1188,45 @@ void CheckForBrokenChromeURL(nsILoadInfo* aLoadInfo, nsIURI* aURI);
 bool IsCoepCredentiallessEnabled(bool aIsOriginTrialCoepCredentiallessEnabled);
 
 void ParseSimpleURISchemes(const nsACString& schemeList);
+
+nsresult AddExtraHeaders(nsIHttpChannel* aHttpChannel,
+                         const nsACString& aExtraHeaders, bool aMerge = true);
+
+bool IsLocalOrPrivateNetworkAccess(
+    nsILoadInfo::IPAddressSpace aParentIPAddressSpace,
+    nsILoadInfo::IPAddressSpace aTargetIPAddressSpace);
+bool IsPrivateNetworkAccess(
+    const nsILoadInfo::IPAddressSpace aParentIPAddressSpace,
+    const nsILoadInfo::IPAddressSpace aTargetIPAddressSpace);
+bool IsLocalHostAccess(const nsILoadInfo::IPAddressSpace aParentIPAddressSpace,
+                       const nsILoadInfo::IPAddressSpace aTargetIPAddressSpace);
+
+enum ActivateStorageAccessVariant {
+  // The server's response instructs the user agent to activate storage access
+  // before continuing with the load of the resource. (This is only relevant
+  // when loading a new document)
+  //     Activate-Storage-Access: load
+  Load,
+  // The server's response instructs the user agent to activate storage access,
+  // then retry the request. The "allowed-origin" parameter allowlists the
+  // request's origin.
+  //     Activate-Storage-Access: retry; allowed-origin="https://foo.bar"
+  RetryOrigin,
+  // Same as above, but using a wildcard instead of explicitly naming the
+  // request's origin.
+  //     Activate-Storage-Access: retry; allowed-origin=*
+  RetryAny,
+};
+
+struct ActivateStorageAccess {
+  ActivateStorageAccessVariant variant;
+  // string from allowed-origin in case ActivateOrigin of ActivateOrigin-Variant
+  // above
+  nsCString origin;
+};
+
+Result<ActivateStorageAccess, nsresult> ParseActivateStorageAccess(
+    const nsACString& aActivateStorageAcess);
 
 }  // namespace net
 }  // namespace mozilla

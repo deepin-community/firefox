@@ -21,6 +21,9 @@ permissions-session =
 permissions-allow =
     .label = Moneĩ
     .accesskey = A
+permissions-add =
+    .label = Mbojuaju
+    .accesskey = A
 permissions-button-off =
     .label = Eipe’aite
     .accesskey = O
@@ -92,6 +95,13 @@ permissions-exceptions-https-only-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-https-only-desc = Ikatu eipe’a HTTPS ayvu añoite ñanduti rendaitépe. { -brand-short-name } nomoambuemo’ãi HTTPS jeike hekorosãva umi tendápe g̃uarã. Umi ykepegua ndoiporúi ovetãnguéra ñemiguáva.
 permissions-exceptions-https-only-desc2 = Ikatu eipe’a HTTPS ayvu ñanduti peteĩva pegua. { -brand-short-name } nombohekopyahumo’ãi HTTPS jeike hekorosãva umi tendápe g̃uarã.
+
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-window3 =
+    .title = Ñanduti rogue moneĩmbyre - Ovetã apysẽ ha ñemoma’ẽ mohapyha gotyo
+    .style = { permissions-window2.style }
+permissions-exceptions-popup-desc2 = Ikatúpa emombe’umi mba’e ñanduti rendápa ombojurujakuaa ovetã apysẽ ha omondo jey kora mbohapyha gotyo.
 
 ## Exceptions - Pop-ups
 
@@ -167,6 +177,26 @@ permissions-site-camera-desc = Ko’ãva ñanduti renda ojejerure oike hag̃ua t
 permissions-site-camera-disable-label =
     .label = Mba’ejerure pyahu joko ani hag̃ua ojeporu ta’ãngamýi
 permissions-site-camera-disable-desc = Kóva omboykéta ñanduti renda noĩriva tysýi yvy gotyoguápe ojerurévo ñemoneĩ oike hag̃ua ta’ãngamýime. Ejokóramo ta’ãngamýime jeike ombyaikuaa ambue ñanduti rendápe.
+
+## Site Permissions - Local host
+
+permissions-site-localhost-window =
+    .title = Ñemobheko – Tembiporu’i ha mba’e’oka rehegua
+    .style = { permissions-window2.style }
+permissions-site-localhost-desc = Ko’ã ñanduti rogue ojerure oike hag̃ua tembiporu’ípe ha mba’eporu ko mba’e’okápe. Ikatu emoneĩ térã ejokohína ko’ã tendápe jeike.
+permissions-site-localhost-disable-label =
+    .label = ¿Ejoko mba’ejerure pyahu tembiporu’ípe jeikerã ha mba’eporurã ko mba’e’okápe?
+permissions-site-localhost-disable-desc = Kóva omboyke oimeraẽva ñanduti rogue noĩriva tysýi ojeruréva jeike tembiporu’í ha mba’eporu ko mba’e’okápe. Jajapórõ ikatu ñambyai ñanduti rogue.
+
+## Site Permissions - Local network
+
+permissions-site-local-network-window =
+    .title = Ñemboheko - Mba’e’oka ñanduti rehegua
+    .style = { permissions-window2.style }
+permissions-site-local-network-desc = Ko’ã tenda ojerure oike hag̃ua tembiporu’í ha mba’eporu ko mba’e’okápe ojuajúva Wi-Fi térã ñanduti oĩvare. Ikatu eiporavo ñemoneĩ térã ejoko tendaita ani ojapo péicha.
+permissions-site-local-network-disable-label =
+    .label = Ojoko jeikerã pyahu tembiporu’ípe ha mba’eporurã mba’e’oka ojuajúva nde Wi-Fi rehe?
+permissions-site-local-network-disable-desc = Kóva omboykéta oimeraẽva ñanduti rogue ndaipóriva tysýipe tojerure jeike tembiporu’ípe ha mba’eporu ko mba’e’okapegua ojuajúva Wi-Fi térã ñanduti oĩvare. Jajapórõ ikatu ñambyai ñanduti rogue.
 
 ## Site Permissions - Microphone
 

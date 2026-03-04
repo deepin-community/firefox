@@ -33,6 +33,7 @@ perftools-description-local-build =
     If you’re profiling a build that you have compiled yourself, on this
     machine, please add your build’s objdir to the list below so that
     it can be used to look up symbol information.
+perftools-pick-local-build-directory = Pick build directory
 
 ## The controls for the interval at which the profiler samples the code.
 
@@ -43,9 +44,7 @@ perftools-range-interval-milliseconds = { NUMBER($interval, maxFractionalUnits: 
 
 # The size of the memory buffer used to store things in the profiler.
 perftools-range-entries-label = Buffer size:
-
 perftools-custom-threads-label = Add custom threads by name:
-
 perftools-devtools-interval-label = Interval:
 perftools-devtools-threads-label = Threads:
 perftools-devtools-settings-label = Settings
@@ -70,6 +69,14 @@ perftools-button-restart = Restart
 perftools-button-add-directory = Add a directory
 perftools-button-remove-directory = Remove selected
 perftools-button-edit-settings = Edit Settings…
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = More actions
+perftools-menu-more-actions-restart-with-profiling = Restart { -brand-shorter-name } with startup profiling enabled
+perftools-menu-more-actions-copy-for-startup = Copy environment variables for startup profiling
+perftools-menu-more-actions-copy-for-perf-tests = Copy parameters for performance tests
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -113,7 +120,6 @@ perftools-thread-jvm-pool =
 ##
 
 perftools-record-all-registered-threads = Bypass selections above and record all registered threads
-
 perftools-tools-threads-input-label =
     .title = These thread names are a comma separated list that is used to enable profiling of the threads in the profiler. The name needs to be only a partial match of the thread name to be included. It is whitespace sensitive.
 
@@ -121,7 +127,6 @@ perftools-tools-threads-input-label =
 ## devtools.performance.new-panel-onboarding preference is true.
 
 perftools-onboarding-message = <b>New</b>: { -profiler-brand-name } is now integrated into Developer Tools. <a>Learn more</a> about this powerful new tool.
-
 perftools-onboarding-close-button =
     .aria-label = Close the onboarding message
 
@@ -129,33 +134,31 @@ perftools-onboarding-close-button =
 
 
 # Presets and their l10n IDs are defined in the file
-# devtools/client/performance-new/popup/background.jsm.js
+# devtools/client/performance-new/shared/background.jsm.js
 # The same labels and descriptions are also defined in appmenu.ftl.
 
+
 # Presets and their l10n IDs are defined in the file
-# devtools/client/performance-new/shared/background.jsm.js
+# devtools/client/performance-new/shared/background.sys.mjs
 # The same labels and descriptions are also defined in appmenu.ftl.
 
 perftools-presets-web-developer-label = Web Developer
 perftools-presets-web-developer-description = Recommended preset for most web app debugging, with low overhead.
-
 perftools-presets-firefox-label = { -brand-shorter-name }
 perftools-presets-firefox-description = Recommended preset for profiling { -brand-shorter-name }.
-
 perftools-presets-graphics-label = Graphics
 perftools-presets-graphics-description = Preset for investigating graphics bugs in { -brand-shorter-name }.
-
 perftools-presets-media-label = Media
 perftools-presets-media-description2 = Preset for investigating audio and video bugs in { -brand-shorter-name }.
-
+perftools-presets-ml-label = მანქანური სწავლება
+perftools-presets-ml-description2 = მზა პარამეტრები მანქანური სწავლების ხარვეზების გამოსავლენად – { -brand-shorter-name }.
 perftools-presets-networking-label = Networking
 perftools-presets-networking-description = Preset for investigating networking bugs in { -brand-shorter-name }.
-
 # "Power" is used in the sense of energy (electricity used by the computer).
 perftools-presets-power-label = Power
 perftools-presets-power-description = Preset for investigating power use bugs in { -brand-shorter-name }, with low overhead.
-
+perftools-presets-debug-label = Debug
+perftools-presets-debug-description = Preset for debugging in { -brand-shorter-name }. High overhead, do not use for performance work but use for focusing on understanding browser behavior.
+perftools-presets-web-compat-label = Web Compat
+perftools-presets-web-compat-description = Recommended preset for debugging web compatibility issues in websites, rather than tracking performance.
 perftools-presets-custom-label = Custom
-
-##
-

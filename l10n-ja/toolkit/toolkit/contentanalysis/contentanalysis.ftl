@@ -13,6 +13,11 @@ contentanalysis-slow-agent-dialog-header = スキャン中
 contentanalysis-slow-agent-dialog-body-file = { $agent } が所属組織のデータポリシーに従って、“{ $filename }” をレビューしています。しばらくお待ちください。
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
+#   $filename - Name of a file being analyzed, such as "aFile.txt"
+#   $count (number) - The number of additional items in the request for analysis
+contentanalysis-slow-agent-dialog-body-file-and-more = { $agent } が所属組織のデータポリシーに従って “{ $filename }” および { $count } 個のアイテムをレビューしています。しばらくお待ちください。
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
 contentanalysis-slow-agent-dialog-body-clipboard = { $agent } が所属組織のデータポリシーに従って、ユーザーが貼り付けたものをレビューしています。しばらくお待ちください。
 # Note that this is shown when the user drag and drops text into the browser.
 # Variables:
@@ -25,7 +30,9 @@ contentanalysis-operationtype-clipboard = クリップボード
 contentanalysis-operationtype-dropped-text = ドロップされたテキスト
 contentanalysis-operationtype-print = 印刷
 #   $filename - The filename associated with the request, such as "aFile.txt"
-contentanalysis-customdisplaystring-description = “{ $filename }” のアップロード
+contentanalysis-upload-description = “{ $filename }” のアップロード
+#   $filename - The filename associated with the request, such as "aFile.txt"
+contentanalysis-download-description = “{ $filename }” のダウンロード
 contentanalysis-warndialogtitle = このコンテンツは安全でない可能性があります
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
@@ -58,10 +65,18 @@ contentanalysis-error-message-upload-file = “{ $filename }” ファイルの�
 contentanalysis-error-message-dropped-text = ドラッグアンドドロップが拒否されました。
 contentanalysis-error-message-clipboard = 貼り付けが拒否されました。
 contentanalysis-error-message-print = 印刷が拒否されました。
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $contentName - Description of the content, such as "clipboard" or "aFile.txt"
+contentanalysis-timeout-block-error-message-content = { $agent } への接続がタイムアウトしました。{ $contentName } はブロックされています。
 contentanalysis-block-dialog-title-upload-file = このファイルのアップロードは許可されていません
 # Variables:
 #   $filename - Name of the file that was blocked, such as "aFile.txt"
 contentanalysis-block-dialog-body-upload-file = 所属組織のデータ保護ポリシーの下では、“{ $filename }” ファイルのアップロードが許可されていません。詳細は組織の管理者に問い合わせてください。
+contentanalysis-block-dialog-title-download-file = このファイルのダウンロードは許可されていません
+# Variables:
+#   $filename - Name of the file that was blocked, such as "aFile.txt"
+contentanalysis-block-dialog-body-download-file = 所属組織のデータ保護ポリシーの下では、“{ $filename }” ファイルのダウンロードが許可されていません。詳細は組織の管理者に問い合わせてください。
 contentanalysis-block-dialog-title-clipboard = このコンテンツの貼り付けは許可されていません
 contentanalysis-block-dialog-body-clipboard = 所属組織のデータ保護ポリシーの下では、このコンテンツの貼り付けが許可されていません。詳細は組織の管理者に問い合わせてください。
 contentanalysis-block-dialog-title-dropped-text = このコンテンツのドロップは許可されていません

@@ -6,6 +6,7 @@ add_heuristic_tests(
   [
     {
       fixturePath: "index.html",
+      useTestYear: 2024,
       expectedResult: [
         {
           default: {
@@ -14,14 +15,15 @@ add_heuristic_tests(
           fields: [
             { fieldName: "cc-name" },
             { fieldName: "cc-number" },
+            { fieldName: "cc-number", reason: "autocomplete" },
           ],
         },
         {
           fields: [
-            { fieldName: "cc-number", reason: "autocomplete" },
             { fieldName: "cc-name", reason: "fathom" },
             { fieldName: "cc-exp-month", reason: "regex-heuristic" },
             { fieldName: "cc-exp-year", reason: "regex-heuristic" },
+            { fieldName: "cc-csc", reason: "regex-heuristic" },
           ],
         },
       ],

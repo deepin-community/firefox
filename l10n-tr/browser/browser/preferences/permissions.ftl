@@ -13,14 +13,17 @@ permissions-block =
     .label = Engelle
     .accesskey = E
 permissions-disable-etp =
-    .label = Ayrıcalık tanı…
-    .accesskey = A
+    .label = İstisna ekle
+    .accesskey = e
 permissions-session =
     .label = Oturum boyunca izin ver
     .accesskey = r
 permissions-allow =
     .label = İzin ver
     .accesskey = z
+permissions-add =
+    .label = Ekle
+    .accesskey = E
 permissions-button-off =
     .label = Kapat
     .accesskey = K
@@ -76,7 +79,7 @@ permissions-invalid-uri-label = Lütfen geçerli bir sunucu adı girin
 permissions-exceptions-etp-window2 =
     .title = Gelişmiş İzlenme Koruması İstisnaları
     .style = { permissions-window2.style }
-permissions-exceptions-manage-etp-desc = Gelişmiş izlenme korumasının hangi sitelerde kapalı kalacağını belirleyebilirsiniz. Yönetmek istediğiniz sitenin tam adresini yazıp "İstisna ekle"ye tıklayın.
+permissions-exceptions-manage-etp-desc = Gelişmiş izlenme korumasının hangi sitelerde kapalı kalacağını belirleyebilirsiniz. Yönetmek istediğiniz sitenin tam adresini yazıp “İstisna ekle”ye tıklayın.
 
 ## Exceptions - Cookies
 
@@ -92,6 +95,13 @@ permissions-exceptions-https-only-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-https-only-desc = Belirli web siteleri için yalnızca HTTPS modunu kapatabilirsiniz. Böylece { -brand-short-name }, bu sitelerde HTTPS güvenliğini sağlamak üzere bağlantıyı yükseltme girişiminde bulunmaz. İstisnalar gizli pencerelerde geçerli değildir.
 permissions-exceptions-https-only-desc2 = Belirli web siteleri için yalnızca HTTPS modunu kapatabilirsiniz. Böylece { -brand-short-name }, bu sitelerde HTTPS güvenliğini sağlamak üzere bağlantıyı yükseltme girişiminde bulunmaz.
+
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-window3 =
+    .title = İzin Verilen Siteler - Açılır Pencereler ve Üçüncü Taraf Yönlendirmeleri
+    .style = { permissions-window2.style }
+permissions-exceptions-popup-desc2 = Hangi sitelerin açılır pencere gösterebileceğini ve üçüncü taraf çerçeveler tarafından yeniden yönlendirilebileceğini belirleyebilirsiniz.
 
 ## Exceptions - Pop-ups
 
@@ -167,6 +177,26 @@ permissions-site-camera-desc = Aşağıdaki web siteleri kameranıza erişme ist
 permissions-site-camera-disable-label =
     .label = Kamerama erişme isteklerini sormadan engelle
 permissions-site-camera-disable-desc = Yukarıdaki listede bulunmayan hiçbir web sitesi kameranıza erişme isteğinde bulunamayacaktır. Kamera erişimini engellerseniz bazı site özellikleri çalışmayabilir.
+
+## Site Permissions - Local host
+
+permissions-site-localhost-window =
+    .title = Ayarlar - Cihaz uygulamaları ve hizmetleri
+    .style = { permissions-window2.style }
+permissions-site-localhost-desc = Aşağıdaki siteler bu cihazdaki uygulama ve hizmetlere erişmek istedi. Erişime izin vermeyi veya erişimi engellemeyi seçebilirsiniz.
+permissions-site-localhost-disable-label =
+    .label = Bu cihazdaki uygulama ve hizmetlere erişim isteklerini engelle
+permissions-site-localhost-disable-desc = Yukarıdaki listede bulunmayan hiçbir site bu cihazdaki uygulama ve hizmetlere erişim isteğinde bulunamayacaktır. Bu ayarı etkinleştirmeniz bazı sitelerin özelliklerini bozabilir.
+
+## Site Permissions - Local network
+
+permissions-site-local-network-window =
+    .title = Ayarlar - Yerel Ağ Cihazları
+    .style = { permissions-window2.style }
+permissions-site-local-network-desc = Aşağıdaki siteler Wi-Fi veya yerel ağınıza bağlı cihazlardaki uygulama ve hizmetlere erişmek istedi. Erişime izin vermeyi veya erişimi engellemeyi seçebilirsiniz.
+permissions-site-local-network-disable-label =
+    .label = Wi-Fi veya yerel ağıma bağlı cihazlardaki uygulama ve hizmetlere erişim için yapılacak yeni istekleri engelle.
+permissions-site-local-network-disable-desc = Yukarıdaki listede bulunmayan hiçbir site, Wi-Fi veya yerel ağınızdaki cihazlarda bulunan uygulama ve hizmetlere erişim isteğinde bulunamayacaktır. Bu ayarı etkinleştirmeniz bazı sitelerin özelliklerini bozabilir.
 
 ## Site Permissions - Microphone
 

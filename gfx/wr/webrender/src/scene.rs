@@ -279,6 +279,7 @@ pub struct BuiltScene {
     pub config: FrameBuilderConfig,
     pub hit_testing_scene: Arc<HitTestingScene>,
     pub tile_cache_config: TileCacheConfig,
+    pub snapshot_pictures: Vec<PictureIndex>,
     pub tile_cache_pictures: Vec<PictureIndex>,
     pub picture_graph: PictureGraph,
     pub num_plane_splitters: usize,
@@ -303,6 +304,7 @@ impl BuiltScene {
             clip_store: ClipStore::new(),
             hit_testing_scene: Arc::new(HitTestingScene::new(&HitTestingSceneStats::empty())),
             tile_cache_config: TileCacheConfig::new(0),
+            snapshot_pictures: Vec::new(),
             tile_cache_pictures: Vec::new(),
             picture_graph: PictureGraph::new(),
             num_plane_splitters: 0,
@@ -330,6 +332,10 @@ impl BuiltScene {
                 is_software: false,
                 low_quality_pinch_zoom: false,
                 max_shared_surface_size: 2048,
+                enable_dithering: false,
+                precise_linear_gradients: false,
+                precise_radial_gradients: false,
+                precise_conic_gradients: false,
             },
         }
     }

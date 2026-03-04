@@ -8,11 +8,21 @@
 newtab-page-title = Skedë e Re
 newtab-settings-button =
     .title = Personalizoni faqen tuaj Skedë e Re
+newtab-customize-panel-icon-button =
+    .title = Përshtateni këtë faqe
+newtab-customize-panel-icon-button-label = Përshtateni
+newtab-personalize-settings-icon-label =
+    .title = Personalizoni Skedën e Re
+    .aria-label = Rregullime
+newtab-settings-dialog-label =
+    .aria-label = Rregullime
 newtab-personalize-icon-label =
     .title = Personalizoni skedën e re
     .aria-label = Personalizoni skedën e re
 newtab-personalize-dialog-label =
     .aria-label = Personalizojeni
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
 
 ## Search box component.
 
@@ -46,6 +56,9 @@ newtab-topsites-add-shortcut-header = Shkurtore e Re
 newtab-topsites-edit-topsites-header = Përpunoni Sajtin Kryesues
 newtab-topsites-edit-shortcut-header = Përpunoni Shkurtore
 newtab-topsites-add-shortcut-label = Shtoni Shkurtore
+newtab-topsites-add-shortcut-title =
+    .title = Shtoni Shkurtore
+    .aria-label = Shtoni Shkurtore
 newtab-topsites-title-label = Titull
 newtab-topsites-title-input =
     .placeholder = Jepni një titull
@@ -74,6 +87,14 @@ newtab-confirm-delete-history-p2 = Ky veprim s’mund të zhbëhet.
 ## Top Sites - Sponsored label
 
 newtab-topsite-sponsored = E sponsorizuar
+
+## Label used by screen readers for pinned top sites
+
+# Variables:
+#   $title (string) - The label or hostname of the site.
+topsite-label-pinned =
+    .aria-label = { $title } (i fiksuar)
+    .title = { $title }
 
 ## Context Menu - Action Tooltips.
 
@@ -109,6 +130,21 @@ newtab-menu-save-to-pocket = Ruaje te { -pocket-brand-name }
 newtab-menu-delete-pocket = Fshije nga { -pocket-brand-name }
 newtab-menu-archive-pocket = Arkivoje në { -pocket-brand-name }
 newtab-menu-show-privacy-info = Sponsorët tanë & privatësia jonë
+newtab-menu-about-fakespot = Mvi { -fakespot-brand-name }
+# Report is a verb (i.e. report issue with the content).
+newtab-menu-report = Raportojeni
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Bllokoje
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Hiqe Ndjekjen e Subjektit
+
+## Context menu options for sponsored stories and new ad formats on New Tab.
+
+newtab-menu-manage-sponsored-content = Administroni lëndë të sponsorizuar
+newtab-menu-our-sponsors-and-your-privacy = Sponsorët tanë dhe privatësia jonë
+newtab-menu-report-this-ad = Njoftoni për këtë reklamë
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -166,6 +202,8 @@ newtab-label-sponsored-by = Sponsorizuar nga { $sponsor }
 #   $source (string) - The name of a company or their domain
 #   $timeToRead (number) - The estimated number of minutes to read this story
 newtab-label-source-read-time = { $source } · { $timeToRead } minuta
+# This string is used under fixed size ads to indicate sponsored content
+newtab-label-sponsored-fixed = E sponsorizuar
 
 ## Section Menu: These strings are displayed in the section context menu and are
 ## meant as a call to action for the given section.
@@ -228,7 +266,6 @@ newtab-pocket-learn-more = Mësoni më tepër
 newtab-pocket-cta-button = Merreni { -pocket-brand-name }-in
 newtab-pocket-cta-text = Ruajini në { -pocket-brand-name } shkrimet që doni dhe ushqejeni mendjen me lexime të mahnitshme.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } është pjesë e familjes { -brand-product-name }
-# A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Ruaje
 newtab-pocket-saved = U ruajt
 
@@ -240,7 +277,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Jo për mua
-newtab-toast-thumbs-up-or-down = Faleminderit. Përshtypjet tuaja do të na ndihmojnë të përmirësojmë prurjen për ju.
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Faleminderit. Përshtypjet tuaja do të na ndihmojnë të përmirësojmë prurjen për ju.
 newtab-toast-dismiss-button =
     .title = Hidhe tej
     .aria-label = Hidhe tej
@@ -276,16 +315,30 @@ newtab-custom-pocket-subtitle = Lëndë e jashtëzakonshme, në kujdesin e { -po
 newtab-custom-stories-toggle =
     .label = Histori të rekomanduara
     .description = Lëndë e veçantë, nën kujdesin e familjes { -brand-product-name }
+newtab-custom-stories-personalized-toggle =
+    .label = Histori
+newtab-custom-stories-personalized-checkbox-label = Histori të personalizuara, bazuar në veprimtarinë tuaj
 newtab-custom-pocket-sponsored = Histori të sponsorizuara
 newtab-custom-pocket-show-recent-saves = Shfaq të ruajturat së fundi
 newtab-custom-recent-title = Veprimtari së fundi
 newtab-custom-recent-subtitle = Një përzgjedhje sajtesh dhe lënde së fundi
-newtab-custom-recent-toggle =
-    .label = Veprimtari së fundi
-    .description = Një përzgjedhje sajtesh dhe lënde së fundi
 newtab-custom-weather-toggle =
     .label = Moti
     .description = Parashikimi i motit për sot me një vështrim
+newtab-custom-widget-weather-toggle =
+    .label = Moti
+newtab-custom-widget-lists-toggle =
+    .label = Lista
+newtab-custom-widget-timer-toggle =
+    .label = Kohëmatës
+newtab-custom-widget-section-title = Widget-e
+newtab-custom-widget-section-toggle =
+    .label = Widget-e
+newtab-widget-manage-title = Widget-e
+# Tooltip for close button
+newtab-custom-close-menu-button =
+    .title = Mbylle
+    .aria-label = Mbylleni menunë
 newtab-custom-close-button = Mbylle
 newtab-custom-settings = Administroni më tepër rregullime
 
@@ -293,6 +346,13 @@ newtab-custom-settings = Administroni më tepër rregullime
 
 newtab-wallpaper-title = Sfonde
 newtab-wallpaper-reset = Riktheje te parazgjedhjet
+newtab-wallpaper-upload-image = Ngarkoni një figurë
+newtab-wallpaper-custom-color = Zgjidhni një ngjyrë
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = Figura tejkalonte kufirin { $file_size }MB e madhësive të kartelave. Ju lutemi, provoni të ngarkoni një kartelë më të vogël.
+newtab-wallpaper-error-upload-file-type = S’e ngarkuam dot kartelën tuaj. Ju lutemi, riprovoni me një kartelë figurë.
+newtab-wallpaper-error-file-type = S’e ngarkuam dot kartelën tuaj. Ju lutemi, riprovoni me një lloj tjetër kartele.
 newtab-wallpaper-light-red-panda = Panda e kuqe
 newtab-wallpaper-light-mountain = Mal i bardhë
 newtab-wallpaper-light-sky = Qiell me re të purpurta dhe të trëndafilta
@@ -305,6 +365,8 @@ newtab-wallpaper-dark-panda = Panda e kuqe e fshehur në pyll
 newtab-wallpaper-dark-sky = Reliev qyteti me qiell nate
 newtab-wallpaper-dark-mountain = Peizazh malor
 newtab-wallpaper-dark-city = Peizazh qyteti i purpurt
+newtab-wallpaper-dark-fox-anniversary = Një dhelpër në shesh pranë një pylli
+newtab-wallpaper-light-fox-anniversary = Një dhelpër në një lëndinë, në një peizazh malor të mjegullt
 
 ## Solid Colors
 
@@ -334,8 +396,12 @@ newtab-wallpaper-abstract-purple = Forma të purpurta
 newtab-wallpaper-abstract-orange = Forma portokalli
 newtab-wallpaper-gradient-orange = Gradient portokalli dhe rozë
 newtab-wallpaper-abstract-blue-purple = Forma blu dhe të purpurta
+newtab-wallpaper-abstract-white-curves = E bardhë me lakore të hijezuara
+newtab-wallpaper-abstract-purple-green = Gradient ndriçimi të purpur dhe të gjelbër
+newtab-wallpaper-abstract-blue-purple-waves = Forma të valëzuara blu dhe të purpurta
+newtab-wallpaper-abstract-black-waves = Forma të valëzuara të zeza
 
-## Photographs
+## Firefox
 
 newtab-wallpaper-category-title-photographs = Fotografi
 newtab-wallpaper-beach-at-sunrise = Plazh në agim
@@ -344,6 +410,12 @@ newtab-wallpaper-storm-sky = Qiell me furtunë
 newtab-wallpaper-sky-with-pink-clouds = Qiell me re rozë
 newtab-wallpaper-red-panda-yawns-in-a-tree = Pandë e kuqe në majë të pemës
 newtab-wallpaper-white-mountains = Male të bardhë
+newtab-wallpaper-hot-air-balloons = Aerostate me ngjyra të ndryshme të parë gjatë ditës
+newtab-wallpaper-starry-canyon = Natë blu me yje
+newtab-wallpaper-suspension-bridge = Fotografi e një ure të varur gri gjatë ditës
+newtab-wallpaper-sand-dunes = Duna ranore të bardha
+newtab-wallpaper-palm-trees = Siluetë pemësh arrash kokosi gjatë orës së artë
+newtab-wallpaper-blue-flowers = Foto nga afër lulesh me petale të kaltra në lulëzim
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -359,6 +431,23 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Firefox
+
+newtab-wallpaper-category-title-firefox = { -brand-product-name }
+
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Qiellor
+newtab-wallpaper-celestial-lunar-eclipse = Eklips hënor
+newtab-wallpaper-celestial-earth-night = Foto nate nga orbitë e ulët e Tokës
+newtab-wallpaper-celestial-starry-sky = Qiell me yje
+newtab-wallpaper-celestial-eclipse-time-lapse = Rrjedhë kohore eklipsi hënor
+newtab-wallpaper-celestial-black-hole = Ilustrim galaktike vrimë e zezë
+newtab-wallpaper-celestial-river = Pamje satelitore e një lumi
+
 ## New Tab Weather
 
 # Variables:
@@ -369,7 +458,9 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ E sponsorizuar
 newtab-weather-menu-change-location = Ndryshoni vendndodhje
-newtab-weather-change-location-search-input = Kërkoni për vendndodhje
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Kërkoni për vendndodhje
+    .aria-label = Kërkoni për vendndodhje
 newtab-weather-menu-weather-display = Shfaqje moti
 # Display options are:
 # - Simple: Displays a current weather condition icon and the current temperature
@@ -385,8 +476,21 @@ newtab-weather-menu-change-temperature-units-fahrenheit = Kalo në Farenajt
 newtab-weather-menu-change-temperature-units-celsius = Kalo në Celsius
 newtab-weather-menu-hide-weather = Fshihe motin në Skedë të Re
 newtab-weather-menu-learn-more = Mësoni më tepër
+newtab-weather-menu-detect-my-location = Pikas vendndodhjen time
 # This message is shown if user is working offline
 newtab-weather-error-not-available = S’ka të dhëna moti tani për tani.
+newtab-weather-opt-in-see-weather = Doni të shihni motin për vendndodhjen tuaj?
+newtab-weather-opt-in-not-now =
+    .label = Jo tani
+newtab-weather-opt-in-yes =
+    .label = Po
+# We'll be showing static (fake) weather data if the user has not opted in to using their location
+newtab-weather-static-city = Nju Jork Siti
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast-description =
+    .title = Shihni parashikimin në { $provider }
+    .aria-description = { $provider } ∙ E sponsorizuar
 
 ## Topic Labels
 
@@ -403,6 +507,10 @@ newtab-topic-label-hobbies = Lojëra
 newtab-topic-label-finance = Para
 newtab-topic-label-government = Politikë
 newtab-topic-label-education-science = Shkencë
+# ”Life Hacks” = “Self Improvement”, refers to articles and stories aimed at helping readers improve various
+# aspects of their lives – from mental health to  productivity. See the “Curated by our editors“ section
+# at the top of https://getpocket.com/explore/self-improvement for more context.
+newtab-topic-label-society = Vetëpërmirësim
 newtab-topic-label-sports = Sporte
 newtab-topic-label-tech = Teknologji
 newtab-topic-label-travel = Udhëtime
@@ -422,3 +530,173 @@ newtab-topic-selection-button-maybe-later = Ndoshta më vonë
 newtab-topic-selection-privacy-link = Mësoni se si i mbrojmë dhe administrojmë të dhënat
 newtab-topic-selection-button-update-interests = Përditësoni interesat tuaja
 newtab-topic-selection-button-pick-interests = Zgjidhni interesat tuaja
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Ndiqe
+newtab-section-following-button = Po e Ndiqni
+newtab-section-unfollow-button = Hiqi Ndjekjen
+# A modal may appear next to the Follow button, directing users to try out the feature
+newtab-section-follow-highlight-title = Përimtoni prurjen tuaj
+newtab-section-follow-highlight-subtitle = Ndiqni interesat tuaja, që të shihni më tepër gjëra nga ato që pëlqeni.
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Bllokoje
+newtab-section-blocked-button = E bllokuar
+newtab-section-unblock-button = Zhbllokoje
+
+## Confirmation modal for blocking a section
+
+newtab-section-cancel-button = Jo tani
+newtab-section-confirm-block-topic-p1 = Jeni i sigurt se doni të bllokohet ky subjekt?
+newtab-section-confirm-block-topic-p2 = Subjektet e bllokuar s’do të shfaqen më në prurjen tuaj.
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = Bllokoje { $topic }
+
+## Strings for custom wallpaper highlight
+
+newtab-section-mangage-topics-title = Tema
+newtab-section-manage-topics-button-v2 =
+    .label = Administroni subjekte
+newtab-section-mangage-topics-followed-topics = Të ndjekur
+newtab-section-mangage-topics-followed-topics-empty-state = S’keni ende ndonjë temë të ndjekur.
+newtab-section-mangage-topics-blocked-topics = Të bllokuar
+newtab-section-mangage-topics-blocked-topics-empty-state = S’’keni ende ndonjë temë të bllokuar.
+newtab-custom-wallpaper-title = Mbërritën sfonde vetjake
+# 'Make firefox yours" means to customize or personalize
+newtab-custom-wallpaper-subtitle = Ngarkoni sfondin tuaj vetjak, ose zgjidhni një ngjyrë vetjake, për ta bërë { -brand-product-name }-in si e doni.
+newtab-custom-wallpaper-cta = Provojeni
+
+## Strings for new user activation custom wallpaper highlight
+
+newtab-new-user-custom-wallpaper-title = Zgjidhni një sfond, për ta bërë { -brand-product-name }-in si e doni
+newtab-new-user-custom-wallpaper-subtitle = Bëjeni çdo skedë të re t’ju duket si shtëpia juaj, me sfonde dhe ngjyra tuajat.
+newtab-new-user-custom-wallpaper-cta = Provojeni tani
+
+## Strings for download mobile highlight
+
+newtab-download-mobile-highlight-title = Shkarkoni { -brand-product-name } për celular
+# "Scan the code" refers to scanning the QR code that appears above the body text that leads to Firefox for mobile download.
+newtab-download-mobile-highlight-body-variant-a = Skanoni kodin, që të shfletoni pa rrezik kudo që jeni.
+newtab-download-mobile-highlight-body-variant-b = Vazhdoni ku e lata, kur njëkohësoni skedat tuaja, fjalëkalimet, etj.
+newtab-download-mobile-highlight-body-variant-c = E dinit se mund ta merrni { -brand-product-name } me vete kudo që gjendeni? Po ai shfletues. Në xhep.
+newtab-download-mobile-highlight-image =
+    .aria-label = Kod QR për të shkarkuar { -brand-product-name } për celular
+
+## Strings for shortcuts highlight
+
+newtab-shortcuts-highlight-title = Të parapëlqyerat tuaja në majë të gishtave
+newtab-shortcuts-highlight-subtitle = Shtoni një shkurtore, për t’i mbajtur sajtet e parapëlqyer vetëm një klikim larg.
+
+## Strings for reporting issues with ads and content
+
+newtab-report-content-why-reporting-this =
+    .label = Pse po njoftoni për këtë?
+newtab-report-ads-reason-not-interested =
+    .label = S’më intereson
+newtab-report-ads-reason-inappropriate =
+    .label = Është e papërshtatshme
+newtab-report-ads-reason-seen-it-too-many-times =
+    .label = E kam parë shumë herë
+newtab-report-content-wrong-category =
+    .label = Kategori e gabuar
+newtab-report-content-outdated =
+    .label = E vjetruar
+newtab-report-content-inappropriate-offensive =
+    .label = E papërshtatshme ose fyese
+newtab-report-content-spam-misleading =
+    .label = Mesazh i padëshiruar, ose ngatërrues
+newtab-report-content-requires-payment-subscription =
+    .label = Lyp pagesë ose pajtim
+newtab-report-content-requires-payment-subscription-learn-more = Mësoni më tepër
+newtab-report-cancel = Anuloje
+newtab-report-submit = Parashtroje
+newtab-toast-thanks-for-reporting =
+    .message = Faleminderit për njoftimin rreth kësaj.
+
+## Strings for task / to-do list productivity widget
+
+# "Add one" means adding a new task to the list (e.g., "Walk the dog")
+newtab-widget-lists-empty-cta = Mundësitë janë të pafundme. Shtoni një të tillë.
+# A simple label next to the default list name letting users know this is a new / beta feature
+newtab-widget-lists-label-new =
+    .label = E re
+newtab-widget-lists-label-beta =
+    .label = Beta
+# When tasks have been previous marked as complete, they will appear in their own separate list beneath incomplete items
+# Variables:
+#   $number (number) - Amount of list items marked complete
+newtab-widget-lists-completed-list = Të plotësuara ({ $number })
+newtab-widget-task-list-menu-copy = Kopjoje
+newtab-widget-lists-menu-edit = Përpunoni emër liste
+newtab-widget-lists-menu-create = Krijoni një listë të re
+newtab-widget-lists-menu-delete = Fshije këtë listë
+newtab-widget-lists-menu-copy = Kopjoje listën në të papastër
+newtab-widget-lists-menu-hide = Fshihi krejt listat
+newtab-widget-lists-menu-learn-more = Mësoni më tepër
+newtab-widget-lists-input-add-an-item =
+    .placeholder = Shtoni një objekt
+newtab-widget-lists-input-error = Ju lutemi, që të shtohet një objekt, përfshini tekst.
+newtab-widget-lists-input-menu-open-link = Hape lidhjen
+newtab-widget-lists-input-menu-move-up = Ngjite sipër
+newtab-widget-lists-input-menu-move-down = Zbrite poshtë
+newtab-widget-lists-input-menu-delete = Fshije
+newtab-widget-lists-input-menu-edit = Përpunoni
+# the + symbol emphasises the functionality of adding a new list
+newtab-widget-lists-dropdown-create =
+    .label = + Krijoni një listë të re
+newtab-widget-lists-name-label-default =
+    .label = Listë punësh
+newtab-widget-lists-name-placeholder-default =
+    .placeholder = Listë punësh
+# The placeholder value of the name field for a newly created list
+newtab-widget-lists-name-placeholder-new =
+    .placeholder = Listë e re
+newtab-widget-section-title = Widget-e
+# Tooltip for hide all widgets button
+newtab-widget-section-hide-all-button =
+    .title = Fshihni widget-et
+    .aria-label = Fshihni krejt widget-et
+newtab-widget-section-maximize =
+    .title = Zgjeroji widget-et
+    .aria-label = Zgjeroji krejt widget-et sa madhësia e plotë
+newtab-widget-section-minimize =
+    .title = Minimizoji widget-et
+    .aria-label = Tkurri krejt widget-et sa madhësia kompakte
+
+## Strings for timer productivity widget
+## When the timer ends, a system notification may be shown. Depending on which mode the timer is in, that message would be shown
+
+newtab-widget-timer-notification-title = Kohëmatës
+newtab-widget-timer-notification-focus = Koha për i përqendruar mbaroi. Punë e paqme. Ju duhet një pushim?
+newtab-widget-timer-notification-break = Pushimi juaj përfundoi. Gati për t’u përqendruar?
+newtab-widget-timer-notification-warning = Njoftimet janë të çaktivizuara
+newtab-widget-timer-mode-focus =
+    .label = Vëmendje
+newtab-widget-timer-mode-break =
+    .label = Pushim
+newtab-widget-timer-label-play =
+    .label = Luaje
+newtab-widget-timer-label-pause =
+    .label = Ndalesë
+newtab-widget-timer-reset =
+    .title = Riktheje te parazgjedhjet
+newtab-widget-timer-menu-notifications = Çaktivizoni njoftimet
+newtab-widget-timer-menu-notifications-on = Aktivizoni njoftimet
+newtab-widget-timer-menu-hide = Fshihe kohëmatësin
+newtab-widget-timer-menu-learn-more = Mësoni më tepër
+newtab-widget-message-title = Mbani përqendrimin, me lista dhe kohëmatës të brendshëm
+# to-dos stands for "things to do".
+newtab-widget-message-copy = Nga kujtues të shpejtë e deri te për-t’u-bërë të përditshme, nga sesione përqendrimi e deri te pushime — merruni me punë dhe ndiqni kohën.
+newtab-promo-card-title = Përkrahni { -brand-product-name }
+newtab-promo-card-body = Sponsorët tanë përkrahin misionin tonë për ndërtimin e një interneti më të mirë
+newtab-promo-card-cta = Mësoni më tepër
+newtab-promo-card-dismiss-button =
+    .title = Hidhe tej
+    .aria-label = Hidheni tej

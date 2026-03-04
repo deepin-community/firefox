@@ -8,12 +8,11 @@
 #define GFX_WEBRENDERUSERDATA_H
 
 #include <vector>
-#include "mozilla/gfx/DrawEventRecorder.h"
+#include "mozilla/gfx/DrawEventRecorderTypes.h"
 #include "mozilla/webrender/WebRenderAPI.h"
 #include "mozilla/image/WebRenderImageProvider.h"
 #include "mozilla/layers/AnimationInfo.h"
 #include "mozilla/layers/LayersTypes.h"
-#include "mozilla/dom/RemoteBrowser.h"
 #include "mozilla/UniquePtr.h"
 #include "nsIFrame.h"
 #include "nsRefPtrHashtable.h"
@@ -217,6 +216,8 @@ class WebRenderImageProviderData final : public WebRenderUserData {
 class WebRenderFallbackData : public WebRenderUserData {
  public:
   WebRenderFallbackData(RenderRootStateManager* aManager, nsDisplayItem* aItem);
+  WebRenderFallbackData(RenderRootStateManager* aManager,
+                        uint32_t aDisplayItemKey, nsIFrame* aFrame);
   virtual ~WebRenderFallbackData();
 
   WebRenderFallbackData* AsFallbackData() override { return this; }
@@ -237,7 +238,7 @@ class WebRenderFallbackData : public WebRenderUserData {
   /// into.
   WebRenderImageData* PaintIntoImage();
 
-  gfx::DrawEventRecorderPrivate::ExternalSurfacesHolder mExternalSurfaces;
+  gfx::DrawEventRecorderPrivate_ExternalSurfacesHolder mExternalSurfaces;
   UniquePtr<nsDisplayItemGeometry> mGeometry;
   DisplayItemClip mClip;
   nsRect mBounds;
@@ -260,6 +261,8 @@ class WebRenderAPZAnimationData : public WebRenderUserData {
  public:
   WebRenderAPZAnimationData(RenderRootStateManager* aManager,
                             nsDisplayItem* aItem);
+  WebRenderAPZAnimationData(RenderRootStateManager* aManager,
+                            uint32_t aDisplayItemKey, nsIFrame* aFrame);
   virtual ~WebRenderAPZAnimationData() = default;
 
   UserDataType GetType() override { return UserDataType::eAPZAnimation; }
@@ -274,6 +277,8 @@ class WebRenderAnimationData : public WebRenderUserData {
  public:
   WebRenderAnimationData(RenderRootStateManager* aManager,
                          nsDisplayItem* aItem);
+  WebRenderAnimationData(RenderRootStateManager* aManager,
+                         uint32_t aDisplayItemKey, nsIFrame* aFrame);
   virtual ~WebRenderAnimationData();
 
   UserDataType GetType() override { return UserDataType::eAnimation; }
@@ -287,6 +292,8 @@ class WebRenderAnimationData : public WebRenderUserData {
 class WebRenderCanvasData : public WebRenderUserData {
  public:
   WebRenderCanvasData(RenderRootStateManager* aManager, nsDisplayItem* aItem);
+  WebRenderCanvasData(RenderRootStateManager* aManager,
+                      uint32_t aDisplayItemKey, nsIFrame* aFrame);
   virtual ~WebRenderCanvasData();
 
   WebRenderCanvasData* AsCanvasData() override { return this; }
@@ -307,31 +314,12 @@ class WebRenderCanvasData : public WebRenderUserData {
   RefPtr<ImageContainer> mContainer;
 };
 
-class WebRenderRemoteData : public WebRenderUserData {
- public:
-  WebRenderRemoteData(RenderRootStateManager* aManager, nsDisplayItem* aItem);
-  virtual ~WebRenderRemoteData();
-
-  UserDataType GetType() override { return UserDataType::eRemote; }
-  static UserDataType Type() { return UserDataType::eRemote; }
-
-  void SetRemoteBrowser(dom::RemoteBrowser* aBrowser) {
-    mRemoteBrowser = aBrowser;
-  }
-
- protected:
-  RefPtr<dom::RemoteBrowser> mRemoteBrowser;
-};
-
 class WebRenderMaskData : public WebRenderUserData {
  public:
   explicit WebRenderMaskData(RenderRootStateManager* aManager,
-                             nsDisplayItem* aItem)
-      : WebRenderUserData(aManager, aItem),
-        mMaskStyle(nsStyleImageLayers::LayerType::Mask),
-        mShouldHandleOpacity(false) {
-    MOZ_COUNT_CTOR(WebRenderMaskData);
-  }
+                             nsDisplayItem* aItem);
+  explicit WebRenderMaskData(RenderRootStateManager* aManager,
+                             uint32_t aDisplayItemKey, nsIFrame* aFrame);
   virtual ~WebRenderMaskData() {
     MOZ_COUNT_DTOR(WebRenderMaskData);
     ClearImageKey();
@@ -345,7 +333,7 @@ class WebRenderMaskData : public WebRenderUserData {
 
   Maybe<wr::BlobImageKey> mBlobKey;
   std::vector<RefPtr<gfx::ScaledFont>> mFonts;
-  gfx::DrawEventRecorderPrivate::ExternalSurfacesHolder mExternalSurfaces;
+  gfx::DrawEventRecorderPrivate_ExternalSurfacesHolder mExternalSurfaces;
   LayerIntRect mItemRect;
   nsPoint mMaskOffset;
   nsStyleImageLayers mMaskStyle;

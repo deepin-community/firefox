@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2016, Alliance for Open Media. All rights reserved.
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -165,7 +165,7 @@ void av1_cyclic_reset_segment_skip(const AV1_COMP *cpi, MACROBLOCK *const x,
 
   assert(cm->seg.enabled);
 
-  if (!cr->skip_over4x4) {
+  if (!cr->skip_over4x4 && !cpi->roi.reference_enabled) {
     mbmi->segment_id =
         av1_get_spatial_seg_pred(cm, xd, &cdf_num, cr->skip_over4x4);
     if (prev_segment_id != mbmi->segment_id) {
@@ -434,11 +434,12 @@ void av1_cyclic_refresh_update_parameters(AV1_COMP *const cpi) {
   // function av1_cyclic_reset_segment_skip(). Skipping over
   // 4x4 will therefore have small bdrate loss (~0.2%), so
   // we use it only for speed > 9 for now.
-  cr->skip_over4x4 = (cpi->oxcf.speed > 9) ? 1 : 0;
+  cr->skip_over4x4 = (cpi->oxcf.speed > 9 && !cpi->roi.enabled) ? 1 : 0;
 
   // should we enable cyclic refresh on this frame.
   cr->apply_cyclic_refresh = 1;
   if (frame_is_intra_only(cm) || is_lossless_requested(&cpi->oxcf.rc_cfg) ||
+      cpi->roi.enabled || cpi->rc.high_motion_content_screen_rtc ||
       scene_change_detected || svc->temporal_layer_id > 0 ||
       svc->prev_number_spatial_layers != svc->number_spatial_layers ||
       p_rc->avg_frame_qindex[INTER_FRAME] < qp_thresh ||
@@ -539,6 +540,19 @@ void av1_cyclic_refresh_update_parameters(AV1_COMP *const cpi) {
   }
 }
 
+static void cyclic_refresh_reset_resize(AV1_COMP *const cpi) {
+  const AV1_COMMON *const cm = &cpi->common;
+  CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
+  memset(cr->map, 0, cm->mi_params.mi_rows * cm->mi_params.mi_cols);
+  cr->sb_index = 0;
+  cr->last_sb_index = 0;
+  cpi->refresh_frame.golden_frame = true;
+  cr->apply_cyclic_refresh = 0;
+  cr->counter_encode_maxq_scene_change = 0;
+  cr->percent_refresh_adjustment = 5;
+  cr->rate_ratio_qdelta_adjustment = 0.25;
+}
+
 // Setup cyclic background refresh: set delta q and segmentation map.
 void av1_cyclic_refresh_setup(AV1_COMP *const cpi) {
   AV1_COMMON *const cm = &cpi->common;
@@ -551,15 +565,15 @@ void av1_cyclic_refresh_setup(AV1_COMP *const cpi) {
   const int layer_depth = AOMMIN(gf_group->layer_depth[cpi->gf_frame_index], 6);
   const FRAME_TYPE frame_type = cm->current_frame.frame_type;
 
-  // Set resolution_change flag: for svc only set it when the
-  // number of spatial layers has not changed.
-  const int resolution_change =
-      cm->prev_frame &&
-      (cm->width != cm->prev_frame->width ||
-       cm->height != cm->prev_frame->height) &&
-      cpi->svc.prev_number_spatial_layers == cpi->svc.number_spatial_layers;
+  // Set resolution_change flag: for single spatial layers only.
+  const int resolution_change = !cpi->rc.rtc_external_ratectrl &&
+                                cm->prev_frame &&
+                                cpi->svc.number_spatial_layers == 1 &&
+                                (cm->width != cm->prev_frame->width ||
+                                 cm->height != cm->prev_frame->height);
 
-  if (resolution_change) av1_cyclic_refresh_reset_resize(cpi);
+  if (resolution_change && cpi->svc.temporal_layer_id == 0)
+    cyclic_refresh_reset_resize(cpi);
   if (!cr->apply_cyclic_refresh) {
     // Don't disable and set seg_map to 0 if active_maps is enabled, unless
     // whole frame is set as inactive (since we only apply cyclic_refresh to
@@ -631,7 +645,7 @@ void av1_cyclic_refresh_setup(AV1_COMP *const cpi) {
         qindex2, cm->seq_params->bit_depth,
         cpi->ppi->gf_group.update_type[cpi->gf_frame_index], layer_depth,
         boost_index, frame_type, cpi->oxcf.q_cfg.use_fixed_qp_offsets,
-        is_stat_consumption_stage(cpi));
+        is_stat_consumption_stage(cpi), cpi->oxcf.tune_cfg.tuning);
 
     av1_set_segdata(seg, CR_SEGMENT_ID_BOOST1, SEG_LVL_ALT_Q, qindex_delta);
 
@@ -650,19 +664,6 @@ void av1_cyclic_refresh_setup(AV1_COMP *const cpi) {
 
 int av1_cyclic_refresh_get_rdmult(const CYCLIC_REFRESH *cr) {
   return cr->rdmult;
-}
-
-void av1_cyclic_refresh_reset_resize(AV1_COMP *const cpi) {
-  const AV1_COMMON *const cm = &cpi->common;
-  CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
-  memset(cr->map, 0, cm->mi_params.mi_rows * cm->mi_params.mi_cols);
-  cr->sb_index = 0;
-  cr->last_sb_index = 0;
-  cpi->refresh_frame.golden_frame = true;
-  cr->apply_cyclic_refresh = 0;
-  cr->counter_encode_maxq_scene_change = 0;
-  cr->percent_refresh_adjustment = 5;
-  cr->rate_ratio_qdelta_adjustment = 0.25;
 }
 
 int av1_cyclic_refresh_disable_lf_cdef(AV1_COMP *const cpi) {

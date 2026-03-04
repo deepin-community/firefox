@@ -55,13 +55,19 @@ function ChromeTask_ChromeScript() {
     /* eslint-enable no-unused-vars */
 
     try {
-      let runnablestr = `
-        (() => {
-          return (${source});
-        })();`;
-
-      // eslint-disable-next-line no-eval
-      let runnable = eval(runnablestr);
+      let sb = Cu.Sandbox(Services.scriptSecurityManager.getSystemPrincipal(), {
+        sandboxPrototype: {
+          __proto__: globalThis,
+          Assert,
+          ok,
+          is,
+          isnot,
+          todo,
+          todo_is,
+          info,
+        },
+      });
+      let runnable = Cu.evalInSandbox(`(() => (${source}))()`, sb);
       let result = await runnable.call(this, aData.arg);
       sendAsyncMessage("chrome-task:complete", {
         id,
@@ -105,10 +111,8 @@ var ChromeTask = {
    *          the remote browser to be executed. Unlike Task.spawn, this
    *          argument may not be an iterator as it will be serialized and
    *          sent to the remote browser.
-   * @return A promise object where you can register completion callbacks to be
-   *         called when the task terminates.
-   * @resolves With the final returned value of the task if it executes
-   *           successfully.
+   * @return {Promise}
+   *   Resolves when the task finishes without errors.
    * @rejects An error message if execution fails.
    */
   spawn: function ChromeTask_spawn(arg, task) {

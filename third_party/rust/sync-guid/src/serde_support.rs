@@ -12,7 +12,7 @@ use serde::{
 use crate::Guid;
 
 struct GuidVisitor;
-impl<'de> Visitor<'de> for GuidVisitor {
+impl Visitor<'_> for GuidVisitor {
     type Value = Guid;
     #[inline]
     fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -44,16 +44,21 @@ impl Serialize for Guid {
 #[cfg(test)]
 mod test {
     use super::*;
-    use serde_test::{assert_tokens, Token};
     #[test]
     fn test_ser_de() {
         let guid = Guid::from("asdffdsa12344321");
-        assert_tokens(&guid, &[Token::Str("asdffdsa12344321")]);
+        assert_eq!(
+            serde_json::to_value(guid).unwrap(),
+            serde_json::json!("asdffdsa12344321")
+        );
 
         let guid = Guid::from("");
-        assert_tokens(&guid, &[Token::Str("")]);
+        assert_eq!(serde_json::to_value(guid).unwrap(), serde_json::json!(""));
 
         let guid = Guid::from(&b"abcd43211234"[..]);
-        assert_tokens(&guid, &[Token::Str("abcd43211234")]);
+        assert_eq!(
+            serde_json::to_value(guid).unwrap(),
+            serde_json::json!("abcd43211234")
+        );
     }
 }

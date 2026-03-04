@@ -25,6 +25,8 @@ return-to-amo-subtitle = Dispar, { -brand-short-name } a zo ganeoc’h
 return-to-amo-addon-title = Staliomp <img data-l10n-name="icon"/> <b>{ $addon-name }</b> bremañ.
 return-to-amo-add-extension-label = Ouzhpennañ an askouezh
 return-to-amo-add-theme-label = Ouzhpennañ an neuz
+return-to-amo-theme-install-complete-label = Tem staliet
+return-to-amo-extension-install-complete-label = Askouezh staliet
 
 ##  Variables: $addon-name (String) - Name of the add-on to be installed
 
@@ -202,7 +204,9 @@ mr2022-onboarding-set-default-primary-button-label = Lakaat { -brand-short-name 
 
 mr2022-onboarding-get-started-primary-button-label = Staliañ en un nebeut eilennoù
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-primary-button-label-no-attribution = Emporzhiañ diouzh ar merdeer diwezhañ
 
@@ -275,8 +279,10 @@ onboarding-device-migration-primary-button-label = Kennaskañ
 
 ## Add-ons Picker screen
 
+amo-picker-title = Personelait ho { -brand-short-name }
 amo-picker-install-button-label = Ouzhpennañ da { -brand-short-name }
 amo-picker-install-complete-label = Staliet
+amo-picker-collection-link = Ergerzhout muioc’h a askouezhioù
 
 ## The following screens have been updated to use security and privacy focused strings:
 
@@ -284,6 +290,8 @@ amo-picker-install-complete-label = Staliet
 onboarding-easy-setup-security-and-privacy-title = Ho surentez a zo talvoudus deomp
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } a souten ac’hanoc’h bepred
+onboarding-sign-up-button = Krouiñ ur gont pe kennaskañ
+onboarding-sign-up-secondary-button = Kregiñ gant ar merdeiñ
 
 ## New user time and familiarity survey strings
 
@@ -291,3 +299,30 @@ onboarding-new-user-time-based-survey-title = Pegeit zo emaoc’h oc’h implij 
 # When translating "next" it means the next screen in onboarding.
 onboarding-new-user-survey-next-button-label = War-lerc’h
 onboarding-new-user-survey-time-based-option-2 = Nebeutoc’h eget 1 miz
+
+## UI strings for the sidebar and vertical tabs
+
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Esaeit an ivinelloù a-serzh
+onboarding-flair-text = Nevez!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Derc’hel an ivinelloù a-blaen
+onboarding-genai-sidebar-secondary-button = Kregiñ gant ar merdeiñ
+
+## New user onboarding checklist
+
+onboarding-checklist-extension = Ouzhpennañ un askouezh
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-dismiss = Mat eo
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Lârit demat da brofiloù { -brand-product-name }
+multi-profile-spotlight-cta = Krouiñ ur profil
+multi-profile-callout-cta = Krouiñ ur profil
+
+## Desktop to Mobile Adoption feature callout strings
+
+dismiss-button-label = Argas

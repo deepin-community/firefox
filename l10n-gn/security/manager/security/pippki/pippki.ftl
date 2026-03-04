@@ -15,7 +15,7 @@ change-password-old = Ñe’ẽñemi ag̃agua:
 change-password-new = Ñe’ẽñemi pyahu:
 change-password-reenter = Ñe’ẽñemi pyahu: (ñemoneĩ):
 pippki-failed-pw-change = Ndaikatúi emoambue ne’ẽñemi.
-pippki-incorrect-pw = Neremoingeporãi ne’ẽñemi ha’etéva ag̃aguáva. Eha’ãjey upe rire.
+pippki-incorrect-pw = Neremoingeporãi ne’ẽñemi ha’etéva ag̃aguáva. Eha’ã jey upe rire.
 pippki-pw-change-ok = Emoambuéma ñe’ẽñemi hekopete.
 pippki-pw-empty-warning = Ne ñe’ẽñemi mbyatypyre ha ñe’ẽkañy ñemigua noñemo’ãi.
 pippki-pw-erased-ok = Emboguéma ne ñe’ẽñemi. { pippki-pw-empty-warning }
@@ -47,9 +47,6 @@ download-cert-message-desc = Ejerovia mboyve ko CA rehe oimeraẽva ejaposévape
 download-cert-view-cert =
     .label = Hecha
 download-cert-view-text = CA mboajepyre hechakatu
-
-## Client Authorization Ask dialog
-
 
 ## Client Authentication Ask dialog
 
@@ -85,8 +82,13 @@ client-auth-cert-details-issued-by = Onohẽpyre: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Ñongatupyre: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Epyta mba’e je’epyrépe
+client-auth-cert-remember-label = Eñemomandu’a ko ejapóvare:
+client-auth-cert-remember-never =
+    .label = Peteĩ jey
+client-auth-cert-remember-always =
+    .label = Tapiaitéva
+client-auth-cert-remember-temporarily =
+    .label = Ko jeiképe g̃uarã
 
 ## Set password (p12) dialog
 

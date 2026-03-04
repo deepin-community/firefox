@@ -20,6 +20,18 @@ export class PdfJsTelemetryContent {
 }
 
 export class PdfJsTelemetry {
+  static #fixKeys(data) {
+    for (const [key, values] of Object.entries(data)) {
+      const newKey = key.replaceAll(/([A-Z])/g, c => `_${c.toLowerCase()}`);
+      if (newKey === key) {
+        continue;
+      }
+      data[newKey] = values;
+      delete data[key];
+    }
+    return data;
+  }
+
   static report(aData) {
     const { type } = aData;
     switch (type) {
@@ -42,6 +54,12 @@ export class PdfJsTelemetry {
             this.onGeckoview(id);
           }
         }
+        break;
+      case "comment":
+        this.onComment(aData.data);
+        break;
+      case "commentSidebar":
+        this.onCommentSidebar(aData.data);
         break;
     }
   }
@@ -72,13 +90,18 @@ export class PdfJsTelemetry {
         if (!stats) {
           return;
         }
-        if (data.type === "highlight") {
+
+        if (stats.highlight) {
           const numbers = ["one", "two", "three", "four", "five"];
           Glean.pdfjsEditingHighlight[data.type].add(1);
           Glean.pdfjsEditingHighlight.numberOfColors[
-            numbers[stats.highlight.numberOfColors - 1]
+            numbers[
+              Math.min(
+                Math.max(1, stats.highlight.numberOfColors),
+                numbers.length
+              ) - 1
+            ]
           ].add(1);
-          return;
         }
         if (stats.stamp) {
           this.onImage({
@@ -86,8 +109,25 @@ export class PdfJsTelemetry {
             data: stats.stamp,
           });
         }
+        if (stats.signature) {
+          this.onSignature({
+            action: "pdfjs.signature.added",
+            data: stats.signature,
+          });
+        }
+        if (stats.comments) {
+          Glean.pdfjsComment.save.record(stats.comments);
+        }
         return;
       }
+      case "signature":
+        if (data.action === "added") {
+          Glean.pdfjs.editing.signature.add(1);
+          return;
+        }
+
+        this.onSignature(data);
+        return;
       case "stamp":
         if (data.action.startsWith("pdfjs.image.")) {
           this.onImage(data);
@@ -223,11 +263,47 @@ export class PdfJsTelemetry {
     }
   }
 
+  static onSignature({ action, data = {} }) {
+    action = action.split(".").pop();
+    data = this.#fixKeys(data);
+
+    switch (action) {
+      case "clear":
+        Glean.pdfjsSignature.clear[data.type].add(1);
+        break;
+      case "delete_saved":
+        Glean.pdfjsSignature.deleteSaved.record(data);
+        break;
+      case "created":
+        Glean.pdfjsSignature.created.record(data);
+        break;
+      case "added":
+        Glean.pdfjsSignature.added.record(data);
+        break;
+      case "inserted":
+        Glean.pdfjsSignature.inserted.record(data);
+        break;
+      case "edit_description":
+        Glean.pdfjsSignature.editDescription[
+          data.has_been_changed ? "saved" : "unsaved"
+        ].add(1);
+        break;
+    }
+  }
+
   static onButtons(id) {
     Glean.pdfjs.buttons[id].add(1);
   }
 
   static onGeckoview(id) {
     Glean.pdfjs.geckoview[id].add(1);
+  }
+
+  static onComment({ deleted }) {
+    Glean.pdfjsComment.edit[deleted ? "deleted" : "edited"].add(1);
+  }
+
+  static onCommentSidebar({ numberOfAnnotations }) {
+    Glean.pdfjsComment.sidebar.record({ comments_count: numberOfAnnotations });
   }
 }

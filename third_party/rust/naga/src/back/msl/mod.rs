@@ -29,10 +29,53 @@ holding the result.
 [msl]: https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf
 [all-atom]: crate::valid::Capabilities::SHADER_INT64_ATOMIC_ALL_OPS
 
+## Pointer-typed bounds-checked expressions and OOB locals
+
+MSL (unlike HLSL and GLSL) has native support for pointer-typed function
+arguments. When the [`BoundsCheckPolicy`] is `ReadZeroSkipWrite` and an
+out-of-bounds index expression is used for such an argument, our strategy is to
+pass a pointer to a dummy variable. These dummy variables are called "OOB
+locals". We emit at most one OOB local per function for each type, since all
+expressions producing a result of that type can share the same OOB local. (Note
+that the OOB local mechanism is not actually implementing "skip write", nor even
+"read zero" in some cases of read-after-write, but doing so would require
+additional effort and the difference is unlikely to matter.)
+
+[`BoundsCheckPolicy`]: crate::proc::BoundsCheckPolicy
+
+## External textures
+
+Support for [`crate::ImageClass::External`] textures is implemented by lowering
+each external texture global variable to 3 `texture2d<float, sample>`s, and a
+constant buffer of type `NagaExternalTextureParams`. This provides up to 3
+planes of texture data (for example single planar RGBA, or separate Y, Cb, and
+Cr planes), and the parameters buffer containing information describing how to
+handle these correctly. The bind target to use for each of these globals is
+specified via the [`BindTarget::external_texture`] field of the relevant
+entries in [`EntryPointResources::resources`].
+
+External textures are supported by WGSL's `textureDimensions()`,
+`textureLoad()`, and `textureSampleBaseClampToEdge()` built-in functions. These
+are implemented using helper functions. See the following functions for how
+these are generated:
+ * `Writer::write_wrapped_image_query`
+ * `Writer::write_wrapped_image_load`
+ * `Writer::write_wrapped_image_sample`
+
+The lowered global variables for each external texture global are passed to the
+entry point as separate arguments (see "Entry points" above). However, they are
+then wrapped in a struct to allow them to be conveniently passed to user
+defined and helper functions. See `writer::EXTERNAL_TEXTURE_WRAPPER_STRUCT`.
 */
 
-use crate::{arena::Handle, proc::index, valid::ModuleInfo};
-use std::fmt::{Error as FmtError, Write};
+use alloc::{
+    format,
+    string::{String, ToString},
+    vec::Vec,
+};
+use core::fmt::{Error as FmtError, Write};
+
+use crate::{arena::Handle, ir, proc::index, valid::ModuleInfo};
 
 mod keywords;
 pub mod sampler;
@@ -51,6 +94,19 @@ pub enum BindSamplerTarget {
     Inline(InlineSamplerIndex),
 }
 
+/// Binding information for a Naga [`External`] image global variable.
+///
+/// See the module documentation's section on external textures for details.
+///
+/// [`External`]: crate::ir::ImageClass::External
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serialize", derive(serde::Serialize))]
+#[cfg_attr(feature = "deserialize", derive(serde::Deserialize))]
+pub struct BindExternalTextureTarget {
+    pub planes: [Slot; 3],
+    pub params: Slot,
+}
+
 #[derive(Clone, Debug, Default, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serialize", derive(serde::Serialize))]
 #[cfg_attr(feature = "deserialize", derive(serde::Deserialize))]
@@ -59,22 +115,47 @@ pub struct BindTarget {
     pub buffer: Option<Slot>,
     pub texture: Option<Slot>,
     pub sampler: Option<BindSamplerTarget>,
-    /// If the binding is an unsized binding array, this overrides the size.
-    pub binding_array_size: Option<u32>,
+    pub external_texture: Option<BindExternalTextureTarget>,
     pub mutable: bool,
 }
 
+#[cfg(feature = "deserialize")]
+#[derive(serde::Deserialize)]
+struct BindingMapSerialization {
+    resource_binding: crate::ResourceBinding,
+    bind_target: BindTarget,
+}
+
+#[cfg(feature = "deserialize")]
+fn deserialize_binding_map<'de, D>(deserializer: D) -> Result<BindingMap, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::Deserialize;
+
+    let vec = Vec::<BindingMapSerialization>::deserialize(deserializer)?;
+    let mut map = BindingMap::default();
+    for item in vec {
+        map.insert(item.resource_binding, item.bind_target);
+    }
+    Ok(map)
+}
+
 // Using `BTreeMap` instead of `HashMap` so that we can hash itself.
-pub type BindingMap = std::collections::BTreeMap<crate::ResourceBinding, BindTarget>;
+pub type BindingMap = alloc::collections::BTreeMap<crate::ResourceBinding, BindTarget>;
 
 #[derive(Clone, Debug, Default, Hash, Eq, PartialEq)]
 #[cfg_attr(feature = "serialize", derive(serde::Serialize))]
 #[cfg_attr(feature = "deserialize", derive(serde::Deserialize))]
 #[cfg_attr(any(feature = "serialize", feature = "deserialize"), serde(default))]
 pub struct EntryPointResources {
+    #[cfg_attr(
+        feature = "deserialize",
+        serde(deserialize_with = "deserialize_binding_map")
+    )]
     pub resources: BindingMap,
 
-    pub push_constant_buffer: Option<Slot>,
+    pub immediates_buffer: Option<Slot>,
 
     /// The slot of a buffer that contains an array of `u32`,
     /// one for the size of each bound buffer that contains a runtime array,
@@ -82,14 +163,14 @@ pub struct EntryPointResources {
     pub sizes_buffer: Option<Slot>,
 }
 
-pub type EntryPointResourceMap = std::collections::BTreeMap<String, EntryPointResources>;
+pub type EntryPointResourceMap = alloc::collections::BTreeMap<String, EntryPointResources>;
 
 enum ResolvedBinding {
     BuiltIn(crate::BuiltIn),
     Attribute(u32),
     Color {
         location: u32,
-        second_blend_source: bool,
+        blend_src: Option<u32>,
     },
     User {
         prefix: &'static str,
@@ -139,17 +220,25 @@ pub enum Error {
     #[error("can not use writeable storage buffers in fragment stage prior to MSL 1.2")]
     UnsupportedWriteableStorageBuffer,
     #[error("can not use writeable storage textures in {0:?} stage prior to MSL 1.2")]
-    UnsupportedWriteableStorageTexture(crate::ShaderStage),
+    UnsupportedWriteableStorageTexture(ir::ShaderStage),
     #[error("can not use read-write storage textures prior to MSL 1.2")]
     UnsupportedRWStorageTexture,
     #[error("array of '{0}' is not supported for target MSL version")]
     UnsupportedArrayOf(String),
     #[error("array of type '{0:?}' is not supported")]
     UnsupportedArrayOfType(Handle<crate::Type>),
-    #[error("ray tracing is not supported prior to MSL 2.3")]
+    #[error("ray tracing is not supported prior to MSL 2.4")]
     UnsupportedRayTracing,
+    #[error("cooperative matrix is not supported prior to MSL 2.3")]
+    UnsupportedCooperativeMatrix,
     #[error("overrides should not be present at this stage")]
     Override,
+    #[error("bitcasting to {0:?} is not supported")]
+    UnsupportedBitCast(crate::TypeInner),
+    #[error(transparent)]
+    ResolveArraySizeError(#[from] crate::proc::ResolveArraySizeError),
+    #[error("entry point with stage {0:?} and name '{1}' not found")]
+    EntryPointNotFound(ir::ShaderStage, String),
 }
 
 #[derive(Clone, Debug, PartialEq, thiserror::Error)]
@@ -160,8 +249,8 @@ pub enum EntryPointError {
     MissingBinding(String),
     #[error("mapping of {0:?} is missing")]
     MissingBindTarget(crate::ResourceBinding),
-    #[error("mapping for push constants is missing")]
-    MissingPushConstants,
+    #[error("mapping for immediates is missing")]
+    MissingImmediateData,
     #[error("mapping for sizes buffer is missing")]
     MissingSizesBuffer,
 }
@@ -195,6 +284,7 @@ enum LocationMode {
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 #[cfg_attr(feature = "serialize", derive(serde::Serialize))]
 #[cfg_attr(feature = "deserialize", derive(serde::Deserialize))]
+#[cfg_attr(feature = "deserialize", serde(default))]
 pub struct Options {
     /// (Major, Minor) target version of the Metal Shading Language.
     pub lang_version: (u8, u8),
@@ -207,10 +297,12 @@ pub struct Options {
     /// Don't panic on missing bindings, instead generate invalid MSL.
     pub fake_missing_bindings: bool,
     /// Bounds checking policies.
-    #[cfg_attr(feature = "deserialize", serde(default))]
     pub bounds_check_policies: index::BoundsCheckPolicies,
     /// Should workgroup variables be zero initialized (by polyfilling)?
     pub zero_initialize_workgroup_memory: bool,
+    /// If set, loops will have code injected into them, forcing the compiler
+    /// to think the number of iterations is bounded.
+    pub force_loop_bounding: bool,
 }
 
 impl Default for Options {
@@ -223,6 +315,7 @@ impl Default for Options {
             fake_missing_bindings: true,
             bounds_check_policies: index::BoundsCheckPolicies::default(),
             zero_initialize_workgroup_memory: true,
+            force_loop_bounding: true,
         }
     }
 }
@@ -234,72 +327,107 @@ impl Default for Options {
 #[cfg_attr(feature = "serialize", derive(serde::Serialize))]
 #[cfg_attr(feature = "deserialize", derive(serde::Deserialize))]
 pub enum VertexFormat {
+    /// One unsigned byte (u8). `u32` in shaders.
+    Uint8 = 0,
     /// Two unsigned bytes (u8). `vec2<u32>` in shaders.
-    Uint8x2 = 0,
+    Uint8x2 = 1,
     /// Four unsigned bytes (u8). `vec4<u32>` in shaders.
-    Uint8x4 = 1,
+    Uint8x4 = 2,
+    /// One signed byte (i8). `i32` in shaders.
+    Sint8 = 3,
     /// Two signed bytes (i8). `vec2<i32>` in shaders.
-    Sint8x2 = 2,
+    Sint8x2 = 4,
     /// Four signed bytes (i8). `vec4<i32>` in shaders.
-    Sint8x4 = 3,
+    Sint8x4 = 5,
+    /// One unsigned byte (u8). [0, 255] converted to float [0, 1] `f32` in shaders.
+    Unorm8 = 6,
     /// Two unsigned bytes (u8). [0, 255] converted to float [0, 1] `vec2<f32>` in shaders.
-    Unorm8x2 = 4,
+    Unorm8x2 = 7,
     /// Four unsigned bytes (u8). [0, 255] converted to float [0, 1] `vec4<f32>` in shaders.
-    Unorm8x4 = 5,
+    Unorm8x4 = 8,
+    /// One signed byte (i8). [-127, 127] converted to float [-1, 1] `f32` in shaders.
+    Snorm8 = 9,
     /// Two signed bytes (i8). [-127, 127] converted to float [-1, 1] `vec2<f32>` in shaders.
-    Snorm8x2 = 6,
+    Snorm8x2 = 10,
     /// Four signed bytes (i8). [-127, 127] converted to float [-1, 1] `vec4<f32>` in shaders.
-    Snorm8x4 = 7,
+    Snorm8x4 = 11,
+    /// One unsigned short (u16). `u32` in shaders.
+    Uint16 = 12,
     /// Two unsigned shorts (u16). `vec2<u32>` in shaders.
-    Uint16x2 = 8,
+    Uint16x2 = 13,
     /// Four unsigned shorts (u16). `vec4<u32>` in shaders.
-    Uint16x4 = 9,
+    Uint16x4 = 14,
+    /// One signed short (u16). `i32` in shaders.
+    Sint16 = 15,
     /// Two signed shorts (i16). `vec2<i32>` in shaders.
-    Sint16x2 = 10,
+    Sint16x2 = 16,
     /// Four signed shorts (i16). `vec4<i32>` in shaders.
-    Sint16x4 = 11,
+    Sint16x4 = 17,
+    /// One unsigned short (u16). [0, 65535] converted to float [0, 1] `f32` in shaders.
+    Unorm16 = 18,
     /// Two unsigned shorts (u16). [0, 65535] converted to float [0, 1] `vec2<f32>` in shaders.
-    Unorm16x2 = 12,
+    Unorm16x2 = 19,
     /// Four unsigned shorts (u16). [0, 65535] converted to float [0, 1] `vec4<f32>` in shaders.
-    Unorm16x4 = 13,
+    Unorm16x4 = 20,
+    /// One signed short (i16). [-32767, 32767] converted to float [-1, 1] `f32` in shaders.
+    Snorm16 = 21,
     /// Two signed shorts (i16). [-32767, 32767] converted to float [-1, 1] `vec2<f32>` in shaders.
-    Snorm16x2 = 14,
+    Snorm16x2 = 22,
     /// Four signed shorts (i16). [-32767, 32767] converted to float [-1, 1] `vec4<f32>` in shaders.
-    Snorm16x4 = 15,
+    Snorm16x4 = 23,
+    /// One half-precision float (no Rust equiv). `f32` in shaders.
+    Float16 = 24,
     /// Two half-precision floats (no Rust equiv). `vec2<f32>` in shaders.
-    Float16x2 = 16,
+    Float16x2 = 25,
     /// Four half-precision floats (no Rust equiv). `vec4<f32>` in shaders.
-    Float16x4 = 17,
+    Float16x4 = 26,
     /// One single-precision float (f32). `f32` in shaders.
-    Float32 = 18,
+    Float32 = 27,
     /// Two single-precision floats (f32). `vec2<f32>` in shaders.
-    Float32x2 = 19,
+    Float32x2 = 28,
     /// Three single-precision floats (f32). `vec3<f32>` in shaders.
-    Float32x3 = 20,
+    Float32x3 = 29,
     /// Four single-precision floats (f32). `vec4<f32>` in shaders.
-    Float32x4 = 21,
+    Float32x4 = 30,
     /// One unsigned int (u32). `u32` in shaders.
-    Uint32 = 22,
+    Uint32 = 31,
     /// Two unsigned ints (u32). `vec2<u32>` in shaders.
-    Uint32x2 = 23,
+    Uint32x2 = 32,
     /// Three unsigned ints (u32). `vec3<u32>` in shaders.
-    Uint32x3 = 24,
+    Uint32x3 = 33,
     /// Four unsigned ints (u32). `vec4<u32>` in shaders.
-    Uint32x4 = 25,
+    Uint32x4 = 34,
     /// One signed int (i32). `i32` in shaders.
-    Sint32 = 26,
+    Sint32 = 35,
     /// Two signed ints (i32). `vec2<i32>` in shaders.
-    Sint32x2 = 27,
+    Sint32x2 = 36,
     /// Three signed ints (i32). `vec3<i32>` in shaders.
-    Sint32x3 = 28,
+    Sint32x3 = 37,
     /// Four signed ints (i32). `vec4<i32>` in shaders.
-    Sint32x4 = 29,
+    Sint32x4 = 38,
     /// Three unsigned 10-bit integers and one 2-bit integer, packed into a 32-bit integer (u32). [0, 1024] converted to float [0, 1] `vec4<f32>` in shaders.
     #[cfg_attr(
         any(feature = "serialize", feature = "deserialize"),
         serde(rename = "unorm10-10-10-2")
     )]
-    Unorm10_10_10_2 = 34,
+    Unorm10_10_10_2 = 43,
+    /// Four unsigned 8-bit integers, packed into a 32-bit integer (u32). [0, 255] converted to float [0, 1] `vec4<f32>` in shaders.
+    #[cfg_attr(
+        any(feature = "serialize", feature = "deserialize"),
+        serde(rename = "unorm8x4-bgra")
+    )]
+    Unorm8x4Bgra = 44,
+}
+
+/// Defines how to advance the data in vertex buffers.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serialize", derive(serde::Serialize))]
+#[cfg_attr(feature = "deserialize", derive(serde::Deserialize))]
+pub enum VertexBufferStepMode {
+    Constant,
+    #[default]
+    ByVertex,
+    ByInstance,
 }
 
 /// A mapping of vertex buffers and their attributes to shader
@@ -330,9 +458,8 @@ pub struct VertexBufferMapping {
     pub id: u32,
     /// Size of the structure in bytes
     pub stride: u32,
-    /// True if the buffer is indexed by vertex, false if indexed
-    /// by instance.
-    pub indexed_by_vertex: bool,
+    /// Vertex buffer step mode
+    pub step_mode: VertexBufferStepMode,
     /// Vec of the attributes within the structure
     pub attributes: Vec<AttributeMapping>,
 }
@@ -341,7 +468,17 @@ pub struct VertexBufferMapping {
 #[derive(Debug, Default, Clone)]
 #[cfg_attr(feature = "serialize", derive(serde::Serialize))]
 #[cfg_attr(feature = "deserialize", derive(serde::Deserialize))]
+#[cfg_attr(feature = "deserialize", serde(default))]
 pub struct PipelineOptions {
+    /// The entry point to write.
+    ///
+    /// Entry points are identified by a shader stage specification,
+    /// and a name.
+    ///
+    /// If `None`, all entry points will be written. If `Some` and the entry
+    /// point is not found, an error will be thrown while writing.
+    pub entry_point: Option<(ir::ShaderStage, String)>,
+
     /// Allow `BuiltIn::PointSize` and inject it if doesn't exist.
     ///
     /// Metal doesn't like this for non-point primitive topologies and requires it for
@@ -391,9 +528,20 @@ impl Options {
                         return Err(Error::UnsupportedAttribute("instance_id".to_string()));
                     }
                     // macOS: Since Metal 2.2
-                    // iOS: Since Metal 2.3 (check depends on https://github.com/gfx-rs/naga/issues/2164)
-                    crate::BuiltIn::PrimitiveIndex if self.lang_version < (2, 2) => {
+                    // iOS: Since Metal 2.3 (check depends on https://github.com/gfx-rs/wgpu/issues/4414)
+                    crate::BuiltIn::PrimitiveIndex if self.lang_version < (2, 3) => {
                         return Err(Error::UnsupportedAttribute("primitive_id".to_string()));
+                    }
+                    // macOS: since Metal 2.3
+                    // iOS: Since Metal 2.2
+                    // https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf#page=114
+                    crate::BuiltIn::ViewIndex if self.lang_version < (2, 2) => {
+                        return Err(Error::UnsupportedAttribute("amplification_id".to_string()));
+                    }
+                    // macOS: Since Metal 2.2
+                    // iOS: Since Metal 2.3 (check depends on https://github.com/gfx-rs/wgpu/issues/4414)
+                    crate::BuiltIn::Barycentric if self.lang_version < (2, 3) => {
+                        return Err(Error::UnsupportedAttribute("barycentric_coord".to_string()));
                     }
                     _ => {}
                 }
@@ -404,18 +552,17 @@ impl Options {
                 location,
                 interpolation,
                 sampling,
-                second_blend_source,
+                blend_src,
+                per_primitive: _,
             } => match mode {
                 LocationMode::VertexInput => Ok(ResolvedBinding::Attribute(location)),
                 LocationMode::FragmentOutput => {
-                    if second_blend_source && self.lang_version < (1, 2) {
-                        return Err(Error::UnsupportedAttribute(
-                            "second_blend_source".to_string(),
-                        ));
+                    if blend_src.is_some() && self.lang_version < (1, 2) {
+                        return Err(Error::UnsupportedAttribute("blend_src".to_string()));
                     }
                     Ok(ResolvedBinding::Color {
                         location,
-                        second_blend_source,
+                        blend_src,
                     })
                 }
                 LocationMode::VertexOutput | LocationMode::FragmentInput => {
@@ -437,8 +584,7 @@ impl Options {
                     })
                 }
                 LocationMode::Uniform => Err(Error::GenericValidation(format!(
-                    "Unexpected Binding::Location({}) for the Uniform mode",
-                    location
+                    "Unexpected Binding::Location({location}) for the Uniform mode"
                 ))),
             },
         }
@@ -470,17 +616,17 @@ impl Options {
                 index: 0,
                 interpolation: None,
             }),
-            None => Err(EntryPointError::MissingBindTarget(res_binding.clone())),
+            None => Err(EntryPointError::MissingBindTarget(*res_binding)),
         }
     }
 
-    fn resolve_push_constants(
+    fn resolve_immediates(
         &self,
         ep: &crate::EntryPoint,
     ) -> Result<ResolvedBinding, EntryPointError> {
         let slot = self
             .get_entry_point_resources(ep)
-            .and_then(|res| res.push_constant_buffer);
+            .and_then(|res| res.immediates_buffer);
         match slot {
             Some(slot) => Ok(ResolvedBinding::Resource(BindTarget {
                 buffer: Some(slot),
@@ -491,7 +637,7 @@ impl Options {
                 index: 0,
                 interpolation: None,
             }),
-            None => Err(EntryPointError::MissingPushConstants),
+            None => Err(EntryPointError::MissingImmediateData),
         }
     }
 
@@ -528,13 +674,6 @@ impl ResolvedBinding {
         }
     }
 
-    const fn as_bind_target(&self) -> Option<&BindTarget> {
-        match *self {
-            Self::Resource(ref target) => Some(target),
-            _ => None,
-        }
-    }
-
     fn try_fmt<W: Write>(&self, out: &mut W) -> Result<(), Error> {
         write!(out, " [[")?;
         match *self {
@@ -543,6 +682,7 @@ impl ResolvedBinding {
                 let name = match built_in {
                     Bi::Position { invariant: false } => "position",
                     Bi::Position { invariant: true } => "position, invariant",
+                    Bi::ViewIndex => "amplification_id",
                     // vertex
                     Bi::BaseInstance => "base_instance",
                     Bi::BaseVertex => "base_vertex",
@@ -555,6 +695,7 @@ impl ResolvedBinding {
                     Bi::PointCoord => "point_coord",
                     Bi::FrontFacing => "front_facing",
                     Bi::PrimitiveIndex => "primitive_id",
+                    Bi::Barycentric => "barycentric_coord",
                     Bi::SampleIndex => "sample_id",
                     Bi::SampleMask => "sample_mask",
                     // compute
@@ -569,19 +710,27 @@ impl ResolvedBinding {
                     Bi::SubgroupId => "simdgroup_index_in_threadgroup",
                     Bi::SubgroupSize => "threads_per_simdgroup",
                     Bi::SubgroupInvocationId => "thread_index_in_simdgroup",
-                    Bi::CullDistance | Bi::ViewIndex => {
+                    Bi::CullDistance | Bi::DrawID => {
                         return Err(Error::UnsupportedBuiltIn(built_in))
                     }
+                    Bi::CullPrimitive => "primitive_culled",
+                    // TODO: figure out how to make this written as a function call
+                    Bi::PointIndex | Bi::LineIndices | Bi::TriangleIndices => unimplemented!(),
+                    Bi::MeshTaskSize
+                    | Bi::VertexCount
+                    | Bi::PrimitiveCount
+                    | Bi::Vertices
+                    | Bi::Primitives => unreachable!(),
                 };
                 write!(out, "{name}")?;
             }
             Self::Attribute(index) => write!(out, "attribute({index})")?,
             Self::Color {
                 location,
-                second_blend_source,
+                blend_src,
             } => {
-                if second_blend_source {
-                    write!(out, "color({location}) index(1)")?
+                if let Some(blend_src) = blend_src {
+                    write!(out, "color({location}) index({blend_src})")?
                 } else {
                     write!(out, "color({location})")?
                 }
@@ -627,6 +776,7 @@ impl ResolvedInterpolation {
             (I::Linear, S::Centroid) => Self::CentroidNoPerspective,
             (I::Linear, S::Sample) => Self::SampleNoPerspective,
             (I::Flat, _) => Self::Flat,
+            _ => unreachable!(),
         }
     }
 
@@ -668,6 +818,5 @@ pub fn write_string(
 
 #[test]
 fn test_error_size() {
-    use std::mem::size_of;
-    assert_eq!(size_of::<Error>(), 32);
+    assert_eq!(size_of::<Error>(), 40);
 }

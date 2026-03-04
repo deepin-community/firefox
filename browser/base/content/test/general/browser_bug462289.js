@@ -9,7 +9,10 @@ function focus_in_navbar() {
   return parent != null;
 }
 
+const SCOTCH_BONNET_PREF = "browser.urlbar.scotchBonnet.enableOverride";
+
 function test() {
+  Services.prefs.setBoolPref(SCOTCH_BONNET_PREF, false);
   // Put the home button in the pre-proton placement to test focus states.
   CustomizableUI.addWidgetToArea(
     "home-button",
@@ -17,6 +20,7 @@ function test() {
     CustomizableUI.getPlacementOfWidget("stop-reload-button").position + 1
   );
   registerCleanupFunction(async function resetToolbar() {
+    Services.prefs.clearUserPref(SCOTCH_BONNET_PREF);
     await CustomizableUI.reset();
   });
 
@@ -60,13 +64,17 @@ async function step3() {
   info("focusing URLBar then sending 3 Shift+Tab.");
   gURLBar.focus();
 
+  const previousButtonId = Services.prefs.getBoolPref("sidebar.revamp")
+    ? "sidebar-button"
+    : "home-button";
+
   let focused = BrowserTestUtils.waitForEvent(
-    document.getElementById("home-button"),
+    document.getElementById(previousButtonId),
     "focus"
   );
   EventUtils.synthesizeKey("VK_TAB", { shiftKey: true });
   await focused;
-  info("Focus is now on Home button");
+  info(`Focus is now on ${previousButtonId} button`);
 
   focused = BrowserTestUtils.waitForEvent(
     document.getElementById("tabs-newtab-button"),

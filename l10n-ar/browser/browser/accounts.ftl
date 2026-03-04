@@ -45,6 +45,9 @@ account-send-tab-to-device-verify = أكّد حسابك…
 # The title shown in a notification when either this device or another device
 # has connected to, or disconnected from, a Firefox account.
 account-connection-title = { -fxaccount-brand-name(capitalization: "title") }
+# The title shown in a notification when either this device or another device
+# has connected to, or disconnected from, a Firefox account.
+account-connection-title-2 = الحساب
 # Variables:
 #   $deviceName (String): the name of the new device
 account-connection-connected-with = أصبح هذا الحاسوب الآن متصلًا مع { $deviceName }.
@@ -80,15 +83,15 @@ account-multiple-tabs-arriving-title = وصل لسان
 account-multiple-tabs-arriving-from-single-device =
     { $tabCount ->
         [one] وصل لسان من { $deviceName }
-        [two] وصل لسانين من { $deviceName }
+        [two] وصل لسانان من { $deviceName }
         [few] وصلت { $tabCount } ألسنة من { $deviceName }
         [many] وصل { $tabCount } لسانًا من { $deviceName }
-       *[other] وصل { $tabCount } لسان من { $deviceName }
+       *[other] وصل { $tabCount } لسانًا من { $deviceName }
     }
 account-multiple-tabs-arriving-from-multiple-devices =
     { $tabCount ->
         [one] وصل لسان من أجهزتك المتصلة
-        [two] وصل لسانين من أجهزتك المتصلة
+        [two] وصل لسانان من أجهزتك المتصلة
         [few] وصلت { $tabCount } ألسنة من أجهزتك المتصلة
         [many] وصل { $tabCount } لسانًا من أجهزتك المتصلة
        *[other] وصل { $tabCount } لسان من أجهزتك المتصلة
@@ -97,7 +100,7 @@ account-multiple-tabs-arriving-from-multiple-devices =
 account-multiple-tabs-arriving-from-unknown-device =
     { $tabCount ->
         [one] وصل لسان
-        [two] وصل لسانين
+        [two] وصل لسانان
         [few] وصلت { $tabCount } ألسنة
         [many] وصل { $tabCount } لسانًا
        *[other] وصل { $tabCount } لسان
@@ -109,3 +112,12 @@ account-multiple-tabs-arriving-from-unknown-device =
 ##   $closedCount (Number): the number of tabs closed
 
 account-view-recently-closed-tabs = عرض الألسنة المُغلقة مؤخرًا
+account-tabs-closed-remotely =
+    { $closedCount ->
+        [zero] أغلق { $closedCount } لسان من { -brand-short-name }
+        [one] أغلق لسان { -brand-short-name } واحد
+        [two] أغلق لسانان من { -brand-short-name }
+        [few] أغلقت { $closedCount } ألسنة من { -brand-short-name }
+        [many] أغلق { $closedCount } لسانًا من { -brand-short-name }
+       *[other] أغلق { $closedCount } لسانًا من { -brand-short-name }
+    }

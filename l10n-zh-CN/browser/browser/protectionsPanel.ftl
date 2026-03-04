@@ -21,8 +21,8 @@ protections-popup-footer-protection-label-standard = 标准
 # The text a screen reader speaks when focused on the info button.
 protections-panel-etp-more-info =
     .aria-label = 关于增强型跟踪保护功能的更多信息
-protections-panel-etp-on-header = 此网站已开启增强型跟踪保护
-protections-panel-etp-off-header = 此网站已关闭增强型跟踪保护
+protections-panel-etp-on-header = 已对此网站开启增强型跟踪保护
+protections-panel-etp-off-header = 已对此网站关闭增强型跟踪保护
 # The link to be clicked to open the sub-panel view
 protections-panel-site-not-working = 网站不正常？
 # The heading/title of the sub-panel view
@@ -36,12 +36,12 @@ protections-panel-site-not-working-view =
 
 protections-panel-etp-toggle-on =
     .label = 增强型跟踪保护
-    .description = 已为此网站开启
-    .aria-label = 增强型跟踪保护：已为 { $host } 开启
+    .description = 已对此网站开启
+    .aria-label = 增强型跟踪保护：已对 { $host } 开启
 protections-panel-etp-toggle-off =
     .label = 增强型跟踪保护
-    .description = 已为此网站关闭
-    .aria-label = 增强型跟踪保护：已为 { $host } 关闭
+    .description = 已对此网站关闭
+    .aria-label = 增强型跟踪保护：已对 { $host } 关闭
 
 ## The "Allowed" header also includes a "Why?" link that, when hovered, shows
 ## a tooltip explaining why these items were not blocked in the page.
@@ -71,6 +71,19 @@ protections-panel-content-blocking-fingerprinters-label = 数字指纹跟踪程�
 protections-panel-blocking-label = 已拦截
 protections-panel-not-blocking-label = 已允许
 protections-panel-not-found-label = 未检测到
+
+## Smartblock strings
+
+protections-panel-smartblock-desc-label = { -brand-short-name } 将在您浏览此网站时拦截跟踪性内容，除非您要求不拦截。
+# Variables
+#  $trackername (String): the name of the tracker that is currently being blocked.
+protections-panel-smartblock-blocking-toggle =
+    .label = 允许 { $trackername }
+#  $trackername (String): the name of the tracker that is currently being blocked.
+smartblock-placeholder-title = 已拦截 { $trackername } 跟踪器和内容
+smartblock-placeholder-desc = 您的 { -brand-short-name } 设置已阻止此内容跨网站跟踪您，或是用于投放广告。
+#  $websitehost (String): host of website with blocked content.
+smartblock-placeholder-button-text = 在 { $websitehost } 上允许
 
 ##
 

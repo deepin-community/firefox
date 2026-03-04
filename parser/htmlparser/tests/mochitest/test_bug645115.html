@@ -5,7 +5,6 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=645115
 -->
 <head>
   <title>Test for Bug 645115</title>
-  <script type="text/javascript" src="/MochiKit/MochiKit.js"></script>
   <script src="/tests/SimpleTest/SimpleTest.js"></script>
   <link rel="stylesheet" type="text/css" href="/tests/SimpleTest/test.css" />
 </head>
@@ -18,7 +17,7 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=645115
 <pre id="test">
 <script class="testbody" type="text/javascript">
 
-/** Test for Bug 645115 **/
+/** Test for Bug 645115 */
 var div = document.createElement("div");
 div.innerHTML = "\u003Cscript>ok(false, 'innerHTML script ran');\u003C/script>\u003Cscript>";
 document.getElementById("content").appendChild(div);

@@ -27,7 +27,6 @@
 #include "nsIX509Cert.h"
 #include "nsIX509CertDB.h"
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/BasePrincipal.h"
 #include "mozilla/Components.h"
 #include "mozilla/ErrorNames.h"
@@ -35,7 +34,7 @@
 #include "mozilla/Preferences.h"
 #include "mozilla/ScopeExit.h"
 #include "mozilla/Services.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/ReputationserviceMetrics.h"
 #include "mozilla/TimeStamp.h"
 #include "mozilla/intl/LocaleService.h"
 
@@ -60,14 +59,11 @@
 
 #include "ApplicationReputationTelemetryUtils.h"
 
-using mozilla::ArrayLength;
 using mozilla::BasePrincipal;
 using mozilla::OriginAttributes;
 using mozilla::Preferences;
 using mozilla::TimeStamp;
 using mozilla::intl::LocaleService;
-using mozilla::Telemetry::Accumulate;
-using mozilla::Telemetry::AccumulateCategorical;
 using safe_browsing::ClientDownloadRequest;
 using safe_browsing::ClientDownloadRequest_CertificateChain;
 using safe_browsing::ClientDownloadRequest_Resource;
@@ -152,6 +148,7 @@ const char* const ApplicationReputationService::kNonBinaryExecutables[] = {
     ".air",
     ".atloc",
     ".ftploc",
+    ".terminal",
     // clang-format on
 };
 
@@ -291,6 +288,7 @@ const char* const ApplicationReputationService::kBinaryFileExtensions[] = {
     //".jse", exec // JScript
     ".ksh",  // Linux shell
     //".lha",
+    //".library-ms", exec // Windows
     //".lnk", exec // Windows
     ".local",  // Windows
     //".lpaq1",
@@ -591,7 +589,7 @@ enum class LookupType { AllowlistOnly, BlocklistOnly, BothLists };
 // Remote lookup is disabled or the remote lookup URL is empty InternalError :
 // An unexpected internal error DPDisabled           : Download protection is
 // disabled
-using Reason = mozilla::Telemetry::LABELS_APPLICATION_REPUTATION_REASON;
+using Reason = mozilla::glean::application_reputation::ReasonLabel;
 
 class PendingDBLookup;
 
@@ -852,6 +850,9 @@ nsresult PendingDBLookup::LookupSpecInternal(const nsACString& aSpec) {
     }
     tables.Append(blocklist);
   }
+  if (principal->IsSystemPrincipal()) {
+    return mPendingLookup->LookupNext();
+  }
   return dbService->Lookup(principal, tables, this);
 }
 
@@ -866,11 +867,12 @@ PendingDBLookup::HandleEvent(const nsACString& tables) {
   if ((mLookupType != LookupType::AllowlistOnly) &&
       FindInReadable(blockList, tables)) {
     mPendingLookup->mBlocklistCount++;
-    Accumulate(mozilla::Telemetry::APPLICATION_REPUTATION_LOCAL, BLOCK_LIST);
+    mozilla::glean::application_reputation::local.AccumulateSingleSample(
+        BLOCK_LIST);
     LOG(("Found principal %s on blocklist [this = %p]", mSpec.get(), this));
     return mPendingLookup->OnComplete(
         nsIApplicationReputationService::VERDICT_DANGEROUS,
-        Reason::LocalBlocklist, NS_OK);
+        Reason::eLocalblocklist, NS_OK);
   }
 
   nsAutoCString allowList;
@@ -878,14 +880,15 @@ PendingDBLookup::HandleEvent(const nsACString& tables) {
   if ((mLookupType != LookupType::BlocklistOnly) &&
       FindInReadable(allowList, tables)) {
     mPendingLookup->mAllowlistCount++;
-    Accumulate(mozilla::Telemetry::APPLICATION_REPUTATION_LOCAL, ALLOW_LIST);
+    mozilla::glean::application_reputation::local.AccumulateSingleSample(
+        ALLOW_LIST);
     LOG(("Found principal %s on allowlist [this = %p]", mSpec.get(), this));
     // Don't call onComplete, since blocklisting trumps allowlisting
     return mPendingLookup->LookupNext();
   }
 
   LOG(("Didn't find principal %s on any list [this = %p]", mSpec.get(), this));
-  Accumulate(mozilla::Telemetry::APPLICATION_REPUTATION_LOCAL, NO_LIST);
+  mozilla::glean::application_reputation::local.AccumulateSingleSample(NO_LIST);
   return mPendingLookup->LookupNext();
 }
 
@@ -938,7 +941,7 @@ static const char* GetFileExt(const nsACString& aFilename,
 }
 
 static const char* GetFileExt(const nsACString& aFilename) {
-#define _GetFileExt(_f, _l) GetFileExt(_f, _l, ArrayLength(_l))
+#define _GetFileExt(_f, _l) GetFileExt(_f, _l, std::size(_l))
   const char* ext = _GetFileExt(
       aFilename, ApplicationReputationService::kBinaryFileExtensions);
   if (ext == nullptr &&
@@ -957,15 +960,13 @@ static bool IsFileType(const nsACString& aFilename,
 }
 
 static bool IsBinary(const nsACString& aFilename) {
-  return IsFileType(aFilename,
-                    ApplicationReputationService::kBinaryFileExtensions,
-                    ArrayLength(
-                        ApplicationReputationService::kBinaryFileExtensions)) ||
+  return IsFileType(
+             aFilename, ApplicationReputationService::kBinaryFileExtensions,
+             std::size(ApplicationReputationService::kBinaryFileExtensions)) ||
          (!IsFileType(
               aFilename, ApplicationReputationService::kNonBinaryExecutables,
-              ArrayLength(
-                  ApplicationReputationService::kNonBinaryExecutables)) &&
-          IsFileType(aFilename, sExecutableExts, ArrayLength(sExecutableExts)));
+              std::size(ApplicationReputationService::kNonBinaryExecutables)) &&
+          IsFileType(aFilename, sExecutableExts, std::size(sExecutableExts)));
 }
 
 ClientDownloadRequest::DownloadType PendingLookup::GetDownloadType(
@@ -1041,7 +1042,7 @@ nsresult PendingLookup::LookupNext() {
   // go ahead and pass.
   if (mAllowlistCount > 0) {
     return OnComplete(nsIApplicationReputationService::VERDICT_SAFE,
-                      Reason::LocalWhitelist, NS_OK);
+                      Reason::eLocalwhitelist, NS_OK);
   }
 
   MOZ_ASSERT_IF(!mIsBinaryFile, mAllowlistSpecs.Length() == 0);
@@ -1056,49 +1057,58 @@ nsresult PendingLookup::LookupNext() {
 
   if (!mFileName.IsEmpty()) {
     if (IsBinary(mFileName)) {
-      AccumulateCategorical(
-          mozilla::Telemetry::LABELS_APPLICATION_REPUTATION_BINARY_TYPE::
-              BinaryFile);
+      mozilla::glean::application_reputation::binary_type
+          .EnumGet(mozilla::glean::application_reputation::BinaryTypeLabel::
+                       eBinaryfile)
+          .Add();
     } else if (IsFileType(mFileName, kSafeFileExtensions,
-                          ArrayLength(kSafeFileExtensions))) {
-      AccumulateCategorical(
-          mozilla::Telemetry::LABELS_APPLICATION_REPUTATION_BINARY_TYPE::
-              NonBinaryFile);
+                          std::size(kSafeFileExtensions))) {
+      mozilla::glean::application_reputation::binary_type
+          .EnumGet(mozilla::glean::application_reputation::BinaryTypeLabel::
+                       eNonbinaryfile)
+          .Add();
     } else if (IsFileType(mFileName, kMozNonBinaryExecutables,
-                          ArrayLength(kMozNonBinaryExecutables))) {
-      AccumulateCategorical(
-          mozilla::Telemetry::LABELS_APPLICATION_REPUTATION_BINARY_TYPE::
-              MozNonBinaryFile);
+                          std::size(kMozNonBinaryExecutables))) {
+      mozilla::glean::application_reputation::binary_type
+          .EnumGet(mozilla::glean::application_reputation::BinaryTypeLabel::
+                       eMoznonbinaryfile)
+          .Add();
     } else {
-      AccumulateCategorical(
-          mozilla::Telemetry::LABELS_APPLICATION_REPUTATION_BINARY_TYPE::
-              UnknownFile);
+      mozilla::glean::application_reputation::binary_type
+          .EnumGet(mozilla::glean::application_reputation::BinaryTypeLabel::
+                       eUnknownfile)
+          .Add();
     }
   } else {
-    AccumulateCategorical(
-        mozilla::Telemetry::LABELS_APPLICATION_REPUTATION_BINARY_TYPE::
-            MissingFilename);
+    mozilla::glean::application_reputation::binary_type
+        .EnumGet(mozilla::glean::application_reputation::BinaryTypeLabel::
+                     eMissingfilename)
+        .Add();
   }
 
   if (IsFileType(mFileName, kDmgFileExtensions,
-                 ArrayLength(kDmgFileExtensions))) {
-    AccumulateCategorical(
-        mozilla::Telemetry::LABELS_APPLICATION_REPUTATION_BINARY_ARCHIVE::
-            DmgFile);
+                 std::size(kDmgFileExtensions))) {
+    mozilla::glean::application_reputation::binary_archive
+        .EnumGet(mozilla::glean::application_reputation::BinaryArchiveLabel::
+                     eDmgfile)
+        .Add();
   } else if (IsFileType(mFileName, kRarFileExtensions,
-                        ArrayLength(kRarFileExtensions))) {
-    AccumulateCategorical(
-        mozilla::Telemetry::LABELS_APPLICATION_REPUTATION_BINARY_ARCHIVE::
-            RarFile);
+                        std::size(kRarFileExtensions))) {
+    mozilla::glean::application_reputation::binary_archive
+        .EnumGet(mozilla::glean::application_reputation::BinaryArchiveLabel::
+                     eRarfile)
+        .Add();
   } else if (IsFileType(mFileName, kZipFileExtensions,
-                        ArrayLength(kZipFileExtensions))) {
-    AccumulateCategorical(
-        mozilla::Telemetry::LABELS_APPLICATION_REPUTATION_BINARY_ARCHIVE::
-            ZipFile);
+                        std::size(kZipFileExtensions))) {
+    mozilla::glean::application_reputation::binary_archive
+        .EnumGet(mozilla::glean::application_reputation::BinaryArchiveLabel::
+                     eZipfile)
+        .Add();
   } else if (mIsBinaryFile) {
-    AccumulateCategorical(
-        mozilla::Telemetry::LABELS_APPLICATION_REPUTATION_BINARY_ARCHIVE::
-            OtherBinaryFile);
+    mozilla::glean::application_reputation::binary_archive
+        .EnumGet(mozilla::glean::application_reputation::BinaryArchiveLabel::
+                     eOtherbinaryfile)
+        .Add();
   }
 
   // There are no more URIs to check against local list. If the file is
@@ -1106,13 +1116,13 @@ nsresult PendingLookup::LookupNext() {
   if (!mIsBinaryFile) {
     LOG(("Not eligible for remote lookups [this=%p]", this));
     return OnComplete(nsIApplicationReputationService::VERDICT_SAFE,
-                      Reason::NonBinaryFile, NS_OK);
+                      Reason::eNonbinaryfile, NS_OK);
   }
 
   nsresult rv = SendRemoteQuery();
   if (NS_FAILED(rv)) {
     return OnComplete(nsIApplicationReputationService::VERDICT_SAFE,
-                      Reason::InternalError, rv);
+                      Reason::eInternalerror, rv);
   }
   return NS_OK;
 }
@@ -1294,7 +1304,7 @@ nsresult PendingLookup::StartLookup() {
   nsresult rv = DoLookupInternal();
   if (NS_FAILED(rv)) {
     return OnComplete(nsIApplicationReputationService::VERDICT_SAFE,
-                      Reason::InternalError, NS_OK);
+                      Reason::eInternalerror, NS_OK);
   }
   return rv;
 }
@@ -1414,7 +1424,7 @@ nsresult PendingLookup::DoLookupInternal() {
   resource->set_type(ClientDownloadRequest::DOWNLOAD_URL);
 
   nsCOMPtr<nsIReferrerInfo> referrerInfo;
-  mozilla::Unused << mQuery->GetReferrerInfo(getter_AddRefs(referrerInfo));
+  (void)mQuery->GetReferrerInfo(getter_AddRefs(referrerInfo));
   nsCOMPtr<nsIURI> referrer;
   // It is quite possible that referrer header is omitted due to security reason
   // (for example navigation from https-> http). Hence we should use the
@@ -1493,25 +1503,25 @@ nsresult PendingLookup::OnComplete(uint32_t aVerdict, Reason aReason,
     case nsIApplicationReputationService::VERDICT_DANGEROUS:
       if (!Preferences::GetBool(PREF_BLOCK_DANGEROUS, true)) {
         shouldBlock = false;
-        aReason = Reason::DangerousPrefOff;
+        aReason = Reason::eDangerousprefoff;
       }
       break;
     case nsIApplicationReputationService::VERDICT_UNCOMMON:
       if (!Preferences::GetBool(PREF_BLOCK_UNCOMMON, true)) {
         shouldBlock = false;
-        aReason = Reason::UncommonPrefOff;
+        aReason = Reason::eUncommonprefoff;
       }
       break;
     case nsIApplicationReputationService::VERDICT_POTENTIALLY_UNWANTED:
       if (!Preferences::GetBool(PREF_BLOCK_POTENTIALLY_UNWANTED, true)) {
         shouldBlock = false;
-        aReason = Reason::UnwantedPrefOff;
+        aReason = Reason::eUnwantedprefoff;
       }
       break;
     case nsIApplicationReputationService::VERDICT_DANGEROUS_HOST:
       if (!Preferences::GetBool(PREF_BLOCK_DANGEROUS_HOST, true)) {
         shouldBlock = false;
-        aReason = Reason::DangerousHostPrefOff;
+        aReason = Reason::eDangeroushostprefoff;
       }
       break;
     default:
@@ -1519,9 +1529,12 @@ nsresult PendingLookup::OnComplete(uint32_t aVerdict, Reason aReason,
       break;
   }
 
-  AccumulateCategorical(aReason);
-  Accumulate(mozilla::Telemetry::APPLICATION_REPUTATION_SHOULD_BLOCK,
-             shouldBlock);
+  mozilla::glean::application_reputation::reason.EnumGet(aReason).Add();
+  mozilla::glean::application_reputation::should_block
+      .EnumGet(
+          static_cast<mozilla::glean::application_reputation::ShouldBlockLabel>(
+              shouldBlock))
+      .Add();
 
   double t = (TimeStamp::Now() - mStartTime).ToMilliseconds();
   LOG(("Application Reputation verdict is %u, obtained in %f ms [this = %p]",
@@ -1561,8 +1574,8 @@ nsresult PendingLookup::ParseCertificates(
 nsresult PendingLookup::SendRemoteQuery() {
   MOZ_ASSERT(!IsFileType(
       mFileName, ApplicationReputationService::kNonBinaryExecutables,
-      ArrayLength(ApplicationReputationService::kNonBinaryExecutables)));
-  Reason reason = Reason::NotSet;
+      std::size(ApplicationReputationService::kNonBinaryExecutables)));
+  Reason reason = Reason::eNotset;
   nsresult rv = SendRemoteQueryInternal(reason);
   if (NS_FAILED(rv)) {
     return OnComplete(nsIApplicationReputationService::VERDICT_SAFE, reason,
@@ -1575,15 +1588,15 @@ nsresult PendingLookup::SendRemoteQuery() {
 
 nsresult PendingLookup::SendRemoteQueryInternal(Reason& aReason) {
   auto scopeExit = mozilla::MakeScopeExit([&aReason]() {
-    if (aReason == Reason::NotSet) {
-      aReason = Reason::InternalError;
+    if (aReason == Reason::eNotset) {
+      aReason = Reason::eInternalerror;
     }
   });
 
   // If we aren't supposed to do remote lookups, bail.
   if (!Preferences::GetBool(PREF_SB_DOWNLOADS_REMOTE_ENABLED, false)) {
     LOG(("Remote lookups are disabled [this = %p]", this));
-    aReason = Reason::RemoteLookupDisabled;
+    aReason = Reason::eRemotelookupdisabled;
     return NS_ERROR_NOT_AVAILABLE;
   }
   // If the remote lookup URL is empty or absent, bail.
@@ -1595,7 +1608,7 @@ nsresult PendingLookup::SendRemoteQueryInternal(Reason& aReason) {
           NS_ConvertASCIItoUTF16(PREF_SB_APP_REP_URL), serviceUrl)) ||
       serviceUrl.IsEmpty() || u"about:blank"_ns.Equals(serviceUrl)) {
     LOG(("Remote lookup URL is empty or absent [this = %p]", this));
-    aReason = Reason::RemoteLookupDisabled;
+    aReason = Reason::eRemotelookupdisabled;
     return NS_ERROR_NOT_AVAILABLE;
   }
 
@@ -1664,7 +1677,7 @@ nsresult PendingLookup::SendRemoteQueryInternal(Reason& aReason) {
       do_CreateInstance("@mozilla.org/io/string-input-stream;1", &rv);
   NS_ENSURE_SUCCESS(rv, rv);
 
-  rv = sstream->SetData(serialized.c_str(), serialized.length());
+  rv = sstream->CopyData(serialized.c_str(), serialized.length());
   NS_ENSURE_SUCCESS(rv, rv);
 
   // Set up the channel to transmit the request to the service.
@@ -1686,7 +1699,7 @@ nsresult PendingLookup::SendRemoteQueryInternal(Reason& aReason) {
 
   nsCOMPtr<nsIHttpChannel> httpChannel(do_QueryInterface(mChannel, &rv));
   NS_ENSURE_SUCCESS(rv, rv);
-  mozilla::Unused << httpChannel;
+  (void)httpChannel;
 
   // Upload the protobuf to the application reputation service.
   nsCOMPtr<nsIUploadChannel2> uploadChannel = do_QueryInterface(mChannel, &rv);
@@ -1714,8 +1727,10 @@ NS_IMETHODIMP
 PendingLookup::Notify(nsITimer* aTimer) {
   LOG(("Remote lookup timed out [this = %p]", this));
   MOZ_ASSERT(aTimer == mTimeoutTimer);
-  Accumulate(mozilla::Telemetry::APPLICATION_REPUTATION_REMOTE_LOOKUP_TIMEOUT,
-             true);
+  mozilla::glean::application_reputation::remote_lookup_timeout
+      .EnumGet(mozilla::glean::application_reputation::
+                   RemoteLookupTimeoutLabel::eTrue)
+      .Add();
   mChannel->Cancel(NS_ERROR_NET_TIMEOUT_EXTERNAL);
   mTimeoutTimer->Cancel();
   return NS_OK;
@@ -1771,21 +1786,22 @@ PendingLookup::OnStopRequest(nsIRequest* aRequest, nsresult aResult) {
   NS_ENSURE_STATE(mCallback);
 
   if (aResult != NS_ERROR_NET_TIMEOUT_EXTERNAL) {
-    Accumulate(mozilla::Telemetry::APPLICATION_REPUTATION_REMOTE_LOOKUP_TIMEOUT,
-               false);
+    mozilla::glean::application_reputation::remote_lookup_timeout
+        .EnumGet(mozilla::glean::application_reputation::
+                     RemoteLookupTimeoutLabel::eFalse)
+        .Add();
 
     MOZ_ASSERT(mTelemetryRemoteRequestStartMs > 0);
     int32_t msecs = PR_IntervalToMilliseconds(PR_IntervalNow() -
                                               mTelemetryRemoteRequestStartMs);
 
     MOZ_ASSERT(msecs >= 0);
-    mozilla::Telemetry::Accumulate(
-        mozilla::Telemetry::APPLICATION_REPUTATION_REMOTE_LOOKUP_RESPONSE_TIME,
-        msecs);
+    mozilla::glean::application_reputation::remote_lookup_response_time
+        .AccumulateRawDuration(mozilla::TimeDuration::FromMilliseconds(msecs));
   }
 
   uint32_t verdict = nsIApplicationReputationService::VERDICT_SAFE;
-  Reason reason = Reason::NotSet;
+  Reason reason = Reason::eNotset;
   nsresult rv = OnStopRequestInternal(aRequest, aResult, verdict, reason);
   OnComplete(verdict, reason, rv);
   return rv;
@@ -1797,44 +1813,50 @@ nsresult PendingLookup::OnStopRequestInternal(nsIRequest* aRequest,
                                               Reason& aReason) {
   auto scopeExit = mozilla::MakeScopeExit([&aReason]() {
     // If |aReason| is not set while exiting, there must be an error.
-    if (aReason == Reason::NotSet) {
-      aReason = Reason::NetworkError;
+    if (aReason == Reason::eNotset) {
+      aReason = Reason::eNetworkerror;
     }
   });
 
   if (NS_FAILED(aResult)) {
-    Accumulate(mozilla::Telemetry::APPLICATION_REPUTATION_SERVER,
-               SERVER_RESPONSE_FAILED);
-    AccumulateCategorical(NSErrorToLabel(aResult));
+    mozilla::glean::application_reputation::server.AccumulateSingleSample(
+        SERVER_RESPONSE_FAILED);
+    mozilla::glean::application_reputation::server_2
+        .EnumGet(NSErrorToLabel(aResult))
+        .Add();
     return aResult;
   }
 
   nsresult rv;
   nsCOMPtr<nsIHttpChannel> channel = do_QueryInterface(aRequest, &rv);
   if (NS_FAILED(rv)) {
-    Accumulate(mozilla::Telemetry::APPLICATION_REPUTATION_SERVER,
-               SERVER_RESPONSE_FAILED);
-    AccumulateCategorical(
-        mozilla::Telemetry::LABELS_APPLICATION_REPUTATION_SERVER_2::
-            FailGetChannel);
+    mozilla::glean::application_reputation::server.AccumulateSingleSample(
+        SERVER_RESPONSE_FAILED);
+    mozilla::glean::application_reputation::server_2
+        .EnumGet(mozilla::glean::application_reputation::Server2Label::
+                     eFailgetchannel)
+        .Add();
     return rv;
   }
 
   uint32_t status = 0;
   rv = channel->GetResponseStatus(&status);
   if (NS_FAILED(rv)) {
-    Accumulate(mozilla::Telemetry::APPLICATION_REPUTATION_SERVER,
-               SERVER_RESPONSE_FAILED);
-    AccumulateCategorical(
-        mozilla::Telemetry::LABELS_APPLICATION_REPUTATION_SERVER_2::
-            FailGetResponse);
+    mozilla::glean::application_reputation::server.AccumulateSingleSample(
+        SERVER_RESPONSE_FAILED);
+    mozilla::glean::application_reputation::server_2
+        .EnumGet(mozilla::glean::application_reputation::Server2Label::
+                     eFailgetresponse)
+        .Add();
     return rv;
   }
 
   if (status != 200) {
-    Accumulate(mozilla::Telemetry::APPLICATION_REPUTATION_SERVER,
-               SERVER_RESPONSE_FAILED);
-    AccumulateCategorical(HTTPStatusToLabel(status));
+    mozilla::glean::application_reputation::server.AccumulateSingleSample(
+        SERVER_RESPONSE_FAILED);
+    mozilla::glean::application_reputation::server_2
+        .EnumGet(HTTPStatusToLabel(status))
+        .Add();
     return NS_ERROR_NOT_AVAILABLE;
   }
 
@@ -1843,52 +1865,54 @@ nsresult PendingLookup::OnStopRequestInternal(nsIRequest* aRequest,
   if (!response.ParseFromString(buf)) {
     LOG(("Invalid protocol buffer response [this = %p]: %s", this,
          buf.c_str()));
-    Accumulate(mozilla::Telemetry::APPLICATION_REPUTATION_SERVER,
-               SERVER_RESPONSE_INVALID);
+    mozilla::glean::application_reputation::server.AccumulateSingleSample(
+        SERVER_RESPONSE_INVALID);
     return NS_ERROR_CANNOT_CONVERT_DATA;
   }
 
-  Accumulate(mozilla::Telemetry::APPLICATION_REPUTATION_SERVER,
-             SERVER_RESPONSE_VALID);
-  AccumulateCategorical(
-      mozilla::Telemetry::LABELS_APPLICATION_REPUTATION_SERVER_2::
-          ResponseValid);
+  mozilla::glean::application_reputation::server.AccumulateSingleSample(
+      SERVER_RESPONSE_VALID);
+  mozilla::glean::application_reputation::server_2
+      .EnumGet(
+          mozilla::glean::application_reputation::Server2Label::eResponsevalid)
+      .Add();
 
   // Clamp responses 0-7, we only know about 0-4 for now.
-  Accumulate(mozilla::Telemetry::APPLICATION_REPUTATION_SERVER_VERDICT,
-             std::min<uint32_t>(response.verdict(), 7));
+  mozilla::glean::application_reputation::server_verdict.AccumulateSingleSample(
+      std::min<uint32_t>(response.verdict(), 7));
   const char* ext = GetFileExt(mFileName);
-  AccumulateCategoricalKeyed(nsCString(ext), VerdictToLabel(std::min<uint32_t>(
-                                                 response.verdict(), 7)));
+  mozilla::glean::application_reputation::server_verdict_2.Get(
+      nsCString(ext),
+      VerdictToLabel(std::min<uint32_t>(response.verdict(), 7)));
   switch (response.verdict()) {
     case safe_browsing::ClientDownloadResponse::DANGEROUS:
       aVerdict = nsIApplicationReputationService::VERDICT_DANGEROUS;
-      aReason = Reason::VerdictDangerous;
+      aReason = Reason::eVerdictdangerous;
       break;
     case safe_browsing::ClientDownloadResponse::DANGEROUS_HOST:
       aVerdict = nsIApplicationReputationService::VERDICT_DANGEROUS_HOST;
-      aReason = Reason::VerdictDangerousHost;
+      aReason = Reason::eVerdictdangeroushost;
       break;
     case safe_browsing::ClientDownloadResponse::POTENTIALLY_UNWANTED:
       aVerdict = nsIApplicationReputationService::VERDICT_POTENTIALLY_UNWANTED;
-      aReason = Reason::VerdictUnwanted;
+      aReason = Reason::eVerdictunwanted;
       break;
     case safe_browsing::ClientDownloadResponse::UNCOMMON:
       aVerdict = nsIApplicationReputationService::VERDICT_UNCOMMON;
-      aReason = Reason::VerdictUncommon;
+      aReason = Reason::eVerdictuncommon;
       break;
     case safe_browsing::ClientDownloadResponse::UNKNOWN:
       aVerdict = nsIApplicationReputationService::VERDICT_SAFE;
-      aReason = Reason::VerdictUnknown;
+      aReason = Reason::eVerdictunknown;
       break;
     case safe_browsing::ClientDownloadResponse::SAFE:
       aVerdict = nsIApplicationReputationService::VERDICT_SAFE;
-      aReason = Reason::VerdictSafe;
+      aReason = Reason::eVerdictsafe;
       break;
     default:
       // Treat everything else as safe
       aVerdict = nsIApplicationReputationService::VERDICT_SAFE;
-      aReason = Reason::VerdictUnrecognized;
+      aReason = Reason::eVerdictunrecognized;
       break;
   }
 
@@ -1929,11 +1953,14 @@ ApplicationReputationService::QueryReputation(
 
   nsresult rv = QueryReputationInternal(aQuery, aCallback);
   if (NS_FAILED(rv)) {
-    Reason reason = rv == NS_ERROR_NOT_AVAILABLE ? Reason::DPDisabled
-                                                 : Reason::InternalError;
+    Reason reason = rv == NS_ERROR_NOT_AVAILABLE ? Reason::eDpdisabled
+                                                 : Reason::eInternalerror;
 
-    AccumulateCategorical(reason);
-    Accumulate(mozilla::Telemetry::APPLICATION_REPUTATION_SHOULD_BLOCK, false);
+    mozilla::glean::application_reputation::reason.EnumGet(reason).Add();
+    mozilla::glean::application_reputation::should_block
+        .EnumGet(
+            mozilla::glean::application_reputation::ShouldBlockLabel::eFalse)
+        .Add();
 
     aCallback->OnComplete(false, rv,
                           nsIApplicationReputationService::VERDICT_SAFE);
@@ -1982,6 +2009,6 @@ nsresult ApplicationReputationService::IsBinary(const nsACString& aFileName,
 nsresult ApplicationReputationService::IsExecutable(const nsACString& aFileName,
                                                     bool* aExecutable) {
   *aExecutable =
-      ::IsFileType(aFileName, sExecutableExts, ArrayLength(sExecutableExts));
+      ::IsFileType(aFileName, sExecutableExts, std::size(sExecutableExts));
   return NS_OK;
 }

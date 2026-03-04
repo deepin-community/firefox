@@ -13,11 +13,7 @@ add_task(async function testBrowserActionClickCanceled() {
   );
 
   // Make sure the mouse isn't hovering over the browserAction widget.
-  EventUtils.synthesizeMouseAtCenter(
-    gURLBar.textbox,
-    { type: "mousemove" },
-    window
-  );
+  EventUtils.synthesizeMouseAtCenter(gURLBar, { type: "mousemove" }, window);
 
   let extension = ExtensionTestUtils.loadExtension({
     manifest: {
@@ -172,11 +168,7 @@ add_task(async function testBrowserActionClickCanceled() {
 
 add_task(async function testBrowserActionDisabled() {
   // Make sure the mouse isn't hovering over the browserAction widget.
-  EventUtils.synthesizeMouseAtCenter(
-    gURLBar.textbox,
-    { type: "mousemove" },
-    window
-  );
+  EventUtils.synthesizeMouseAtCenter(gURLBar, { type: "mousemove" }, window);
 
   let extension = ExtensionTestUtils.loadExtension({
     manifest: {
@@ -215,7 +207,9 @@ add_task(async function testBrowserActionDisabled() {
   let browserAction = browserActionFor(ext);
 
   let widget = getBrowserActionWidget(extension).forWindow(window);
-  let button = widget.node.firstElementChild;
+  let button = widget.node.querySelector(
+    ".unified-extensions-item-action-button"
+  );
 
   is(button.getAttribute("disabled"), "true", "Button is disabled");
   is(browserAction.pendingPopup, null, "Have no pending popup prior to click");
@@ -350,11 +344,7 @@ add_task(async function testBrowserActionTabPopulation() {
   await BrowserTestUtils.browserLoaded(win.gBrowser.selectedBrowser);
 
   // Make sure the mouse isn't hovering over the browserAction widget.
-  EventUtils.synthesizeMouseAtCenter(
-    win.gURLBar.textbox,
-    { type: "mousemove" },
-    win
-  );
+  EventUtils.synthesizeMouseAtCenter(win.gURLBar, { type: "mousemove" }, win);
 
   await extension.startup();
 
@@ -400,11 +390,7 @@ add_task(async function testClosePopupDuringPreload() {
   });
 
   // Make sure the mouse isn't hovering over the browserAction widget.
-  EventUtils.synthesizeMouseAtCenter(
-    gURLBar.textbox,
-    { type: "mousemove" },
-    window
-  );
+  EventUtils.synthesizeMouseAtCenter(gURLBar, { type: "mousemove" }, window);
 
   await extension.startup();
 

@@ -36,6 +36,7 @@ certificate-viewer-key-size = Key Size
 certificate-viewer-inc-locality = Inc. Locality
 certificate-viewer-locality = Locality
 certificate-viewer-location = Airtin
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = Log ID
 certificate-viewer-method = Method
 certificate-viewer-modulus = Modulus
@@ -81,7 +82,6 @@ certificate-viewer-authority-info-aia = Authority Info (AIA)
 certificate-viewer-certificate-policies = Certificate Policies
 certificate-viewer-embedded-scts = Embeddit SCTs
 certificate-viewer-crl-endpoints = CRL Endpynts
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Doonload
@@ -101,7 +101,6 @@ certificate-viewer-download-pem = PEM (cert)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (chain)
     .download = { $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = This extension has been merkt as creetical, meanin that clients maun rejeck the certificate gin they dinnae unnerstaun it.

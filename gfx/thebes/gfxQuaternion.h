@@ -6,9 +6,9 @@
 #ifndef GFX_QUATERNION_H
 #define GFX_QUATERNION_H
 
+#include "gfxTypes.h"
 #include "mozilla/gfx/BasePoint4D.h"
 #include "mozilla/gfx/Matrix.h"
-#include "nsAlgorithm.h"
 #include <algorithm>
 
 struct gfxQuaternion
@@ -35,7 +35,7 @@ struct gfxQuaternion
   }
 
   gfxQuaternion Slerp(const gfxQuaternion& aOther, gfxFloat aCoeff) const {
-    gfxFloat dot = mozilla::clamped(DotProduct(aOther), -1.0, 1.0);
+    gfxFloat dot = std::clamp(DotProduct(aOther), -1.0, 1.0);
     if (dot == 1.0) {
       return *this;
     }

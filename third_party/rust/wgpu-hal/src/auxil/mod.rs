@@ -6,21 +6,27 @@ pub(super) mod renderdoc;
 
 pub mod db {
     pub mod amd {
+        /// cbindgen:ignore
         pub const VENDOR: u32 = 0x1002;
     }
     pub mod apple {
+        /// cbindgen:ignore
         pub const VENDOR: u32 = 0x106B;
     }
     pub mod arm {
+        /// cbindgen:ignore
         pub const VENDOR: u32 = 0x13B5;
     }
     pub mod broadcom {
+        /// cbindgen:ignore
         pub const VENDOR: u32 = 0x14E4;
     }
     pub mod imgtec {
+        /// cbindgen:ignore
         pub const VENDOR: u32 = 0x1010;
     }
     pub mod intel {
+        /// cbindgen:ignore
         pub const VENDOR: u32 = 0x8086;
         pub const DEVICE_KABY_LAKE_MASK: u32 = 0x5900;
         pub const DEVICE_SKY_LAKE_MASK: u32 = 0x1900;
@@ -30,12 +36,15 @@ pub mod db {
         //
         // To match Vulkan, we use the VkVendorId for Mesa in the gles backend so that lavapipe (Vulkan) and
         // llvmpipe (OpenGL) have the same vendor id.
+        /// cbindgen:ignore
         pub const VENDOR: u32 = 0x10005;
     }
     pub mod nvidia {
+        /// cbindgen:ignore
         pub const VENDOR: u32 = 0x10DE;
     }
     pub mod qualcomm {
+        /// cbindgen:ignore
         pub const VENDOR: u32 = 0x5143;
     }
 }
@@ -44,13 +53,15 @@ pub mod db {
 /// Interestingly, the index itself can't reach that high, because the minimum
 /// element size is 4 bytes, but the compiler toolchain still computes the
 /// offset at some intermediate point, internally, as i32.
-pub const MAX_I32_BINDING_SIZE: u32 = 1 << 31;
+pub const MAX_I32_BINDING_SIZE: u32 = (1 << 31) - 1;
 
 pub fn map_naga_stage(stage: naga::ShaderStage) -> wgt::ShaderStages {
     match stage {
         naga::ShaderStage::Vertex => wgt::ShaderStages::VERTEX,
         naga::ShaderStage::Fragment => wgt::ShaderStages::FRAGMENT,
         naga::ShaderStage::Compute => wgt::ShaderStages::COMPUTE,
+        naga::ShaderStage::Task => wgt::ShaderStages::TASK,
+        naga::ShaderStage::Mesh => wgt::ShaderStages::MESH,
     }
 }
 
@@ -114,4 +125,22 @@ impl crate::TextureCopy {
         let max_dst_size = self.dst_base.max_copy_size(full_dst_size);
         self.size = self.size.min(&max_src_size).min(&max_dst_size);
     }
+}
+
+/// Clamp the limits in `limits` to honor any HAL-imposed maximums.
+///
+/// Limits that do not have a HAL-defined maximum are left unchanged.
+#[cfg_attr(not(any_backend), allow(dead_code))]
+pub(crate) fn apply_hal_limits(mut limits: wgt::Limits) -> wgt::Limits {
+    // The Metal backend wants to have its own consistent view of the limits, so
+    // it may duplicate some of these limits.
+    limits.max_bind_groups = limits.max_bind_groups.min(crate::MAX_BIND_GROUPS as u32);
+    limits.max_storage_buffer_binding_size &= !(wgt::STORAGE_BINDING_SIZE_ALIGNMENT - 1);
+    limits.max_vertex_buffers = limits
+        .max_vertex_buffers
+        .min(crate::MAX_VERTEX_BUFFERS as u32);
+    limits.max_color_attachments = limits
+        .max_color_attachments
+        .min(crate::MAX_COLOR_ATTACHMENTS as u32);
+    limits
 }

@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = Nový panel
     .accesskey = o
@@ -28,11 +32,17 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Zavřít panely vlevo
     .accesskey = l
+close-tabs-to-the-start-vertical =
+    .label = Zavřít panel výše
+    .accesskey = v
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Zavřít panely vpravo
     .accesskey = r
+close-tabs-to-the-end-vertical =
+    .label = Zavřít panely níže
+    .accesskey = n
 close-other-tabs =
     .label = Zavřít ostatní panely
     .accesskey = o
@@ -69,6 +79,10 @@ move-to-end =
 move-to-new-window =
     .label = Přesunout do nového okna
     .accesskey = k
+# Variables
+#  $profileName (string): The name of the profile to move tab to
+move-to-new-profile =
+    .label = Přesunout do profilu { $profileName }
 tab-context-close-multiple-tabs =
     .label = Zavřít několik panelů
     .accesskey = k
@@ -78,6 +92,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Sdílet
     .accesskey = S
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Nový panel vpravo
+    .accesskey = p
+tab-context-new-tab-open-vertical =
+    .label = Nový panel níže
+    .accesskey = p
+tab-context-new-group =
+    .label = Nová skupina
+    .accesskey = N
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -102,12 +126,23 @@ tab-context-close-n-tabs =
     .accesskey = Z
 tab-context-move-tabs =
     .label =
-        Přesunout { $tabCount ->
-            [one] panel
-            [few] { $tabCount } panely
-           *[other] { $tabCount } panelů
+        { $tabCount ->
+            [one] Přesunout panel
+            [few] Přesunout { $tabCount } panely
+           *[other] Přesunout { $tabCount } panelů
         }
     .accesskey = s
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-device =
+    .label =
+        { $tabCount ->
+            [1] Poslat do zařízení
+            [one] Poslat do zařízení
+            [few] Poslat { $tabCount } panely do zařízení
+            [many] Poslat { $tabCount } panelů do zařízení
+           *[other] Poslat { $tabCount } panelů do zařízení
+        }
+    .accesskey = n
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->
@@ -116,3 +151,13 @@ tab-context-send-tabs-to-device =
            *[other] Poslat { $tabCount } panelů do zařízení
         }
     .accesskey = n
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [1] Uvolnit panel z paměti
+            [one] Uvolnit { $tabCount } panel z paměti
+            [few] Uvolnit { $tabCount } panely z paměti
+            [many] Uvolnit { $tabCount } panelů z paměti
+           *[other] Uvolnit { $tabCount } panelů z paměti
+        }
+    .accesskey = U

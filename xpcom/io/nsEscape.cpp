@@ -6,8 +6,6 @@
 
 #include "nsEscape.h"
 
-#include "mozilla/ArrayUtils.h"
-#include "mozilla/BinarySearch.h"
 #include "mozilla/CheckedInt.h"
 #include "mozilla/TextUtils.h"
 #include "nsTArray.h"
@@ -387,7 +385,7 @@ static nsresult T_EscapeURL(const typename T::char_type* aPart, size_t aPartLen,
     }
 
     // Flush the temp buffer if it doesnt't have room for another encoded char.
-    if (tempBufferPos >= mozilla::ArrayLength(tempBuffer) - ENCODE_MAX_LEN) {
+    if (tempBufferPos >= std::size(tempBuffer) - ENCODE_MAX_LEN) {
       NS_ASSERTION(writing, "should be writing");
       if (!aResult.Append(tempBuffer, tempBufferPos, mozilla::fallible)) {
         return NS_ERROR_OUT_OF_MEMORY;

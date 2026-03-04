@@ -21,6 +21,7 @@ policy-AutofillAddressEnabled = Фаъол кардани пуркунии ху�
 policy-AutofillCreditCardEnabled = Фаъол кардани пуркунии худкор барои тарзҳои пардохт.
 policy-AutoLaunchProtocolsFromOrigins = Рӯйхати протоколҳои беруниеро муайян мекунад, ки метавонад аз манбаъҳои протоколҳои муайяншуда бе ҷалби корбар истифода барад.
 policy-BackgroundAppUpdate2 = Хизмати навсозии заминаиро фаъол ё ғайрифаъол мекунад.
+policy-Backup = Ғайрифаъол кардани нусхаи эҳтиётӣ ё барқарор кардани маълумоти профил.
 policy-BlockAboutAddons = Дастрасиро ба мудири ҷузъҳои иловагӣ манъ мекунад (about:addons).
 policy-BlockAboutConfig = Дастрасиро ба саҳифаи «about:config» манъ мекунад.
 policy-BlockAboutProfiles = Дастрасиро ба саҳифаи «about:profiles» манъ мекунад.
@@ -52,7 +53,7 @@ policy-DisableFormHistory = Нигоҳдории таърихи ҷустуҷӯ �
 policy-DisablePrimaryPasswordCreation = Агар «true» бошад, ниҳонвожаи асосӣ эҷод карда намешавад.
 policy-DisablePasswordReveal = Имкон намедиҳад, ки ниҳонвожаҳо дар воридшавиҳои нигоҳдошташуда намоиш дода шаванд.
 policy-DisablePocket2 = Хусусиятро барои нигоҳ доштани саҳифаҳои сомона ба «{ -pocket-brand-name }» ғайрифаъол мекунад.
-policy-DisablePrivateBrowsing = Тамошокунии хусусиро ғайрифаъол мекунад.
+policy-DisablePrivateBrowsing = Тамошобинии хусусиро ғайрифаъол мекунад.
 policy-DisableProfileImport = Фармони менюро барои ворид кардани маълумот аз браузери дигар ғайрифаъол мекунад.
 policy-DisableProfileRefresh = Тугмаи «Аз нав сохтани { -brand-short-name }»-ро дар саҳифаи «about:support» ғайрифаъол мекунад.
 policy-DisableSafeMode = Барои аз нав оғоз кардани браузер дар «Реҷаи бехатар», ин хусусиятро ғайрифаъол мекунад. Тавзеҳ: тугмаи «Shift», ки барои воридшавӣ ба «Реҷаи бехатар» истифода мешавад, метавонад танҳо ба воситаи «Сиёсати гурӯҳ» дар низоми «Windows» ғайрифаъол карда шавад.
@@ -79,6 +80,7 @@ policy-ExtensionSettings = Ҳамаи тарафҳои насбкунии вас
 policy-ExtensionUpdate = Навсозиҳои худкори васеъшавиро фаъол ё ғайрифаъол мекунад.
 policy-FirefoxHome2 = «{ -firefox-home-brand-name }»-ро танзим мекунад.
 policy-FirefoxSuggest = Танзимоти «{ -firefox-suggest-brand-name }».
+policy-GenerativeAI = Хусусиятҳои зеҳни сунъии (AI) эҷодкориро танзим мекунад.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Гузариши маҷбурии мустақим ба сомонаи шабакаи дохилӣ ба ивази амали ҷустуҷӯ ҳангоми воридкунии калимаҳои алоҳида дар навори нишонӣ.
 policy-Handlers = Коркарди пешфарзи барномаро танзим мекунад.
 policy-HardwareAcceleration = Дар ҳолати «false» суръатафзои сахтафзор хомӯш карда мешавад.
@@ -97,6 +99,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Барқарор ка�
 ##
 
 policy-LocalFileLinks = Ба сомонаҳои махсус барои додани пайванд ба файлҳои маҳаллӣ иҷозат медиҳад.
+policy-LocalNetworkAccess = Санҷишҳоро оид ба дастрасии шабакаи маҳаллӣ фаъол ё ғайрифаъол мекунад.
 policy-ManagedBookmarks = Рӯйхати хатбаракҳоеро танзим мекунад, ки аз ҷониби маъмур идора карда мешавад, аммо аз тарафи корбар иваз карда намешавад.
 policy-ManualAppUpdateOnly = Иҷозат додан танҳо ба навсозиҳои дастӣ ва огоҳ накардани корбар дар бораи навсозиҳо.
 policy-PrimaryPassword = Талаб кардан ё манъ кардани истифодаи ниҳонвожаи асосӣ.
@@ -117,8 +120,10 @@ policy-PostQuantumKeyAgreementEnabled = Фаъол кардани мутобиқ
 policy-PDFjs = «PDF.js», намоишгари «PDF»-и дарунсохтро дар «{ -brand-short-name }» ғайрифаъол мекунад ё онро танзим менамояд.
 policy-Permissions2 = Иҷозатҳоро барои камера, микрофон, ҷойгиршавӣ, огоҳиҳо ва пахши худкор танзим мекунад.
 policy-PictureInPicture = Реҷаи «Расм-дар-расм»-ро фаъол ё хомӯш мекунад.
+policy-PopupBlocking2 = Ба сомонаҳои муайян иҷозат диҳед, ки дар онҳо равзанаҳои зоҳиршаванда нишон дода шаванд ва аз чорчӯбаҳои тарафи сеюм равона карда шаванд.
 policy-PopupBlocking = Ба баъзе сомонаҳо иҷозат медиҳад, то онҳо тавонанд равзанаҳои пайдошавандаро ба таври пешфарз намош диҳанд.
 policy-Preferences = Қиматро барои зермаҷмуи хусусиятҳо танзим ва бетағйир мекунад.
+policy-PrivateBrowsingModeAvailability = Танзимоти қобилияти дастрасии реҷаи «Тамошобинии хусусӣ».
 policy-PromptForDownloadLocation = Ҳангоми боргирӣ аз шумо мепурсад, ки файлҳоро ба куҷо нигоҳ медоред.
 policy-Proxy = Хусусиятҳои проксиро танзим мекунад.
 policy-RequestedLocales = Рӯйхати забонҳои дархостшударо барои барнома бо тартиби бартарӣ танзим мекунад.
@@ -129,6 +134,8 @@ policy-SearchSuggestEnabled = Пешниҳодҳои ҷустуҷӯро фаъо
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = Модулҳои «PKCS #11»-ро илова ё нест мекунад.
 policy-ShowHomeButton = Намоиш додани тугмаи «Асосӣ» дар навори абзорҳо.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = «Шартҳои истифода» ва «Огоҳномаи махфият» бояд ҳангоми оғоз шудани браузер намоиш дода нашаванд. Бо ин амал шумо тасдиқ менамоед, ки «Шартҳои истифода»-ро пурра қабул карда, салоҳият доред, ки онҳоро аз номи ҳамаи шахсоне, ки ба ин браузер дастрасӣ доранд, низ қабул намоед.
 policy-SSLVersionMax = Версия ҳадди аксари «SSL»-ро танзим мекунад.
 policy-SSLVersionMin = Версия ҳадди ақали «SSL»-ро танзим мекунад.
 policy-StartDownloadsInTempDirectory = Боргириҳоро маҷбур мекунад, то ки онҳо дар ҷойгиршавии муваққатии маҳаллӣ ба ивази феҳристи пешфарз оғоз карда шаванд.
@@ -136,6 +143,9 @@ policy-SupportMenu = Унсури фармоишии менюи дастгири
 policy-TranslateEnabled = Фаъол ё ғайрифаъол кардани тарҷумаи саҳифаи сомона.
 policy-UserMessaging = Имкон медиҳад, ки баъзе паёмҳо ба корбар нишон дода нашаванд.
 policy-UseSystemPrintDialog = Барои чоп аз равзанаи гуфтугӯи низомии чоп истифода мебарад.
+policy-VisualSearchEnabled = Ҷустуҷӯи дидориро фаъол ё ғайрифаъол мекунад.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Сомонаҳоро аз имкони тамошо манъ мекунад. Барои маълумоти муфассал оид ба формат ба ҳуҷҷатҳо нигаред.
 policy-Windows10SSO = Иҷозат додани воридшавии ягонаи Windows барои ҳисобҳои Microsoft, корӣ ва мактабӣ.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Иҷозат додани воридшавии ягона ба ҳисобҳои «Microsoft Entra».

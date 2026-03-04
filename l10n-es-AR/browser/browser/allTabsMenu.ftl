@@ -12,7 +12,17 @@ all-tabs-menu-hidden-tabs =
 all-tabs-menu-manage-user-context =
     .label = Administrar contenedores
     .accesskey = O
-all-tabs-menu-close-duplicate-tabs =
-    .label = Cerrar pestañas duplicadas
 all-tabs-menu-close-all-duplicate-tabs =
     .label = Cerrar todas las pestañas duplicadas
+all-tabs-menu-synced-tabs =
+    .label = Pestañas de otros dispositivos
+# "Recent" refers to tab groups being sorted in recently used order. We show up
+# to five of these in this section.
+all-tabs-menu-recent-tab-groups-header = Grupos de pestañas recientes
+all-tabs-menu-current-window-header = Ventana actual
+# This opens the sub view listing _all_ open and saved tab groups.
+all-tabs-menu-tab-groups-show-all =
+    .label = Mostrar todos
+# This is header for the sub view listing _all_ open and saved tab groups.
+all-tabs-menu-tab-groups-sub-view =
+    .title = Grupos de pestañas

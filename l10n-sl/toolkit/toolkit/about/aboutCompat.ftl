@@ -5,10 +5,13 @@
 label-disable = Onemogoči
 label-enable = Omogoči
 label-interventions = Posredovanja
+# Variables:
+#   $bug (string) - Bug number
 label-more-information = Več informacij: hrošč { $bug }
 label-overrides = Preglasitve uporabniškega agenta
 text-disabled-in-about-config = Ta možnost je onemogočena v about:config
 text-no-interventions = Posredovanja se ne uporabljajo
+text-page-title = Spletna združljivost
 text-no-overrides = Preglasitve UA se ne uporabljajo
 text-title = about:compat
 

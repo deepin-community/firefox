@@ -15,10 +15,6 @@ ChromeUtils.defineESModuleGetters(this, {
     "resource:///modules/SelectionChangedMenulist.sys.mjs",
 });
 
-document
-  .getElementById("BrowserLanguagesDialog")
-  .addEventListener("dialoghelp", window.top.openPrefsHelp);
-
 /* This dialog provides an interface for managing what language the browser is
  * displayed in.
  *
@@ -300,7 +296,7 @@ class SortedItemSelectList {
     document.l10n.setAttributes(this.menulist, messageId);
     this.menulist.setAttribute(
       "image",
-      "chrome://browser/skin/tabbrowser/tab-connecting.png"
+      "chrome://global/skin/icons/loading.svg"
     );
     this.menulist.disabled = true;
     this.button.disabled = true;
@@ -321,11 +317,11 @@ class SortedItemSelectList {
 /**
  * @typedef LocaleDisplayInfo
  * @type {object}
- * @prop {string} id - A unique ID.
- * @prop {string} label - The localized display name.
- * @prop {string} value - The BCP 47 locale identifier or the word "search".
- * @prop {boolean} canRemove - The default locale cannot be removed.
- * @prop {boolean} installed - Whether or not the locale is installed.
+ * @property {string} id - A unique ID.
+ * @property {string} label - The localized display name.
+ * @property {string} value - The BCP 47 locale identifier or the word "search".
+ * @property {boolean} canRemove - The default locale cannot be removed.
+ * @property {boolean} installed - Whether or not the locale is installed.
  */
 
 /**
@@ -410,19 +406,14 @@ var gBrowserLanguagesDialog = {
     return Services.prefs.getBoolPref("intl.multilingual.downloadEnabled");
   },
 
-  recordTelemetry(method, extra = null) {
-    Services.telemetry.recordEvent(
-      "intl.ui.browserLanguage",
-      method,
-      "dialog",
-      this._telemetryId,
-      extra
-    );
+  recordTelemetry(method, extra = {}) {
+    extra.value = this._telemetryId;
+    Glean.intlUiBrowserLanguage[method + "Dialog"].record(extra);
   },
 
   async onLoad() {
     /**
-     * @typedef {Object} Options - Options passed in to configure the subdialog.
+     * @typedef {object} Options - Options passed in to configure the subdialog.
      * @property {string} telemetryId,
      * @property {Array<string>} [selectedLocalesForRestart] The optional list of
      *   previously selected locales for when a restart is required. This list is
@@ -724,3 +715,5 @@ var gBrowserLanguagesDialog = {
     };
   },
 };
+
+window.addEventListener("load", () => gBrowserLanguagesDialog.onLoad());

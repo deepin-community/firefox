@@ -5,6 +5,8 @@ prefs = [
   "telemetry.number_of_site_origin.min_interval=0",
 ]
 
+["browser_BrowserDOMWindow_openURI.js"]
+
 ["browser_BrowserWindowTracker.js"]
 
 ["browser_EveryWindow.js"]
@@ -40,8 +42,7 @@ support-files = [
   "../../../base/content/test/general/audio.ogg",
 ]
 skip-if = [
-  "os == 'linux' && os_version == '18.04' && asan", # Bug 1781868
-  "os == 'linux' && os_version == '18.04' && tsan", # Bug 1781868
+  "os == 'mac' && os_version == '15.30' && arch == 'aarch64' && opt", # Bug 1781868
 ]
 
 ["browser_Telemetry_numberOfSiteOrigins.js"]
@@ -53,23 +54,27 @@ support-files = [
   "blank_iframe.html",
 ]
 
+["browser_URILoadingHelper_chromeless.js"]
+
 ["browser_UnsubmittedCrashHandler.js"]
-run-if = ["crashreporter"]
+run-if = [
+  "crashreporter",
+]
 
 ["browser_UsageTelemetry.js"]
 https_first_disabled = true
-
-["browser_UsageTelemetry_content_aboutRestartRequired.js"]
 
 ["browser_UsageTelemetry_domains.js"]
 https_first_disabled = true
 
 ["browser_UsageTelemetry_interaction.js"]
 https_first_disabled = true
+skip-if = [
+  "os == 'win' && os_version == '11.26100' && opt && verify-standalone",
+]
 
 ["browser_UsageTelemetry_private_and_restore.js"]
 https_first_disabled = true
-skip-if = ["verify && debug"]
 
 ["browser_UsageTelemetry_toolbars.js"]
 
@@ -77,18 +82,14 @@ skip-if = ["verify && debug"]
 https_first_disabled = true
 
 ["browser_preloading_tab_moving.js"]
-skip-if = ["os == 'linux' && tsan"] # Bug 1720203
 
 ["browser_taskbar_preview.js"]
-skip-if = [
-  "os != 'win'",               # bug 1456807
-  "os == 'win' && bits == 64", # bug 1456807
+run-if = [
+  "os == 'win'",
 ]
 
 ["browser_urlBar_zoom.js"]
 skip-if = [
-  "os == 'mac'", # Bug 1528429
-  "os == 'linux' && bits == 64 && os_version == '18.04'", # Bug 1619835
-  "win10_2009 && bits == 64",           # Bug 1619835
-  "win11_2009 && bits == 32 && debug", # Bug 1619835
+  "os == 'linux' && os_version == '24.04' && arch == 'x86_64' && display == 'x11'", # Bug 1775794
+  "os == 'mac' && os_version == '10.15' && arch == 'x86_64' && debug", # Bug 1775794
 ]

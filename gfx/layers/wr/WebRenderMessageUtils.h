@@ -11,6 +11,9 @@
 
 #include "ipc/EnumSerializer.h"
 #include "ipc/IPCMessageUtils.h"
+#include "mozilla/IsEnumCase.h"
+#include "mozilla/ParamTraits_IsEnumCase.h"
+#include "mozilla/ParamTraits_TiedFields.h"
 #include "mozilla/webrender/webrender_ffi.h"
 #include "mozilla/webrender/WebRenderTypes.h"
 #include "mozilla/dom/MediaIPCUtils.h"
@@ -138,6 +141,12 @@ inline auto TiedFields<mozilla::wr::ImageKey>(mozilla::wr::ImageKey& a) {
 template <>
 inline auto TiedFields<mozilla::wr::BlobImageKey>(
     mozilla::wr::BlobImageKey& a) {
+  return std::tie(a._0);
+}
+
+template <>
+inline auto TiedFields<mozilla::wr::SnapshotImageKey>(
+    mozilla::wr::SnapshotImageKey& a) {
   return std::tie(a._0);
 }
 
@@ -287,9 +296,6 @@ inline auto TiedFields<mozilla::wr::MemoryReport>(
   // clang-format off
   return std::tie(
     a.clip_stores,
-    a.gpu_cache_metadata,
-    a.gpu_cache_cpu_mirror,
-    a.render_tasks,
     a.hit_testers,
     a.fonts,
     a.weak_fonts,
@@ -300,7 +306,8 @@ inline auto TiedFields<mozilla::wr::MemoryReport>(
     a.display_list,
     a.upload_staging_memory,
     a.swgl,
-    a.gpu_cache_textures,
+    a.frame_allocator,
+    a.render_tasks,
     a.vertex_data_textures,
     a.render_target_textures,
     a.picture_tile_textures,
@@ -335,6 +342,10 @@ struct ParamTraits<mozilla::wr::ImageKey>
 template <>
 struct ParamTraits<mozilla::wr::BlobImageKey>
     : public ParamTraits_TiedFields<mozilla::wr::BlobImageKey> {};
+
+template <>
+struct ParamTraits<mozilla::wr::SnapshotImageKey>
+    : public ParamTraits_TiedFields<mozilla::wr::SnapshotImageKey> {};
 
 template <>
 struct ParamTraits<mozilla::wr::FontKey>

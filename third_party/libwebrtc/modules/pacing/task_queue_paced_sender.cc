@@ -11,12 +11,27 @@
 #include "modules/pacing/task_queue_paced_sender.h"
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+#include <optional>
 #include <utility>
+#include <vector>
 
 #include "absl/cleanup/cleanup.h"
+#include "api/field_trials_view.h"
+#include "api/sequence_checker.h"
 #include "api/task_queue/pending_task_safety_flag.h"
+#include "api/task_queue/task_queue_base.h"
 #include "api/transport/network_types.h"
+#include "api/units/data_rate.h"
+#include "api/units/data_size.h"
+#include "api/units/time_delta.h"
+#include "api/units/timestamp.h"
+#include "modules/pacing/pacing_controller.h"
+#include "modules/rtp_rtcp/source/rtp_packet_to_send.h"
 #include "rtc_base/checks.h"
+#include "rtc_base/numerics/exp_filter.h"
 #include "rtc_base/trace_event.h"
 
 namespace webrtc {
@@ -60,14 +75,20 @@ void TaskQueuePacedSender::SetAllowProbeWithoutMediaPacket(bool allow) {
 void TaskQueuePacedSender::EnsureStarted() {
   RTC_DCHECK_RUN_ON(task_queue_);
   is_started_ = true;
-  MaybeProcessPackets(Timestamp::MinusInfinity());
+  PostMaybeProcessPackets();
 }
 
 void TaskQueuePacedSender::CreateProbeClusters(
     std::vector<ProbeClusterConfig> probe_cluster_configs) {
   RTC_DCHECK_RUN_ON(task_queue_);
   pacing_controller_.CreateProbeClusters(probe_cluster_configs);
-  MaybeScheduleProcessPackets();
+
+  // Probing should be scheduled regardless of if the queue is empty or not in
+  // order to be able to BWE probe before media is sent.
+  task_queue_->PostTask(SafeTask(safety_.flag(), [this]() {
+    RTC_DCHECK_RUN_ON(task_queue_);
+    MaybeProcessPackets(Timestamp::MinusInfinity());
+  }));
 }
 
 void TaskQueuePacedSender::Pause() {
@@ -78,20 +99,20 @@ void TaskQueuePacedSender::Pause() {
 void TaskQueuePacedSender::Resume() {
   RTC_DCHECK_RUN_ON(task_queue_);
   pacing_controller_.Resume();
-  MaybeProcessPackets(Timestamp::MinusInfinity());
+  PostMaybeProcessPackets();
 }
 
 void TaskQueuePacedSender::SetCongested(bool congested) {
   RTC_DCHECK_RUN_ON(task_queue_);
   pacing_controller_.SetCongested(congested);
-  MaybeScheduleProcessPackets();
+  PostMaybeProcessPackets();
 }
 
 void TaskQueuePacedSender::SetPacingRates(DataRate pacing_rate,
                                           DataRate padding_rate) {
   RTC_DCHECK_RUN_ON(task_queue_);
   pacing_controller_.SetPacingRates(pacing_rate, padding_rate);
-  MaybeScheduleProcessPackets();
+  PostMaybeProcessPackets();
 }
 
 void TaskQueuePacedSender::EnqueuePackets(
@@ -130,26 +151,26 @@ void TaskQueuePacedSender::RemovePacketsForSsrc(uint32_t ssrc) {
 void TaskQueuePacedSender::SetAccountForAudioPackets(bool account_for_audio) {
   RTC_DCHECK_RUN_ON(task_queue_);
   pacing_controller_.SetAccountForAudioPackets(account_for_audio);
-  MaybeProcessPackets(Timestamp::MinusInfinity());
+  PostMaybeProcessPackets();
 }
 
 void TaskQueuePacedSender::SetIncludeOverhead() {
   RTC_DCHECK_RUN_ON(task_queue_);
   include_overhead_ = true;
   pacing_controller_.SetIncludeOverhead();
-  MaybeProcessPackets(Timestamp::MinusInfinity());
+  PostMaybeProcessPackets();
 }
 
 void TaskQueuePacedSender::SetTransportOverhead(DataSize overhead_per_packet) {
   RTC_DCHECK_RUN_ON(task_queue_);
   pacing_controller_.SetTransportOverhead(overhead_per_packet);
-  MaybeProcessPackets(Timestamp::MinusInfinity());
+  PostMaybeProcessPackets();
 }
 
 void TaskQueuePacedSender::SetQueueTimeLimit(TimeDelta limit) {
   RTC_DCHECK_RUN_ON(task_queue_);
   pacing_controller_.SetQueueTimeLimit(limit);
-  MaybeProcessPackets(Timestamp::MinusInfinity());
+  PostMaybeProcessPackets();
 }
 
 TimeDelta TaskQueuePacedSender::ExpectedQueueTime() const {
@@ -160,7 +181,7 @@ DataSize TaskQueuePacedSender::QueueSizeData() const {
   return GetStats().queue_size;
 }
 
-absl::optional<Timestamp> TaskQueuePacedSender::FirstSentPacketTime() const {
+std::optional<Timestamp> TaskQueuePacedSender::FirstSentPacketTime() const {
   return GetStats().first_sent_packet_time;
 }
 
@@ -184,10 +205,14 @@ void TaskQueuePacedSender::OnStatsUpdated(const Stats& stats) {
   current_stats_ = stats;
 }
 
-// RTC_RUN_ON(task_queue_)
-void TaskQueuePacedSender::MaybeScheduleProcessPackets() {
-  if (!processing_packets_)
+void TaskQueuePacedSender::PostMaybeProcessPackets() {
+  if (pacing_controller_.QueueSizePackets() == 0) {
+    return;
+  }
+  task_queue_->PostTask(SafeTask(safety_.flag(), [this]() {
+    RTC_DCHECK_RUN_ON(task_queue_);
     MaybeProcessPackets(Timestamp::MinusInfinity());
+  }));
 }
 
 void TaskQueuePacedSender::MaybeProcessPackets(
@@ -246,7 +271,7 @@ void TaskQueuePacedSender::MaybeProcessPackets(
     DataRate pacing_rate = pacing_controller_.pacing_rate();
     if (max_hold_back_window_in_packets_ != kNoPacketHoldback &&
         !pacing_rate.IsZero() &&
-        packet_size_.filtered() != rtc::ExpFilter::kValueUndefined) {
+        packet_size_.filtered() != ExpFilter::kValueUndefined) {
       TimeDelta avg_packet_send_time =
           DataSize::Bytes(packet_size_.filtered()) / pacing_rate;
       hold_back_window =

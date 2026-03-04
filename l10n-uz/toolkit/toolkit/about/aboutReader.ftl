@@ -5,9 +5,6 @@
 about-reader-loading = Yuklanmoqda…
 about-reader-load-error = Sahifadan maqolani yuklab bo‘lmadi
 
-## These are used as tooltips in Type Control
-
-
 ## These are the styles of typeface that are options in the reader view controls.
 
 about-reader-font-type-serif = Serif

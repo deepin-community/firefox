@@ -11,6 +11,7 @@
 #include "nsRect.h"
 #include "nsRectAbsolute.h"
 #include "gfxRect.h"
+#include "mozilla/gfx/Point.h"
 #include "mozilla/gfx/Rect.h"
 #include "mozilla/gfx/RectAbsolute.h"
 #include "mozilla/WritingModes.h"
@@ -22,8 +23,10 @@ using mozilla::CSSCoord;
 using mozilla::CSSIntCoord;
 using mozilla::CSSIntSize;
 using mozilla::ScreenIntCoord;
+using mozilla::gfx::IntPoint;
 using mozilla::gfx::IntRect;
 using mozilla::gfx::IntRectAbsolute;
+using mozilla::gfx::Rect;
 
 static_assert(std::is_constructible_v<CSSIntSize, CSSIntCoord, CSSIntCoord>);
 static_assert(
@@ -128,7 +131,7 @@ static bool TestEqualityOperator() {
   return true;
 }
 
-template <class RectType>
+template <class RectType, class UnitType>
 static bool TestContainment() {
   RectType rect1(10, 10, 50, 50);
 
@@ -182,6 +185,12 @@ static bool TestContainment() {
   EXPECT_FALSE(rect1.Contains(rect2))
       << "[8] Test against a rect whose bottom edge (only) is outside of rect1";
   rect2.MoveByY(-1);
+
+  // Test rects approaching numeric limits can contain rects
+  RectType rectLarge(10, 10, std::numeric_limits<UnitType>::max(),
+                     std::numeric_limits<UnitType>::max());
+  EXPECT_TRUE(rectLarge.Contains(rect2))
+      << "[9] Test rect at numeric limits against a smaller rect";
 
   return true;
 }
@@ -602,7 +611,7 @@ TEST(Gfx, nsRect)
 {
   TestConstructors<nsRect>();
   TestEqualityOperator<nsRect>();
-  TestContainment<nsRect>();
+  TestContainment<nsRect, nscoord>();
   TestIntersects<nsRect>();
   TestIntersection<nsRect>();
   TestUnion<nsRect>();
@@ -616,7 +625,7 @@ TEST(Gfx, nsIntRect)
 {
   TestConstructors<nsIntRect>();
   TestEqualityOperator<nsIntRect>();
-  TestContainment<nsIntRect>();
+  TestContainment<nsIntRect, int32_t>();
   TestIntersects<nsIntRect>();
   TestIntersection<nsIntRect>();
   TestUnion<nsIntRect>();
@@ -630,7 +639,7 @@ TEST(Gfx, gfxRect)
 {
   TestConstructors<gfxRect>();
   // Skip TestEqualityOperator<gfxRect>(); as gfxRect::operator== is private
-  TestContainment<gfxRect>();
+  TestContainment<gfxRect, double>();
   TestIntersects<gfxRect>();
   TestIntersection<gfxRect>();
   TestUnion<gfxRect>();
@@ -642,10 +651,14 @@ TEST(Gfx, gfxRect)
 }
 
 TEST(Gfx, nsRectAbsolute)
-{ TestUnionEmptyRects<nsRectAbsolute>(); }
+{
+  TestUnionEmptyRects<nsRectAbsolute>();
+}
 
 TEST(Gfx, IntRectAbsolute)
-{ TestUnionEmptyRects<IntRectAbsolute>(); }
+{
+  TestUnionEmptyRects<IntRectAbsolute>();
+}
 
 static void TestMoveInsideAndClamp(IntRect aSrc, IntRect aTarget,
                                    IntRect aExpected) {
@@ -679,4 +692,52 @@ TEST(Gfx, MoveInsideAndClamp)
                          IntRect(-10, -1, 10, 0));
   TestMoveInsideAndClamp(IntRect(0, 0, 0, 0), IntRect(10, -10, 10, 10),
                          IntRect(10, 0, 0, 0));
+}
+
+TEST(Gfx, ClampPoint)
+{
+  /* Various bounds */
+  IntRect Square(0, 0, 10, 10);
+  EXPECT_EQ(Square.ClampPoint(IntPoint(-5, -5)), IntPoint(0, 0));
+  EXPECT_EQ(Square.ClampPoint(IntPoint(-5, 5)), IntPoint(0, 5));
+  EXPECT_EQ(Square.ClampPoint(IntPoint(-5, 15)), IntPoint(0, 10));
+
+  EXPECT_EQ(Square.ClampPoint(IntPoint(5, -5)), IntPoint(5, 0));
+  EXPECT_EQ(Square.ClampPoint(IntPoint(5, 5)), IntPoint(5, 5));
+  EXPECT_EQ(Square.ClampPoint(IntPoint(5, 15)), IntPoint(5, 10));
+
+  EXPECT_EQ(Square.ClampPoint(IntPoint(15, -5)), IntPoint(10, 0));
+  EXPECT_EQ(Square.ClampPoint(IntPoint(15, 5)), IntPoint(10, 5));
+  EXPECT_EQ(Square.ClampPoint(IntPoint(15, 15)), IntPoint(10, 10));
+
+  /* Special case of empty rect */
+  IntRect Empty(0, 0, -1, -1);
+  EXPECT_TRUE(Empty.IsEmpty());
+  EXPECT_EQ(Empty.ClampPoint(IntPoint(-1, -1)), IntPoint(0, 0));
+  EXPECT_EQ(Empty.ClampPoint(IntPoint(-1, 1)), IntPoint(0, 0));
+  EXPECT_EQ(Empty.ClampPoint(IntPoint(1, -1)), IntPoint(0, 0));
+  EXPECT_EQ(Empty.ClampPoint(IntPoint(1, 1)), IntPoint(0, 0));
+}
+
+TEST(Gfx, SafeMoveBy)
+{
+  IntRect intRect(0, 0, 10, 10);
+  intRect.SafeMoveByX(10);
+  intRect.SafeMoveByY(10);
+  EXPECT_EQ(intRect, IntRect(10, 10, 10, 10));
+
+  intRect = IntRect(0, 0, 10, 10);
+  intRect.SafeMoveByX(-10);
+  intRect.SafeMoveByY(-10);
+  EXPECT_EQ(intRect, IntRect(-10, -10, 10, 10));
+
+  Rect rect(0, 0, 10, 10);
+  rect.SafeMoveByX(10);
+  rect.SafeMoveByY(10);
+  EXPECT_EQ(rect, Rect(10, 10, 10, 10));
+
+  rect = Rect(0, 0, 10, 10);
+  rect.SafeMoveByX(-10);
+  rect.SafeMoveByY(-10);
+  EXPECT_EQ(rect, Rect(-10, -10, 10, 10));
 }

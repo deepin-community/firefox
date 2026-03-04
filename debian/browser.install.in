@@ -14,13 +14,11 @@ usr/lib/@browser@/libplds4.so
 %ifndef USE_SYSTEM_NSS
 usr/lib/@browser@/libfreeblpriv3.so
 usr/lib/@browser@/libnss3.so
-usr/lib/@browser@/libnssckbi.so
 usr/lib/@browser@/libnssutil3.so
 usr/lib/@browser@/libsmime3.so
 usr/lib/@browser@/libsoftokn3.so
 usr/lib/@browser@/libssl3.so
 %endif
-usr/lib/@browser@/libipcclientcerts.so
 
 %if SHORT_SOURCE_CHANNEL == central
 usr/lib/@browser@/libreplace_jemalloc.so
@@ -35,6 +33,7 @@ usr/lib/@browser@/libmozavutil.so
 usr/lib/@browser@/libmozsandbox.so
 %endif
 usr/lib/@browser@/libgkcodecs.so
+usr/lib/@browser@/libmozinference.so
 
 usr/lib/@browser@/defaults/pref/channel-prefs.js
 
@@ -53,8 +52,6 @@ debian/vendor.js usr/share/@browser@/browser/defaults/preferences
 
 debian/debsearch.xml usr/share/@browser@/distribution/searchplugins/common
 
-usr/lib/@browser@/browser/features usr/lib/@browser@/browser
-
 %if browser != firefox
 debian/firefox usr/bin
 %endif
@@ -64,7 +61,7 @@ usr/lib/@browser@/gmp-clearkey/0.1/libclearkey.so
 
 %if CRASH_REPORTER
 usr/lib/@browser@/crashreporter
-usr/lib/@browser@/minidump-analyzer
+usr/lib/@browser@/crashhelper
 %endif
 
 usr/lib/@browser@/fonts/TwemojiMozilla.ttf

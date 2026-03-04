@@ -15,7 +15,7 @@ password-manager-save-password-button-allow =
     .label = Mentés
     .accesskey = e
 password-manager-save-password-button-never =
-    .label = Soha ne mentse
+    .label = Sose mentse
     .accesskey = S
 # Variables
 #   $host (String) - Hostname for which the password is updated for.
@@ -32,8 +32,5 @@ password-manager-update-password-button-deny =
     .accesskey = N
 # This is displayed in place of the username when it is missing.
 password-manager-no-username-placeholder = Nincs felhasználónév
-password-manager-toggle-password =
-    .label = Jelszó megjelenítése
-    .accesskey = m
 password-manager-confirm-password-change = Jelszóváltoztatás megerősítése
 password-manager-select-username = Válassza ki a frissítendő bejelentkezést:

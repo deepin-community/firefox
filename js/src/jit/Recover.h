@@ -86,7 +86,23 @@ namespace jit {
   _(BigIntDecrement)              \
   _(BigIntNegate)                 \
   _(BigIntBitNot)                 \
+  _(BigIntToIntPtr)               \
+  _(IntPtrToBigInt)               \
+  _(BigIntPtrAdd)                 \
+  _(BigIntPtrSub)                 \
+  _(BigIntPtrMul)                 \
+  _(BigIntPtrDiv)                 \
+  _(BigIntPtrMod)                 \
+  _(BigIntPtrPow)                 \
+  _(BigIntPtrBitAnd)              \
+  _(BigIntPtrBitOr)               \
+  _(BigIntPtrBitXor)              \
+  _(BigIntPtrLsh)                 \
+  _(BigIntPtrRsh)                 \
+  _(BigIntPtrBitNot)              \
   _(Compare)                      \
+  _(StrictConstantCompareInt32)   \
+  _(StrictConstantCompareBoolean) \
   _(Concat)                       \
   _(StringLength)                 \
   _(ArgumentsLength)              \
@@ -104,13 +120,11 @@ namespace jit {
   _(Sqrt)                         \
   _(Atan2)                        \
   _(Hypot)                        \
-  _(NearbyInt)                    \
   _(Sign)                         \
   _(MathFunction)                 \
   _(Random)                       \
   _(StringSplit)                  \
   _(NaNToZero)                    \
-  _(RegExpMatcher)                \
   _(StringReplace)                \
   _(Substr)                       \
   _(TypeOf)                       \
@@ -128,17 +142,20 @@ namespace jit {
   _(NewCallObject)                \
   _(Lambda)                       \
   _(FunctionWithProto)            \
+  _(Callee)                       \
+  _(FunctionEnvironment)          \
   _(ObjectKeys)                   \
+  _(ObjectKeysFromIterator)       \
   _(ObjectState)                  \
   _(ArrayState)                   \
   _(AtomicIsLockFree)             \
-  _(Int32ToBigInt)                \
   _(Int64ToBigInt)                \
   _(BigIntAsIntN)                 \
   _(BigIntAsUintN)                \
   _(CreateArgumentsObject)        \
   _(CreateInlinedArgumentsObject) \
   _(Rest)                         \
+  _(TypedArraySubarray)           \
   _(AssertRecoveredOnBailout)
 
 class RResumePoint;
@@ -480,11 +497,145 @@ class RBigIntBitNot final : public RInstruction {
                              SnapshotIterator& iter) const override;
 };
 
+class RBigIntToIntPtr final : public RInstruction {
+ public:
+  RINSTRUCTION_HEADER_NUM_OP_(BigIntToIntPtr, 1)
+
+  [[nodiscard]] bool recover(JSContext* cx,
+                             SnapshotIterator& iter) const override;
+};
+
+class RIntPtrToBigInt final : public RInstruction {
+ public:
+  RINSTRUCTION_HEADER_NUM_OP_(IntPtrToBigInt, 1)
+
+  [[nodiscard]] bool recover(JSContext* cx,
+                             SnapshotIterator& iter) const override;
+};
+
+class RBigIntPtrAdd final : public RInstruction {
+ public:
+  RINSTRUCTION_HEADER_NUM_OP_(BigIntPtrAdd, 2)
+
+  [[nodiscard]] bool recover(JSContext* cx,
+                             SnapshotIterator& iter) const override;
+};
+
+class RBigIntPtrSub final : public RInstruction {
+ public:
+  RINSTRUCTION_HEADER_NUM_OP_(BigIntPtrSub, 2)
+
+  [[nodiscard]] bool recover(JSContext* cx,
+                             SnapshotIterator& iter) const override;
+};
+
+class RBigIntPtrMul final : public RInstruction {
+ public:
+  RINSTRUCTION_HEADER_NUM_OP_(BigIntPtrMul, 2)
+
+  [[nodiscard]] bool recover(JSContext* cx,
+                             SnapshotIterator& iter) const override;
+};
+
+class RBigIntPtrDiv final : public RInstruction {
+ public:
+  RINSTRUCTION_HEADER_NUM_OP_(BigIntPtrDiv, 2)
+
+  [[nodiscard]] bool recover(JSContext* cx,
+                             SnapshotIterator& iter) const override;
+};
+
+class RBigIntPtrMod final : public RInstruction {
+ public:
+  RINSTRUCTION_HEADER_NUM_OP_(BigIntPtrMod, 2)
+
+  [[nodiscard]] bool recover(JSContext* cx,
+                             SnapshotIterator& iter) const override;
+};
+
+class RBigIntPtrPow final : public RInstruction {
+ public:
+  RINSTRUCTION_HEADER_NUM_OP_(BigIntPtrPow, 2)
+
+  [[nodiscard]] bool recover(JSContext* cx,
+                             SnapshotIterator& iter) const override;
+};
+
+class RBigIntPtrBitAnd final : public RInstruction {
+ public:
+  RINSTRUCTION_HEADER_NUM_OP_(BigIntPtrBitAnd, 2)
+
+  [[nodiscard]] bool recover(JSContext* cx,
+                             SnapshotIterator& iter) const override;
+};
+
+class RBigIntPtrBitOr final : public RInstruction {
+ public:
+  RINSTRUCTION_HEADER_NUM_OP_(BigIntPtrBitOr, 2)
+
+  [[nodiscard]] bool recover(JSContext* cx,
+                             SnapshotIterator& iter) const override;
+};
+
+class RBigIntPtrBitXor final : public RInstruction {
+ public:
+  RINSTRUCTION_HEADER_NUM_OP_(BigIntPtrBitXor, 2)
+
+  [[nodiscard]] bool recover(JSContext* cx,
+                             SnapshotIterator& iter) const override;
+};
+
+class RBigIntPtrLsh final : public RInstruction {
+ public:
+  RINSTRUCTION_HEADER_NUM_OP_(BigIntPtrLsh, 2)
+
+  [[nodiscard]] bool recover(JSContext* cx,
+                             SnapshotIterator& iter) const override;
+};
+
+class RBigIntPtrRsh final : public RInstruction {
+ public:
+  RINSTRUCTION_HEADER_NUM_OP_(BigIntPtrRsh, 2)
+
+  [[nodiscard]] bool recover(JSContext* cx,
+                             SnapshotIterator& iter) const override;
+};
+
+class RBigIntPtrBitNot final : public RInstruction {
+ public:
+  RINSTRUCTION_HEADER_NUM_OP_(BigIntPtrBitNot, 1)
+
+  [[nodiscard]] bool recover(JSContext* cx,
+                             SnapshotIterator& iter) const override;
+};
+
 class RCompare final : public RInstruction {
   JSOp jsop_;
 
  public:
   RINSTRUCTION_HEADER_NUM_OP_(Compare, 2)
+
+  [[nodiscard]] bool recover(JSContext* cx,
+                             SnapshotIterator& iter) const override;
+};
+
+class RStrictConstantCompareInt32 final : public RInstruction {
+  JSOp jsop_;
+  int32_t constant_;
+
+ public:
+  RINSTRUCTION_HEADER_NUM_OP_(StrictConstantCompareInt32, 1)
+
+  [[nodiscard]] bool recover(JSContext* cx,
+                             SnapshotIterator& iter) const override;
+};
+
+class RStrictConstantCompareBoolean final : public RInstruction {
+  JSOp jsop_;
+  bool constant_;
+
+ public:
+  RINSTRUCTION_HEADER_NUM_OP_(StrictConstantCompareBoolean, 1)
 
   [[nodiscard]] bool recover(JSContext* cx,
                              SnapshotIterator& iter) const override;
@@ -637,17 +788,6 @@ class RHypot final : public RInstruction {
                              SnapshotIterator& iter) const override;
 };
 
-class RNearbyInt final : public RInstruction {
- private:
-  uint8_t roundingMode_;
-
- public:
-  RINSTRUCTION_HEADER_NUM_OP_(NearbyInt, 1)
-
-  [[nodiscard]] bool recover(JSContext* cx,
-                             SnapshotIterator& iter) const override;
-};
-
 class RSign final : public RInstruction {
  public:
   RINSTRUCTION_HEADER_NUM_OP_(Sign, 1)
@@ -687,14 +827,6 @@ class RNaNToZero final : public RInstruction {
   RINSTRUCTION_HEADER_NUM_OP_(NaNToZero, 1);
 
   bool recover(JSContext* cx, SnapshotIterator& iter) const override;
-};
-
-class RRegExpMatcher final : public RInstruction {
- public:
-  RINSTRUCTION_HEADER_NUM_OP_(RegExpMatcher, 3)
-
-  [[nodiscard]] bool recover(JSContext* cx,
-                             SnapshotIterator& iter) const override;
 };
 
 class RStringReplace final : public RInstruction {
@@ -842,6 +974,22 @@ class RFunctionWithProto final : public RInstruction {
                              SnapshotIterator& iter) const override;
 };
 
+class RCallee final : public RInstruction {
+ public:
+  RINSTRUCTION_HEADER_NUM_OP_(Callee, 0)
+
+  [[nodiscard]] bool recover(JSContext* cx,
+                             SnapshotIterator& iter) const override;
+};
+
+class RFunctionEnvironment final : public RInstruction {
+ public:
+  RINSTRUCTION_HEADER_NUM_OP_(FunctionEnvironment, 1)
+
+  [[nodiscard]] bool recover(JSContext* cx,
+                             SnapshotIterator& iter) const override;
+};
+
 class RNewCallObject final : public RInstruction {
  public:
   RINSTRUCTION_HEADER_NUM_OP_(NewCallObject, 1)
@@ -853,6 +1001,14 @@ class RNewCallObject final : public RInstruction {
 class RObjectKeys final : public RInstruction {
  public:
   RINSTRUCTION_HEADER_NUM_OP_(ObjectKeys, 1)
+
+  [[nodiscard]] bool recover(JSContext* cx,
+                             SnapshotIterator& iter) const override;
+};
+
+class RObjectKeysFromIterator final : public RInstruction {
+ public:
+  RINSTRUCTION_HEADER_NUM_OP_(ObjectKeysFromIterator, 1)
 
   [[nodiscard]] bool recover(JSContext* cx,
                              SnapshotIterator& iter) const override;
@@ -901,16 +1057,8 @@ class RAtomicIsLockFree final : public RInstruction {
                              SnapshotIterator& iter) const override;
 };
 
-class RInt32ToBigInt final : public RInstruction {
- public:
-  RINSTRUCTION_HEADER_NUM_OP_(Int32ToBigInt, 1)
-
-  [[nodiscard]] bool recover(JSContext* cx,
-                             SnapshotIterator& iter) const override;
-};
-
 class RInt64ToBigInt final : public RInstruction {
-  bool isUnsigned_;
+  bool isSigned_;
 
  public:
   RINSTRUCTION_HEADER_NUM_OP_(Int64ToBigInt, 1)
@@ -966,6 +1114,14 @@ class RRest final : public RInstruction {
 
  public:
   RINSTRUCTION_HEADER_NUM_OP_(Rest, 1)
+
+  [[nodiscard]] bool recover(JSContext* cx,
+                             SnapshotIterator& iter) const override;
+};
+
+class RTypedArraySubarray final : public RInstruction {
+ public:
+  RINSTRUCTION_HEADER_NUM_OP_(TypedArraySubarray, 3)
 
   [[nodiscard]] bool recover(JSContext* cx,
                              SnapshotIterator& iter) const override;

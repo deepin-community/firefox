@@ -111,6 +111,10 @@ startup-header = ᱮᱛᱦᱚᱵ
 always-check-default =
     .label = ᱫᱤᱱ ᱜᱮ ᱧᱮᱞ ᱢᱮ ᱡᱩᱫᱤ { -brand-short-name } ᱫᱚ ᱟᱢᱟᱜ ᱢᱩᱞ ᱵᱽᱨᱟᱣᱡᱚᱨ ᱠᱟᱱᱟ ᱥᱮ ᱵᱟᱝᱟ
     .accesskey = y
+is-default-browser =
+    .message = { -brand-short-name } ᱫᱚ ᱱᱤᱛᱚᱜ ᱟᱢᱟᱜ ᱢᱩᱞ ᱵᱽᱨᱟᱣᱡᱚᱨ ᱠᱟᱱᱟ
+is-not-default-browser =
+    .message = { -brand-short-name } ᱫᱚ ᱟᱢᱟᱜ ᱢᱩᱞ ᱵᱽᱨᱟᱣᱡᱚᱨ ᱵᱟᱝ ᱠᱟᱱᱟ
 is-default = { -brand-short-name } ᱫᱚ ᱱᱤᱛᱚᱜ ᱟᱢᱟᱜ ᱢᱩᱞ ᱵᱽᱨᱟᱣᱡᱚᱨ ᱠᱟᱱᱟ
 is-not-default = { -brand-short-name } ᱫᱚ ᱟᱢᱟᱜ ᱢᱩᱞ ᱵᱽᱨᱟᱣᱡᱚᱨ ᱵᱟᱝ ᱠᱟᱱᱟ
 set-as-my-default-browser =
@@ -128,6 +132,8 @@ preferences-data-migration-description = { -brand-short-name } ᱨᱮ ᱵᱩᱠ�
 preferences-data-migration-button =
     .label = ᱰᱟᱴᱟ ᱟᱹᱜᱩᱜ ᱠᱟᱱᱟ
     .accesskey = m
+tabs-group-header2 =
+    .label = ᱴᱮᱵᱽ ᱠᱚ
 tabs-group-header = ᱴᱮᱵᱽ ᱠᱚ
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab ᱫᱚ ᱱᱮᱱᱮ ᱵᱮᱵᱷᱟᱨ ᱠᱟᱱ ᱛᱷᱚᱨ ᱦᱤᱥᱟᱹᱵ ᱛᱮ ᱟᱹᱪᱩᱨᱚᱜᱼᱟᱭ
@@ -163,6 +169,8 @@ browser-containers-settings =
     .label = ᱥᱟᱡᱟᱣ ᱠᱚ…
     .accesskey = i
 containers-disable-alert-title = ᱡᱷᱚᱛᱚ ᱠᱚᱱᱴᱮᱱᱚᱨ ᱴᱮᱵᱽ ᱵᱚᱸᱫᱚᱭ ᱟᱢ ᱥᱮ ?
+startup-group =
+    .label = ᱮᱛᱦᱚᱵ
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -198,8 +206,20 @@ containers-remove-cancel-button = ᱱᱚᱶᱟ ᱠᱚᱱᱴᱮᱱᱚᱨ ᱟᱞ�
 ## General Section - Language & Appearance
 
 language-and-appearance-header = ᱯᱟᱹᱨᱥᱤ ᱟᱨ ᱧᱮᱞᱚᱜ
+appearance-group =
+    .label = ᱣᱮᱵᱽᱥᱟᱭᱤᱴ ᱧᱮᱞᱚᱜ
+    .description = ᱛᱤᱱᱟᱹᱜ ᱜᱟᱱ ᱣᱮᱵᱽᱥᱟᱭᱤᱴ ᱫᱚ ᱟᱠᱚᱣᱟᱜ ᱨᱚᱝ ᱦᱤᱥᱟᱹᱵᱽ ᱛᱮ ᱠᱩᱥᱤᱭᱟᱜ ᱠᱚ ᱵᱚᱫᱚᱞ ᱟ ᱾ ᱵᱟᱪᱷᱟᱣ ᱢᱮ ᱚᱱᱟ ᱥᱟᱭᱤᱴ ᱠᱚ ᱞᱟᱹᱜᱤᱫ ᱪᱮᱫ ᱨᱚᱝ ᱥᱠᱤᱢᱮᱢ ᱵᱟᱪᱷᱟᱣ ᱟ ᱾
 preferences-web-appearance-header = ᱣᱮᱵᱽᱥᱟᱭᱤᱴ ᱧᱮᱞᱚᱜ
 preferences-web-appearance-description = ᱛᱤᱱᱟᱹᱜ ᱜᱟᱱ ᱣᱮᱵᱽᱥᱟᱭᱤᱴ ᱫᱚ ᱟᱠᱚᱣᱟᱜ ᱨᱚᱝ ᱦᱤᱥᱟᱹᱵᱽ ᱛᱮ ᱠᱩᱥᱤᱭᱟᱜ ᱠᱚ ᱵᱚᱫᱚᱞ ᱟ ᱾ ᱵᱟᱪᱷᱟᱣ ᱢᱮ ᱚᱱᱟ ᱥᱟᱭᱤᱴ ᱠᱚ ᱞᱟᱹᱜᱤᱫ ᱪᱮᱫ ᱨᱚᱝ ᱥᱠᱤᱢᱮᱢ ᱵᱟᱪᱷᱟᱣ ᱟ ᱾
+preferences-web-appearance-choice-auto2 =
+    .label = ᱟᱡ ᱛᱮ
+    .title = ᱟᱢᱟᱜ ᱥᱤᱥᱴᱚᱢ ᱥᱟᱡᱟᱣ ᱟᱨ { -brand-short-name } ᱛᱷᱤᱢ ᱦᱤᱥᱟᱹᱵ ᱛᱮ ᱟᱡ ᱛᱮ ᱣᱮᱵᱽᱥᱟᱭᱤᱴ ᱵᱮᱜᱽᱨᱟᱣᱱᱰ ᱟᱨ ᱡᱤᱱᱤᱥ ᱠᱚ ᱵᱚᱫᱚᱞ ᱢᱮ ᱾
+preferences-web-appearance-choice-light2 =
+    .label = ᱢᱟᱨᱥᱟᱞ
+    .title = ᱣᱮᱵᱽᱥᱟᱭᱤᱴ ᱵᱮᱜᱽᱨᱟᱣᱱᱰ ᱟᱨ ᱡᱤᱱᱤᱥ ᱞᱟᱹᱜᱤᱫ ᱟᱨᱥᱟᱞ ᱧᱮᱞ ᱵᱮᱵᱷᱟᱨ ᱢᱮ ᱾
+preferences-web-appearance-choice-dark2 =
+    .label = ᱧᱩᱛ
+    .title = ᱣᱮᱵᱽᱥᱟᱭᱤᱴ ᱵᱮᱜᱽᱨᱟᱣᱱᱰ ᱟᱨ ᱡᱤᱱᱤᱥ ᱞᱟᱹᱜᱤᱫ ᱧᱩᱛ ᱧᱮᱞ ᱵᱮᱵᱷᱟᱨ ᱢᱮ ᱾
 preferences-web-appearance-choice-auto = ᱟᱡ ᱛᱮ
 preferences-web-appearance-choice-light = ᱢᱟᱨᱥᱟᱞ
 preferences-web-appearance-choice-dark = ᱧᱩᱛ
@@ -215,13 +235,11 @@ preferences-web-appearance-choice-input-light =
     .aria-description = { preferences-web-appearance-choice-tooltip-light.title }
 preferences-web-appearance-choice-input-dark =
     .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
+preferences-web-appearance-link =
+    .label = { -brand-short-name } ᱛᱷᱤᱢ ᱫᱚ  ᱮᱠᱥᱴᱮᱱᱥᱚᱱ ᱟᱨ ᱛᱷᱤᱢ ᱨᱮ ᱢᱮᱱᱮᱡᱽ ᱢᱮ
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = ᱟᱢᱟᱜ ᱨᱚᱝ ᱵᱟᱪᱷᱟᱣ ᱠᱚ ᱫᱚ ᱣᱮᱵᱽᱥᱟᱭᱤᱴ ᱧᱮᱞ ᱨᱮ ᱢᱮᱥᱟᱜ ᱠᱟᱱᱟ ᱾ <a data-l10n-name="colors-link">ᱨᱚᱝ ᱢᱮᱱᱮᱡᱽ ᱢᱮ</a>
-# This can appear when using windows HCM or "Override colors: always" without
-# system colors.
-preferences-web-appearance-override-warning2 =
-    .message = ᱟᱢᱟᱜ ᱨᱚᱝ ᱵᱟᱪᱷᱟᱣ ᱠᱚ ᱫᱚ ᱣᱮᱵᱽᱥᱟᱭᱤᱴ ᱧᱮᱞ ᱨᱮ ᱢᱮᱥᱟᱜ ᱠᱟᱱᱟ ᱾
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = { -brand-short-name } ᱛᱷᱤᱢ ᱫᱚ <a data-l10n-name="themes-link"> ᱮᱠᱥᱴᱮᱱᱥᱚᱱ ᱟᱨ ᱛᱷᱤᱢ</a> ᱨᱮ ᱢᱮᱱᱮᱡᱽ ᱢᱮ
@@ -230,6 +248,14 @@ preferences-colors-description = { -brand-short-name }ᱦᱟᱜ ᱢᱩᱞ ᱚᱞ
 preferences-colors-manage-button =
     .label = ᱨᱚᱝ ᱠᱚ ᱢᱮᱱᱮᱡᱽ ᱢᱮ…
     .accesskey = C
+preferences-fonts-header2 =
+    .label = ᱪᱤᱠᱤ ᱠᱚ
+default-font-2 =
+    .label = ᱢᱩᱞ ᱪᱤᱠᱤ
+    .accesskey = D
+default-font-size-2 =
+    .label = ᱢᱟᱯ
+    .accesskey = S
 preferences-fonts-header = ᱪᱤᱠᱤ ᱠᱚ
 default-font = ᱢᱩᱞ ᱪᱤᱠᱤ
     .accesskey = D
@@ -238,6 +264,12 @@ default-font-size = ᱢᱟᱯ
 advanced-fonts =
     .label = ᱞᱟᱦᱟᱱᱛᱤ…
     .accesskey = A
+# Zoom is a noun, and the message is used as header for a group of options
+preferences-zoom-header2 =
+    .label = ᱡᱩᱢ
+preferences-default-zoom-label =
+    .label = ᱢᱩᱞ ᱡᱩᱢ
+    .accesskey = z
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = ᱡᱩᱢ
 preferences-default-zoom = ᱢᱩᱞ ᱡᱩᱢ
@@ -281,6 +313,11 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = ᱨᱮᱫᱽ ᱟᱨ ᱮᱯᱞᱤᱠᱮᱥᱚᱱ ᱠᱚ
+downloads-header-2 =
+    .label = ᱰᱟᱣᱱᱞᱚᱰ ᱠᱚ
+download-save-where-2 =
+    .label = ᱨᱮ ᱨᱮᱫ ᱠᱚ ᱥᱟᱺᱪᱟᱣ
+    .accesskey = v
 download-header = ᱰᱟᱣᱱᱞᱚᱰ ᱠᱚ
 download-save-where = ᱨᱮ ᱨᱮᱫ ᱠᱚ ᱥᱟᱺᱪᱟᱣ
     .accesskey = v
@@ -380,6 +417,8 @@ applications-save-for-new-types =
 applications-ask-before-handling =
     .label = ᱨᱮᱫ ᱥᱟᱺᱪᱟᱣ ᱟᱢ ᱥᱮ ᱠᱷᱩᱞᱟᱹᱭ ᱟᱢ ᱠᱩᱠᱞᱤ ᱢᱮ
     .accesskey = A
+drm-group =
+    .label = ᱰᱤᱡᱤᱴᱟᱞ ᱨᱟᱭᱤᱴᱥ ᱢᱮᱱᱮᱡᱢᱮᱱᱴ (DRM) ᱡᱤᱱᱤᱥ
 drm-content-header = ᱰᱤᱡᱤᱴᱟᱞ ᱨᱟᱭᱤᱴᱥ ᱢᱮᱱᱮᱡᱢᱮᱱᱴ (DRM) ᱡᱤᱱᱤᱥ
 play-drm-content =
     .label = DRM-ᱠᱚᱵᱚᱡᱽ ᱟᱠᱟᱱ ᱠᱟᱛᱷᱟ ᱮᱢ ᱢᱮ
@@ -448,6 +487,8 @@ performance-limit-content-process-blocked-desc = ᱡᱚᱱᱚᱥ ᱯᱨᱚᱥᱮ
 #   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (ᱢᱩᱞ)
+performance-group =
+    .label = ᱠᱟᱹᱢᱤᱦᱚᱨᱟ
 
 ## General Section - Browsing
 
@@ -488,6 +529,8 @@ browsing-cfr-features =
     .label = ᱵᱽᱨᱟᱣᱡᱽ ᱥᱟᱶ ᱛᱮ ᱯᱷᱤᱪᱚᱨ ᱠᱚ ᱵᱟᱛᱟᱣᱟᱢᱟᱭ
     .accesskey = f
 browsing-cfr-recommendations-learn-more = ᱰᱷᱮᱨ ᱥᱮᱬᱟᱭ ᱢᱮ
+browsing-group =
+    .label = ᱯᱟᱱᱛᱮ ᱮᱫ ᱟ
 
 ## General Section - Proxy
 
@@ -497,16 +540,27 @@ network-proxy-connection-learn-more = ᱰᱷᱮᱨ ᱥᱮᱬᱟᱭ ᱢᱮ
 network-proxy-connection-settings =
     .label = ᱥᱟᱡᱟᱣ ᱠᱚ…
     .accesskey = e
+network-proxy-group =
+    .label = ᱱᱮᱴᱣᱟᱨᱠ ᱥᱟᱡᱟᱣᱠᱚ
+    .description = ᱥᱟᱡᱟᱣ ᱢᱮ ᱪᱮᱫ ᱞᱮᱠᱷᱟᱛᱮ { -brand-short-name } ᱫᱚ ᱤᱱᱴᱚᱨᱱᱮᱴ ᱥᱟᱞᱟᱜ ᱡᱩᱲᱟᱹᱣᱜᱼᱟ ᱾
 
 ## Home Section
 
 home-new-windows-tabs-header = ᱱᱚᱶᱟ ᱣᱤᱱᱰᱚ ᱟᱨ ᱴᱮᱵᱽ ᱠᱚ
 home-new-windows-tabs-description2 = ᱟᱢ ᱟᱢᱟᱜ ᱚᱲᱟᱜ ᱥᱟᱦᱴᱟ, ᱱᱟᱣᱟ ᱣᱤᱱᱰᱚ ᱟᱨ ᱱᱟᱣᱟ ᱴᱟᱵᱽ ᱮᱢᱟᱱ ᱠᱚ ᱚᱞ ᱠᱟᱛᱮ ᱪᱮᱫ ᱧᱮᱞᱟ ᱚᱱᱟ ᱵᱟᱪᱷᱟᱣ ᱢᱮ ᱾
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = ᱢᱩᱞ ᱯᱷᱮᱲᱟᱛ ᱵᱮᱵᱷᱟᱨ ᱢᱮ
+    .accesskey = D
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = ᱚᱲᱟᱜᱥᱟᱦᱴᱟ ᱟᱨ ᱱᱟᱶᱟ ᱣᱤᱱᱰᱳ
 home-newtabs-mode-label = ᱱᱟᱶᱟ ᱴᱮᱵᱽ ᱠᱚ
+home-homepage-new-tabs =
+    .label = ᱱᱟᱶᱟ ᱴᱮᱵᱽ ᱠᱚ
 home-restore-defaults =
     .label = ᱦᱩᱲᱟᱹᱜ ᱠᱚ ᱡᱚᱜᱟᱣ ᱫᱚᱦᱲᱟᱹ
     .accesskey = R
@@ -545,8 +599,7 @@ home-prefs-shortcuts-description = ᱟᱢ ᱥᱟᱺᱪᱟᱣ ᱠᱟᱫ ᱟᱨ �
 home-prefs-shortcuts-by-option-sponsored =
     .label = ᱠᱟᱹᱢᱤᱼᱤᱡ ᱠᱷᱟᱴᱚ ᱢᱟᱪᱷᱟ ᱠᱚ
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = { $provider } ᱨᱮᱭᱟᱜ ᱵᱟᱛᱟᱣᱟᱜ
@@ -608,6 +661,8 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = ᱴᱷᱤᱠᱬᱟᱹ ᱵᱟᱨ ᱛᱮᱞᱟ ᱨᱮ ᱥᱚᱞᱟᱦ ᱥᱮᱸᱫᱽᱨᱟ ᱫᱮᱠᱷᱟᱣ ᱢᱮ
     .accesskey = l
+search-suggestions-cant-show-2 =
+    .message = ᱥᱚᱞᱟᱦ ᱥᱮᱸᱫᱽᱨᱟ ᱫᱚ ᱡᱟᱭᱜᱟ ᱵᱟᱨ ᱛᱟᱞᱟ ᱨᱮ ᱵᱟᱭ ᱫᱮᱠᱷᱟᱣᱟᱜ ᱟ ᱪᱮᱫᱟᱜ ᱥᱮ { -brand-short-name } ᱫᱚ ᱦᱤᱛᱟᱹᱞ ᱟᱞᱚ ᱩᱭᱦᱟᱹᱨ ᱞᱟᱹᱜᱤᱫ ᱢᱟᱲᱟᱝ ᱠᱷᱚᱱ ᱵᱟᱛᱟᱣ ᱠᱟᱱᱟ ᱾
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -647,12 +702,18 @@ search-keyword-warning-title = ᱱᱚᱠᱚᱞ ᱛᱮᱭᱟᱨ ᱠᱟᱹᱴᱷ�
 #   $name (string) - Name of a search engine.
 search-keyword-warning-engine = ᱟᱢ ᱠᱟᱹᱴᱷᱤ ᱥᱟᱵᱟᱫᱽ ᱵᱟᱪᱷᱟᱣ ᱟᱠᱟᱫ ᱟ ᱚᱠᱟ “{ $name }” ᱾ ᱫᱟᱨᱟᱭ ᱛᱮ ᱱᱤᱛᱚᱜ ᱵᱮᱵᱷᱟᱨᱚᱠ ᱠᱟᱱᱟ. ᱮᱴᱟᱜᱟᱜ ᱵᱟᱪᱷᱟᱣ ᱢᱮ ᱾
 search-keyword-warning-bookmark = ᱟᱢ ᱠᱟᱹᱴᱷᱤ ᱥᱟᱵᱟᱫᱽ ᱵᱟᱪᱷᱟᱣ ᱟᱠᱟᱛ ᱟ ᱚᱠᱟ ᱯᱩᱛᱷᱤ ᱪᱤᱱᱦᱟᱹᱝ ᱫᱟᱨᱟᱭ ᱛᱮ ᱱᱤᱛᱚᱜ ᱵᱮᱵᱷᱟᱨᱚᱜ ᱠᱟᱱᱟ ᱾ ᱫᱟᱭᱟᱠᱟᱛᱮ ᱮᱴᱟᱜᱟᱜ ᱵᱟᱪᱷᱟᱣ ᱢᱮ ᱾
+search-engine-group =
+    .label = ᱢᱩᱞ ᱥᱮᱸᱫᱽᱨᱟ ᱤᱧᱡᱤᱱ
+search-default-engine =
+    .aria-label = ᱢᱩᱞ ᱥᱮᱸᱫᱽᱨᱟ ᱤᱧᱡᱤᱱ
 
 ## Containers Section
 
 containers-back-button2 =
     .aria-label = ᱥᱟᱡᱟᱣ ᱛᱮ ᱨᱤᱣᱟᱹᱲ
 containers-header = ᱠᱚᱱᱴᱮᱱᱚᱨ ᱴᱮᱵᱽ
+containers-section-header =
+    .heading = ᱠᱚᱱᱴᱮᱱᱚᱨ ᱴᱮᱵᱽ
 containers-add-button =
     .label = ᱱᱚᱶᱟ ᱫᱚᱦᱚᱣᱟᱜ ᱥᱚᱞᱮᱫ ᱢᱮ
     .accesskey = A
@@ -663,6 +724,11 @@ containers-settings-button =
     .label = ᱥᱟᱡᱟᱣ ᱠᱚ
 containers-remove-button =
     .label = ᱚᱪᱚᱜᱽ ᱢᱮ
+
+## Account and sync
+
+sync-group-label =
+    .label = ᱥᱭᱝᱠ
 
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
@@ -692,11 +758,18 @@ sync-profile-picture-with-alt =
 sync-sign-out =
     .label = ᱵᱟᱦᱨᱮ ᱚᱰᱚᱠ…
     .accesskey = g
+sync-sign-out2 =
+    .label = ᱵᱟᱦᱨᱮ ᱚᱰᱚᱠ
+    .accesskey = g
 sync-manage-account = ᱠᱷᱟᱛᱟ ᱢᱮᱱᱮᱡᱽ ᱢᱮ
+    .accesskey = o
+sync-manage-account2 =
+    .label = ᱠᱷᱟᱛᱟ ᱢᱮᱱᱮᱡᱽ ᱢᱮ
     .accesskey = o
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } ᱫᱚ ᱵᱟᱭ ᱧᱮᱞ ᱢᱤᱞᱟᱣ ᱠᱟᱱᱟ ᱾
 sync-signedin-login-failure = ᱫᱟᱭᱟᱠᱟᱛᱮ { $email } ᱥᱟᱞᱟᱜ ᱫᱚᱦᱲᱟᱹ ᱡᱚᱲᱟᱣ ᱞᱟᱹᱜᱤᱫ ᱥᱩᱦᱤ ᱮᱢ ᱢᱮ
@@ -720,6 +793,9 @@ prefs-syncing-off = ᱟᱹᱭᱩᱨ ᱢᱤᱫ: ᱵᱚᱸᱫ
 prefs-sync-turn-on-syncing =
     .label = ᱟᱹᱭᱩᱨ ᱢᱤᱫ ᱮᱢ ᱪᱷᱚᱭ ᱢᱮ...
     .accesskey = s
+prefs-sync-turn-on-syncing-2 =
+    .label = ᱟᱹᱭᱩᱨ ᱢᱤᱫ ᱮᱢ ᱪᱷᱚᱭ ᱢᱮ
+    .accesskey = s
 prefs-sync-offer-setup-label2 = ᱟᱢᱟᱜ ᱯᱩᱛᱷᱤᱪᱤᱱᱦᱟ, ᱦᱤᱛᱟᱹᱞ, ᱪᱮᱵᱽᱠᱚ, ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱠᱚ, ᱮᱰ-ᱚᱱ ᱟᱨ ᱥᱟᱡᱟᱣ ᱠᱚ ᱟᱢᱟᱜ ᱡᱷᱚᱛᱚ ᱥᱟᱫᱷᱚᱱ ᱨᱮ ᱟᱭᱩᱨ ᱢᱤᱫ ᱢᱮ ᱾
 prefs-sync-now =
     .labelnotsyncing = ᱱᱤᱛᱚᱜ ᱥᱤᱝᱠ ᱢᱮ
@@ -728,8 +804,14 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = ᱱᱤᱛᱚᱜ ᱥᱤᱝᱠ ᱢᱮ
     .accesskey = N
+prefs-sync-now-button-2 =
+    .label = ᱱᱤᱛᱚᱜ ᱥᱤᱝᱠ ᱢᱮ
+    .accesskey = N
 prefs-syncing-button =
     .label = ᱥᱭᱝᱠᱚᱜ ᱠᱟᱱᱟ…
+prefs-syncing-button-2 =
+    .label = ᱥᱭᱝᱠᱚᱜ ᱠᱟᱱᱟ…
+    .title = ᱱᱤᱛᱚᱜ ᱥᱤᱝᱠ ᱢᱮ
 
 ## The list of things currently syncing.
 
@@ -790,6 +872,16 @@ sync-engine-settings =
 ## The device name controls.
 
 sync-device-name-header = ᱥᱟᱫᱷᱚᱱ ᱨᱮᱭᱟᱜ ᱧᱩᱛᱩᱢ
+sync-device-name-header-2 =
+    .label = ᱥᱟᱫᱷᱚᱱ ᱨᱮᱭᱟᱜ ᱧᱩᱛᱩᱢ
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = ᱥᱟᱫᱷᱚᱱ ᱨᱮᱭᱟᱜ ᱧᱩᱛᱩᱢ
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = ᱥᱚᱫᱷᱚᱱ ᱧᱩᱛᱩᱢ ᱵᱚᱫᱚᱞ ᱢᱮ
+    .accesskey = h
 sync-device-name-change =
     .label = ᱥᱚᱫᱷᱚᱱ ᱧᱩᱛᱩᱢ ᱵᱚᱫᱚᱞ ᱢᱮ…
     .accesskey = h
@@ -800,6 +892,8 @@ sync-device-name-save =
     .label = ᱥᱟᱺᱪᱟᱣ ᱢᱮ
     .accesskey = ᱥ
 sync-connect-another-device = ᱮᱴᱟᱜ ᱥᱟᱫᱷᱚᱱ ᱡᱩᱲᱟᱹᱣ ᱢᱮ
+sync-connect-another-device-2 =
+    .label = ᱮᱴᱟᱜ ᱥᱟᱫᱷᱚᱱ ᱡᱩᱲᱟᱹᱣ ᱢᱮ
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -882,12 +976,19 @@ primary-password-os-auth-dialog-message-win = ᱢᱤᱫᱴᱟᱝ ᱫᱟᱵᱟᱝ
 primary-password-os-auth-dialog-message-macosx = ᱢᱤᱫᱴᱟᱝ ᱢᱩᱞ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫ ᱛᱮᱭᱟᱨ ᱢᱮ
 master-password-os-auth-dialog-caption = { -brand-full-name }
 
-## Privacy section - Autofill
-
-
 ## Privacy Section - History
 
 history-header = ᱱᱟᱜᱟᱢ
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label2 = { -brand-short-name } ᱫᱚ
 # This label is followed, on the same line, by a dropdown list of options
 # (Remember history, etc.).
 # In English it visually creates a full sentence, e.g.
@@ -905,6 +1006,18 @@ history-remember-option-never =
     .label = ᱦᱤᱛᱟᱹᱞ ᱛᱤᱥ ᱦᱚᱸ ᱟᱞᱚᱢ ᱩᱭᱦᱟᱹᱨ ᱟ
 history-remember-option-custom =
     .label = ᱦᱤᱛᱟᱹᱞ ᱞᱟᱹᱜᱤᱫ ᱠᱩᱥᱤᱭᱟᱜ ᱥᱟᱡᱟᱣ ᱠᱚ ᱵᱮᱵᱷᱟᱨ ᱢᱮ ᱾
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } ᱫᱚ ᱟᱢᱟᱜ ᱵᱽᱨᱟᱣᱡᱤᱝ, ᱰᱟᱣᱱᱞᱚᱰ, ᱯᱷᱚᱨᱢ, ᱟᱨ ᱥᱮᱸᱫᱽᱨᱟ ᱦᱤᱛᱟᱹᱞ ᱢᱚᱱᱮ ᱫᱚᱦᱚᱭᱟᱭ ᱾
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } ᱫᱚ ᱱᱤᱡᱮᱨᱟᱜ ᱯᱟᱱᱛᱮ ᱭᱟᱜ ᱞᱮᱠᱟ ᱢᱤᱛ ᱜᱮ ᱥᱟᱡᱟᱣ ᱠᱚ ᱨᱮᱭᱟᱜ ᱵᱮᱵᱷᱟᱨᱟ, ᱟᱨ ᱟᱢ ᱣᱮᱵ ᱯᱟᱱᱛᱮ ᱞᱮᱠᱟ ᱡᱟᱦᱟᱱ ᱦᱤᱛᱟᱹᱞ ᱵᱟᱭ ᱩᱭᱦᱟᱹᱨᱟ ᱾
+history-remember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } ᱫᱚ ᱟᱢᱟᱜ ᱵᱽᱨᱟᱣᱡᱤᱝ, ᱰᱟᱣᱱᱞᱚᱰ, ᱯᱷᱚᱨᱢ, ᱟᱨ ᱥᱮᱸᱫᱽᱨᱟ ᱦᱤᱛᱟᱹᱞ ᱢᱚᱱᱮ ᱫᱚᱦᱚᱭᱟᱭ ᱾
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } ᱫᱚ ᱱᱤᱡᱮᱨᱟᱜ ᱯᱟᱱᱛᱮ ᱭᱟᱜ ᱞᱮᱠᱟ ᱢᱤᱛ ᱜᱮ ᱥᱟᱡᱟᱣ ᱠᱚ ᱨᱮᱭᱟᱜ ᱵᱮᱵᱷᱟᱨᱟ, ᱟᱨ ᱟᱢ ᱣᱮᱵ ᱯᱟᱱᱛᱮ ᱞᱮᱠᱟ ᱡᱟᱦᱟᱱ ᱦᱤᱛᱟᱹᱞ ᱵᱟᱭ ᱩᱭᱦᱟᱹᱨᱟ ᱾
 history-remember-description = { -brand-short-name } ᱫᱚ ᱟᱢᱟᱜ ᱵᱽᱨᱟᱣᱡᱤᱝ, ᱰᱟᱣᱱᱞᱚᱰ, ᱯᱷᱚᱨᱢ, ᱟᱨ ᱥᱮᱸᱫᱽᱨᱟ ᱦᱤᱛᱟᱹᱞ ᱢᱚᱱᱮ ᱫᱚᱦᱚᱭᱟᱭ ᱾
 history-dontremember-description = { -brand-short-name } ᱫᱚ ᱱᱤᱡᱮᱨᱟᱜ ᱯᱟᱱᱛᱮ ᱭᱟᱜ ᱞᱮᱠᱟ ᱢᱤᱛ ᱜᱮ ᱥᱟᱡᱟᱣ ᱠᱚ ᱨᱮᱭᱟᱜ ᱵᱮᱵᱷᱟᱨᱟ, ᱟᱨ ᱟᱢ ᱣᱮᱵ ᱯᱟᱱᱛᱮ ᱞᱮᱠᱟ ᱡᱟᱦᱟᱱ ᱦᱤᱛᱟᱹᱞ ᱵᱟᱭ ᱩᱭᱦᱟᱹᱨᱟ ᱾
 history-private-browsing-permanent =
@@ -925,6 +1038,8 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = ᱦᱤᱛᱟᱹᱞ ᱯᱷᱟᱨᱪᱟᱭ ᱢᱮ…
     .accesskey = s
+history-group =
+    .label = ᱱᱟᱜᱟᱢ
 
 ## Privacy Section - Site Data
 
@@ -970,6 +1085,8 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = ᱮᱠᱥᱮᱯᱥᱚᱱ ᱢᱮᱱᱮᱡᱽ ᱢᱮ …
     .accesskey = x
+cookies-site-data-group =
+    .label = ᱠᱩᱠᱤᱡᱽ ᱠᱚ ᱟᱨ ᱥᱟᱭᱤᱴ ᱰᱟᱴᱟ
 
 ## Privacy Section - Cookie Banner Handling
 
@@ -982,7 +1099,7 @@ cookie-banner-learn-more = ᱰᱷᱮᱨ ᱥᱮᱬᱟᱭ ᱢᱮ
 forms-handle-cookie-banners =
     .label = ᱠᱩᱠᱤ ᱵᱮᱱᱚᱨ ᱠᱷᱟᱴᱚᱭ ᱢᱮ
 
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = ᱴᱷᱤᱠᱟᱹᱱᱟ ᱦᱩᱨᱠᱟᱹᱬ
 addressbar-suggest = ᱴᱷᱤᱠᱬᱟᱹ ᱵᱟᱨ ᱵᱮᱵᱷᱟᱨ ᱡᱷᱚᱜ, ᱵᱟᱛᱟᱣ ᱢᱮ
@@ -1139,6 +1256,8 @@ permissions-notification-link = ᱰᱷᱮᱨ ᱥᱮᱬᱟᱭ ᱢᱮ
 permissions-notification-pause =
     .label = { -brand-short-name } ᱫᱩᱦᱲᱟᱹ ᱮᱛᱦᱚᱵ ᱫᱷᱟᱹᱵᱤᱡ ᱠᱷᱚᱵᱚᱨ ᱛᱷᱩᱢ ᱛᱷᱟᱲ ᱢᱮ
     .accesskey = n
+permissions-autoplay2 =
+    .label = ᱟᱡ ᱛᱮ ᱮᱱᱮᱡ
 permissions-autoplay = ᱟᱡ ᱛᱮ ᱮᱱᱮᱡ
 permissions-autoplay-settings =
     .label = ᱥᱟᱡᱟᱣ ᱠᱚ…
@@ -1158,6 +1277,16 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = ᱪᱷᱟᱰᱟ ᱠᱚ …
     .accesskey = E
+permissions-location2 =
+    .label = ᱡᱟᱭᱜᱟ
+permissions-xr2 =
+    .label = ᱵᱷᱟᱨᱛᱩᱣᱟᱞ ᱨᱮᱭᱟᱞᱤᱴᱤ
+permissions-camera2 =
+    .label = ᱠᱮᱢᱨᱟ
+permissions-microphone2 =
+    .label = ᱢᱟᱭᱠᱨᱚᱯᱷᱳᱱ
+permissions-notification2 =
+    .label = ᱤᱛᱞᱟᱹᱭ ᱠᱚ
 
 ## Privacy Section - Data Collection
 
@@ -1181,8 +1310,6 @@ addon-recommendations-link = ᱰᱷᱮᱨ ᱥᱮᱬᱟᱭ ᱢᱮ
 collection-health-report-disabled = ᱱᱚᱶᱟ ᱵᱮᱱᱟᱣ ᱥᱟᱯᱲᱟᱣ ᱞᱟᱹᱜᱤᱫ ᱰᱟᱴᱟ ᱠᱷᱚᱵᱚᱨ ᱫᱚ ᱵᱚᱸᱫ ᱠᱟᱱᱟ
 collection-backlogged-crash-reports-with-link = { -brand-short-name } ᱟᱢᱟᱜ ᱧᱩᱛᱩᱢ ᱛᱮ ᱵᱮᱠᱞᱚᱜᱽ ᱟᱠᱟᱱ ᱠᱨᱟᱥ ᱠᱷᱚᱵᱚᱨ ᱠᱚ ᱚᱰᱚᱠ ᱞᱟᱹᱜᱤᱫ ᱦᱮᱠ ᱮᱢᱟᱭ ᱢᱮ <a data-l10n-name="crash-reports-link">ᱰᱷᱮᱨ ᱥᱮᱬᱟᱭ ᱢᱮ</a>
     .accesskey = c
-collection-backlogged-crash-reports = { -brand-short-name } ᱟᱢᱟᱜ ᱧᱩᱛᱩᱢ ᱛᱮ ᱵᱮᱠᱞᱚᱜᱽ ᱟᱠᱟᱱ ᱠᱨᱟᱥ ᱠᱷᱚᱵᱚᱨ ᱠᱚ ᱚᱰᱚᱠ ᱞᱟᱹᱜᱤᱫ ᱦᱮᱠ ᱮᱢᱟᱭ ᱢᱮ
-    .accesskey = c
 privacy-segmentation-section-header = ᱱᱟᱣᱟ ᱯᱷᱤᱪᱚᱨ ᱡᱟᱦᱟᱸᱭ ᱟᱢᱟᱜ ᱵᱽᱨᱟᱣᱡᱤᱝ ᱥᱩᱫᱽᱨᱟᱹᱣ ᱪᱷᱚᱭ ᱟ
 privacy-segmentation-section-description = ᱡᱩᱫᱤ ᱟᱢᱟᱜ ᱰᱟᱴᱟ ᱵᱮᱵᱷᱟᱨ ᱠᱟᱛᱮ ᱟᱢᱟᱜ ᱵᱮᱥ ᱠᱟᱹᱢᱤᱦᱚᱨᱟ ᱠᱚ ᱦᱩᱦᱩᱜ ᱞᱟᱹᱜᱤᱫ ᱯᱷᱤᱪᱚᱨ ᱞᱮ ᱮᱢᱚᱜᱼᱟ :
 privacy-segmentation-radio-off =
@@ -1190,15 +1317,14 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = ᱰᱷᱮᱨ ᱵᱤᱵᱨᱚᱬ ᱫᱮᱠᱷᱟᱣ ᱢᱮ
 
-## Privacy Section - Website Advertising Preferences
-
-
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
 ## https://developers.google.com/safe-browsing/developers_guide_v2#AcceptableUsage
 
 security-header = ᱡᱟᱹᱯᱛᱤ
+browsing-protection-group =
+    .label = ᱠᱩᱢᱵᱽᱲᱩ ᱡᱤᱱᱤᱥ ᱟᱨ ᱤᱥᱠᱟᱨ ᱥᱚᱯᱷᱴᱣᱮᱨ ᱨᱩᱠᱷᱤᱭᱟᱹᱤᱭᱟᱹ
 security-browsing-protection = ᱠᱩᱢᱵᱽᱲᱩ ᱡᱤᱱᱤᱥ ᱟᱨ ᱤᱥᱠᱟᱨ ᱥᱚᱯᱷᱴᱣᱮᱨ ᱨᱩᱠᱷᱤᱭᱟᱹᱤᱭᱟᱹ
 security-enable-safe-browsing =
     .label = ᱤᱥᱠᱟᱨ ᱟᱨ ᱠᱩᱢᱵᱽᱲᱩ ᱡᱚᱱᱚᱥ ᱵᱟᱹᱰ ᱢᱮ
@@ -1223,6 +1349,7 @@ certs-view =
 certs-devices =
     .label = ᱡᱟᱹᱯᱛᱤ ᱥᱟᱫᱷᱚᱱ…
     .accesskey = D
+certs-devices-enable-fips = FIPS ᱦᱩᱭ ᱦᱚᱪᱚ
 space-alert-over-5gb-settings-button =
     .label = ᱥᱟᱡᱟᱣ ᱠᱚ ᱡᱷᱤᱜ ᱢᱮ
     .accesskey = O
@@ -1244,6 +1371,8 @@ httpsonly-radio-disabled =
 ## DoH Section
 
 preferences-doh-header = HTTPS ᱪᱮᱛᱟᱱ ᱨᱮ DNS
+dns-over-https-group =
+    .label = HTTPS ᱪᱮᱛᱟᱱ ᱨᱮ DNS
 preferences-doh-description = HTTPS ᱨᱮ ᱰᱚᱢᱮᱱ ᱧᱩᱛᱩᱢ ᱥᱤᱥᱴᱮᱢ (DNS) ᱟᱢᱟᱜ ᱰᱚᱢᱮᱱ ᱧᱩᱛᱩᱢ ᱞᱟᱹᱜᱤᱫ ᱱᱮᱦᱚᱨ ᱢᱤᱫ ᱠᱨᱤᱯᱴᱮᱰ ᱡᱩᱲᱟᱹᱣ ᱛᱟᱞᱟᱛᱮ ᱯᱟᱨᱥᱟᱞᱟᱭ, ᱢᱤᱫ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱰᱤᱹᱮᱱᱹᱮᱥ ᱵᱮᱱᱟᱣᱜ ᱠᱟᱱᱟ ᱟᱨ ᱟᱢ ᱡᱟᱦᱟᱸ ᱣᱮᱵᱽᱥᱟᱭᱤᱴ ᱨᱮ ᱥᱮᱱᱚᱜ ᱠᱟᱱᱟ ᱚᱱᱟ ᱮᱴᱟᱜ ᱦᱚᱲ ᱠᱚ ᱞᱟᱹᱜᱤᱫ ᱟᱹᱰᱤ ᱵᱟᱹᱲᱛᱤ ᱟᱸᱴᱚᱜ ᱢᱟᱸ ᱾
 # Variables:
 #   $status (string) - The status of the DoH connection

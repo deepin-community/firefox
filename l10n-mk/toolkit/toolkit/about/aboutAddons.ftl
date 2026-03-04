@@ -4,10 +4,6 @@
 
 addons-page-title = Менаџер за додатоци
 
-## Variables
-##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
-
-
 ##
 
 list-empty-installed =
@@ -160,29 +156,6 @@ addon-install-from-file-filter-name = Додатоци
 addon-open-about-debugging = Дебагирање на додатоци
     .accesskey = B
 
-## Extension shortcut management
-
-
-## Recommended add-ons page
-
-
-## Add-on actions
-
-
-## Pending uninstall message bar
-
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
-
-## This is the tooltip text for the recommended badges for an extension in about:addons. The
-## badge is a small icon displayed next to an extension when it is recommended on AMO.
-
-
-##
-
-
 ## Page headings
 
 addon-page-options-button =
@@ -193,7 +166,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } е некомпатибилна со { -brand-short-name } { $version }.
 # Variables:
 #   $version (string) - Application version.
@@ -208,12 +181,8 @@ details-notification-unsigned2 =
     .message = { $name } не може да се верифицира за употреба во { -brand-short-name }. Бидете внимателни.
 details-notification-unsigned-link = Повеќе информации
 details-notification-blocked = { $name } е онеспособен поради проблем со безбедност или стабилност.
-details-notification-blocked2 =
-    .message = { $name } е онеспособен поради проблем со безбедност или стабилност.
 details-notification-blocked-link = Повеќе информации
 details-notification-softblocked = Познато е дека { $name } предизвикува проблеми со безбедноста и стабилноста.
-details-notification-softblocked2 =
-    .message = Познато е дека { $name } предизвикува проблеми со безбедноста и стабилноста.
 details-notification-softblocked-link = Повеќе информации
 details-notification-gmp-pending = { $name } ќе се инсталира за кратко.
 details-notification-gmp-pending2 =

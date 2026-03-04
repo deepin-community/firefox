@@ -25,6 +25,8 @@ return-to-amo-subtitle = Molt bé, teniu el { -brand-short-name }
 return-to-amo-addon-title = Ara, instal·leu l'extensió <img data-l10n-name="icon"/><b>{ $addon-name }</b>.
 return-to-amo-add-extension-label = Afegeix l'extensió
 return-to-amo-add-theme-label = Afegeix un tema
+return-to-amo-theme-install-complete-label = Tema instal·lat
+return-to-amo-extension-install-complete-label = Extensió instal·lada
 
 ##  Variables: $addon-name (String) - Name of the add-on to be installed
 
@@ -53,9 +55,6 @@ mr1-onboarding-import-primary-button-label-attribution = Importa del { $previous
 mr1-onboarding-theme-header = Feu-lo vostre
 mr1-onboarding-theme-subtitle = Personalitzeu el { -brand-short-name } amb un tema.
 mr1-onboarding-theme-secondary-button-label = Ara no
-newtab-wallpaper-onboarding-title = Afegiu-hi un toc de color
-newtab-wallpaper-onboarding-subtitle = Trieu un fons de pantalla per donar un aspecte més fresc a les pestanyes noves.
-newtab-wallpaper-onboarding-primary-button-label = Defineix un fons de pantalla
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Tema del sistema
 mr1-onboarding-theme-label-light = Clar
@@ -188,6 +187,8 @@ mr2022-onboarding-pin-primary-button-label =
         [macos] Fixa el { -brand-short-name } al Dock
        *[other] Fixa el { -brand-short-name } a la barra de tasques
     }
+# Primary button string used on welcome page for when Firefox is not pinned on MSIX
+mr2022-onboarding-pin-primary-button-label-msix = Fixa el { -brand-short-name } a la barra de tasques i al menú d'inici
 # Subtitle will be used when user already has Firefox pinned, but
 # has not set it as their default browser.
 # When translating "zip", please feel free to pick a verb that signifies movement and/or exploration
@@ -223,7 +224,9 @@ mr2022-onboarding-set-default-subtitle = Utilitzeu un navegador creat per una or
 mr2022-onboarding-get-started-primary-subtitle = Hem creat l'última versió tenint en compte el vostre punt de vista, i és més fàcil que mai navegar pel web. Ve farcida de funcions que us fascinaran.
 mr2022-onboarding-get-started-primary-button-label = Configura-la en un tres i no res
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Configuració ultraràpida
 mr2022-onboarding-import-subtitle = Configureu el { -brand-short-name } com més us agradi. Afegiu-hi les adreces d'interès, contrasenyes i molt més del vostre navegador antic.
@@ -296,7 +299,7 @@ mr2022-onboarding-privacy-segmentation-button-secondary-label = Mostra informaci
 ## MR2022 Multistage Gratitude screen strings
 
 mr2022-onboarding-gratitude-title = Ens esteu ajudant a crear un web millor
-mr2022-onboarding-gratitude-subtitle = Gràcies per utilitzar el { -brand-short-name }, amb el suport de la Fundació Mozilla. Amb el vostre suport, estem treballant per fer que Internet sigui més oberta, accessible i millor per a tothom.
+mr2022-onboarding-gratitude-subtitle = Gràcies per utilitzar el { -brand-short-name }, amb el suport de la Fundació Mozilla. Amb el vostre suport, treballem per fer que Internet sigui més oberta, accessible i millor per a tothom.
 mr2022-onboarding-gratitude-primary-button-label = Descobriu les novetats
 mr2022-onboarding-gratitude-secondary-button-label = Comença a navegar
 
@@ -335,6 +338,14 @@ onboarding-device-migration-subtitle = Inicieu la sessió al vostre { -fxaccount
 onboarding-device-migration-subtitle2 = Inicieu la sessió al vostre compte per accedir a les vostres adreces d'interès, les contrasenyes i l'historial en el dispositiu nou.
 onboarding-device-migration-primary-button-label = Inicia la sessió
 
+## Add-ons Picker screen
+
+amo-picker-title = Personalitzeu el { -brand-short-name }
+amo-picker-subtitle = Les extensions són com aplicacions per al navegador i us permeten protegir contrasenyes, baixar vídeos, trobar ofertes, blocar la publicitat molesta, canviar l'aspecte del navegador i molt més.
+amo-picker-install-button-label = Afegeix al { -brand-short-name }
+amo-picker-install-complete-label = Instal·lat
+amo-picker-collection-link = Exploreu més complements
+
 ## The following screens have been updated to use security and privacy focused strings:
 
 # Easy setup screen
@@ -342,10 +353,216 @@ onboarding-easy-setup-security-and-privacy-title = Ens encanta mantenir-vos segu
 onboarding-easy-setup-security-and-privacy-subtitle = El nostre navegador sense ànim de lucre ajuda a blocar automàticament les empreses que, en secret, us fan el seguiment mentre navegueu.
 # Mobile download screen
 onboarding-mobile-download-security-and-privacy-title = Manteniu-vos protegit amb el xifratge quan passeu d'un dispositiu a un altre
-onboarding-gratitude-security-and-privacy-subtitle = Gràcies per utilitzar el { -brand-short-name }, amb el suport de la Fundació Mozilla. Amb el vostre suport, estem treballant per fer que Internet sigui més segura i accessible per a tothom.
+onboarding-mobile-download-security-and-privacy-subtitle = Quan activeu la sincronització, el { -brand-short-name } xifra les vostres contrasenyes i les adreces d'interès, entre d'altres. A més, podeu recuperar les pestanyes obertes en altres dispositius.
+# Gratitude screen
+onboarding-gratitude-security-and-privacy-title = El { -brand-short-name } està de part vostra
+onboarding-gratitude-security-and-privacy-subtitle = Gràcies per utilitzar el { -brand-short-name }, amb el suport de la Fundació Mozilla. Amb el vostre suport, treballem per fer que Internet sigui més segura i accessible per a tothom.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Sincronitzeu les vostres dades entre dispositius
+onboarding-sign-up-description = Creeu un compte i tota la vostra informació important (contrasenyes, adreces d’interès i altres) s’emmagatzemarà de manera segura i estarà disponible quan inicieu la sessió en qualsevol dispositiu.
+onboarding-sign-up-button = Inici de sessió o registre
+onboarding-sign-up-secondary-button = Comença a navegar
 
 ## New user time and familiarity survey strings
 
 onboarding-new-user-time-based-survey-title = Quant temps fa que feu servir el { -brand-short-name }?
+onboarding-new-user-familiarity-based-survey-title = Quin grau de familiaritat teniu amb el { -brand-short-name }?
+onboarding-new-user-survey-subtitle = Els vostres comentaris ajuden a millorar el { -brand-short-name }.
 # When translating "next" it means the next screen in onboarding.
 onboarding-new-user-survey-next-button-label = Següent
+onboarding-new-user-survey-legal-link-label = En seleccionar «{ onboarding-new-user-survey-next-button-label }», accepteu l’<a data-l10n-name="privacy_notice">avís de privadesa</a> del { -brand-product-name }.
+# When translating "brand new" it means completely new.
+onboarding-new-user-survey-time-based-option-1 = Tot just l’acabo de conèixer
+onboarding-new-user-survey-time-based-option-2 = Menys d’un mes
+onboarding-new-user-survey-time-based-option-3 = Més d’un mes i l’utilitzo habitualment
+onboarding-new-user-survey-time-based-option-4 = Més d’un mes i l’utilitzo de tant en tant
+# When translating "brand new" it means completely new.
+onboarding-new-user-survey-familiarity-based-option-1 = Tot just l’acabo de conèixer
+onboarding-new-user-survey-familiarity-based-option-2 = L’he utilitzat una mica
+onboarding-new-user-survey-familiarity-based-option-3 = El conec molt bé
+onboarding-new-user-survey-familiarity-based-option-4 = L’he utilitzat abans, però ja fa temps
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = On voleu que es mostrin les pestanyes?
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Podeu canviar-ho quan vulgueu en els paràmetres de la barra lateral.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Trieu on voleu veure les pestanyes
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Teniu moltes pestanyes obertes? Simplifiqueu-ne la visualització col·locant-les al lateral. O manteniu l’estil clàssic amb les pestanyes a la part superior. Podeu canviar-ho en qualsevol moment.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Trieu la disposició de les pestanyes
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Proveu les pestanyes laterals per simplificar la visualització i ajudar a concentrar-vos. O manteniu l’estil clàssic amb les pestanyes a la part superior. Podeu canviar-ho en qualsevol moment.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Pestanyes laterals
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Pestanyes al capdamunt
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Les pestanyes verticals ja són aquí
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Us presentem les pestanyes verticals
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Proveu les pestanyes laterals. Podeu canviar-ho quan vulgueu en els paràmetres de la barra lateral.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Proveu les pestanyes verticals
+onboarding-flair-text = Novetat
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Mantingueu les pestanyes horitzontals
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Una finestra del navegador que mostra les pestanyes al costat de la pantalla com a part de la barra lateral del { -brand-shorter-name }.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Una finestra del navegador que mostra les pestanyes al costat de la pantalla com a part de la barra lateral del { -brand-shorter-name }.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Una finestra del navegador que mostra les pestanyes a la part superior.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Una finestra del navegador que mostra les pestanyes a la part superior.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Proveu un bot de conversa d’IA a la barra lateral
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Resumiu el contingut web, feu una pluja d'idees, redacteu esborranys de missatges... tot mentre navegueu. Podeu triar entre diversos proveïdors. Podeu canviar-ho en qualsevol moment. <a data-l10n-name="learn-more">Més informació</a>
+onboarding-genai-sidebar-primary-button = Trieu un bot de conversa
+onboarding-genai-sidebar-secondary-button = Comença a navegar
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Acabeu de configurar el { -brand-short-name }
+onboarding-checklist-subtitle = Seguiu aquests passos per treure el màxim profit de la vostra experiència de navegació.
+onboarding-checklist-set-default = Defineix el { -brand-short-name } com a navegador per defecte
+onboarding-checklist-pin = Fixa el { -brand-short-name } a la barra de tasques
+onboarding-checklist-import = Importa del navegador anterior
+onboarding-checklist-extension = Afegeix una extensió
+onboarding-checklist-sign-up = Creeu un compte o inicieu la sessió
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Els grups de pestanyes milloren l’organització i la concentració
+tab-groups-onboarding-feature-callout-subtitle = Arrossegueu una pestanya sobre una altra per crear el vostre primer grup.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-create-group-title-3 = Trobareu els vostres grups de pestanyes al menú «Llista totes les pestanyes» quan vulgueu.
+tab-groups-onboarding-create-group-title-2 = Trobareu els vostres grups de pestanyes aquí quan vulgueu.
+tab-groups-onboarding-create-group-no-alltabs-button-title = Trobeu els vostres grups cercant-los a la barra d'adreces.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-saved-groups-title-3 = Quan tanqueu un grup de pestanyes, el podeu tornar a obrir des del menú «Llista totes les pestanyes» quan vulgueu.
+tab-groups-onboarding-saved-groups-title-2 = Quan tanqueu un grup de pestanyes, podeu tornar a obrir-lo des d’aquí en qualsevol moment.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title-2 = Trobeu els grups tancats cercant-los a la barra d'adreces.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-session-restore-title-2 = Torneu a obrir els vostres grups de pestanyes des del menú «Llista totes les pestanyes» quan vulgueu.
+tab-groups-onboarding-session-restore-title = Torneu a obrir els vostres grups de pestanyes des d’aquí quan vulgueu.
+tab-groups-onboarding-dismiss = D'acord
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Doneu la benvinguda als perfils del { -brand-product-name }
+multi-profile-spotlight-body = Canvieu fàcilment entre la navegació per feina i per diversió. Els perfils mantenen totalment separada la vostra informació de navegació (inclosos l’historial de cerca i les contrasenyes), perquè pugueu tenir-ho tot organitzat.
+multi-profile-spotlight-cta = Crea un perfil
+multi-profile-callout-title = Creeu perfils diferents per a la feina i per a la diversió
+multi-profile-callout-subtitle = Els perfils us permeten mantenir totalment separada la vostra informació de navegació, com ara l’historial de cerca i les contrasenyes.
+multi-profile-callout-cta = Crea un perfil
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Baixa, sincronitza i llestos!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Escanegeu el codi QR per a baixar el { -brand-product-name } per al mòbil. Un cop instal·lat, seleccioneu «Sincronitza amb el mòbil» per a accedir a les vostres contrasenyes, adreces d’interès i molt més des de qualsevol lloc.
+dismiss-button-label = Descarta
+sync-to-mobile-button-label = Sincronitza amb el mòbil
+desktop-to-mobile-qr-code-alt =
+    .aria-label = Codi QR per baixar el { -brand-product-name } per al mòbil
+
+## Fx Backup onboarding: Create Backup spotlight
+
+create-backup-screen-1-title =
+    Feu l'actualització al Windows 11?
+    Fem una còpia de seguretat de les vostres dades del { -brand-product-name }.
+create-backup-screen-1-subtitle = Protegiu automàticament les contrasenyes, les adreces d'interès i més coses en 1 o 2 minuts.
+create-backup-screen-1-flair = Recomanat
+create-backup-learn-more-link = <a data-l10n-name="learn-more-label">Més informació</a>
+create-backup-screen-1-sync-label = Sincronitza amb el { -brand-product-name }
+create-backup-screen-1-backup-label = Còpia de seguretat a l'ordinador
+create-backup-screen-1-backup-body = Desa al dispositiu o al OneDrive
+create-backup-select-tile-button-label = Selecciona
+create-backup-back-button-label = Enrere
+create-backup-show-fewer =
+    .label = Mostra'n menys com aquest
+create-backup-screen-2-title = Trieu les dades del { -brand-product-name } de què voleu fer una còpia de seguretat
+create-backup-screen-2-subtitle = Només tarda un minut. Es fa una còpia de seguretat de les dades un cop al dia.
+# Label for the "Easy setup" backup option
+create-backup-screen-2-easy-label = Configuració fàcil
+# Preceded by a green check mark indicating that these are included in "Easy setup" backup
+create-backup-screen-2-easy-list-1 = Adreces d'interès, historial, configuració i més
+# Preceded by a red X indicating that these are not included in the "Easy setup" backup
+create-backup-screen-2-easy-list-2 = No inclou contrasenyes ni pagaments
+# Preceded by a red X indicating that "Easy setup" backups are not encrypted
+create-backup-screen-2-easy-list-3 = No estan xifrades
+# Label for the "All data" backup option
+create-backup-screen-2-all-label = Totes les dades
+# Preceded by a green check mark indicating that these are included in the "All data" backup
+create-backup-screen-2-all-list-2 = Inclou contrasenyes i pagaments
+# Preceded by a green check mark and shield indicating "All data" backups are encrypted
+create-backup-screen-2-all-list-3 = Xifrat amb una contrasenya
+# Title for a screen asking users to choose a file location
+create-backup-screen-3-location = On voleu que es desi la còpia de seguretat?
+# Title for a screen asking users to create a password that will encrypt the backup
+create-backup-screen-3-title = Creeu una contrasenya per al fitxer de còpia de seguretat
+create-backup-screen-3-subtitle = Necessària per xifrar les dades. Guardeu-la en un lloc que recordeu.
+fx-backup-opt-in-header = Trieu la ubicació del fitxer
+fx-backup-opt-in-filepath-label = Trieu un lloc on vulgueu fer la transferència a un dispositiu nou, com ara el OneDrive.
+fx-backup-opt-in-create-password-label = Introduïu la contrasenya
+fx-backup-opt-in-confirm-btn-label = Continua
+fx-backup-opt-in-cancel-btn-label = Enrere
+
+## Fx Backup confirmation screen strings
+
+fx-backup-confirmation-screen-title = S'ha programat la còpia de seguretat
+fx-backup-confirmation-screen-close-button = Tanca
+
+## These strings appear as a confirmation of which items will or won't be included as part of the selected backup method.
+
+fx-backup-confirmation-screen-all-data-item-text-1 = Totes les dades de navegació incloses
+fx-backup-confirmation-screen-all-data-item-text-2 = S'ha desat al dispositiu
+fx-backup-confirmation-screen-all-data-item-text-3 = Xifrats i protegits amb contrasenya
+fx-backup-confirmation-screen-easy-setup-item-text-1 = Adreces d'interès, historial, configuració i altres dades incloses
+fx-backup-confirmation-screen-easy-setup-item-text-2 = S'ha desat al dispositiu
+fx-backup-confirmation-screen-easy-setup-item-text-3 = No s'inclouen ni les contrasenyes ni els pagaments
+fx-backup-confirmation-screen-easy-setup-item-subtext-3 = Aneu a <a data-l10n-name="settings">Configuració</a> per a incloure dades sensibles.
+fx-backup-confirmation-screen-item-subtext-1 = La còpia de seguretat començarà d'aquí a uns minuts i s'executarà un cop al dia. Podeu comprovar-ne l'estat a <a data-l10n-name="settings">Configuració</a>.
+fx-backup-confirmation-screen-item-subtext-2 = El { -brand-short-name } buscarà la vostra còpia de seguretat si cal que la torneu a instal·lar.
+
+## Restore from Backup Flow about:welcome screens
+
+restore-from-backup-secondary-top-button = Restaura des de la còpia de seguretat
+restore-from-backup-title = Recuperem el { -brand-short-name } tal com us agrada.
+restore-from-backup-subtitle = Recupereu totes les adreces d'interès, l'historial i altres dades per tornar a navegar.
+
+## Restored from Backup spotlight
+
+restored-from-backup-success-title = Ja tornem a ser aquí! Les vostres dades del { -brand-short-name } s'han restaurat.
+restored-from-backup-success-no-checklist-subtitle = Podeu activar la còpia de seguretat per a aquest dispositiu a <a data-l10n-name="settings">Configuració</a>.
+restored-from-backup-success-with-checklist-primary-button = Desa i continua
+restored-from-backup-success-with-checklist-secondary-button = Omet aquest pas
+restored-from-backup-success-no-checklist-primary-button = Continua
+restored-from-backup-error-title = Hi ha hagut un problema amb el fitxer de còpia de seguretat.
+restored-from-backup-error-subtitle = Si teniu un altre fitxer de còpia de seguretat del { -brand-short-name }, proveu de restaurar-lo des d'allà. <a data-l10n-name="restore-problems">Encara teniu problemes?</a>
+restored-from-backup-error-primary-button = Tanca
+
+## Onboarding Personalization Screen
+## A screen shown to users during the onboarding process that asks them two qualifying questions about their use of the browser
+
+onboarding-personalization-title = Personalitzeu la vostra experiència amb el { -brand-short-name }
+onboarding-personalization-subtitle = Responeu unes quantes preguntes i us recomanarem funcions i extensions per millorar l'ús del { -brand-short-name }.
+onboarding-personalization-use-case-title = Per a què utilitzareu el { -brand-short-name }?
+onboarding-personalization-use-case-personal-option = Personal
+onboarding-personalization-use-case-school-option = Escola
+onboarding-personalization-use-case-work-option = Feina
+onboarding-personalization-motivation-title = Quines funcions del { -brand-short-name } us importen més?
+onboarding-personalization-motivation-privacy-option = Privadesa i seguretat
+onboarding-personalization-motivation-productivity-option = Productivitat
+onboarding-personalization-motivation-other-option = Altres

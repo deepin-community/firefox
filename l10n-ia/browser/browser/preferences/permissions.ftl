@@ -21,6 +21,9 @@ permissions-session =
 permissions-allow =
     .label = Permitter
     .accesskey = P
+permissions-add =
+    .label = Adder
+    .accesskey = A
 permissions-button-off =
     .label = Disactivar
     .accesskey = D
@@ -92,6 +95,13 @@ permissions-exceptions-https-only-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-https-only-desc = Tu pote disactivar le modo solo HTTPS pro sitos web specific. { -brand-short-name } non tentara securisar le connexion a HTTPS pro ille sitos. Exceptiones non se applica a fenestras private.
 permissions-exceptions-https-only-desc2 = Tu pote disactivar le modo solo HTTPS pro sitos web specific. { -brand-short-name } non tentara securisar le connexion a HTTPS pro ille sitos.
+
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-window3 =
+    .title = Sitos web permittite: quadros resaltante e re-directiones de tertie-partes
+    .style = { permissions-window2.style }
+permissions-exceptions-popup-desc2 = Tu pote specificar a qual sitos web es permittite aperir fenestras resaltante e esser re-dirigite per quadros de tertie-partes.
 
 ## Exceptions - Pop-ups
 
@@ -167,6 +177,26 @@ permissions-site-camera-desc = Le sitos web sequente ha requestate de acceder a 
 permissions-site-camera-disable-label =
     .label = Blocar nove requestas de acceder a tu camera
 permissions-site-camera-disable-desc = Isto impedira qualcunque sitos web non listate antea de demandar licentia a acceder a tu camera. Blocar le accesso a tu camera pote nocer alcun functionalitates del sito web.
+
+## Site Permissions - Local host
+
+permissions-site-localhost-window =
+    .title = Parametros: applicationes e servicios del apparato
+    .style = { permissions-window2.style }
+permissions-site-localhost-desc = Iste sitos web ha requirite accesso a applicationes e servicios sur iste apparato. Tu pote eliger de permitter o blocar le sitos de facer isto.
+permissions-site-localhost-disable-label =
+    .label = Blocar nove requestas de acceder a applicationes e servicios sur iste apparato
+permissions-site-localhost-disable-desc = Isto impedira a qualcunque sito web non in supra listate de requirer accesso a applicationes e servicios sur iste apparato. Facer isto pote corrumper alcun functionalitates de sitos web.
+
+## Site Permissions - Local network
+
+permissions-site-local-network-window =
+    .title = Parametros, apparatos de rete local
+    .style = { permissions-window2.style }
+permissions-site-local-network-desc = Iste sitos web ha requirite accesso a applicationes e servicios sur apparatos connexe a tu wi-fi o rete local. Tu pote eliger de permitter o blocar le sitos de facer isto.
+permissions-site-local-network-disable-label =
+    .label = Blocar nove requestas de acceder a applicationes e servicios sur apparatos connexe a tu wi-fi o rete local.
+permissions-site-local-network-disable-desc = Isto impedira a qualcunque sito web non listate supra de requirer accesso a applicationes e servicios sur apparatos connexe a tu wi-fi o rete local. Facer isto pote corrumper alcun functionalitates de sitos web.
 
 ## Site Permissions - Microphone
 

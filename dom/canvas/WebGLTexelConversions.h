@@ -32,8 +32,9 @@
 #  define __restrict
 #endif
 
-#include "WebGLTypes.h"
 #include <stdint.h>
+
+#include "WebGLTypes.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/Casting.h"
 
@@ -48,6 +49,8 @@ bool ConvertImage(size_t width, size_t height, const void* srcBegin,
                   WebGLTexelFormat srcFormat, bool srcPremultiplied,
                   void* dstBegin, size_t dstStride, gl::OriginPos dstOrigin,
                   WebGLTexelFormat dstFormat, bool dstPremultiplied,
+                  dom::PredefinedColorSpace srcColorSpace,
+                  dom::PredefinedColorSpace dstColorSpace,
                   bool* out_wasTrivial);
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -1343,6 +1346,11 @@ template <typename SrcType, typename DstType>
 MOZ_ALWAYS_INLINE void convertType(const SrcType* __restrict src,
                                    DstType* __restrict dst) {
   MOZ_ASSERT(false, "Unimplemented texture format conversion");
+  // Default construct dst values, ensuring they are *some* value.
+  dst[0] = DstType();
+  dst[1] = DstType();
+  dst[2] = DstType();
+  dst[3] = DstType();
 }
 
 template <>
@@ -1380,6 +1388,34 @@ MOZ_ALWAYS_INLINE void convertType<uint8_t, float>(
   dst[1] = src[1] * scaleFactor;
   dst[2] = src[2] * scaleFactor;
   dst[3] = src[3] * scaleFactor;
+}
+
+template <>
+MOZ_ALWAYS_INLINE void convertType<float, uint8_t>(const float* __restrict src,
+                                                   uint8_t* __restrict dst) {
+  const float scaleFactor = 255.0f;
+  dst[0] = uint8_t(src[0] * scaleFactor);
+  dst[1] = uint8_t(src[1] * scaleFactor);
+  dst[2] = uint8_t(src[2] * scaleFactor);
+  dst[3] = uint8_t(src[3] * scaleFactor);
+}
+
+template <>
+MOZ_ALWAYS_INLINE void convertType<uint16_t, float>(
+    const uint16_t* __restrict src, float* __restrict dst) {
+  dst[0] = unpackFromFloat16(src[0]);
+  dst[1] = unpackFromFloat16(src[1]);
+  dst[2] = unpackFromFloat16(src[2]);
+  dst[3] = unpackFromFloat16(src[3]);
+}
+
+template <>
+MOZ_ALWAYS_INLINE void convertType<float, uint16_t>(const float* __restrict src,
+                                                    uint16_t* __restrict dst) {
+  dst[0] = packToFloat16(src[0]);
+  dst[1] = packToFloat16(src[1]);
+  dst[2] = packToFloat16(src[2]);
+  dst[3] = packToFloat16(src[3]);
 }
 
 template <>

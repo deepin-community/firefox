@@ -12,7 +12,6 @@ import sys
 from pathlib import Path
 
 import mozpack.path as mozpath
-import six
 from mach.mixin.process import ProcessExecutionMixin
 from mozboot.mozconfig import MozconfigFindException
 from mozfile import which
@@ -20,6 +19,7 @@ from mozversioncontrol import (
     GitRepository,
     HgRepository,
     InvalidRepoPath,
+    JujutsuRepository,
     MissingConfigureInfo,
     MissingVCSTool,
     get_repository_from_build_config,
@@ -64,7 +64,7 @@ class BinaryNotFoundException(Exception):
         self.path = path
 
     def __str__(self):
-        return "Binary expected at {} does not exist.".format(self.path)
+        return f"Binary expected at {self.path} does not exist."
 
     def help(self):
         return "It looks like your program isn't built. You can run |./mach build| to build it."
@@ -141,7 +141,7 @@ class MozbuildObject(ProcessExecutionMixin):
         mozconfig = MozconfigLoader.AUTODETECT
 
         def load_mozinfo(path):
-            info = json.load(io.open(path, "rt", encoding="utf-8"))
+            info = json.load(open(path, encoding="utf-8"))
             topsrcdir = info.get("topsrcdir")
             topobjdir = os.path.dirname(path)
             mozconfig = info.get("mozconfig")
@@ -207,7 +207,7 @@ class MozbuildObject(ProcessExecutionMixin):
             return True
 
         deps = []
-        with io.open(dep_file, "r", encoding="utf-8", newline="\n") as fh:
+        with open(dep_file, encoding="utf-8", newline="\n") as fh:
             deps = fh.read().splitlines()
 
         mtime = os.path.getmtime(output)
@@ -232,7 +232,7 @@ class MozbuildObject(ProcessExecutionMixin):
         # we last built the backend, re-generate the backend if
         # so.
         outputs = []
-        with io.open(backend_file, "r", encoding="utf-8", newline="\n") as fh:
+        with open(backend_file, encoding="utf-8", newline="\n") as fh:
             outputs = fh.read().splitlines()
         for output in outputs:
             if not os.path.isfile(mozpath.join(self.topobjdir, output)):
@@ -278,7 +278,7 @@ class MozbuildObject(ProcessExecutionMixin):
         # the environment variable, which has an impact on autodetection (when
         # path is MozconfigLoader.AUTODETECT), and memoization wouldn't account
         # for it without the explicit (unused) argument.
-        out = six.StringIO()
+        out = io.StringIO()
         env = os.environ
         if path and path != MozconfigLoader.AUTODETECT:
             env = dict(env)
@@ -294,14 +294,14 @@ class MozbuildObject(ProcessExecutionMixin):
         class ReducedConfigureSandbox(ConfigureSandbox):
             def depends_impl(self, *args, **kwargs):
                 args = tuple(
-                    a
-                    if not isinstance(a, six.string_types) or a != "--help"
-                    else self._always.sandboxed
+                    (
+                        a
+                        if not isinstance(a, str) or a != "--help"
+                        else self._always.sandboxed
+                    )
                     for a in args
                 )
-                return super(ReducedConfigureSandbox, self).depends_impl(
-                    *args, **kwargs
-                )
+                return super().depends_impl(*args, **kwargs)
 
         # This may be called recursively from configure itself for $reasons,
         # so avoid logging to the same logger (configure uses "moz.configure")
@@ -370,12 +370,9 @@ class MozbuildObject(ProcessExecutionMixin):
                 config_status
             )
         except ConfigStatusFailure as e:
-            six.raise_from(
-                BuildEnvironmentNotFoundException(
-                    "config.status is outdated or broken. Run configure."
-                ),
-                e,
-            )
+            raise BuildEnvironmentNotFoundException(
+                "config.status is outdated or broken. Run configure."
+            ) from e
 
         return self._config_environment
 
@@ -937,7 +934,7 @@ class MachCommandBase(MozbuildObject):
             self._ensure_state_subdir_exists(".")
             logfile = self._get_state_filename("last_log.json")
             try:
-                fd = open(logfile, "wt")
+                fd = open(logfile, "w")
                 self.log_manager.add_json_handler(fd)
             except Exception as e:
                 self.log(
@@ -953,115 +950,144 @@ class MachCommandBase(MozbuildObject):
         )
 
 
-class MachCommandConditions(object):
+class MachCommandConditions:
     """A series of commonly used condition functions which can be applied to
     mach commands with providers deriving from MachCommandBase.
     """
 
     @staticmethod
-    def is_firefox(cls):
+    def is_firefox(build_obj):
         """Must have a Firefox build."""
-        if hasattr(cls, "substs"):
-            return cls.substs.get("MOZ_BUILD_APP") == "browser"
+        if hasattr(build_obj, "substs"):
+            return build_obj.substs.get("MOZ_BUILD_APP") == "browser"
         return False
 
     @staticmethod
-    def is_jsshell(cls):
+    def is_jsshell(build_obj):
         """Must have a jsshell build."""
-        if hasattr(cls, "substs"):
-            return cls.substs.get("MOZ_BUILD_APP") == "js"
+        if hasattr(build_obj, "substs"):
+            return build_obj.substs.get("MOZ_BUILD_APP") == "js"
         return False
 
     @staticmethod
-    def is_thunderbird(cls):
+    def is_thunderbird(build_obj):
         """Must have a Thunderbird build."""
-        if hasattr(cls, "substs"):
-            return cls.substs.get("MOZ_BUILD_APP") == "comm/mail"
+        if hasattr(build_obj, "substs"):
+            return build_obj.substs.get("MOZ_BUILD_APP") == "comm/mail"
         return False
 
     @staticmethod
-    def is_firefox_or_thunderbird(cls):
+    def is_firefox_or_thunderbird(build_obj):
         """Must have a Firefox or Thunderbird build."""
         return MachCommandConditions.is_firefox(
-            cls
-        ) or MachCommandConditions.is_thunderbird(cls)
+            build_obj
+        ) or MachCommandConditions.is_thunderbird(build_obj)
 
     @staticmethod
-    def is_android(cls):
+    def is_android(build_obj):
         """Must have an Android build."""
-        if hasattr(cls, "substs"):
-            return cls.substs.get("MOZ_WIDGET_TOOLKIT") == "android"
+        if hasattr(build_obj, "substs"):
+            return build_obj.substs.get("MOZ_WIDGET_TOOLKIT") == "android"
         return False
 
     @staticmethod
-    def is_not_android(cls):
+    def is_not_android(build_obj):
         """Must not have an Android build."""
-        if hasattr(cls, "substs"):
-            return cls.substs.get("MOZ_WIDGET_TOOLKIT") != "android"
+        if hasattr(build_obj, "substs"):
+            return build_obj.substs.get("MOZ_WIDGET_TOOLKIT") != "android"
         return False
 
     @staticmethod
-    def is_firefox_or_android(cls):
+    def is_ios(build_obj):
+        """Must have an iOS build."""
+        if hasattr(build_obj, "substs"):
+            return build_obj.substs.get("TARGET_OS") == "iOS"
+        return False
+
+    @staticmethod
+    def is_ios_simulator(build_obj):
+        """Must have an iOS simulator build."""
+        if hasattr(build_obj, "substs"):
+            return build_obj.substs.get("IPHONEOS_IS_SIMULATOR", False)
+        return False
+
+    @staticmethod
+    def is_android_cpu(build_obj):
+        """Targeting Android CPU."""
+        if hasattr(build_obj, "substs"):
+            return "ANDROID_CPU_ARCH" in build_obj.substs
+        return False
+
+    @staticmethod
+    def is_firefox_or_android(build_obj):
         """Must have a Firefox or Android build."""
         return MachCommandConditions.is_firefox(
-            cls
-        ) or MachCommandConditions.is_android(cls)
+            build_obj
+        ) or MachCommandConditions.is_android(build_obj)
 
     @staticmethod
-    def has_build(cls):
+    def has_build(build_obj):
         """Must have a build."""
         return MachCommandConditions.is_firefox_or_android(
-            cls
-        ) or MachCommandConditions.is_thunderbird(cls)
+            build_obj
+        ) or MachCommandConditions.is_thunderbird(build_obj)
 
     @staticmethod
-    def has_build_or_shell(cls):
+    def has_build_or_shell(build_obj):
         """Must have a build or a shell build."""
-        return MachCommandConditions.has_build(cls) or MachCommandConditions.is_jsshell(
-            cls
-        )
+        return MachCommandConditions.has_build(
+            build_obj
+        ) or MachCommandConditions.is_jsshell(build_obj)
 
     @staticmethod
-    def is_hg(cls):
+    def is_hg(build_obj):
         """Must have a mercurial source checkout."""
         try:
-            return isinstance(cls.repository, HgRepository)
+            return isinstance(build_obj.repository, HgRepository)
         except InvalidRepoPath:
             return False
 
     @staticmethod
-    def is_git(cls):
+    def is_git(build_obj):
         """Must have a git source checkout."""
         try:
-            return isinstance(cls.repository, GitRepository)
+            return isinstance(build_obj.repository, GitRepository)
         except InvalidRepoPath:
             return False
 
     @staticmethod
-    def is_artifact_build(cls):
+    def is_jj(build_obj):
+        """Must have a jj source checkout."""
+        try:
+            return isinstance(build_obj.repository, JujutsuRepository)
+        except InvalidRepoPath:
+            return False
+
+    @staticmethod
+    def is_artifact_build(build_obj):
         """Must be an artifact build."""
-        if hasattr(cls, "substs"):
-            return getattr(cls, "substs", {}).get("MOZ_ARTIFACT_BUILDS")
+        if hasattr(build_obj, "substs"):
+            return getattr(build_obj, "substs", {}).get("MOZ_ARTIFACT_BUILDS")
         return False
 
     @staticmethod
-    def is_non_artifact_build(cls):
+    def is_non_artifact_build(build_obj):
         """Must not be an artifact build."""
-        if hasattr(cls, "substs"):
-            return not MachCommandConditions.is_artifact_build(cls)
+        if hasattr(build_obj, "substs"):
+            return not MachCommandConditions.is_artifact_build(build_obj)
         return False
 
     @staticmethod
-    def is_buildapp_in(cls, apps):
+    def is_buildapp_in(build_obj, apps):
         """Must have a build for one of the given app"""
         for app in apps:
-            attr = getattr(MachCommandConditions, "is_{}".format(app), None)
-            if attr and attr(cls):
+            attr = getattr(MachCommandConditions, f"is_{app}", None)
+            if attr and attr(build_obj):
                 return True
         return False
 
 
-class PathArgument(object):
+class PathArgument:
     """Parse a filesystem path argument and transform it in various ways."""
 
     def __init__(self, arg, topsrcdir, topobjdir, cwd=None):

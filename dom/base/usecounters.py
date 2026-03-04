@@ -7,7 +7,7 @@ import re
 
 def read_conf(conf_filename):
     # Can't read/write from a single StringIO, so make a new one for reading.
-    stream = open(conf_filename, "r")
+    stream = open(conf_filename)
 
     def parse_counters(stream):
         for line_num, full_line in enumerate(stream):
@@ -103,6 +103,7 @@ use.counter:
     expires: never
     send_in_pings:
       - use-counters
+      - metrics
 
   dedicated_workers_destroyed:
     type: counter
@@ -382,42 +383,38 @@ def parse_use_counters():
             )
             name = f"{counter['interface_name']}_{counter['attribute_name']}".lower()
             attr = f"{counter['interface_name']}.{counter['attribute_name']}"
-            page.append(
-                (f"{enum_root}_getter", f"{name}_getter", f"Whether a page got {attr}.")
-            )
-            page.append(
-                (f"{enum_root}_setter", f"{name}_setter", f"Whether a page set {attr}.")
-            )
-            doc.append(
-                (
-                    f"{enum_root}_getter",
-                    f"{name}_getter",
-                    f"Whether a document got {attr}.",
-                )
-            )
-            doc.append(
-                (
-                    f"{enum_root}_setter",
-                    f"{name}_setter",
-                    f"Whether a document set {attr}.",
-                )
-            )
+            page.append((
+                f"{enum_root}_getter",
+                f"{name}_getter",
+                f"Whether a page got {attr}.",
+            ))
+            page.append((
+                f"{enum_root}_setter",
+                f"{name}_setter",
+                f"Whether a page set {attr}.",
+            ))
+            doc.append((
+                f"{enum_root}_getter",
+                f"{name}_getter",
+                f"Whether a document got {attr}.",
+            ))
+            doc.append((
+                f"{enum_root}_setter",
+                f"{name}_setter",
+                f"Whether a document set {attr}.",
+            ))
         elif counter["type"] == "custom":
             enum_name = f"eUseCounter_custom_{counter['name']}"
-            page.append(
-                (
-                    enum_name,
-                    to_snake_case(counter["name"]),
-                    f"Whether a page {counter['desc']}.",
-                )
-            )
-            doc.append(
-                (
-                    enum_name,
-                    to_snake_case(counter["name"]),
-                    f"Whether a document {counter['desc']}.",
-                )
-            )
+            page.append((
+                enum_name,
+                to_snake_case(counter["name"]),
+                f"Whether a page {counter['desc']}.",
+            ))
+            doc.append((
+                enum_name,
+                to_snake_case(counter["name"]),
+                f"Whether a document {counter['desc']}.",
+            ))
         else:
             print(f"Found unexpected use counter type {counter['type']}. Returning 1.")
             return 1
@@ -433,84 +430,72 @@ def parse_use_counters():
             enum_name = f"{counter['interface_name']}_{counter['method_name']}"
             name = f"{counter['interface_name']}_{counter['method_name']}".lower()
             method = f"called {counter['interface_name']}.{counter['method_name']}"
-            dedicated.append(
-                (enum_name, name, f"Whether a dedicated worker called {method}.")
-            )
-            shared.append(
-                (enum_name, name, f"Whether a shared worker called {method}.")
-            )
-            service.append(
-                (enum_name, name, f"Whether a service worker called {method}.")
-            )
+            dedicated.append((
+                enum_name,
+                name,
+                f"Whether a dedicated worker called {method}.",
+            ))
+            shared.append((
+                enum_name,
+                name,
+                f"Whether a shared worker called {method}.",
+            ))
+            service.append((
+                enum_name,
+                name,
+                f"Whether a service worker called {method}.",
+            ))
         elif counter["type"] == "attribute":
             enum_root = f"{counter['interface_name']}_{counter['attribute_name']}"
             name = f"{counter['interface_name']}_{counter['attribute_name']}".lower()
             attr = f"{counter['interface_name']}.{counter['attribute_name']}"
-            dedicated.append(
-                (
-                    f"{enum_root}_getter",
-                    f"{name}_getter",
-                    f"Whether a dedicated worker got {attr}.",
-                )
-            )
-            dedicated.append(
-                (
-                    f"{enum_root}_setter",
-                    f"{name}_setter",
-                    f"Whether a dedicated worker set {attr}.",
-                )
-            )
-            shared.append(
-                (
-                    f"{enum_root}_getter",
-                    f"{name}_getter",
-                    f"Whether a shared worker got {attr}.",
-                )
-            )
-            shared.append(
-                (
-                    f"{enum_root}_setter",
-                    f"{name}_setter",
-                    f"Whether a shared worker set {attr}.",
-                )
-            )
-            service.append(
-                (
-                    f"{enum_root}_getter",
-                    f"{name}_getter",
-                    f"Whether a service worker got {attr}.",
-                )
-            )
-            service.append(
-                (
-                    f"{enum_root}_setter",
-                    f"{name}_setter",
-                    f"Whether a service worker set {attr}.",
-                )
-            )
+            dedicated.append((
+                f"{enum_root}_getter",
+                f"{name}_getter",
+                f"Whether a dedicated worker got {attr}.",
+            ))
+            dedicated.append((
+                f"{enum_root}_setter",
+                f"{name}_setter",
+                f"Whether a dedicated worker set {attr}.",
+            ))
+            shared.append((
+                f"{enum_root}_getter",
+                f"{name}_getter",
+                f"Whether a shared worker got {attr}.",
+            ))
+            shared.append((
+                f"{enum_root}_setter",
+                f"{name}_setter",
+                f"Whether a shared worker set {attr}.",
+            ))
+            service.append((
+                f"{enum_root}_getter",
+                f"{name}_getter",
+                f"Whether a service worker got {attr}.",
+            ))
+            service.append((
+                f"{enum_root}_setter",
+                f"{name}_setter",
+                f"Whether a service worker set {attr}.",
+            ))
         elif counter["type"] == "custom":
             enum_name = f"Custom_{counter['name']}"
-            dedicated.append(
-                (
-                    enum_name,
-                    to_snake_case(counter["name"]),
-                    f"Whether a dedicated worker {counter['desc']}.",
-                )
-            )
-            shared.append(
-                (
-                    enum_name,
-                    to_snake_case(counter["name"]),
-                    f"Whether a shared worker {counter['desc']}.",
-                )
-            )
-            service.append(
-                (
-                    enum_name,
-                    to_snake_case(counter["name"]),
-                    f"Whether a service worker {counter['desc']}.",
-                )
-            )
+            dedicated.append((
+                enum_name,
+                to_snake_case(counter["name"]),
+                f"Whether a dedicated worker {counter['desc']}.",
+            ))
+            shared.append((
+                enum_name,
+                to_snake_case(counter["name"]),
+                f"Whether a shared worker {counter['desc']}.",
+            ))
+            service.append((
+                enum_name,
+                to_snake_case(counter["name"]),
+                f"Whether a service worker {counter['desc']}.",
+            ))
         else:
             print(
                 f"Found unexpected worker use counter type {counter['type']}. Returning 1."
@@ -563,16 +548,16 @@ def parse_use_counters():
             method = method[3:]  # remove the moz prefix
 
         enum_name = f"eUseCounter_property_{method}"
-        css_page.append(
-            (enum_name, prop_name, f"Whether a page used the CSS property {prop.name}.")
-        )
-        css_doc.append(
-            (
-                enum_name,
-                prop_name,
-                f"Whether a document used the CSS property {prop.name}.",
-            )
-        )
+        css_page.append((
+            enum_name,
+            prop_name,
+            f"Whether a page used the CSS property {prop.name}.",
+        ))
+        css_doc.append((
+            enum_name,
+            prop_name,
+            f"Whether a document used the CSS property {prop.name}.",
+        ))
 
     # Counted unknown properties: AKA - stuff that doesn't exist, but we want
     # to count uses of anyway.
@@ -599,20 +584,16 @@ def parse_use_counters():
     for prop in unknown_properties:
         enum_name = f"eUseCounter_unknown_property_{to_camel_case(prop)}"
         prop_name = to_snake_case(prop)
-        css_page.append(
-            (
-                enum_name,
-                prop_name,
-                f"Whether a page used the (unknown, counted) CSS property {prop}.",
-            )
-        )
-        css_doc.append(
-            (
-                enum_name,
-                prop_name,
-                f"Whether a document used the (unknown, counted) CSS property {prop}.",
-            )
-        )
+        css_page.append((
+            enum_name,
+            prop_name,
+            f"Whether a page used the (unknown, counted) CSS property {prop}.",
+        ))
+        css_doc.append((
+            enum_name,
+            prop_name,
+            f"Whether a document used the (unknown, counted) CSS property {prop}.",
+        ))
 
     return (page, doc, dedicated, shared, service, ops_page, ops_doc, css_page, css_doc)
 
@@ -659,15 +640,15 @@ def metric_map(f, *inputs):
 #include "mozilla/dom/UseCounterMetrics.h"
 
 #include "mozilla/dom/WorkerPrivate.h"
-#include "mozilla/glean/GleanMetrics.h"
+#include "mozilla/glean/DomUseCounterMetrics.h"
 
 namespace mozilla::dom {
 
 const char* IncrementUseCounter(UseCounter aUseCounter, bool aIsPage) {
   static constexpr struct {
     const char* name;
-    glean::impl::CounterMetric doc_metric;
-    glean::impl::CounterMetric page_metric;
+    glean::impl::CounterMetric<> doc_metric;
+    glean::impl::CounterMetric<> page_metric;
   } kEntries[] = {
 """
     )
@@ -729,7 +710,7 @@ const char* IncrementUseCounter(UseCounter aUseCounter, bool aIsPage) {
     f.write("\n".join(static_asserts))
     f.write(
         """\
-  MOZ_ASSERT(size_t(aUseCounter) < ArrayLength(kEntries));
+  MOZ_ASSERT(size_t(aUseCounter) < std::size(kEntries));
   const auto& entry = kEntries[size_t(aUseCounter)];
   (aIsPage ? entry.page_metric : entry.doc_metric).Add();
   return entry.name;
@@ -738,9 +719,9 @@ const char* IncrementUseCounter(UseCounter aUseCounter, bool aIsPage) {
 const char* IncrementWorkerUseCounter(UseCounterWorker aUseCounter, WorkerKind aKind) {
   static constexpr struct {
     const char* name;
-    glean::impl::CounterMetric dedicated_metric;
-    glean::impl::CounterMetric shared_metric;
-    glean::impl::CounterMetric service_metric;
+    glean::impl::CounterMetric<> dedicated_metric;
+    glean::impl::CounterMetric<> shared_metric;
+    glean::impl::CounterMetric<> service_metric;
   } kEntries[] = {
 """
     )
@@ -771,7 +752,7 @@ const char* IncrementWorkerUseCounter(UseCounterWorker aUseCounter, WorkerKind a
     f.write("\n".join(static_asserts))
     f.write(
         """\
-  MOZ_ASSERT(size_t(aUseCounter) < ArrayLength(kEntries));
+  MOZ_ASSERT(size_t(aUseCounter) < std::size(kEntries));
   const auto& entry = kEntries[size_t(aUseCounter)];
   switch (aKind) {
     case WorkerKind::WorkerKindDedicated:

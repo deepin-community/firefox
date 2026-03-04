@@ -19,8 +19,6 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Sluiten
     .aria-label = Sluiten
-firefoxview-empty-state-icon =
-    .alt = Attentie:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Zojuist
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -32,15 +30,15 @@ firefoxview-tabpickup-progress-label = { $percentValue }% voltooid
 firefoxview-tabpickup-step-signin-header = Schakel naadloos tussen apparaten
 firefoxview-tabpickup-step-signin-description = Meld u eerst aan of maak een account aan om hier de tabbladen van uw telefoon op te halen.
 firefoxview-tabpickup-step-signin-primarybutton = Doorgaan
-firefoxview-syncedtabs-signin-header = Pak overal tabbladen
-firefoxview-syncedtabs-signin-description = Meld u aan bij uw account om uw tabbladen te bekijken, ongeacht waar u { -brand-product-name } gebruikt. Als u geen account hebt, zullen we u door de stappen leiden om u in te schrijven.
-firefoxview-syncedtabs-signin-primarybutton = Aanmelden of inschrijven
+firefoxview-syncedtabs-signin-header-2 = Uw { -brand-product-name } op al uw apparaten
+firefoxview-syncedtabs-signin-description-2 = Meld u aan of registreer u voor een account om op uw telefoon en andere apparaten geopende tabbladen te zien. Met een account kunt u ook uw wachtwoorden, geschiedenis en meer synchroniseren.
+firefoxview-syncedtabs-signin-primarybutton-2 = Aanmelden
 firefoxview-tabpickup-adddevice-header = { -brand-product-name } op uw telefoon of tablet synchroniseren
 firefoxview-tabpickup-adddevice-description = Download { -brand-product-name } voor mobiel en meld u daar aan.
 firefoxview-tabpickup-adddevice-learn-how = Meer info
 firefoxview-tabpickup-adddevice-primarybutton = { -brand-product-name } voor mobiel downloaden
-firefoxview-syncedtabs-adddevice-header = Meld u aan bij { -brand-product-name } op uw andere apparaten
-firefoxview-syncedtabs-adddevice-description = Meld u aan op al uw apparaten om uw tabbladen te bekijken, waar u { -brand-product-name } ook gebruikt. Lees hoe u <a data-l10n-name="url">extra apparaten aansluit</a>.
+firefoxview-syncedtabs-adddevice-header-2 = Pak overal tabbladen
+firefoxview-syncedtabs-adddevice-description-2 = Meld u aan bij { -brand-product-name } op uw telefoon of een andere computer om hier tabbladen te bekijken. Lees hoe u <a data-l10n-name="url">extra apparaten kunt verbinden</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = { -brand-product-name } voor mobiel proberen
 firefoxview-tabpickup-synctabs-header = Tabbladsynchronisatie inschakelen
 firefoxview-tabpickup-synctabs-description = { -brand-short-name } toestaan om tabbladen tussen apparaten te delen.
@@ -48,7 +46,6 @@ firefoxview-tabpickup-synctabs-learn-how = Meer info
 firefoxview-tabpickup-synctabs-primarybutton = Open tabbladen synchroniseren
 firefoxview-syncedtabs-synctabs-header = Werk uw synchronisatie-instellingen bij
 firefoxview-syncedtabs-synctabs-description = Om tabbladen van andere apparaten te zien, moet u uw open tabbladen synchroniseren.
-firefoxview-syncedtabs-synctabs-checkbox = Toestaan dat open tabbladen worden gesynchroniseerd
 firefoxview-syncedtabs-loading-header = Synchroniseren
 firefoxview-syncedtabs-loading-description = Als dit is afgerond, ziet u alle tabbladen die u op andere apparaten hebt geopend. Kom snel terug.
 firefoxview-tabpickup-fxa-admin-disabled-header = Uw organisatie heeft synchronisatie uitgeschakeld
@@ -82,7 +79,6 @@ firefoxview-closed-tabs-title = Onlangs gesloten
 firefoxview-closed-tabs-description2 = Open pagina’s die u in dit venster hebt gesloten opnieuw.
 firefoxview-closed-tabs-placeholder-header = Geen onlangs gesloten tabbladen
 firefoxview-closed-tabs-placeholder-body = Wanneer u een tabblad in dit venster sluit, kunt u het hier ophalen.
-firefoxview-closed-tabs-placeholder-body2 = Wanneer u een tabblad sluit, kunt u het hier ophalen.
 # Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 firefoxview-closed-tabs-dismiss-tab =
@@ -136,6 +132,14 @@ firefoxview-synced-tabs-nav = Tabbladen van andere apparaten
     .title = Tabbladen van andere apparaten
 firefoxview-synced-tabs-header = Tabbladen van andere apparaten
 
+## Chats in this context refers to chats saved from the AI Window Assistant
+
+firefoxview-chats-nav = Chats
+    .title = Chats
+firefoxview-chats-header = Chats
+firefoxview-chat-context-delete = Verwijderen uit chats
+    .accesskey = w
+
 ##
 
 # Used for a link in collapsible cards, in the ’Recent browsing’ page of Firefox View
@@ -148,8 +152,6 @@ firefoxview-opentabs-window-header =
 #   $winID (Number) - The index of the owner window (which is currently focused) for this set of tabs
 firefoxview-opentabs-current-window-header =
     .title = Venster { $winID } (huidige)
-firefoxview-opentabs-focus-tab =
-    .title = Wisselen naar dit tabblad
 firefoxview-show-more = Meer tonen
 firefoxview-show-less = Minder tonen
 firefoxview-show-all = Alles tonen
@@ -165,11 +167,14 @@ firefoxview-search-text-box-history =
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Onlangs gesloten tabbladen doorzoeken
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
-firefoxview-search-text-box-syncedtabs =
-    .placeholder = Gesynchroniseerde tabbladen doorzoeken
+firefoxview-search-text-box-tabs =
+    .placeholder = Tabbladen doorzoeken
 # Placeholder for the input field to search in open tabs ("search" is a verb).
 firefoxview-search-text-box-opentabs =
     .placeholder = Open tabbladen doorzoeken
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-chats =
+    .placeholder = Chats doorzoeken
 # "Search" is a noun (as in "Results of the search for")
 # Variables:
 #   $query (String) - The search query used for searching through browser history.
@@ -189,10 +194,6 @@ firefoxview-sort-history-by-date-label = Sorteren op datum
 firefoxview-sort-history-by-site-label = Sorteren op website
 firefoxview-sort-open-tabs-by-recency-label = Sorteren op recente activiteit
 firefoxview-sort-open-tabs-by-order-label = Sorteren op tabbladvolgorde
-# Variables:
-#   $url (string) - URL that will be opened in the new tab
-firefoxview-opentabs-tab-row =
-    .title = Omschakelen naar { $url }
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
@@ -205,11 +206,14 @@ firefoxview-history-date-prev-month = { DATETIME($date, month: "long", year: "nu
 # order to group sites that do not come from an outside host.
 # For example, this would be the heading for all file:/// URLs in history.
 firefoxview-history-site-localhost = (lokale bestanden)
+firefoxview-chat-date-today = Vandaag – { DATETIME($date, dateStyle: "full") }
+firefoxview-chat-date-yesterday = Gisteren – { DATETIME($date, dateStyle: "full") }
+firefoxview-chat-date-this-month = { DATETIME($date, dateStyle: "full") }
+firefoxview-chat-date-prev-month = { DATETIME($date, month: "long", year: "numeric") }
 
 ##
 
 firefoxview-show-all-history = Alle geschiedenis tonen
-firefoxview-view-more-browsing-history = Meer navigatiegeschiedenis bekijken
 
 ## Message displayed in Firefox View when the user has no history data
 
@@ -225,9 +229,8 @@ firefoxview-choose-browser-button = Kies browser
 
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
-firefoxview-dont-remember-history-empty-header = Niets om te laten zien
-firefoxview-dont-remember-history-empty-description = Het beschermen van uw privacy staat centraal in wat we doen. Daarom kunt u de activiteit die { -brand-short-name } onthoudt beheren.
-firefoxview-dont-remember-history-empty-description-two = Op basis van uw huidige instellingen onthoudt { -brand-short-name } uw activiteit niet terwijl u surft. <a data-l10n-name="history-settings-url-two">Wijzig uw geschiedenisinstellingen om uw geschiedenis te onthouden</a> om dat te wijzigen.
+firefoxview-dont-remember-history-empty-header-2 = U hebt controle over wat { -brand-short-name } onthoudt
+firefoxview-dont-remember-history-empty-description-one = Op dit moment onthoudt { -brand-short-name } uw surfactiviteit niet. <a data-l10n-name="history-settings-url-two">Werk uw geschiedenisinstellingen bij</a> om dat te wijzigen.
 
 ##
 

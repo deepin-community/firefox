@@ -79,7 +79,10 @@ bool TextPoint::operator<(const TextPoint& aPoint) const {
     // We compare its end offset in aPoint.mContainer with aPoint.mOffset.
     Accessible* child = parents1.ElementAt(pos1 - 1);
     MOZ_ASSERT(child->Parent() == aPoint.mContainer);
-    return child->EndOffset() < static_cast<uint32_t>(aPoint.mOffset);
+    // If the offsets are equal, aPoint points to an ancestor embedded object
+    // for this. aPoint should be treated as earlier in the text. This is why we
+    // use <= here.
+    return child->EndOffset() <= static_cast<uint32_t>(aPoint.mOffset);
   }
 
   if (pos2 != 0) {
@@ -89,7 +92,10 @@ bool TextPoint::operator<(const TextPoint& aPoint) const {
     // We compare its start offset in mContainer with mOffset.
     Accessible* child = parents2.ElementAt(pos2 - 1);
     MOZ_ASSERT(child->Parent() == mContainer);
-    return static_cast<uint32_t>(mOffset) < child->StartOffset();
+    // If the offsets are equal, aPoint points to an ancestor embedded object
+    // for this. aPoint should be treated as earlier in the text. This is why we
+    // use <= here.
+    return static_cast<uint32_t>(mOffset) <= child->StartOffset();
   }
 
   NS_ERROR("Broken tree?!");
@@ -116,6 +122,11 @@ bool TextRange::Crop(Accessible* aContainer) {
   Accessible* container = nullptr;
   HyperTextAccessibleBase* startHyper = mStartContainer->AsHyperTextBase();
   Accessible* boundary = startHyper->GetChildAtOffset(mStartOffset);
+  if (!boundary) {
+    // mStartContainer is empty.
+    MOZ_ASSERT(mStartOffset == 0 && startHyper->CharacterCount() == 0);
+    boundary = mStartContainer;
+  }
   if (boundary != aContainer) {
     CommonParent(boundary, aContainer, &boundaryParents, &boundaryPos,
                  &containerParents, &containerPos);
@@ -154,6 +165,11 @@ bool TextRange::Crop(Accessible* aContainer) {
 
   HyperTextAccessibleBase* endHyper = mEndContainer->AsHyperTextBase();
   boundary = endHyper->GetChildAtOffset(mEndOffset);
+  if (!boundary) {
+    // mEndContainer is empty.
+    MOZ_ASSERT(mEndOffset == 0 && endHyper->CharacterCount() == 0);
+    boundary = mEndContainer;
+  }
   if (boundary == aContainer) {
     return true;
   }

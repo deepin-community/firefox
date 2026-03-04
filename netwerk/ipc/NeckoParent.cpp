@@ -5,27 +5,30 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "nsBaseParentChannel.h"
 #include "nsHttp.h"
 #include "mozilla/BasePrincipal.h"
 #include "mozilla/Components.h"
 #include "mozilla/ContentPrincipal.h"
+#include "mozilla/NullPrincipal.h"
 #include "mozilla/ipc/IPCStreamUtils.h"
 #include "mozilla/net/ExtensionProtocolHandler.h"
 #include "mozilla/net/PageThumbProtocolHandler.h"
+#include "mozilla/net/MozNewTabWallpaperProtocolHandler.h"
 #include "mozilla/net/NeckoParent.h"
 #include "mozilla/net/HttpChannelParent.h"
 #include "mozilla/net/CookieServiceParent.h"
 #include "mozilla/net/WebSocketChannelParent.h"
 #include "mozilla/net/WebSocketEventListenerParent.h"
-#include "mozilla/net/DataChannelParent.h"
 #ifdef MOZ_WIDGET_GTK
 #  include "mozilla/net/GIOChannelParent.h"
 #endif
+#ifdef MOZ_WIDGET_ANDROID
+#  include "mozilla/net/GeckoViewContentChannelParent.h"
+#endif
 #include "mozilla/net/DocumentChannelParent.h"
-#include "mozilla/net/SimpleChannelParent.h"
+#include "mozilla/net/CacheEntryWriteHandleParent.h"
 #include "mozilla/net/AltDataOutputStreamParent.h"
-#include "mozilla/Unused.h"
-#include "mozilla/net/FileChannelParent.h"
 #include "mozilla/net/DNSRequestParent.h"
 #include "mozilla/net/IPCTransportProvider.h"
 #include "mozilla/net/RemoteStreamGetter.h"
@@ -52,10 +55,10 @@
 #include "nsEscape.h"
 #include "SerializedLoadContext.h"
 #include "nsAuthInformationHolder.h"
-#include "nsINetworkPredictor.h"
-#include "nsINetworkPredictorVerifier.h"
 #include "nsISpeculativeConnect.h"
+#include "nsFileChannel.h"
 #include "nsHttpHandler.h"
+#include "nsIMIMEService.h"
 #include "nsNetUtil.h"
 #include "nsIOService.h"
 
@@ -118,7 +121,7 @@ static already_AddRefed<nsIPrincipal> GetRequestingPrincipal(
   return GetRequestingPrincipal(args.loadInfo());
 }
 
-const char* NeckoParent::GetValidatedOriginAttributes(
+void NeckoParent::GetValidatedOriginAttributes(
     const SerializedLoadContext& aSerialized, PContentParent* aContent,
     nsIPrincipal* aRequestingPrincipal, OriginAttributes& aAttrs) {
   if (!aSerialized.IsNotNull()) {
@@ -128,22 +131,16 @@ const char* NeckoParent::GetValidatedOriginAttributes(
   } else {
     aAttrs = aSerialized.mOriginAttributes;
   }
-  return nullptr;
 }
 
-const char* NeckoParent::CreateChannelLoadContext(
+void NeckoParent::CreateChannelLoadContext(
     PBrowserParent* aBrowser, PContentParent* aContent,
     const SerializedLoadContext& aSerialized,
     nsIPrincipal* aRequestingPrincipal, nsCOMPtr<nsILoadContext>& aResult) {
   OriginAttributes attrs;
-  const char* error = GetValidatedOriginAttributes(aSerialized, aContent,
-                                                   aRequestingPrincipal, attrs);
-  if (error) {
-    return error;
-  }
+  GetValidatedOriginAttributes(aSerialized, aContent, aRequestingPrincipal,
+                               attrs);
 
-  // if !UsingNeckoIPCSecurity(), we may not have a LoadContext to set. This is
-  // the common case for most xpcshell tests.
   if (aSerialized.IsNotNull()) {
     attrs.SyncAttributesWithPrivateBrowsing(
         aSerialized.mOriginAttributes.IsPrivateBrowsing());
@@ -155,8 +152,6 @@ const char* NeckoParent::CreateChannelLoadContext(
     }
     aResult = new LoadContext(aSerialized, topFrameElement, attrs);
   }
-
-  return nullptr;
 }
 
 void NeckoParent::ActorDestroy(ActorDestroyReason aWhy) {
@@ -171,15 +166,8 @@ already_AddRefed<PHttpChannelParent> NeckoParent::AllocPHttpChannelParent(
       GetRequestingPrincipal(aOpenArgs);
 
   nsCOMPtr<nsILoadContext> loadContext;
-  const char* error = CreateChannelLoadContext(
-      aBrowser, Manager(), aSerialized, requestingPrincipal, loadContext);
-  if (error) {
-    printf_stderr(
-        "NeckoParent::AllocPHttpChannelParent: "
-        "FATAL error: %s: KILLING CHILD PROCESS\n",
-        error);
-    return nullptr;
-  }
+  CreateChannelLoadContext(aBrowser, Manager(), aSerialized,
+                           requestingPrincipal, loadContext);
   PBOverrideStatus overrideStatus =
       PBOverrideStatusFromLoadContext(aSerialized);
   RefPtr<HttpChannelParent> p = new HttpChannelParent(
@@ -237,13 +225,41 @@ bool NeckoParent::DeallocPWebrtcTCPSocketParent(
   return true;
 }
 
-PAltDataOutputStreamParent* NeckoParent::AllocPAltDataOutputStreamParent(
-    const nsACString& type, const int64_t& predictedSize,
+PCacheEntryWriteHandleParent* NeckoParent::AllocPCacheEntryWriteHandleParent(
     PHttpChannelParent* channel) {
   HttpChannelParent* chan = static_cast<HttpChannelParent*>(channel);
+  CacheEntryWriteHandleParent* parent = chan->AllocCacheEntryWriteHandle();
+  parent->AddRef();
+  return parent;
+}
+
+bool NeckoParent::DeallocPCacheEntryWriteHandleParent(
+    PCacheEntryWriteHandleParent* aActor) {
+  CacheEntryWriteHandleParent* parent =
+      static_cast<CacheEntryWriteHandleParent*>(aActor);
+  parent->Release();
+  return true;
+}
+
+PAltDataOutputStreamParent* NeckoParent::AllocPAltDataOutputStreamParent(
+    const nsACString& type, const int64_t& predictedSize,
+    mozilla::Maybe<mozilla::NotNull<mozilla::net::PHttpChannelParent*>>&
+        channel,
+    mozilla::Maybe<mozilla::NotNull<PCacheEntryWriteHandleParent*>>& handle) {
+  MOZ_ASSERT(channel || handle);
+
+  nsresult rv;
   nsCOMPtr<nsIAsyncOutputStream> stream;
-  nsresult rv = chan->OpenAlternativeOutputStream(type, predictedSize,
-                                                  getter_AddRefs(stream));
+  if (channel) {
+    HttpChannelParent* chan = static_cast<HttpChannelParent*>(channel->get());
+    rv = chan->OpenAlternativeOutputStream(type, predictedSize,
+                                           getter_AddRefs(stream));
+  } else {
+    CacheEntryWriteHandleParent* h =
+        static_cast<CacheEntryWriteHandleParent*>(handle->get());
+    rv = h->OpenAlternativeOutputStream(type, predictedSize,
+                                        getter_AddRefs(stream));
+  }
   AltDataOutputStreamParent* parent = new AltDataOutputStreamParent(stream);
   parent->AddRef();
   // If the return value was not NS_OK, the error code will be sent
@@ -275,7 +291,7 @@ mozilla::ipc::IPCResult NeckoParent::RecvPDocumentChannelConstructor(
   DocumentChannelParent* p = static_cast<DocumentChannelParent*>(aActor);
 
   if (aContext.IsNullOrDiscarded()) {
-    Unused << p->SendFailedAsyncOpen(NS_ERROR_FAILURE);
+    (void)p->SendFailedAsyncOpen(NS_ERROR_FAILURE);
     return IPC_OK();
   }
 
@@ -287,7 +303,7 @@ mozilla::ipc::IPCResult NeckoParent::RecvPDocumentChannelConstructor(
 }
 
 PCookieServiceParent* NeckoParent::AllocPCookieServiceParent() {
-  return new CookieServiceParent();
+  return new CookieServiceParent(static_cast<ContentParent*>(Manager()));
 }
 
 bool NeckoParent::DeallocPCookieServiceParent(PCookieServiceParent* cs) {
@@ -299,15 +315,8 @@ PWebSocketParent* NeckoParent::AllocPWebSocketParent(
     PBrowserParent* browser, const SerializedLoadContext& serialized,
     const uint32_t& aSerial) {
   nsCOMPtr<nsILoadContext> loadContext;
-  const char* error = CreateChannelLoadContext(browser, Manager(), serialized,
-                                               nullptr, loadContext);
-  if (error) {
-    printf_stderr(
-        "NeckoParent::AllocPWebSocketParent: "
-        "FATAL error: %s: KILLING CHILD PROCESS\n",
-        error);
-    return nullptr;
-  }
+  CreateChannelLoadContext(browser, Manager(), serialized, nullptr,
+                           loadContext);
 
   RefPtr<BrowserParent> browserParent = BrowserParent::GetFrom(browser);
   PBOverrideStatus overrideStatus = PBOverrideStatusFromLoadContext(serialized);
@@ -338,13 +347,13 @@ bool NeckoParent::DeallocPWebSocketEventListenerParent(
   return true;
 }
 
-already_AddRefed<PDataChannelParent> NeckoParent::AllocPDataChannelParent() {
-  RefPtr<DataChannelParent> p = new DataChannelParent();
-  return p.forget();
-}
+mozilla::ipc::IPCResult NeckoParent::RecvConnectBaseChannel(
+    const uint32_t& channelId) {
+  RefPtr<nsBaseParentChannel> parentChannel =
+      new nsBaseParentChannel(ContentParent::Cast(Manager())->GetRemoteType());
 
-mozilla::ipc::IPCResult NeckoParent::RecvPDataChannelConstructor(
-    PDataChannelParent* actor) {
+  nsCOMPtr<nsIChannel> channel;
+  NS_LinkRedirectChannels(channelId, parentChannel, getter_AddRefs(channel));
   return IPC_OK();
 }
 
@@ -366,15 +375,8 @@ PGIOChannelParent* NeckoParent::AllocPGIOChannelParent(
       GetRequestingPrincipal(aOpenArgs);
 
   nsCOMPtr<nsILoadContext> loadContext;
-  const char* error = CreateChannelLoadContext(
-      aBrowser, Manager(), aSerialized, requestingPrincipal, loadContext);
-  if (error) {
-    printf_stderr(
-        "NeckoParent::AllocPGIOChannelParent: "
-        "FATAL error: %s: KILLING CHILD PROCESS\n",
-        error);
-    return nullptr;
-  }
+  CreateChannelLoadContext(aBrowser, Manager(), aSerialized,
+                           requestingPrincipal, loadContext);
   PBOverrideStatus overrideStatus =
       PBOverrideStatusFromLoadContext(aSerialized);
   GIOChannelParent* p = new GIOChannelParent(BrowserParent::GetFrom(aBrowser),
@@ -400,36 +402,50 @@ mozilla::ipc::IPCResult NeckoParent::RecvPGIOChannelConstructor(
 }
 #endif
 
-PSimpleChannelParent* NeckoParent::AllocPSimpleChannelParent(
-    const uint32_t& channelId) {
-  RefPtr<SimpleChannelParent> p = new SimpleChannelParent();
-  return p.forget().take();
+#ifdef MOZ_WIDGET_ANDROID
+static already_AddRefed<nsIPrincipal> GetRequestingPrincipal(
+    const GeckoViewContentChannelArgs& aArgs) {
+  if (aArgs.type() !=
+      GeckoViewContentChannelArgs::TGeckoViewContentChannelOpenArgs) {
+    return nullptr;
+  }
+
+  const GeckoViewContentChannelOpenArgs& args =
+      aArgs.get_GeckoViewContentChannelOpenArgs();
+  return GetRequestingPrincipal(args.loadInfo());
 }
 
-bool NeckoParent::DeallocPSimpleChannelParent(PSimpleChannelParent* actor) {
-  RefPtr<SimpleChannelParent> p =
-      dont_AddRef(actor).downcast<SimpleChannelParent>();
-  return true;
+already_AddRefed<PGeckoViewContentChannelParent>
+NeckoParent::AllocPGeckoViewContentChannelParent(
+    PBrowserParent* aBrowser, const SerializedLoadContext& aSerialized,
+    const GeckoViewContentChannelArgs& aOpenArgs) {
+  nsCOMPtr<nsIPrincipal> requestingPrincipal =
+      GetRequestingPrincipal(aOpenArgs);
+
+  nsCOMPtr<nsILoadContext> loadContext;
+  CreateChannelLoadContext(aBrowser, Manager(), aSerialized,
+                           requestingPrincipal, loadContext);
+  return MakeAndAddRef<GeckoViewContentChannelParent>(
+      BrowserParent::GetFrom(aBrowser), loadContext);
 }
 
-mozilla::ipc::IPCResult NeckoParent::RecvPSimpleChannelConstructor(
-    PSimpleChannelParent* actor, const uint32_t& channelId) {
-  SimpleChannelParent* p = static_cast<SimpleChannelParent*>(actor);
-  MOZ_ALWAYS_TRUE(p->Init(channelId));
+mozilla::ipc::IPCResult NeckoParent::RecvPGeckoViewContentChannelConstructor(
+    PGeckoViewContentChannelParent* actor, PBrowserParent* aBrowser,
+    const SerializedLoadContext& aSerialized,
+    const GeckoViewContentChannelArgs& aArgs) {
+  GeckoViewContentChannelParent* p =
+      static_cast<GeckoViewContentChannelParent*>(actor);
+  if (!p->Init(aArgs)) {
+    return IPC_FAIL(this, "Init is failed");
+  }
   return IPC_OK();
 }
+#endif
 
-already_AddRefed<PFileChannelParent> NeckoParent::AllocPFileChannelParent(
-    const uint32_t& channelId) {
-  RefPtr<FileChannelParent> p = new FileChannelParent();
-  return p.forget();
-}
-
-mozilla::ipc::IPCResult NeckoParent::RecvPFileChannelConstructor(
-    PFileChannelParent* actor, const uint32_t& channelId) {
-  FileChannelParent* p = static_cast<FileChannelParent*>(actor);
-  DebugOnly<bool> rv = p->Init(channelId);
-  MOZ_ASSERT(rv);
+mozilla::ipc::IPCResult NeckoParent::RecvNotifyFileChannelOpened(
+    const FileChannelInfo& aInfo) {
+  nsFileChannel::DoNotifyFileChannelOpened(
+      ContentParent::Cast(Manager())->GetRemoteType(), aInfo);
   return IPC_OK();
 }
 
@@ -561,49 +577,6 @@ bool NeckoParent::DeallocPTransportProviderParent(
   RefPtr<TransportProviderParent> provider =
       dont_AddRef(static_cast<TransportProviderParent*>(aActor));
   return true;
-}
-
-/* Predictor Messages */
-mozilla::ipc::IPCResult NeckoParent::RecvPredPredict(
-    nsIURI* aTargetURI, nsIURI* aSourceURI, const uint32_t& aReason,
-    const OriginAttributes& aOriginAttributes, const bool& hasVerifier) {
-  // Get the current predictor
-  nsresult rv = NS_OK;
-  nsCOMPtr<nsINetworkPredictor> predictor;
-  predictor = mozilla::components::Predictor::Service(&rv);
-  NS_ENSURE_SUCCESS(rv, IPC_OK());
-
-  nsCOMPtr<nsINetworkPredictorVerifier> verifier;
-  if (hasVerifier) {
-    verifier = do_QueryInterface(predictor);
-  }
-  predictor->PredictNative(aTargetURI, aSourceURI, aReason, aOriginAttributes,
-                           verifier);
-  return IPC_OK();
-}
-
-mozilla::ipc::IPCResult NeckoParent::RecvPredLearn(
-    nsIURI* aTargetURI, nsIURI* aSourceURI, const uint32_t& aReason,
-    const OriginAttributes& aOriginAttributes) {
-  // Get the current predictor
-  nsresult rv = NS_OK;
-  nsCOMPtr<nsINetworkPredictor> predictor;
-  predictor = mozilla::components::Predictor::Service(&rv);
-  NS_ENSURE_SUCCESS(rv, IPC_OK());
-
-  predictor->LearnNative(aTargetURI, aSourceURI, aReason, aOriginAttributes);
-  return IPC_OK();
-}
-
-mozilla::ipc::IPCResult NeckoParent::RecvPredReset() {
-  // Get the current predictor
-  nsresult rv = NS_OK;
-  nsCOMPtr<nsINetworkPredictor> predictor;
-  predictor = mozilla::components::Predictor::Service(&rv);
-  NS_ENSURE_SUCCESS(rv, IPC_OK());
-
-  predictor->Reset();
-  return IPC_OK();
 }
 
 mozilla::ipc::IPCResult NeckoParent::RecvRequestContextLoadBegin(
@@ -824,7 +797,53 @@ mozilla::ipc::IPCResult NeckoParent::RecvGetPageThumbStream(
         // If NewStream failed, we send back an invalid stream to the child so
         // it can handle the error. MozPromise rejection is reserved for channel
         // errors/disconnects.
-        Unused << NS_WARN_IF(NS_FAILED(aRv));
+        (void)NS_WARN_IF(NS_FAILED(aRv));
+        aResolver(Nothing());
+      });
+
+  return IPC_OK();
+}
+
+mozilla::ipc::IPCResult NeckoParent::RecvGetMozNewTabWallpaperStream(
+    nsIURI* aURI, const LoadInfoArgs& aLoadInfoArgs,
+    GetMozNewTabWallpaperStreamResolver&& aResolver) {
+  // Only the privileged about content process is allowed to access
+  // things over the moz-newtab-wallpaper protocol. Any other content process
+  // that tries to send this should have been blocked via the
+  // ScriptSecurityManager, but if somehow the process has been tricked into
+  // sending this message, we send IPC_FAIL in order to crash that
+  // likely-compromised content process.
+  if (static_cast<ContentParent*>(Manager())->GetRemoteType() !=
+      PRIVILEGEDABOUT_REMOTE_TYPE) {
+    return IPC_FAIL(this, "Wrong process type");
+  }
+
+  RefPtr<net::MozNewTabWallpaperProtocolHandler> ph(
+      net::MozNewTabWallpaperProtocolHandler::GetSingleton());
+  MOZ_ASSERT(ph);
+
+  // Ask the MozNewTabWallpaperProtocolHandler to give us a new input stream for
+  // this URI. The request comes from a MozNewTabWallpaperProtocolHandler in the
+  // child process, but is not guaranteed to be a valid moz-newtab-wallpaper
+  // URI, and not guaranteed to represent a resource that the child should be
+  // allowed to access. The MozNewTabWallpaperProtocolHandler is responsible for
+  // validating the request.
+  nsCOMPtr<nsIInputStream> inputStream;
+  bool terminateSender = true;
+  auto inputStreamPromise = ph->NewStream(aURI, &terminateSender);
+
+  if (terminateSender) {
+    return IPC_FAIL(this, "Malformed moz-newtab-wallpaper request");
+  }
+
+  inputStreamPromise->Then(
+      GetMainThreadSerialEventTarget(), __func__,
+      [aResolver](const RemoteStreamInfo& aInfo) { aResolver(Some(aInfo)); },
+      [aResolver](nsresult aRv) {
+        // If NewStream failed, we send back an invalid stream to the child so
+        // it can handle the error. MozPromise rejection is reserved for channel
+        // errors/disconnects.
+        (void)NS_WARN_IF(NS_FAILED(aRv));
         aResolver(Nothing());
       });
 
@@ -873,7 +892,7 @@ mozilla::ipc::IPCResult NeckoParent::RecvGetPageIconStream(
         // If NewStream failed, we send back an invalid stream to the child so
         // it can handle the error. MozPromise rejection is reserved for channel
         // errors/disconnects.
-        Unused << NS_WARN_IF(NS_FAILED(aRv));
+        (void)NS_WARN_IF(NS_FAILED(aRv));
         aResolver(Nothing());
       });
 
@@ -881,6 +900,110 @@ mozilla::ipc::IPCResult NeckoParent::RecvGetPageIconStream(
 #else
   return IPC_FAIL(this, "page-icon: protocol unavailable");
 #endif
+}
+
+/* static */
+RefPtr<RemoteStreamPromise> NeckoParent::CreateRemoteStreamForResolvedURI(
+    nsIURI* aChildURI, const nsACString& aResolvedSpec,
+    const nsACString& aDefaultMimeType) {
+  MOZ_ASSERT(NS_IsMainThread());
+  MOZ_ASSERT(XRE_IsParentProcess());
+
+  nsresult rv;
+
+  nsAutoCString resolvedScheme;
+  rv = net_ExtractURLScheme(aResolvedSpec, resolvedScheme);
+  if (NS_FAILED(rv) || !resolvedScheme.EqualsLiteral("file")) {
+    return RemoteStreamPromise::CreateAndReject(NS_ERROR_UNEXPECTED, __func__);
+  }
+
+  MOZ_ASSERT(resolvedScheme.EqualsLiteral("file"),
+             "CreateRemoteStreamForResolvedURI requires file:// URI");
+
+  nsCOMPtr<nsIIOService> ioService = do_GetIOService(&rv);
+  if (NS_FAILED(rv)) {
+    return RemoteStreamPromise::CreateAndReject(rv, __func__);
+  }
+
+  nsCOMPtr<nsIURI> resolvedURI;
+  rv = ioService->NewURI(aResolvedSpec, nullptr, nullptr,
+                         getter_AddRefs(resolvedURI));
+  if (NS_FAILED(rv)) {
+    return RemoteStreamPromise::CreateAndReject(rv, __func__);
+  }
+
+  // Load local file resources for internal protocol handlers (moz-page-thumb,
+  // moz-newtab-wallpaper). resolvedURI must be file:// scheme pointing to the
+  // profile directory. Callers validate the original URI scheme/host and use
+  // internal path resolution (PageThumbsStorageService, profile/wallpaper/)
+  // before calling this method.
+  nsCOMPtr<nsIChannel> channel;
+  nsCOMPtr<nsIPrincipal> nullPrincipal =
+      NullPrincipal::CreateWithoutOriginAttributes();
+  rv = NS_NewChannel(getter_AddRefs(channel), resolvedURI, nullPrincipal,
+                     nsILoadInfo::SEC_ALLOW_CROSS_ORIGIN_SEC_CONTEXT_IS_NULL,
+                     nsIContentPolicy::TYPE_IMAGE);
+  if (NS_FAILED(rv)) {
+    return RemoteStreamPromise::CreateAndReject(rv, __func__);
+  }
+
+  auto promiseHolder = MakeUnique<MozPromiseHolder<RemoteStreamPromise>>();
+  RefPtr<RemoteStreamPromise> promise = promiseHolder->Ensure(__func__);
+
+  nsCOMPtr<nsIMIMEService> mime = do_GetService("@mozilla.org/mime;1", &rv);
+  if (NS_FAILED(rv)) {
+    return RemoteStreamPromise::CreateAndReject(rv, __func__);
+  }
+
+  nsAutoCString contentType;
+  rv = mime->GetTypeFromURI(aChildURI, contentType);
+  if (NS_FAILED(rv)) {
+    if (!aDefaultMimeType.IsEmpty()) {
+      contentType = aDefaultMimeType;
+    } else {
+      return RemoteStreamPromise::CreateAndReject(rv, __func__);
+    }
+  }
+
+  rv = NS_DispatchBackgroundTask(
+      NS_NewRunnableFunction(
+          "NeckoParent::CreateRemoteStreamForResolvedURI",
+          [contentType, channel, holder = std::move(promiseHolder)]() {
+            nsresult rv;
+
+            nsCOMPtr<nsIFileChannel> fileChannel =
+                do_QueryInterface(channel, &rv);
+            if (NS_FAILED(rv)) {
+              holder->Reject(rv, __func__);
+              return;
+            }
+
+            nsCOMPtr<nsIFile> requestedFile;
+            rv = fileChannel->GetFile(getter_AddRefs(requestedFile));
+            if (NS_FAILED(rv)) {
+              holder->Reject(rv, __func__);
+              return;
+            }
+
+            nsCOMPtr<nsIInputStream> inputStream;
+            rv = NS_NewLocalFileInputStream(getter_AddRefs(inputStream),
+                                            requestedFile, PR_RDONLY, -1);
+            if (NS_FAILED(rv)) {
+              holder->Reject(rv, __func__);
+              return;
+            }
+
+            RemoteStreamInfo info(inputStream, contentType, -1);
+
+            holder->Resolve(std::move(info), __func__);
+          }),
+      NS_DISPATCH_EVENT_MAY_BLOCK);
+
+  if (NS_FAILED(rv)) {
+    return RemoteStreamPromise::CreateAndReject(rv, __func__);
+  }
+
+  return promise;
 }
 
 }  // namespace net

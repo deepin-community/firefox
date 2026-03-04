@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = Neuer Tab
     .accesskey = N
@@ -18,21 +22,27 @@ tab-context-play-tabs =
     .label = Tabs wiedergeben
     .accesskey = w
 duplicate-tab =
-    .label = Tab klonen
-    .accesskey = k
+    .label = Tab duplizieren
+    .accesskey = d
 duplicate-tabs =
-    .label = Tabs klonen
-    .accesskey = k
+    .label = Tabs duplizieren
+    .accesskey = D
 # The following string is displayed on a menuitem that will close the tabs from the start of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Left" and in right-to-left languages this should use "Right".
 close-tabs-to-the-start =
     .label = Linke Tabs schließen
     .accesskey = L
+close-tabs-to-the-start-vertical =
+    .label = Obere Tabs schließen
+    .accesskey = O
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Rechte Tabs schließen
     .accesskey = R
+close-tabs-to-the-end-vertical =
+    .label = Untere Tabs schließen
+    .accesskey = U
 close-other-tabs =
     .label = Andere Tabs schließen
     .accesskey = A
@@ -64,11 +74,15 @@ move-to-start =
     .label = An Anfang verschieben
     .accesskey = A
 move-to-end =
-    .label = An Ende verschieben
+    .label = Ans Ende verschieben
     .accesskey = E
 move-to-new-window =
     .label = In neues Fenster verschieben
     .accesskey = n
+# Variables
+#  $profileName (string): The name of the profile to move tab to
+move-to-new-profile =
+    .label = Nach { $profileName } verschieben
 tab-context-close-multiple-tabs =
     .label = Mehrere Tabs schließen
     .accesskey = M
@@ -78,6 +92,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Teilen
     .accesskey = T
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Neuer Tab rechts
+    .accesskey = r
+tab-context-new-tab-open-vertical =
+    .label = Neuer Tab unten
+    .accesskey = r
+tab-context-new-group =
+    .label = Neue Gruppe
+    .accesskey = G
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -105,6 +129,15 @@ tab-context-move-tabs =
            *[other] Tabs verschieben
         }
     .accesskey = v
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-device =
+    .label =
+        { $tabCount ->
+            [1] An Gerät senden
+            [one] Tab an Gerät senden
+           *[other] { $tabCount } Tabs an Gerät senden
+        }
+    .accesskey = n
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->
@@ -112,3 +145,10 @@ tab-context-send-tabs-to-device =
            *[other] { $tabCount } Tabs an Gerät senden
         }
     .accesskey = s
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [one] Tab entladen
+           *[other] { $tabCount } Tabs entladen
+        }
+    .accesskey = e

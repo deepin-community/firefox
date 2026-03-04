@@ -28,14 +28,14 @@ use super::model::{self, Alignment, Application, Element, TypedElement};
 use crate::data::Property;
 use cocoa::{
     INSApplication, INSBox, INSButton, INSColor, INSControl, INSFont, INSLayoutAnchor,
-    INSLayoutConstraint, INSLayoutDimension, INSMenu, INSMenuItem, INSMutableParagraphStyle,
-    INSObject, INSProcessInfo, INSProgressIndicator, INSRunLoop, INSScrollView, INSStackView,
-    INSText, INSTextContainer, INSTextField, INSTextView, INSView, INSWindow,
-    NSArray_NSArrayCreation, NSAttributedString_NSExtendedAttributedString,
-    NSDictionary_NSDictionaryCreation, NSRunLoop_NSRunLoopConveniences,
-    NSStackView_NSStackViewGravityAreas, NSString_NSStringExtensionMethods,
-    NSTextField_NSTextFieldConvenience, NSView_NSConstraintBasedLayoutInstallingConstraints,
-    NSView_NSConstraintBasedLayoutLayering, PNSObject,
+    INSLayoutConstraint, INSLayoutDimension, INSMenu, INSMenuItem, INSObject, INSProcessInfo,
+    INSProgressIndicator, INSRunLoop, INSScrollView, INSStackView, INSText, INSTextContainer,
+    INSTextField, INSTextView, INSView, INSWindow, NSArray_NSArrayCreation,
+    NSAttributedString_NSExtendedAttributedString, NSDictionary_NSDictionaryCreation,
+    NSMutableParagraphStyle_, NSRunLoop_NSRunLoopConveniences, NSStackView_NSStackViewGravityAreas,
+    NSString_NSStringExtensionMethods, NSTextField_NSTextFieldConvenience,
+    NSView_NSConstraintBasedLayoutInstallingConstraints, NSView_NSConstraintBasedLayoutLayering,
+    PNSObject,
 };
 use once_cell::sync::Lazy;
 
@@ -170,7 +170,7 @@ fn enqueue<F: Fn() + 'static>(f: F) {
                     cocoa::NSArray(<cocoa::NSArray as NSArray_NSArrayCreation<
                         cocoa::NSRunLoopMode,
                     >>::arrayWithObjects_count_(
-                        objects.as_slice().as_ptr() as *const *mut u64,
+                        objects.as_slice().as_ptr() as *const *mut _,
                         objects
                             .as_slice()
                             .len()
@@ -279,11 +279,6 @@ objc_class! {
             self.windows = windows.unwrap();
 
         }
-
-        #[sel(applicationShouldTerminateAfterLastWindowClosed:)]
-        fn application_should_terminate_after_window_closed(&mut self, _app: Ptr<cocoa::NSApplication>) -> runtime::BOOL {
-            runtime::YES
-        }
     }
 }
 
@@ -335,10 +330,13 @@ objc_class! {
 
         #[sel(windowWillClose:)]
         fn window_will_close(&mut self, _notification: Ptr<cocoa::NSNotification>) {
-            if self.modal {
-                unsafe {
-                    let nsapp = cocoa::NSApplication::sharedApplication();
+            unsafe {
+                let nsapp = cocoa::NSApplication::sharedApplication();
+                if self.modal {
                     nsapp.stopModal();
+                } else if self.instance == nsapp.mainWindow().0 {
+                    // Stop the application, causing run_loop to exit.
+                    nsapp.stop_(self.instance);
                 }
             }
         }
@@ -1084,8 +1082,8 @@ fn render_element(
                             cocoa::NSAttributedStringKey,
                             cocoa::id,
                         >>::dictionaryWithObject_forKey_(
-                            cocoa::NSColor::placeholderTextColor().0 as u64,
-                            cocoa::NSForegroundColorAttributeName.0 as u64,
+                            std::mem::transmute(cocoa::NSColor::placeholderTextColor().0),
+                            std::mem::transmute(cocoa::NSForegroundColorAttributeName.0),
                         ),
                     );
                     let string = StrongRef::new(cocoa::NSAttributedString(

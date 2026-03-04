@@ -12,6 +12,10 @@ support-files = [
 ]
 
 ["browser_ManifestFinder_browserHasManifestLink.js"]
+skip-if = [
+  "os == 'win' && os_version == '11.26100' && arch == 'x86_64' && asan", # Bug 1904224
+  "os == 'win' && os_version == '11.26100' && arch == 'x86_64' && ccov", # Bug 1904224
+]
 
 ["browser_ManifestIcons_browserFetchIcon.js"]
 
@@ -20,4 +24,6 @@ support-files = [
 ["browser_ManifestObtainer_obtain.js"]
 
 ["browser_Manifest_install.js"]
-skip-if = ["verify"]
+skip-if = [
+  "verify-standalone",
+]

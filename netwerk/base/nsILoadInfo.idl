@@ -11,6 +11,7 @@
 
 interface nsIChannel;
 interface nsIContentSecurityPolicy;
+interface nsIPolicyContainer;
 interface nsICookieJarSettings;
 interface nsICSPEventListener;
 interface nsINode;
@@ -22,6 +23,7 @@ webidl BrowsingContext;
 native LoadContextRef(already_AddRefed<nsISupports>);
 %{C++
 #include "nsTArray.h"
+#include "mozilla/dom/UserNavigationInvolvement.h"
 #include "mozilla/LoadTainting.h"
 #include "mozilla/OriginAttributes.h"
 #include "mozilla/UniquePtr.h"
@@ -35,6 +37,8 @@ class ClientSource;
 struct FeaturePolicyInfo;
 class PerformanceStorage;
 class ServiceWorkerDescriptor;
+enum class RequestMode : uint8_t;
+enum class ForceMediaDocument : uint8_t;
 } // namespace dom
 } // namespace mozilla
 %}
@@ -52,13 +56,16 @@ native OriginAttributes(mozilla::OriginAttributes);
 [ref] native const_MaybeClientInfoRef(const mozilla::Maybe<mozilla::dom::ClientInfo>);
 [ref] native const_ServiceWorkerDescriptorRef(const mozilla::dom::ServiceWorkerDescriptor);
 [ref] native const_MaybeServiceWorkerDescriptorRef(const mozilla::Maybe<mozilla::dom::ServiceWorkerDescriptor>);
-[ref] native const_MaybeRFPTarget(const mozilla::Maybe<mozilla::RFPTarget>);
-      native RFPTarget(mozilla::RFPTarget);
+[ref] native const_MaybeRFPTargetSet(const mozilla::Maybe<mozilla::RFPTargetSet>);
+      native RFPTargetSet(mozilla::RFPTargetSet);
 [ptr] native PerformanceStoragePtr(mozilla::dom::PerformanceStorage);
       native LoadTainting(mozilla::LoadTainting);
       native CSPRef(already_AddRefed<nsIContentSecurityPolicy>);
+      native PolicyContainerRef(already_AddRefed<nsIPolicyContainer>);
       native MaybeFeaturePolicyInfo(mozilla::Maybe<mozilla::dom::FeaturePolicyInfo>);
 [ref] native const_FeaturePolicyInfoRef(const mozilla::dom::FeaturePolicyInfo);
+      native MaybeRequestMode(mozilla::Maybe<mozilla::dom::RequestMode>);
+      native ForceMediaDocument(mozilla::dom::ForceMediaDocument);
 
 typedef unsigned long nsSecurityFlags;
 
@@ -310,6 +317,12 @@ interface nsILoadInfo : nsISupports
   readonly attribute nsIPrincipal triggeringPrincipal;
 
   /**
+   * This method is intended to override the triggering principal
+   * in test environments.
+   */
+  void setTriggeringPrincipalForTesting(in nsIPrincipal aPrincipal);
+
+  /**
    * A C++-friendly version of triggeringPrincipal.
    */
   [noscript, notxpcom, nostdcall, binaryname(TriggeringPrincipal)]
@@ -449,6 +462,24 @@ interface nsILoadInfo : nsISupports
   [infallible] attribute boolean triggeringStorageAccess;
 
   /**
+   * The classification flags of the first-party context responsible for causing
+   * the load to start. If the load is not triggered by a first-party context,
+   * this will be 0.
+   *
+   * See nsIClassifiedChannel.idl for the list of flags.
+   */
+  [infallible] attribute unsigned long triggeringFirstPartyClassificationFlags;
+
+  /**
+   * The classification flags of the third-party context responsible for causing
+   * the load to start. If the load is not triggered by a third-party context,
+   * this will be 0.
+   *
+   * See nsIClassifiedChannel.idl for the list of flags.
+   */
+  [infallible] attribute unsigned long triggeringThirdPartyClassificationFlags;
+
+  /**
    * Allows to query only the security mode bits from above.
    */
   [infallible] readonly attribute unsigned long securityMode;
@@ -521,13 +552,6 @@ interface nsILoadInfo : nsISupports
   const unsigned long HTTPS_ONLY_BYPASS_ORB = (1 << 8);
 
   /**
-   * This flag indicates that HTTPS_ONLY_EXEMPT should be
-   * set the next time HTTPS-Only exemptions are checked
-   * and HTTPS-First is enabled.
-   */
-  const unsigned long HTTPS_FIRST_EXEMPT_NEXT_LOAD = (1 << 9);
-
-  /**
    * Upgrade state of HTTPS-Only Mode. The flag HTTPS_ONLY_EXEMPT can get
    * set on requests that should be excempt from an upgrade.
    */
@@ -536,7 +560,7 @@ interface nsILoadInfo : nsISupports
   /**
    * Reflects whetehr this is an HTTP Strict Transport Security host
    */
-[infallible] attribute boolean hstsStatus;
+  [infallible] attribute boolean hstsStatus;
 
   /**
    * Returns true if at the time of the loadinfo construction the document
@@ -582,6 +606,13 @@ interface nsILoadInfo : nsISupports
   [infallible] attribute boolean parserCreatedScript;
 
   /**
+   * Request mode of the request. This is only set by ScriptLoader
+   * for script loads.
+   */
+  [noscript]
+  attribute MaybeRequestMode requestMode;
+
+  /**
    * True if this request is known to have been triggered by a user
    * manually requesting the URI to be saved.
    */
@@ -613,6 +644,14 @@ interface nsILoadInfo : nsISupports
   [infallible] attribute boolean isThirdPartyContextToTopWindow;
 
   /**
+   * True if this request is on the third-party cookie blocking exception list.
+   *
+   * This value would be set during opening the channel in parent and propagate
+   * to the channel in the content.
+   */
+  [infallible] attribute boolean isOn3PCBExceptionList;
+
+  /**
    * See the SEC_COOKIES_* flags above. This attribute will never return
    * SEC_COOKIES_DEFAULT, but will instead return what the policy resolves to.
    * I.e. SEC_COOKIES_SAME_ORIGIN for CORS mode, and SEC_COOKIES_INCLUDE
@@ -630,7 +669,39 @@ interface nsILoadInfo : nsISupports
     NoStoragePermission = 0,
     HasStoragePermission = 1,
     StoragePermissionAllowListed = 2,
+    // Value for Storage-Access-Headers. Like NoStoragePermission, but on a channel that can potentially
+    // have access to unpartitioned cookies.
+    // XXX(Bug 1978856): If this is considered to be not useful, this variant can be removed.
+    DisabledStoragePermission = 3,
+    // Value for Storage-Access-Headers. The user has granted storage-access permissions previously,
+    // but in this request we partition the storage. Website can simply elevate to unpartitioned cookies
+    // by running document.requestStoragePermission()
+    InactiveStoragePermission = 4,
   };
+
+/**
+* IP AddressSpace - For classifying IP Addresses into different categories based on their vicinity to the user.
+* Ref https://wicg.github.io/private-network-access/#ip-address-space
+*/
+  cenum IPAddressSpace : 8 {
+    Unknown = 0,
+    Local = 1,
+    Private = 2,
+    Public = 3,
+    Invalid,
+  };
+
+/**
+* IP AddressSpace of the resource being loaded. This will be set after connection to the server has been established.
+* This is used to check if the request crosses address boundaries between public to a more private address space.
+*/
+  [infallible] attribute nsILoadInfo_IPAddressSpace ipAddressSpace;
+
+/**
+* IP AddressSpace of the document/sub-document that trigeered this request.
+* This will be set from the browsing context of the document that triggered this request.
+*/
+  [infallible] attribute nsILoadInfo_IPAddressSpace parentIpAddressSpace;
 
   /**
    * The result of the storage permission check of the loading document. This
@@ -649,13 +720,13 @@ interface nsILoadInfo : nsISupports
    * The RFPTarget defined in the RFPTargets.inc.
    */
   [noscript, nostdcall, notxpcom]
-  const_MaybeRFPTarget GetOverriddenFingerprintingSettings();
+  const_MaybeRFPTargetSet GetOverriddenFingerprintingSettings();
 
   /**
    * Set the granular overrides of fingerprinting protections for the channel.
    */
   [noscript, nostdcall, notxpcom]
-  void SetOverriddenFingerprintingSettings(in RFPTarget aTargets);
+  void SetOverriddenFingerprintingSettings(in RFPTargetSet aTargets);
 
   /**
    * True if the load was triggered by a meta refresh.
@@ -741,6 +812,11 @@ interface nsILoadInfo : nsISupports
   [infallible] attribute boolean isFormSubmission;
 
   /**
+   * True if the load will be a get request.
+   */
+  [infallible] attribute boolean isGETRequest;
+
+  /**
    * The external contentPolicyType of the channel, used for security checks
    * like Mixed Content Blocking and Content Security Policy.
    *
@@ -781,6 +857,12 @@ interface nsILoadInfo : nsISupports
   nsContentPolicyType binaryInternalContentPolicyType();
 
   readonly attribute nsContentPolicyType internalContentPolicyType;
+
+  /**
+   * Returns the internalContentPolicyType converted to a destination
+   * string matching the fetch specification.
+   */
+  readonly attribute ACString fetchDestination;
 
   /**
    * Returns true if document or any of the documents ancestors
@@ -834,6 +916,20 @@ interface nsILoadInfo : nsISupports
    * If true, insecure redirects to a data: URI are allowed.
    */
   [infallible] attribute boolean allowInsecureRedirectToDataURI;
+
+  /**
+   * If not NONE, force the resulting document to load as specific kind of MediaDocument.
+   */
+  [noscript] attribute ForceMediaDocument forceMediaDocument;
+
+%{ C++
+  mozilla::dom::ForceMediaDocument GetForceMediaDocument()
+  {
+    mozilla::dom::ForceMediaDocument forceMediaDocument;
+    MOZ_ALWAYS_SUCCEEDS(GetForceMediaDocument(&forceMediaDocument));
+    return forceMediaDocument;
+  }
+%}
 
   /**
    * If true, the content policy security check is excluded from web requests.
@@ -1355,9 +1451,10 @@ interface nsILoadInfo : nsISupports
    * After evaluating what CSP to use for frame navigations we should
    * update the above documentation to match the outcome of Bug 1557114.
    */
-  [notxpcom,nostdcall] CSPRef GetCsp();
   [notxpcom,nostdcall] CSPRef GetPreloadCsp();
-  [notxpcom,nostdcall] CSPRef GetCspToInherit();
+
+  [notxpcom,nostdcall] PolicyContainerRef GetPolicyContainer();
+  [notxpcom,nostdcall] PolicyContainerRef GetPolicyContainerToInherit();
 
   /**
     * The possibly cross-origin container feature policy required to
@@ -1441,6 +1538,7 @@ interface nsILoadInfo : nsISupports
   const uint32_t BLOCKING_REASON_CLASSIFY_FINGERPRINTING_URI = 2008;
   const uint32_t BLOCKING_REASON_CLASSIFY_SOCIALTRACKING_URI = 2009;
   const uint32_t BLOCKING_REASON_CLASSIFY_EMAILTRACKING_URI = 2010;
+  const uint32_t BLOCKING_REASON_CLASSIFY_HARMFULADDON_URI = 2011;
   const uint32_t BLOCKING_REASON_MIXED_BLOCKED = 3001;
   // The general reason comes from nsCSPContext::permitsInternal(),
   // which is way too generic to distinguish an exact reason.
@@ -1506,6 +1604,10 @@ interface nsILoadInfo : nsISupports
    * innerWindowIID in the nsILoadInfo.
    * It also could be set by workers when fetch is called under
    * the workers' scope.
+   *
+   * If the value is nsILoadInfo::EMBEDDER_POLICY_REQUIRE_CORP, CORP checking
+   * must be performed for the loading.
+   * See https://wicg.github.io/cross-origin-embedder-policy/#corp-check.
    */
   [infallible] attribute nsILoadInfo_CrossOriginEmbedderPolicy
         loadingEmbedderPolicy;
@@ -1534,12 +1636,6 @@ interface nsILoadInfo : nsISupports
   [infallible] attribute boolean isFromObjectOrEmbed;
 
   /**
-   * This attribute will be true if the URL is known to be possibly broken and
-   * CheckForBrokenChromeURL and RecordZeroLengthEvent should be skipped.
-   */
-  [infallible] readonly attribute boolean shouldSkipCheckForBrokenURLOrZeroSized;
-
-  /**
    * If this is non-null, this property holds the URI as it was before query
    * stripping was performed.
    */
@@ -1563,10 +1659,15 @@ interface nsILoadInfo : nsISupports
    */
   [infallible] attribute boolean hasInjectedCookieForCookieBannerHandling;
 
+  cenum SchemelessInputType : 8 {
+    SchemelessInputTypeUnset = 0,
+    SchemelessInputTypeSchemeful = 1,
+    SchemelessInputTypeSchemeless = 2,
+  };
   /**
    * Whether the load has gone through the URL bar, where the fixup had to add * the protocol scheme.
    */
-   [infallible] attribute boolean wasSchemelessInput;
+   [infallible] attribute nsILoadInfo_SchemelessInputType schemelessInput;
 
   cenum HTTPSUpgradeTelemetryType : 32 {
     NOT_INITIALIZED = 0,
@@ -1583,6 +1684,7 @@ interface nsILoadInfo : nsISupports
     HTTPS_RR = (1 << 10),
     WEB_EXTENSION_UPGRADE = (1 << 11),
     UPGRADE_EXCEPTION = (1 << 12),
+    SKIP_HTTPS_UPGRADE = (1 << 13),
   };
 
   /**
@@ -1595,4 +1697,22 @@ interface nsILoadInfo : nsISupports
    */
   [infallible] attribute boolean isNewWindowTarget;
 
+  /**
+   * When true, this load will never be upgraded to HTTPS.
+   */
+  [infallible] attribute boolean skipHTTPSUpgrade;
+
+  /**
+   * see https://html.spec.whatwg.org/#user-navigation-involvement
+   */
+  attribute uint8_t userNavigationInvolvement;
+%{C++
+    mozilla::dom::UserNavigationInvolvement GetUserNavigationInvolvement() {
+      uint8_t userNavigationInvolvement = 0;
+      mozilla::DebugOnly<nsresult> rv = GetUserNavigationInvolvement(&userNavigationInvolvement);
+      MOZ_ASSERT(NS_SUCCEEDED(rv));
+      MOZ_DIAGNOSTIC_ASSERT(userNavigationInvolvement < 3);
+      return static_cast<mozilla::dom::UserNavigationInvolvement>(userNavigationInvolvement);
+    }
+%}
 };

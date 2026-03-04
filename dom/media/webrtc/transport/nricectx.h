@@ -50,24 +50,21 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef nricectx_h__
 #define nricectx_h__
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
-#include <map>
-
-#include "sigslot.h"
-
-#include "prnetdb.h"
-
-#include "mozilla/RefPtr.h"
-#include "mozilla/UniquePtr.h"
-#include "nsIEventTarget.h"
-#include "nsTArray.h"
-#include "mozilla/Maybe.h"
 
 #include "m_cpp_utils.h"
-#include "nricestunaddr.h"
+#include "mozilla/Maybe.h"
+#include "mozilla/RefPtr.h"
+#include "mozilla/UniquePtr.h"
 #include "nricemediastream.h"
+#include "nricestunaddr.h"
+#include "nsIEventTarget.h"
+#include "nsTArray.h"
+#include "prnetdb.h"
+#include "sigslot.h"
 
 typedef struct nr_ice_ctx_ nr_ice_ctx;
 typedef struct nr_ice_peer_ctx_ nr_ice_peer_ctx;
@@ -215,10 +212,13 @@ class NrIceCtx {
     nsCString mFilteringType = "ENDPOINT_INDEPENDENT"_ns;
     nsCString mRedirectAddress;
     CopyableTArray<nsCString> mRedirectTargets;
+    unsigned int mNetworkDelayMs = 0;
   };
 
   struct Config {
     NrIceCtx::Policy mPolicy = NrIceCtx::ICE_POLICY_ALL;
+    bool mAllowLinkLocal = false;
+    bool mAllowLoopback = false;
     Maybe<NatSimulatorConfig> mNatSimulatorConfig;
   };
 
@@ -232,8 +232,6 @@ class NrIceCtx {
   void DestroyStream(const std::string& id);
 
   struct GlobalConfig {
-    bool mAllowLinkLocal = false;
-    bool mAllowLoopback = false;
     bool mTcpEnabled = true;
     int mStunClientMaxTransmits = 7;
     int mTrickleIceGracePeriod = 5000;

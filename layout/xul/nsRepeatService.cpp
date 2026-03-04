@@ -12,6 +12,7 @@
 //
 
 #include "nsRepeatService.h"
+
 #include "mozilla/StaticPtr.h"
 #include "mozilla/dom/Document.h"
 
@@ -56,7 +57,9 @@ void nsRepeatService::Start(Callback aCallback, void* aCallbackData,
 }
 
 void nsRepeatService::Stop(Callback aCallback, void* aCallbackData) {
-  if (mCallback != aCallback || mCallbackData != aCallbackData) return;
+  if (mCallback != aCallback || mCallbackData != aCallbackData) {
+    return;
+  }
 
   // printf("Stopping repeat timer\n");
   if (mRepeatTimer) {
@@ -89,5 +92,5 @@ void nsRepeatService::InitTimerCallback(uint32_t aInitialDelay) {
 
         rs->InitTimerCallback(REPEAT_DELAY);
       },
-      nullptr, aInitialDelay, nsITimer::TYPE_ONE_SHOT, mCallbackName.Data());
+      nullptr, aInitialDelay, nsITimer::TYPE_ONE_SHOT, mCallbackName);
 }

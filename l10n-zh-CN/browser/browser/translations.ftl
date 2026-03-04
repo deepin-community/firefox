@@ -96,8 +96,8 @@ translations-panel-error-unsupported-hint-unknown = 抱歉，我们尚未支持�
 ## If this structure is problematic for your locale, an alternative way is to
 ## translate them as `Source language:` and `Target language:`
 
-translations-panel-from-label = 原始语言：
-translations-panel-to-label = 目标语言：
+translations-panel-from-label = 原始语言
+translations-panel-to-label = 目标语言
 
 ## The translation panel appears from the url bar, and this view is the "restore" view
 ## that lets a user restore a page to the original language, or translate into another
@@ -126,13 +126,6 @@ translations-manage-description = 下载离线翻译语言包。
 translations-manage-all-language = 所有语言
 translations-manage-download-button = 下载
 translations-manage-delete-button = 删除
-translations-manage-intro = 设置语言与网站翻译首选项，管理离线翻译语言包。
-translations-manage-install-description = 安装离线翻译语言包
-translations-manage-language-install-button =
-    .label = 安装
-translations-manage-language-install-all-button =
-    .label = 全部安装
-    .accesskey = I
 translations-manage-intro-2 = 设置语言与网站翻译首选项，管理离线翻译语言包。
 translations-manage-download-description = 下载离线翻译语言包
 translations-manage-language-download-button =
@@ -145,7 +138,6 @@ translations-manage-language-remove-button =
 translations-manage-language-remove-all-button =
     .label = 全部移除
     .accesskey = e
-translations-manage-error-install = 安装离线包时遇到问题，请重试。
 translations-manage-error-download = 下载离线包时遇到问题，请重试。
 translations-manage-error-delete = 删除离线包时遇到问题，请重试。
 translations-manage-error-remove = 删除离线包时遇到问题，请重试。
@@ -206,9 +198,9 @@ main-context-menu-translate-link-text-to-language =
 # Text displayed in the select translations panel header.
 select-translations-panel-header = 翻译
 # Text displayed above the from-language dropdown menu.
-select-translations-panel-from-label = 原始语言
+select-translations-panel-from-label = 从
 # Text displayed above the to-language dropdown menu.
-select-translations-panel-to-label = 目标语言
+select-translations-panel-to-label = 翻译成
 # Text displayed above the try-another-source-language dropdown menu.
 select-translations-panel-try-another-language-label = 选择其他原始语言
 select-translations-panel-cancel-button =

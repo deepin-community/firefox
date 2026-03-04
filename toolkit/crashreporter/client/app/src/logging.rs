@@ -16,6 +16,7 @@ pub fn init() -> LogTarget {
     let log_target_inner = LogTargetInner::default();
 
     env_logger::builder()
+        .filter_level(log::LevelFilter::Warn)
         .parse_env(
             env_logger::Env::new()
                 .filter(ekey!("LOG"))
@@ -42,6 +43,7 @@ impl LogTarget {
     pub fn set_file(&self, path: &Path) {
         match std::fs::File::create(path) {
             Ok(file) => {
+                log::info!("retargetting log to {}", path.display());
                 if let Ok(mut guard) = self.inner.target.lock() {
                     *guard = Box::new(file);
                 }

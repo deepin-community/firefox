@@ -3,9 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Gửi tín hiệu “Không theo dõi” tới trang web để cho biết bạn không muốn bị theo dõi
-do-not-track-description2 =
-    .label = Gửi yêu cầu “không theo dõi” đến trang web
-    .accesskey = d
+do-not-track-removal = Chúng tôi không còn hỗ trợ tín hiệu “Không theo dõi”
 do-not-track-learn-more = Tìm hiểu thêm
 do-not-track-option-default-content-blocking-known =
     .label = Chỉ khi { -brand-short-name } được đặt để chặn trình theo dõi đã biết
@@ -14,7 +12,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Yêu cầu trang web không bán hoặc chia sẻ dữ liệu của tôi
     .accesskey = s
+non-technical-privacy-group =
+    .label = Tùy chọn riêng tư trang web
 non-technical-privacy-header = Tùy chọn riêng tư trang web
+non-technical-privacy-label =
+    .aria-label = { non-technical-privacy-header }
 # Do not translate.
 # "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
 # included to facilitate power-user search of the about:preferences page.
@@ -51,6 +53,9 @@ category-privacy =
 pane-sync-title3 = Đồng bộ hóa
 category-sync3 =
     .tooltiptext = { pane-sync-title3 }
+pane-ai-controls-title = Kiểm soát trí tuệ nhân tạo (AI)
+category-ai-controls =
+    .tooltiptext = { pane-ai-controls-title }
 pane-experimental-title = Thử nghiệm { -brand-short-name }
 category-experimental =
     .tooltiptext = Thử nghiệm { -brand-short-name }
@@ -60,6 +65,7 @@ pane-experimental-description2 = Thay đổi cài đặt cấu hình nâng cao c
 settings-pane-labs-title = { -firefoxlabs-brand-name }
 settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description4 = Hãy thử các tính năng thử nghiệm của chúng tôi! Chúng đang được phát triển và cải tiến, điều này có thể ảnh hưởng đến cách thức hoạt động của { -brand-short-name }. Chúng tôi chỉ nhận dữ liệu về việc bạn sử dụng các tính năng này nếu bạn đã bật thu thập <a data-l10n-name="data-collection">dữ liệu kỹ thuật và tương tác</a>.
 pane-experimental-description3 = Hãy dùng thử các tính năng thử nghiệm của chúng tôi! Chúng đang trong quá trình phát triển, điều này có thể ảnh hưởng đến cách { -brand-short-name } hoạt động.
 pane-experimental-reset =
     .label = Khôi phục về mặc định
@@ -70,6 +76,8 @@ focus-search =
     .key = f
 close-button =
     .aria-label = Đóng
+do-not-track-removal2 =
+    .label = Chúng tôi không còn hỗ trợ tín hiệu “Không theo dõi”
 
 ## Browser Restart Dialog
 
@@ -111,6 +119,10 @@ extension-controlling-proxy-config = <img data-l10n-name ="icon"/> <strong>{ $na
 # <img data-l10n-name="addons-icon"/> will be replaced with Add-ons icon
 # <img data-l10n-name="menu-icon"/> will be replaced with Menu icon
 extension-controlled-enable = Để kích hoạt tiện ích mở rộng hãy vào phần tiện ích <img data-l10n-name="addons-icon"/> trên bảng chọn <img data-l10n-name="menu-icon"/>.
+extension-controlled-enable-2 = Để kích hoạt lại tiện ích mở rộng này, hãy truy cập <a data-l10n-name="addons-link">Tiện ích mở rộng và chủ đề</a>.
+# This string is shown to notify the user that their home page or new tab preferences
+# are being controlled by an extension.
+extension-controlling-homepage = { $name } kiểm soát một số cài đặt trang chủ của bạn.
 
 ## Preferences UI Search Results
 
@@ -125,6 +137,10 @@ startup-header = Khởi động
 always-check-default =
     .label = Luôn kiểm tra xem { -brand-short-name } có phải trình duyệt mặc định không
     .accesskey = y
+is-default-browser =
+    .message = { -brand-short-name } đang là trình duyệt mặc định của bạn
+is-not-default-browser =
+    .message = { -brand-short-name } không phải là trình duyệt mặc định
 is-default = { -brand-short-name } đang là trình duyệt mặc định của bạn
 is-not-default = { -brand-short-name } không phải là trình duyệt mặc định
 set-as-my-default-browser =
@@ -133,19 +149,63 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Mở các cửa sổ và thẻ trước đó
     .accesskey = s
+startup-windows-launch-on-login-profile-disabled =
+    .message = Kích hoạt tùy chỉnh này bằng cách đánh dấu hộp kiểm “{ profile-manager-use-selected.label }” trong cửa sổ “Chọn hồ sơ người dùng”.
 windows-launch-on-login =
     .label = Tự động mở { -brand-short-name } khi máy tính của bạn khởi động
     .accesskey = O
 windows-launch-on-login-disabled = Tùy chọn này đã bị tắt trong Windows. Để thay đổi, hãy truy cập <a data-l10n-name="startup-link">Ứng dụng khởi động</a> trong Cài đặt hệ thống.
+windows-launch-on-login-profile-disabled = Kích hoạt tùy chỉnh này bằng cách đánh dấu hộp kiểm “{ profile-manager-use-selected.label }” trong cửa sổ “Chọn hồ sơ người dùng”.
 startup-restore-warn-on-quit =
     .label = Cảnh báo bạn khi thoát khỏi trình duyệt
 disable-extension =
     .label = Vô hiệu hóa tiện ích mở rộng
+preferences-data-migration-group =
+    .label = Nhập dữ liệu trình duyệt
+    .description = Mang dấu trang, mật khẩu, lịch sử, tiện ích mở rộng và dữ liệu tự động điền từ trình duyệt khác.
 preferences-data-migration-header = Nhập dữ liệu trình duyệt
 preferences-data-migration-description = Nhập dấu trang, mật khẩu, lịch sử và dữ liệu tự động điền vào { -brand-short-name }.
 preferences-data-migration-button =
     .label = Nhập dữ liệu
     .accesskey = m
+preferences-profiles-group-header =
+    .heading = Hồ sơ
+preferences-profiles-subpane-description =
+    .description = Mỗi hồ sơ có dữ liệu duyệt và cài đặt riêng biệt, bao gồm lịch sử, mật khẩu và nhiều thứ khác.
+preferences-profiles-section-header =
+    .label = Hồ sơ
+    .description = Mỗi hồ sơ có dữ liệu duyệt và cài đặt riêng biệt, bao gồm lịch sử, mật khẩu và nhiều thứ khác.
+preferences-profiles-header = Hồ sơ
+preferences-manage-profiles-description = Mỗi hồ sơ có dữ liệu duyệt và cài đặt riêng biệt, bao gồm lịch sử, mật khẩu và nhiều thứ khác.
+preferences-manage-profiles-learn-more = Tìm hiểu thêm
+preferences-manage-profiles-button =
+    .label = Quản lý hồ sơ
+preferences-profiles-settings-button =
+    .label = Cài đặt
+# This string labels the entire copy profile section in the profiles sub-pane.
+preferences-copy-profile-header =
+    .label = Sao chép hồ sơ hiện tại
+    .description = Hồ sơ mới sẽ sao chép cài đặt, tiện ích mở rộng, lịch sử và dữ liệu đã lưu như dấu trang và mật khẩu — nhưng không sao chép thông tin tài khoản hoặc đồng bộ hóa của bạn.
+# This string sits next to the copy controls, both the copy-profile-select
+# drop-down and the copy-profile-button, so that the user understands they
+# need to first pick a profile to copy, and then click the copy button.
+preferences-profile-to-copy =
+    .label = Hồ sơ để sao chép
+# This string is a placeholder that will be shown in a drop-down list of
+# profiles. The user will select a profile, then click the copy button
+# to make a copy of that profile.
+preferences-copy-profile-select = Chọn hồ sơ
+preferences-copy-profile-button = Sao chép
+tabs-group-header2 =
+    .label = Thẻ
+tabs-opening-heading =
+    .label = Mở
+tabs-interaction-heading =
+    .label = Tương tác
+tabs-containers-heading =
+    .label = Ngăn chứa
+tabs-closing-heading =
+    .label = Đóng
 tabs-group-header = Thẻ
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab để chuyển qua các thẻ theo thứ tự sử dụng gần đây nhất
@@ -153,6 +213,19 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Mở đường dẫn ở thẻ thay vì ở cửa sổ mới
     .accesskey = w
+open-external-link-next-to-active-tab =
+    .label = Mở liên kết từ các ứng dụng bên cạnh thẻ đang hoạt động của bạn
+ask-on-close-multiple-tabs =
+    .label = Hỏi trước khi đóng nhiều thẻ
+    .accesskey = m
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = Hỏi trước khi thoát khi nhấn { $quitKey }
+    .accesskey = b
 confirm-on-close-multiple-tabs =
     .label = Xác nhận trước khi đóng nhiều thẻ
     .accesskey = m
@@ -181,6 +254,8 @@ browser-containers-settings =
     .label = Cài đặt…
     .accesskey = i
 containers-disable-alert-title = Đóng tất cả các ngăn chứa thẻ?
+startup-group =
+    .label = Khởi động
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -200,12 +275,49 @@ containers-remove-cancel-button = Không xóa ngăn chứa này
 settings-tabs-show-image-in-preview =
     .label = Hiển thị hình ảnh xem trước khi bạn di chuột trên thẻ
     .accessKey = h
+browser-layout-header2 =
+    .label = Bố cục trình duyệt
+browser-layout-horizontal-tabs2 =
+    .label = Thẻ ngang
+    .title = Các thẻ ở trên cùng
+    .description = Các thẻ ở trên cùng
+browser-layout-vertical-tabs2 =
+    .label = Thẻ dọc
+    .title = Các thẻ ở bên cạnh, trong thanh lề
+    .description = Các thẻ ở bên cạnh, trong thanh lề
+browser-layout-show-sidebar2 =
+    .label = Hiển thị thanh lề
+    .description = Nhanh chóng truy cập dấu trang, thẻ từ điện thoại của bạn, chatbot AI và nhiều hơn nữa mà không rời khỏi chế độ xem chính của bạn.
+browser-layout-header = Bố cục trình duyệt
+browser-layout-horizontal-tabs =
+    .label = Thẻ ngang
+browser-layout-horizontal-tabs-desc = Hiển thị ở đầu trình duyệt
+browser-layout-vertical-tabs =
+    .label = Thẻ dọc
+browser-layout-vertical-tabs-desc = Hiển thị ở bên, trong thanh lề
+browser-layout-show-sidebar =
+    .label = Hiển thị thanh lề
+browser-layout-show-sidebar-desc = Nhanh chóng truy cập dấu trang, thẻ từ điện thoại của bạn, chatbot AI và nhiều hơn nữa mà không rời khỏi chế độ xem chính của bạn.
 
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Ngôn ngữ và chủ đề
+appearance-group =
+    .label = Diện mạo trang web
+    .description = Một số trang web điều chỉnh bảng màu của họ dựa trên tùy chỉnh của bạn. Chọn bảng màu mà bạn muốn sử dụng cho các trang web đó.
 preferences-web-appearance-header = Diện mạo trang web
 preferences-web-appearance-description = Một số trang web điều chỉnh bảng màu của họ dựa trên tùy chỉnh của bạn. Chọn bảng màu mà bạn muốn sử dụng cho các trang web đó.
+preferences-web-appearance-choice-auto2 =
+    .label = Tự động
+    .title = Tự động thay đổi hình nền và nội dung trang web dựa trên cài đặt hệ thống và chủ đề { -brand-short-name } của bạn.
+preferences-web-appearance-choice-light2 =
+    .label = Sáng
+    .title = Sử dụng giao diện sáng cho hình nền và nội dung trang web.
+preferences-web-appearance-choice-dark2 =
+    .label = Tối
+    .title = Sử dụng giao diện tối cho hình nền và nội dung trang web.
+web-appearance-group =
+    .aria-label = Diện mạo trang web
 preferences-web-appearance-choice-auto = Tự động
 preferences-web-appearance-choice-light = Sáng
 preferences-web-appearance-choice-dark = Tối
@@ -223,19 +335,45 @@ preferences-web-appearance-choice-input-dark =
     .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
-preferences-web-appearance-override-warning = Các lựa chọn màu sắc của bạn đang ghi đè diện mạo trang web. <a data-l10n-name="colors-link">Quản lý màu</a>
+preferences-web-appearance-override-warning3 =
+    .message = Cài đặt kiểm soát độ tương phản của bạn đang ghi đè lên giao diện của trang web.
+preferences-web-appearance-link =
+    .label = Quản lý chủ đề { -brand-short-name } trong Tiện ích mở rộng & chủ đề
+preferences-contrast-control-group =
+    .label = Độ tương phản trang web
+    .description = Các trang web sử dụng nhiều màu nền và màu chữ khác nhau. Để tạo độ tương phản nhất quán, bạn có thể sử dụng cùng một màu sắc trên tất cả các trang web.
+preferences-contrast-control-radio-group =
+    .label = Ghi đè màu sắc
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
-preferences-web-appearance-override-warning2 =
-    .message = Các lựa chọn màu sắc của bạn đang ghi đè diện mạo trang web.
+preferences-web-appearance-override-warning = Các lựa chọn màu sắc của bạn đang ghi đè diện mạo trang web. <a data-l10n-name="colors-link">Quản lý màu</a>
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = Quản lý chủ đề { -brand-short-name } trong <a data-l10n-name="themes-link">Tiện ích mở rộng & chủ đề</a>
+preferences-contrast-control-header = Kiểm soát độ tương phản
+preferences-contrast-control-description = Các trang web có nhiều màu nền trước và nền sau. Cấu hình { -brand-short-name } sử dụng cùng một màu sắc trên các trang web để dễ đọc hơn.
+preferences-contrast-control-use-platform-settings =
+    .label = Tự động (sử dụng cài đặt hệ thống)
+    .accesskey = A
+preferences-contrast-control-off =
+    .label = Tắt
+    .accesskey = O
+preferences-contrast-control-custom =
+    .label = Tuỳ chọn
+    .accesskey = C
 preferences-colors-header = Màu
 preferences-colors-description = Ghi đè màu mặc định của { -brand-short-name } cho văn bản, nền trang web và liên kết.
 preferences-colors-manage-button =
     .label = Quản lý màu…
     .accesskey = C
+preferences-fonts-header2 =
+    .label = Phông chữ
+default-font-2 =
+    .label = Phông mặc định
+    .accesskey = D
+default-font-size-2 =
+    .label = Kích thước
+    .accesskey = S
 preferences-fonts-header = Phông chữ
 default-font = Phông mặc định
     .accesskey = D
@@ -244,6 +382,12 @@ default-font-size = Kích thước
 advanced-fonts =
     .label = Nâng cao…
     .accesskey = o
+# Zoom is a noun, and the message is used as header for a group of options
+preferences-zoom-header2 =
+    .label = Thu phóng
+preferences-default-zoom-label =
+    .label = Thu phóng mặc định
+    .accesskey = z
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Thu phóng
 preferences-default-zoom = Thu phóng mặc định
@@ -259,6 +403,28 @@ preferences-text-zoom-override-warning =
     .message = Cảnh báo: Nếu bạn chọn “Chỉ phóng to văn bản” và thu phóng mặc định của bạn không được đặt thành 100%, nó có thể khiến một số trang web hoặc nội dung bị hỏng.
 language-header = Ngôn ngữ
 choose-language-description = Chọn ngôn ngữ ưu tiên bạn muốn để hiển thị trang
+website-language-heading =
+    .label = Ngôn ngữ trang web
+    .description = Một số trang web được hiển thị bằng nhiều ngôn ngữ. Hãy chọn ngôn ngữ theo thứ tự bạn muốn.
+website-preferred-language =
+    .label = Ngôn ngữ ưu tiên
+website-add-language =
+    .label = Thêm ngôn ngữ
+website-add-language-button =
+    .aria-label = Thêm ngôn ngữ đã chọn
+    .title = Thêm ngôn ngữ đã chọn
+# The pattern used to generate strings presented to the user in the
+# website languages selection list.
+#
+# Example:
+#   Icelandic
+#   Spanish (Chile)
+#
+# Variables:
+#   $locale (String) - A name of the locale (for example: "Icelandic", "Spanish (Chile)")
+website-remove-language-button =
+    .aria-label = Xoá { $locale }
+    .title = Xoá { $locale }
 choose-button =
     .label = Chọn…
     .accesskey = C
@@ -278,6 +444,68 @@ translate-attribution = Dịch bởi <img data-l10n-name="logo"/>
 translate-exceptions =
     .label = Ngoại lệ...
     .accesskey = N
+settings-translations-header =
+    .label = Dịch
+    .aria-label = Dịch
+    .description = Dịch trang hoặc đoạn văn bản đã chọn. Để bảo vệ quyền riêng tư của bạn, bản dịch sẽ được lưu trữ trên thiết bị của bạn.
+settings-translations-offer-to-translate-label =
+    .label = Cung cấp bản dịch toàn trang
+settings-translations-more-settings-button =
+    .label = Cài đặt dịch thuật khác
+    .description = Thiết lập tùy chọn cho ngôn ngữ, trang web và dịch ngoại tuyến.
+settings-translations-subpage-header =
+    .heading = Cài đặt dịch thuật khác
+settings-translations-subpage-speed-up-translation-header =
+    .label = Tăng tốc độ dịch thuật
+    .description = Tải xuống toàn bộ ngôn ngữ để dịch nhanh hơn và dịch ngoại tuyến.
+settings-translations-subpage-automatic-translation-header =
+    .label = Dịch tự động
+settings-translations-subpage-always-translate-header =
+    .label = Luôn dịch các ngôn ngữ này
+settings-translations-subpage-never-translate-header =
+    .label = Không bao giờ dịch các ngôn ngữ này
+settings-translations-subpage-never-translate-sites-header =
+    .label = Không bao giờ dịch các trang này
+# The icon placeholders show the translations button and the settings gear in the urlbar panel.
+settings-translations-subpage-never-translate-sites-description = Để thêm trang web, hãy mở <img data-l10n-name="translations-icon"/> bảng dịch, chọn <img data-l10n-name="settings-icon"/> cài đặt dịch, và chọn “Không bao giờ dịch trang này”
+settings-translations-subpage-language-select-option =
+    .label = Thêm ngôn ngữ
+settings-translations-subpage-language-add-button =
+    .aria-label = Thêm ngôn ngữ
+    .title = Thêm ngôn ngữ
+settings-translations-subpage-download-languages-header =
+    .label = Tải xuống ngôn ngữ
+settings-translations-subpage-download-languages-select-option =
+    .label = Chọn ngôn ngữ
+settings-translations-subpage-download-languages-button =
+    .aria-label = Tải xuống ngôn ngữ
+    .title = Tải xuống ngôn ngữ
+# Variables:
+#   $language (string) - Localized name of the language to download.
+#   $size (string) - Download size in megabytes, formatted for the locale.
+settings-translations-subpage-download-language-option = { $language } ({ $size }MB)
+    .label = { $language } ({ $size }MB)
+settings-translations-subpage-no-languages-downloaded =
+    .label = Chưa có ngôn ngữ nào được tải xuống
+settings-translations-subpage-no-languages-added =
+    .label = Chưa có ngôn ngữ nào được thêm vào
+settings-translations-subpage-download-progress = Đang trong tiến trình tải xuống…
+# Variables:
+#   $language (string) - The localized display name of the language.
+#   $size (string) - The download size of the language in megabytes.
+settings-translations-subpage-download-error = Không thể tải xuống { $language } ({ $size }MB)
+settings-translations-subpage-download-retry-button =
+    .label = Thử lại
+# Variables:
+#   $language (string) - The localized display name of the language.
+#   $size (string) - The download size of the language in megabytes.
+settings-translations-subpage-download-delete-confirm = Xoá { $language } ({ $size }MB)?
+settings-translations-subpage-download-delete-button =
+    .label = Xóa
+settings-translations-subpage-download-cancel-button =
+    .label = Hủy bỏ
+settings-translations-subpage-no-sites-added =
+    .label = Chưa có trang web nào được thêm vào
 # Variables:
 #    $localeName (string) - Localized name of the locale to be used.
 use-system-locale =
@@ -289,6 +517,11 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = Tập tin và ứng dụng
+downloads-header-2 =
+    .label = Tải xuống
+download-save-where-2 =
+    .label = Lưu tập tin vào
+    .accesskey = v
 download-header = Tải xuống
 download-save-where = Lưu tập tin vào
     .accesskey = v
@@ -306,6 +539,9 @@ download-choose-folder =
 download-always-ask-where =
     .label = Luôn hỏi bạn nơi để lưu các tập tin
     .accesskey = A
+download-private-browsing-delete =
+    .label = Xóa các tập tin đã tải xuống trong trình duyệt riêng tư khi tất cả các cửa sổ riêng tư đã đóng
+    .accesskey = D
 applications-header = Ứng dụng
 applications-description = Chọn cách { -brand-short-name } xử lý các tập tin bạn tải xuống từ web hoặc các ứng dụng bạn sử dụng khi duyệt web.
 applications-filter =
@@ -388,6 +624,8 @@ applications-save-for-new-types =
 applications-ask-before-handling =
     .label = Hỏi xem có nên mở hay lưu tập tin hay không
     .accesskey = A
+drm-group =
+    .label = Nội dung quản lý bản quyền kỹ thuật số (DRM)
 drm-content-header = Nội dung quản lý bản quyền kỹ thuật số (DRM)
 play-drm-content =
     .label = Phát nội dung DRM được kiểm soát
@@ -437,6 +675,16 @@ update-in-progress-ok-button = &Hủy bỏ
 # method of closing the UI will not discard the update.
 update-in-progress-cancel-button = &Tiếp tục
 
+## Firefox support
+
+support-application-heading =
+    .label = Hỗ trợ của { -brand-short-name }
+    .description = Giải quyết sự cố hoặc chia sẻ ý tưởng với cộng đồng.
+support-get-help =
+    .label = Nhận trợ giúp
+support-share-ideas =
+    .label = Chia sẻ ý tưởng và phản hồi
+
 ## General Section - Performance
 
 performance-title = Hiệu suất
@@ -456,10 +704,14 @@ performance-limit-content-process-blocked-desc = Việc chỉnh sửa số tiế
 #   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (mặc định)
+performance-group =
+    .label = Hiệu suất
 
 ## General Section - Browsing
 
 browsing-title = Duyệt
+browsing-group-label =
+    .aria-label = Duyệt
 browsing-use-autoscroll =
     .label = Tự động cuộn
     .accesskey = u
@@ -487,6 +739,9 @@ browsing-search-on-start-typing =
 browsing-picture-in-picture-toggle-enabled =
     .label = Bật điều khiển video hình trong hình
     .accesskey = E
+browsing-picture-in-picture-enable-when-switching-tabs =
+    .label = Tiếp tục phát video ở chế độ hình trong hình khi chuyển sang thẻ khác
+    .accesskey = s
 browsing-picture-in-picture-learn-more = Tìm hiểu thêm
 browsing-media-control =
     .label = Điều khiển phương tiện qua bàn phím, tai nghe hoặc giao diện ảo
@@ -499,6 +754,8 @@ browsing-cfr-features =
     .label = Đề xuất các tính năng khi bạn duyệt
     .accesskey = f
 browsing-cfr-recommendations-learn-more = Tìm hiểu thêm
+browsing-group =
+    .label = Duyệt
 
 ## General Section - Proxy
 
@@ -508,16 +765,36 @@ network-proxy-connection-learn-more = Tìm hiểu thêm
 network-proxy-connection-settings =
     .label = Cài đặt…
     .accesskey = e
+network-proxy-group =
+    .label = Cài đặt mạng
+    .description = Cấu hình phương thức { -brand-short-name } kết nối internet.
 
 ## Home Section
 
 home-new-windows-tabs-header = Cửa sổ và thẻ mới
 home-new-windows-tabs-description2 = Chọn những gì bạn thấy khi bạn mở trang chủ, cửa sổ mới và các thẻ mới.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+home-default-browser-title =
+    .label = Trình duyệt mặc định
+is-default-browser-2 =
+    .message = { -brand-short-name } là trình duyệt mặc định của bạn. Lựa chọn tốt đấy.
+is-not-default-browser-2 =
+    .message = Này, hiện tại { -brand-short-name } không phải là trình duyệt mặc định của bạn.
+set-as-my-default-browser-2 =
+    .label = Đặt làm mặc định
+    .accesskey = D
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = Trang chủ và cửa sổ mới
+home-homepage-new-windows =
+    .label = Cửa sổ mới
+home-homepage-mode-label2 = Cửa sổ mới
 home-newtabs-mode-label = Thẻ mới
+home-homepage-new-tabs =
+    .label = Thẻ mới
 home-restore-defaults =
     .label = Khôi phục về mặc định
     .accesskey = R
@@ -529,6 +806,14 @@ home-mode-choice-blank =
     .label = Trang trắng
 home-homepage-custom-url =
     .placeholder = Dán một URL...
+# This button is shown when the homepage is managed by an extension and is placed below extension-controlling-homepage.
+home-homepage-manage-extension-button =
+    .label = Quản lý tiện ích
+# This option leads to the "Custom Homepage" subpage
+home-homepage-custom-homepage-button =
+    .label = Chọn một trang web cụ thể
+# This option leads to the "Custom Homepage" subpage
+home-homepage-custom-homepage-url = Chọn một trang web cụ thể
 # This string has a special case for '1' and [other] (default). If necessary for
 # your language, you can add {$tabCount} to your translations and use the
 # standard CLDR forms, or only use the form for [other] if both strings should
@@ -543,6 +828,44 @@ use-current-pages =
 choose-bookmark =
     .label = Sử dụng dấu trang…
     .accesskey = B
+home-homepage-header = Trang chủ
+
+## Home Section - Home Page Customization
+
+home-homepage-title =
+    .label = Trang chủ
+
+## Custom Homepage subpage
+
+home-custom-homepage-header = Tùy chỉnh trang chủ
+home-custom-homepage-subpage =
+    .heading = Tùy chỉnh trang chủ
+# Subheader on the Custom Homepage subpage. Followed by a form to enter URLs and a list of URLs already saved, if any.
+home-custom-homepage-card-header =
+    .label = Địa chỉ trang web
+# Subheader on the Custom Homepage subpage. Followed by a form to enter URLs and a list of URLs already saved, if any.
+home-custom-homepage-subheader = Địa chỉ trang web
+home-custom-homepage-address =
+    .placeholder = Nhập địa chỉ
+home-custom-homepage-address-button =
+    .label = Thêm địa chỉ
+# Shown when no custom websites/URLs to use as a homepage have been added yet
+home-custom-homepage-no-results =
+    .label = Chưa có trang web nào được thêm vào.
+home-custom-homepage-delete-address-button =
+    .aria-label = Xóa địa chỉ
+    .title = Xóa địa chỉ
+# Shown when no custom websites/URLs to use as a homepage have been added yet
+home-custom-homepage-no-websites-yet = Chưa có trang web nào được thêm vào.
+# Further options to use when setting the home page. Two action buttons are placed in line with this prompt
+# to replace the current home page with a currently open page or bookmark.
+home-custom-homepage-replace-with = Thay thế bằng
+# Button that appears in-line after text "Replace with" (home-custom-homepage-replace-with)
+home-custom-homepage-current-pages-button =
+    .label = Các trang hiện đang mở
+# Button that appears in-line after text "Replace with" (home-custom-homepage-replace-with)
+home-custom-homepage-bookmarks-button =
+    .label = Dấu trang…
 
 ## Home Section - Firefox Home Content Customization
 
@@ -550,14 +873,17 @@ home-prefs-content-header2 = Nội dung { -firefox-home-brand-name }
 home-prefs-content-description2 = Chọn nội dung bạn muốn trên màn hình { -firefox-home-brand-name } của mình.
 home-prefs-search-header =
     .label = Tìm kiếm web
+home-prefs-search-header2 =
+    .label = Tìm kiếm
 home-prefs-shortcuts-header =
     .label = Lối tắt
 home-prefs-shortcuts-description = Các trang web bạn lưu hoặc truy cập
 home-prefs-shortcuts-by-option-sponsored =
     .label = Các lối tắt được tài trợ
+home-prefs-content-header =
+    .label = { -firefox-home-brand-name }
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Được đề xuất bởi { $provider }
@@ -565,6 +891,12 @@ home-prefs-recommended-by-description-new = Nội dung đặc biệt do { $provi
 home-prefs-recommended-by-header-generic =
     .label = Câu chuyện được đề xuất
 home-prefs-recommended-by-description-generic = Nội dung đặc biệt được quản lý bởi gia đình { -brand-product-name }
+home-prefs-stories-header =
+    .label = Câu chuyện
+home-prefs-stories-description = Câu chuyện được cá nhân hóa dựa trên hoạt động của bạn
+home-prefs-stories-header2 =
+    .label = Câu chuyện
+    .description = Nội dung đặc biệt được quản lý bởi gia đình { -brand-product-name }
 
 ##
 
@@ -595,6 +927,27 @@ home-prefs-weather-header =
     .label = Thời tiết
 home-prefs-weather-description = Sơ lược về dự báo hôm nay
 home-prefs-weather-learn-more-link = Tìm hiểu thêm
+home-prefs-widgets-header =
+    .label = Widget
+# Lists is a widget on New Tab, similar to a to-do widget
+home-prefs-lists-header =
+    .label = Danh sách
+# Timer is a widget on New Tab, similar to the Pomodoro timer.
+home-prefs-timer-header =
+    .label = Bộ hẹn giờ
+# "Support" here means to help sustain or contribute to something, especially through funding or sponsorship.
+home-prefs-support-firefox-header =
+    .label = Hỗ trợ cho { -brand-product-name }
+home-prefs-mission-message = Các nhà tài trợ của chúng tôi hỗ trợ sứ mệnh của chúng tôi là xây dựng một trang web tốt hơn
+home-prefs-mission-message-learn-more-link = Tìm hiểu cách thức
+home-prefs-mission-message2 =
+    .message = Các nhà tài trợ của chúng tôi hỗ trợ sứ mệnh của chúng tôi là xây dựng một trang web tốt hơn.
+home-prefs-manage-topics-link = Quản lý chủ đề
+home-prefs-manage-topics-link2 =
+    .label = Quản lý chủ đề
+home-prefs-choose-wallpaper-link = Chọn một hình nền
+home-prefs-choose-wallpaper-link2 =
+    .label = Chọn một hình nền
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -624,6 +977,35 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Hiển thị gợi ý tìm kiếm trong kết quả thanh địa chỉ
     .accesskey = l
+# This string describes what the user will observe when the system
+# prioritizes search suggestions over browsing history in the results
+# that extend down from the address bar. In the original English string,
+# "before" refers to location (appearing most proximate to), not time
+# (appearing before).
+search-show-suggestions-above-history-option-2 =
+    .label = Hiển thị đề xuất tìm kiếm trước lịch sử duyệt web trong kết quả thanh địa chỉ
+search-show-suggestions-private-windows-2 =
+    .label = Đề xuất tìm kiếm trong cửa sổ ẩn danh
+search-suggestions-cant-show-2 =
+    .message = Gợi ý tìm kiếm sẽ không được hiển thị ở thanh địa chỉ vì bạn đã thiết lập { -brand-short-name } không bao giờ ghi nhớ lịch sử.
+addressbar-header-1 =
+    .label = Thanh địa chỉ
+    .description = Chọn những đề xuất hiển thị trên thanh địa chỉ của bạn
+# When Firefox Suggest is enabled, this replaces `addressbar-header-1`.
+addressbar-header-firefox-suggest-2 =
+    .label = { -firefox-suggest-brand-name }
+    .description = Đề xuất từ { -brand-short-name } và các đối tác của chúng tôi trên thanh địa chỉ của bạn.
+# With this option enabled, while on a SERP, the URL normally displayed in the
+# address bar will be replaced with the search term used to generate that SERP.
+search-show-search-term-option-2 =
+    .label = Hiển thị cụm từ tìm kiếm trên thanh địa chỉ trên trang kết quả
+search-separate-default-engine-2 =
+    .label = Sử dụng công cụ tìm kiếm mặc định khác trong cửa sổ ẩn danh
+    .accesskey = U
+search-separate-default-engine-dropdown =
+    .aria-label = Công cụ tìm kiếm mặc định trong cửa sổ ẩn danh
+search-suggestions-header-2 =
+    .label = Đề xuất của công cụ tìm kiếm
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -642,6 +1024,9 @@ suggestions-addressbar-settings-generic2 = Thay đổi cài đặt cho các đ�
 search-suggestions-cant-show = Gợi ý tìm kiếm sẽ không được hiển thị ở thanh địa chỉ vì bạn đã thiết lập { -brand-short-name } không bao giờ ghi nhớ lịch sử.
 search-one-click-header2 = Lối tắt tìm kiếm
 search-one-click-desc = Chọn các công cụ tìm kiếm thay thế xuất hiện bên dưới thanh địa chỉ và thanh tìm kiếm khi bạn bắt đầu nhập một từ khoá.
+search-one-click-header-3 =
+    .label = Các công cụ tìm kiếm khác
+    .description = Hãy chọn những công cụ tìm kiếm và lối tắt nào sẽ hiển thị trên thanh địa chỉ của bạn.
 search-choose-engine-column =
     .label = Công cụ tìm kiếm
 search-choose-keyword-column =
@@ -655,6 +1040,12 @@ search-remove-engine =
 search-add-engine =
     .label = Thêm
     .accesskey = A
+search-add-engine-2 =
+    .label = Thêm công cụ tìm kiếm
+    .accesskey = A
+search-edit-engine =
+    .label = Chỉnh sửa
+    .accesskey = E
 search-find-more-link = Tìm các công cụ tìm kiếm khác
 # This warning is displayed when the chosen keyword is already in use
 # ('Duplicate' is an adjective)
@@ -663,12 +1054,25 @@ search-keyword-warning-title = Nhân bản Từ khóa
 #   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Bạn đã chọn một từ khóa hiện đang được dùng bởi "{ $name }". Vui lòng chọn từ khác.
 search-keyword-warning-bookmark = Bạn đã chọn một từ khóa hiện đang được dùng bởi một dấu trang. Vui lòng chọn từ khác.
+# This warning is displayed when the chosen name is already in use.
+# Variables:
+#   $name (string) - Name of a search engine.
+edit-engine-name-warning-duplicate = Đã có một công cụ tìm kiếm có tên “{ $name }”. Vui lòng chọn tên khác.
+remove-engine-confirmation = Bạn có chắc chắn muốn xóa công cụ tìm kiếm này không?
+remove-engine-remove = Xóa
+remove-addon-engine-alert = Để xóa công cụ tìm kiếm này, hãy xóa tiện ích có liên quan.
+search-engine-group =
+    .label = Dịch vụ tìm kiếm mặc định
+search-default-engine =
+    .aria-label = Dịch vụ tìm kiếm mặc định
 
 ## Containers Section
 
 containers-back-button2 =
     .aria-label = Quay lại Cài đặt
 containers-header = Ngăn chứa thẻ
+containers-section-header =
+    .heading = Ngăn chứa thẻ
 containers-add-button =
     .label = Thêm ngăn chứa mới
     .accesskey = T
@@ -680,6 +1084,16 @@ containers-settings-button =
 containers-remove-button =
     .label = Loại bỏ
 
+## Account and sync
+
+sync-group-label =
+    .label = Đồng bộ hóa
+account-group-label =
+    .label = Tài khoản { -vendor-short-name }
+account-placeholder =
+    .label = Bạn chưa đăng nhập
+    .description = Đăng nhập để giữ dữ liệu của bạn riêng tư, được mã hóa và đồng bộ hóa trên các thiết bị.
+
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
@@ -687,6 +1101,12 @@ sync-signedout-caption = Mang trang web theo bạn
 sync-signedout-description2 = Đồng bộ trang đánh dấu, lịch sử, thẻ, mật khẩu, tiện ích và cài đặt tới tất cả các thiết bị của bạn.
 sync-signedout-account-signin3 =
     .label = Đăng nhập để đồng bộ hóa…
+    .accesskey = i
+sync-signedout-account-signin-4 =
+    .label = Đăng nhập vào tài khoản của bạn để bắt đầu đồng bộ hóa.
+    .accesskey = i
+sync-signedout-account-short =
+    .label = Đăng nhập
     .accesskey = i
 # This message contains two links and two icon images.
 #   `<img data-l10n-name="android-icon"/>` - Android logo icon
@@ -712,14 +1132,37 @@ fxa-login-rejected-warning =
 sync-sign-out =
     .label = Đăng xuất…
     .accesskey = g
+sync-sign-out2 =
+    .label = Đăng xuất
+    .accesskey = g
 sync-manage-account = Quản lý tài khoản
+    .accesskey = k
+sync-manage-account2 =
+    .label = Quản lý tài khoản
     .accesskey = k
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } chưa được kiểm tra.
+sync-signedin-unverified2 =
+    .label = { $email } chưa được xác minh
+    .description = Kiểm tra hộp thư đến của bạn để xác minh tài khoản và hoàn tất việc đăng ký.
 sync-signedin-login-failure = Xin hãy đăng nhập để kết nối lại { $email }
+sync-signedin-login-failure2 =
+    .label = Bạn đã đăng xuất khỏi { $email }
+    .description = Đăng nhập lại để kết nối lại và bắt đầu đồng bộ hóa dữ liệu của bạn.
+
+## Variables
+## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
+
+sync-account-signed-in =
+    .label = { $email }
+sync-account-signed-in-display-name =
+    .label = { $name }
+    .description = { $email }
 
 ##
 
@@ -739,9 +1182,17 @@ sync-sign-in =
 ## Sync section - enabling or disabling sync.
 
 prefs-syncing-on = Đồng bộ hóa: BẬT
+prefs-syncing-on-2 =
+    .label = Đồng bộ hóa đang BẬT
 prefs-syncing-off = Đồng bộ hóa: TẮT
+prefs-syncing-off-2 =
+    .label = Đồng bộ hoá đã TẮT
+    .description = Bật tính năng đồng bộ hóa để có thể truy cập dấu trang, mật khẩu, lịch sử và nhiều dữ liệu khác trên mọi thiết bị.
 prefs-sync-turn-on-syncing =
     .label = Bật đồng bộ hóa…
+    .accesskey = s
+prefs-sync-turn-on-syncing-2 =
+    .label = Bật đồng bộ hóa
     .accesskey = s
 prefs-sync-offer-setup-label2 = Đồng bộ trang đánh dấu, lịch sử, thẻ, mật khẩu, tiện ích và cài đặt tới tất cả các thiết bị của bạn.
 prefs-sync-now =
@@ -751,12 +1202,22 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = Đồng bộ hóa ngay
     .accesskey = N
+prefs-sync-now-button-2 =
+    .label = Đồng bộ hóa ngay
+    .accesskey = N
 prefs-syncing-button =
     .label = Đang đồng bộ hóa…
+prefs-syncing-button-2 =
+    .label = Đang đồng bộ hóa…
+    .title = Đồng bộ hóa ngay
 
 ## The list of things currently syncing.
 
 sync-syncing-across-devices-heading = Bạn đang đồng bộ hóa các mục này trên tất cả các thiết bị được kết nối của mình:
+sync-syncing-across-devices-heading-2 = Dữ liệu được đồng bộ hóa trên các thiết bị.
+sync-syncing-across-devices-empty-state =
+    .label = Bạn chưa đồng bộ hóa bất cứ thứ gì…
+    .description = Bắt đầu đồng bộ hóa để có được tất cả dữ liệu trên mọi thiết bị của bạn.
 sync-currently-syncing-bookmarks = Dấu trang
 sync-currently-syncing-history = Lịch sử
 sync-currently-syncing-tabs = Các thẻ đang mở
@@ -767,6 +1228,12 @@ sync-currently-syncing-creditcards = Thẻ tín dụng
 sync-currently-syncing-payment-methods = Phương thức thanh toán
 sync-currently-syncing-addons = Tiện ích
 sync-currently-syncing-settings = Cài đặt
+sync-manage-options =
+    .label = Quản lý đồng bộ hoá…
+    .accesskey = M
+sync-manage-options-2 =
+    .label = Quản lý dữ liệu đã đồng bộ hoá
+    .accesskey = M
 sync-change-options =
     .label = Thay đổi…
     .accesskey = C
@@ -819,10 +1286,27 @@ sync-engine-settings =
     .label = Cài đặt
     .tooltiptext = Cài đặt tổng quát, riêng tư và bảo mật mà bạn đã thay đổi
     .accesskey = s
+sync-choose-what-to-sync-dialog4 =
+    .title = Quản lý những gì đồng bộ hóa trên tất cả các thiết bị được kết nối của bạn
+    .style = min-width: 36em;
+    .buttonlabelaccept = Lưu
+    .buttonaccesskeyaccept = S
+    .buttonlabelextra2 = Ngắt kết nối…
+    .buttonaccesskeyextra2 = D
 
 ## The device name controls.
 
 sync-device-name-header = Tên thiết bị
+sync-device-name-header-2 =
+    .label = Tên thiết bị
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Tên thiết bị
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Thay đổi tên thiết bị
+    .accesskey = h
 sync-device-name-change =
     .label = Thay đổi tên thiết bị…
     .accesskey = h
@@ -833,6 +1317,8 @@ sync-device-name-save =
     .label = Lưu
     .accesskey = u
 sync-connect-another-device = Kết nối thiết bị khác
+sync-connect-another-device-2 =
+    .label = Kết nối thiết bị khác
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -864,10 +1350,16 @@ forms-ask-to-save-logins =
 # by searching for the former term "logins". It's not displayed in the UI.
 pane-privacy-passwords-header = Mật khẩu
     .searchkeywords = đăng nhập
+forms-passwords-header =
+    .label = Mật khẩu
+    .aria-label = Mật khẩu
 # Checkbox to control whether UI is shown to users to save or fill logins/passwords.
 forms-ask-to-save-passwords =
     .label = Hỏi để lưu mật khẩu
     .accesskey = A
+forms-manage-password-exceptions =
+    .label = Quản lý ngoại lệ mật khẩu
+    .accesskey = M
 forms-exceptions =
     .label = Ngoại lệ…
     .accesskey = x
@@ -882,9 +1374,9 @@ forms-breach-alerts =
     .accesskey = b
 forms-breach-alerts-learn-more-link = Tìm hiểu thêm
 preferences-relay-integration-checkbox =
-    .label = Đề xuất mặt nạ email { -relay-brand-name } để bảo vệ địa chỉ email của bạn
+    .label = Đề xuất email ẩn danh { -relay-brand-name } để bảo vệ địa chỉ email của bạn
 preferences-relay-integration-checkbox2 =
-    .label = Đề xuất mặt nạ email { -relay-brand-name } để bảo vệ địa chỉ email của bạn
+    .label = Đề xuất email ẩn danh { -relay-brand-name } để bảo vệ địa chỉ email của bạn
     .accesskey = r
 relay-integration-learn-more-link = Tìm hiểu thêm
 # Checkbox which controls filling saved logins into fields automatically when they appear, in some cases without user interaction.
@@ -898,15 +1390,40 @@ forms-saved-logins =
 forms-fill-usernames-and-passwords =
     .label = Tự động điền tên người dùng và mật khẩu
     .accesskey = F
+forms-fill-usernames-and-passwords-2 =
+    .label = Lưu và tự động điền tên người dùng và mật khẩu
+    .accesskey = f
 forms-saved-passwords =
     .label = Mật khẩu đã lưu
     .accesskey = d
+forms-saved-passwords-2 =
+    .label = Quản lý mật khẩu đã lưu
+    .accesskey = d
+forms-saved-passwords-searchkeywords = Đăng nhập để các trang web sau đây được lưu trữ trên máy tính của bạn
+# Header for additional protections when managing password settings.
+forms-additional-protections-header =
+    .label = Các biện pháp bảo vệ bổ sung
 forms-primary-pw-use =
     .label = Sử dụng mật khẩu chính
     .accesskey = U
+forms-primary-pw-use-2 =
+    .label = Sử dụng mật khẩu chính
+    .description = Thêm một lớp bảo mật để bảo vệ mật khẩu đã lưu của bạn.
+    .accesskey = U
+forms-primary-pw-set =
+    .label = Đặt mật khẩu chính
+forms-primary-pw-on =
+    .label = Đã BẬT mật khẩu chính
+forms-primary-pw-change-2 =
+    .label = Thay đổi mật khẩu chính
+# Label for button to disable primary password.
+forms-primary-pw-turn-off =
+    .label = Tắt nó
 # This operation requires the user to authenticate with the operating system (device sign-in)
 forms-os-reauth =
-    .label = Yêu cầu thiết bị đăng nhập để điền và quản lý mật khẩu
+    .label = Yêu cầu đăng nhập từ thiết bị để điền và quản lý mật khẩu
+forms-os-reauth-2 =
+    .label = Yêu cầu đăng nhập từ thiết bị để quản lý mật khẩu
 forms-primary-pw-learn-more-link = Tìm hiểu thêm
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -924,7 +1441,7 @@ forms-primary-pw-former-name = { "" }
 forms-primary-pw-fips-title = Bạn hiện đang ở chế độ FIPS. FIPS yêu cầu tính năng mật khẩu chính.
 forms-master-pw-fips-desc = Thay đổi mật khẩu không thành công
 forms-windows-sso =
-    .label = Cho phép Windows đăng nhập một lần cho tài khoản Microsoft, cơ quan và trường học
+    .label = Cho phép Windows đăng nhập một lần (SSO) cho tài khoản Microsoft, cơ quan và trường học
 forms-windows-sso-learn-more-link = Tìm hiểu thêm
 forms-windows-sso-desc = Quản lý tài khoản trong cài đặt thiết bị của bạn
 windows-passkey-settings-label = Quản lý passkey trong cài đặt hệ thống
@@ -961,12 +1478,97 @@ autofill-payment-methods-checkbox-submessage = Bao gồm thẻ tín dụng và t
 autofill-saved-payment-methods-button = Phương thức thanh toán đã lưu
     .accesskey = v
 # This operation requires the user to authenticate with the operating system (device sign-in)
-autofill-reauth-payment-methods-checkbox = Yêu cầu thiết bị đăng nhập để điền và quản lý phương thức thanh toán
+autofill-reauth-payment-methods-checkbox = Yêu cầu đăng nhập từ thiết bị để điền và quản lý phương thức thanh toán
     .accesskey = o
+autofill-payment-methods-title = Phương thức thanh toán
+autofill-payment-methods-header =
+    .aria-label = Phương thức thanh toán
+autofill-payment-methods-checkbox-message-2 =
+    .label = Lưu và tự động điền thông tin thanh toán
+    .accesskey = p
+autofill-payment-methods-manage-payments-title =
+    .heading = Quản lý phương thức thanh toán
+autofill-payment-methods-manage-payments-button =
+    .label = Quản lý phương thức thanh toán
+    .accesskey = m
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox-2 =
+    .label = Yêu cầu đăng nhập từ thiết bị để tự động điền và quản lý phương thức thanh toán
+    .accesskey = o
+autofill-payment-methods-add-button = Thêm phương thức thanh toán mới
+payments-list-header =
+    .label = Phương thức thanh toán
+payments-list-item-label = <strong>Phương thức thanh toán</strong>
+payments-delete-payment-prompt-title = Xoá phương thức thanh toán này?
+payments-delete-payment-prompt-confirm-button = Xóa
+payments-delete-payment-prompt-cancel-button = Hủy bỏ
+payments-delete-payment-button-label =
+    .aria-label = Xóa
+payments-edit-payment-button-label =
+    .aria-label = Chỉnh sửa
+# This message is displayed when no payment methods such as credit card are stored in Firefox
+payments-no-payments-stored-message =
+    .label = Không có phương thức thanh toán nào được thêm
+payments-remove-payment-prompt-title = Xoá phương thức thanh toán này?
+payments-remove-payment-prompt-confirm-button = Xóa
+payments-remove-payment-prompt-cancel-button = Hủy bỏ
+autofill-addresses-title = Địa chỉ và nhiều hơn nữa
+autofill-addresses-header =
+    .aria-label = Địa chỉ và nhiều hơn nữa
+autofill-addresses-checkbox-message =
+    .label = Lưu và tự động điền địa chỉ
+    .accesskey = S
+autofill-addresses-manage-addresses-button =
+    .label = Quản lý địa chỉ và nhiều hơn nữa
+    .accesskey = M
+addresses-list-header =
+    .label = Địa chỉ
+addreses-delete-address-button-label =
+    .aria-label = Xóa
+addreses-edit-address-button-label =
+    .aria-label = Chỉnh sửa
+addresses-delete-address-prompt-title = Xoá địa chỉ này?
+addresses-delete-address-prompt-confirm-button = Xóa
+addresses-delete-address-prompt-cancel-button = Hủy bỏ
+autofill-addresses-add-button = Thêm địa chỉ mới
+autofill-addresses-manage-addresses-title =
+    .heading = Quản lý địa chỉ và nhiều hơn nữa
+# This message is displayed when no addresses are stored in Firefox
+addresses-no-addresses-stored-message =
+    .label = Không có địa chỉ nào được thêm
+# These values are displayed for each address record listed on the "Manage addresses and more" subpage.
+# Variables:
+#   $name (string) - The name associated with the address
+#   $address (string) - The address
+address-moz-box-item =
+    .label = { $name }
+    .description = { $address }
+# These values are displayed for each credit card record listed on the Manage Payment methods
+# settings page.
+# Variables:
+#   $cardNumber (string) - The obscured credit card number (for example: ********* 2423)
+#   $expDate (string) - The obscured expiry date of the credit card (for example: XX/2027)
+payment-moz-box-item =
+    .label = { $cardNumber }
+    .description = { $expDate }
+addresses-group =
+    .label = Địa chỉ và nhiều hơn nữa
+payments-group =
+    .label = Phương thức thanh toán
 
 ## Privacy Section - History
 
 history-header = Lịch sử
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label2 = { -brand-short-name } sẽ
 # This label is followed, on the same line, by a dropdown list of options
 # (Remember history, etc.).
 # In English it visually creates a full sentence, e.g.
@@ -984,6 +1586,24 @@ history-remember-option-never =
     .label = Không bao giờ ghi nhớ lịch sử
 history-remember-option-custom =
     .label = Sử dụng thiết lập tùy biến cho lịch sử
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } sẽ ghi nhớ lịch sử duyệt web, tải xuống, biểu mẫu và tìm kiếm của bạn.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } sẽ dùng thiết lập giống như chế độ duyệt web riêng tư, và sẽ không ghi nhớ lịch sử khi bạn duyệt Web.
+history-custom-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } sẽ sử dụng các thiết lập tùy chỉnh cho lịch sử duyệt, tải xuống, biểu mẫu và tìm kiếm của bạn.
+history-remember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } sẽ ghi nhớ lịch sử duyệt web, tải xuống, biểu mẫu và tìm kiếm của bạn.
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } sẽ dùng thiết lập giống như chế độ duyệt web riêng tư, và sẽ không ghi nhớ lịch sử khi bạn duyệt Web.
+history-custom-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } sẽ sử dụng các thiết lập tùy chỉnh cho lịch sử duyệt, tải xuống, biểu mẫu và tìm kiếm của bạn.
 history-remember-description = { -brand-short-name } sẽ ghi nhớ lịch sử duyệt web, tải xuống, biểu mẫu và tìm kiếm của bạn.
 history-dontremember-description = { -brand-short-name } sẽ dùng thiết lập giống như chế độ duyệt web riêng tư, và sẽ không ghi nhớ lịch sử khi bạn duyệt Web.
 history-private-browsing-permanent =
@@ -1004,11 +1624,19 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = Xóa lịch sử...
     .accesskey = s
+history-group =
+    .label = Lịch sử
 
 ## Privacy Section - Site Data
 
 sitedata-header = Cookie và dữ liệu trang
+sitedata-label =
+    .aria-label = { sitedata-header }
 sitedata-total-size-calculating = Đang tính toán kích thước bộ nhớ đệm và dữ liệu trang…
+# Variables:
+#   $value (number) - Value of the unit (for example: 4.6, 500)
+#   $unit (string) - Name of the unit (for example: "bytes", "KB")
+sitedata-total-size2 = Cookie, lịch sử, dữ liệu trang web và bộ nhớ đệm của bạn hiện đang sử dụng <strong>{ $value } { $unit }</strong> dung lượng đĩa.
 # Variables:
 #   $value (number) - Value of the unit (for example: 4.6, 500)
 #   $unit (string) - Name of the unit (for example: "bytes", "KB")
@@ -1017,6 +1645,8 @@ sitedata-learn-more = Tìm hiểu thêm
 sitedata-delete-on-close =
     .label = Xóa cookie và dữ liệu trang web khi đóng { -brand-short-name }
     .accesskey = c
+sitedata-delete-on-close-private-browsing3 =
+    .message = Dựa trên cài đặt lịch sử của bạn, { -brand-short-name } xóa cookie và dữ liệu trang web khỏi phiên của bạn khi bạn đóng trình duyệt.
 sitedata-delete-on-close-private-browsing = Trong chế độ duyệt riêng tư, cookie và dữ liệu trang web sẽ luôn bị xóa khi { -brand-short-name } bị đóng.
 sitedata-delete-on-close-private-browsing2 = Dựa trên cài đặt lịch sử của bạn, { -brand-short-name } xóa cookie và dữ liệu trang web khỏi phiên của bạn khi bạn đóng trình duyệt.
 sitedata-allow-cookies-option =
@@ -1030,17 +1660,25 @@ sitedata-disallow-cookies-option =
 sitedata-block-desc = Loại bị chặn
     .accesskey = T
 sitedata-option-block-cross-site-trackers =
-    .label = Trình theo dõi trên nhiều trang web
+    .label = Trình theo dõi liên trang web
 sitedata-option-block-cross-site-tracking-cookies =
-    .label = Cookie theo dõi trên nhiều trang web
+    .label = Cookie theo dõi liên trang web
+sitedata-option-block-cross-site-cookies2 =
+    .label = Cô lập cookie liên trang web
 sitedata-option-block-cross-site-cookies =
-    .label = Cookie theo dõi trên nhiều trang web và cô lập các cookie trên nhiều trang khác
+    .label = Cookie theo dõi liên trang web và cô lập các cookie liên trang khác
 sitedata-option-block-unvisited =
     .label = Cookie từ các trang web không mong muốn
 sitedata-option-block-all-cross-site-cookies =
-    .label = Tất cả cookie trên nhiều trang web (có thể khiến trang web bị hỏng)
+    .label = Tất cả cookie liên trang web (có thể khiến trang web bị hỏng)
 sitedata-option-block-all =
     .label = Tất cả các cookie (có thể khiến các trang web bị hỏng)
+sitedata-clear2 =
+    .label = Xoá dữ liệu duyệt web
+    .accesskey = l
+sitedata-settings2 =
+    .label = Quản lý dữ liệu duyệt web
+    .accesskey = M
 sitedata-clear =
     .label = Xóa dữ liệu...
     .accesskey = l
@@ -1050,6 +1688,12 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = Quản lý ngoại lệ…
     .accesskey = x
+sitedata-cookies-exceptions2 =
+    .label = Quản lý ngoại lệ
+    .accesskey = x
+    .description = Bạn có thể chỉ định trang web nào luôn được phép hoặc không bao giờ được phép sử dụng cookie và dữ liệu trang web.
+cookies-site-data-group =
+    .label = Cookie và dữ liệu trang
 
 ## Privacy Section - Cookie Banner Handling
 
@@ -1066,10 +1710,22 @@ forms-handle-cookie-banners =
 cookie-banner-blocker-checkbox-label =
     .label = Tự động từ chối các biểu ngữ cookie
 
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = Thanh địa chỉ
+addressbar-suggest-1 = Chọn những đề xuất hiển thị trên thanh địa chỉ của bạn
+# When Firefox Suggest is enabled, this replaces `addressbar-header`.
+addressbar-header-firefox-suggest-1 = { -firefox-suggest-brand-name }
+# When Firefox Suggest is enabled, this replaces `addressbar-suggest`.
+addressbar-suggest-firefox-suggest-1 = Đề xuất từ { -brand-short-name } và các đối tác của chúng tôi trên thanh địa chỉ của bạn.
 addressbar-suggest = Khi dùng thanh địa chỉ, gợi ý
+# When Firefox Suggest is enabled, this replaces `addressbar-header`.
+addressbar-header-firefox-suggest = Thanh địa chỉ — { -firefox-suggest-brand-name }
+# When Firefox Suggest is enabled, this replaces `addressbar-suggest`.
+addressbar-suggest-firefox-suggest = Chọn loại đề xuất xuất hiện trong thanh địa chỉ.
+# When Firefox Suggest is enabled, a "Learn more" link appears at the end of
+# `addressbar-suggest-firefox-suggest`.
+addressbar-locbar-firefox-suggest-learn-more = Tìm hiểu thêm
 addressbar-locbar-history-option =
     .label = Lịch sử duyệt web
     .accesskey = h
@@ -1089,12 +1745,28 @@ addressbar-locbar-shortcuts-option =
 addressbar-locbar-topsites-option =
     .label = Trang web hàng đầu
     .accesskey = T
+addressbar-locbar-engines-option-1 =
+    .label = Đề xuất các công cụ tìm kiếm để sử dụng
+    .accesskey = a
 addressbar-locbar-engines-option =
     .label = Công cụ tìm kiếm
     .accesskey = t
 addressbar-locbar-quickactions-option =
     .label = Hành động nhanh
     .accesskey = Q
+addressbar-locbar-showrecentsearches-option-2 =
+    .label = Tìm kiếm gần đây
+    .accesskey = r
+addressbar-locbar-showtrendingsuggestions-option-2 =
+    .label = Đề xuất tìm kiếm đang thịnh hành
+    .accesskey = t
+# Toggles whether suggestions are obtained from Firefox Suggest or not (local or online).
+addressbar-locbar-suggest-all-option-2 =
+    .label = Đề xuất từ { -brand-short-name }
+    .description = Nhận đề xuất từ ​​web liên quan đến tìm kiếm của bạn.
+addressbar-locbar-suggest-sponsored-option-2 =
+    .label = Đề xuất từ nhà tài trợ
+    .description = Hỗ trợ { -brand-short-name } với các đề xuất được tài trợ không thường xuyên.
 addressbar-suggestions-settings = Thay đổi tùy chỉnh phần gợi ý của công cụ tìm kiếm
 addressbar-locbar-showrecentsearches-option =
     .label = Hiển thị các tìm kiếm gần đây
@@ -1102,7 +1774,35 @@ addressbar-locbar-showrecentsearches-option =
 addressbar-locbar-showtrendingsuggestions-option =
     .label = Hiển thị đề xuất tìm kiếm thịnh hành
     .accesskey = t
+# Toggles whether suggestions are obtained from Firefox Suggest or not (local or online).
+addressbar-locbar-suggest-all-option =
+    .label = Đề xuất từ { -brand-short-name }
+addressbar-locbar-suggest-all-option-desc = Nhận đề xuất từ ​​web liên quan đến tìm kiếm của bạn.
+# Nonsponsored suggestions refers to Firefox Suggest suggestions like Wikipedia.
+addressbar-locbar-suggest-nonsponsored-option =
+    .label = Đề xuất từ { -brand-short-name }
+addressbar-locbar-suggest-nonsponsored-desc = Nhận đề xuất từ ​​web liên quan đến tìm kiếm của bạn.
+addressbar-locbar-suggest-sponsored-option =
+    .label = Đề xuất từ nhà tài trợ
+addressbar-locbar-suggest-sponsored-desc = Hỗ trợ { -brand-short-name } với các đề xuất được tài trợ không thường xuyên.
+# This string is used for a checkbox in the settings UI that opts the
+# user into "online" Firefox Suggest, allowing them to receive suggestions from
+# Mozilla's Merino server.
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since the online suggest is created and maintained
+# by Mozilla.
+addressbar-firefox-suggest-online =
+    .label = Nhận các đề xuất từ Mozilla khi bạn nhập
+addressbar-dismissed-suggestions-label-2 =
+    .label = Đề xuất bị loại bỏ
+    .description = Khôi phục các đề xuất đã bị loại bỏ từ các nhà tài trợ và { -brand-short-name }.
+addressbar-restore-dismissed-suggestions-button-2 =
+    .label = Khôi phục đề xuất
 addressbar-quickactions-learn-more = Tìm hiểu thêm
+addressbar-dismissed-suggestions-label = Đề xuất bị loại bỏ
+addressbar-restore-dismissed-suggestions-description = Khôi phục các đề xuất đã bị loại bỏ từ các nhà tài trợ và { -brand-short-name }.
+addressbar-restore-dismissed-suggestions-button =
+    .label = Khôi phục
 
 ## Privacy Section - Content Blocking
 
@@ -1136,16 +1836,17 @@ content-blocking-etp-strict-desc = Bảo vệ mạnh mẽ hơn, nhưng có thể
 content-blocking-etp-custom-desc = Chọn trình theo dõi và tập lệnh để chặn.
 content-blocking-etp-blocking-desc = { -brand-short-name } chặn những điều sau:
 content-blocking-private-windows = Trình theo dõi nội dung trong cửa sổ riêng tư
-content-blocking-cross-site-cookies-in-all-windows2 = Cookie trên nhiều trang web trong tất cả các cửa sổ
-content-blocking-cross-site-tracking-cookies = Cookie theo dõi trên nhiều trang web
-content-blocking-all-cross-site-cookies-private-windows = Cookie trên nhiều trang web trong cửa sổ riêng tư
-content-blocking-cross-site-tracking-cookies-plus-isolate = Cookie theo dõi trên nhiều trang web và cô lập các cookie còn lại
+content-blocking-cross-site-cookies-in-all-windows2 = Cookie liên trang web trong tất cả các cửa sổ
+content-blocking-cross-site-tracking-cookies = Cookie theo dõi liên trang web
+content-blocking-all-cross-site-cookies-private-windows = Cookie liên trang web trong cửa sổ riêng tư
+content-blocking-isolate-cross-site-cookies = Cô lập cookie liên trang web
+content-blocking-cross-site-tracking-cookies-plus-isolate = Cookie theo dõi liên trang web và cô lập các cookie còn lại
 content-blocking-social-media-trackers = Trình theo dõi truyền thông xã hội
 content-blocking-all-cookies = Tất cả cookie
 content-blocking-unvisited-cookies = Cookie từ các trang không mong muốn
 content-blocking-all-windows-tracking-content = Trình theo dõi nội dung trong tất cả cửa sổ
-content-blocking-all-cross-site-cookies = Tất cả cookie trên nhiều trang web
-content-blocking-cryptominers = Tiền điện tử
+content-blocking-all-cross-site-cookies = Tất cả cookie liên trang web
+content-blocking-cryptominers = Trình đào tiền điện tử
 content-blocking-fingerprinters = Dấu vết (Fingerprintng)
 # The known fingerprinters are those that are known for collecting browser fingerprints from user devices. And
 # the suspected fingerprinters are those that we are uncertain about browser fingerprinting activities. But they could
@@ -1159,8 +1860,23 @@ content-blocking-etp-standard-tcp-rollout-description = Trình chống cookie ch
 content-blocking-etp-standard-tcp-rollout-learn-more = Tìm hiểu thêm
 content-blocking-etp-standard-tcp-title = Bao gồm Trình chống cookie chung, tính năng bảo mật mạnh mẽ nhất từ trước đến nay của chúng tôi
 content-blocking-warning-title = Hãy cân nhắc!
+content-blocking-warning-title-2 = Một số trang web có thể bị phá vỡ bởi chế độ trình chống theo dõi nghiêm ngặt
+content-blocking-warning-title-custom = Một số trang web có thể bị hỏng với tính năng trình chống theo dõi tùy chỉnh
+# “Fix site issues” references the string content-blocking-exceptions-subheader
+content-blocking-and-isolating-etp-warning-description-4 = { -brand-short-name } đề xuất sử dụng cài đặt "Khắc phục sự cố trang web" để giảm thiểu các tính năng và nội dung bị lỗi. Nếu một trang web có vẻ bị lỗi, hãy thử tắt trình chống theo dõi cho trang web đó để tải toàn bộ nội dung.
 content-blocking-and-isolating-etp-warning-description-2 = Cài đặt này có thể khiến một số trang web không hiển thị nội dung hoặc hoạt động không chính xác. Nếu trang web có vẻ bị hỏng, bạn có thể muốn tắt trình chống theo dõi để trang web đó tải tất cả nội dung.
 content-blocking-warning-learn-how = Tìm hiểu cách thức
+content-blocking-baseline-exceptions-3 =
+    .label = Sửa các sự cố lớn của trang web (đề xuất)
+    .description = Giúp tải trang web và tính năng bằng cách chỉ bỏ chặn các thành phần thiết yếu có thể chứa trình theo dõi. Xử lý hầu hết các sự cố thường gặp.
+# This option to fix minor site issues must be used with the option to fix major site issues (string content-blocking-baseline-exceptions-3)
+content-blocking-convenience-exceptions-3 =
+    .label = Sửa các sự cố nhỏ của trang web
+    .description = Khôi phục những nội dung như video trong bài viết hoặc phần bình luận bằng cách bỏ chặn các thành phần có thể chứa trình theo dõi. Điều này có thể giảm thiểu sự cố trang web nhưng lại kém bảo vệ hơn. Phải được sử dụng cùng với các bản sửa lỗi cho các sự cố nghiêm trọng.
+content-blocking-baseline-uncheck-warning-dialog-title = Bạn có chắc chắn muốn tắt tính năng sửa lỗi không?
+content-blocking-baseline-uncheck-warning-dialog-body = Cài đặt này giúp khắc phục những sự cố thường gặp nhất của trang web. Nếu bạn tắt cài đặt này, một số trang web có thể không hoạt động và { -brand-short-name } sẽ không thể hỗ trợ khắc phục những sự cố đó.
+content-blocking-baseline-uncheck-warning-dialog-ok-button = Tắt sửa lỗi
+content-blocking-baseline-uncheck-warning-dialog-cancel-button = Tiếp tục bật sửa lỗi
 content-blocking-reload-description = Bạn sẽ cần tải lại các thẻ của mình để áp dụng những thay đổi này.
 content-blocking-reload-tabs-button =
     .label = Tải lại tất cả các thẻ
@@ -1182,7 +1898,7 @@ content-blocking-expand-section =
     .tooltiptext = Thông tin chi tiết
 # Cryptomining refers to using scripts on websites that can use a computer’s resources to mine cryptocurrency without a user’s knowledge.
 content-blocking-cryptominers-label =
-    .label = Tiền điện tử
+    .label = Trình đào tiền điện tử
     .accesskey = y
 # Browser fingerprinting is a method of tracking users by the configuration and settings information (their "digital fingerprint")
 # that is visible to websites they browse, rather than traditional tracking methods such as IP addresses and unique cookies.
@@ -1240,10 +1956,27 @@ permissions-notification-link = Tìm hiểu thêm
 permissions-notification-pause =
     .label = Tạm dừng thông báo cho đến khi { -brand-short-name } khởi động lại
     .accesskey = n
+permissions-autoplay2 =
+    .label = Tự động phát
 permissions-autoplay = Tự động phát
 permissions-autoplay-settings =
     .label = Cài đặt…
     .accesskey = t
+permissions-block-popups2 =
+    .label = Chặn cửa sổ bật lên và chuyển hướng của bên thứ ba
+    .accesskey = B
+# "popup" is a misspelling that is more popular than the correct spelling of
+# "pop-up" so it's included as a search keyword, not displayed in the UI.
+permissions-block-popups-exceptions-button2 =
+    .label = Quản lý ngoại lệ cửa sổ bật lên và chuyển hướng của bên thứ ba
+    .accesskey = E
+    .searchkeywords = cửa sổ bật lên
+permissions-addon-install-warning2 =
+    .label = Cảnh báo khi các trang web cố gắng cài đặt tiện ích mở rộng
+    .accesskey = W
+permissions-addon-exceptions2 =
+    .label = Chọn trang web nào có thể cài đặt tiện ích mở rộng
+    .accesskey = E
 permissions-block-popups =
     .label = Chặn các cửa sổ bật lên
     .accesskey = B
@@ -1259,23 +1992,71 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = Ngoại lệ…
     .accesskey = E
+permissions-header2 =
+    .label = Quyền hạn
+    .description = Quyền bạn cấp cho các trang web bạn duyệt.
+permissions-location2 =
+    .label = Vị trí
+permissions-localhost2 =
+    .label = Ứng dụng và dịch vụ thiết bị
+permissions-local-network2 =
+    .label = Thiết bị mạng cục bộ
+permissions-xr2 =
+    .label = Thực tế ảo
+permissions-camera2 =
+    .label = Máy ảnh
+permissions-microphone2 =
+    .label = Micrô
+# Privacy permission for sound output devices.
+permissions-speaker2 =
+    .label = Loa
+permissions-notification2 =
+    .label = Thông báo
 
 ## Privacy Section - Data Collection
 
 collection-header = Thu thập và sử dụng dữ liệu { -brand-short-name }
 collection-header2 = Thu thập và sử dụng dữ liệu { -brand-short-name }
     .searchkeywords = thu thập
+preferences-collection-description = Chúng tôi cố gắng cung cấp cho bạn các lựa chọn và chỉ thu thập dữ liệu tối thiểu cần thiết để cải thiện { -brand-product-name } cho mọi người.
+preferences-collection-privacy-notice = Xem thông báo về quyền riêng tự
+preferences-across-profiles = Những thiết lập này áp dụng cho tất cả hồ sơ { -brand-product-name } trên thiết bị này.
+preferences-view-profiles = Xem tất cả hồ sơ
 collection-description = Chúng tôi cố gắng cung cấp cho bạn sự lựa chọn và chỉ thu thập những gì chúng tôi cần để cung cấp và cải thiện { -brand-short-name } cho tất cả mọi người. Chúng tôi luôn xin phép trước khi thu thập thông tin cá nhân.
 collection-privacy-notice = Thông báo bảo mật
 collection-health-report-telemetry-disabled = Bạn không còn cho phép { -vendor-short-name } thu thập dữ liệu kỹ thuật và tương tác. Tất cả dữ liệu trong quá khứ sẽ bị xóa trong vòng 30 ngày.
 collection-health-report-telemetry-disabled-link = Tìm hiểu thêm
+collection-usage-ping =
+    .label = Gửi ping sử dụng hàng ngày đến { -vendor-short-name }
+    .accesskey = u
+collection-usage-ping-description = Điều này giúp { -vendor-short-name } ước tính số người dùng đang hoạt động.
+collection-health-report2 =
+    .label = Gửi dữ liệu kỹ thuật và tương tác đến { -vendor-short-name }
+    .accesskey = r
 collection-health-report =
     .label = Cho phép { -brand-short-name } gửi dữ liệu kỹ thuật và tương tác tới { -vendor-short-name }
     .accesskey = r
 collection-health-report-link = Tìm hiểu thêm
+collection-health-report-description = Điều này giúp chúng tôi cải thiện các tính năng, hiệu suất và ổn định của { -brand-product-name }.
+collection-studies2 =
+    .label = Cài đặt và chạy nghiên cứu
+collection-studies-description = Hãy thử các tính năng và ý tưởng trước khi chúng được phát hành cho mọi người.
 collection-studies =
     .label = Cho phép { -brand-short-name } cài đặt và chạy các nghiên cứu
 collection-studies-link = Xem nghiên cứu { -brand-short-name }
+nimbus-rollouts-enabled =
+    .label = Cho phép { -brand-short-name } cải thiện các tính năng, hiệu suất và độ ổn định giữa các bản cập nhật
+nimbus-rollouts-enabled-description = Các thay đổi sẽ được thực hiện từ xa.
+addon-recommendations2 =
+    .label = Cho phép các đề xuất tiện ích mở rộng được cá nhân hoá
+addon-recommendations-description = Nhận đề xuất tiện ích mở rộng để cải thiện trải nghiệm duyệt web của bạn.
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = Báo cáo dữ liệu bị vô hiệu hóa cho cấu hình bản dựng này.
+collection-backlogged-crash-reports2 =
+    .label = Tự động gửi báo cáo sự cố
+    .accesskey = c
+collection-backlogged-crash-reports-description = Điều này giúp { -vendor-short-name } chẩn đoán và khắc phục sự cố với trình duyệt. Báo cáo có thể bao gồm dữ liệu cá nhân hoặc nhạy cảm.
 addon-recommendations =
     .label = Cho phép { -brand-short-name } để thực hiện các đề xuất tiện ích mở rộng được cá nhân hóa
 addon-recommendations-link = Tìm hiểu thêm
@@ -1283,8 +2064,6 @@ addon-recommendations-link = Tìm hiểu thêm
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Dữ liệu báo cáo bị vô hiệu hóa với cấu hình này
 collection-backlogged-crash-reports-with-link = Cho phép { -brand-short-name } thay mặt bạn gửi báo cáo sự cố tồn đọng <a data-l10n-name="crash-reports-link">Tìm hiểu thêm</a>
-    .accesskey = c
-collection-backlogged-crash-reports = Cho phép { -brand-short-name } thay mặt bạn gửi báo cáo sự cố tồn đọng
     .accesskey = c
 privacy-segmentation-section-header = Các tính năng mới nâng cao khả năng duyệt web của bạn
 privacy-segmentation-section-description = Khi chúng tôi cung cấp các tính năng sử dụng dữ liệu của bạn để mang lại cho bạn trải nghiệm cá nhân hơn:
@@ -1307,6 +2086,8 @@ website-advertising-private-attribution-description = Điều này giúp các tr
 ## https://developers.google.com/safe-browsing/developers_guide_v2#AcceptableUsage
 
 security-header = Bảo mật
+browsing-protection-group =
+    .label = Chống nội dung lừa đảo và phần mềm nguy hiểm
 security-browsing-protection = Chống nội dung lừa đảo và phần mềm nguy hiểm
 security-enable-safe-browsing =
     .label = Chặn nội dung lừa đảo và không an toàn
@@ -1334,34 +2115,46 @@ certs-devices =
 certs-thirdparty-toggle =
     .label = Cho phép { -brand-short-name } tự động tin cậy chứng chỉ gốc của bên thứ ba mà bạn cài đặt
     .accesskey = t
+certs-devices-enable-fips = Bật FIPS
 space-alert-over-5gb-settings-button =
     .label = Mở Cài đặt
     .accesskey = O
 space-alert-over-5gb-message2 = <strong>{ -brand-short-name } sắp hết dung lượng đĩa.</strong> Nội dung trang web có thể không hiển thị chính xác. Bạn có thể xóa dữ liệu được lưu trữ trong Cài đặt > Riêng tư & Bảo mật > Cookie và dữ liệu trang.
 space-alert-under-5gb-message2 = <strong>{ -brand-short-name } sắp hết dung lượng đĩa. </strong>Nội dung trang web có thể không hiển thị chính xác. Truy cập “Tìm hiểu thêm” để tối ưu hóa việc sử dụng đĩa của bạn để có trải nghiệm duyệt web tốt hơn.
+certs-description2 =
+    .label = Chứng nhận
+    .description = Cấu hình chứng chỉ mà { -brand-short-name } sử dụng để xác thực.
 
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = Chế độ chỉ HTTPS
+httpsonly-label =
+    .aria-label = { httpsonly-header }
+    .description = Chỉ cho phép các kết nối an toàn đến các trang web. { -brand-short-name } sẽ hỏi trước khi kết nối không an toàn.
+httpsonly-description3 = Chỉ cho phép các kết nối an toàn đến các trang web. { -brand-short-name } sẽ hỏi trước khi kết nối không an toàn.
+httpsonly-learn-more2 = Chế độ Chỉ HTTPS hoạt động như thế nào
 httpsonly-description = HTTPS cung cấp kết nối được mã hóa an toàn giữa { -brand-short-name } và các trang web bạn truy cập. Hầu hết các trang web đều hỗ trợ HTTPS và nếu chế độ chỉ HTTPS được bật, thì { -brand-short-name } sẽ nâng cấp tất cả các kết nối lên HTTPS.
-httpsonly-description2 = { -brand-short-name } tạo kết nối an toàn và được mã hóa tới các trang web bạn truy cập. { -brand-short-name } sẽ cảnh báo bạn nếu kết nối không an toàn khi kích hoạt chỉ HTTPS.
 httpsonly-learn-more = Tìm hiểu thêm
 httpsonly-radio-enabled =
     .label = Kích hoạt chế độ chỉ HTTPS trong tất cả các cửa sổ
-httpsonly-radio-enabled2 =
-    .label = Chỉ sử dụng HTTPS trong tất cả cửa sổ
 httpsonly-radio-enabled-pbm =
     .label = Chỉ kích hoạt chế độ HTTPS trong các cửa sổ riêng tư
-httpsonly-radio-enabled-pbm2 =
-    .label = Chỉ sử dụng HTTPS trong cửa số riêng tư
+httpsonly-radio-disabled3 =
+    .label = Không kích hoạt chế độ chỉ HTTPS
+    .description = { -brand-short-name } vẫn có thể nâng cấp một số kết nối
 httpsonly-radio-disabled =
     .label = Không kích hoạt chế độ chỉ HTTPS
-httpsonly-radio-disabled2 =
-    .label = Thử HTTPS trước, nhưng cho phép kết nối không an toàn
+httpsonly-group =
+    .label = Chế độ chỉ HTTPS
+    .description = Chỉ cho phép các kết nối an toàn đến các trang web. { -brand-short-name } sẽ hỏi trước khi kết nối không an toàn.
+httpsonly-label2 =
+    .aria-label = { httpsonly-group.label }
 
 ## DoH Section
 
 preferences-doh-header = DNS qua HTTPS
+dns-over-https-group =
+    .label = DNS qua HTTPS
 preferences-doh-description = Hệ thống tên miền (DNS) qua HTTPS gửi yêu cầu tên miền của bạn thông qua kết nối được mã hóa, tạo một DNS an toàn và khiến người khác khó nhìn thấy trang web bạn sắp truy cập hơn.
 preferences-doh-description2 = Hệ thống phân giải tên miền (DNS) trên HTTPS gửi yêu cầu tên miền của bạn thông qua kết nối được mã hóa, cung cấp DNS an toàn và khiến người khác khó biết bạn sắp truy cập trang web nào.
 # Variables:
@@ -1423,3 +2216,62 @@ preferences-doh-manage-exceptions =
 desktop-folder-name = Bàn làm việc
 downloads-folder-name = Tải xuống
 choose-download-folder-title = Chọn thư mục tải xuống:
+
+## AI controls page
+
+preferences-ai-controls-header =
+    .heading = { pane-ai-controls-title }
+preferences-ai-controls-description = Bạn luôn có quyền lựa chọn trong { -brand-short-name }, bao gồm cả việc sử dụng các tính năng được tăng cường bởi trí tuệ nhân tạo. Nhiều tùy chọn hơn sẽ sớm được bổ sung.
+preferences-ai-controls-block-ai-label = Chặn cải tiến AI
+preferences-ai-controls-block-ai =
+    .label = { preferences-ai-controls-block-ai-label }
+preferences-ai-controls-block-ai-description = Chặn có nghĩa là bạn sẽ không thấy các cải tiến AI mới hoặc hiện tại trong { -brand-short-name }, hoặc các cửa sổ bật lên về chúng. <a data-l10n-name="link">Xem thêm chi tiết</a> về những gì được bao gồm và cách kiểm soát các tính năng học máy truyền thống, chẳng hạn như gợi ý và đề xuất tìm kiếm.
+preferences-ai-controls-blocked-message =
+    .message = Các tính năng nâng cao AI mới và hiện tại đều bị chặn theo mặc định. Để bỏ chặn một tính năng cụ thể, hãy sử dụng các điều khiển bên dưới.
+preferences-ai-controls-on-device-group =
+    .label = AI trên thiết bị
+    .description = Các ứng dụng này sử dụng các mô hình AI nhỏ được tải xuống thiết bị của bạn nếu bạn sử dụng tính năng này. Cách tiếp cận này giúp bảo vệ quyền riêng tư của bạn.
+preferences-ai-controls-translations-control =
+    .label = Dịch thuật
+    .description = Dễ dàng duyệt web bằng ngôn ngữ bạn ưa thích.
+preferences-ai-controls-translations-more-link = Cài đặt dịch thuật khác
+preferences-ai-controls-pdfjs-control =
+    .label = Văn bản thay thế cho hình ảnh trong trình xem PDF của { -brand-short-name }
+    .description = Khi bạn thêm hình ảnh vào tập tin PDF, thao tác này sẽ thêm mô tả để giúp hình ảnh dễ đọc hơn.
+preferences-ai-controls-tab-group-suggestions-control =
+    .label = Gợi ý nhóm thẻ
+    .description = Nhận gợi ý để đặt tên và sắp xếp các thẻ của bạn.
+preferences-ai-controls-key-points-control =
+    .label = Nội dung chính trong bản xem trước liên kết
+    .description = Xem tóm tắt nhanh trước khi mở liên kết.
+preferences-ai-controls-sidebar-chatbot-group =
+    .label = Các nhà cung cấp chatbot AI ở thanh lề
+    .description = Hãy luôn để chatbot hiển thị trong tầm nhìn khi bạn duyệt web. Chọn từ Anthropic Claude, ChatGPT, Copilot, Google Gemini, và Le Chat Mistral.
+preferences-ai-controls-sidebar-chatbot-control =
+    .label = Chatbot ở thanh lề
+# This option means that a user will see the feature and can use it.
+preferences-ai-controls-state-available =
+    .label = Có sẵn
+# This option means a user has opted in to use the feature.
+preferences-ai-controls-state-enabled =
+    .label = Đã bật
+# This option means the user won't see and can't use the feature. For on-device AI, any models already downloaded are removed.
+preferences-ai-controls-state-blocked =
+    .label = Đã chặn
+preferences-ai-controls-state-description-before = Ý nghĩa của tùy chọn:
+preferences-ai-controls-state-description-available = <strong>Có sẵn:</strong> Bạn sẽ thấy và có thể sử dụng nó.
+preferences-ai-controls-state-description-enabled = <strong>Đã bật:</strong> Bạn đã chọn sử dụng tính năng này.
+preferences-ai-controls-state-description-blocked = <strong>Đã chặn:</strong> Bạn sẽ không thấy và không thể sử dụng tính năng này. Đối với AI trên thiết bị, mọi mô hình đã tải xuống trước đó sẽ bị xóa.
+preferences-ai-controls-block-confirmation-heading = Chặn các cải tiến AI?
+preferences-ai-controls-block-confirmation-description = Bạn sẽ không thấy các cải tiến AI mới hoặc hiện tại trong { -brand-short-name }, hoặc các cửa sổ bật lên về chúng. Sau đó, bạn có thể bỏ chặn bất cứ thứ gì bạn muốn tiếp tục sử dụng.
+preferences-ai-controls-block-confirmation-features-start = Những gì sẽ bị chặn:
+preferences-ai-controls-block-confirmation-translations = Dịch thuật
+preferences-ai-controls-block-confirmation-pdfjs = Văn bản thay thế cho hình ảnh trong trình xem PDF của { -brand-short-name }
+preferences-ai-controls-block-confirmation-tab-group-suggestions = Gợi ý nhóm thẻ
+preferences-ai-controls-block-confirmation-key-points = Nội dung chính trong bản xem trước liên kết
+preferences-ai-controls-block-confirmation-sidebar-chatbot = Các nhà cung cấp chatbot ở thanh lề
+preferences-ai-controls-block-confirmation-features-after = Việc chặn cũng ảnh hưởng đến các tiện ích mở rộng sử dụng AI do { -brand-short-name } cung cấp.
+preferences-ai-controls-block-confirmation-cancel =
+    .label = Hủy bỏ
+preferences-ai-controls-block-confirmation-confirm =
+    .label = Chặn

@@ -13,10 +13,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
 const DUMMY_VERSION_STRING = "____NOP____";
 
 ChromeUtils.defineLazyGetter(lazy, "console", () => {
-  let { ConsoleAPI } = ChromeUtils.importESModule(
-    "resource://gre/modules/Console.sys.mjs"
-  );
-  return new ConsoleAPI({
+  return console.createInstance({
     maxLogLevelPref: "dom.push.loglevel",
     prefix: "BroadcastService",
   });
@@ -114,7 +111,7 @@ export var BroadcastService = class {
    * @param {string} broadcastId The broadcastID to listen for
    * @param {string} version The most recent version we have for
    *   updates from this broadcastID
-   * @param {Object} sourceInfo A description of the handler for
+   * @param {object} sourceInfo A description of the handler for
    *   updates on this broadcastID
    */
   async addListener(broadcastId, version, sourceInfo) {
@@ -171,10 +168,10 @@ export var BroadcastService = class {
   /**
    * Call the listeners of the specified broadcasts.
    *
-   * @param {Array<Object>} broadcasts Map between broadcast ids and versions.
-   * @param {Object} context Additional information about the context in which the
+   * @param {Array<object>} broadcasts Map between broadcast ids and versions.
+   * @param {object} context Additional information about the context in which the
    *  broadcast notification was originally received. This is transmitted to listeners.
-   * @param {String} context.phase One of `BroadcastService.PHASES`
+   * @param {string} context.phase One of `BroadcastService.PHASES`
    */
   async receivedBroadcastMessage(broadcasts, context) {
     lazy.console.info("receivedBroadcastMessage:", broadcasts, context);

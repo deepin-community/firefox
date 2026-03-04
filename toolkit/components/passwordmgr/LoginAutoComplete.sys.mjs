@@ -238,7 +238,7 @@ class LoginsFooterAutocompleteItem extends AutocompleteItem {
       formHostname,
       fillMessageName: "PasswordManager:OpenPreferences",
       fillMessageData: {
-        entryPoint: "autocomplete",
+        entryPoint: "Autocomplete",
       },
     });
   }
@@ -390,6 +390,7 @@ export class LoginAutoCompleteResult {
 
   /**
    * Accessed via .wrappedJSObject
+   *
    * @private
    */
   get logins() {

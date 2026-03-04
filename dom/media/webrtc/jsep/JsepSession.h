@@ -5,21 +5,17 @@
 #ifndef _JSEPSESSION_H_
 #define _JSEPSESSION_H_
 
-#include <map>
 #include <string>
 #include <vector>
-#include "mozilla/Attributes.h"
-#include "mozilla/Maybe.h"
-#include "mozilla/RefPtr.h"
-#include "mozilla/UniquePtr.h"
-#include "nsError.h"
-
-#include "jsep/JsepTransport.h"
-#include "sdp/Sdp.h"
 
 #include "jsep/JsepTransceiver.h"
-
+#include "jsep/JsepTransport.h"
+#include "mozilla/Attributes.h"
+#include "mozilla/Maybe.h"
+#include "mozilla/UniquePtr.h"
 #include "mozilla/dom/PeerConnectionObserverEnumsBinding.h"
+#include "nsError.h"
+#include "sdp/Sdp.h"
 
 namespace mozilla {
 
@@ -242,6 +238,30 @@ class JsepSession {
   }
 
   virtual bool CheckNegotiationNeeded() const = 0;
+
+  void CountTransceivers(
+      uint16_t (&recvonly)[SdpMediaSection::kMediaTypes],
+      uint16_t (&sendonly)[SdpMediaSection::kMediaTypes],
+      uint16_t (&sendrecv)[SdpMediaSection::kMediaTypes]) const {
+    memset(recvonly, 0, sizeof(recvonly));
+    memset(sendonly, 0, sizeof(sendonly));
+    memset(sendrecv, 0, sizeof(sendrecv));
+
+    for (const auto& transceiver : GetTransceivers()) {
+      if (!transceiver.IsNegotiated()) {
+        continue;
+      }
+      if ((transceiver.mRecvTrack.GetActive() &&
+           transceiver.mSendTrack.GetActive()) ||
+          transceiver.GetMediaType() == SdpMediaSection::kApplication) {
+        ++sendrecv[transceiver.GetMediaType()];
+      } else if (transceiver.mRecvTrack.GetActive()) {
+        ++recvonly[transceiver.GetMediaType()];
+      } else if (transceiver.mSendTrack.GetActive()) {
+        ++sendonly[transceiver.GetMediaType()];
+      }
+    }
+  }
 
   void CountTracksAndDatachannels(
       uint16_t (&receiving)[SdpMediaSection::kMediaTypes],

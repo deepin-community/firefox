@@ -5,21 +5,24 @@
 //! `<length>` computed values, and related ones.
 
 use super::{Context, Number, ToComputedValue};
+use crate::derives::*;
+use crate::logical_geometry::PhysicalSide;
 use crate::values::animated::{Context as AnimatedContext, ToAnimatedValue};
-use crate::values::computed::{NonNegativeNumber, Zoom};
-use crate::values::generics::length as generics;
+use crate::values::computed::position::TryTacticAdjustment;
+use crate::values::computed::{NonNegativeNumber, Percentage, Zoom};
 use crate::values::generics::length::{
     GenericLengthOrNumber, GenericLengthPercentageOrNormal, GenericMaxSize, GenericSize,
 };
 use crate::values::generics::NonNegative;
+use crate::values::generics::{length as generics, ClampToNonNegative};
 use crate::values::resolved::{Context as ResolvedContext, ToResolvedValue};
 use crate::values::specified::length::{AbsoluteLength, FontBaseSize, LineHeightBase};
 use crate::values::{specified, CSSFloat};
 use crate::Zero;
 use app_units::Au;
 use std::fmt::{self, Write};
-use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Neg, Sub};
-use style_traits::{CSSPixel, CssWriter, ToCss};
+use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Neg, Sub, SubAssign};
+use style_traits::{CSSPixel, CssString, CssWriter, NumericValue, ToCss, ToTyped, TypedValue};
 
 pub use super::image::Image;
 pub use super::length_percentage::{LengthPercentage, NonNegativeLengthPercentage};
@@ -103,16 +106,6 @@ macro_rules! computed_length_percentage_or_auto {
                 Self::LengthPercentage(ref lp) => Some(lp.to_used_value(percentage_basis)),
             }
         }
-
-        /// Returns true if the computed value is absolute 0 or 0%.
-        #[inline]
-        pub fn is_definitely_zero(&self) -> bool {
-            use crate::values::generics::length::LengthPercentageOrAuto::*;
-            match *self {
-                LengthPercentage(ref l) => l.is_definitely_zero(),
-                Auto => false,
-            }
-        }
     };
 }
 
@@ -173,47 +166,6 @@ pub type NonNegativeLengthPercentageOrAuto =
 
 impl NonNegativeLengthPercentageOrAuto {
     computed_length_percentage_or_auto!(NonNegativeLengthPercentage);
-}
-
-#[cfg(feature = "servo")]
-impl MaxSize {
-    /// Convert the computed value into used value.
-    #[inline]
-    pub fn to_used_value(&self, percentage_basis: Au) -> Option<Au> {
-        match *self {
-            GenericMaxSize::None => None,
-            GenericMaxSize::LengthPercentage(ref lp) => Some(lp.to_used_value(percentage_basis)),
-        }
-    }
-}
-
-impl Size {
-    /// Convert the computed value into used value.
-    #[inline]
-    #[cfg(feature = "servo")]
-    pub fn to_used_value(&self, percentage_basis: Au) -> Option<Au> {
-        match *self {
-            GenericSize::Auto => None,
-            GenericSize::LengthPercentage(ref lp) => Some(lp.to_used_value(percentage_basis)),
-        }
-    }
-
-    /// Returns true if the computed value is absolute 0 or 0%.
-    #[inline]
-    pub fn is_definitely_zero(&self) -> bool {
-        match *self {
-            Self::Auto => false,
-            Self::LengthPercentage(ref lp) => lp.is_definitely_zero(),
-            #[cfg(feature = "gecko")]
-            Self::MinContent |
-            Self::MaxContent |
-            Self::FitContent |
-            Self::MozAvailable |
-            Self::WebkitFillAvailable |
-            Self::Stretch |
-            Self::FitContentFunction(_) => false,
-        }
-    }
 }
 
 /// The computed `<length>` value.
@@ -381,6 +333,15 @@ impl ToCss for CSSPixelLength {
     }
 }
 
+impl ToTyped for CSSPixelLength {
+    fn to_typed(&self) -> Option<TypedValue> {
+        Some(TypedValue::Numeric(NumericValue::Unit {
+            value: self.0 as f32,
+            unit: CssString::from("px"),
+        }))
+    }
+}
+
 impl std::iter::Sum for CSSPixelLength {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
         iter.fold(Length::zero(), Add::add)
@@ -455,6 +416,13 @@ impl Sub for CSSPixelLength {
     }
 }
 
+impl SubAssign for CSSPixelLength {
+    #[inline]
+    fn sub_assign(&mut self, other: Self) {
+        self.0 -= other.0;
+    }
+}
+
 impl From<CSSPixelLength> for Au {
     #[inline]
     fn from(len: CSSPixelLength) -> Self {
@@ -491,17 +459,9 @@ pub type LengthOrNumber = GenericLengthOrNumber<Length, Number>;
 /// A wrapper of Length, whose value must be >= 0.
 pub type NonNegativeLength = NonNegative<Length>;
 
-impl ToAnimatedValue for NonNegativeLength {
-    type AnimatedValue = Length;
-
-    #[inline]
-    fn to_animated_value(self, context: &AnimatedContext) -> Self::AnimatedValue {
-        self.0.to_animated_value(context)
-    }
-
-    #[inline]
-    fn from_animated_value(animated: Self::AnimatedValue) -> Self {
-        NonNegativeLength::new(animated.px().max(0.))
+impl ClampToNonNegative for Length {
+    fn clamp_to_non_negative(self) -> Self {
+        Self::new(self.px().max(0.))
     }
 }
 
@@ -560,5 +520,112 @@ pub type NonNegativeLengthOrNumber = GenericLengthOrNumber<NonNegativeLength, No
 /// A computed value for `min-width`, `min-height`, `width` or `height` property.
 pub type Size = GenericSize<NonNegativeLengthPercentage>;
 
-/// A computed value for `max-width` or `min-height` property.
+/// A computed value for `max-width` or `max-height` property.
 pub type MaxSize = GenericMaxSize<NonNegativeLengthPercentage>;
+
+#[cfg(feature = "gecko")]
+use crate::{
+    gecko_bindings::structs::AnchorPosResolutionParams, logical_geometry::PhysicalAxis,
+    values::generics::length::AnchorSizeKeyword, values::DashedIdent,
+};
+
+/// Resolve the anchor function with the given resolver. Returns `Err()` if no anchor is found.
+/// `prop_axis`, axis of the property (e.g. `margin-left` -> Horizontal axis), is used if the
+/// anchor size keyword is not specified.
+#[cfg(feature = "gecko")]
+pub fn resolve_anchor_size(
+    anchor_name: &DashedIdent,
+    prop_axis: PhysicalAxis,
+    anchor_size_keyword: AnchorSizeKeyword,
+    params: &AnchorPosResolutionParams,
+) -> Result<Length, ()> {
+    use crate::gecko_bindings::structs::Gecko_GetAnchorPosSize;
+
+    let mut offset = Length::zero();
+    let valid = unsafe {
+        Gecko_GetAnchorPosSize(
+            params,
+            anchor_name.0.as_ptr(),
+            prop_axis as u8,
+            anchor_size_keyword as u8,
+            &mut offset,
+        )
+    };
+
+    if !valid {
+        return Err(());
+    }
+
+    Ok(offset)
+}
+
+/// A computed type for `margin` properties.
+pub type Margin = generics::GenericMargin<LengthPercentage>;
+
+impl TryTacticAdjustment for MaxSize {
+    fn try_tactic_adjustment(&mut self, old_side: PhysicalSide, new_side: PhysicalSide) {
+        debug_assert!(
+            old_side.orthogonal_to(new_side),
+            "Sizes should only change axes"
+        );
+        match self {
+            Self::FitContentFunction(lp)
+            | Self::LengthPercentage(lp)
+            | Self::AnchorContainingCalcFunction(lp) => {
+                lp.try_tactic_adjustment(old_side, new_side);
+            },
+            Self::AnchorSizeFunction(s) => s.try_tactic_adjustment(old_side, new_side),
+            Self::None
+            | Self::MaxContent
+            | Self::MinContent
+            | Self::FitContent
+            | Self::MozAvailable
+            | Self::WebkitFillAvailable
+            | Self::Stretch => {},
+        }
+    }
+}
+
+impl TryTacticAdjustment for Size {
+    fn try_tactic_adjustment(&mut self, old_side: PhysicalSide, new_side: PhysicalSide) {
+        debug_assert!(
+            old_side.orthogonal_to(new_side),
+            "Sizes should only change axes"
+        );
+        match self {
+            Self::FitContentFunction(lp)
+            | Self::LengthPercentage(lp)
+            | Self::AnchorContainingCalcFunction(lp) => {
+                lp.try_tactic_adjustment(old_side, new_side);
+            },
+            Self::AnchorSizeFunction(s) => s.try_tactic_adjustment(old_side, new_side),
+            Self::Auto
+            | Self::MaxContent
+            | Self::MinContent
+            | Self::FitContent
+            | Self::MozAvailable
+            | Self::WebkitFillAvailable
+            | Self::Stretch => {},
+        }
+    }
+}
+
+impl TryTacticAdjustment for Percentage {
+    fn try_tactic_adjustment(&mut self, old_side: PhysicalSide, new_side: PhysicalSide) {
+        if old_side.parallel_to(new_side) {
+            self.0 = 1.0 - self.0;
+        }
+    }
+}
+
+impl TryTacticAdjustment for Margin {
+    fn try_tactic_adjustment(&mut self, old_side: PhysicalSide, new_side: PhysicalSide) {
+        match self {
+            Self::Auto => {},
+            Self::LengthPercentage(lp) | Self::AnchorContainingCalcFunction(lp) => {
+                lp.try_tactic_adjustment(old_side, new_side)
+            },
+            Self::AnchorSizeFunction(anchor) => anchor.try_tactic_adjustment(old_side, new_side),
+        }
+    }
+}

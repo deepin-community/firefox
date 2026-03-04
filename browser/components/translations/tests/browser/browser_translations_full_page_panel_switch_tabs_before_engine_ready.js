@@ -37,14 +37,14 @@ add_task(async function test_button_does_not_update_when_button_is_not_shown() {
     "The button is present in the Spanish page."
   );
 
-  await FullPageTranslationsTestUtils.assertPageIsUntranslated(
+  await FullPageTranslationsTestUtils.assertPageIsNotTranslated(
     runInSpanishPage
   );
 
   await FullPageTranslationsTestUtils.openPanel({
     expectedFromLanguage: "es",
     expectedToLanguage: "en",
-    onOpenPanel: FullPageTranslationsTestUtils.assertPanelViewDefault,
+    onOpenPanel: FullPageTranslationsTestUtils.assertPanelViewIntro,
   });
 
   await FullPageTranslationsTestUtils.clickTranslateButton();
@@ -75,11 +75,11 @@ add_task(async function test_button_does_not_update_when_button_is_not_shown() {
     "en"
   );
 
-  await FullPageTranslationsTestUtils.assertPageIsTranslated(
-    "es",
-    "en",
-    runInSpanishPage
-  );
+  await FullPageTranslationsTestUtils.assertOnlyIntersectingNodesAreTranslated({
+    fromLanguage: "es",
+    toLanguage: "en",
+    runInPage: runInSpanishPage,
+  });
 
   await removeTab();
   await cleanup();
@@ -107,7 +107,7 @@ add_task(
       "The button is present Spanish .com tab."
     );
 
-    await FullPageTranslationsTestUtils.assertPageIsUntranslated(
+    await FullPageTranslationsTestUtils.assertPageIsNotTranslated(
       runInSpanishDotComPage
     );
 
@@ -125,14 +125,14 @@ add_task(
       "The button is present Spanish .org tab."
     );
 
-    await FullPageTranslationsTestUtils.assertPageIsUntranslated(
+    await FullPageTranslationsTestUtils.assertPageIsNotTranslated(
       runInSpanishDotOrgPage
     );
 
     await FullPageTranslationsTestUtils.openPanel({
       expectedFromLanguage: "es",
       expectedToLanguage: "en",
-      onOpenPanel: FullPageTranslationsTestUtils.assertPanelViewDefault,
+      onOpenPanel: FullPageTranslationsTestUtils.assertPanelViewIntro,
     });
 
     await FullPageTranslationsTestUtils.changeSelectedToLanguage({
@@ -158,16 +158,18 @@ add_task(
       { button: true, circleArrows: false, locale: false, icon: true },
       "The button should be present but inactive on the Spanish .com tab, even after resolving downloads."
     );
-    await FullPageTranslationsTestUtils.assertPageIsUntranslated(
+    await FullPageTranslationsTestUtils.assertPageIsNotTranslated(
       runInSpanishDotComPage
     );
 
     await switchTab(spanishTabDotOrg, "Switch back to the Spanish .org tab");
 
-    await FullPageTranslationsTestUtils.assertPageIsTranslated(
-      "es",
-      "fr",
-      runInSpanishDotOrgPage
+    await FullPageTranslationsTestUtils.assertOnlyIntersectingNodesAreTranslated(
+      {
+        fromLanguage: "es",
+        toLanguage: "fr",
+        runInPage: runInSpanishDotOrgPage,
+      }
     );
 
     await removeTab();
@@ -197,14 +199,14 @@ add_task(
       "The button is present Spanish .com tab."
     );
 
-    await FullPageTranslationsTestUtils.assertPageIsUntranslated(
+    await FullPageTranslationsTestUtils.assertPageIsNotTranslated(
       runInSpanishDotComPage
     );
 
     await FullPageTranslationsTestUtils.openPanel({
       expectedFromLanguage: "es",
       expectedToLanguage: "en",
-      onOpenPanel: FullPageTranslationsTestUtils.assertPanelViewDefault,
+      onOpenPanel: FullPageTranslationsTestUtils.assertPanelViewIntro,
     });
 
     await FullPageTranslationsTestUtils.changeSelectedToLanguage({
@@ -215,10 +217,12 @@ add_task(
       downloadHandler: resolveDownloads,
     });
 
-    await FullPageTranslationsTestUtils.assertPageIsTranslated(
-      "es",
-      "fr",
-      runInSpanishDotComPage
+    await FullPageTranslationsTestUtils.assertOnlyIntersectingNodesAreTranslated(
+      {
+        fromLanguage: "es",
+        toLanguage: "fr",
+        runInPage: runInSpanishDotComPage,
+      }
     );
 
     const {
@@ -235,7 +239,7 @@ add_task(
       "The button is present but not active in the Spanish .org tab."
     );
 
-    await FullPageTranslationsTestUtils.assertPageIsUntranslated(
+    await FullPageTranslationsTestUtils.assertPageIsNotTranslated(
       runInSpanishDotOrgPage
     );
 
@@ -258,10 +262,12 @@ add_task(
     await switchTab(spanishTabDotCom, "Switch to the Spanish .com tab.");
 
     info("The Spanish .com page should still be translated to French.");
-    await FullPageTranslationsTestUtils.assertPageIsTranslated(
-      "es",
-      "fr",
-      runInSpanishDotComPage
+    await FullPageTranslationsTestUtils.assertOnlyIntersectingNodesAreTranslated(
+      {
+        fromLanguage: "es",
+        toLanguage: "fr",
+        runInPage: runInSpanishDotComPage,
+      }
     );
 
     await resolveDownloads(2);
@@ -269,19 +275,23 @@ add_task(
     info(
       "The Spanish .com page should still be translated to French, even after resolving downloads."
     );
-    await FullPageTranslationsTestUtils.assertPageIsTranslated(
-      "es",
-      "fr",
-      runInSpanishDotComPage
+    await FullPageTranslationsTestUtils.assertOnlyIntersectingNodesAreTranslated(
+      {
+        fromLanguage: "es",
+        toLanguage: "fr",
+        runInPage: runInSpanishDotComPage,
+      }
     );
 
     await switchTab(spanishTabDotOrg, "Switch back to the Spanish .org tab");
 
     info("The Spanish .org page should be translated to Ukrainian.");
-    await FullPageTranslationsTestUtils.assertPageIsTranslated(
-      "es",
-      "uk",
-      runInSpanishDotOrgPage
+    await FullPageTranslationsTestUtils.assertOnlyIntersectingNodesAreTranslated(
+      {
+        fromLanguage: "es",
+        toLanguage: "uk",
+        runInPage: runInSpanishDotOrgPage,
+      }
     );
 
     await removeTab();

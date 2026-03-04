@@ -1,98 +1,121 @@
 /* Any copyright is dedicated to the Public Domain.
  * http://creativecommons.org/publicdomain/zero/1.0/ */
+/* import-globals-from /toolkit/profile/test/xpcshell/head.js */
 
 "use strict";
 
-const { AppConstants } = ChromeUtils.importESModule(
-  "resource://gre/modules/AppConstants.sys.mjs"
-);
-const { SelectableProfile } = ChromeUtils.importESModule(
-  "resource:///modules/profiles/SelectableProfile.sys.mjs"
-);
+const lazy = {};
 
-const storeID = "12345678";
-var gFakeAppDirectoryProvider;
+ChromeUtils.defineESModuleGetters(lazy, {
+  SelectableProfileService:
+    "resource:///modules/profiles/SelectableProfileService.sys.mjs",
+  Sqlite: "resource://gre/modules/Sqlite.sys.mjs",
+});
 
-function makeFakeProfileDirs() {
-  do_get_profile();
+ChromeUtils.defineLazyGetter(lazy, "ProfilesDatastoreService", () => {
+  const { ProfilesDatastoreService } = ChromeUtils.importESModule(
+    "moz-src:///toolkit/profile/ProfilesDatastoreService.sys.mjs"
+  );
 
-  let dirMode = 0o700;
-  let baseFile = Services.dirsvc.get("ProfD", Ci.nsIFile);
-  let appD = baseFile.clone();
-  appD.append("UAppData");
+  ProfilesDatastoreService.overrideDirectoryService({
+    ProfD: getProfileService().currentProfile.rootDir,
+  });
 
-  if (gFakeAppDirectoryProvider) {
-    return Promise.resolve(appD.path);
+  return ProfilesDatastoreService;
+});
+
+let gProfileServiceInitialised = false;
+
+/**
+ * Starts up the toolkit profile services and initialises it with a new default profile.
+ */
+function startProfileService() {
+  if (gProfileServiceInitialised) {
+    return;
   }
 
-  function makeDir(f) {
-    if (f.exists()) {
-      return;
-    }
+  gProfileServiceInitialised = true;
+  selectStartupProfile();
+}
 
-    dump("Creating directory: " + f.path + "\n");
-    f.create(Ci.nsIFile.DIRECTORY_TYPE, dirMode);
+function getSelectableProfileService() {
+  return lazy.SelectableProfileService;
+}
+
+function getProfilesDatastoreService() {
+  return lazy.ProfilesDatastoreService;
+}
+
+/**
+ * Starts the selectable profile service and creates the group store for the
+ * current profile.
+ */
+async function initSelectableProfileService() {
+  startProfileService();
+
+  const SelectableProfileService = getSelectableProfileService();
+  const ProfilesDatastoreService = getProfilesDatastoreService();
+
+  await ProfilesDatastoreService.init();
+
+  await SelectableProfileService.init();
+
+  await SelectableProfileService.maybeSetupDataStore();
+}
+
+function getRelativeProfilePath(path) {
+  let relativePath = path.getRelativePath(
+    Services.dirsvc.get("UAppData", Ci.nsIFile)
+  );
+
+  if (AppConstants.platform === "win") {
+    relativePath = relativePath.replace("/", "\\");
   }
 
-  makeDir(appD);
+  return relativePath;
+}
 
-  let profileDir = appD.clone();
-  profileDir.append("Profiles");
-  makeDir(profileDir);
-
-  let defProfRtDir = appD.clone();
-  defProfRtDir.append("DefProfRt");
-  makeDir(defProfRtDir);
-
-  let defProfLRtDir = appD.clone();
-  defProfLRtDir.append("DefProfLRt");
-  makeDir(defProfLRtDir);
-
-  let provider = {
-    getFile(prop, persistent) {
-      persistent.value = true;
-      if (prop === "UAppData") {
-        return appD.clone();
-      } else if (prop === "ProfD") {
-        return profileDir.clone();
-      } else if (prop === "DefProfRt") {
-        return defProfRtDir.clone();
-      } else if (prop === "DefProfLRt") {
-        return defProfLRtDir.clone();
-      }
-
-      throw Components.Exception("", Cr.NS_ERROR_FAILURE);
-    },
-
-    QueryInterface: ChromeUtils.generateQI(["nsIDirectoryServiceProvider"]),
+// Waits for the profile service to update about a change
+async function updateNotified() {
+  let { resolve, promise } = Promise.withResolvers();
+  let observer = (subject, topic, data) => {
+    Services.obs.removeObserver(observer, "sps-profiles-updated");
+    resolve(data);
   };
 
-  // Register the new provider.
-  Services.dirsvc.registerProvider(provider);
+  Services.obs.addObserver(observer, "sps-profiles-updated");
 
-  // And undefine the old one.
-  try {
-    Services.dirsvc.undefine("UAppData");
-  } catch (ex) {}
-
-  gFakeAppDirectoryProvider = provider;
-
-  dump("Successfully installed fake UAppDir\n");
-  return appD.path;
+  await promise;
 }
 
-async function setupMockDB() {
-  makeFakeProfileDirs();
-
-  await IOUtils.createUniqueFile(
-    PathUtils.join(
-      Services.dirsvc.get("UAppData", Ci.nsIFile).path,
-      "Profile Groups"
-    ),
-    `${storeID}.sqlite`
-  );
+async function openDatabase() {
+  let dbFile = Services.dirsvc.get("UAppData", Ci.nsIFile);
+  dbFile.append("Profile Groups");
+  dbFile.append(`${getProfileService().currentProfile.storeID}.sqlite`);
+  return lazy.Sqlite.openConnection({
+    path: dbFile.path,
+    openNotExclusive: true,
+  });
 }
 
-add_setup(async () => {
-  await setupMockDB();
-});
+async function createTestProfile(profileData = {}) {
+  const SelectableProfileService = getSelectableProfileService();
+
+  let name = profileData.name ?? "Test";
+  let path = profileData.path;
+
+  if (!path) {
+    path = await SelectableProfileService.createProfileDirs(name);
+    await SelectableProfileService.createProfileInitialFiles(path);
+    path = SelectableProfileService.getRelativeProfilePath(path);
+  }
+
+  return SelectableProfileService.insertProfile({
+    avatar: profileData.avatar ?? "book",
+    name,
+    path,
+    themeBg: profileData.themeBg ?? "var(--background-color-box)",
+    themeFg: profileData.themeFg ?? "var(--text-color)",
+    themeId: profileData.themeId ?? "default",
+  });
+}

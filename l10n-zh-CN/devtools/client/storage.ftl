@@ -71,6 +71,7 @@ storage-table-headers-cookies-expires = Expires / Max-Age
 storage-table-headers-cookies-size = 大小
 storage-table-headers-cookies-last-accessed = 最后访问
 storage-table-headers-cookies-creation-time = 创建于
+storage-table-headers-cookies-update-time = 更新时间
 storage-table-headers-cache-status = 状态
 storage-table-headers-extension-storage-area = 存储区域
 
@@ -107,3 +108,11 @@ storage-idb-delete-blocked = 数据库“{ $dbName }”将在所有连接关闭�
 # Variables:
 #   $dbName (String) - Name of the database
 storage-idb-delete-error = 数据库“{ $dbName }”未能删除。
+# Error notification when cookie could not be created (e.g. because it's invalid).
+# Variables:
+#   $errorString (String) - Platform error message
+storage-cookie-create-error = 无法创建 Cookie：“{ $errorString }”。
+# Error notification when cookie could not be edited (e.g. because it's invalid).
+# Variables:
+#   $errorString (String) - Platform error message
+storage-cookie-edit-error = 无法更新 Cookie：“{ $errorString }”。

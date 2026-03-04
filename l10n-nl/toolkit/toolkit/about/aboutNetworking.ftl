@@ -39,6 +39,7 @@ about-networking-dns-lookup = DNS-zoekactie
 about-networking-dns-lookup-button = Omzetten
 about-networking-dns-domain = Domein:
 about-networking-dns-lookup-table-column = IP-adressen
+about-networking-dns-https-rrs-lookup-table-column = HTTPS-RR’s
 about-networking-dns-https-rr-lookup-table-column = HTTP-RR’s
 about-networking-rcwn = RCWN-statistieken
 about-networking-rcwn-status = RCWN-status
@@ -64,6 +65,3 @@ about-networking-moved-about-logging = Deze pagina is verplaatst naar <a data-l1
 
 about-networking-networkid-is-up = Koppeling is beschikbaar
 about-networking-networkid-status-known = Koppelingsstatus is bekend
-
-##
-

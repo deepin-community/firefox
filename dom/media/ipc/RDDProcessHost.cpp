@@ -5,12 +5,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "RDDProcessHost.h"
 
-#include "mozilla/dom/ContentParent.h"
-#include "mozilla/ipc/ProcessUtils.h"
 #include "RDDChild.h"
 #include "chrome/common/process_watcher.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/StaticPrefs_media.h"
+#include "mozilla/dom/ContentParent.h"
+#include "mozilla/ipc/ProcessUtils.h"
 
 #if defined(XP_MACOSX) && defined(MOZ_SANDBOX)
 #  include "mozilla/Sandbox.h"
@@ -40,7 +40,7 @@ RDDProcessHost::RDDProcessHost(Listener* aListener)
 
 RDDProcessHost::~RDDProcessHost() { MOZ_COUNT_DTOR(RDDProcessHost); }
 
-bool RDDProcessHost::Launch(StringVector aExtraOpts) {
+bool RDDProcessHost::Launch(geckoargs::ChildProcessArgs aExtraOpts) {
   MOZ_ASSERT(NS_IsMainThread());
 
   MOZ_ASSERT(mLaunchPhase == LaunchPhase::Unlaunched);
@@ -84,7 +84,7 @@ bool RDDProcessHost::Launch(StringVector aExtraOpts) {
         timeoutMs);
   }
 
-  if (!GeckoChildProcessHost::AsyncLaunch(aExtraOpts)) {
+  if (!GeckoChildProcessHost::AsyncLaunch(std::move(aExtraOpts))) {
     mLaunchPhase = LaunchPhase::Complete;
     mPrefSerializer = nullptr;
     return false;
@@ -256,7 +256,7 @@ void RDDProcessHost::DestroyProcess() {
 void RDDProcessHost::ResolvePromise() {
   MOZ_ASSERT(NS_IsMainThread());
 
-  if (!mLaunchPromiseSettled) {
+  if (mLaunchPromise && !mLaunchPromiseSettled) {
     mLaunchPromise->Resolve(true, __func__);
     mLaunchPromiseSettled = true;
   }
@@ -268,7 +268,7 @@ void RDDProcessHost::ResolvePromise() {
 void RDDProcessHost::RejectPromise() {
   MOZ_ASSERT(NS_IsMainThread());
 
-  if (!mLaunchPromiseSettled) {
+  if (mLaunchPromise && !mLaunchPromiseSettled) {
     mLaunchPromise->Reject(NS_ERROR_FAILURE, __func__);
     mLaunchPromiseSettled = true;
   }

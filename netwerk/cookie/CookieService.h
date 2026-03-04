@@ -13,10 +13,13 @@
 
 #include "Cookie.h"
 #include "CookieCommons.h"
+#include "ThirdPartyCookieBlockingExceptions.h"
 
 #include "nsString.h"
+#include "nsICookieValidation.h"
 #include "nsIMemoryReporter.h"
 #include "mozilla/MemoryReporting.h"
+#include "mozilla/MozPromise.h"
 
 class nsIConsoleReportCollector;
 class nsICookieJarSettings;
@@ -58,6 +61,12 @@ class CookieService final : public nsICookieService,
   static already_AddRefed<nsICookieService> GetXPCOMSingleton();
   nsresult Init();
 
+  static void Update3PCBExceptionInfo(nsIChannel* aChannel);
+
+  ThirdPartyCookieBlockingExceptions& ThirdPartyCookieBlockingExceptionsRef() {
+    return mThirdPartyCookieBlockingExceptions;
+  }
+
   /**
    * Start watching the observer service for messages indicating that an app has
    * been uninstalled.  When an app is uninstalled, we get the cookie service
@@ -89,13 +98,14 @@ class CookieService final : public nsICookieService,
    * with OriginAttributes parameter.
    */
   nsresult Remove(const nsACString& aHost, const OriginAttributes& aAttrs,
-                  const nsACString& aName, const nsACString& aPath);
+                  const nsACString& aName, const nsACString& aPath,
+                  bool aFromHttp, const nsID* aOperationID);
 
-  bool SetCookiesFromIPC(const nsACString& aBaseDomain,
-                         const OriginAttributes& aAttrs, nsIURI* aHostURI,
-                         bool aFromHttp, bool aIsThirdParty,
-                         const nsTArray<CookieStruct>& aCookies,
-                         dom::BrowsingContext* aBrowsingContext);
+  nsICookieValidation::ValidationError SetCookiesFromIPC(
+      const nsACString& aBaseDomain, const OriginAttributes& aAttrs,
+      nsIURI* aHostURI, bool aFromHttp, bool aIsThirdParty,
+      const nsTArray<CookieStruct>& aCookies,
+      dom::BrowsingContext* aBrowsingContext);
 
  protected:
   virtual ~CookieService();
@@ -110,7 +120,7 @@ class CookieService final : public nsICookieService,
 
   nsresult GetCookiesWithOriginAttributes(
       const OriginAttributesPattern& aPattern, const nsCString& aBaseDomain,
-      nsTArray<RefPtr<nsICookie>>& aResult);
+      bool aSorted, nsTArray<RefPtr<nsICookie>>& aResult);
   nsresult RemoveCookiesWithOriginAttributes(
       const OriginAttributesPattern& aPattern, const nsCString& aBaseDomain);
 
@@ -125,10 +135,22 @@ class CookieService final : public nsICookieService,
   nsCOMPtr<mozIThirdPartyUtil> mThirdPartyUtil;
   nsCOMPtr<nsIEffectiveTLDService> mTLDService;
 
+  ThirdPartyCookieBlockingExceptions mThirdPartyCookieBlockingExceptions;
+
   // we have two separate Cookie Storages: one for normal browsing and one for
   // private browsing.
   RefPtr<CookieStorage> mPersistentStorage;
   RefPtr<CookieStorage> mPrivateStorage;
+
+ private:
+  nsresult AddInternal(nsIURI* aCookieURI, const nsACString& aHost,
+                       const nsACString& aPath, const nsACString& aName,
+                       const nsACString& aValue, bool aIsSecure,
+                       bool aIsHttpOnly, bool aIsSession, int64_t aExpiry,
+                       OriginAttributes* aOriginAttributes, int32_t aSameSite,
+                       nsICookie::schemeType aSchemeMap, bool aIsPartitioned,
+                       bool aFromHttp, const nsID* aOperationID,
+                       nsICookieValidation** aValidation);
 };
 
 }  // namespace net

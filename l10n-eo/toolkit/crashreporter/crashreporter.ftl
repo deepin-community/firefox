@@ -8,17 +8,18 @@ crashreporter-crashed-and-restore = { -brand-short-name } havis problemon kaj pa
 crashreporter-plea = Por helpi nin diagnozi kaj solvi la problemon, vi povas sendi al ni raporton de paneo.
 crashreporter-information = Tiu ĉi programo estas funkciigita post paneo por raporti la problemon al { -vendor-short-name }. Ĝi ne devus esti rekte funkciigita.
 crashreporter-error = { -brand-short-name } havis problemon kaj paneis. Bedaŭrinde ne eblas sendi raporton pri tiu ĉi paneo.
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = Details: { $details }
+crashreporter-error-details-header = Detaloj:
 crashreporter-no-run-message = Tiu ĉi programo estas funkciigita post paneo por raporti la problemon al la provizanto de la programo. Ĝi ne devus esti rekte funkciigita.
 crashreporter-button-details = Detaloj…
 crashreporter-loading-details = Ŝargado…
 crashreporter-view-report-title = Enhavo de raporto
 crashreporter-comment-prompt = Aldoni komenton (komentoj estas publike videblaj)
 crashreporter-report-info = Tiu ĉi raporto enhavas ankaŭ teĥnikan informon pri la stato de la programo kiam ĝi paneis.
-crashreporter-send-report = Raporti tiun ĉi paneon al { -vendor-short-name } tiel ke ili povos solvi ĝin.
-crashreporter-include-url = Aldoni la adreson de la paĝo kie mi estis.
+crashreporter-checkbox-test-hardware = Kontroli ĉu estas aparataraj aŭ agordaj problemoj en mia aparato.
+crashreporter-checkbox-send-report = Raporti tiun ĉi paneon al { -vendor-short-name } tiel ke ili povos solvi ĝin.
+crashreporter-checkbox-include-url = Aldoni la adreson de la paĝo kie mi estis.
 crashreporter-submit-status = Via raporto estos sendita antaŭ vi finos aŭ restartigos.
+crashreporter-submit-waiting-hardware-tests = Kontrolo pri aparataraj aŭ agordaj problemoj…
 crashreporter-submit-in-progress = Via raporto estas sendata…
 crashreporter-submit-success = Raporto sukcese sendita!
 crashreporter-submit-failure = Estis problemo dum la sendo de via raporto.
@@ -34,7 +35,6 @@ crashreporter-crash-details = Vi povas vidi detalojn de tiu ĉi paneo ĉe { $url
 
 # Error strings
 
-crashreporter-error-minidump-analyzer = Ne eblis ruli minidump-analyzer
 # $path (String) - the file path
 crashreporter-error-opening-file = Ne eblis malfermi la dosieron ({ $path })
 # $path (String) - the file path
@@ -46,3 +46,4 @@ crashreporter-error-no-home-dir = Mankanta dosierujo de uzanto
 # $to (String) - the destination path
 crashreporter-error-moving-path = Ne eblis movi { $from } al { $to }
 crashreporter-error-version-eol = Fino de vivo de tiu ĉi versio: raportoj de paneoj ne plu estos akceptitaj.
+crashreporter-error-failed-to-generate-minidump = La programo ne sukcesis krei la informon pri paneo.

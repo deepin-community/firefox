@@ -104,113 +104,19 @@ function waitForCondition(condition, nextTest, errorMsg, retryTimes) {
   };
 }
 
-function whenTabLoaded(aTab, aCallback) {
-  promiseTabLoadEvent(aTab).then(aCallback);
-}
-
-function promiseTabLoaded(aTab) {
-  return new Promise(resolve => {
-    whenTabLoaded(aTab, resolve);
-  });
-}
-
-/**
- * Waits for a load (or custom) event to finish in a given tab. If provided
- * load an uri into the tab.
- *
- * @param tab
- *        The tab to load into.
- * @param [optional] url
- *        The url to load, or the current url.
- * @return {Promise} resolved when the event is handled.
- * @resolves to the received event
- * @rejects if a valid load event is not received within a meaningful interval
- */
-function promiseTabLoadEvent(tab, url) {
-  info("Wait tab event: load");
-
-  function handle(loadedUrl) {
-    if (loadedUrl === "about:blank" || (url && loadedUrl !== url)) {
-      info(`Skipping spurious load event for ${loadedUrl}`);
-      return false;
-    }
-
-    info("Tab event received: load");
-    return true;
-  }
-
-  let loaded = BrowserTestUtils.browserLoaded(tab.linkedBrowser, false, handle);
-
-  if (url) {
-    BrowserTestUtils.startLoadingURIString(tab.linkedBrowser, url);
-  }
-
-  return loaded;
-}
-
-/**
- * Wait for the user's default search engine to change. searchEngineChangeFn is
- * a function that will be called to change the search engine.
- */
-async function promiseContentSearchChange(browser, searchEngineChangeFn) {
-  // Add an event listener manually then perform the action, rather than using
-  // BrowserTestUtils.addContentEventListener as that doesn't add the listener
-  // early enough.
-  await SpecialPowers.spawn(browser, [], async () => {
-    // Store the results in a temporary place.
-    content._searchDetails = {
-      defaultEnginesList: [],
-      listener: event => {
-        if (event.detail.type == "CurrentEngine") {
-          content._searchDetails.defaultEnginesList.push(
-            content.wrappedJSObject.gContentSearchController.defaultEngine.name
-          );
-        }
-      },
-    };
-
-    // Listen using the system group to ensure that it fires after
-    // the default behaviour.
-    content.addEventListener(
-      "ContentSearchService",
-      content._searchDetails.listener,
-      { mozSystemGroup: true }
-    );
-  });
-
-  let expectedEngineName = await searchEngineChangeFn();
-
-  await SpecialPowers.spawn(
-    browser,
-    [expectedEngineName],
-    async expectedEngineNameChild => {
-      await ContentTaskUtils.waitForCondition(
-        () =>
-          content._searchDetails.defaultEnginesList &&
-          content._searchDetails.defaultEnginesList[
-            content._searchDetails.defaultEnginesList.length - 1
-          ] == expectedEngineNameChild,
-        `Waiting for ${expectedEngineNameChild} to be set`
-      );
-      content.removeEventListener(
-        "ContentSearchService",
-        content._searchDetails.listener,
-        { mozSystemGroup: true }
-      );
-      delete content._searchDetails;
-    }
-  );
-}
-
 async function waitForBookmarksToolbarVisibility({
   win = window,
   visible,
   message,
 }) {
-  let result = await TestUtils.waitForCondition(() => {
-    let toolbar = win.document.getElementById("PersonalToolbar");
-    return toolbar && (visible ? !toolbar.collapsed : toolbar.collapsed);
-  }, message || "waiting for toolbar to become " + (visible ? "visible" : "hidden"));
+  let result = await TestUtils.waitForCondition(
+    () => {
+      let toolbar = win.document.getElementById("PersonalToolbar");
+      return toolbar && (visible ? !toolbar.collapsed : toolbar.collapsed);
+    },
+    message ||
+      "waiting for toolbar to become " + (visible ? "visible" : "hidden")
+  );
   ok(result, message);
   return result;
 }
@@ -219,3 +125,12 @@ function isBookmarksToolbarVisible(win = window) {
   let toolbar = win.document.getElementById("PersonalToolbar");
   return !toolbar.collapsed;
 }
+
+const setSecurityCertErrorsFeltPrivacyToTrue = async () =>
+  await SpecialPowers.pushPrefEnv({
+    set: [["security.certerrors.felt-privacy-v1", true]],
+  });
+const setSecurityCertErrorsFeltPrivacyToFalse = async () =>
+  await SpecialPowers.pushPrefEnv({
+    set: [["security.certerrors.felt-privacy-v1", false]],
+  });

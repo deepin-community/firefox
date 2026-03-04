@@ -1,10 +1,18 @@
 [DEFAULT]
 tags = "remote"
 subsuite = "remote"
-support-files = ["head.js"]
+support-files = [
+  "head.js",
+  "cached_resource.sjs",
+  "sample.txt",
+]
 prefs = ["remote.messagehandler.modulecache.useBrowserTestRoot=true"]
 
 ["browser_BrowsingContextListener.js"]
+
+["browser_CachedResourceListener.js"]
+
+["browser_ChromeWindowListener.js"]
 
 ["browser_ConsoleAPIListener.js"]
 
@@ -15,6 +23,8 @@ prefs = ["remote.messagehandler.modulecache.useBrowserTestRoot=true"]
 ["browser_ConsoleListener_cached_messages.js"]
 
 ["browser_ContextualIdentityListener.js"]
+
+["browser_DownloadListener.js"]
 
 ["browser_NetworkListener.js"]
 

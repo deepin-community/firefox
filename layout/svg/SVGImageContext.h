@@ -7,12 +7,13 @@
 #ifndef LAYOUT_SVG_SVGIMAGECONTEXT_H_
 #define LAYOUT_SVG_SVGIMAGECONTEXT_H_
 
+#include "Units.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/SVGContextPaint.h"
 #include "mozilla/SVGPreserveAspectRatio.h"
-#include "Units.h"
 
 class nsIFrame;
+class nsISVGPaintContext;
 
 namespace mozilla {
 
@@ -60,6 +61,10 @@ class SVGImageContext {
                                      const nsPresContext&, const ComputedStyle&,
                                      imgIContainer*);
 
+  static void MaybeStoreContextPaint(SVGImageContext& aContext,
+                                     nsISVGPaintContext* aPaintContext,
+                                     imgIContainer* aImgContainer);
+
   const Maybe<CSSIntSize>& GetViewportSize() const { return mViewportSize; }
 
   void SetViewportSize(const Maybe<CSSIntSize>& aSize) {
@@ -84,6 +89,14 @@ class SVGImageContext {
     return mContextPaint.get();
   }
 
+  SVGEmbeddingContextPaint* GetOrCreateContextPaint() {
+    if (!mContextPaint) {
+      mContextPaint = MakeRefPtr<SVGEmbeddingContextPaint>();
+    }
+
+    return mContextPaint.get();
+  }
+
   void ClearContextPaint() { mContextPaint = nullptr; }
 
   bool operator==(const SVGImageContext& aOther) const {
@@ -99,9 +112,7 @@ class SVGImageContext {
            mColorScheme == aOther.mColorScheme;
   }
 
-  bool operator!=(const SVGImageContext& aOther) const {
-    return !(*this == aOther);
-  }
+  bool operator!=(const SVGImageContext&) const = default;
 
   PLDHashNumber Hash() const {
     PLDHashNumber hash = 0;

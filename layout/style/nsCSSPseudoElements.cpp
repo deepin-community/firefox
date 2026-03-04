@@ -8,8 +8,7 @@
 
 #include "nsCSSPseudoElements.h"
 
-#include "mozilla/ArrayUtils.h"
-
+#include "mozilla/ServoBindings.h"
 #include "nsCSSAnonBoxes.h"
 #include "nsDOMString.h"
 #include "nsGkAtomConsts.h"
@@ -39,77 +38,31 @@ nsAtom* nsCSSPseudoElements::GetPseudoAtom(Type aType) {
 }
 
 /* static */
-std::tuple<mozilla::Maybe<PseudoStyleType>, RefPtr<nsAtom>>
-nsCSSPseudoElements::ParsePseudoElement(const nsAString& aPseudoElement,
-                                        CSSEnabledState aEnabledState) {
-  if (DOMStringIsNull(aPseudoElement) || aPseudoElement.IsEmpty()) {
-    return {Some(PseudoStyleType::NotPseudo), nullptr};
-  }
-
-  if (aPseudoElement.First() != char16_t(':')) {
-    return {};
-  }
-
-  // deal with two-colon forms of aPseudoElt
-  const char16_t* start = aPseudoElement.BeginReading();
-  const char16_t* end = aPseudoElement.EndReading();
-  NS_ASSERTION(start != end, "aPseudoElement is not empty!");
-  ++start;
-  bool haveTwoColons = true;
-  if (start == end || *start != char16_t(':')) {
-    --start;
-    haveTwoColons = false;
-  }
-
-  // XXX jjaschke: this parsing algorithm should be replaced by the css parser
-  // for correct handling of all edge cases. See Bug 1845712.
-  const int32_t parameterPosition = aPseudoElement.FindChar('(');
-  const bool hasParameter = parameterPosition != kNotFound;
-  if (hasParameter) {
-    end = start + parameterPosition - 1;
-  }
-  RefPtr<nsAtom> pseudo = NS_Atomize(Substring(start, end));
-  MOZ_ASSERT(pseudo);
-
-  Maybe<uint32_t> index = nsStaticAtomUtils::Lookup(pseudo, GetAtomBase(),
-                                                    kAtomCount_PseudoElements);
-  if (index.isNothing()) {
-    return {};
-  }
-  auto type = static_cast<Type>(*index);
-  RefPtr<nsAtom> functionalPseudoParameter;
-  if (hasParameter) {
-    if (type != PseudoStyleType::highlight) {
-      return {};
-    }
-    functionalPseudoParameter =
-        [&aPseudoElement, parameterPosition]() -> already_AddRefed<nsAtom> {
-      const char16_t* start = aPseudoElement.BeginReading();
-      const char16_t* end = aPseudoElement.EndReading();
-      start += parameterPosition + 1;
-      --end;
-      if (*end != ')') {
-        return nullptr;
-      }
-      return NS_Atomize(Substring(start, end));
-    }();
-  }
-
-  if (!haveTwoColons &&
-      !PseudoElementHasFlags(type, CSS_PSEUDO_ELEMENT_IS_CSS2)) {
-    return {};
-  }
-  if (IsEnabled(type, aEnabledState)) {
-    return {Some(type), functionalPseudoParameter};
-  }
-  return {};
-}
-
-/* static */
-mozilla::Maybe<PseudoStyleType> nsCSSPseudoElements::GetPseudoType(
+Maybe<PseudoStyleRequest> nsCSSPseudoElements::ParsePseudoElement(
     const nsAString& aPseudoElement, CSSEnabledState aEnabledState) {
-  auto [pseudoType, _] = ParsePseudoElement(aPseudoElement, aEnabledState);
-  return pseudoType;
+  PseudoStyleRequest result;
+
+  // Not a pseudo-element, use default PseudoStyleReqeust.
+  if (DOMStringIsNull(aPseudoElement) || aPseudoElement.IsEmpty()) {
+    return Some(result);
+  }
+
+  // Parse the pseudo-element string.
+  if (!Servo_ParsePseudoElement(&aPseudoElement, &result)) {
+    return Nothing();
+  }
+
+  // Servo_ParsePseudoElement() doesn't do enabled check, so it may return all
+  // possible PseudoElements, including tree pseudo-elements and anoymous boxes,
+  // so we have to filter out the pseudo-elements not defined in
+  // "nsCSSPseudoElementList.h" as well.
+  // Also, IsEnabled() checks if this pseudo-element should be enabled here
+  // (e.g. preference check and ua stylesheet check).
+  if (!PseudoStyle::IsPseudoElement(result.mType) ||
+      !IsEnabled(result.mType, aEnabledState)) {
+    return Nothing();
+  }
+  return Some(result);
 }
 
 /* static */
@@ -120,17 +73,33 @@ bool nsCSSPseudoElements::PseudoElementSupportsUserActionState(
 }
 
 /* static */
-nsString nsCSSPseudoElements::PseudoTypeAsString(Type aPseudoType) {
-  switch (aPseudoType) {
+nsString nsCSSPseudoElements::PseudoRequestAsString(
+    const Request& aPseudoRequest) {
+  switch (aPseudoRequest.mType) {
     case PseudoStyleType::before:
       return u"::before"_ns;
     case PseudoStyleType::after:
       return u"::after"_ns;
+    case PseudoStyleType::backdrop:
+      return u"::backdrop"_ns;
     case PseudoStyleType::marker:
       return u"::marker"_ns;
+    case PseudoStyleType::viewTransition:
+      return u"::view-transition"_ns;
+    case PseudoStyleType::viewTransitionGroup:
+      return u"::view-transition-group("_ns +
+             nsAtomString(aPseudoRequest.mIdentifier) + u")"_ns;
+    case PseudoStyleType::viewTransitionImagePair:
+      return u"::view-transition-image-pair("_ns +
+             nsAtomString(aPseudoRequest.mIdentifier) + u")"_ns;
+    case PseudoStyleType::viewTransitionOld:
+      return u"::view-transition-old("_ns +
+             nsAtomString(aPseudoRequest.mIdentifier) + u")"_ns;
+    case PseudoStyleType::viewTransitionNew:
+      return u"::view-transition-new("_ns +
+             nsAtomString(aPseudoRequest.mIdentifier) + u")"_ns;
     default:
-      MOZ_ASSERT(aPseudoType == PseudoStyleType::NotPseudo,
-                 "Unexpected pseudo type");
+      MOZ_ASSERT(aPseudoRequest.IsNotPseudo(), "Unexpected pseudo type");
       return u""_ns;
   }
 }

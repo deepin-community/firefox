@@ -17,12 +17,13 @@
 #define TLS_EARLY_DATA_AVAILABLE_BUT_NOT_USED 1
 #define TLS_EARLY_DATA_AVAILABLE_AND_USED 2
 
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/NetwerkProtocolHttpMetrics.h"
 #include "HttpConnectionBase.h"
 #include "nsHttpHandler.h"
 #include "nsIClassOfService.h"
 #include "nsIOService.h"
 #include "nsISocketTransport.h"
+#include "ConnectionEntry.h"
 
 namespace mozilla {
 namespace net {
@@ -57,7 +58,7 @@ void HttpConnectionBase::SetTrafficCategory(HttpTrafficCategory aCategory) {
       mTrafficCategory.Contains(aCategory)) {
     return;
   }
-  Unused << mTrafficCategory.AppendElement(aCategory);
+  (void)mTrafficCategory.AppendElement(aCategory);
 }
 
 void HttpConnectionBase::ChangeConnectionState(ConnectionState aState) {
@@ -93,8 +94,77 @@ void HttpConnectionBase::RecordConnectionCloseTelemetry(nsresult aReason) {
   SetCloseReason(ToCloseReason(aReason));
   LOG(("RecordConnectionCloseTelemetry key=%s reason=%d\n", key.get(),
        static_cast<uint32_t>(mCloseReason)));
-  Telemetry::Accumulate(Telemetry::HTTP_CONNECTION_CLOSE_REASON, key,
-                        static_cast<uint32_t>(mCloseReason));
+  glean::http::connection_close_reason.Get(key).AccumulateSingleSample(
+      static_cast<uint32_t>(mCloseReason));
+}
+
+void HttpConnectionBase::RecordConnectionAddressType() {
+  if (mAddressTypeReported) {
+    return;
+  }
+
+  NetAddr addr;
+  GetPeerAddr(&addr);
+  if (addr.GetIpAddressSpace() != nsILoadInfo::IPAddressSpace::Public) {
+    return;
+  }
+
+  if (mConnInfo->UsingProxy()) {
+    return;
+  }
+
+  nsAutoCString key(HttpVersionToTelemetryLabel(Version()));
+
+  if (addr.IsIPAddrV4()) {
+    key.Append("_ipv4");
+  } else {
+    key.Append("_ipv6");
+  }
+
+  mozilla::glean::networking::connection_address_type.Get(key).Add(1);
+  mAddressTypeReported = true;
+}
+
+void HttpConnectionBase::ChangeState(HttpConnectionState newState) {
+  LOG(("HttpConnectionBase::ChangeState %d -> %d [this=%p]", mState, newState,
+       this));
+  mState = newState;
+}
+
+nsresult HttpConnectionBase::CheckTunnelIsNeeded(
+    nsAHttpTransaction* aTransaction) {
+  switch (mState) {
+    case HttpConnectionState::UNINITIALIZED: {
+      // This is is called first time. Check if we need a tunnel.
+      if (!aTransaction->ConnectionInfo()->UsingConnect()) {
+        ChangeState(HttpConnectionState::REQUEST);
+        return NS_OK;
+      }
+      ChangeState(HttpConnectionState::SETTING_UP_TUNNEL);
+    }
+      [[fallthrough]];
+    case HttpConnectionState::SETTING_UP_TUNNEL: {
+      // When a HttpConnectionBase is in this state that means that an
+      // authentication was needed and we are resending a CONNECT
+      // request. This request will include authentication headers.
+      nsresult rv = SetupProxyConnectStream();
+      if (NS_FAILED(rv)) {
+        ChangeState(HttpConnectionState::UNINITIALIZED);
+      }
+      return rv;
+    }
+    case HttpConnectionState::REQUEST:
+      return NS_OK;
+  }
+  return NS_OK;
+}
+
+void HttpConnectionBase::SetOwner(ConnectionEntry* aEntry) {
+  mOwnerEntry = aEntry;
+}
+
+ConnectionEntry* HttpConnectionBase::OwnerEntry() const {
+  return mOwnerEntry.get();
 }
 
 }  // namespace net

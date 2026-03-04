@@ -20,7 +20,7 @@ add_setup(async function () {
     guid: PlacesUtils.bookmarks.toolbarGuid,
     children: Array(BOOKMARKS_COUNT)
       .fill("")
-      .map((_, i) => ({ url: `http://test.places.y${i}/` })),
+      .map((_, i) => ({ url: `https://test.places.y${i}/` })),
   });
 
   // Toggle the bookmarks toolbar so that we start from a stable situation and
@@ -41,8 +41,9 @@ add_task(async function test_overflow() {
   // Check that the overflow chevron is visible.
   Assert.ok(!gChevron.collapsed, "The overflow chevron should be visible");
   let children = getPlacesChildren();
-  Assert.ok(
-    children.length < BOOKMARKS_COUNT,
+  Assert.less(
+    children.length,
+    BOOKMARKS_COUNT,
     "Not all the nodes should be built by default"
   );
   let visibleNodes = [];
@@ -51,8 +52,9 @@ add_task(async function test_overflow() {
       visibleNodes.push(node);
     }
   }
-  Assert.ok(
-    visibleNodes.length < children.length,
+  Assert.less(
+    visibleNodes.length,
+    children.length,
     `The number of visible nodes (${visibleNodes.length}) should be smaller than the number of built nodes (${children.length})`
   );
 
@@ -107,7 +109,7 @@ add_task(async function test_separator_first() {
   Assert.greater(children.length, 2, "Multiple elements are visible");
   Assert.equal(
     children[1]._placesNode.uri,
-    "http://test.places.y0/",
+    "https://test.places.y0/",
     "Found the first bookmark"
   );
   Assert.equal(
@@ -128,7 +130,7 @@ add_task(async function test_newWindow_noOverflow() {
   // Add a single bookmark.
   await PlacesUtils.bookmarks.insert({
     parentGuid: PlacesUtils.bookmarks.toolbarGuid,
-    url: "http://toolbar.overflow/",
+    url: "https://toolbar.overflow/",
     title: "Example",
   });
   // Add a favicon for the bookmark.
@@ -136,7 +138,7 @@ add_task(async function test_newWindow_noOverflow() {
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAA" +
     "AAAA6fptVAAAACklEQVQI12NgAAAAAgAB4iG8MwAAAABJRU5ErkJggg==";
   await PlacesTestUtils.addFavicons(
-    new Map([["http://toolbar.overflow/", favicon]])
+    new Map([["https://toolbar.overflow/", favicon]])
   );
 
   let win = await BrowserTestUtils.openNewBrowserWindow();
@@ -171,7 +173,7 @@ async function test_index(desc, index, expected) {
 
   let bm = await PlacesUtils.bookmarks.insert({
     parentGuid: PlacesUtils.bookmarks.toolbarGuid,
-    url: "http://test.places.added/",
+    url: "https://test.places.added/",
     index,
   });
   Assert.equal(bm.index, index, "Sanity check the bookmark index");
@@ -179,8 +181,9 @@ async function test_index(desc, index, expected) {
   children = getPlacesChildren();
 
   if (!expected) {
-    Assert.ok(
-      children.length <= index,
+    Assert.lessOrEqual(
+      children.length,
+      index,
       "The new node should not have been added"
     );
   } else {
@@ -211,7 +214,7 @@ async function test_index(desc, index, expected) {
   if (expected && nodeExisted) {
     Assert.equal(
       children[index]._placesNode.uri,
-      `http://test.places.y${index}/`,
+      `https://test.places.y${index}/`,
       "Found the previous bookmark at the expected position"
     );
     Assert.equal(
@@ -254,8 +257,9 @@ async function test_move_index(desc, fromIndex, toIndex, original, expected) {
   children = getPlacesChildren();
 
   if (!expected) {
-    Assert.ok(
-      children.length <= toIndex,
+    Assert.lessOrEqual(
+      children.length,
+      toIndex,
       "Node in the new position is not expected"
     );
     Assert.ok(

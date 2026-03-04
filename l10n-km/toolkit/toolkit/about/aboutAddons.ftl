@@ -4,10 +4,6 @@
 
 addons-page-title = កម្មវិធី​គ្រប់គ្រង​កម្មវិធី​បន្ថែម
 
-## Variables
-##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
-
-
 ##
 
 list-empty-installed =
@@ -112,6 +108,7 @@ extensions-warning-update-security2 =
     .message = ការ​ត្រួតពិនិត្យ​សុវត្ថិភាព​នៃ​បច្ចុប្បន្នភាព​របស់​កម្មវិធី​បន្ថែម​ត្រូវ​បាន​បិទ ។ អ្នក​អាច​នឹង​ត្រូវ​បាន​សម្របសម្រួល​ទៅតាម​បច្ចុប្បន្នភាព ។
 extensions-warning-update-security-button = បើក
     .title = បើក​ការ​ត្រួតពិនិត្យមើល​សុវត្ថិភាព​នៃ​បច្ចុប្បន្នភាព​របស់​កម្មវិធី​បន្ថែម
+extensions-warning-imported-addons-button = ដំឡើង​ផ្នែក​បន្ថែម
 
 ## Strings connected to add-on updates
 
@@ -155,26 +152,25 @@ addon-open-about-debugging = បំបាត់​កំហុស​ផ្នែ
 
 ## Extension shortcut management
 
+header-back-button =
+    .title = ថយ​ក្រោយ
 
 ## Recommended add-ons page
 
+install-theme-button = តំឡើងរចនាប័ទ្ម
 
 ## Add-on actions
 
+enable-addon-button = បើក​ដំណើរការ
+# This is used for the toggle on the extension card, it's a checkbox and this
+# is always its label.
+extension-enable-addon-button-label =
+    .aria-label = បើក​ដំណើរការ
+install-postponed-button = ធ្វើបច្ចុប្បន្នភាពឥឡូវនេះ
 
 ## Pending uninstall message bar
 
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
-
-## This is the tooltip text for the recommended badges for an extension in about:addons. The
-## badge is a small icon displayed next to an extension when it is recommended on AMO.
-
-
-##
-
+addon-detail-private-browsing-allow = អនុញ្ញាត
 
 ## Page headings
 
@@ -186,7 +182,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } មិន​ឆប​ជាមួយ { -brand-short-name } { $version } ។
 # Variables:
 #   $version (string) - Application version.
@@ -201,12 +197,8 @@ details-notification-unsigned2 =
     .message = { $name } មិន​អាច​បញ្ជាក់​សម្រាប់​ប្រើ​នៅ​ក្នុង { -brand-short-name }។ ចាប់ផ្ដើម​ដំណើរការ​ដោយ​ប្រុងប្រយ័ត្ន។
 details-notification-unsigned-link = ព័ត៌មាន​បន្ថែម
 details-notification-blocked = { $name } ត្រូវ​បាន​បិទ​ ដោយសារ​តែ​បញ្ហា​សុវត្ថិភាព ឬ​ស្ថិរភាព ។
-details-notification-blocked2 =
-    .message = { $name } ត្រូវ​បាន​បិទ​ ដោយសារ​តែ​បញ្ហា​សុវត្ថិភាព ឬ​ស្ថិរភាព ។
 details-notification-blocked-link = ព័ត៌មាន​បន្ថែម
 details-notification-softblocked = { $name } ត្រូវ​បាន​គេ​ដឹង​ថា នឹង​បង្ក​ឲ្យ​មាន​បញ្ហា​សុវត្ថិភាព ឬ​ស្ថិរភាព ។
-details-notification-softblocked2 =
-    .message = { $name } ត្រូវ​បាន​គេ​ដឹង​ថា នឹង​បង្ក​ឲ្យ​មាន​បញ្ហា​សុវត្ថិភាព ឬ​ស្ថិរភាព ។
 details-notification-softblocked-link = ព័ត៌មាន​បន្ថែម
 details-notification-gmp-pending = { $name } នឹង​ត្រូវ​បាន​ដំឡើង​នៅ​ពេល​បន្តិច​ទៀត។
 details-notification-gmp-pending2 =

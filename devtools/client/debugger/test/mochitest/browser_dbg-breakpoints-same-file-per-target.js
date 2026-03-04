@@ -7,11 +7,6 @@
 "use strict";
 
 add_task(async function () {
-  // This test fails with server side target switching disabled
-  if (!isFissionEnabled() && !isEveryFrameTargetEnabled()) {
-    return;
-  }
-
   const dbg = await initDebugger(
     "doc_dbg-same-source-distinct-threads.html",
     "same-script.js"
@@ -44,7 +39,7 @@ add_task(async function () {
   );
 
   info("Assert that the breakpoint pauses on line 5");
-  assertPausedAtSourceAndLine(dbg, source.id, 5);
+  await assertPausedAtSourceAndLine(dbg, source.id, 5);
 
   // This fails at the moment as there is no visible breakpoint on this line
   info("Assert that there is a breakpoint displayed on line 5");
@@ -69,7 +64,7 @@ add_task(async function () {
   );
 
   info("Assert that the breakpoint pauses on line 5");
-  assertPausedAtSourceAndLine(dbg, source.id, 5);
+  await assertPausedAtSourceAndLine(dbg, source.id, 5);
 
   info("Assert that there is a breakpoint dispalyed on line 5");
   await assertBreakpoint(dbg, 5);
@@ -100,7 +95,7 @@ add_task(async function () {
   );
 
   info("Assert that the breakpoint pauses on line 5");
-  assertPausedAtSourceAndLine(dbg, source.id, 5);
+  await assertPausedAtSourceAndLine(dbg, source.id, 5);
 
   info("Assert that there is a breakpoint displayed on line 5");
   await assertBreakpoint(dbg, 5);

@@ -7,40 +7,12 @@
 #include "nsUnicodeProperties.h"
 #include "nsUnicodePropertyData.cpp"
 
-#include "mozilla/ArrayUtils.h"
-#include "mozilla/HashTable.h"
 #include "mozilla/intl/Segmenter.h"
 
 #include "BaseChars.h"
 #include "IsCombiningDiacritic.h"
 
 #define UNICODE_BMP_LIMIT 0x10000
-#define UNICODE_LIMIT 0x110000
-
-const nsCharProps2& GetCharProps2(uint32_t aCh) {
-  if (aCh < UNICODE_BMP_LIMIT) {
-    return sCharProp2Values[sCharProp2Pages[0][aCh >> kCharProp2CharBits]]
-                           [aCh & ((1 << kCharProp2CharBits) - 1)];
-  }
-  if (aCh < (kCharProp2MaxPlane + 1) * 0x10000) {
-    return sCharProp2Values[sCharProp2Pages[sCharProp2Planes[(aCh >> 16) - 1]]
-                                           [(aCh & 0xffff) >>
-                                            kCharProp2CharBits]]
-                           [aCh & ((1 << kCharProp2CharBits) - 1)];
-  }
-
-  MOZ_ASSERT_UNREACHABLE(
-      "Getting CharProps for codepoint outside Unicode "
-      "range");
-
-  // Default values for unassigned
-  using namespace mozilla::unicode;
-  static const nsCharProps2 undefined = {
-      VERTICAL_ORIENTATION_R,
-      0  // IdentifierType
-  };
-  return undefined;
-}
 
 namespace mozilla {
 
@@ -191,7 +163,7 @@ uint32_t CountGraphemeClusters(Span<const char16_t> aText) {
 
 uint32_t GetNaked(uint32_t aCh) {
   uint32_t index = aCh >> 8;
-  if (index >= MOZ_ARRAY_LENGTH(BASE_CHAR_MAPPING_BLOCK_INDEX)) {
+  if (index >= std::size(BASE_CHAR_MAPPING_BLOCK_INDEX)) {
     return aCh;
   }
   index = BASE_CHAR_MAPPING_BLOCK_INDEX[index];

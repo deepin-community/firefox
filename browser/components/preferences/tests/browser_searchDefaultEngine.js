@@ -5,10 +5,6 @@ const { SearchTestUtils } = ChromeUtils.importESModule(
   "resource://testing-common/SearchTestUtils.sys.mjs"
 );
 
-ChromeUtils.defineESModuleGetters(this, {
-  TelemetryTestUtils: "resource://testing-common/TelemetryTestUtils.sys.mjs",
-});
-
 SearchTestUtils.init(this);
 
 add_setup(async function () {
@@ -51,17 +47,16 @@ add_task(async function test_openWithPrivateDefaultNotEnabledFirst() {
   const doc = gBrowser.selectedBrowser.contentDocument;
   const separateEngineCheckbox = doc.getElementById(
     "browserSeparateDefaultEngine"
-  );
-  const privateDefaultVbox = doc.getElementById(
-    "browserPrivateEngineSelection"
-  );
+  ).parentElement;
+  const privateDefaultDropdown = doc.getElementById("defaultPrivateEngine");
 
   Assert.ok(
     separateEngineCheckbox.hidden,
     "Should have hidden the separate search engine checkbox"
   );
   Assert.ok(
-    privateDefaultVbox.hidden,
+    separateEngineCheckbox.hidden &&
+      separateEngineCheckbox.contains(privateDefaultDropdown),
     "Should have hidden the private engine selection box"
   );
 
@@ -74,8 +69,8 @@ add_task(async function test_openWithPrivateDefaultNotEnabledFirst() {
     "Should have displayed the separate search engine checkbox"
   );
   Assert.ok(
-    privateDefaultVbox.hidden,
-    "Should not have displayed the private engine selection box"
+    BrowserTestUtils.isVisible(privateDefaultDropdown),
+    "Private engine selection box should be visible"
   );
 
   await SpecialPowers.pushPrefEnv({
@@ -87,8 +82,8 @@ add_task(async function test_openWithPrivateDefaultNotEnabledFirst() {
     "Should still be displaying the separate search engine checkbox"
   );
   Assert.ok(
-    !privateDefaultVbox.hidden,
-    "Should have displayed the private engine selection box"
+    !privateDefaultDropdown.disabled,
+    "Private engine selection box should be enabled"
   );
 
   gBrowser.removeCurrentTab();
@@ -107,18 +102,16 @@ add_task(async function test_openWithPrivateDefaultEnabledFirst() {
   const doc = gBrowser.selectedBrowser.contentDocument;
   const separateEngineCheckbox = doc.getElementById(
     "browserSeparateDefaultEngine"
-  );
-  const privateDefaultVbox = doc.getElementById(
-    "browserPrivateEngineSelection"
-  );
+  ).parentElement;
+  const privateDefaultDropdown = doc.getElementById("defaultPrivateEngine");
 
   Assert.ok(
     !separateEngineCheckbox.hidden,
     "Should not have hidden the separate search engine checkbox"
   );
   Assert.ok(
-    !privateDefaultVbox.hidden,
-    "Should not have hidden the private engine selection box"
+    !privateDefaultDropdown.shadowRoot.getElementById("input").disabled,
+    "Private engine selection box should be enabled"
   );
 
   await SpecialPowers.pushPrefEnv({
@@ -130,8 +123,8 @@ add_task(async function test_openWithPrivateDefaultEnabledFirst() {
     "Should not have hidden the separate search engine checkbox"
   );
   Assert.ok(
-    privateDefaultVbox.hidden,
-    "Should have hidden the private engine selection box"
+    BrowserTestUtils.isVisible(privateDefaultDropdown),
+    "Private engine selection box should be visible"
   );
 
   await SpecialPowers.pushPrefEnv({
@@ -143,8 +136,9 @@ add_task(async function test_openWithPrivateDefaultEnabledFirst() {
     "Should have hidden the separate private engine checkbox"
   );
   Assert.ok(
-    privateDefaultVbox.hidden,
-    "Should still be hiding the private engine selection box"
+    separateEngineCheckbox.hidden &&
+      separateEngineCheckbox.contains(privateDefaultDropdown),
+    "Should have hidden the private engine selection box"
   );
 
   gBrowser.removeCurrentTab();
@@ -164,39 +158,35 @@ add_task(async function test_separatePrivateDefault() {
   const separateEngineCheckbox = doc.getElementById(
     "browserSeparateDefaultEngine"
   );
-  const privateDefaultVbox = doc.getElementById(
-    "browserPrivateEngineSelection"
-  );
+  const privateDefaultDropdown = doc.getElementById("defaultPrivateEngine");
 
   Assert.ok(
-    privateDefaultVbox.hidden,
-    "Should not be displaying the private engine selection box"
+    BrowserTestUtils.isVisible(privateDefaultDropdown),
+    "Private engine selection box should be visible"
   );
 
-  separateEngineCheckbox.checked = false;
-  separateEngineCheckbox.doCommand();
+  separateEngineCheckbox.click();
+  await separateEngineCheckbox.parentElement.updateComplete;
 
   Assert.ok(
     Services.prefs.getBoolPref("browser.search.separatePrivateDefault"),
     "Should have correctly set the pref"
   );
-
   Assert.ok(
-    !privateDefaultVbox.hidden,
-    "Should be displaying the private engine selection box"
+    !privateDefaultDropdown.shadowRoot.getElementById("input").disabled,
+    "Private engine selection box should be enabled"
   );
 
-  separateEngineCheckbox.checked = true;
-  separateEngineCheckbox.doCommand();
+  separateEngineCheckbox.click();
+  await separateEngineCheckbox.parentElement.updateComplete;
 
   Assert.ok(
     !Services.prefs.getBoolPref("browser.search.separatePrivateDefault"),
     "Should have correctly turned the pref off"
   );
-
   Assert.ok(
-    privateDefaultVbox.hidden,
-    "Should have hidden the private engine selection box"
+    BrowserTestUtils.isVisible(privateDefaultDropdown),
+    "Private engine selection box should be visible"
   );
 
   gBrowser.removeCurrentTab();
@@ -210,28 +200,31 @@ async function setDefaultEngine(
   await openPreferencesViaOpenPreferencesAPI("search", { leaveOpen: true });
 
   const doc = gBrowser.selectedBrowser.contentDocument;
-  const defaultEngineSelector = doc.getElementById(
-    testPrivate ? "defaultPrivateEngine" : "defaultEngine"
+  const input = doc.getElementById(
+    testPrivate ? "defaultPrivateEngine" : "defaultEngineNormal"
   );
+  const defaultEngineSelector = input.inputEl;
+  const defaultEngineTrigger = input.shadowRoot.querySelector(".panel-trigger");
 
-  Assert.equal(
-    defaultEngineSelector.selectedItem.engine.name,
-    currentEngineName,
+  Assert.ok(
+    defaultEngineSelector.value.startsWith(currentEngineName),
     "Should have the correct engine as default on first open"
   );
 
-  const popup = defaultEngineSelector.menupopup;
-  const popupShown = BrowserTestUtils.waitForEvent(popup, "popupshown");
-  EventUtils.synthesizeMouseAtCenter(
+  const popupShown = BrowserTestUtils.waitForEvent(
     defaultEngineSelector,
+    "shown"
+  );
+  EventUtils.synthesizeMouseAtCenter(
+    defaultEngineTrigger,
     {},
-    defaultEngineSelector.ownerGlobal
+    defaultEngineTrigger.ownerGlobal
   );
   await popupShown;
 
-  const items = Array.from(popup.children);
-  const engine2Item = items.find(
-    item => item.engine.name == expectedEngineName
+  const items = Array.from(defaultEngineSelector.children);
+  const engine2Item = items.find(item =>
+    item.textContent.includes(expectedEngineName)
   );
 
   const defaultChanged = SearchTestUtils.promiseSearchNotification(
@@ -268,24 +261,7 @@ add_task(async function test_setDefaultEngine() {
 
   await setDefaultEngine(false, "engine1", "engine2");
 
-  TelemetryTestUtils.assertEvents(
-    [
-      {
-        object: "change_default",
-        value: "user",
-        extra: {
-          prev_id: engine1.telemetryId,
-          new_id: "other-engine2",
-          new_name: "engine2",
-          new_load_path: "[addon]engine2@tests.mozilla.org",
-          new_sub_url: "",
-        },
-      },
-    ],
-    { category: "search", method: "engine" }
-  );
-
-  let snapshot = await Glean.searchEngineDefault.changed.testGetValue();
+  let snapshot = Glean.searchEngineDefault.changed.testGetValue();
   delete snapshot[0].timestamp;
   Assert.deepEqual(
     snapshot[0],
@@ -293,7 +269,7 @@ add_task(async function test_setDefaultEngine() {
       category: "search.engine.default",
       name: "changed",
       extra: {
-        change_source: "user",
+        change_reason: "user",
         previous_engine_id: engine1.telemetryId,
         new_engine_id: "other-engine2",
         new_display_name: "engine2",
@@ -331,24 +307,7 @@ add_task(async function test_setPrivateDefaultEngine() {
 
   await setDefaultEngine(true, "engine2", "engine1");
 
-  TelemetryTestUtils.assertEvents(
-    [
-      {
-        object: "change_private",
-        value: "user",
-        extra: {
-          prev_id: engine2.telemetryId,
-          new_id: "other-engine1",
-          new_name: "engine1",
-          new_load_path: "[addon]engine1@tests.mozilla.org",
-          new_sub_url: "",
-        },
-      },
-    ],
-    { category: "search", method: "engine" }
-  );
-
-  let snapshot = await Glean.searchEnginePrivate.changed.testGetValue();
+  let snapshot = Glean.searchEnginePrivate.changed.testGetValue();
   delete snapshot[0].timestamp;
   console.log(snapshot);
   Assert.deepEqual(
@@ -357,7 +316,7 @@ add_task(async function test_setPrivateDefaultEngine() {
       category: "search.engine.private",
       name: "changed",
       extra: {
-        change_source: "user",
+        change_reason: "user",
         previous_engine_id: engine2.telemetryId,
         new_engine_id: "other-engine1",
         new_display_name: "engine1",

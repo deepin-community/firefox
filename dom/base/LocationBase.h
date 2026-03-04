@@ -7,7 +7,7 @@
 #ifndef mozilla_dom_LocationBase_h
 #define mozilla_dom_LocationBase_h
 
-#include "mozilla/AlreadyAddRefed.h"
+#include "mozilla/dom/NavigationBinding.h"
 #include "nsStringFwd.h"
 
 class nsIDocShell;
@@ -28,35 +28,30 @@ class BrowsingContext;
 class LocationBase {
  public:
   // WebIDL API:
-  void Replace(const nsAString& aUrl, nsIPrincipal& aSubjectPrincipal,
-               ErrorResult& aError);
+  void Replace(const nsACString& aUrl, nsIPrincipal& aSubjectPrincipal,
+               ErrorResult& aRv);
 
-  void SetHref(const nsAString& aHref, nsIPrincipal& aSubjectPrincipal,
-               ErrorResult& aError);
+  void SetHref(const nsACString& aHref, nsIPrincipal& aSubjectPrincipal,
+               ErrorResult& aRv);
 
  protected:
   virtual BrowsingContext* GetBrowsingContext() = 0;
   virtual nsIDocShell* GetDocShell() = 0;
 
-  void SetURI(nsIURI* aURL, nsIPrincipal& aSubjectPrincipal, ErrorResult& aRv,
-              bool aReplace = false);
-  void SetHrefWithBase(const nsAString& aHref, nsIURI* aBase,
+  void Navigate(nsIURI* aURI, nsIPrincipal& aSubjectPrincipal, ErrorResult& aRv,
+                NavigationHistoryBehavior aHistoryHandling =
+                    NavigationHistoryBehavior::Auto);
+  void SetHrefWithBase(const nsACString& aHref, nsIURI* aBase,
                        nsIPrincipal& aSubjectPrincipal, bool aReplace,
                        ErrorResult& aRv);
 
   // Helper for Assign/SetHref/Replace
-  void DoSetHref(const nsAString& aHref, nsIPrincipal& aSubjectPrincipal,
+  void DoSetHref(const nsACString& aHref, nsIPrincipal& aSubjectPrincipal,
                  bool aReplace, ErrorResult& aRv);
 
   // Get the base URL we should be using for our relative URL
   // resolution for SetHref/Assign/Replace.
   nsIURI* GetSourceBaseURL();
-
-  // Check whether it's OK to load the given url with the given subject
-  // principal, and if so construct the right nsDocShellLoadInfo for the load
-  // and return it.
-  already_AddRefed<nsDocShellLoadState> CheckURL(
-      nsIURI* url, nsIPrincipal& aSubjectPrincipal, ErrorResult& aRv);
 };
 
 }  // namespace dom

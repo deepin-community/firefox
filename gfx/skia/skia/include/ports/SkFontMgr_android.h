@@ -10,6 +10,8 @@
 
 #include "include/core/SkRefCnt.h"
 
+#include <memory>
+
 class SkFontMgr;
 class SkFontScanner;
 
@@ -41,10 +43,6 @@ struct SkFontMgr_Android_CustomFonts {
 };
 
 /** Create a font manager for Android. If 'custom' is NULL, use only system fonts. */
-
-// Deprecated
-SK_API sk_sp<SkFontMgr> SkFontMgr_New_Android(const SkFontMgr_Android_CustomFonts* custom);
-
 SK_API sk_sp<SkFontMgr> SkFontMgr_New_Android(const SkFontMgr_Android_CustomFonts* custom,
                                               std::unique_ptr<SkFontScanner> scanner);
 #endif // SkFontMgr_android_DEFINED

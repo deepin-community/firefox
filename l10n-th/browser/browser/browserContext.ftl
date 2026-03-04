@@ -149,9 +149,7 @@ main-context-menu-save-link-to-pocket =
     .label = บันทึกลิงก์ไปยัง { -pocket-brand-name }
     .accesskey = น
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = คัดลอกที่อยู่อีเมล
@@ -162,11 +160,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = คัดลอกลิงก์
     .accesskey = L
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = คัดลอกลิงก์โดยไม่ติดตามไซต์
-    .accesskey = ค
+main-context-menu-preview-link =
+    .label = ดูตัวอย่างลิงก์
+    .accesskey = ด
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = คัดลอกลิงก์แบบสะอาด
+    .accesskey = u
 
 ## Media (video/audio) controls
 ##
@@ -227,8 +229,8 @@ main-context-menu-media-video-leave-fullscreen =
 # This is used when right-clicking on a video in the
 # content area when the Picture-in-Picture feature is enabled.
 main-context-menu-media-watch-pip =
-    .label = ดูในแบบภาพที่เล่นควบคู่
-    .accesskey = ค
+    .label = ดูในแบบภาพซ้อนภาพ
+    .accesskey = พ
 main-context-menu-image-reload =
     .label = โหลดภาพใหม่
     .accesskey = ห
@@ -268,6 +270,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = ดูคำอธิบาย
     .accesskey = ย
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = ค้นหาภาพด้วย { $engine }
+    .accesskey = e
 main-context-menu-video-save-as =
     .label = บันทึกวิดีโอเป็น…
     .accesskey = น
@@ -283,6 +290,9 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = ส่งอีเมลเสียง…
     .accesskey = ม
+main-context-menu-send-to-device-2 =
+    .label = ส่งไปยังอุปกรณ์
+    .accesskey = ส
 main-context-menu-save-to-pocket =
     .label = บันทึกหน้าไปยัง { -pocket-brand-name }
     .accesskey = บ
@@ -290,9 +300,7 @@ main-context-menu-send-to-device =
     .label = ส่งหน้าไปยังอุปกรณ์
     .accesskey = ส
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = ใช้การเข้าสู่ระบบที่บันทึกไว้
@@ -319,6 +327,9 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = เพิ่มคำสำคัญสำหรับการค้นหานี้…
     .accesskey = พ
+main-context-menu-add-engine =
+    .label = เพิ่มเครื่องมือค้นหา
+    .accesskey = ค
 main-context-menu-link-send-to-device =
     .label = ส่งลิงก์ไปยังอุปกรณ์
     .accesskey = ส
@@ -389,3 +400,5 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = เผยรหัสผ่าน
     .accesskey = v
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = ใหม่

@@ -7,7 +7,7 @@
 pub use std::path::*;
 
 use super::mock::MockKey;
-use std::ffi::OsStr;
+use std::ffi::{OsStr, OsString};
 
 macro_rules! delegate {
     ( fn $name:ident (&self $(, $arg:ident : $argty:ty )* ) -> $ret:ty ) => {
@@ -18,12 +18,19 @@ macro_rules! delegate {
 }
 
 #[repr(transparent)]
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize)]
 pub struct Path(std::path::Path);
 
 impl AsRef<std::path::Path> for Path {
     fn as_ref(&self) -> &std::path::Path {
         &self.0
+    }
+}
+
+impl ToOwned for Path {
+    type Owned = PathBuf;
+    fn to_owned(&self) -> Self::Owned {
+        PathBuf(self.0.to_owned())
     }
 }
 
@@ -46,6 +53,12 @@ impl AsRef<Path> for String {
 }
 
 impl AsRef<Path> for &OsStr {
+    fn as_ref(&self) -> &Path {
+        Path::from_path(self.as_ref())
+    }
+}
+
+impl AsRef<Path> for OsString {
     fn as_ref(&self) -> &Path {
         Path::from_path(self.as_ref())
     }
@@ -79,7 +92,7 @@ impl Path {
         super::fs::ReadDir::new(&self.0)
     }
 
-    delegate!(fn display(&self) -> Display);
+    delegate!(fn display(&self) -> Display<'_>);
     delegate!(fn file_stem(&self) -> Option<&OsStr>);
     delegate!(fn file_name(&self) -> Option<&OsStr>);
     delegate!(fn extension(&self) -> Option<&OsStr>);
@@ -92,7 +105,7 @@ impl Path {
         self.0.parent().map(Path::from_path)
     }
 
-    pub fn ancestors(&self) -> Ancestors {
+    pub fn ancestors(&self) -> Ancestors<'_> {
         Ancestors(self.0.ancestors())
     }
 }
@@ -129,6 +142,12 @@ impl PathBuf {
 impl std::ops::Deref for PathBuf {
     type Target = Path;
     fn deref(&self) -> &Self::Target {
+        Path::from_path(self.0.as_ref())
+    }
+}
+
+impl std::borrow::Borrow<Path> for PathBuf {
+    fn borrow(&self) -> &Path {
         Path::from_path(self.0.as_ref())
     }
 }

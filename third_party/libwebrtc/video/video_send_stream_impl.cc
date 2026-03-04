@@ -9,19 +9,19 @@
  */
 #include "video/video_send_stream_impl.h"
 
-#include <stdio.h>
-
 #include <algorithm>
 #include <cstdint>
+#include <cstdio>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "absl/algorithm/container.h"
-#include "absl/types/optional.h"
 #include "api/adaptation/resource.h"
+#include "api/array_view.h"
 #include "api/call/bitrate_allocation.h"
 #include "api/crypto/crypto_options.h"
 #include "api/environment/environment.h"
@@ -53,7 +53,6 @@
 #include "call/rtp_config.h"
 #include "call/rtp_transport_controller_send_interface.h"
 #include "call/video_send_stream.h"
-#include "media/base/media_constants.h"
 #include "media/base/sdp_video_format_utils.h"
 #include "modules/pacing/pacing_controller.h"
 #include "modules/rtp_rtcp/include/rtp_header_extension_map.h"
@@ -68,7 +67,6 @@
 #include "rtc_base/experiments/rate_control_settings.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/numerics/safe_conversions.h"
-#include "rtc_base/strings/string_builder.h"
 #include "rtc_base/task_utils/repeating_task.h"
 #include "rtc_base/trace_event.h"
 #include "system_wrappers/include/clock.h"
@@ -86,9 +84,9 @@ namespace internal {
 namespace {
 
 // Max positive size difference to treat allocations as "similar".
-static constexpr int kMaxVbaSizeDifferencePercent = 10;
+constexpr int kMaxVbaSizeDifferencePercent = 10;
 // Max time we will throttle similar video bitrate allocations.
-static constexpr int64_t kMaxVbaThrottleTimeMs = 500;
+constexpr int64_t kMaxVbaThrottleTimeMs = 500;
 
 constexpr TimeDelta kEncoderTimeOut = TimeDelta::Seconds(2);
 
@@ -103,7 +101,7 @@ constexpr int kMinDefaultAv1BitrateBps =
 // bandwidth rampup with less risk of overshoots causing adverse effects like
 // packet loss. Not used for receive side BWE, since there we lack the probing
 // feature and so may result in too slow initial rampup.
-static constexpr double kStrictPacingMultiplier = 1.1;
+constexpr double kStrictPacingMultiplier = 1.1;
 
 bool TransportSeqNumExtensionConfigured(const VideoSendStream::Config& config) {
   const std::vector<RtpExtension>& extensions = config.rtp.extensions;
@@ -181,7 +179,7 @@ int CalculateMaxPadBitrateBps(const std::vector<VideoStream>& streams,
   return pad_up_to_bitrate_bps;
 }
 
-absl::optional<AlrExperimentSettings> GetAlrSettings(
+std::optional<AlrExperimentSettings> GetAlrSettings(
     const FieldTrialsView& field_trials,
     VideoEncoderConfig::ContentType content_type) {
   if (content_type == VideoEncoderConfig::ContentType::kScreen) {
@@ -208,15 +206,15 @@ bool SameStreamsEnabled(const VideoBitrateAllocation& lhs,
 
 // Returns an optional that has value iff TransportSeqNumExtensionConfigured
 // is `true` for the given video send stream config.
-absl::optional<float> GetConfiguredPacingFactor(
+std::optional<float> GetConfiguredPacingFactor(
     const VideoSendStream::Config& config,
     VideoEncoderConfig::ContentType content_type,
     const PacingConfig& default_pacing_config,
     const FieldTrialsView& field_trials) {
   if (!TransportSeqNumExtensionConfigured(config))
-    return absl::nullopt;
+    return std::nullopt;
 
-  absl::optional<AlrExperimentSettings> alr_settings =
+  std::optional<AlrExperimentSettings> alr_settings =
       GetAlrSettings(field_trials, content_type);
   if (alr_settings)
     return alr_settings->pacing_factor;
@@ -230,10 +228,9 @@ int GetEncoderPriorityBitrate(std::string codec_name,
                               const FieldTrialsView& field_trials) {
   int priority_bitrate = 0;
   if (PayloadStringToCodecType(codec_name) == VideoCodecType::kVideoCodecAV1) {
-    webrtc::FieldTrialParameter<int> av1_priority_bitrate("bitrate", 0);
-    webrtc::ParseFieldTrial(
-        {&av1_priority_bitrate},
-        field_trials.Lookup("WebRTC-AV1-OverridePriorityBitrate"));
+    FieldTrialParameter<int> av1_priority_bitrate("bitrate", 0);
+    ParseFieldTrial({&av1_priority_bitrate},
+                    field_trials.Lookup("WebRTC-AV1-OverridePriorityBitrate"));
     priority_bitrate = av1_priority_bitrate;
   }
   return priority_bitrate;
@@ -241,7 +238,7 @@ int GetEncoderPriorityBitrate(std::string codec_name,
 
 uint32_t GetInitialEncoderMaxBitrate(int initial_encoder_max_bitrate) {
   if (initial_encoder_max_bitrate > 0)
-    return rtc::dchecked_cast<uint32_t>(initial_encoder_max_bitrate);
+    return dchecked_cast<uint32_t>(initial_encoder_max_bitrate);
 
   // TODO(srte): Make sure max bitrate is not set to negative values. We don't
   // have any way to handle unset values in downstream code, such as the
@@ -250,8 +247,12 @@ uint32_t GetInitialEncoderMaxBitrate(int initial_encoder_max_bitrate) {
   // reasonable use cases as it allows adding the max of multiple streams
   // without wrappping around.
   const int kFallbackMaxBitrateBps = 10000000;
-  RTC_DLOG(LS_ERROR) << "ERROR: Initial encoder max bitrate = "
-                     << initial_encoder_max_bitrate << " which is <= 0!";
+  // Don't log an error for -1 since this is the default value that is used to
+  // signal that the max bitrate is unset.
+  if (initial_encoder_max_bitrate != -1) {
+    RTC_DLOG(LS_ERROR) << "ERROR: Initial encoder max bitrate = "
+                       << initial_encoder_max_bitrate << " which is <= 0!";
+  }
   RTC_DLOG(LS_INFO) << "Using default encoder max bitrate = 10 Mbps";
   return kFallbackMaxBitrateBps;
 }
@@ -297,9 +298,8 @@ size_t CalculateMaxHeaderSize(const RtpConfig& config) {
 VideoStreamEncoder::BitrateAllocationCallbackType
 GetBitrateAllocationCallbackType(const VideoSendStream::Config& config,
                                  const FieldTrialsView& field_trials) {
-  if (webrtc::RtpExtension::FindHeaderExtensionByUri(
-          config.rtp.extensions,
-          webrtc::RtpExtension::kVideoLayersAllocationUri,
+  if (RtpExtension::FindHeaderExtensionByUri(
+          config.rtp.extensions, RtpExtension::kVideoLayersAllocationUri,
           config.crypto_options.srtp.enable_encrypted_rtp_header_extensions
               ? RtpExtension::Filter::kPreferEncryptedExtension
               : RtpExtension::Filter::kDiscardEncryptedExtension)) {
@@ -347,7 +347,7 @@ std::unique_ptr<VideoStreamEncoderInterface> CreateVideoStreamEncoder(
     VideoStreamEncoder::BitrateAllocationCallbackType
         bitrate_allocation_callback_type,
     Metronome* metronome,
-    webrtc::VideoEncoderFactory::EncoderSelectorInterface* encoder_selector) {
+    VideoEncoderFactory::EncoderSelectorInterface* encoder_selector) {
   std::unique_ptr<TaskQueueBase, TaskQueueDeleter> encoder_queue =
       env.task_queue_factory().CreateTaskQueue(
           "EncoderQueue", TaskQueueFactory::Priority::NORMAL);
@@ -472,12 +472,12 @@ VideoSendStreamImpl::VideoSendStreamImpl(
   RTC_CHECK(
       AlrExperimentSettings::MaxOneFieldTrialEnabled(env_.field_trials()));
 
-  absl::optional<bool> enable_alr_bw_probing;
+  std::optional<bool> enable_alr_bw_probing;
 
   // If send-side BWE is enabled, check if we should apply updated probing and
   // pacing settings.
   if (configured_pacing_factor_) {
-    absl::optional<AlrExperimentSettings> alr_settings =
+    std::optional<AlrExperimentSettings> alr_settings =
         GetAlrSettings(env_.field_trials(), content_type_);
     int queue_time_limit_ms;
     if (alr_settings) {
@@ -528,19 +528,19 @@ VideoSendStreamImpl::~VideoSendStreamImpl() {
 }
 
 void VideoSendStreamImpl::AddAdaptationResource(
-    rtc::scoped_refptr<Resource> resource) {
+    scoped_refptr<Resource> resource) {
   RTC_DCHECK_RUN_ON(&thread_checker_);
   video_stream_encoder_->AddAdaptationResource(resource);
 }
 
-std::vector<rtc::scoped_refptr<Resource>>
+std::vector<scoped_refptr<Resource>>
 VideoSendStreamImpl::GetAdaptationResources() {
   RTC_DCHECK_RUN_ON(&thread_checker_);
   return video_stream_encoder_->GetAdaptationResources();
 }
 
 void VideoSendStreamImpl::SetSource(
-    rtc::VideoSourceInterface<webrtc::VideoFrame>* source,
+    VideoSourceInterface<VideoFrame>* source,
     const DegradationPreference& degradation_preference) {
   RTC_DCHECK_RUN_ON(&thread_checker_);
   video_stream_encoder_->SetSource(source, degradation_preference);
@@ -555,8 +555,8 @@ void VideoSendStreamImpl::ReconfigureVideoEncoder(
     SetParametersCallback callback) {
   RTC_DCHECK_RUN_ON(&thread_checker_);
   RTC_DCHECK_EQ(content_type_, config.content_type);
-  RTC_LOG(LS_VERBOSE) << "Encoder config: " << config.ToString()
-                      << " VideoSendStream config: " << config_.ToString();
+  RTC_LOG(LS_INFO) << "Encoder config: " << config.ToString()
+                   << " VideoSendStream config: " << config_.ToString();
 
   has_active_encodings_ = HasActiveEncodings(config);
   if (has_active_encodings_ && rtp_video_sender_->IsActive() && !IsRunning()) {
@@ -575,7 +575,17 @@ VideoSendStream::Stats VideoSendStreamImpl::GetStats() {
   return stats_proxy_.GetStats();
 }
 
-absl::optional<float> VideoSendStreamImpl::GetPacingFactorOverride() const {
+void VideoSendStreamImpl::SetStats(const Stats& stats) {
+  RTC_DCHECK_RUN_ON(&thread_checker_);
+  stats_proxy_.SetStats(stats);
+}
+
+void VideoSendStreamImpl::SetCsrcs(ArrayView<const uint32_t> csrcs) {
+  RTC_DCHECK_RUN_ON(&thread_checker_);
+  rtp_video_sender_->SetCsrcs(csrcs);
+}
+
+std::optional<float> VideoSendStreamImpl::GetPacingFactorOverride() const {
   return configured_pacing_factor_;
 }
 
@@ -617,9 +627,9 @@ void VideoSendStreamImpl::GenerateKeyFrame(
   }
 }
 
-void VideoSendStreamImpl::DeliverRtcp(const uint8_t* packet, size_t length) {
+void VideoSendStreamImpl::DeliverRtcp(ArrayView<const uint8_t> packet) {
   RTC_DCHECK_RUN_ON(&thread_checker_);
-  rtp_video_sender_->DeliverRtcp(packet, length);
+  rtp_video_sender_->DeliverRtcp(packet);
 }
 
 bool VideoSendStreamImpl::started() {
@@ -693,8 +703,8 @@ void VideoSendStreamImpl::StopVideoSendStream() {
   RTC_DCHECK_RUN_ON(&thread_checker_);
   bitrate_allocator_->RemoveObserver(this);
   check_encoder_activity_task_.Stop();
-  video_stream_encoder_->OnBitrateUpdated(DataRate::Zero(), DataRate::Zero(),
-                                          DataRate::Zero(), 0, 0, 0);
+  video_stream_encoder_->OnBitrateUpdated(DataRate::Zero(), DataRate::Zero(), 0,
+                                          0, 0);
   stats_proxy_.OnSetEncoderTargetRate(0);
 }
 
@@ -775,12 +785,17 @@ void VideoSendStreamImpl::SignalEncoderActive() {
 
 MediaStreamAllocationConfig VideoSendStreamImpl::GetAllocationConfig() const {
   return MediaStreamAllocationConfig{
-      static_cast<uint32_t>(encoder_min_bitrate_bps_),
-      encoder_max_bitrate_bps_,
-      static_cast<uint32_t>(disable_padding_ ? 0 : max_padding_bitrate_),
-      encoder_av1_priority_bitrate_override_bps_,
-      !config_.suspend_below_min_bitrate,
-      encoder_bitrate_priority_};
+      .min_bitrate_bps = static_cast<uint32_t>(encoder_min_bitrate_bps_),
+      .max_bitrate_bps = encoder_max_bitrate_bps_,
+      .pad_up_bitrate_bps =
+          static_cast<uint32_t>(disable_padding_ ? 0 : max_padding_bitrate_),
+      .priority_bitrate_bps = encoder_av1_priority_bitrate_override_bps_,
+      .enforce_min_bitrate = !config_.suspend_below_min_bitrate,
+      .bitrate_priority = encoder_bitrate_priority_,
+      .rate_elasticity =
+          (content_type_ == VideoEncoderConfig::ContentType::kRealtimeVideo)
+              ? std::optional(TrackRateElasticity::kCanConsumeExtraRate)
+              : std::nullopt};
 }
 
 void VideoSendStreamImpl::OnEncoderConfigurationChanged(
@@ -799,7 +814,7 @@ void VideoSendStreamImpl::OnEncoderConfigurationChanged(
     const VideoCodecType codec_type =
         PayloadStringToCodecType(config_.rtp.payload_name);
 
-    const absl::optional<DataRate> experimental_min_bitrate =
+    const std::optional<DataRate> experimental_min_bitrate =
         GetExperimentalMinVideoBitrate(env_.field_trials(), codec_type);
     encoder_min_bitrate_bps_ =
         experimental_min_bitrate
@@ -903,12 +918,6 @@ uint32_t VideoSendStreamImpl::OnBitrateUpdated(BitrateAllocationUpdate update) {
   RTC_DCHECK(rtp_video_sender_->IsActive())
       << "VideoSendStream::Start has not been called.";
 
-  // When the BWE algorithm doesn't pass a stable estimate, we'll use the
-  // unstable one instead.
-  if (update.stable_target_bitrate.IsZero()) {
-    update.stable_target_bitrate = update.target_bitrate;
-  }
-
   rtp_video_sender_->OnBitrateUpdated(update, stats_proxy_.GetSendFrameRate());
   encoder_target_rate_bps_ = rtp_video_sender_->GetPayloadBitrateBps();
   const uint32_t protection_bitrate_bps =
@@ -918,30 +927,22 @@ uint32_t VideoSendStreamImpl::OnBitrateUpdated(BitrateAllocationUpdate update) {
     link_allocation =
         DataRate::BitsPerSec(encoder_target_rate_bps_ - protection_bitrate_bps);
   }
-  DataRate overhead =
-      update.target_bitrate - DataRate::BitsPerSec(encoder_target_rate_bps_);
-  DataRate encoder_stable_target_rate = update.stable_target_bitrate;
-  if (encoder_stable_target_rate > overhead) {
-    encoder_stable_target_rate = encoder_stable_target_rate - overhead;
-  } else {
-    encoder_stable_target_rate = DataRate::BitsPerSec(encoder_target_rate_bps_);
-  }
-
   encoder_target_rate_bps_ =
       std::min(encoder_max_bitrate_bps_, encoder_target_rate_bps_);
-
-  encoder_stable_target_rate =
-      std::min(DataRate::BitsPerSec(encoder_max_bitrate_bps_),
-               encoder_stable_target_rate);
-
   DataRate encoder_target_rate = DataRate::BitsPerSec(encoder_target_rate_bps_);
   link_allocation = std::max(encoder_target_rate, link_allocation);
   video_stream_encoder_->OnBitrateUpdated(
-      encoder_target_rate, encoder_stable_target_rate, link_allocation,
-      rtc::dchecked_cast<uint8_t>(update.packet_loss_ratio * 256),
+      encoder_target_rate, link_allocation,
+      dchecked_cast<uint8_t>(update.packet_loss_ratio * 256),
       update.round_trip_time.ms(), update.cwnd_reduce_ratio);
   stats_proxy_.OnSetEncoderTargetRate(encoder_target_rate_bps_);
   return protection_bitrate_bps;
+}
+
+std::optional<DataRate> VideoSendStreamImpl::GetUsedRate() const {
+  // This value is for real-time video. Screenshare may have unused bandwidth
+  // that can be shared, and this needs to be changed to support that.
+  return std::nullopt;
 }
 
 }  // namespace internal

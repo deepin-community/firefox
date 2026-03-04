@@ -52,6 +52,7 @@ fn result_helper(rv: ssl::SECStatus, allow_blocked: bool) -> Res<bool> {
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use super::{result, result_or_blocked};
     use crate::{
@@ -83,7 +84,7 @@ mod tests {
                 assert_eq!(code, -12273);
                 assert_eq!(
                     desc,
-                    "SSL received a record with an incorrect Message Authentication Code."
+                    "SSL received a record with an incorrect Message Authentication Code"
                 );
             }
             _ => unreachable!(),

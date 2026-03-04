@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Ansicht
 download-cert-view-text = CA-Zertifikat überprüfen
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -72,10 +69,10 @@ client-auth-cert-details-serial-number = Seriennummer: { $serialNumber }
 # Variables:
 # $notBefore (String) - The date before which the certificate is not valid (e.g. Apr 21, 2023, 1:47:53 PM UTC)
 # $notAfter (String) - The date after which the certificate is not valid
-client-auth-cert-details-validity-period = Gültig vom { $notBefore } bis { $notAfter }
+client-auth-cert-details-validity-period = Gültig von { $notBefore } bis { $notAfter }
 # Variables:
 # $keyUsages (String) - A list of already-localized key usages for which the certificate may be used
-client-auth-cert-details-key-usages = Schlüsselgebrauch: { $keyUsages }
+client-auth-cert-details-key-usages = Verwendungen des Schlüssels: { $keyUsages }
 # Variables:
 # $emailAddresses (String) - A list of email addresses present in the certificate
 client-auth-cert-details-email-addresses = E-Mail-Adressen: { $emailAddresses }
@@ -85,8 +82,13 @@ client-auth-cert-details-issued-by = Ausgestellt von: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Gespeichert auf: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Diese Entscheidung merken
+client-auth-cert-remember-label = Diese Entscheidung merken:
+client-auth-cert-remember-never =
+    .label = Ein Mal
+client-auth-cert-remember-always =
+    .label = Dauerhaft
+client-auth-cert-remember-temporarily =
+    .label = Für diese Sitzung
 
 ## Set password (p12) dialog
 

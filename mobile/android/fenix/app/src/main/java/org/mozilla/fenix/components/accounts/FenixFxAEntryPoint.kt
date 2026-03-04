@@ -44,11 +44,6 @@ enum class FenixFxAEntryPoint(override val entryName: String) : FxAEntryPoint, P
     BookmarkView("bookmark-view"),
 
     /**
-     * Authenticating from the homepage onboarding dialog
-     */
-    HomeOnboardingDialog("home-onboarding-dialog"),
-
-    /**
      * Authenticating from the settings menu
      */
     SettingsMenu("settings-menu"),
@@ -79,6 +74,11 @@ enum class FenixFxAEntryPoint(override val entryName: String) : FxAEntryPoint, P
      * Authenticating from the synced tabs menu to enable synced tabs
      */
     SyncedTabsMenu("synced-tabs-menu"),
+
+    /**
+     * Accessing the menu dialog from an external view (e.g. custom tab)
+     */
+    ExternalView("external-view"),
 
     /**
      * When serializing the value after navigating, the result is a nullable value. We have this

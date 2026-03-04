@@ -5,11 +5,19 @@
 /*---
 description: |
     A collection of assertion and wrapper functions for testing asynchronous built-ins.
-defines: [asyncTest]
+defines: [asyncTest, assert.throwsAsync]
 ---*/
 
+/**
+ * Defines the **sole** asynchronous test of a file.
+ * @see {@link ../docs/rfcs/async-helpers.md} for background.
+ *
+ * @param {Function} testFunc a callback whose returned promise indicates test results
+ *   (fulfillment for success, rejection for failure)
+ * @returns {void}
+ */
 function asyncTest(testFunc) {
-  if (!Object.hasOwn(globalThis, "$DONE")) {
+  if (!Object.prototype.hasOwnProperty.call(globalThis, "$DONE")) {
     throw new Test262Error("asyncTest called without async flag");
   }
   if (typeof testFunc !== "function") {
@@ -30,87 +38,71 @@ function asyncTest(testFunc) {
   }
 }
 
+/**
+ * Asserts that a callback asynchronously throws an instance of a particular
+ * error (i.e., returns a promise whose rejection value is an object referencing
+ * the constructor).
+ *
+ * @param {Function} expectedErrorConstructor the expected constructor of the
+ *   rejection value
+ * @param {Function} func the callback
+ * @param {string} [message] the prefix to use for failure messages
+ * @returns {Promise<void>} fulfills if the expected error is thrown,
+ *   otherwise rejects
+ */
 assert.throwsAsync = function (expectedErrorConstructor, func, message) {
   return new Promise(function (resolve) {
-    var innerThenable;
-    if (message === undefined) {
-      message = "";
-    } else {
-      message += " ";
-    }
-    if (typeof func === "function") {
-      try {
-        innerThenable = func();
-        if (
-          innerThenable === null ||
-          typeof innerThenable !== "object" ||
-          typeof innerThenable.then !== "function"
-        ) {
-          message +=
-            "Expected to obtain an inner promise that would reject with a" +
-            expectedErrorConstructor.name +
-            " but result was not a thenable";
-          throw new Test262Error(message);
-        }
-      } catch (thrown) {
-        message +=
-          "Expected a " +
-          expectedErrorConstructor.name +
-          " to be thrown asynchronously but an exception was thrown synchronously while obtaining the inner promise";
-        throw new Test262Error(message);
+    var fail = function (detail) {
+      if (message === undefined) {
+        throw new Test262Error(detail);
       }
-    } else {
-      message +=
-        "assert.throwsAsync called with an argument that is not a function";
-      throw new Test262Error(message);
+      throw new Test262Error(message + " " + detail);
+    };
+    if (typeof expectedErrorConstructor !== "function") {
+      fail("assert.throwsAsync called with an argument that is not an error constructor");
     }
-
+    if (typeof func !== "function") {
+      fail("assert.throwsAsync called with an argument that is not a function");
+    }
+    var expectedName = expectedErrorConstructor.name;
+    var expectation = "Expected a " + expectedName + " to be thrown asynchronously";
+    var res;
     try {
-      resolve(innerThenable.then(
-        function () {
-          message +=
-            "Expected a " +
-            expectedErrorConstructor.name +
-            " to be thrown asynchronously but no exception was thrown at all";
-          throw new Test262Error(message);
-        },
-        function (thrown) {
-          var expectedName, actualName;
-          if (typeof thrown !== "object" || thrown === null) {
-            message += "Thrown value was not an object!";
-            throw new Test262Error(message);
-          } else if (thrown.constructor !== expectedErrorConstructor) {
-            expectedName = expectedErrorConstructor.name;
-            actualName = thrown.constructor.name;
-            if (expectedName === actualName) {
-              message +=
-                "Expected a " +
-                expectedName +
-                " but got a different error constructor with the same name";
-            } else {
-              message +=
-                "Expected a " + expectedName + " but got a " + actualName;
-            }
-            throw new Test262Error(message);
-          }
-        }
-      ));
+      res = func();
     } catch (thrown) {
-      if (typeof thrown !== "object" || thrown === null) {
-        message +=
-          "Expected a " +
-          expectedErrorConstructor.name +
-          " to be thrown asynchronously but innerThenable synchronously threw a value that was not an object ";
-      } else {
-        message +=
-          "Expected a " +
-          expectedErrorConstructor.name +
-          " to be thrown asynchronously but a " +
-          thrown.constructor.name +
-          " was thrown synchronously";
-      }
-      throw new Test262Error(message);
+      fail(expectation + " but the function threw synchronously");
     }
+    if (res === null || typeof res !== "object" || typeof res.then !== "function") {
+      fail(expectation + " but result was not a thenable");
+    }
+    var onResFulfilled, onResRejected;
+    var resSettlementP = new Promise(function (onFulfilled, onRejected) {
+      onResFulfilled = onFulfilled;
+      onResRejected = onRejected;
+    });
+    try {
+      res.then(onResFulfilled, onResRejected)
+    } catch (thrown) {
+      fail(expectation + " but .then threw synchronously");
+    }
+    resolve(resSettlementP.then(
+      function () {
+        fail(expectation + " but no exception was thrown at all");
+      },
+      function (thrown) {
+        var actualName;
+        if (thrown === null || typeof thrown !== "object") {
+          fail(expectation + " but thrown value was not an object");
+        } else if (thrown.constructor !== expectedErrorConstructor) {
+          actualName = thrown.constructor.name;
+          if (expectedName === actualName) {
+            fail(expectation +
+              " but got a different error constructor with the same name");
+          }
+          fail(expectation + " but got a " + actualName);
+        }
+      }
+    ));
   });
 };
 
@@ -131,17 +123,17 @@ function formatPropertyName(propertyKey, objectName = "") {
     case "symbol":
       if (Symbol.keyFor(propertyKey) !== undefined) {
         return `${objectName}[Symbol.for('${Symbol.keyFor(propertyKey)}')]`;
-      } else if (propertyKey.description.startsWith('Symbol.')) {
+      } else if (propertyKey.description.startsWith("Symbol.")) {
         return `${objectName}[${propertyKey.description}]`;
       } else {
-        return `${objectName}[Symbol('${propertyKey.description}')]`
+        return `${objectName}[Symbol('${propertyKey.description}')]`;
       }
     case "string":
       if (propertyKey !== String(Number(propertyKey))) {
         if (ASCII_IDENTIFIER.test(propertyKey)) {
           return objectName ? `${objectName}.${propertyKey}` : propertyKey;
         }
-        return `${objectName}['${propertyKey.replace(/'/g, "\\'")}']`
+        return `${objectName}['${propertyKey.replace(/'/g, "\\'")}']`;
       }
       // fall through
     default:
@@ -178,65 +170,63 @@ var TemporalHelpers = {
    */
   CalendarEras: {
     buddhist: [
-      { era: "buddhist", aliases: ["be"] },
-    ],
-    chinese: [
-      { era: "chinese" },
+      { era: "be" },
     ],
     coptic: [
-      { era: "coptic" },
-      { era: "coptic-inverse" },
-    ],
-    dangi: [
-      { era: "dangi" },
+      { era: "am" },
     ],
     ethiopic: [
-      { era: "ethiopic", aliases: ["incar"] },
-      { era: "ethioaa", aliases: ["ethiopic-amete-alem", "mundi"] },
+      { era: "aa", aliases: ["mundi"] },
+      { era: "am", aliases: ["incar"] },
     ],
     ethioaa: [
-      { era: "ethioaa", aliases: ["ethiopic-amete-alem", "mundi"] },
+      { era: "aa", aliases: ["mundi"] },
     ],
     gregory: [
-      { era: "gregory", aliases: ["ce", "ad"] },
-      { era: "gregory-inverse", aliases: ["bc", "bce"] },
+      { era: "bce", aliases: ["bc"] },
+      { era: "ce", aliases: ["ad"] },
     ],
     hebrew: [
-      { era: "hebrew", aliases: ["am"] },
+      { era: "am" },
     ],
     indian: [
-      { era: "indian", aliases: ["saka"] },
+      { era: "shaka" },
     ],
     islamic: [
-      { era: "islamic", aliases: ["ah"] },
+      { era: "ah" },
+      { era: "bh" },
     ],
     "islamic-civil": [
-      { era: "islamic-civil", aliases: ["islamicc", "ah"] },
+      { era: "bh" },
+      { era: "ah" },
     ],
     "islamic-rgsa": [
-      { era: "islamic-rgsa", aliases: ["ah"] },
+      { era: "bh" },
+      { era: "ah" },
     ],
     "islamic-tbla": [
-      { era: "islamic-tbla", aliases: ["ah"] },
+      { era: "bh" },
+      { era: "ah" },
     ],
     "islamic-umalqura": [
-      { era: "islamic-umalqura", aliases: ["ah"] },
+      { era: "bh" },
+      { era: "ah" },
     ],
     japanese: [
+      { era: "bce", aliases: ["bc"] },
+      { era: "ce", aliases: ["ad"] },
       { era: "heisei" },
-      { era: "japanese", aliases: ["gregory", "ad", "ce"] },
-      { era: "japanese-inverse", aliases: ["gregory-inverse", "bc", "bce"] },
       { era: "meiji" },
       { era: "reiwa" },
       { era: "showa" },
       { era: "taisho" },
     ],
     persian: [
-      { era: "persian", aliases: ["ap"] },
+      { era: "ap" },
     ],
     roc: [
       { era: "roc", aliases: ["minguo"] },
-      { era: "roc-inverse", aliases: ["before-roc"] },
+      { era: "broc", aliases: ["before-roc", "minguo-qian"] },
     ],
   },
 
@@ -246,15 +236,11 @@ var TemporalHelpers = {
   canonicalizeCalendarEra(calendarId, eraName) {
     assert.sameValue(typeof calendarId, "string", "calendar must be string in canonicalizeCalendarEra");
 
-    if (calendarId === "iso8601") {
+    if (!Object.prototype.hasOwnProperty.call(TemporalHelpers.CalendarEras, calendarId)) {
       assert.sameValue(eraName, undefined);
       return undefined;
     }
-    assert(Object.hasOwn(TemporalHelpers.CalendarEras, calendarId));
 
-    if (eraName === undefined) {
-      return undefined;
-    }
     assert.sameValue(typeof eraName, "string", "eraName must be string or undefined in canonicalizeCalendarEra");
 
     for (let {era, aliases = []} of TemporalHelpers.CalendarEras[calendarId]) {
@@ -457,9 +443,15 @@ var TemporalHelpers = {
    * equal to an expected value. (Except the `calendar` property, since callers
    * may want to assert either object equality with an object they put in there,
    * or the value of yearMonth.calendarId.)
+   *
+   * Pass null as the referenceISODay if you don't want to give it explicitly.
+   * In that case, the expected referenceISODay will be computed using PlainDate
+   * and only verified for consistency, not for equality with a specific value.
    */
   assertPlainYearMonth(yearMonth, year, month, monthCode, description = "", era = undefined, eraYear = undefined, referenceISODay = 1) {
     const prefix = description ? `${description}: ` : "";
+    assert(typeof referenceISODay === "number" || referenceISODay === null,
+      `TemporalHelpers.assertPlainYearMonth() referenceISODay argument should be a number or null, not ${referenceISODay}`);
     assert(yearMonth instanceof Temporal.PlainYearMonth, `${prefix}instanceof`);
     assert.sameValue(
       TemporalHelpers.canonicalizeCalendarEra(yearMonth.calendarId, yearMonth.era),
@@ -470,8 +462,9 @@ var TemporalHelpers = {
     assert.sameValue(yearMonth.year, year, `${prefix}year result:`);
     assert.sameValue(yearMonth.month, month, `${prefix}month result:`);
     assert.sameValue(yearMonth.monthCode, monthCode, `${prefix}monthCode result:`);
-    const isoDay = Number(yearMonth.toString({ calendarName: "always" }).slice(1).split('-')[2].slice(0, 2));
-    assert.sameValue(isoDay, referenceISODay, `${prefix}referenceISODay result:`);
+    const isoDay = Number(yearMonth.toString({ calendarName: "always" }).slice(1).split("-")[2].slice(0, 2));
+    const expectedISODay = referenceISODay ?? yearMonth.toPlainDate({ day: 1 }).withCalendar("iso8601").day;
+    assert.sameValue(isoDay, expectedISODay, `${prefix}referenceISODay result:`);
   },
 
   /*
@@ -486,7 +479,7 @@ var TemporalHelpers = {
     assert(expected instanceof Temporal.ZonedDateTime, `${prefix}expected value should be a Temporal.ZonedDateTime`);
     assert(actual instanceof Temporal.ZonedDateTime, `${prefix}instanceof`);
     assert(actual.equals(expected), `${prefix}equals method`);
-    assert.sameValue(actual.timeZone, expected.timeZone, `${prefix}time zone same value:`);
+    assert.sameValue(actual.timeZoneId, expected.timeZoneId, `${prefix}time zone same value:`);
     assert.sameValue(
       actual.calendarId,
       expected.calendarId,
@@ -565,16 +558,16 @@ var TemporalHelpers = {
    */
   checkPluralUnitsAccepted(func, validSingularUnits) {
     const plurals = {
-      year: 'years',
-      month: 'months',
-      week: 'weeks',
-      day: 'days',
-      hour: 'hours',
-      minute: 'minutes',
-      second: 'seconds',
-      millisecond: 'milliseconds',
-      microsecond: 'microseconds',
-      nanosecond: 'nanoseconds',
+      year: "years",
+      month: "months",
+      week: "weeks",
+      day: "days",
+      hour: "hours",
+      minute: "minutes",
+      second: "seconds",
+      millisecond: "milliseconds",
+      microsecond: "microseconds",
+      nanosecond: "nanoseconds",
     };
 
     validSingularUnits.forEach((unit) => {
@@ -1004,18 +997,18 @@ var TemporalHelpers = {
     const zonedDateTime = new Temporal.ZonedDateTime(1_000_000_000_000_000_000n, "UTC", "iso8601");
 
     [plainDate, plainDateTime, plainMonthDay, plainYearMonth, zonedDateTime].forEach((temporalObject) => {
-      const actual = [];
-      const expected = [];
-
       Object.defineProperty(temporalObject, "calendar", {
         get() {
-          actual.push("get calendar");
-          return calendar;
+          throw new Test262Error("should not get 'calendar' property");
+        },
+      });
+      Object.defineProperty(temporalObject, "calendarId", {
+        get() {
+          throw new Test262Error("should not get 'calendarId' property");
         },
       });
 
       func(temporalObject);
-      assert.compareArray(actual, expected, "calendar getter not called");
     });
   },
 
@@ -1024,7 +1017,7 @@ var TemporalHelpers = {
     const expected = [];
 
     const datetime = new Temporal.ZonedDateTime(1_000_000_000_987_654_321n, "UTC");
-    Object.defineProperty(datetime, 'toString', {
+    Object.defineProperty(datetime, "toString", {
       get() {
         actual.push("get toString");
         return function (options) {
@@ -1084,7 +1077,7 @@ var TemporalHelpers = {
         calls.push(`get ${formatPropertyName(propertyName, objectName)}`);
         return value;
       },
-      set(v) {
+      set() {
         calls.push(`set ${formatPropertyName(propertyName, objectName)}`);
       }
     });
@@ -1222,6 +1215,10 @@ var TemporalHelpers = {
         "11-18[U-CA=iso8601]",
         "11-18[u-CA=iso8601]",
         "11-18[FOO=bar]",
+        "-999999-01-01[u-ca=gregory]",
+        "-999999-01-01[u-ca=chinese]",
+        "+999999-01-01[u-ca=gregory]",
+        "+999999-01-01[u-ca=chinese]",
       ];
     },
 
@@ -1253,6 +1250,10 @@ var TemporalHelpers = {
         "1976-10-01",
         "--10-01",
         "--1001",
+        "-999999-10-01",
+        "-999999-10-01[u-ca=iso8601]",
+        "+999999-10-01",
+        "+999999-10-01[u-ca=iso8601]",
       ];
     },
 
@@ -1274,7 +1275,7 @@ var TemporalHelpers = {
       ];
       // Adding a calendar annotation to one of these strings must not cause
       // disambiguation in favour of time.
-      const stringsWithCalendar = ambiguousStrings.map((s) => s + '[u-ca=iso8601]');
+      const stringsWithCalendar = ambiguousStrings.map((s) => s + "[u-ca=iso8601]");
       return ambiguousStrings.concat(stringsWithCalendar);
     },
 
@@ -1314,6 +1315,8 @@ var TemporalHelpers = {
         "1976-11[U-CA=iso8601]",
         "1976-11[u-CA=iso8601]",
         "1976-11[FOO=bar]",
+        "+999999-01",
+        "-999999-01",
       ];
     },
 

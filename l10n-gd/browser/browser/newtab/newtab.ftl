@@ -226,7 +226,6 @@ newtab-pocket-learn-more = Barrachd fiosrachaidh
 newtab-pocket-cta-button = Faigh { -pocket-brand-name }
 newtab-pocket-cta-text = Sàbhail na sgeulachdan as fhearr leat ann am { -pocket-brand-name } is faigh toileachas inntinn san leughadh.
 newtab-pocket-pocket-firefox-family = Tha { -pocket-brand-name } ’na phàirt de theaghlach bathar { -brand-product-name }
-# A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Sàbhail
 newtab-pocket-saved = Air a shàbhaladh
 
@@ -260,15 +259,9 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Ath-ghoiridean sponsairichte
 newtab-custom-pocket-title = ’Ga mholadh le { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Sàr-shusbaint ’ga thasgadh le { -pocket-brand-name } mar phàirt de theaghlach { -brand-product-name }
-newtab-custom-pocket-toggle =
-    .label = ’Ga mholadh le { -pocket-brand-name }
-    .description = Sàr-shusbaint ’ga thasgadh le { -pocket-brand-name } mar phàirt de theaghlach { -brand-product-name }
 newtab-custom-pocket-sponsored = Sgeulachdan sponsairichte
 newtab-custom-pocket-show-recent-saves = Seall na chaidh a shàbhaladh o chionn goird
 newtab-custom-recent-title = Gnìomhachd o chionn goirid
 newtab-custom-recent-subtitle = Roghainn de làraichean is susbaint faisg ort
-newtab-custom-recent-toggle =
-    .label = Gnìomhachd o chionn goirid
-    .description = Roghainn de làraichean is susbaint faisg ort
 newtab-custom-close-button = Dùin
 newtab-custom-settings = Stiùirich barrachd roghainnean

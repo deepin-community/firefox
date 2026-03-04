@@ -39,6 +39,7 @@ about-networking-dns-lookup = DNS ਖੋਜ
 about-networking-dns-lookup-button = ਹੱਲ਼
 about-networking-dns-domain = ਡੋਮੇਨ:
 about-networking-dns-lookup-table-column = IP
+about-networking-dns-https-rrs-lookup-table-column = HTTPS RRs
 about-networking-dns-https-rr-lookup-table-column = HTTP RRs
 about-networking-rcwn = RCWN ਅੰਕੜੇ
 about-networking-rcwn-status = RCWN ਹਾਲਤ
@@ -64,6 +65,3 @@ about-networking-moved-about-logging = ਇਸ ਸਫ਼ੇ ਨੂੰ <a data-l10n-n
 
 about-networking-networkid-is-up = ਲਿੰਕ ਚਾਲੂ ਹੈ
 about-networking-networkid-status-known = ਲਿੰਕ ਸਥਿਤੀ ਜਾਣੀ ਹੈ
-
-##
-

@@ -14,7 +14,6 @@
 #include "mozilla/dom/MediaControlUtils.h"
 #include "mozilla/GRefPtr.h"
 #include "mozilla/GUniquePtr.h"
-#include "mozilla/UniquePtrExtensions.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/ScopeExit.h"
 #include "mozilla/Sprintf.h"
@@ -128,6 +127,7 @@ enum class Property : uint8_t {
   eGetPlaybackStatus,
   eGetMetadata,
   eGetPosition,
+  eGetRate,
 };
 
 static inline Maybe<dom::MediaControlKey> GetPairedKey(Property aProperty) {
@@ -168,7 +168,8 @@ static inline Maybe<Property> GetProperty(const gchar* aPropertyName) {
       {"CanControl", Property::eCanControl},
       {"PlaybackStatus", Property::eGetPlaybackStatus},
       {"Metadata", Property::eGetMetadata},
-      {"Position", Property::eGetPosition}};
+      {"Position", Property::eGetPosition},
+      {"Rate", Property::eGetRate}};
 
   auto it = map.find(aPropertyName);
   return (it == map.end() ? Nothing() : Some(it->second));
@@ -206,6 +207,8 @@ static GVariant* HandleGetProperty(GDBusConnection* aConnection,
           CheckedInt64((int64_t)handler->GetPositionSeconds()) * 1000000;
       return g_variant_new_int64(position.isValid() ? position.value() : 0);
     }
+    case Property::eGetRate:
+      return g_variant_new_double(handler->GetPlaybackRate());
     case Property::eIdentity:
       return g_variant_new_string(handler->Identity());
     case Property::eDesktopEntry:
@@ -463,8 +466,7 @@ void MPRISServiceHandler::InitIdentity() {
   mIdentity.Append(' ');
   mIdentity.Append(mDesktopEntry);
 
-  // Compute the desktop entry name like nsAppRunner does for g_set_prgname
-  ToLowerCase(mDesktopEntry);
+  LOGMPRIS("InitIdentity() MPRIS desktop ID %s", mDesktopEntry.get());
 }
 
 const char* MPRISServiceHandler::Identity() const {
@@ -510,7 +512,7 @@ void MPRISServiceHandler::SetPlaybackState(
       "(sa{sv}as)", DBUS_MPRIS_PLAYER_INTERFACE, &builder, nullptr);
 
   LOGMPRIS("Emitting MPRIS property changes for 'PlaybackStatus'");
-  Unused << EmitPropertiesChangedSignal(parameters);
+  (void)EmitPropertiesChangedSignal(parameters);
 }
 
 GVariant* MPRISServiceHandler::GetPlaybackStatus() const {
@@ -682,10 +684,13 @@ bool MPRISServiceHandler::RenewLocalImageFile(const char* aImageData,
 
   MOZ_ASSERT(mLocalImageFile);
   nsCOMPtr<nsIOutputStream> out;
-  NS_NewLocalFileOutputStream(getter_AddRefs(out), mLocalImageFile,
-                              PR_RDWR | PR_CREATE_FILE | PR_TRUNCATE);
+  nsresult rv =
+      NS_NewLocalFileOutputStream(getter_AddRefs(out), mLocalImageFile,
+                                  PR_RDWR | PR_CREATE_FILE | PR_TRUNCATE);
   uint32_t written;
-  nsresult rv = out->Write(aImageData, aDataSize, &written);
+  if (NS_SUCCEEDED(rv)) {
+    rv = out->Write(aImageData, aDataSize, &written);
+  }
   if (NS_FAILED(rv) || written != aDataSize) {
     LOGMPRIS("Failed to write an image file");
     RemoveAllLocalImages();
@@ -756,7 +761,7 @@ bool MPRISServiceHandler::InitLocalImageFolder() {
     // The XDG_DATA_HOME points to the same location in the host and guest
     // filesystem.
     if (const auto* xdgDataHome = g_getenv("XDG_DATA_HOME")) {
-      rv = NS_NewNativeLocalFile(nsDependentCString(xdgDataHome), true,
+      rv = NS_NewNativeLocalFile(nsDependentCString(xdgDataHome),
                                  getter_AddRefs(mLocalImageFolder));
     }
   } else {
@@ -846,6 +851,11 @@ GVariant* MPRISServiceHandler::GetMetadataAsGVariant() const {
                           g_variant_new_string(static_cast<const gchar*>(
                               mMPRISMetadata.mArtUrl.get())));
   }
+  if (!mMPRISMetadata.mUrl.IsEmpty()) {
+    g_variant_builder_add(&builder, "{sv}", "xesam:url",
+                          g_variant_new_string(static_cast<const gchar*>(
+                              mMPRISMetadata.mUrl.get())));
+  }
   if (mPositionState.isSome()) {
     CheckedInt64 length =
         CheckedInt64((int64_t)mPositionState.value().mDuration) * 1000000;
@@ -869,7 +879,8 @@ struct InterfaceProperty {
   const char* interface;
   const char* property;
 };
-static const std::unordered_map<dom::MediaControlKey, InterfaceProperty>
+MOZ_RUNINIT static const std::unordered_map<dom::MediaControlKey,
+                                            InterfaceProperty>
     gKeyProperty = {
         {dom::MediaControlKey::Focus, {DBUS_MPRIS_INTERFACE, "CanRaise"}},
         {dom::MediaControlKey::Nexttrack,
@@ -909,7 +920,28 @@ void MPRISServiceHandler::SetSupportedMediaKeys(
 
 void MPRISServiceHandler::SetPositionState(
     const Maybe<dom::PositionState>& aState) {
+  bool rateChanged = false;
+  bool durationChanged = false;
+  bool positionChanged = mPositionState.isSome() || aState.isSome();
+  if (mPositionState.isSome() && aState.isSome()) {
+    rateChanged = mPositionState->mPlaybackRate != aState->mPlaybackRate;
+    durationChanged = mPositionState->mDuration != aState->mDuration;
+  } else if (mPositionState.isNothing() && aState.isSome()) {
+    rateChanged = aState->mPlaybackRate != 1.0;
+    durationChanged = true;
+  } else if (mPositionState.isSome() && aState.isNothing()) {
+    rateChanged = mPositionState->mPlaybackRate != 1.0;
+    durationChanged = true;
+  }
+
   mPositionState = aState;
+
+  if (rateChanged || durationChanged) {
+    EmitPositionStateChanges(rateChanged, durationChanged);
+  }
+  if (positionChanged) {
+    EmitSeekedSignal();
+  }
 }
 
 double MPRISServiceHandler::GetPositionSeconds() const {
@@ -917,6 +949,13 @@ double MPRISServiceHandler::GetPositionSeconds() const {
     return mPositionState.value().CurrentPlaybackPosition();
   }
   return 0.0;
+}
+
+double MPRISServiceHandler::GetPlaybackRate() const {
+  if (mPositionState.isSome()) {
+    return mPositionState->mPlaybackRate;
+  }
+  return 1.0;
 }
 
 bool MPRISServiceHandler::IsMediaKeySupported(dom::MediaControlKey aKey) const {
@@ -946,6 +985,28 @@ bool MPRISServiceHandler::EmitSupportedKeyChanged(dom::MediaControlKey aKey,
   return EmitPropertiesChangedSignal(parameters);
 }
 
+bool MPRISServiceHandler::EmitPositionStateChanges(
+    bool aRateChanged, bool aDurationChanged) const {
+  GVariantBuilder builder;
+  g_variant_builder_init(&builder, G_VARIANT_TYPE("a{sv}"));
+  if (aRateChanged) {
+    double rate = 1.0;
+    if (mPositionState.isSome()) {
+      rate = mPositionState->mPlaybackRate;
+    }
+    g_variant_builder_add(&builder, "{sv}", "Rate", g_variant_new_double(rate));
+  }
+  if (aDurationChanged) {
+    g_variant_builder_add(&builder, "{sv}", "Metadata",
+                          GetMetadataAsGVariant());
+  }
+
+  GVariant* parameters = g_variant_new(
+      "(sa{sv}as)", "org.mpris.MediaPlayer2.Player", &builder, nullptr);
+
+  return EmitPropertiesChangedSignal(parameters);
+}
+
 bool MPRISServiceHandler::EmitPropertiesChangedSignal(
     GVariant* aParameters) const {
   if (!mConnection) {
@@ -959,6 +1020,45 @@ bool MPRISServiceHandler::EmitPropertiesChangedSignal(
           "org.freedesktop.DBus.Properties", "PropertiesChanged", aParameters,
           &error)) {
     LOGMPRIS("Failed to emit MPRIS property changes: %s",
+             error ? error->message : "Unknown Error");
+    if (error) {
+      g_error_free(error);
+    }
+    return false;
+  }
+
+  return true;
+}
+
+bool MPRISServiceHandler::EmitSeekedSignal() const {
+  if (!mConnection) {
+    LOGMPRIS("No D-Bus Connection. Cannot emit seeked signal");
+    return false;
+  }
+  if (mPositionState.isNothing()) {
+    LOGMPRIS("No position state. Cannot emit seeked signal");
+    return false;
+  }
+
+  constexpr double kMaxMicroseconds =
+      static_cast<double>(std::numeric_limits<gint64>::max());
+
+  double currentPositionSec = mPositionState->CurrentPlaybackPosition();
+  double currentPositionUs = currentPositionSec * 1.e6;
+  if (currentPositionUs > kMaxMicroseconds) {
+    LOGMPRIS("Failed to convert %f microseconds to gint64 (overflow)",
+             currentPositionUs);
+    return false;
+  }
+
+  GVariant* position =
+      g_variant_new("(x)", static_cast<gint64>(currentPositionUs));
+
+  GError* error = nullptr;
+  if (!g_dbus_connection_emit_signal(
+          mConnection, nullptr, DBUS_MPRIS_OBJECT_PATH,
+          "org.mpris.MediaPlayer2.Player", "Seeked", position, &error)) {
+    LOGMPRIS("Failed to emit MPRIS player seeked: %s",
              error ? error->message : "Unknown Error");
     if (error) {
       g_error_free(error);

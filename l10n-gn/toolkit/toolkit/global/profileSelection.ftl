@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 profile-selection-window =
-    .title = { -brand-short-name } - Eiparavo peteĩ poruhára mba’ete
+    .title = { -brand-short-name } - Eiporavo poruhára mba’ete
 profile-selection-button-accept =
     .label = { -brand-short-name } ñepyrũ
 profile-selection-button-cancel =
@@ -28,3 +28,4 @@ profile-manager-work-offline =
 profile-manager-use-selected =
     .label = Eiporu mba’ete poravopyre ejerure’ỹre ñepyrũha
     .accesskey = s
+profile-has-selectable-profiles-title = Ndaikatúi embogue mba’ete ojuajúva ambue mba’eteita ndive.

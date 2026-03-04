@@ -157,6 +157,17 @@ checkKeyParams(const SECAlgorithmID *sigAlgorithm, const SECKEYPublicKey *key)
             }
 
             return SECSuccess;
+        case SEC_OID_ML_DSA_44:
+        case SEC_OID_ML_DSA_65:
+        case SEC_OID_ML_DSA_87:
+            if (key->keyType != mldsaKey) {
+                PORT_SetError(SEC_ERROR_INVALID_ALGORITHM);
+                return SECFailure;
+            }
+            if (key->u.mldsa.paramSet != sigAlg) {
+                PORT_SetError(SEC_ERROR_INVALID_ALGORITHM);
+                return SECFailure;
+            }
         default:
             return SECSuccess;
     }
@@ -1256,7 +1267,7 @@ cert_CheckLeafTrust(CERTCertificate *cert, SECCertUsage certUsage,
 
                 /* is the cert directly trusted or not trusted ? */
                 if (flags & CERTDB_TERMINAL_RECORD) { /* the trust record is
-                            * authoritative */
+                                                       * authoritative */
                     if (flags & CERTDB_TRUSTED) {     /* trust this cert */
                         *trusted = PR_TRUE;
                         return SECSuccess;
@@ -1347,7 +1358,7 @@ cert_CheckLeafTrust(CERTCertificate *cert, SECCertUsage certUsage,
                 /* do we distrust these certs explicitly */
                 flags = trust.sslFlags;
                 if (flags & CERTDB_TERMINAL_RECORD) { /* the trust record is
-                            * authoritative */
+                                                       * authoritative */
                     if ((flags & (CERTDB_TRUSTED | CERTDB_TRUSTED_CA)) == 0) {
                         *failedFlags = flags;
                         return SECFailure;
@@ -1355,7 +1366,7 @@ cert_CheckLeafTrust(CERTCertificate *cert, SECCertUsage certUsage,
                 }
                 flags = trust.emailFlags;
                 if (flags & CERTDB_TERMINAL_RECORD) { /* the trust record is
-                            * authoritative */
+                                                       * authoritative */
                     if ((flags & (CERTDB_TRUSTED | CERTDB_TRUSTED_CA)) == 0) {
                         *failedFlags = flags;
                         return SECFailure;
@@ -2147,6 +2158,7 @@ CERT_GetCertChainFromCert(CERTCertificate *cert, PRTime time, SECCertUsage usage
 
     chain = CERT_NewCertList();
     if (NULL == chain) {
+        CERT_DestroyCertificate(cert);
         PORT_SetError(SEC_ERROR_NO_MEMORY);
         return NULL;
     }
@@ -2154,6 +2166,7 @@ CERT_GetCertChainFromCert(CERTCertificate *cert, PRTime time, SECCertUsage usage
     while (cert != NULL && ++count <= CERT_MAX_CERT_CHAIN) {
         if (SECSuccess != CERT_AddCertToListTail(chain, cert)) {
             /* return partial chain */
+            CERT_DestroyCertificate(cert);
             PORT_SetError(SEC_ERROR_NO_MEMORY);
             return chain;
         }
@@ -2167,6 +2180,7 @@ CERT_GetCertChainFromCert(CERTCertificate *cert, PRTime time, SECCertUsage usage
     }
 
     /* return partial chain */
+    CERT_DestroyCertificate(cert);
     PORT_SetError(SEC_ERROR_UNKNOWN_ISSUER);
     return chain;
 }

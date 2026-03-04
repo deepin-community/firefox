@@ -14,8 +14,8 @@ newtab-personalize-icon-label =
 
 ## Search box component.
 
-# Variables
-#  $engine (String): the name of the user's default search engine
+# Variables:
+#   $engine (string) - The name of the user's default search engine
 newtab-search-box-handoff-text = Busca con { $engine } o introduz una direición
 
 ## Top Sites - General form dialog.
@@ -45,9 +45,6 @@ newtab-topsites-add-button = Amestar
 newtab-confirm-delete-history-p1 = ¿De xuru que quies desaniciar del to historial cada instancia d'esta páxina?
 # "This action" refers to deleting a page from history.
 newtab-confirm-delete-history-p2 = Esta aición nun pue desfacese.
-
-## Top Sites - Sponsored label
-
 
 ## Context Menu - Action Tooltips.
 
@@ -130,9 +127,6 @@ newtab-section-menu-move-up = Xubir
 newtab-section-menu-move-down = Baxar
 newtab-section-menu-privacy-notice = Avisu de privacidá
 
-## Section aria-labels
-
-
 ## Section Headers.
 
 newtab-section-header-topsites = Sitios principales
@@ -155,9 +149,6 @@ newtab-pocket-read-more = Temes populares:
 newtab-pocket-more-recommendations = Más recomendaciones
 newtab-pocket-learn-more = Lleer más
 
-## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
-
-
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
 
@@ -170,6 +161,8 @@ newtab-custom-shortcuts-subtitle = Sitios que guardes o visites
 newtab-custom-shortcuts-toggle =
     .label = Atayos
     .description = Sitios que guardes o visites
+# Variables
+#   $num (number) - Number of rows to display
 newtab-custom-row-selector =
     { $num ->
         [one] { $num } filera
@@ -178,8 +171,5 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Atayos patrocinaos
 newtab-custom-recent-title = Actividá recién
 newtab-custom-recent-subtitle = Una esbilla de los sitios y del conteníu recién
-newtab-custom-recent-toggle =
-    .label = Actividá recién
-    .description = Una esbilla de los sitios y del conteníu recién
 newtab-custom-close-button = Zarrar
 newtab-custom-settings = Xestionar más axustes

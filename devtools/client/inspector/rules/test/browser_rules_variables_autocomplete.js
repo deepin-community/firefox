@@ -167,7 +167,7 @@ async function checkCssVariableAutocomplete(
  * @param {Array{Object}} expectedPopupItems
  */
 function assertEditorPopupItems(editor, expectedPopupItems) {
-  const popupListItems = Array.from(editor.popup._list.querySelectorAll("li"));
+  const popupListItems = Array.from(editor.popup.list.querySelectorAll("li"));
   is(
     popupListItems.length,
     expectedPopupItems.length,
@@ -176,7 +176,7 @@ function assertEditorPopupItems(editor, expectedPopupItems) {
   popupListItems.forEach((li, i) => {
     const expected = expectedPopupItems[i];
     const value =
-      li.querySelector(".initial-value").textContent +
+      (li.querySelector(".initial-value")?.textContent ?? "") +
       li.querySelector(".autocomplete-value").textContent;
     is(value, expected.label, `Popup item #${i} as expected label`);
 

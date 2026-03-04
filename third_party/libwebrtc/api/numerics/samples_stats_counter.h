@@ -11,6 +11,9 @@
 #ifndef API_NUMERICS_SAMPLES_STATS_COUNTER_H_
 #define API_NUMERICS_SAMPLES_STATS_COUNTER_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -42,6 +45,7 @@ class SamplesStatsCounter {
   SamplesStatsCounter& operator=(SamplesStatsCounter&&);
 
   // Adds sample to the stats in amortized O(1) time.
+  [[deprecated("Use AddSample(StatsSample) instead.")]]
   void AddSample(double value);
   void AddSample(StatsSample sample);
 
@@ -100,7 +104,7 @@ class SamplesStatsCounter {
   // guarantees of order, so samples can be in different order comparing to in
   // which they were added into counter. Also return value will be invalidate
   // after call to any non const method.
-  rtc::ArrayView<const StatsSample> GetTimedSamples() const { return samples_; }
+  ArrayView<const StatsSample> GetTimedSamples() const { return samples_; }
   std::vector<double> GetSamples() const {
     std::vector<double> out;
     out.reserve(samples_.size());

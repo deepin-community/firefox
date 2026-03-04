@@ -5,7 +5,7 @@
 #include "PreloaderBase.h"
 
 #include "mozilla/dom/Document.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/NetwerkMetrics.h"
 #include "nsContentUtils.h"
 #include "nsIAsyncVerifyRedirectCallback.h"
 #include "nsIHttpChannel.h"
@@ -249,7 +249,8 @@ void PreloaderBase::NotifyStop(nsIRequest* aRequest, nsresult aStatus) {
 }
 
 void PreloaderBase::NotifyStop(nsresult aStatus) {
-  mOnStopStatus.emplace(aStatus);
+  MOZ_DIAGNOSTIC_ASSERT(mOnStopStatus.isNothing());
+  mOnStopStatus = Some(aStatus);
 
   nsTArray<nsWeakPtr> nodes = std::move(mNodes);
 
@@ -305,7 +306,7 @@ void PreloaderBase::CancelUsageTimer() {
 }
 
 void PreloaderBase::ReportUsageTelemetry() {
-  if (mUsageTelementryReported) {
+  if (mUsageTelementryReported || !XRE_IsContentProcess()) {
     return;
   }
   mUsageTelementryReported = true;
@@ -321,8 +322,8 @@ void PreloaderBase::ReportUsageTelemetry() {
     ++index;
   }
 
-  auto label = static_cast<Telemetry::LABELS_REL_PRELOAD_MISS_RATIO>(index);
-  Telemetry::AccumulateCategorical(label);
+  auto label = static_cast<glean::network::RelPreloadMissRatioLabel>(index);
+  glean::network::rel_preload_miss_ratio.EnumGet(label).Add();
 }
 
 nsresult PreloaderBase::AsyncConsume(nsIStreamListener* aListener) {

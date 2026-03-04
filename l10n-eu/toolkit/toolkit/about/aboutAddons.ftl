@@ -165,6 +165,8 @@ extensions-warning-update-security-button = Gaitu
 extensions-warning-imported-addons2 =
     .message = Mesedez amaitu { -brand-short-name }(e)ra inportatu ziren hedapenen instalazioa.
 extensions-warning-imported-addons-button = Instalatu hedapenak
+extensions-warning-safe-mode3 =
+    .message = Arazoak konpontzeko moduak gehigarri guztiak desgaitu ditu.
 
 ## Strings connected to add-on updates
 
@@ -200,6 +202,10 @@ addon-updates-manual-updates-found = Ikusi eguneraketa erabilgarriak
 ## Add-on install/debug strings for page options menu
 
 addon-install-from-file = Instalatu gehigarria fitxategitik…
+    .accesskey = I
+# Like `addon-install-from-file` but used when the `extensions.webextensions.prefer-update-over-install-for-existing-addon`
+# pref is set.
+addon-install-or-update-from-file = Instalatu edo eguneratu gehigarria fitxategitik…
     .accesskey = I
 addon-install-from-file-dialog-title = Hautatu instalatzeko gehigarria
 addon-install-from-file-filter-name = Gehigarriak
@@ -263,6 +269,19 @@ discopane-notice-recommendations = Gomendio hauetako batzuk pertsonalizatuak dir
 discopane-notice-recommendations2 =
     .message = Gomendio hauetako batzuk pertsonalizatuak dira. Instalatuta dituzun hedapenetan, zure hobespenetan eta erabilpen-estatistiketan oinarrituta daude.
 discopane-notice-learn-more = Argibide gehiago
+# Notice for the colorway theme removal
+colorway-removal-notice-message =
+    .heading = Zure kolore-konbinazio itxura(k) ezabatu egin da/dira.
+    .message =
+        { -brand-product-name }(e)k bere kolore-konbinazioen bilduma eguneratu du.
+        Zure "Gordetako itxurak" zerrendako bertsio zaharrak kendu ditugu. Eskuratu
+        bertsio berriak gehigarrien gunean.
+colorway-removal-notice-learn-more = Argibide gehiago
+colorway-removal-notice-button = Eskuratu eguneratutako kolore-konbinazio itxurak
+# Notice to make user aware that themes are not applied in forced colors mode.
+# This notice is only visible on Windows.
+forced-colors-theme-notice =
+    .message = Windowseko zure kontraste-ezarpenek { -brand-short-name } itxurak baliogabetzen dituzte. Desaktibatu ezarpen hauek itxurak erabili ahal izateko { -brand-short-name }(e)n.
 privacy-policy = Pribatutasun-politika
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
@@ -283,6 +302,16 @@ find-more-themes = Aurkitu itxura gehiago
 # used for screen readers.
 addon-options-button =
     .aria-label = Aukera gehiago
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+# We hard code "Firefox" because we do not want to imply that a Firefox fork is
+# making this recommendation.
+discopane-intro3 =
+    Hedapen eta itxurekin { -brand-product-name } pertsonaliza dezakezu. Pribatutasunari bultzada eman,
+    produktibitatea areagotu, multimedia hobetu, { -brand-product-name }(r)en itxura aldatu eta
+    gehiago egin dezakete. Software programa txiki hauek hirugarren batzuek eginak dira askotan.
+    Hona hemen Firefoxek <a data-l10n-name="learn-more-trigger">gomendatzen</a>
+    dituen hautapen bat, aparteko segurtasun, errendimendu eta funtzionaltasunerako.
 
 ## Add-on actions
 
@@ -369,6 +398,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Leiho pribatuetan baimenduta
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Leiho pribatuetan baimenduta
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -408,6 +441,24 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Gehigarri hau berrikusi egin da gure segurtasun- eta errendimendu-estandarrak betetzeko
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Mozillak sortutako hedapen ofiziala. Segurtasun- eta errendimendu-estandarrak betetzen ditu
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are performing the
+# security or performance reviews. As such, we avoid personalising language
+# like the words "our" or "we".
+addon-badge-verified4 =
+    .title = Gehigarri hau berrikusi egin da segurtasun- eta errendimendu-estandarrak betetzeko
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are making the
+# recommendation. As such, we hard code "Firefox" and avoid personalising
+# language like the words "our" or "we".
+addon-badge-recommended4 =
+    .title = Segurtasun eta errendimendurako gure estandarrak betetzen dituzten hedapenak gomendatzen ditu soilik Firefoxek
 
 ##
 
@@ -415,6 +466,10 @@ available-updates-heading = Eguneraketa erabilgarriak
 recent-updates-heading = Azken eguneraketak
 release-notes-loading = Kargatzen…
 release-notes-error = Errorea gertatu da bertsio-oharrak kargatzean.
+addon-permissions-heading = Baimenak
+addon-permissions-empty2 = Hedapen honek ez du baimenik behar.
+addon-permissions-required-label = Beharrezkoa:
+addon-permissions-optional-label = Aukerakoa:
 addon-permissions-empty = Hedapen honek ez du baimenik behar
 addon-permissions-required = Oinarrizko funtzionaltasunerako beharrezko baimenak:
 addon-permissions-optional = Funtzionaltasun gehigarrirako aukerazko baimenak:
@@ -442,6 +497,9 @@ shortcuts-heading = Kudeatu hedapenen lasterbideak
 default-heading-search-label = Bilatu gehigarri gehiago
 addons-heading-search-input =
     .placeholder = Bilatu addons.mozilla.org gunean
+addons-heading-search-button =
+    .title = Bilatu addons.mozilla.org gunean
+    .aria-label = Bilatu addons.mozilla.org gunean
 addon-page-options-button =
     .title = Tresnak gehigarri guztientzat
 
@@ -464,14 +522,32 @@ details-notification-unsigned-and-disabled-link = Informazio gehiago
 details-notification-unsigned = Ezin da { $name } gehigarria { -brand-short-name }(r)en erabiltzeko egiaztatu. Kontuz jarraitu.
 details-notification-unsigned2 =
     .message = Ezin da { $name } gehigarria { -brand-short-name }(r)en erabiltzeko egiaztatu. Kontuz jarraitu.
+details-notification-hard-blocked-extension =
+    .message = Hedapen hau blokeatuta dago Mozillaren politikak bortxatzeagatik eta desgaitu egin da.
+details-notification-hard-blocked-other =
+    .message = Gehigarri hau blokeatuta dago Mozillaren politikak bortxatzeagatik eta desgaitu egin da.
 details-notification-unsigned-link = Informazio gehiago
 details-notification-blocked = { $name } desgaitu egin da segurtasun- edo egonkortasun-arazoengatik.
-details-notification-blocked2 =
-    .message = { $name } desgaitu egin da segurtasun- edo egonkortasun-arazoengatik.
+details-notification-blocked-link2 = Ikusi xehetasunak
+details-notification-soft-blocked-extension-disabled2 =
+    .message = Hedapen hau mugatuta dago eta desgaitu egin da. Gaitzeko aukera daukazu baina arriskutsua izan liteke.
+details-notification-soft-blocked-extension-enabled2 =
+    .message = Hedapen hau mugatuta dago. Erabiltzea arriskutsua izan liteke.
+details-notification-soft-blocked-other-disabled2 =
+    .message = Gehigarri hau mugatuta dago eta desgaitu egin da. Gaitzeko aukera daukazu baina arriskutsua izan liteke.
+details-notification-soft-blocked-other-enabled2 =
+    .message = Gehigarri hau mugatuta dago. Erabiltzea arriskutsua izan liteke.
+details-notification-soft-blocked-extension-disabled =
+    .message = Hedapen hau mugatuta dago Mozillaren politikak bortxatzeagatik eta desgaitu egin da. Gaitzeko aukera daukazu baina arriskutsua izan liteke.
+details-notification-soft-blocked-extension-enabled =
+    .message = Hedapen honek Mozillaren politikak bortxatzen ditu. Arriskutsua izan liteke hau erabiltzea.
+details-notification-soft-blocked-other-disabled =
+    .message = Gehigarri hau mugatuta dago Mozillaren politikak bortxatzeagatik eta desgaitu egin da. Gaitzeko aukera daukazu baina arriskutsua izan liteke.
+details-notification-soft-blocked-other-enabled =
+    .message = Gehigarri honek Mozillaren politikak bortxatzen ditu. Arriskutsua izan liteke hau erabiltzea.
+details-notification-softblocked-link2 = Ikusi xehetasunak
 details-notification-blocked-link = Informazio gehiago
 details-notification-softblocked = { $name } gehigarriak segurtasun- edo egonkortasun-arazoak eragiten dituela jakina da.
-details-notification-softblocked2 =
-    .message = { $name } gehigarriak segurtasun- edo egonkortasun-arazoak eragiten dituela jakina da.
 details-notification-softblocked-link = Informazio gehiago
 details-notification-gmp-pending = { $name } laster instalatuko da.
 details-notification-gmp-pending2 =
@@ -485,3 +561,45 @@ plugins-openh264-name = OpenH264 bideo kodeka, Cisco Systems, Inc.-ek hornitua
 plugins-openh264-description = Plugin hau Mozillak automatikoki installatu du WebRTC espezifikazioa bete eta H.264 bideo-kodeka behar duten gailuekin WebRTC deiak egin ahal izateko. Bisitatu http://www.openh264.org/ helbidea kodekaren iturburu-kodea ikusi eta inplementazioari buruzko argibide gehiago jakiteko.
 plugins-widevine-name = Widevine edukiaren deszifratze-modulua (CDM) Google Inc.-ek eskainia
 plugins-widevine-description = Plugin honek zifratutako multimediaren erreprodukzioa gaitzen du, horrela Encrypted Media Extensions espezifikazioa betez. Ordainpeko multimedia-edukia kopiatzetik babesteko erabiltzen da oro har zifratutako multimedia. Bisitatu https://www.w3.org/TR/encrypted-media/ Encrypted Media Extensions-en gaineko informazio gehiago jasotzeko.
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-permissions-required-data-collection = Beharrezko datu-bilketa:
+addon-permissions-optional-data-collection = Aukerazko datu-bilketa:
+# Name of the Permissions tab in `about:addons` when the data collection feature is enabled.
+permissions-data-addon-button = Baimenak eta datuak
+# This is a description for extension that use this AI model
+# Variables:
+#   $extensionName (String) - Name of the extension
+mlmodel-extension-label = { $extensionName } hedapenak erabilia
+addon-permissions-data-collection-heading = Datu-bilketa
+addon-permissions-data-collection-empty = Garatzaileak dio hedapen honek ez duela daturik biltzen.
+addon-data-collection-provided = Hedapenaren garatzaileak hornitutako informazioa
+addon-data-collection-learnmore = Datu-bilketari buruzko argibide gehiago
+
+## Mapping Engine IDs from AI models to how that feature represented by the engine Id is described in the used by section in local model management
+
+mlmodel-about-inference = { -brand-short-name }(e)k hau darabil about:inference orrian
+mlmodel-link-preview = { -brand-short-name }(e)k hau darabil loturen aurrebistetako puntu nagusiak sortzeko
+mlmodel-pdfjs = { -brand-short-name }(e)k hau darabil PDFetan gehitutako irudietako testu alternatiboa sortzeko
+mlmodel-smart-tab-topic-engine = { -brand-short-name }(e)k hau darabil fitxa-taldeen izenak gomendatzeko
+mlmodel-smart-tab-embedding-engine = { -brand-short-name }(e)k hau darabil fitxa-taldeetarako fitxak gomendatzeko
+# AI Model will be downloaded on the users device and used locally
+addon-category-mlmodel = Gailuko AA
+addon-category-mlmodel-title =
+    .title = Gailuko AA
+mlmodel-heading = Kudeatu gailuko AA modeloak
+mlmodel-description = { -brand-short-name }(e)n hainbat eginbide eta hedapen zure gailuan modu lokalean lan egiten duen AA modeloen bidez hornituta daude. Metodo honek zure pribatutasuna babesten du eta, hainbat kasutan, errendimendua ere hobetzen du. <a data-l10n-name="learn-more">Argibide gehiago</a>
+# Label for button that when clicked removed local model
+mlmodel-remove-addon-button =
+    .aria-label = Kendu
+# Label for the aggregated value of all files for a model
+mlmodel-addon-detail-totalsize-label = Fitxategiaren tamaina
+mlmodel-addon-detail-last-used-label = Azkenekoz erabilia
+# This is a section label to describe what extensions or features use a specific local AI model
+mlmodel-addon-detail-used-by-label = Nork erabilia
+# This is a section label to describe the link to the model card on the Hugging Face website
+mlmodel-addon-detail-model-card = Modeloaren txartela
+# This is a label for the Model Card link to Hugging face
+mlmodel-addon-detail-model-card-link-label = Ikusi Hugging Face webgunean

@@ -8,11 +8,6 @@ apply plugin: 'com.google.devtools.ksp'
 
 android {
     defaultConfig {
-        minSdkVersion config.minSdkVersion
-        compileSdk config.compileSdkVersion
-        targetSdkVersion config.targetSdkVersion
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
         ksp {
             arg("room.schemaLocation", "$projectDir/schemas".toString())
             arg("room.generateKotlin", "true")
@@ -25,57 +20,45 @@ android {
         }
     }
 
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-
-    packagingOptions {
-        exclude 'META-INF/proguard/androidx-annotations.pro'
-    }
-
     sourceSets {
         test.assets.srcDirs += files("$projectDir/schemas".toString())
     }
 
-    namespace 'mozilla.components.feature.recentlyclosed'
+    namespace = 'mozilla.components.feature.recentlyclosed'
 }
 
 dependencies {
-    implementation project(':concept-engine')
+    implementation project(':components:browser-session-storage')
+    implementation project(':components:browser-state')
+    implementation project(':components:concept-engine')
+    implementation project(':components:support-base')
+    implementation project(':components:support-ktx')
 
-    implementation project(':browser-state')
-    implementation project(':browser-session-storage')
+    implementation libs.androidx.lifecycle.livedata
+    implementation libs.androidx.room.runtime
+    ksp libs.androidx.room.compiler
+    implementation libs.kotlinx.coroutines
 
-    implementation project(':support-ktx')
-    implementation project(':support-base')
+    testImplementation project(':components:feature-session')
+    testImplementation project(':components:support-test')
+    testImplementation project(':components:support-test-libstate')
 
-    implementation ComponentsDependencies.kotlin_coroutines
+    testImplementation libs.androidx.test.core
+    testImplementation libs.androidx.test.junit
+    testImplementation platform(libs.junit.bom)
+    testImplementation libs.junit4
+    testRuntimeOnly libs.junit.platform.launcher
+    testRuntimeOnly libs.junit.vintage
+    testImplementation libs.kotlinx.coroutines
+    testImplementation libs.kotlinx.coroutines.test
+    testImplementation libs.robolectric
 
-    implementation ComponentsDependencies.androidx_room_runtime
-    implementation ComponentsDependencies.androidx_lifecycle_livedata
-    ksp ComponentsDependencies.androidx_room_compiler
+    androidTestImplementation project(':components:support-test-fakes')
 
-    testImplementation project(':feature-session')
-    testImplementation project(':support-test')
-    testImplementation project(':support-test-libstate')
-
-    testImplementation ComponentsDependencies.androidx_test_core
-    testImplementation ComponentsDependencies.androidx_test_junit
-    testImplementation ComponentsDependencies.testing_coroutines
-    testImplementation ComponentsDependencies.testing_junit
-    testImplementation ComponentsDependencies.testing_robolectric
-    testImplementation ComponentsDependencies.kotlin_coroutines
-    testImplementation ComponentsDependencies.testing_coroutines
-
-    androidTestImplementation project(':support-test-fakes')
-
-    androidTestImplementation ComponentsDependencies.androidx_test_core
-    androidTestImplementation ComponentsDependencies.androidx_test_runner
+    androidTestImplementation libs.androidx.test.core
+    androidTestImplementation libs.androidx.test.runner
 }
 
-apply from: '../../../android-lint.gradle'
+apply from: '../../../common-config.gradle'
 apply from: '../../../publish.gradle'
-ext.configurePublish(config.componentsGroupId, archivesBaseName, project.ext.description)
+ext.configurePublish(config.componentsGroupId, project.name, project.ext.description)

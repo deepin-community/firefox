@@ -12,12 +12,13 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.Dispatchers.Main
-import kotlinx.coroutines.Job
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import mozilla.components.browser.domains.CustomDomains
+import mozilla.components.support.ktx.android.view.hideKeyboard
+import mozilla.components.support.ktx.android.view.showKeyboard
 import org.mozilla.focus.GleanMetrics.Autocomplete
 import org.mozilla.focus.R
 import org.mozilla.focus.databinding.FragmentAutocompleteAddDomainBinding
@@ -26,25 +27,17 @@ import org.mozilla.focus.ext.showToolbar
 import org.mozilla.focus.settings.BaseSettingsLikeFragment
 import org.mozilla.focus.state.AppAction
 import org.mozilla.focus.utils.ViewUtils
-import kotlin.coroutines.CoroutineContext
 
 /**
  * Fragment showing settings UI to add custom autocomplete domains.
  */
-class AutocompleteAddFragment : BaseSettingsLikeFragment(), CoroutineScope {
-    private var job = Job()
-    override val coroutineContext: CoroutineContext
-        get() = job + Main
+class AutocompleteAddFragment : BaseSettingsLikeFragment() {
+
     private var _binding: FragmentAutocompleteAddDomainBinding? = null
     private val binding get() = _binding!!
 
     override fun onResume() {
         super.onResume()
-
-        if (job.isCancelled) {
-            job = Job()
-        }
-
         showToolbar(getString(R.string.preference_autocomplete_title_add))
     }
 
@@ -59,12 +52,11 @@ class AutocompleteAddFragment : BaseSettingsLikeFragment(), CoroutineScope {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        ViewUtils.showKeyboard(binding.domainView)
+        binding.domainView.showKeyboard()
     }
 
     override fun onPause() {
-        job.cancel()
-        ViewUtils.hideKeyboard(activity?.currentFocus)
+        activity?.currentFocus?.hideKeyboard()
         super.onPause()
     }
 
@@ -81,20 +73,21 @@ class AutocompleteAddFragment : BaseSettingsLikeFragment(), CoroutineScope {
         R.id.save -> {
             val domain = binding.domainView.text.toString().trim()
 
-            launch(IO) {
-                val domains = CustomDomains.load(requireActivity())
+            viewLifecycleOwner.lifecycleScope.launch {
+                val domains = withContext(Dispatchers.IO) {
+                    CustomDomains.load(requireActivity())
+                }
+
                 val error = when {
                     domain.isEmpty() -> getString(R.string.preference_autocomplete_add_error)
                     domains.contains(domain) -> getString(R.string.preference_autocomplete_duplicate_url_error)
                     else -> null
                 }
 
-                launch(Main) {
-                    if (error != null) {
-                        binding.domainView.error = error
-                    } else {
-                        saveDomainAndClose(requireActivity().applicationContext, domain)
-                    }
+                if (error != null) {
+                    binding.domainView.error = error
+                } else {
+                    saveDomainAndClose(requireActivity().applicationContext, domain)
                 }
             }
             true
@@ -104,9 +97,11 @@ class AutocompleteAddFragment : BaseSettingsLikeFragment(), CoroutineScope {
     }
 
     private fun saveDomainAndClose(context: Context, domain: String) {
-        launch(IO) {
-            CustomDomains.add(context, domain)
-            Autocomplete.domainAdded.add()
+        viewLifecycleOwner.lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                CustomDomains.add(context, domain)
+                Autocomplete.domainAdded.add()
+            }
         }
 
         ViewUtils.showBrandedSnackbar(view, R.string.preference_autocomplete_add_confirmation, 0)

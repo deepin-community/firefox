@@ -5,14 +5,12 @@ codespell:
         - browser/base/content/docs/
         - browser/branding/
         - browser/components/asrouter/docs/
-        - browser/components/newtab/docs/
         - browser/components/places/docs/
         - browser/components/search/docs/
         - browser/components/search/schema/
         - browser/components/touchbar/docs/
         - browser/components/urlbar/docs/
-        - browser/extensions/formautofill/locales/en-US/
-        - browser/extensions/report-site-issue/locales/en-US/
+        - browser/extensions/newtab/docs/
         - browser/installer/windows/docs/
         - browser/locales/en-US/
         - build/docs/
@@ -38,7 +36,7 @@ codespell:
         - python/mach/docs/
         - python/mozlint/
         - python/mozperftest/perfdocs/
-        - remote/doc/
+        - remote/
         - security/manager/locales/en-US/
         - services/settings/docs/
         - taskcluster/docs/
@@ -66,6 +64,7 @@ codespell:
         - xpcom/docs/
     exclude:
         - devtools/docs/contributor/tools/storage/
+        - remote/test/puppeteer/
         - tools/lint/cpp/mingw-headers.txt
         - tools/lint/test/test_codespell.py
         - "**/package-lock.json"
@@ -76,8 +75,7 @@ codespell:
     # + localization files
     extensions:
         - js
-        - jsm
-        - jxs
+        - jsx
         - mjs
         - xml
         - html
@@ -94,5 +92,4 @@ codespell:
     support-files:
         - 'tools/lint/spell/**'
     type: external
-    setup: spell:setup
     payload: spell:lint

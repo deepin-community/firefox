@@ -5,6 +5,8 @@
   <title>FxviewTabList Tests</title>
   <script src="chrome://mochikit/content/tests/SimpleTest/SimpleTest.js"></script>
   <script src="chrome://mochikit/content/tests/SimpleTest/EventUtils.js"></script>
+  <link rel="localization" href="browser/firefoxView.ftl">
+  <link rel="localization" href="browser/fxviewTabList.ftl">
   <link rel="localization" href="browser/places.ftl">
   <link rel="stylesheet" href="chrome://mochikit/content/tests/SimpleTest/test.css"/>
   <link rel="stylesheet" href="chrome://global/skin/in-content/common.css">
@@ -44,7 +46,7 @@
     "resource://gre/modules/PlacesUtils.sys.mjs"
   );
   const { PlacesUIUtils } = ChromeUtils.importESModule(
-    "resource:///modules/PlacesUIUtils.sys.mjs"
+    "moz-src:///browser/components/places/PlacesUIUtils.sys.mjs"
   );
   const { PlacesTestUtils } = ChromeUtils.importESModule(
     "resource://testing-common/PlacesTestUtils.sys.mjs"

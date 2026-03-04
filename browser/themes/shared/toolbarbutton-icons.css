@@ -2,19 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-:root {
-  --toolbarbutton-icon-fill-attention: AccentColor;
-  --toolbarbutton-icon-fill-attention-text: AccentColorText;
-  --warning-icon-bgcolor: light-dark(#FFA436, #FFBD4F);
-  &[lwtheme] {
-    --toolbarbutton-icon-fill-attention: var(--lwt-toolbarbutton-icon-fill-attention, light-dark(rgb(0, 97, 224), rgb(0, 221, 255)));
-    /* FIXME(emilio): This could have poor contrast on some themes, maybe use
-     * contrast-color() once that's available, or compute a new variable in
-     * LightWeightThemeConsumer */
-    --toolbarbutton-icon-fill-attention-text: var(--toolbar-field-background-color);
-  }
-}
-
 .toolbarbutton-animatable-box,
 .toolbarbutton-1 {
   color: inherit;
@@ -203,12 +190,55 @@
 }
 
 #sidebar-button {
-  list-style-image: url("chrome://browser/skin/sidebars-right.svg");
-}
+  /* stylelint-disable-next-line media-query-no-invalid */
+  @media not -moz-pref("sidebar.revamp") {
+    list-style-image: url("chrome://browser/skin/sidebars.svg");
 
-#sidebar-button:-moz-locale-dir(ltr):not([positionend]),
-#sidebar-button:-moz-locale-dir(rtl)[positionend] {
-  list-style-image: url("chrome://browser/skin/sidebars.svg");
+    &:-moz-locale-dir(ltr)[sidebar-positionend],
+    &:-moz-locale-dir(rtl):not([sidebar-positionend]) {
+      list-style-image: url("chrome://browser/skin/sidebars-right.svg");
+    }
+  }
+
+  /* stylelint-disable-next-line media-query-no-invalid */
+  @media -moz-pref("sidebar.revamp") {
+    list-style-image: url("chrome://browser/skin/sidebar-collapsed.svg");
+
+    /* stylelint-disable-next-line media-query-no-invalid */
+    @media -moz-pref("sidebar.verticalTabs") {
+      &:hover {
+        list-style-image: url("chrome://browser/skin/sidebar-expanded.svg");
+      }
+    }
+
+    &[expanded] {
+      list-style-image: url("chrome://browser/skin/sidebar-expanded.svg");
+
+      &:hover {
+        list-style-image: url("chrome://browser/skin/sidebar-collapsed.svg");
+      }
+    }
+
+    &:-moz-locale-dir(ltr)[sidebar-positionend],
+    &:-moz-locale-dir(rtl):not([sidebar-positionend]) {
+      list-style-image: url("chrome://browser/skin/sidebar-collapsed-right.svg");
+
+      /* stylelint-disable-next-line media-query-no-invalid */
+      @media -moz-pref("sidebar.verticalTabs") {
+        &:hover {
+          list-style-image: url("chrome://browser/skin/sidebar-expanded-right.svg");
+        }
+      }
+
+      &[expanded] {
+        list-style-image: url("chrome://browser/skin/sidebar-expanded-right.svg");
+        /* stylelint-disable max-nesting-depth */
+        &:hover {
+          list-style-image: url("chrome://browser/skin/sidebar-collapsed-right.svg");
+        }
+      }
+    }
+  }
 }
 
 #panic-button {
@@ -223,63 +253,43 @@
   list-style-image: url("chrome://browser/skin/library.svg");
 }
 
-#save-to-pocket-button {
-  list-style-image: url("chrome://global/skin/icons/pocket-outline.svg");
-  fill: var(--toolbarbutton-icon-fill);
-}
-
-#save-to-pocket-button[open="true"],
-#save-to-pocket-button[pocketed="true"] {
-  list-style-image: url("chrome://global/skin/icons/pocket.svg");
-  fill: var(--pocket-icon-fill);
-}
-
 /* Bookmark toolbar buttons and menu items */
 
 .bookmark-item {
-  list-style-image: url("chrome://global/skin/icons/defaultFavicon.svg");
+  --bookmark-item-icon: url("chrome://global/skin/icons/defaultFavicon.svg");
+  --menuitem-icon: var(--bookmark-item-icon);
   -moz-context-properties: fill;
   fill: currentColor;
 
   &:is(toolbarbutton) {
     -moz-context-properties: fill, fill-opacity;
     fill: var(--toolbarbutton-icon-fill);
+    list-style-image: var(--bookmark-item-icon);
   }
 
-  &[container] {
-    list-style-image: url("chrome://global/skin/icons/folder.svg");
+  &[container],
+  &[hostContainer] {
+    --bookmark-item-icon: url("chrome://global/skin/icons/folder.svg");
   }
 
   &[query] {
-    list-style-image: url("chrome://browser/skin/places/folder-smart.svg");
+    --bookmark-item-icon: url("chrome://browser/skin/places/folder-smart.svg");
   }
 
   &[tagContainer] {
-    list-style-image: url("chrome://browser/skin/places/tag.svg");
+    --bookmark-item-icon: url("chrome://browser/skin/places/tag.svg");
   }
 
   &[dayContainer] {
-    list-style-image: url("chrome://browser/skin/history.svg");
-  }
-
-  &[hostContainer] {
-    list-style-image: url("chrome://global/skin/icons/folder.svg");
+    --bookmark-item-icon: url("chrome://browser/skin/history.svg");
   }
 }
 
 /* Apply crisp rendering for favicons at exactly 2x resolution */
 @media (resolution: 2x) {
-  :is(.bookmark-item, .menuitem-with-favicon) > .menu-iconic-left > .menu-iconic-icon,
+  :is(.bookmark-item, .menuitem-with-favicon) > .menu-icon,
   .bookmark-item > .toolbarbutton-icon {
     image-rendering: -moz-crisp-edges;
-  }
-}
-
-#ion-button {
-  list-style-image: url("chrome://browser/skin/ion.svg");
-
-  toolbar[customizing] & {
-    display: none;
   }
 }
 
@@ -295,12 +305,51 @@
   list-style-image: url("chrome://browser/skin/firefox-view.svg");
 }
 
-#content-analysis-indicator {
+.content-analysis-indicator {
   -moz-context-properties: fill, stroke;
   stroke: var(--toolbarbutton-icon-fill);
   list-style-image: url("chrome://global/skin/icons/content-analysis.svg");
 }
 
-.fxms-bmb-button {
+#fxms-bmb-button {
   list-style-image: url("chrome://branding/content/about-logo.png");
+}
+
+#ipprotection-button {
+  list-style-image: url("chrome://browser/content/logos/ipprotection-off.svg");
+  -moz-context-properties: fill, stroke, fill-opacity;
+
+  &.ipprotection-on {
+    list-style-image: url("chrome://browser/content/logos/ipprotection-on.svg");
+    stroke: var(--icon-color-success);
+  }
+
+  &.ipprotection-error {
+    list-style-image: url("chrome://browser/content/logos/ipprotection-error.svg");
+    stroke: var(--icon-color-critical);
+  }
+}
+
+#taskbar-tabs-favicon {
+  margin: auto 8px;
+  height: var(--icon-size);
+  width: var(--icon-size);
+
+  :root:not([taskbartab]) & {
+    display: none;
+  }
+}
+
+#taskbar-tabs-audio {
+  /* This is only visible in Taskbar Tabs windows; see ':root[taskbartab] toolbar' in
+   * toolbarbuttons.css. */
+  display: none;
+
+  &[soundplaying] {
+    list-style-image: url("chrome://global/skin/media/audio.svg");
+  }
+
+  &[muted] {
+    list-style-image: url("chrome://global/skin/media/audio-muted.svg");
+  }
 }

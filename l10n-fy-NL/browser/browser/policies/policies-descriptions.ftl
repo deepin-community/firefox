@@ -21,6 +21,7 @@ policy-AutofillAddressEnabled = Automatysk ynfolje foar adressen ynskeakelje.
 policy-AutofillCreditCardEnabled = Automatysk ynfolje foar beteelingsmetoaden ynskeakelje.
 policy-AutoLaunchProtocolsFromOrigins = Definiearje in list mei eksterne protokollen dy’t fan fermelde boarnen út brûkt wurde kinne sûnder de brûker te freegjen.
 policy-BackgroundAppUpdate2 = Eftergrûnfernijingen yn- of útskeakelje.
+policy-Backup = Reservekopy meitsje of reparearje fan profylgegevens útskeakelje.
 policy-BlockAboutAddons = Tagong ta de Add-onbehearder (about:addons) blokkearje.
 policy-BlockAboutConfig = Tagong ta de about:config-side blokkearje.
 policy-BlockAboutProfiles = Tagong ta de about:profiles-side blokkearje.
@@ -55,6 +56,7 @@ policy-DisablePocket2 = De funksje foar it bewarjen fan websiden nei { -pocket-b
 policy-DisablePrivateBrowsing = Priveenavigaasje útskeakelje.
 policy-DisableProfileImport = De menuopdracht foar it ymportearjen fan gegevens fan in oare browser út útskeakelje.
 policy-DisableProfileRefresh = De knop { -brand-short-name } opfrisse yn de about:support-side útskeakelje.
+policy-DisableRemoteImprovements = Foarkomme dat { -brand-short-name } prestaasjes, stabiliteit en funksjes tapast tusken fernijingen.
 policy-DisableSafeMode = De funksje foar it opnij starten yn Feilige modus útskeakelje. Noat: de Shift-toets foar it betrêden fan de Feilige modus kin yn Windows allinnich útskeakele wurde fia Groepsbelied.
 policy-DisableSecurityBypass = Foarkomme dat de brûker bepaalde befeiligingsynstellingen omsilet.
 policy-DisableSetAsDesktopBackground = De menuopdracht As buroblêdachtergrûn ynstelle foar ôfbyldingen útskeakelje.
@@ -79,6 +81,7 @@ policy-ExtensionSettings = Alle aspekten fan ynstallaasje fan útwreidingen behe
 policy-ExtensionUpdate = Automatyske útwreiding-fernijingen ynskeakelje of útskeakelje.
 policy-FirefoxHome2 = { -firefox-home-brand-name } konfigurearje.
 policy-FirefoxSuggest = { -firefox-suggest-brand-name } konfigurearje.
+policy-GenerativeAI = Generative AI-funksjes konfigurearje.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Direkte navigaasje op yntranetsites forsearje yn stee fan sykje by it typen fan inkelde wurden yn de adresbalke.
 policy-Handlers = Standert tapassinghandlers konfigurearje
 policy-HardwareAcceleration = Wannear false, hardwarefersnelling útskeakelje.
@@ -97,6 +100,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Op spesifike websites 
 ##
 
 policy-LocalFileLinks = Spesifike websites tastean te keppeljen nei lokale bestannen.
+policy-LocalNetworkAccess = Kontrôles foar lokale netwurktagong yn- of útskeakelje.
 policy-ManagedBookmarks = Konfigurearret in list mei blêdwizers dy’t beheard wurde troch in behearder en dy’t net troch de brûker wizige wurde kin.
 policy-ManualAppUpdateOnly = Allinnich hânmjittige fernijingen tastean en de brûker net oer fernijingen ynformearje.
 policy-PrimaryPassword = In haadwachtwurd fereaskje of foarkomme.
@@ -117,6 +121,7 @@ policy-PostQuantumKeyAgreementEnabled = Post-kwantumkaaioerienkomst foar TLS yns
 policy-PDFjs = PDF.js, de yn { -brand-short-name } ynboude PDF-lêzer, útskeakelje of ynstelle.
 policy-Permissions2 = Tastimmingen foar kamera, mikrofoan, lokaasje, notifikaasjes en automatysk ôfspyljen konfigurearje.
 policy-PictureInPicture = Picture-in-Picture yn- of útskeakelje.
+policy-PopupBlocking2 = Tastean dat bepaalde websites pop-ups werjaan en troch frames fan tredden trochferwiisd wurde.
 policy-PopupBlocking = Tastean dat bepaalde websites standert pop-ups werjaan.
 policy-Preferences = De wearde foar in subset fan foarkarren ynstelle en beskoattelje.
 policy-PrivateBrowsingModeAvailability = Beskikberheid fan priveenavigaasjemodus ynstelle.
@@ -130,6 +135,8 @@ policy-SearchSuggestEnabled = Syksuggestjes ynskeakelje of útskeakelje.
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = PKCS #11-modules tafoegje of fuortsmite.
 policy-ShowHomeButton = De startsideknop op de arkbalke toane.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = Lit de brûksbetingsten en privacyferklearring net werjaan by it opstarten. Jo ferklearje dat jo de Brûksbetingsten akseptearje en it foech hawwe om dizze te akseptearjen út namme fan alle persoanen oan wa’t jo tagong jouwe ta dizze browser.
 policy-SSLVersionMax = De maksimale SSL-ferzje ynstelle.
 policy-SSLVersionMin = De minimale SSL-ferzje ynstelle.
 policy-StartDownloadsInTempDirectory = Oftwinge dat downloads starte yn in lokale, tydlike lokaasje yn stee fan de standert downloadmap.
@@ -137,6 +144,9 @@ policy-SupportMenu = In oanpast menu-item foar stipe oan it menu Help tafoegje.
 policy-TranslateEnabled = Oersetting fan websiden yn- of útskeakelje.
 policy-UserMessaging = Bepaalde berjochten net oan de brûker toane.
 policy-UseSystemPrintDialog = Ofdrukke fia it systeemdialoochfienster fan it systeem.
+policy-VisualSearchEnabled = Fisueel sykjen yn- of útskeakelje.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = It besykjen fan websites blokkearje. Sjoch de dokumintaasje foar mear ynformaasje oer de notaasje.
 policy-Windows10SSO = Windows-single-sign-on tastean foar Microsoft- wurk- en skoalle-accounts.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Single sign-on foar Microsoft Entra-accounts tastean.

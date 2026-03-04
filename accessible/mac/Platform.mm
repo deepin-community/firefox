@@ -21,7 +21,8 @@
 
 #include "nsAppShell.h"
 #include "nsCocoaUtils.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/EnumSet.h"
+#include "mozilla/glean/AccessibleMetrics.h"
 
 // Available from 10.13 onwards; test availability at runtime before using
 @interface NSWorkspace (AvailableSinceHighSierra)
@@ -96,8 +97,10 @@ void PlatformEvent(Accessible* aTarget, uint32_t aEventType) {
       aEventType != nsIAccessibleEvent::EVENT_REORDER &&
       aEventType != nsIAccessibleEvent::EVENT_LIVE_REGION_ADDED &&
       aEventType != nsIAccessibleEvent::EVENT_LIVE_REGION_REMOVED &&
+      aEventType != nsIAccessibleEvent::EVENT_LIVE_REGION_CHANGED &&
       aEventType != nsIAccessibleEvent::EVENT_NAME_CHANGE &&
-      aEventType != nsIAccessibleEvent::EVENT_OBJECT_ATTRIBUTE_CHANGED) {
+      aEventType != nsIAccessibleEvent::EVENT_OBJECT_ATTRIBUTE_CHANGED &&
+      aEventType != nsIAccessibleEvent::EVENT_ERRORMESSAGE_CHANGED) {
     return;
   }
 
@@ -115,8 +118,7 @@ void PlatformStateChangeEvent(Accessible* aTarget, uint64_t aState,
   }
 }
 
-void PlatformFocusEvent(Accessible* aTarget,
-                        const LayoutDeviceIntRect& aCaretRect) {
+void PlatformFocusEvent(Accessible* aTarget) {
   if (mozAccessible* wrapper = GetNativeFromGeckoAccessible(aTarget)) {
     [wrapper handleAccessibleEvent:nsIAccessibleEvent::EVENT_FOCUS];
   }
@@ -124,7 +126,6 @@ void PlatformFocusEvent(Accessible* aTarget,
 
 void PlatformCaretMoveEvent(Accessible* aTarget, int32_t aOffset,
                             bool aIsSelectionCollapsed, int32_t aGranularity,
-                            const LayoutDeviceIntRect& aCaretRect,
                             bool aFromUser) {
   mozAccessible* wrapper = GetNativeFromGeckoAccessible(aTarget);
   MOXTextMarkerDelegate* delegate = [MOXTextMarkerDelegate
@@ -136,9 +137,8 @@ void PlatformCaretMoveEvent(Accessible* aTarget, int32_t aOffset,
   }
 
   if (wrapper) {
-    if (mozTextAccessible* textAcc =
-            static_cast<mozTextAccessible*>([wrapper moxEditableAncestor])) {
-      [textAcc
+    if (mozAccessible* editable = [wrapper moxEditableAncestor]) {
+      [editable
           handleAccessibleEvent:nsIAccessibleEvent::EVENT_TEXT_CARET_MOVED];
     } else {
       [wrapper
@@ -150,16 +150,17 @@ void PlatformCaretMoveEvent(Accessible* aTarget, int32_t aOffset,
 void PlatformTextChangeEvent(Accessible* aTarget, const nsAString& aStr,
                              int32_t aStart, uint32_t aLen, bool aIsInsert,
                              bool aFromUser) {
-  Accessible* acc = aTarget;
-  // If there is a text input ancestor, use it as the event source.
-  while (acc && GetTypeFromRole(acc->Role()) != [mozTextAccessible class]) {
-    acc = acc->Parent();
+  mozAccessible* wrapper = GetNativeFromGeckoAccessible(aTarget);
+  if (wrapper) {
+    if (mozAccessible* editable = [wrapper moxEditableAncestor]) {
+      [editable handleAccessibleTextChangeEvent:nsCocoaUtils::ToNSString(aStr)
+                                       inserted:aIsInsert
+                                    inContainer:aTarget
+                                             at:aStart];
+    } else {
+      [wrapper maybePostValidationErrorChanged];
+    }
   }
-  mozAccessible* wrapper = GetNativeFromGeckoAccessible(acc ? acc : aTarget);
-  [wrapper handleAccessibleTextChangeEvent:nsCocoaUtils::ToNSString(aStr)
-                                  inserted:aIsInsert
-                               inContainer:aTarget
-                                        at:aStart];
 }
 
 void PlatformShowHideEvent(Accessible*, Accessible*, bool, bool) {}
@@ -198,6 +199,150 @@ void PlatformRoleChangedEvent(Accessible* aTarget, const a11y::role& aRole,
   }
 }
 
+// This enum lists possible assistive technology clients. It's intended for use
+// in an EnumSet since there can be multiple ATs active at once.
+enum class Client : uint64_t {
+  Unknown,
+  VoiceOver,
+  SwitchControl,
+  FullKeyboardAccess,
+  VoiceControl,
+  SpeakSelection,
+  SpeakItemUnderMouse,
+  SpeakTypingFeedback,
+  HoverText
+};
+
+// Get the set of currently-active clients and the client to log.
+// XXX: We should log all clients, but default to the first one encountered.
+std::pair<EnumSet<Client>, Client> GetClients() {
+  EnumSet<Client> clients;
+  std::optional<Client> clientToLog;
+  auto AddClient = [&clients, &clientToLog](Client client) {
+    clients += client;
+    if (!clientToLog.has_value()) {
+      clientToLog = client;
+    }
+  };
+  if ([[NSWorkspace sharedWorkspace]
+          respondsToSelector:@selector(isVoiceOverEnabled)] &&
+      [[NSWorkspace sharedWorkspace] isVoiceOverEnabled]) {
+    AddClient(Client::VoiceOver);
+  } else if ([[NSWorkspace sharedWorkspace]
+                 respondsToSelector:@selector(isSwitchControlEnabled)] &&
+             [[NSWorkspace sharedWorkspace] isSwitchControlEnabled]) {
+    AddClient(Client::SwitchControl);
+  } else {
+    Boolean foundSpecificClient = false;
+
+    // This is more complicated than the NSWorkspace queries above
+    // because (a) there is no "full keyboard access" query for NSWorkspace
+    // and (b) the [NSApplication fullKeyboardAccessEnabled] query checks
+    // the pre-Monterey version of full keyboard access, which is not what
+    // we're looking for here. For more info, see bug 1772375 comment 7.
+    Boolean exists;
+    long val = CFPreferencesGetAppIntegerValue(
+        CFSTR("FullKeyboardAccessEnabled"), CFSTR("com.apple.Accessibility"),
+        &exists);
+    if (exists && val == 1) {
+      foundSpecificClient = true;
+      AddClient(Client::FullKeyboardAccess);
+    }
+
+    val = CFPreferencesGetAppIntegerValue(CFSTR("CommandAndControlEnabled"),
+                                          CFSTR("com.apple.Accessibility"),
+                                          &exists);
+    if (exists && val == 1) {
+      foundSpecificClient = true;
+      AddClient(Client::VoiceControl);
+    }
+
+    val = CFPreferencesGetAppIntegerValue(
+        CFSTR("SpeakThisEnabled"), CFSTR("com.apple.universalaccess"), &exists);
+    if (exists && val == 1) {
+      foundSpecificClient = true;
+      AddClient(Client::SpeakSelection);
+    }
+
+    val = CFPreferencesGetAppIntegerValue(CFSTR("speakItemUnderMouseEnabled"),
+                                          CFSTR("com.apple.universalaccess"),
+                                          &exists);
+    if (exists && val == 1) {
+      foundSpecificClient = true;
+      AddClient(Client::SpeakItemUnderMouse);
+    }
+
+    val = CFPreferencesGetAppIntegerValue(CFSTR("typingEchoEnabled"),
+                                          CFSTR("com.apple.universalaccess"),
+                                          &exists);
+    if (exists && val == 1) {
+      foundSpecificClient = true;
+      AddClient(Client::SpeakTypingFeedback);
+    }
+
+    val = CFPreferencesGetAppIntegerValue(
+        CFSTR("hoverTextEnabled"), CFSTR("com.apple.universalaccess"), &exists);
+    if (exists && val == 1) {
+      foundSpecificClient = true;
+      AddClient(Client::HoverText);
+    }
+
+    if (!foundSpecificClient) {
+      AddClient(Client::Unknown);
+    }
+  }
+  return std::make_pair(clients, clientToLog.value());
+}
+
+// Expects a single client, returns a string representation of that client.
+constexpr const char* GetStringForClient(Client aClient) {
+  switch (aClient) {
+    case Client::Unknown:
+      return "Unknown";
+    case Client::VoiceOver:
+      return "VoiceOver";
+    case Client::SwitchControl:
+      return "SwitchControl";
+    case Client::FullKeyboardAccess:
+      return "FullKeyboardAccess";
+    case Client::VoiceControl:
+      return "VoiceControl";
+    case Client::SpeakSelection:
+      return "SpeakSelection";
+    case Client::SpeakItemUnderMouse:
+      return "SpeakItemUnderMouse";
+    case Client::SpeakTypingFeedback:
+      return "SpeakTypingFeedback";
+    case Client::HoverText:
+      return "HoverText";
+    default:
+      break;
+  }
+  MOZ_ASSERT_UNREACHABLE("Unknown Client enum value!");
+  return "";
+}
+
+uint64_t GetCacheDomainsForKnownClients(uint64_t aCacheDomains) {
+  auto [clients, _] = GetClients();
+  // We expect VoiceOver will require all information we have.
+  if (clients.contains(Client::VoiceOver)) {
+    return CacheDomain::All;
+  }
+  if (clients.contains(Client::FullKeyboardAccess)) {
+    aCacheDomains |= CacheDomain::Bounds;
+  }
+  if (clients.contains(Client::SwitchControl)) {
+    // XXX: Find minimum set of domains required for SwitchControl.
+    // SwitchControl can give up if we don't furnish it certain information.
+    return CacheDomain::All;
+  }
+  if (clients.contains(Client::VoiceControl)) {
+    // XXX: Find minimum set of domains required for VoiceControl.
+    return CacheDomain::All;
+  }
+  return aCacheDomains;
+}
+
 }  // namespace a11y
 }  // namespace mozilla
 
@@ -222,46 +367,14 @@ void PlatformRoleChangedEvent(Accessible* aTarget, const a11y::role& aRole,
     mozilla::a11y::sA11yShouldBeEnabled = ([value intValue] == 1);
     if (sA11yShouldBeEnabled) {
       // If accessibility should be enabled, log the appropriate client
-      nsAutoString client;
-      if ([[NSWorkspace sharedWorkspace]
-              respondsToSelector:@selector(isVoiceOverEnabled)] &&
-          [[NSWorkspace sharedWorkspace] isVoiceOverEnabled]) {
-        client.Assign(u"VoiceOver"_ns);
-      } else if ([[NSWorkspace sharedWorkspace]
-                     respondsToSelector:@selector(isSwitchControlEnabled)] &&
-                 [[NSWorkspace sharedWorkspace] isSwitchControlEnabled]) {
-        client.Assign(u"SwitchControl"_ns);
-      } else {
-        // This is more complicated than the NSWorkspace queries above
-        // because (a) there is no "full keyboard access" query for NSWorkspace
-        // and (b) the [NSApplication fullKeyboardAccessEnabled] query checks
-        // the pre-Monterey version of full keyboard access, which is not what
-        // we're looking for here. For more info, see bug 1772375 comment 7.
-        Boolean exists;
-        int val = CFPreferencesGetAppIntegerValue(
-            CFSTR("FullKeyboardAccessEnabled"),
-            CFSTR("com.apple.Accessibility"), &exists);
-        if (exists && val == 1) {
-          client.Assign(u"FullKeyboardAccess"_ns);
-        } else {
-          val = CFPreferencesGetAppIntegerValue(
-              CFSTR("CommandAndControlEnabled"),
-              CFSTR("com.apple.Accessibility"), &exists);
-          if (exists && val == 1) {
-            client.Assign(u"VoiceControl"_ns);
-          } else {
-            client.Assign(u"Unknown"_ns);
-          }
-        }
-      }
+      auto [_, clientToLog] = GetClients();
+      const char* client = GetStringForClient(clientToLog);
 
 #if defined(MOZ_TELEMETRY_REPORTING)
-      mozilla::Telemetry::ScalarSet(
-          mozilla::Telemetry::ScalarID::A11Y_INSTANTIATORS, client);
+      mozilla::glean::a11y::instantiators.Set(nsDependentCString(client));
 #endif  // defined(MOZ_TELEMETRY_REPORTING)
-      CrashReporter::RecordAnnotationNSCString(
-          CrashReporter::Annotation::AccessibilityClient,
-          NS_ConvertUTF16toUTF8(client));
+      CrashReporter::RecordAnnotationCString(
+          CrashReporter::Annotation::AccessibilityClient, client);
     }
   }
 

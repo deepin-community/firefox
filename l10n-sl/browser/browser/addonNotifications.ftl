@@ -81,6 +81,8 @@ addon-removal-title = Odstranim { $name }?
 addon-removal-message = Odstrani { $name } iz { -brand-shorter-name }a?
 addon-removal-button = Odstrani
 addon-removal-abuse-report-checkbox = Prijavi to razširitev organizaciji { -vendor-short-name }
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Če uporabljate funkcije ali razširitve, ki se zanašajo ta model, se bo ta ponovno dodal.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -119,6 +121,7 @@ addon-confirm-install-unsigned-message =
 #   $addonCount (Number): the number of add-ons being installed (at least 2)
 addon-confirm-install-some-unsigned-message =
     { $addonCount ->
+        [one] Pozor: stran želi v { -brand-short-name } namestiti { $addonCount } dodatek, od katerih je vsaj en nepotrjen. Nadaljujte na lastno odgovornost.
         [two] Pozor: stran želi v { -brand-short-name } namestiti { $addonCount } dodatka, od katerih je vsaj en nepotrjen. Nadaljujte na lastno odgovornost.
         [few] Pozor: stran želi v { -brand-short-name } namestiti { $addonCount } dodatke, od katerih je vsaj en nepotrjen. Nadaljujte na lastno odgovornost.
        *[other] Pozor: stran želi v { -brand-short-name } namestiti { $addonCount } dodatkov, od katerih je vsaj en nepotrjen. Nadaljujte na lastno odgovornost.
@@ -134,14 +137,19 @@ addon-install-error-corrupt-file = Dodatka, prenesenega s te strani, ni bilo mog
 addon-install-error-file-access = { $addonName } ni bilo mogoče namestiti, ker { -brand-short-name } ne more spremeniti zahtevane datoteke.
 addon-install-error-not-signed = { -brand-short-name } je tej strani preprečil namestitev nepotrjenega dodatka.
 addon-install-error-invalid-domain = Dodatka { $addonName } ni mogoče namestiti s tega mesta.
+addon-install-error-no-addon-name-file-access = Dodatka ni bilo mogoče namestiti, ker { -brand-short-name } ni mogel spremeniti potrebne datoteke.
 addon-local-install-error-network-failure = Tega dodatka ni bilo mogoče namestiti zaradi napake v datotečnem sistemu.
 addon-local-install-error-incorrect-hash = Tega dodatka ni bilo mogoče namestiti, ker ne ustreza pričakovanemu dodatku { -brand-short-name }.
 addon-local-install-error-corrupt-file = Tega dodatka ni bilo mogoče namestiti, ker je verjetno poškodovan.
 addon-local-install-error-file-access = { $addonName } ni bilo mogoče namestiti, ker { -brand-short-name } ne more spremeniti zahtevane datoteke.
 addon-local-install-error-not-signed = Tega dodatka ni bilo mogoče namestiti, ker ni potrjen.
+addon-local-install-no-addon-name-error-file-access = Dodatka ni bilo mogoče namestiti, ker { -brand-short-name } ne more spremeniti potrebne datoteke.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = Ni bilo mogoče namestiti dodatka { $addonName }, ker ni združljiv s { -brand-short-name } { $appVersion }.
+addon-install-error-hard-blocked = { $addonName } krši Mozilline pravilnike in ga ni mogoče namestiti v { -brand-short-name(sklon: "tozilnik") }.
+addon-install-error-soft-blocked2 = { $addonName } je omejen in ga ni mogoče namestiti v { -brand-short-name }.
 addon-install-error-blocklisted = { $addonName } ni bilo mogoče namestiti, ker predstavlja veliko tveganje za težave z varnostjo ali zanesljivostjo.
+addon-install-error-soft-blocked = { $addonName } krši Mozilline pravilnike in ga ni mogoče namestiti v { -brand-short-name(sklon: "tozilnik") }.
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = Dodatka { $addonName } ne morete namestiti kot končni uporabnik. Namesti ga lahko samo organizacija z uporabo pravilnikov za podjetja.

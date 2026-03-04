@@ -3,6 +3,12 @@
 
 "use strict";
 
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["test.wait300msAfterTabSwitch", true]],
+  });
+});
+
 /**
  * This test ensures the overlay is covering the entire window event thought
  * the body is smaller than the viewport
@@ -52,8 +58,8 @@ add_task(async function test_window_resize() {
       let contentInfo = await helper.getContentDimensions();
       ok(contentInfo, "Got dimensions back from the content");
 
-      const originalWindowWidth = window.outerWidth;
-      const originalWindowHeight = window.outerHeight;
+      const originalWindowWidth = window.innerWidth;
+      const originalWindowHeight = window.innerHeight;
 
       const BIG_WINDOW_SIZE = 920;
       const SMALL_WINDOW_SIZE = 620;

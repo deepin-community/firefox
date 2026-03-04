@@ -5,7 +5,7 @@
 // except according to those terms.
 
 use std::{
-    ops::{Deref, DerefMut},
+    ops::Deref,
     os::raw::c_uint,
     ptr::null_mut,
     time::{Duration, Instant},
@@ -40,10 +40,10 @@ scoped_ptr!(
 );
 
 /// `AntiReplay` is used by servers when processing 0-RTT handshakes.
+///
 /// It limits the exposure of servers to replay attack by rejecting 0-RTT
 /// if it appears to be a replay.  There is a false-positive rate that can be
 /// managed by tuning the parameters used to create the context.
-#[allow(clippy::module_name_repetitions)]
 pub struct AntiReplay {
     ctx: AntiReplayContext,
 }

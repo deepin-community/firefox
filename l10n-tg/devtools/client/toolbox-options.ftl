@@ -30,6 +30,10 @@ options-context-inspector = Тафтишкунанда
 options-show-user-agent-styles-label = Намоиш додани услубҳои браузер
 options-show-user-agent-styles-tooltip =
     .title = Фаъолсозии ин имкон услубҳои пешфарзеро, ки аз тарафи браузер бор мешаванд, нишон медиҳад.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Нишон додани «Shadow DOM»-и браузер
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Фаъол кардани ин имкон унсурҳои «Shadow DOM»-ро, ки браузер идора мекунад, нишон медиҳад.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = Кутоҳ кардани сифатҳои DOM
 options-collapse-attrs-tooltip =
@@ -116,6 +120,8 @@ options-disable-http-cache-label = Ғайрифаъол кардани зерҳ�
 options-disable-http-cache-tooltip =
     .title = Фаъолсозии ин имкон зерҳофизаи «HTTP»-ро барои ҳамаи варақаҳое, ки дорои қуттии абзорҳои кушода мебошанд, ғайрифаъол мекунад. Ин имкон ба коргузори хизматрасонӣ таъсир намерасонад.
 # The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = Ғайрифаъол кардани «JavaScript»
+# The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = Ғайрифаъол кардани JavaScript *
 options-disable-javascript-tooltip =
     .title = Фаъолсозии ин имкон «JavaScript»-ро барои варақаи ҷорӣ ғайрифаъол мекунад. Агар варақа ё қуттии абзорҳо пӯшида шавад, пас ин танзим бекор карда мешавад.
@@ -143,5 +149,11 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Фаъол кардани харитаҳои манбаъ
 options-source-maps-tooltip =
     .title = Агар шумо ин имконро фаъол созед, манбаъҳо дар абзорҳо ба харита дароварда мешаванд.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (танҳо ҷаласаи ҷорӣ, саҳифаро аз нав бор мекунад)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Танҳо ҷаласаи ҷорӣ, саҳифаро аз нав бор мекунад
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (саҳифаро аз нав бор мекунад)

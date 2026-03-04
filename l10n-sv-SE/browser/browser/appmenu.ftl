@@ -27,6 +27,10 @@ appmenuitem-downloads =
     .label = Filhämtaren
 appmenuitem-passwords =
     .label = Lösenord
+appmenuitem-extensions-and-themes =
+    .label = Tillägg och teman
+appmenuitem-extensions =
+    .label = Tillägg
 appmenuitem-addons-and-themes =
     .label = Tillägg och teman
 appmenuitem-print =
@@ -108,8 +112,11 @@ appmenu-fxa-sync-and-save-data2 = Synkronisera och spara data
 appmenu-fxa-signed-in-label = Logga in
 appmenu-fxa-setup-sync =
     .label = Aktivera synkronisering…
+appmenu-fxa-setup-sync-new = Aktivera
 appmenuitem-save-page =
     .label = Spara sida som…
+appmenuitem-fxa-sync-off-title = Synkronisering är avstängd
+appmenuitem-fxa-sync-off-description = Skydda och komma åt dina bokmärken, lösenord och mer var som helst.
 
 ## What's New panel in App menu.
 
@@ -163,6 +170,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Öppna profileringspanel
+    .tooltiptext = Öppna profileringspanel
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +199,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Förinställd för att undersöka ljud- och videobuggar i { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Media
+profiler-popup-presets-ml-description = Förinställd för att undersöka maskininlärningsbuggar i { -brand-shorter-name }.
+profiler-popup-presets-ml-label =
+    .label = Maskininlärning
 profiler-popup-presets-networking-description = Förinställd för att undersöka nätverksbuggar i { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = Nätverk
@@ -199,6 +212,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = Förinställd för felsökning i { -brand-shorter-name }. Hög omkostnad, använd inte för prestandaarbete men för att fokusera på att förstå webbläsarens beteende.
 profiler-popup-presets-debug-label =
     .label = Felsök
+profiler-popup-presets-web-compat-description = Rekommenderad förinställning för felsökning av webbkompatibilitetsproblem på webbplatser, snarare än att spåra prestanda.
+profiler-popup-presets-web-compat-label =
+    .label = Webbkompatibel
 profiler-popup-presets-custom-label =
     .label = Anpassad
 
@@ -277,5 +293,27 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Få varningar om dataintrång
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Dölj din riktiga e-postadress och telefonnummer
+appmenuitem-services-relay-description = Starta översikten för e-postalias
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Få skydd för hela enheten
 appmenuitem-vpn-description = Skydda din onlineaktivitet
+appmenu-services-header = Mina tjänster
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Testa andra skyddsverktyg från Mozilla:
+appmenu-other-protection-header = Testa andra skyddsverktyg från { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-other-profiles = Andra profiler
+appmenu-manage-profiles =
+    .label = Hantera profiler
+appmenu-copy-profile =
+    .label = Kopiera den här profilen
+appmenu-create-profile =
+    .label = Ny profil
+appmenu-edit-profile =
+    .aria-label = Redigera profil
+appmenu-profiles-2 =
+    .label = Profiler

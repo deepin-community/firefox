@@ -28,6 +28,7 @@ use std::time::Duration;
 use std::{env, mem, ptr, slice};
 use thin_vec::ThinVec;
 use webrender::glyph_rasterizer::GlyphRasterThread;
+use webrender::ChunkPool;
 
 use euclid::SideOffsets2D;
 use moz2d_renderer::Moz2dBlobImageHandler;
@@ -37,11 +38,12 @@ use tracy_rs::register_thread_with_profiler;
 use webrender::sw_compositor::SwCompositor;
 use webrender::{
     api::units::*, api::*, create_webrender_instance, render_api::*, set_profiler_hooks, AsyncPropertySampler,
-    AsyncScreenshotHandle, Compositor, CompositorCapabilities, CompositorConfig, CompositorSurfaceTransform, Device,
-    MappableCompositor, MappedTileInfo, NativeSurfaceId, NativeSurfaceInfo, NativeTileId, PartialPresentCompositor,
-    PipelineInfo, ProfilerHooks, RecordedFrameHandle, Renderer, RendererStats, SWGLCompositeSurfaceInfo,
+    AsyncScreenshotHandle, ClipRadius, Compositor, CompositorCapabilities, CompositorConfig, CompositorInputConfig,
+    CompositorSurfaceTransform, CompositorSurfaceUsage, Device, LayerCompositor, MappableCompositor, MappedTileInfo,
+    NativeSurfaceId, NativeSurfaceInfo, NativeTileId, PartialPresentCompositor, PendingShadersToPrecache, PipelineInfo,
+    ProfilerHooks, RecordedFrameHandle, RenderBackendHooks, Renderer, RendererStats, SWGLCompositeSurfaceInfo,
     SceneBuilderHooks, ShaderPrecacheFlags, Shaders, SharedShaders, TextureCacheConfig, UploadMethod, WebRenderOptions,
-    WindowVisibility, RenderBackendHooks, ONE_TIME_USAGE_HINT,
+    WindowProperties, WindowVisibility, ONE_TIME_USAGE_HINT,
 };
 use wr_malloc_size_of::MallocSizeOfOps;
 
@@ -414,6 +416,7 @@ extern "C" {
         renderer: *mut c_void,
         external_image_id: ExternalImageId,
         channel_index: u8,
+        is_composited: bool,
     ) -> WrExternalImage;
     fn wr_renderer_unlock_external_image(renderer: *mut c_void, external_image_id: ExternalImageId, channel_index: u8);
 }
@@ -425,8 +428,9 @@ pub struct WrExternalImageHandler {
 }
 
 impl ExternalImageHandler for WrExternalImageHandler {
-    fn lock(&mut self, id: ExternalImageId, channel_index: u8) -> ExternalImage {
-        let image = unsafe { wr_renderer_lock_external_image(self.external_image_obj, id, channel_index) };
+    fn lock(&mut self, id: ExternalImageId, channel_index: u8, is_composited: bool) -> ExternalImage {
+        let image =
+            unsafe { wr_renderer_lock_external_image(self.external_image_obj, id, channel_index, is_composited) };
         ExternalImage {
             uv: TexelRect::new(image.u0, image.v0, image.u1, image.v1),
             source: match image.image_type {
@@ -556,11 +560,11 @@ unsafe impl Send for CppNotifier {}
 
 extern "C" {
     fn wr_notifier_wake_up(window_id: WrWindowId, composite_needed: bool);
-    fn wr_notifier_new_frame_ready(window_id: WrWindowId, composite_needed: bool, publish_id: FramePublishId);
+    fn wr_notifier_new_frame_ready(window_id: WrWindowId, publish_id: FramePublishId, params: &FrameReadyParams);
     fn wr_notifier_external_event(window_id: WrWindowId, raw_event: usize);
     fn wr_schedule_render(window_id: WrWindowId, reasons: RenderReasons);
     // NOTE: This moves away from pipeline_info.
-    fn wr_finished_scene_build(window_id: WrWindowId, pipeline_info: &mut WrPipelineInfo);
+    fn wr_schedule_frame_after_scene_build(window_id: WrWindowId, pipeline_info: &mut WrPipelineInfo);
 
     fn wr_transaction_notification_notified(handler: usize, when: Checkpoint);
 }
@@ -578,9 +582,9 @@ impl RenderNotifier for CppNotifier {
         }
     }
 
-    fn new_frame_ready(&self, _: DocumentId, _scrolled: bool, composite_needed: bool, publish_id: FramePublishId) {
+    fn new_frame_ready(&self, _: DocumentId, publish_id: FramePublishId, params: &FrameReadyParams) {
         unsafe {
-            wr_notifier_new_frame_ready(self.window_id, composite_needed, publish_id);
+            wr_notifier_new_frame_ready(self.window_id, publish_id, params);
         }
     }
 
@@ -1027,16 +1031,15 @@ impl SceneBuilderHooks for APZCallbacks {
         }
     }
 
-    fn post_scene_swap(&self, _document_ids: &Vec<DocumentId>, info: PipelineInfo) {
+    fn post_scene_swap(&self, _document_ids: &Vec<DocumentId>, info: PipelineInfo, schedule_frame: bool) {
         let mut info = WrPipelineInfo::new(&info);
         unsafe {
             apz_post_scene_swap(self.window_id, &info);
         }
 
-        // After a scene swap we should schedule a render for the next vsync,
-        // otherwise there's no guarantee that the new scene will get rendered
-        // anytime soon
-        unsafe { wr_finished_scene_build(self.window_id, &mut info) }
+        if schedule_frame {
+            unsafe { wr_schedule_frame_after_scene_build(self.window_id, &mut info) }
+        }
         gecko_profiler_end_marker("SceneBuilding");
     }
 
@@ -1140,7 +1143,9 @@ pub extern "C" fn wr_thread_pool_new(low_priority: bool) -> *mut WrThreadPool {
         .num_threads(num_threads)
         .start_handler(move |idx| {
             if use_thread_local_arena {
-                unsafe { wr_register_thread_local_arena(); }
+                unsafe {
+                    wr_register_thread_local_arena();
+                }
             }
             let name = format!("WRWorker{}#{}", priority_tag, idx);
             register_thread_with_profiler(name.clone());
@@ -1159,6 +1164,23 @@ pub extern "C" fn wr_thread_pool_new(low_priority: bool) -> *mut WrThreadPool {
 #[no_mangle]
 pub unsafe extern "C" fn wr_thread_pool_delete(thread_pool: *mut WrThreadPool) {
     mem::drop(Box::from_raw(thread_pool));
+}
+
+pub struct WrChunkPool(Arc<ChunkPool>);
+
+#[no_mangle]
+pub unsafe extern "C" fn wr_chunk_pool_new() -> *mut WrChunkPool {
+    Box::into_raw(Box::new(WrChunkPool(Arc::new(ChunkPool::new()))))
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn wr_chunk_pool_delete(pool: *mut WrChunkPool) {
+    mem::drop(Box::from_raw(pool));
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn wr_chunk_pool_purge(pool: &WrChunkPool) {
+    pool.0.purge_all_chunks();
 }
 
 #[no_mangle]
@@ -1258,6 +1280,14 @@ extern "C" {
         tile_size: DeviceIntSize,
         is_opaque: bool,
     );
+    fn wr_compositor_create_swapchain_surface(
+        compositor: *mut c_void,
+        id: NativeSurfaceId,
+        size: DeviceIntSize,
+        is_opaque: bool,
+        needs_sync_dcomp_commit: bool,
+    );
+    fn wr_compositor_resize_swapchain(compositor: *mut c_void, id: NativeSurfaceId, size: DeviceIntSize);
     fn wr_compositor_create_external_surface(compositor: *mut c_void, id: NativeSurfaceId, is_opaque: bool);
     fn wr_compositor_create_backdrop_surface(compositor: *mut c_void, id: NativeSurfaceId, color: ColorF);
     fn wr_compositor_destroy_surface(compositor: *mut c_void, id: NativeSurfaceId);
@@ -1284,6 +1314,8 @@ extern "C" {
         transform: &CompositorSurfaceTransform,
         clip_rect: DeviceIntRect,
         image_rendering: ImageRendering,
+        rounded_clip_rect: DeviceIntRect,
+        rounded_clip_radii: ClipRadius,
     );
     fn wr_compositor_start_compositing(
         compositor: *mut c_void,
@@ -1298,6 +1330,19 @@ extern "C" {
     fn wr_compositor_deinit(compositor: *mut c_void);
     fn wr_compositor_get_capabilities(compositor: *mut c_void, caps: *mut CompositorCapabilities);
     fn wr_compositor_get_window_visibility(compositor: *mut c_void, caps: *mut WindowVisibility);
+    fn wr_compositor_get_window_properties(compositor: *mut c_void, props: *mut WindowProperties);
+    fn wr_compositor_bind_swapchain(
+        compositor: *mut c_void,
+        id: NativeSurfaceId,
+        dirty_rects: *const DeviceIntRect,
+        num_dirty_rects: usize,
+    );
+    fn wr_compositor_present_swapchain(
+        compositor: *mut c_void,
+        id: NativeSurfaceId,
+        dirty_rects: *const DeviceIntRect,
+        num_dirty_rects: usize,
+    );
     fn wr_compositor_map_tile(
         compositor: *mut c_void,
         id: NativeTileId,
@@ -1412,9 +1457,19 @@ impl Compositor for WrCompositor {
         transform: CompositorSurfaceTransform,
         clip_rect: DeviceIntRect,
         image_rendering: ImageRendering,
+        rounded_clip_rect: DeviceIntRect,
+        rounded_clip_radii: ClipRadius,
     ) {
         unsafe {
-            wr_compositor_add_surface(self.0, id, &transform, clip_rect, image_rendering);
+            wr_compositor_add_surface(
+                self.0,
+                id,
+                &transform,
+                clip_rect,
+                image_rendering,
+                rounded_clip_rect,
+                rounded_clip_radii,
+            );
         }
     }
 
@@ -1468,6 +1523,326 @@ impl Compositor for WrCompositor {
             let mut visibility: WindowVisibility = Default::default();
             wr_compositor_get_window_visibility(self.0, &mut visibility);
             visibility
+        }
+    }
+}
+
+struct NativeLayer {
+    id: NativeSurfaceId,
+    size: DeviceIntSize,
+    is_opaque: bool,
+    frames_since_used: usize,
+    usage: CompositorSurfaceUsage,
+}
+
+pub struct WrLayerCompositor {
+    compositor: *mut c_void,
+    next_layer_id: u64,
+    surface_pool: Vec<NativeLayer>,
+    visual_tree: Vec<NativeLayer>,
+    enable_screenshot: bool,
+    frames_since_using_multiple_layers: Option<u32>,
+}
+
+impl WrLayerCompositor {
+    fn new(compositor: *mut c_void) -> Self {
+        WrLayerCompositor {
+            compositor,
+            next_layer_id: 0,
+            surface_pool: Vec::new(),
+            visual_tree: Vec::new(),
+            enable_screenshot: false,
+            frames_since_using_multiple_layers: None,
+        }
+    }
+
+    fn reuse_same_tree(&mut self, input: &CompositorInputConfig) -> bool {
+        if input.layers.len() != self.visual_tree.len() {
+            return false;
+        }
+
+        for (request, layer) in input.layers.iter().zip(self.visual_tree.iter()) {
+            if layer.is_opaque != request.is_opaque || !layer.usage.matches(&request.usage) {
+                return false;
+            }
+
+            match layer.usage {
+                CompositorSurfaceUsage::Content => {
+                    if layer.size != request.clip_rect.size() {
+                        return false;
+                    }
+                },
+                CompositorSurfaceUsage::External { .. } => {},
+                CompositorSurfaceUsage::DebugOverlay => {},
+            };
+        }
+
+        for (request, layer) in input.layers.iter().zip(self.visual_tree.iter_mut()) {
+            layer.frames_since_used = 0;
+
+            // Copy across (potentially) updated external image id
+            layer.usage = request.usage;
+            match layer.usage {
+                CompositorSurfaceUsage::Content | CompositorSurfaceUsage::DebugOverlay => {},
+                CompositorSurfaceUsage::External { external_image_id, .. } => unsafe {
+                    wr_compositor_attach_external_image(self.compositor, layer.id, external_image_id);
+                },
+            }
+        }
+
+        true
+    }
+
+    fn use_multiple_layers_except_debug_layer(&mut self, input: &CompositorInputConfig) -> bool {
+        let is_debug_layer = |usage: &CompositorSurfaceUsage| -> bool {
+            match usage {
+                CompositorSurfaceUsage::DebugOverlay => true,
+                CompositorSurfaceUsage::Content | CompositorSurfaceUsage::External { .. } => false,
+            }
+        };
+
+        let count = input
+            .layers
+            .iter()
+            .filter(|layer| !is_debug_layer(&layer.usage))
+            .count();
+
+        count > 1
+    }
+}
+
+impl LayerCompositor for WrLayerCompositor {
+    // Begin compositing a frame with the supplied input config
+    fn begin_frame(&mut self, input: &CompositorInputConfig) -> bool {
+        const FRAME_COUNT_BEFORE_DISABLING_SYNC_DCOMP_COMMIT: u32 = 60;
+
+        let mut destroy_all_layers = false;
+        if self.enable_screenshot != input.enable_screenshot {
+            if input.enable_screenshot {
+                // Screenshot should not use multiple layers.
+                assert!(!self.use_multiple_layers_except_debug_layer(input));
+                // Force to disable requesting sync dcomp commit.
+                self.frames_since_using_multiple_layers = None;
+            } else {
+                assert!(self.frames_since_using_multiple_layers.is_none());
+            }
+            self.enable_screenshot = input.enable_screenshot;
+            destroy_all_layers = true;
+        }
+
+        if self.use_multiple_layers_except_debug_layer(input) {
+            assert!(!self.enable_screenshot);
+
+            if self.frames_since_using_multiple_layers.is_none() {
+                destroy_all_layers = true;
+            }
+            // Use of multiple layers requests sync dcomp commit.
+            self.frames_since_using_multiple_layers = Some(0);
+        } else {
+            match self.frames_since_using_multiple_layers {
+                None => {
+                    // Do not request sync dcomp commit.
+                },
+                Some(count) => {
+                    if count < FRAME_COUNT_BEFORE_DISABLING_SYNC_DCOMP_COMMIT {
+                        // Keep to requet sync dcomp commit to avoid frequent layers creation.
+                        self.frames_since_using_multiple_layers = Some(count + 1);
+                    } else {
+                        destroy_all_layers = true;
+                        // Stop to requet sync dcomp commit.
+                        self.frames_since_using_multiple_layers = None;
+                    }
+                },
+            }
+        };
+
+        // Request sync dcomp commit if multiple layers are using/used.
+        let needs_sync_dcomp_commit = self.frames_since_using_multiple_layers.is_some();
+
+        // Discard all layers to recreate them
+        if destroy_all_layers {
+            let mut layers_to_destroy = Vec::new();
+            self.surface_pool.append(&mut self.visual_tree);
+            assert!(self.visual_tree.is_empty());
+            mem::swap(&mut self.surface_pool, &mut layers_to_destroy);
+            for layer in layers_to_destroy {
+                unsafe {
+                    wr_compositor_destroy_surface(self.compositor, layer.id);
+                }
+            }
+        }
+
+        unsafe {
+            wr_compositor_begin_frame(self.compositor);
+        }
+
+        let reuse = self.reuse_same_tree(input);
+        if reuse {
+            // Do not request full render.
+            return false;
+        }
+
+        self.surface_pool.append(&mut self.visual_tree);
+        assert!(self.visual_tree.is_empty());
+
+        for request in input.layers {
+            let size = request.clip_rect.size();
+
+            let existing_index = self
+                .surface_pool
+                .iter()
+                .position(|layer| layer.is_opaque == request.is_opaque && layer.usage.matches(&request.usage));
+
+            let mut layer = match existing_index {
+                Some(existing_index) => {
+                    let mut layer = self.surface_pool.swap_remove(existing_index);
+
+                    layer.frames_since_used = 0;
+
+                    // Copy across (potentially) updated external image id
+                    layer.usage = request.usage;
+
+                    layer
+                },
+                None => {
+                    let id = NativeSurfaceId(self.next_layer_id);
+                    self.next_layer_id += 1;
+
+                    unsafe {
+                        match request.usage {
+                            CompositorSurfaceUsage::Content | CompositorSurfaceUsage::DebugOverlay => {
+                                wr_compositor_create_swapchain_surface(
+                                    self.compositor,
+                                    id,
+                                    size,
+                                    request.is_opaque,
+                                    needs_sync_dcomp_commit,
+                                );
+                            },
+                            CompositorSurfaceUsage::External { .. } => {
+                                wr_compositor_create_external_surface(self.compositor, id, request.is_opaque);
+                            },
+                        }
+                    }
+
+                    NativeLayer {
+                        id,
+                        size,
+                        is_opaque: request.is_opaque,
+                        frames_since_used: 0,
+                        usage: request.usage,
+                    }
+                },
+            };
+
+            match layer.usage {
+                CompositorSurfaceUsage::Content | CompositorSurfaceUsage::DebugOverlay => {
+                    if layer.size.width != size.width || layer.size.height != size.height {
+                        unsafe {
+                            wr_compositor_resize_swapchain(self.compositor, layer.id, size);
+                        }
+                        layer.size = size;
+                    }
+                },
+                CompositorSurfaceUsage::External { external_image_id, .. } => unsafe {
+                    wr_compositor_attach_external_image(self.compositor, layer.id, external_image_id);
+                },
+            }
+
+            self.visual_tree.push(layer);
+        }
+
+        for layer in &mut self.surface_pool {
+            layer.frames_since_used += 1;
+        }
+
+        // Request full render.
+        true
+    }
+
+    // Bind a layer by index for compositing into
+    fn bind_layer(&mut self, index: usize, dirty_rects: &[DeviceIntRect]) {
+        let layer = &self.visual_tree[index];
+
+        unsafe {
+            wr_compositor_bind_swapchain(self.compositor, layer.id, dirty_rects.as_ptr(), dirty_rects.len());
+        }
+    }
+
+    // Finish compositing a layer and present the swapchain
+    fn present_layer(&mut self, index: usize, dirty_rects: &[DeviceIntRect]) {
+        let layer = &self.visual_tree[index];
+
+        unsafe {
+            wr_compositor_present_swapchain(self.compositor, layer.id, dirty_rects.as_ptr(), dirty_rects.len());
+        }
+    }
+
+    fn add_surface(
+        &mut self,
+        index: usize,
+        transform: CompositorSurfaceTransform,
+        clip_rect: DeviceIntRect,
+        image_rendering: ImageRendering,
+        rounded_clip_rect: DeviceIntRect,
+        rounded_clip_radii: ClipRadius,
+    ) {
+        let layer = &self.visual_tree[index];
+
+        unsafe {
+            wr_compositor_add_surface(
+                self.compositor,
+                layer.id,
+                &transform,
+                clip_rect,
+                image_rendering,
+                rounded_clip_rect,
+                rounded_clip_radii,
+            );
+        }
+    }
+
+    // Finish compositing this frame
+    fn end_frame(&mut self) {
+        unsafe {
+            wr_compositor_end_frame(self.compositor);
+        }
+
+        // Destroy any unused surface pool entries
+        let mut layers_to_destroy = Vec::new();
+
+        self.surface_pool.retain(|layer| {
+            let keep = layer.frames_since_used < 3;
+
+            if !keep {
+                layers_to_destroy.push(layer.id);
+            }
+
+            keep
+        });
+
+        for layer_id in layers_to_destroy {
+            unsafe {
+                wr_compositor_destroy_surface(self.compositor, layer_id);
+            }
+        }
+    }
+
+    fn get_window_properties(&self) -> WindowProperties {
+        unsafe {
+            let mut props: WindowProperties = Default::default();
+            wr_compositor_get_window_properties(self.compositor, &mut props);
+            props
+        }
+    }
+}
+
+impl Drop for WrLayerCompositor {
+    fn drop(&mut self) {
+        for layer in self.surface_pool.iter().chain(self.visual_tree.iter()) {
+            unsafe {
+                wr_compositor_destroy_surface(self.compositor, layer.id);
+            }
         }
     }
 }
@@ -1548,8 +1923,15 @@ impl PartialPresentCompositor for WrPartialPresentCompositor {
     }
 }
 
-/// A wrapper around a strong reference to a Shaders object.
-pub struct WrShaders(SharedShaders);
+/// A wrapper around a strong reference to a Shaders object, and around the
+/// Device object that was used to create the shaders.
+///
+/// We store the device to avoid repeated GL function lookups.
+pub struct WrShaders {
+    shaders: SharedShaders,
+    shaders_to_precache: PendingShadersToPrecache,
+    device: Device,
+}
 
 pub struct WrGlyphRasterThread(GlyphRasterThread);
 
@@ -1598,6 +1980,7 @@ pub extern "C" fn wr_window_new(
     shaders: Option<&mut WrShaders>,
     thread_pool: *mut WrThreadPool,
     thread_pool_low_priority: *mut WrThreadPool,
+    chunk_pool: &WrChunkPool,
     glyph_raster_thread: Option<&WrGlyphRasterThread>,
     size_of_op: VoidPtrToSizeFn,
     enclosing_size_of_op: VoidPtrToSizeFn,
@@ -1619,6 +2002,7 @@ pub extern "C" fn wr_window_new(
     low_quality_pinch_zoom: bool,
     max_shared_surface_size: i32,
     enable_subpixel_aa: bool,
+    use_layer_compositor: bool,
 ) -> bool {
     assert!(unsafe { is_in_render_thread() });
 
@@ -1685,6 +2069,10 @@ pub extern "C" fn wr_window_new(
                 use_native_compositor,
             )),
         }
+    } else if use_layer_compositor {
+        CompositorConfig::Layer {
+            compositor: Box::new(WrLayerCompositor::new(compositor)),
+        }
     } else if use_native_compositor {
         CompositorConfig::Native {
             compositor: Box::new(WrCompositor(compositor)),
@@ -1720,6 +2108,30 @@ pub extern "C" fn wr_window_new(
         }
     };
 
+    let enable_dithering = if !software && static_prefs::pref!("gfx.webrender.dithering") {
+        true
+    } else {
+        false
+    };
+
+    let precise_linear_gradients = if software {
+        static_prefs::pref!("gfx.webrender.precise-linear-gradients-swgl")
+    } else {
+        static_prefs::pref!("gfx.webrender.precise-linear-gradients")
+    };
+
+    let precise_radial_gradients = if software {
+        static_prefs::pref!("gfx.webrender.precise-radial-gradients-swgl")
+    } else {
+        static_prefs::pref!("gfx.webrender.precise-radial-gradients")
+    };
+
+    let precise_conic_gradients = if software {
+        static_prefs::pref!("gfx.webrender.precise-conic-gradients-swgl")
+    } else {
+        static_prefs::pref!("gfx.webrender.precise-conic-gradients")
+    };
+
     let opts = WebRenderOptions {
         enable_aa: true,
         enable_subpixel_aa,
@@ -1731,6 +2143,7 @@ pub extern "C" fn wr_window_new(
         ))),
         crash_annotator: Some(Box::new(MozCrashAnnotator)),
         workers: Some(workers),
+        chunk_pool: Some(chunk_pool.0.clone()),
         dedicated_glyph_raster_thread: glyph_raster_thread.map(|grt| grt.0.clone()),
         size_of_op: Some(size_of_op),
         enclosing_size_of_op: Some(enclosing_size_of_op),
@@ -1773,12 +2186,16 @@ pub extern "C" fn wr_window_new(
         reject_software_rasterizer,
         low_quality_pinch_zoom,
         max_shared_surface_size,
+        enable_dithering,
+        precise_linear_gradients,
+        precise_radial_gradients,
+        precise_conic_gradients,
         ..Default::default()
     };
 
     let window_size = DeviceIntSize::new(window_width, window_height);
     let notifier = Box::new(CppNotifier { window_id });
-    let (renderer, sender) = match create_webrender_instance(gl, notifier, opts, shaders.map(|sh| &sh.0)) {
+    let (renderer, sender) = match create_webrender_instance(gl, notifier, opts, shaders.map(|sh| &sh.shaders)) {
         Ok((renderer, sender)) => (renderer, sender),
         Err(e) => {
             warn!(" Failed to create a Renderer: {:?}", e);
@@ -2002,13 +2419,24 @@ pub extern "C" fn wr_transaction_set_document_view(txn: &mut Transaction, doc_re
 }
 
 #[no_mangle]
-pub extern "C" fn wr_transaction_generate_frame(txn: &mut Transaction, id: u64, reasons: RenderReasons) {
-    txn.generate_frame(id, reasons);
+pub extern "C" fn wr_transaction_generate_frame(
+    txn: &mut Transaction,
+    id: u64,
+    present: bool,
+    tracked: bool,
+    reasons: RenderReasons,
+) {
+    txn.generate_frame(id, present, tracked, reasons);
 }
 
 #[no_mangle]
 pub extern "C" fn wr_transaction_invalidate_rendered_frame(txn: &mut Transaction, reasons: RenderReasons) {
     txn.invalidate_rendered_frame(reasons);
+}
+
+#[no_mangle]
+pub extern "C" fn wr_transaction_render_offscreen(txn: &mut Transaction, pipeline_id: WrPipelineId) {
+    txn.render_offscreen(pipeline_id);
 }
 
 fn wr_animation_properties_into_vec<T>(
@@ -2177,6 +2605,7 @@ pub extern "C" fn wr_resource_updates_add_external_image(
     external_image_id: ExternalImageId,
     image_type: &ExternalImageType,
     channel_index: u8,
+    normalized_uvs: bool,
 ) {
     txn.add_image(
         image_key,
@@ -2185,6 +2614,7 @@ pub extern "C" fn wr_resource_updates_add_external_image(
             id: external_image_id,
             channel_index,
             image_type: *image_type,
+            normalized_uvs,
         }),
         None,
     );
@@ -2222,6 +2652,7 @@ pub extern "C" fn wr_resource_updates_update_external_image(
     external_image_id: ExternalImageId,
     image_type: &ExternalImageType,
     channel_index: u8,
+    normalized_uvs: bool,
 ) {
     txn.update_image(
         key,
@@ -2230,6 +2661,7 @@ pub extern "C" fn wr_resource_updates_update_external_image(
             id: external_image_id,
             channel_index,
             image_type: *image_type,
+            normalized_uvs,
         }),
         &DirtyRect::All,
     );
@@ -2243,6 +2675,7 @@ pub extern "C" fn wr_resource_updates_update_external_image_with_dirty_rect(
     external_image_id: ExternalImageId,
     image_type: &ExternalImageType,
     channel_index: u8,
+    normalized_uvs: bool,
     dirty_rect: DeviceIntRect,
 ) {
     txn.update_image(
@@ -2252,6 +2685,7 @@ pub extern "C" fn wr_resource_updates_update_external_image_with_dirty_rect(
             id: external_image_id,
             channel_index,
             image_type: *image_type,
+            normalized_uvs,
         }),
         &DirtyRect::Partial(dirty_rect),
     );
@@ -2283,6 +2717,16 @@ pub extern "C" fn wr_resource_updates_delete_image(txn: &mut Transaction, key: W
 #[no_mangle]
 pub extern "C" fn wr_resource_updates_delete_blob_image(txn: &mut Transaction, key: BlobImageKey) {
     txn.delete_blob_image(key);
+}
+
+#[no_mangle]
+pub extern "C" fn wr_resource_updates_add_snapshot_image(txn: &mut Transaction, image_key: SnapshotImageKey) {
+    txn.add_snapshot_image(image_key);
+}
+
+#[no_mangle]
+pub extern "C" fn wr_resource_updates_delete_snapshot_image(txn: &mut Transaction, key: SnapshotImageKey) {
+    txn.delete_snapshot_image(key);
 }
 
 #[no_mangle]
@@ -2324,7 +2768,7 @@ pub extern "C" fn wr_resource_updates_add_raw_font(
     txn.add_raw_font(key, bytes.flush_into_vec(), index);
 }
 
-fn generate_capture_path(path: *const c_char) -> Option<PathBuf> {
+fn generate_capture_path(path: *const c_char, moz_revision: *const c_char) -> Option<PathBuf> {
     use std::fs::{create_dir_all, File};
     use std::io::Write;
 
@@ -2365,8 +2809,10 @@ fn generate_capture_path(path: *const c_char) -> Option<PathBuf> {
     match File::create(path.join("wr.txt")) {
         Ok(mut file) => {
             // The Gecko HG revision is available at compile time
-            if let Some(moz_revision) = option_env!("GECKO_HEAD_REV") {
-                writeln!(file, "mozilla-central {}", moz_revision).unwrap();
+            if !moz_revision.is_null() {
+                if let Ok(moz_revision) = unsafe { CStr::from_ptr(moz_revision) }.to_str() {
+                    writeln!(file, "mozilla-central {}", moz_revision).unwrap()
+                }
             }
             Some(path)
         },
@@ -2378,16 +2824,26 @@ fn generate_capture_path(path: *const c_char) -> Option<PathBuf> {
 }
 
 #[no_mangle]
-pub extern "C" fn wr_api_capture(dh: &mut DocumentHandle, path: *const c_char, bits_raw: u32) {
-    if let Some(path) = generate_capture_path(path) {
+pub extern "C" fn wr_api_capture(
+    dh: &mut DocumentHandle,
+    path: *const c_char,
+    moz_revision: *const c_char,
+    bits_raw: u32,
+) {
+    if let Some(path) = generate_capture_path(path, moz_revision) {
         let bits = CaptureBits::from_bits(bits_raw as _).unwrap();
         dh.api.save_capture(path, bits);
     }
 }
 
 #[no_mangle]
-pub extern "C" fn wr_api_start_capture_sequence(dh: &mut DocumentHandle, path: *const c_char, bits_raw: u32) {
-    if let Some(path) = generate_capture_path(path) {
+pub extern "C" fn wr_api_start_capture_sequence(
+    dh: &mut DocumentHandle,
+    path: *const c_char,
+    moz_revision: *const c_char,
+    bits_raw: u32,
+) {
+    if let Some(path) = generate_capture_path(path, moz_revision) {
         let bits = CaptureBits::from_bits(bits_raw as _).unwrap();
         dh.api.start_capture_sequence(path, bits);
     }
@@ -2601,6 +3057,7 @@ pub struct WrStackingContextParams {
     pub animation: *const WrAnimationProperty,
     pub opacity: *const f32,
     pub computed_transform: *const WrComputedTransformData,
+    pub snapshot: *const SnapshotInfo,
     pub transform_style: TransformStyle,
     pub reference_frame_kind: WrReferenceFrameKind,
     pub is_2d_scale_translation: bool,
@@ -2760,12 +3217,17 @@ pub extern "C" fn wr_dp_push_stacking_context(
         params.mix_blend_mode,
         &filters,
         &r_filter_datas,
-        &[],
         glyph_raster_space,
         params.flags,
+        unsafe { params.snapshot.as_ref() }.cloned(),
     );
 
     result
+}
+
+#[no_mangle]
+pub extern "C" fn wr_dp_push_debug(state: &mut WrState, val: u32) {
+    state.frame_builder.dl_builder.push_debug(val);
 }
 
 #[no_mangle]
@@ -3089,28 +3551,7 @@ pub extern "C" fn wr_dp_push_backdrop_filter(
     state
         .frame_builder
         .dl_builder
-        .push_backdrop_filter(&prim_info, &filters, &filter_datas, &[]);
-}
-
-#[no_mangle]
-pub extern "C" fn wr_dp_push_clear_rect(
-    state: &mut WrState,
-    rect: LayoutRect,
-    clip_rect: LayoutRect,
-    parent: &WrSpaceAndClipChain,
-) {
-    debug_assert!(unsafe { !is_in_render_thread() });
-
-    let space_and_clip = parent.to_webrender(state.pipeline_id);
-
-    let prim_info = CommonItemProperties {
-        clip_rect,
-        clip_chain_id: space_and_clip.clip_chain_id,
-        spatial_id: space_and_clip.spatial_id,
-        flags: prim_flags(true, /* prefer_compositor_surface */ false),
-    };
-
-    state.frame_builder.dl_builder.push_clear_rect(&prim_info, rect);
+        .push_backdrop_filter(&prim_info, &filters, &filter_datas);
 }
 
 #[no_mangle]
@@ -4151,21 +4592,13 @@ pub extern "C" fn wr_shaders_new(
 ) -> *mut WrShaders {
     let mut device = wr_device_new(gl_context, program_cache);
 
-    let precache_flags = if precache_shaders || env_var_to_bool("MOZ_WR_PRECACHE_SHADERS") {
-        ShaderPrecacheFlags::FULL_COMPILE
-    } else {
-        ShaderPrecacheFlags::ASYNC_COMPILE
-    };
-
-    let opts = WebRenderOptions {
-        precache_flags,
-        ..Default::default()
-    };
-
-    let gl_type = device.gl().get_type();
     device.begin_frame();
 
-    let shaders = Rc::new(RefCell::new(match Shaders::new(&mut device, gl_type, &opts) {
+    let mut options = WebRenderOptions::default();
+    options.enable_dithering = static_prefs::pref!("gfx.webrender.dithering");
+
+    let gl_type = device.gl().get_type();
+    let mut shaders = match Shaders::new(&mut device, gl_type, &options) {
         Ok(shaders) => shaders,
         Err(e) => {
             warn!(" Failed to create a Shaders: {:?}", e);
@@ -4175,22 +4608,68 @@ pub extern "C" fn wr_shaders_new(
             }
             return ptr::null_mut();
         },
-    }));
-
-    let shaders = WrShaders(shaders);
+    };
 
     device.end_frame();
+
+    let precache_flags = if precache_shaders || env_var_to_bool("MOZ_WR_PRECACHE_SHADERS") {
+        ShaderPrecacheFlags::FULL_COMPILE
+    } else {
+        ShaderPrecacheFlags::ASYNC_COMPILE
+    };
+
+    let shaders_to_precache = shaders.precache_all(precache_flags);
+
+    let shaders = WrShaders {
+        shaders: Rc::new(RefCell::new(shaders)),
+        shaders_to_precache,
+        device,
+    };
+
     Box::into_raw(Box::new(shaders))
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn wr_shaders_delete(shaders: *mut WrShaders, gl_context: *mut c_void) {
-    let mut device = wr_device_new(gl_context, None);
-    let shaders = Box::from_raw(shaders);
-    if let Ok(shaders) = Rc::try_unwrap(shaders.0) {
+pub unsafe extern "C" fn wr_shaders_delete(shaders: *mut WrShaders) {
+    // Deallocate the box by moving the values out of it.
+    let WrShaders {
+        shaders, mut device, ..
+    } = *Box::from_raw(shaders);
+    if let Ok(shaders) = Rc::try_unwrap(shaders) {
         shaders.into_inner().deinit(&mut device);
     }
-    // let shaders go out of scope and get dropped
+}
+
+/// Perform one step of shader warmup.
+///
+/// Returns true if another call is needed, false if warmup is finished.
+#[no_mangle]
+pub extern "C" fn wr_shaders_resume_warmup(shaders: &mut WrShaders) -> bool {
+    shaders.device.begin_frame();
+
+    let need_another_call = match shaders
+        .shaders
+        .borrow_mut()
+        .resume_precache(&mut shaders.device, &mut shaders.shaders_to_precache)
+    {
+        Ok(need_another_call) => need_another_call,
+        Err(e) => {
+            warn!(" Failed to create a shader during warmup: {:?}", e);
+            let msg = CString::new(format!("wr_shaders_resume_warmup: {:?}", e)).unwrap();
+            unsafe {
+                gfx_critical_note(msg.as_ptr());
+            }
+
+            // Don't ask for another call to resume warmup; if one shader failed
+            // to compile it's likely that we will run into similar errors with
+            // the rest of the shaders.
+            false
+        },
+    };
+
+    shaders.device.end_frame();
+
+    need_another_call
 }
 
 #[no_mangle]

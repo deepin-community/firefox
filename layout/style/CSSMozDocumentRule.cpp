@@ -5,11 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/CSSMozDocumentRule.h"
-#include "mozilla/dom/CSSMozDocumentRuleBinding.h"
 
 #include "js/RegExpFlags.h"
-#include "mozilla/dom/BrowsingContext.h"
 #include "mozilla/ServoBindings.h"
+#include "mozilla/dom/BrowsingContext.h"
+#include "mozilla/dom/CSSMozDocumentRuleBinding.h"
 #include "nsContentUtils.h"
 #include "nsHTMLDocument.h"
 
@@ -33,14 +33,11 @@ bool CSSMozDocumentRule::Match(const Document* aDoc, nsIURI* aDocURI,
       if (aPattern.EqualsLiteral("all")) {
         return kind != Document::MediaDocumentKind::NotMedia;
       }
-      MOZ_ASSERT(aPattern.EqualsLiteral("plugin") ||
-                 aPattern.EqualsLiteral("image") ||
+      MOZ_ASSERT(aPattern.EqualsLiteral("image") ||
                  aPattern.EqualsLiteral("video"));
       switch (kind) {
         case Document::MediaDocumentKind::NotMedia:
           return false;
-        case Document::MediaDocumentKind::Plugin:
-          return aPattern.EqualsLiteral("plugin");
         case Document::MediaDocumentKind::Image:
           return aPattern.EqualsLiteral("image");
         case Document::MediaDocumentKind::Video:

@@ -81,6 +81,8 @@ addon-removal-title = ต้องการเอา { $name } ออกหร�
 addon-removal-message = เอา { $name } ออกจาก { -brand-shorter-name }?
 addon-removal-button = เอาออก
 addon-removal-abuse-report-checkbox = รายงานส่วนขยายนี้ไปยัง { -vendor-short-name }
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = ถ้าคุณใช้คุณลักษณะหรือส่วนขยายที่ใช้โมเดลนี้ โมเดลนั้นจะถูกเพิ่มกลับมาอีกครั้ง
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying = กำลังดาวน์โหลดและยืนยัน { $addonCount } ส่วนเสริม…
@@ -111,14 +113,19 @@ addon-install-error-corrupt-file = ไม่สามารถติดตั้
 addon-install-error-file-access = ไม่สามารถติดตั้ง { $addonName } เนื่องจาก { -brand-short-name } ไม่สามารถปรับเปลี่ยนไฟล์ที่จำเป็นได้
 addon-install-error-not-signed = { -brand-short-name } ได้ป้องกันไม่ให้ไซต์นี้ติดตั้งส่วนเสริมที่ไม่ได้รับการยืนยัน
 addon-install-error-invalid-domain = ไม่สามารถติดตั้งส่วนเสริม { $addonName } จากตำแหน่งที่ตั้งนี้ได้
+addon-install-error-no-addon-name-file-access = ไม่สามารถติดตั้งส่วนเสริมนี้เนื่องจาก { -brand-short-name } ไม่สามารถปรับเปลี่ยนไฟล์ที่จำเป็น
 addon-local-install-error-network-failure = ไม่สามารถติดตั้งส่วนเสริมนี้เนื่องจากข้อผิดพลาดระบบไฟล์
 addon-local-install-error-incorrect-hash = ไม่สามารถติดตั้งส่วนเสริมนี้เนื่องจากไม่ตรงกับส่วนเสริมที่ { -brand-short-name } ต้องการ
 addon-local-install-error-corrupt-file = ไม่สามารถติดตั้งส่วนเสริมนี้เนื่องจากส่วนเสริมดูเหมือนจะเสียหาย
 addon-local-install-error-file-access = ไม่สามารถติดตั้ง { $addonName } เนื่องจาก { -brand-short-name } ไม่สามารถปรับเปลี่ยนไฟล์ที่จำเป็นได้
 addon-local-install-error-not-signed = ไม่สามารถติดตั้งส่วนเสริมนี้เนื่องจากส่วนเสริมไม่ได้รับการยืนยัน
+addon-local-install-no-addon-name-error-file-access = ไม่สามารถติดตั้งส่วนเสริมนี้เนื่องจาก { -brand-short-name } ไม่สามารถปรับเปลี่ยนไฟล์ที่จำเป็น
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = ไม่สามารถติดตั้ง { $addonName } เนื่องจากใช้ร่วมกับ { -brand-short-name } { $appVersion } ไม่ได้
+addon-install-error-hard-blocked = { $addonName } ละเมิดนโยบายของ Mozilla และไม่สามารถติดตั้งบน { -brand-short-name } ได้
+addon-install-error-soft-blocked2 = { $addonName } ถูกจำกัดและไม่สามารถติดตั้งบน { -brand-short-name } ได้
 addon-install-error-blocklisted = ไม่สามารถติดตั้ง { $addonName } เนื่องจากมีความเสี่ยงสูงที่จะก่อให้เกิดปัญหาด้านเสถียรภาพหรือความปลอดภัย
+addon-install-error-soft-blocked = { $addonName } ละเมิดนโยบายของ Mozilla และไม่สามารถติดตั้งบน { -brand-short-name } ได้
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = คุณไม่สามารถติดตั้ง { $addonName } ในฐานะผู้ใช้ปลายทางได้ แต่สามารถติดตั้งได้โดยองค์กรที่ใช้นโยบายองค์กรเท่านั้น

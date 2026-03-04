@@ -18,7 +18,7 @@ namespace jit {
 // Possible register allocators which may be used.
 enum IonRegisterAllocator {
   RegisterAllocator_Backtracking,
-  RegisterAllocator_Testbed,
+  RegisterAllocator_Simple,
 };
 
 // Which register to use as base register to access stack slots: frame pointer,
@@ -37,8 +37,8 @@ static inline mozilla::Maybe<IonRegisterAllocator> LookupRegisterAllocator(
   if (!strcmp(name, "backtracking")) {
     return mozilla::Some(RegisterAllocator_Backtracking);
   }
-  if (!strcmp(name, "testbed")) {
-    return mozilla::Some(RegisterAllocator_Testbed);
+  if (!strcmp(name, "simple")) {
+    return mozilla::Some(RegisterAllocator_Simple);
   }
   return mozilla::Nothing();
 }
@@ -66,15 +66,19 @@ struct DefaultJitOptions {
   bool disableRecoverIns;
   bool disableScalarReplacement;
   bool disableCacheIR;
+  bool disableStubFolding;
+  bool disableStubFoldingLoadsAndStores;
   bool disableSink;
   bool disableRedundantShapeGuards;
   bool disableRedundantGCBarriers;
   bool disableBailoutLoopCheck;
+  bool disableObjectKeysScalarReplacement;
 #ifdef ENABLE_PORTABLE_BASELINE_INTERP
   bool portableBaselineInterpreter;
 #endif
   bool baselineInterpreter;
   bool baselineJit;
+  bool baselineBatching;
   bool ion;
   bool jitForTrustedPrincipals;
   bool nativeRegExp;
@@ -98,6 +102,7 @@ struct DefaultJitOptions {
   bool emitInterpreterEntryTrampoline;
   uint32_t baselineInterpreterWarmUpThreshold;
   uint32_t baselineJitWarmUpThreshold;
+  uint32_t baselineQueueCapacity;
   uint32_t trialInliningWarmUpThreshold;
   uint32_t trialInliningInitialWarmUpCount;
   UseMonomorphicInlining monomorphicInlining = UseMonomorphicInlining::Default;
@@ -124,7 +129,10 @@ struct DefaultJitOptions {
   uint32_t ionMaxLocalsAndArgsMainThread;
   uint32_t wasmBatchBaselineThreshold;
   uint32_t wasmBatchIonThreshold;
-  mozilla::Maybe<IonRegisterAllocator> forcedRegisterAllocator;
+#ifdef ENABLE_JS_AOT_ICS
+  bool enableAOTICs;
+  bool enableAOTICEnforce;
+#endif
 
   // Spectre mitigation flags. Each mitigation has its own flag in order to
   // measure the effectiveness of each mitigation with various proof of

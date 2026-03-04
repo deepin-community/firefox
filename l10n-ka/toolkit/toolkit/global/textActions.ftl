@@ -22,11 +22,12 @@ text-action-copy =
     .accesskey = ს
 text-action-copy-shortcut =
     .key = C
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-text-action-strip-on-share =
-    .label = ასლი თვალის დევნების არიდებით
-    .accesskey = ნ
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+text-action-copy-clean-link =
+    .label = ბმულის სუფთა ასლი
+    .accesskey = ფ
 text-action-paste =
     .label = ჩასმა
     .accesskey = ჩ
@@ -38,6 +39,9 @@ text-action-paste-shortcut =
 text-action-delete =
     .label = წაშლა
     .accesskey = წ
+text-action-reveal-password =
+    .label = პაროლის გამოჩენა
+    .accesskey = ნ
 text-action-select-all =
     .label = ყველაფრის მონიშვნა
     .accesskey = ყ
@@ -62,3 +66,25 @@ text-action-spell-dictionaries =
     .accesskey = ე
 text-action-search-text-box-clear =
     .title = გასუფთავება
+text-action-highlight-selection =
+    .label = მონიშნულის გამორჩევა
+# This adds a comment to selected text within the PDF viewer.
+text-action-comment-selection-1 =
+    .label = შენიშვნის დართვა მონიშნულზე
+# "Copy Link to Highlight" creates a permanent 'Text Fragment' link
+# to the current selection, and copies it into the user's clipboard.
+text-action-copy-link-to-highlight =
+    .label = ბმულის აღება მონიშნულზე
+# This combines "Copy Link to Highlight" with "Copy Clean Link", ie.
+# it creates a link with a text fragment to the current selection
+# and it strips trackers etc.
+text-action-copy-clean-link-to-highlight =
+    .label = სუფთა ბმულის აღება მონიშნულიდან
+# If the page has been loaded with a text fragment and text is
+# visibly highlighted, this removes any highlighted sections on the page.
+text-action-remove-highlight =
+    .label = მონიშვნის მოცილება
+# If the page has been loaded with a text fragment and text is
+# visibly highlighted, this removes any highlighted sections on the page.
+text-action-remove-all-highlights =
+    .label = ყველა მონიშვნის მოცილება

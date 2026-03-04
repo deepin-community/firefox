@@ -39,7 +39,6 @@ ${helpers.predefined_type(
     affects="",
 )}
 
-// TODO(emilio): This probably should be hidden from content.
 ${helpers.single_keyword(
     "-moz-window-dragging",
     "default drag no-drag",
@@ -47,6 +46,7 @@ ${helpers.single_keyword(
     gecko_ffi_name="mWindowDragging",
     gecko_enum_prefix="StyleWindowDragging",
     animation_type="discrete",
+    enabled_in="chrome",
     spec="None (Nonstandard Firefox-only property)",
     affects="paint",
 )}
@@ -81,18 +81,6 @@ ${helpers.predefined_type(
     "Transform",
     "generics::transform::Transform::none()",
     engines="gecko",
-    spec="None (Nonstandard internal property)",
-    enabled_in="chrome",
-    affects="overflow",
-)}
-
-${helpers.predefined_type(
-    "-moz-window-transform-origin",
-    "TransformOrigin",
-    "computed::TransformOrigin::initial_value()",
-    engines="gecko",
-    gecko_ffi_name="mWindowTransformOrigin",
-    boxed=True,
     spec="None (Nonstandard internal property)",
     enabled_in="chrome",
     affects="overflow",
@@ -195,12 +183,11 @@ ${helpers.predefined_type(
     "transition-behavior",
     "TransitionBehavior",
     "computed::TransitionBehavior::normal()",
-    engines="gecko",
+    engines="gecko servo",
     initial_specified_value="specified::TransitionBehavior::normal()",
     vector=True,
     need_index=True,
     animation_type="none",
-    gecko_pref="layout.css.transition-behavior.enabled",
     spec="https://drafts.csswg.org/css-transitions-2/#transition-behavior-property",
     affects="",
 )}
@@ -321,7 +308,6 @@ ${helpers.predefined_type(
     vector=True,
     need_index=True,
     animation_type="none",
-    gecko_pref="layout.css.animation-composition.enabled",
     servo_pref="layout.unimplemented",
     spec="https://drafts.csswg.org/css-animations-2/#animation-composition",
     affects="",
@@ -443,9 +429,24 @@ ${helpers.predefined_type(
     "view-transition-name",
     "ViewTransitionName",
     "computed::ViewTransitionName::none()",
-    engines="gecko",
+    engines="gecko servo",
+    servo_pref="layout.unimplemented",
     animation_type="discrete",
     gecko_pref="dom.viewTransitions.enabled",
     spec="https://drafts.csswg.org/css-view-transitions-1/#view-transition-name-prop",
     affects="",
+    enabled_in="ua",
+)}
+
+${helpers.predefined_type(
+    "view-transition-class",
+    "ViewTransitionClass",
+    "computed::ViewTransitionClass::none()",
+    engines="gecko servo",
+    servo_pref="layout.unimplemented",
+    animation_type="discrete",
+    gecko_pref="dom.viewTransitions.enabled",
+    spec="https://drafts.csswg.org/css-view-transitions-2/#view-transition-class-prop",
+    affects="",
+    enabled_in="ua",
 )}

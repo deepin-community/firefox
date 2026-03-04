@@ -179,7 +179,7 @@ var CaptivePortalWatcher = {
     let win = BrowserWindowTracker.getTopWindow();
     // Used by tests: ignore the main test window in order to enable testing of
     // the case where we have no open windows.
-    if (win.document.documentElement.getAttribute("ignorecaptiveportal")) {
+    if (win?.document.documentElement.getAttribute("ignorecaptiveportal")) {
       win = null;
     }
 
@@ -247,11 +247,15 @@ var CaptivePortalWatcher = {
       (Date.now() - this._bannerDisplayTime) / 1000
     );
 
-    Services.telemetry.keyedScalarAdd(
-      "networking.captive_portal_banner_display_time",
-      aSuccess ? "success" : "abort",
-      durationInSeconds
-    );
+    if (aSuccess) {
+      Glean.networking.captivePortalBannerDisplayTime.success.add(
+        durationInSeconds
+      );
+    } else {
+      Glean.networking.captivePortalBannerDisplayTime.abort.add(
+        durationInSeconds
+      );
+    }
 
     if (!this._captivePortalTab) {
       return;
@@ -284,7 +288,7 @@ var CaptivePortalWatcher = {
       case "activate":
         this._delayedCaptivePortalDetected();
         break;
-      case "TabSelect":
+      case "TabSelect": {
         if (this._notificationPromise) {
           await this._notificationPromise;
         }
@@ -308,6 +312,7 @@ var CaptivePortalWatcher = {
           button.style.visibility = "visible";
         }
         break;
+      }
     }
   },
 
@@ -316,10 +321,7 @@ var CaptivePortalWatcher = {
       return;
     }
 
-    Services.telemetry.scalarAdd(
-      "networking.captive_portal_banner_displayed",
-      1
-    );
+    Glean.networking.captivePortalBannerDisplayed.add(1);
     this._bannerDisplayTime = Date.now();
 
     let buttons = [
@@ -346,9 +348,7 @@ var CaptivePortalWatcher = {
           (Date.now() - this._bannerDisplayTime) / 1000
         );
 
-        Services.telemetry.keyedScalarAdd(
-          "networking.captive_portal_banner_display_time",
-          "dismiss",
+        Glean.networking.captivePortalBannerDisplayTime.dismiss.add(
           durationInSeconds
         );
       }
@@ -395,7 +395,7 @@ var CaptivePortalWatcher = {
             userContextId: gBrowser.contentPrincipal.userContextId,
           }
         ),
-        disableTRR: true,
+        isCaptivePortalTab: true,
       });
       this._captivePortalTab = Cu.getWeakReference(tab);
       this._previousCaptivePortalTab = Cu.getWeakReference(tab);

@@ -215,7 +215,7 @@ this.DateTimeBoxWidget = class {
     // This is to open the picker when input element is tapped on Android
     // or for type=time inputs (this includes padding area).
     this.isAndroid = this.window.navigator.appVersion.includes("Android");
-    if (this.isAndroid || this.type == "time") {
+    if (this.showPickerOnClick) {
       this.mInputElement.addEventListener(
         "click",
         this,
@@ -246,7 +246,7 @@ this.DateTimeBoxWidget = class {
 
   generateContent() {
     const parser = new this.window.DOMParser();
-    let parserDoc = parser.parseFromString(
+    let parserDoc = parser.parseFromSafeString(
       `<div class="datetimebox" xmlns="http://www.w3.org/1999/xhtml" role="none">
         <link rel="stylesheet" type="text/css" href="chrome://global/content/bindings/datetimebox.css" />
         <div class="datetime-input-box-wrapper" id="input-box-wrapper" role="presentation">
@@ -274,11 +274,12 @@ this.DateTimeBoxWidget = class {
   }
 
   get FIELD_EVENTS() {
-    return ["focus", "blur", "copy", "cut", "paste"];
+    return ["focus", "copy", "cut", "paste"];
   }
 
   get CONTROL_EVENTS() {
     return [
+      "MozDateTimeWillBlur",
       "MozDateTimeValueChanged",
       "MozNotifyMinMaxStepAttrChanged",
       "MozDateTimeAttributeChanged",
@@ -301,7 +302,7 @@ this.DateTimeBoxWidget = class {
         eventName,
         this,
         { mozSystemGroup: true },
-        false
+        /* wantsUntrusted = */ false
       );
     });
   }
@@ -433,6 +434,7 @@ this.DateTimeBoxWidget = class {
   setPickerState(aIsOpen) {
     this.log("picker is now " + (aIsOpen ? "opened" : "closed"));
     this.mIsPickerOpen = aIsOpen;
+    this.mInputElement.setOpenState(aIsOpen);
     // Calendar button's expanded state mirrors this.mIsPickerOpen
     this.updateCalendarButtonState(this.mIsPickerOpen);
   }
@@ -483,12 +485,6 @@ this.DateTimeBoxWidget = class {
   closeDateTimePicker() {
     if (this.mIsPickerOpen) {
       this.mInputElement.closeDateTimePicker();
-    }
-  }
-
-  notifyPicker() {
-    if (this.mIsPickerOpen && this.isAnyFieldAvailable(true)) {
-      this.mInputElement.updateDateTimePicker(this.getCurrentValue());
     }
   }
 
@@ -556,8 +552,9 @@ this.DateTimeBoxWidget = class {
         this.onFocus(aEvent);
         break;
       }
-      case "blur": {
-        this.onBlur(aEvent);
+      case "MozDateTimeWillBlur": {
+        // The event detail is the blur event.
+        this.onWillBlur(aEvent.detail);
         break;
       }
       case "mousedown":
@@ -591,9 +588,9 @@ this.DateTimeBoxWidget = class {
     }
   }
 
-  onBlur(aEvent) {
+  onWillBlur(aEvent) {
     this.log(
-      "onBlur originalTarget: " +
+      "onWillBlur originalTarget: " +
         aEvent.originalTarget +
         " target: " +
         aEvent.target +
@@ -604,7 +601,16 @@ this.DateTimeBoxWidget = class {
     );
 
     let target = aEvent.originalTarget;
+    if (
+      target.getRootNode() !== this.shadowRoot ||
+      !target.matches(".datetime-edit-field")
+    ) {
+      // We only care about the blurring of our inner fields.
+      return;
+    }
+
     target.setAttribute("typeBuffer", "");
+
     this.setInputValueFromFields();
     // No need to set and unset the focus state (or closing the picker) if the
     // focus is staying within our input.
@@ -667,8 +673,8 @@ this.DateTimeBoxWidget = class {
     }
 
     switch (aEvent.key) {
-      // Toggle the picker on Space/Enter on Calendar button or Space on input,
-      // close on Escape anywhere.
+      // Toggle the date picker on Space/Enter on Calendar button or Space on input,
+      // time picker on Space on input, close picker on Escape anywhere.
       case "Escape": {
         if (this.mIsPickerOpen) {
           this.closeDateTimePicker();
@@ -912,13 +918,14 @@ this.DateTimeBoxWidget = class {
           // Give aria autocomplete hint for am/pm
           this.mDayPeriodField.setAttribute("aria-autocomplete", "inline");
           break;
-        default:
+        default: {
           let span = this.shadowRoot.createElementAndAppendChildAt(
             root,
             "span"
           );
           span.textContent = part.value;
           break;
+        }
       }
     });
   }
@@ -1021,8 +1028,6 @@ this.DateTimeBoxWidget = class {
         this.setFieldValue(this.mMillisecField, millisecond || 0);
       }
     }
-
-    this.notifyPicker();
   }
 
   setInputValueFromFields() {
@@ -1035,9 +1040,6 @@ this.DateTimeBoxWidget = class {
       } else {
         this.mInputElement.updateValidityState();
       }
-      // We still need to notify picker in case any of the field has
-      // changed.
-      this.notifyPicker();
       return;
     }
 
@@ -1098,7 +1100,6 @@ this.DateTimeBoxWidget = class {
       return;
     }
     this.log("setInputValueFromFields: " + value);
-    this.notifyPicker();
     this.mInputElement.setUserInput(value);
   }
 
@@ -1171,9 +1172,6 @@ this.DateTimeBoxWidget = class {
         this.advanceToNextField();
       }
       targetField.setAttribute("typeBuffer", buffer);
-      if (!this.isAnyFieldEmpty()) {
-        this.setInputValueFromFields();
-      }
     }
   }
 
@@ -1525,14 +1523,16 @@ this.DateTimeBoxWidget = class {
         this.incrementFieldValue(targetField, 0 - interval);
         break;
       }
-      case "Home":
+      case "Home": {
         let min = targetField.getAttribute("min");
         this.setFieldValue(targetField, min);
         break;
-      case "End":
+      }
+      case "End": {
         let max = targetField.getAttribute("max");
         this.setFieldValue(targetField, max);
         break;
+      }
     }
     this.setInputValueFromFields();
   }

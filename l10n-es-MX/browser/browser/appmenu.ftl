@@ -27,6 +27,10 @@ appmenuitem-downloads =
     .label = Descargas
 appmenuitem-passwords =
     .label = Contraseñas
+appmenuitem-extensions-and-themes =
+    .label = Extensiones y temas
+appmenuitem-extensions =
+    .label = Extensiones
 appmenuitem-addons-and-themes =
     .label = Complementos y temas
 appmenuitem-print =
@@ -108,8 +112,11 @@ appmenu-fxa-sync-and-save-data2 = Sincronizar y guardar datos
 appmenu-fxa-signed-in-label = Iniciar sesión
 appmenu-fxa-setup-sync =
     .label = Activar la sincronización…
+appmenu-fxa-setup-sync-new = Activar
 appmenuitem-save-page =
     .label = Guardar como…
+appmenuitem-fxa-sync-off-title = La sincronización está desactivada
+appmenuitem-fxa-sync-off-description = Protege y accede a tus marcadores, contraseñas y más desde cualquier lugar.
 
 ## What's New panel in App menu.
 
@@ -163,6 +170,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Mayús+2
     }
+profiler-button-dropmarker =
+    .label = Abre el panel del perfilador
+    .tooltiptext = Abre el panel del perfilador
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +199,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Preestablecido para investigar errores de audio y video en { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Multimedia
+profiler-popup-presets-ml-description = Preconfiguración para investigar errores de aprendizaje automático en { -brand-shorter-name }.
+profiler-popup-presets-ml-label =
+    .label = Machine Learning
 profiler-popup-presets-networking-description = Preestablecido para investigar errores de red en { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = Redes
@@ -199,6 +212,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = Depuración preestablecida en { -brand-shorter-name }. Sobrecarga, no lo use para trabajo de rendimiento, úselo para centrarse en entender el comportamiento del navegador.
 profiler-popup-presets-debug-label =
     .label = Depurar
+profiler-popup-presets-web-compat-description = Ajuste preestablecido recomendado para depurar problemas de compatibilidad web en sitios web, en lugar de rastrear el rendimiento.
+profiler-popup-presets-web-compat-label =
+    .label = Compatibilidad web
 profiler-popup-presets-custom-label =
     .label = Personalizado
 
@@ -277,5 +293,27 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Reciba alertas de filtración de datos
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Enmascare su correo electrónico y teléfono reales
+appmenuitem-services-relay-description = Iniciar el panel de máscaras de correo electrónico
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Obtén protección para todo el dispositivo
 appmenuitem-vpn-description = Protege tu actividad en línea
+appmenu-services-header = Mis servicios
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Prueba otras herramientas de protección de Mozilla:
+appmenu-other-protection-header = Prueba otras herramientas de protección de { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-other-profiles = Otros perfiles
+appmenu-manage-profiles =
+    .label = Administrar perfiles
+appmenu-copy-profile =
+    .label = Copiar este perfil
+appmenu-create-profile =
+    .label = Nuevo perfil
+appmenu-edit-profile =
+    .aria-label = Editar perfil
+appmenu-profiles-2 =
+    .label = Perfiles

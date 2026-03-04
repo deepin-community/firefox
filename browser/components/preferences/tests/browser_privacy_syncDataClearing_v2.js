@@ -29,6 +29,9 @@ add_task(async function test_syncWithoutCustomPrefs() {
 
   deleteOnCloseBox.click();
 
+  // Wait for UI to update.
+  await new Promise(resolve => requestAnimationFrame(resolve));
+
   ok(deleteOnCloseBox.checked, "DeleteOnClose is selected");
   is(
     deleteOnCloseBox.checked,
@@ -49,7 +52,7 @@ add_task(async function test_syncWithoutCustomPrefs() {
   );
   ok(
     !Services.prefs.getBoolPref(
-      "privacy.clearOnShutdown_v2.historyFormDataAndDownloads"
+      "privacy.clearOnShutdown_v2.browsingHistoryAndDownloads"
     ),
     "History cleaning pref is not set"
   );
@@ -63,6 +66,9 @@ add_task(async function test_syncWithoutCustomPrefs() {
   );
 
   deleteOnCloseBox.click();
+
+  // Wait for UI to update.
+  await new Promise(resolve => requestAnimationFrame(resolve));
 
   ok(!deleteOnCloseBox.checked, "DeleteOnClose is deselected");
   is(
@@ -85,7 +91,7 @@ add_task(async function test_syncWithoutCustomPrefs() {
   );
   ok(
     !Services.prefs.getBoolPref(
-      "privacy.clearOnShutdown_v2.historyFormDataAndDownloads"
+      "privacy.clearOnShutdown_v2.browsingHistoryAndDownloads"
     ),
     "History cleaning pref is not set"
   );
@@ -96,7 +102,7 @@ add_task(async function test_syncWithoutCustomPrefs() {
 
   BrowserTestUtils.removeTab(gBrowser.selectedTab);
   Services.prefs.clearUserPref(
-    "privacy.clearOnShutdown_v2.historyFormDataAndDownloads"
+    "privacy.clearOnShutdown_v2.browsingHistoryAndDownloads"
   );
   Services.prefs.clearUserPref("privacy.clearOnShutdown_v2.siteSettings");
   Services.prefs.clearUserPref("privacy.clearOnShutdown_v2.cache");
@@ -112,7 +118,7 @@ add_task(async function test_syncWithoutCustomPrefs() {
 add_task(async function test_syncWithCustomPrefs() {
   await SpecialPowers.pushPrefEnv({
     set: [
-      ["privacy.clearOnShutdown_v2.historyFormDataAndDownloads", true],
+      ["privacy.clearOnShutdown_v2.browsingHistoryAndDownloads", true],
       ["privacy.clearOnShutdown.history", false],
       ["privacy.clearOnShutdown_v2.siteSettings", true],
       ["privacy.sanitize.sanitizeOnShutdown", true],
@@ -137,7 +143,7 @@ add_task(async function test_syncWithCustomPrefs() {
   );
   ok(
     Services.prefs.getBoolPref(
-      "privacy.clearOnShutdown_v2.historyFormDataAndDownloads"
+      "privacy.clearOnShutdown_v2.browsingHistoryAndDownloads"
     ),
     "History cleaning pref is still set"
   );
@@ -161,6 +167,9 @@ add_task(async function test_syncWithCustomPrefs() {
 
   deleteOnCloseBox.click();
 
+  // Wait for UI to update.
+  await new Promise(resolve => requestAnimationFrame(resolve));
+
   ok(!deleteOnCloseBox.checked, "DeleteOnClose is deselected");
   is(
     !deleteOnCloseBox.checked,
@@ -178,7 +187,7 @@ add_task(async function test_syncWithCustomPrefs() {
   );
   ok(
     Services.prefs.getBoolPref(
-      "privacy.clearOnShutdown_v2.historyFormDataAndDownloads"
+      "privacy.clearOnShutdown_v2.browsingHistoryAndDownloads"
     ),
     "History cleaning pref is still set"
   );
@@ -226,6 +235,9 @@ add_task(async function test_syncWithCustomPrefs() {
 
   alwaysClearBox.click();
 
+  // Wait for UI to update.
+  await new Promise(resolve => requestAnimationFrame(resolve));
+
   ok(!alwaysClearBox.checked, "AlwaysClear is deselected");
   is(
     deleteOnCloseBox.checked,
@@ -268,7 +280,7 @@ add_task(async function test_initialState() {
       ["privacy.clearOnShutdown_v2.cookiesAndStorage", false],
       ["privacy.clearOnShutdown_v2.cache", false],
       ["privacy.sanitize.sanitizeOnShutdown", true],
-      ["privacy.clearOnShutdown_v2.historyFormDataAndDownloads", true],
+      ["privacy.clearOnShutdown_v2.browsingHistoryAndDownloads", true],
     ],
   });
 
@@ -309,9 +321,8 @@ add_task(async function test_initialState() {
   );
 
   // Reset history mode
-  let historyMode = document.getElementById("historyMode");
-  historyMode.value = "remember";
-  historyMode.doCommand();
-  BrowserTestUtils.removeTab(gBrowser.selectedTab);
   await SpecialPowers.popPrefEnv();
+  gBrowser.contentWindow.Preferences.getSetting("historyMode").value =
+    "remember";
+  BrowserTestUtils.removeTab(gBrowser.selectedTab);
 });

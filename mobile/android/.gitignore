@@ -62,9 +62,6 @@ test_artifacts/
 /build/test-tools/*.jar
 /build/test-tools/*.gz
 
-# Screenshots
-fastlane/
-
 # Secrets files, e.g. tokens
 .adjust_token
 .sentry_token
@@ -78,9 +75,6 @@ fenix/app/src/**/res/values/fenix_firebase_push_credentials.xml
 __pycache__/
 *.py[cod]
 venv/
-
-# Web extensions: manifest.json files are generated
-manifest.json
 
 # Xcode
 *.pbxuser

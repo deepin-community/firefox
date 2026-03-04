@@ -5,10 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/SVGFETileElement.h"
-#include "mozilla/dom/SVGFETileElementBinding.h"
+
 #include "mozilla/SVGFilterInstance.h"
-#include "mozilla/dom/Document.h"
 #include "mozilla/dom/BindContext.h"
+#include "mozilla/dom/Document.h"
+#include "mozilla/dom/SVGFETileElementBinding.h"
 
 NS_IMPL_NS_NEW_SVG_ELEMENT(FETile)
 
@@ -60,7 +61,7 @@ bool SVGFETileElement::AttributeAffectsRendering(int32_t aNameSpaceID,
 
 SVGElement::StringAttributesInfo SVGFETileElement::GetStringInfo() {
   return StringAttributesInfo(mStringAttributes, sStringInfo,
-                              ArrayLength(sStringInfo));
+                              std::size(sStringInfo));
 }
 
 nsresult SVGFETileElement::BindToTree(BindContext& aCtx, nsINode& aParent) {

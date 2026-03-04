@@ -3,6 +3,12 @@
 
 "use strict";
 
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["test.wait300msAfterTabSwitch", true]],
+  });
+});
+
 add_task(async function wheel_switches_tabs() {
   Services.prefs.setBoolPref("toolkit.tabbox.switchByScrolling", true);
 
@@ -26,7 +32,7 @@ add_task(async function wheel_switches_tabs_overflow() {
   let arrowScrollbox = gBrowser.tabContainer.arrowScrollbox;
   let tabs = [];
 
-  while (!arrowScrollbox.hasAttribute("overflowing")) {
+  while (!arrowScrollbox.overflowing) {
     tabs.push(
       await BrowserTestUtils.openNewForegroundTab(gBrowser, "about:blank")
     );

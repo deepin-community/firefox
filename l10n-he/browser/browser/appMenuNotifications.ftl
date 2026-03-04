@@ -30,6 +30,9 @@ appmenu-update-restart2 =
     .secondarybuttonlabel = סגירה
     .secondarybuttonaccesskey = ס
 appmenu-update-restart-message2 = קבלת הגרסה העדכנית ביותר של { -brand-shorter-name }. לשוניות וחלונות פתוחים ישוחזרו.
+appmenu-theme-installed =
+    .secondarybuttonlabel = ביטול פעולה
+    .secondarybuttonaccesskey = ב
 appmenu-update-other-instance =
     .label = לא ניתן לעדכן באופן אוטומטי את { -brand-shorter-name } לגרסה העדכנית ביותר.
     .buttonlabel = לעדכן את { -brand-shorter-name } בכל מקרה
@@ -37,15 +40,19 @@ appmenu-update-other-instance =
     .secondarybuttonlabel = לא כעת
     .secondarybuttonaccesskey = ל
 appmenu-update-other-instance-message = זמין עדכון חדש ל־{ -brand-shorter-name }, אבל לא ניתן היה להתקין אותו מכיוון שפועל עותק אחר של { -brand-shorter-name }. יש לסגור אותו כדי להמשיך בעדכון, או לבחור לעדכן אותו בכל מקרה (ייתכן שהעותק האחר לא יפעל כראוי עד שיופעל מחדש).
-
 appmenu-addon-private-browsing-installed2 =
     .buttonlabel = בסדר
     .buttonaccesskey = ב
 appmenu-addon-post-install-message3 = ניתן לנהל את התוספות וערכות הנושא שלך דרך תפריט היישום.
+# This string is used in the confirmation popup displayed after an extension
+# has been installed, when the data collection feature is enabled.
+appmenu-addon-post-install-message-with-data-collection = ניתן לעדכן העדפות של הרשאות ונתונים בכל עת ב<a data-l10n-name="settings-link">הגדרות ההרחבה</a>.
+appmenu-addon-post-install-pin-toolbarbutton-checkbox =
+    .label = הצמדת ההרחבה לסרגל הכלים
+    .accesskey = ה
 appmenu-addon-post-install-incognito-checkbox =
     .label = לאפשר להרחבה זו לפעול בחלונות פרטיים
     .accesskey = ל
-    
 appmenu-new-tab-controlled-changes =
     .label = הלשונית החדשה שלך השתנתה.
     .buttonlabel = שמירת השינויים

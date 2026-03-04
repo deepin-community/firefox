@@ -96,6 +96,10 @@ startup-header = راه‌اندازی
 always-check-default =
     .label = همیشه بررسی شود که آیا { -brand-short-name } مرورگر پیش‌فرض شما است یا خیر
     .accesskey = ه
+is-default-browser =
+    .message = { -brand-short-name } مرورگر همیشگی شماست
+is-not-default-browser =
+    .message = { -brand-short-name } مرورگر پیش‌فرض شما نیست
 is-default = { -brand-short-name } مرورگر همیشگی شماست
 is-not-default = { -brand-short-name } مرورگر پیش‌فرض شما نیست
 set-as-my-default-browser =
@@ -108,6 +112,8 @@ startup-restore-warn-on-quit =
     .label = هنگام خروج اخطار می‌دهد
 disable-extension =
     .label = غیرفعال سازی افزونه
+tabs-group-header2 =
+    .label = زبانه‌ها
 tabs-group-header = زبانه‌ها
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab به ترتیب زبانه‌های اخیرا استفاده شده بین آنها حرکت می‌کند
@@ -143,6 +149,8 @@ browser-containers-settings =
     .label = تنظیمات…
     .accesskey = ت
 containers-disable-alert-title = بستن تمام زبانه‌های حامل؟
+startup-group =
+    .label = راه‌اندازی
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -185,6 +193,14 @@ preferences-web-appearance-choice-input-light =
 preferences-web-appearance-choice-input-dark =
     .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
 preferences-colors-header = رنگ‌ها
+preferences-fonts-header2 =
+    .label = قلم‌ها
+default-font-2 =
+    .label = قلم پیش‌فرض
+    .accesskey = D
+default-font-size-2 =
+    .label = اندازه
+    .accesskey = ا
 preferences-fonts-header = قلم‌ها
 default-font = قلم پیش‌فرض
     .accesskey = D
@@ -193,6 +209,12 @@ default-font-size = اندازه
 advanced-fonts =
     .label = پیشرفته...
     .accesskey = پ
+# Zoom is a noun, and the message is used as header for a group of options
+preferences-zoom-header2 =
+    .label = بزرگنمایی
+preferences-default-zoom-label =
+    .label = بزرگنمایی پیش‌فرض
+    .accesskey = z
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = بزرگنمایی
 preferences-default-zoom = بزرگنمایی پیش‌فرض
@@ -236,6 +258,11 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = پرونده‌ها و برنامه‌ها
+downloads-header-2 =
+    .label = بارگیری‌ها
+download-save-where-2 =
+    .label = ذخیره پرونده در
+    .accesskey = ذ
 download-header = بارگیری‌ها
 download-save-where = ذخیره پرونده در
     .accesskey = ذ
@@ -332,6 +359,8 @@ applications-handle-new-file-types-description = ‏{ -brand-short-name } با �
 applications-save-for-new-types =
     .label = ذخیرهٔ پرونده‌ها
     .accesskey = ذ
+drm-group =
+    .label = محتوا مدیریت حقوق دیجیتال(DRM)
 drm-content-header = محتوا مدیریت حقوق دیجیتال(DRM)
 play-drm-content =
     .label = پخش محتوا کنترل شده-DRM
@@ -397,6 +426,8 @@ performance-limit-content-process-blocked-desc = تغییر دادن تعداد 
 #   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (پیش‌فرض)
+performance-group =
+    .label = کارایی
 
 ## General Section - Browsing
 
@@ -431,6 +462,8 @@ browsing-cfr-features =
     .label = پیشنهاد دادن ویژگی‌ها همزمان با مرور وب
     .accesskey = f
 browsing-cfr-recommendations-learn-more = بیشتر بدانید
+browsing-group =
+    .label = مرور
 
 ## General Section - Proxy
 
@@ -440,16 +473,27 @@ network-proxy-connection-learn-more = اطلاعات بیشتر
 network-proxy-connection-settings =
     .label = تنظیمات…
     .accesskey = ت
+network-proxy-group =
+    .label = تنظیمات شبکه
+    .description = نحوهٔ اتصال { -brand-short-name } به اینترنت را پیکربندی کنید.
 
 ## Home Section
 
 home-new-windows-tabs-header = پنجره‌ها و زبانه‌های جدید
 home-new-windows-tabs-description2 = انتخاب کنید چه چیزی در زمان باز کردن صفحهٔ خانگی، پنجره‌ها جدید و زبانه‌های جدید می‌بینید.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = تنظیم به عنوان پیش‌فرض
+    .accesskey = پ
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = صفحهٔ خانگی و پنجره‌های جدید
 home-newtabs-mode-label = زبانه‌های جدید
+home-homepage-new-tabs =
+    .label = زبانه‌های جدید
 home-restore-defaults =
     .label = بازنشانی پیش‌فرض‌ها
     .accesskey = R
@@ -484,8 +528,7 @@ home-prefs-shortcuts-description = وب‌سایت‌هایی که ذخیره ی
 home-prefs-shortcuts-by-option-sponsored =
     .label = میانبرهایی از حامیان مالی
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = پیشنهاد شده توسط { $provider }
@@ -546,6 +589,8 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = نمایش پیشنهادهای جست‌و‌جو در نوار آدرس
     .accesskey = آ
+search-suggestions-cant-show-2 =
+    .message = پیشنهادهای جستجو در نوار مکان نمایش داده نخواهد شده زیرا شما { -brand-short-name } را به گونه‌ای تنظیم کرده‌اید که هیچ تاریخچه‌ای را نگه ندارد.
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
@@ -580,12 +625,18 @@ search-keyword-warning-title = کلیدواژهٔ تکراری
 #   $name (string) - Name of a search engine.
 search-keyword-warning-engine = شما کلیدواژه‌ای انتخاب نموده‌اید که در حال حاضر توسط «{ $name }» در حال استفاده است. لطفا کلیدواژه دیگری انتخاب کنید.
 search-keyword-warning-bookmark = شما کلیدواژه‌ای انتخاب نموده‌اید که در حال حاضر توسط یک نشانک در حال استفاده است.  لطفاً کلیدواژهٔ دیگری انتخاب کنید.
+search-engine-group =
+    .label = موتور جستجو پیش‌فرض
+search-default-engine =
+    .aria-label = موتور جستجو پیش‌فرض
 
 ## Containers Section
 
 containers-back-button2 =
     .aria-label = بازگشت به تنظیمات
 containers-header = زبانه‌های حامل
+containers-section-header =
+    .heading = زبانه‌های حامل
 containers-add-button =
     .label = افزودن حامل جدید
     .accesskey = ا
@@ -596,6 +647,11 @@ containers-settings-button =
     .label = تنظیمات
 containers-remove-button =
     .label = حذف
+
+## Account and sync
+
+sync-group-label =
+    .label = همگام‌سازی
 
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
@@ -625,11 +681,18 @@ sync-profile-picture-with-alt =
 sync-sign-out =
     .label = خروج...
     .accesskey = g
+sync-sign-out2 =
+    .label = خروج
+    .accesskey = g
 sync-manage-account = مدیریت حساب
+    .accesskey = ح
+sync-manage-account2 =
+    .label = مدیریت حساب
     .accesskey = ح
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } تایید نشده است.
 sync-signedin-login-failure = لطفا جهت ارتباط مجدد وارد شوید. { $email }
@@ -653,6 +716,9 @@ prefs-syncing-off = همگام‌سازی: خاموش
 prefs-sync-turn-on-syncing =
     .label = روشن کردن همگام‌سازی…
     .accesskey = ر
+prefs-sync-turn-on-syncing-2 =
+    .label = روشن کردن همگام‌سازی
+    .accesskey = ر
 prefs-sync-offer-setup-label2 = نشانک‌ها، تاریخچه، زبانه‌ها، گذرواژه‌ها، افزونه‌ها و ترجیحات خود را در تمام دستگاه‌هایتان همگام کنید.
 prefs-sync-now =
     .labelnotsyncing = هم‌اکنون همگام‌سازی کنید
@@ -661,8 +727,14 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = هم‌اکنون همگام‌سازی کنید
     .accesskey = N
+prefs-sync-now-button-2 =
+    .label = هم‌اکنون همگام‌سازی کنید
+    .accesskey = N
 prefs-syncing-button =
     .label = درحال همگام‌سازی...
+prefs-syncing-button-2 =
+    .label = درحال همگام‌سازی...
+    .title = هم‌اکنون همگام‌سازی کنید
 
 ## The list of things currently syncing.
 
@@ -721,6 +793,16 @@ sync-engine-settings =
 ## The device name controls.
 
 sync-device-name-header = نام دستگاه
+sync-device-name-header-2 =
+    .label = نام دستگاه
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = نام دستگاه
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = تغییر نام دستگاه
+    .accesskey = ت
 sync-device-name-change =
     .label = تغییر نام دستگاه…
     .accesskey = ت
@@ -731,6 +813,8 @@ sync-device-name-save =
     .label = ذخیره
     .accesskey = ذ
 sync-connect-another-device = اتصال یک دستگاه دیگر
+sync-connect-another-device-2 =
+    .label = اتصال یک دستگاه دیگر
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -811,12 +895,19 @@ primary-password-os-auth-dialog-message-win = برای ایجاد گذرواژه
 primary-password-os-auth-dialog-message-macosx = ساخت یک گذرواژهٔ اصلی
 master-password-os-auth-dialog-caption = { -brand-full-name }
 
-## Privacy section - Autofill
-
-
 ## Privacy Section - History
 
 history-header = تاریخچه
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label2 = مرورگر { -brand-short-name }
 # This label is followed, on the same line, by a dropdown list of options
 # (Remember history, etc.).
 # In English it visually creates a full sentence, e.g.
@@ -834,6 +925,18 @@ history-remember-option-never =
     .label = هرگز تاریخچه را به خاطر نمی‌سپارد
 history-remember-option-custom =
     .label = تنظیمات خاصی را برای تاریخچه استفاده می‌کند
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } سابقهٔ مرور، دریافت‌ها، اطلاعات فرم‌ها و تاریخچهٔ جستجوهای شما را به خاطر خواهد سپرد.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } تنظیمات حالت مرور ناشناس را استفاده خواهد کرد، و هیچ تاریخچه‌ای از مرور شما در وب نگه نخواهد داشت.
+history-remember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } سابقهٔ مرور، دریافت‌ها، اطلاعات فرم‌ها و تاریخچهٔ جستجوهای شما را به خاطر خواهد سپرد.
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } تنظیمات حالت مرور ناشناس را استفاده خواهد کرد، و هیچ تاریخچه‌ای از مرور شما در وب نگه نخواهد داشت.
 history-remember-description = { -brand-short-name } سابقهٔ مرور، دریافت‌ها، اطلاعات فرم‌ها و تاریخچهٔ جستجوهای شما را به خاطر خواهد سپرد.
 history-dontremember-description = { -brand-short-name } تنظیمات حالت مرور ناشناس را استفاده خواهد کرد، و هیچ تاریخچه‌ای از مرور شما در وب نگه نخواهد داشت.
 history-private-browsing-permanent =
@@ -854,6 +957,8 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = پاک کردن تاریخچه…
     .accesskey = s
+history-group =
+    .label = تاریخچه
 
 ## Privacy Section - Site Data
 
@@ -897,14 +1002,10 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = مدیریت استثناها…
     .accesskey = x
+cookies-site-data-group =
+    .label = کلوچک‌ها و داده‌های پایگاه
 
-## Privacy Section - Cookie Banner Handling
-
-
-## Privacy Section - Cookie Banner Blocking
-
-
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = نوار نشانی
 addressbar-suggest = هنگام استفاده از نوار مکان، پیشنهاد بده
@@ -1038,6 +1139,8 @@ permissions-notification-link = بیشتر بدانید
 permissions-notification-pause =
     .label = توقف هوشدار تا زمانی که { -brand-short-name } مجدد راه اندازی شود
     .accesskey = n
+permissions-autoplay2 =
+    .label = پخش خودکار
 permissions-autoplay = پخش خودکار
 permissions-autoplay-settings =
     .label = تنظیمات...
@@ -1057,6 +1160,16 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = استثناها…
     .accesskey = ت
+permissions-location2 =
+    .label = مکان
+permissions-xr2 =
+    .label = واقعیت مجازی
+permissions-camera2 =
+    .label = دوربین
+permissions-microphone2 =
+    .label = صدابَر
+permissions-notification2 =
+    .label = اعلان‌ها
 
 ## Privacy Section - Data Collection
 
@@ -1080,11 +1193,6 @@ addon-recommendations-link = بیشتر بدانید
 collection-health-report-disabled = گزارش کردن داده‌ها برای این پیکربندی ساخته شده غیرفعال شده است
 collection-backlogged-crash-reports-with-link = به { -brand-short-name } اجازه دهید گزارش‌های خرابی عقب مانده را از طرف شما ارسال کند <a data-l10n-name="crash-reports-link">اطلاعات بیشتر</a>
     .accesskey = ج
-collection-backlogged-crash-reports = به { -brand-short-name } اجازه دهید گزارش‌های خرابی عقب مانده را از طرف شما ارسال کند
-    .accesskey = ج
-
-## Privacy Section - Website Advertising Preferences
-
 
 ## Privacy Section - Security
 ##
@@ -1092,6 +1200,8 @@ collection-backlogged-crash-reports = به { -brand-short-name } اجازه ده
 ## https://developers.google.com/safe-browsing/developers_guide_v2#AcceptableUsage
 
 security-header = امنیت
+browsing-protection-group =
+    .label = محافظت در مقابل نرم‌افزارهای خطرناک و محتوا فریبنده
 security-browsing-protection = محافظت در مقابل نرم‌افزارهای خطرناک و محتوا فریبنده
 security-enable-safe-browsing =
     .label = مسدود سازی محتوا‌های خطرناک و فریبنده
@@ -1116,6 +1226,7 @@ certs-view =
 certs-devices =
     .label = امنیت دستگاه‌ها…
     .accesskey = د
+certs-devices-enable-fips = به کار انداختن FIPS
 space-alert-over-5gb-settings-button =
     .label = باز کردن تنظیمات
     .accesskey = ب
@@ -1137,6 +1248,8 @@ httpsonly-radio-disabled =
 ## DoH Section
 
 preferences-doh-header = ساناد روی HTTPS
+dns-over-https-group =
+    .label = ساناد روی HTTPS
 preferences-doh-description = سامانهٔ نام دامنه (ساناد) روی HTTPS درخواست شما برای نام دامنه را از طریق اتصال رمزگذاشته می‌فرستد، سانادی ایمن ایجاد می‌کند و مشاهدهٔ وبگاه‌هایی که بازدید می‌کنید را برای دیگران سخت‌تر می‌کند.
 # Variables:
 #   $name (string) - The name of the DNS over HTTPS resolver. If a custom resolver is used, the name will be the domain of the URL.

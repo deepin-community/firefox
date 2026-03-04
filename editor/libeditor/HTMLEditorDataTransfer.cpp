@@ -10,6 +10,7 @@
 
 #include "AutoSelectionRestorer.h"
 #include "EditAction.h"
+#include "EditorBase.h"
 #include "EditorDOMPoint.h"
 #include "EditorUtils.h"
 #include "HTMLEditHelpers.h"
@@ -17,7 +18,8 @@
 #include "InternetCiter.h"
 #include "PendingStyles.h"
 #include "SelectionState.h"
-#include "WSRunObject.h"
+#include "WhiteSpaceVisibilityKeeper.h"
+#include "WSRunScanner.h"
 
 #include "ErrorList.h"
 #include "mozilla/dom/Comment.h"
@@ -27,13 +29,14 @@
 #include "mozilla/dom/DOMException.h"
 #include "mozilla/dom/DOMStringList.h"
 #include "mozilla/dom/DOMStringList.h"
+#include "mozilla/dom/Element.h"
+#include "mozilla/dom/ElementInlines.h"
 #include "mozilla/dom/Event.h"
 #include "mozilla/dom/FileBlobImpl.h"
 #include "mozilla/dom/FileReader.h"
 #include "mozilla/dom/Selection.h"
 #include "mozilla/dom/StaticRange.h"
 #include "mozilla/dom/WorkerRef.h"
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/Base64.h"
 #include "mozilla/BasicEvents.h"
@@ -42,6 +45,8 @@
 #include "mozilla/OwningNonNull.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/Result.h"
+#include "mozilla/StaticPrefs_editor.h"
+#include "mozilla/TextComposition.h"
 #include "nsAString.h"
 #include "nsCOMPtr.h"
 #include "nsCRTGlue.h"  // for CRLF
@@ -130,11 +135,24 @@ nsresult HTMLEditor::InsertDroppedDataTransferAsAction(
                          "MaybeDispatchBeforeInputEvent() failed");
     return rv;
   }
+
+  if (MOZ_UNLIKELY(!aDroppedAt.IsInContentNode())) {
+    NS_WARNING("Dropped into non-content node");
+    return NS_OK;
+  }
+
+  const RefPtr<Element> editingHost = ComputeEditingHost(
+      *aDroppedAt.ContainerAs<nsIContent>(), LimitInBodyElement::No);
+  if (MOZ_UNLIKELY(!editingHost)) {
+    NS_WARNING("Dropped onto non-editable node");
+    return NS_OK;
+  }
+
   uint32_t numItems = aDataTransfer.MozItemCount();
   for (uint32_t i = 0; i < numItems; ++i) {
     DebugOnly<nsresult> rvIgnored =
         InsertFromDataTransfer(&aDataTransfer, i, aSourcePrincipal, aDroppedAt,
-                               DeleteSelectedContent::No);
+                               DeleteSelectedContent::No, *editingHost);
     if (NS_WARN_IF(Destroyed())) {
       return NS_OK;
     }
@@ -209,7 +227,7 @@ nsresult HTMLEditor::LoadHTML(const nsAString& aInputString) {
   //     behavior since using only child node to pointing insertion point
   //     changes the behavior when inserted child is moved by mutation
   //     observer.  We need to investigate what we should do here.
-  Unused << pointToInsert.Offset();
+  (void)pointToInsert.Offset();
   EditorDOMPoint pointToPutCaret;
   for (nsCOMPtr<nsIContent> contentToInsert = documentFragment->GetFirstChild();
        contentToInsert; contentToInsert = documentFragment->GetFirstChild()) {
@@ -275,12 +293,60 @@ nsresult HTMLEditor::InsertHTMLAsAction(const nsAString& aInString,
     return EditorBase::ToGenericNSResult(rv);
   }
 
+  const RefPtr<Element> editingHost =
+      ComputeEditingHost(LimitInBodyElement::No);
+  if (NS_WARN_IF(!editingHost)) {
+    return NS_ERROR_FAILURE;
+  }
+
+  if (editingHost->IsContentEditablePlainTextOnly()) {
+    nsAutoString plaintextString;
+    nsresult rv = nsContentUtils::ConvertToPlainText(
+        aInString, plaintextString, nsIDocumentEncoder::OutputLFLineBreak,
+        0u /* never wrap lines*/);
+    if (NS_FAILED(rv)) {
+      NS_WARNING("nsContentUtils::ConvertToPlainText() failed");
+      return EditorBase::ToGenericNSResult(rv);
+    }
+    Maybe<AutoPlaceholderBatch> treatAsOneTransaction;
+    const auto EnsureAutoPlaceholderBatch = [&]() {
+      if (treatAsOneTransaction.isNothing()) {
+        treatAsOneTransaction.emplace(*this, ScrollSelectionIntoView::Yes,
+                                      __FUNCTION__);
+      }
+    };
+    if (mComposition &&
+        mComposition->CanRequsetIMEToCommitOrCancelComposition()) {
+      EnsureAutoPlaceholderBatch();
+      CommitComposition();
+      if (NS_WARN_IF(Destroyed())) {
+        return EditorBase::ToGenericNSResult(NS_ERROR_EDITOR_DESTROYED);
+      }
+      if (NS_WARN_IF(editingHost !=
+                     ComputeEditingHost(LimitInBodyElement::No))) {
+        return EditorBase::ToGenericNSResult(
+            NS_ERROR_EDITOR_UNEXPECTED_DOM_TREE);
+      }
+    }
+    if (MOZ_LIKELY(!plaintextString.IsEmpty())) {
+      EnsureAutoPlaceholderBatch();
+      rv = InsertTextAsSubAction(plaintextString, InsertTextFor::NormalText);
+      NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
+                           "EditorBase::InsertTextAsSubAction() failed");
+    } else if (!SelectionRef().IsCollapsed()) {
+      EnsureAutoPlaceholderBatch();
+      rv = DeleteSelectionAsSubAction(nsIEditor::eNone, nsIEditor::eNoStrip);
+      NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
+                           "EditorBase::DeleteSelectionAsSubAction() failed");
+    }
+    return EditorBase::ToGenericNSResult(rv);
+  }
   AutoPlaceholderBatch treatAsOneTransaction(
       *this, ScrollSelectionIntoView::Yes, __FUNCTION__);
-  rv = InsertHTMLWithContextAsSubAction(aInString, u""_ns, u""_ns, u""_ns,
-                                        SafeToInsertData::Yes, EditorDOMPoint(),
-                                        DeleteSelectedContent::Yes,
-                                        InlineStylesAtInsertionPoint::Clear);
+  rv = InsertHTMLWithContextAsSubAction(
+      aInString, u""_ns, u""_ns, u""_ns, SafeToInsertData::Yes,
+      EditorDOMPoint(), DeleteSelectedContent::Yes,
+      InlineStylesAtInsertionPoint::Clear, *editingHost);
   NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
                        "HTMLEditor::InsertHTMLWithContextAsSubAction("
                        "SafeToInsertData::Yes, DeleteSelectedContent::Yes, "
@@ -290,8 +356,9 @@ nsresult HTMLEditor::InsertHTMLAsAction(const nsAString& aInString,
 
 class MOZ_STACK_CLASS HTMLEditor::HTMLWithContextInserter final {
  public:
-  MOZ_CAN_RUN_SCRIPT explicit HTMLWithContextInserter(HTMLEditor& aHTMLEditor)
-      : mHTMLEditor(aHTMLEditor) {}
+  MOZ_CAN_RUN_SCRIPT HTMLWithContextInserter(HTMLEditor& aHTMLEditor,
+                                             const Element& aEditingHost)
+      : mHTMLEditor(aHTMLEditor), mEditingHost(aEditingHost) {}
 
   HTMLWithContextInserter() = delete;
   HTMLWithContextInserter(const HTMLWithContextInserter&) = delete;
@@ -324,20 +391,15 @@ class MOZ_STACK_CLASS HTMLEditor::HTMLWithContextInserter final {
       const EditorRawDOMPoint& aStartPoint, const EditorRawDOMPoint& aEndPoint,
       nsTArray<OwningNonNull<nsIContent>>& aOutArrayOfContents);
 
-  /**
-   * @return nullptr, if there's no invisible `<br>`.
-   */
-  HTMLBRElement* GetInvisibleBRElementAtPoint(
-      const EditorDOMPoint& aPointToInsert) const;
-
   EditorDOMPoint GetNewCaretPointAfterInsertingHTML(
       const EditorDOMPoint& aLastInsertedPoint) const;
 
   /**
-   * @return error result or the last inserted point. The latter is only set, if
-   *         content was inserted.
+   * Insert nodes in aArrayOfTopMostChildContents or their children to
+   * aPointToInsert (if the container is not a proper parent of inserting node,
+   * this splits the ancestors).
    */
-  [[nodiscard]] MOZ_CAN_RUN_SCRIPT Result<EditorDOMPoint, nsresult>
+  [[nodiscard]] MOZ_CAN_RUN_SCRIPT Result<CreateContentResult, nsresult>
   InsertContents(
       const EditorDOMPoint& aPointToInsert,
       nsTArray<OwningNonNull<nsIContent>>& aArrayOfTopMostChildContents,
@@ -360,10 +422,11 @@ class MOZ_STACK_CLASS HTMLEditor::HTMLWithContextInserter final {
   // MOZ_KNOWN_LIVE because this is set only by the constructor which is
   // marked as MOZ_CAN_RUN_SCRIPT and this is allocated only in the stack.
   MOZ_KNOWN_LIVE HTMLEditor& mHTMLEditor;
+  MOZ_KNOWN_LIVE const Element& mEditingHost;
 };
 
 class MOZ_STACK_CLASS
-    HTMLEditor::HTMLWithContextInserter::FragmentFromPasteCreator final {
+HTMLEditor::HTMLWithContextInserter::FragmentFromPasteCreator final {
  public:
   nsresult Run(const Document& aDocument, const nsAString& aInputString,
                const nsAString& aContextStr, const nsAString& aInfoStr,
@@ -431,18 +494,6 @@ class MOZ_STACK_CLASS
       nsIContent& aNode, NodesToRemove aNodesToRemove);
 };
 
-HTMLBRElement*
-HTMLEditor::HTMLWithContextInserter::GetInvisibleBRElementAtPoint(
-    const EditorDOMPoint& aPointToInsert) const {
-  WSRunScanner wsRunScannerAtInsertionPoint(
-      mHTMLEditor.ComputeEditingHost(), aPointToInsert,
-      BlockInlineCheck::UseComputedDisplayStyle);
-  if (wsRunScannerAtInsertionPoint.EndsByInvisibleBRElement()) {
-    return wsRunScannerAtInsertionPoint.EndReasonBRElementPtr();
-  }
-  return nullptr;
-}
-
 EditorDOMPoint
 HTMLEditor::HTMLWithContextInserter::GetNewCaretPointAfterInsertingHTML(
     const EditorDOMPoint& aLastInsertedPoint) const {
@@ -450,7 +501,10 @@ HTMLEditor::HTMLWithContextInserter::GetNewCaretPointAfterInsertingHTML(
 
   // but don't cross tables
   nsIContent* containerContent = nullptr;
-  if (!HTMLEditUtils::IsTable(aLastInsertedPoint.GetChild())) {
+  // FIXME: GetChild() might be nullptr, but it's referred as non-null in the
+  // block!
+  if (!aLastInsertedPoint.GetChild() ||
+      !aLastInsertedPoint.GetChild()->IsHTMLElement(nsGkAtoms::table)) {
     containerContent = HTMLEditUtils::GetLastLeafContent(
         *aLastInsertedPoint.GetChild(), {LeafNodeType::OnlyEditableLeafNode},
         BlockInlineCheck::Unused,
@@ -462,7 +516,7 @@ HTMLEditor::HTMLWithContextInserter::GetNewCaretPointAfterInsertingHTML(
            maybeTableElement &&
            maybeTableElement != aLastInsertedPoint.GetChild();
            maybeTableElement = maybeTableElement->GetParentElement()) {
-        if (HTMLEditUtils::IsTable(maybeTableElement)) {
+        if (maybeTableElement->IsHTMLElement(nsGkAtoms::table)) {
           mostDistantInclusiveAncestorTableElement = maybeTableElement;
         }
       }
@@ -483,46 +537,33 @@ HTMLEditor::HTMLWithContextInserter::GetNewCaretPointAfterInsertingHTML(
   // element, put caret a end of it.
   if (containerContent->IsText() ||
       (HTMLEditUtils::IsContainerNode(*containerContent) &&
-       !HTMLEditUtils::IsTable(containerContent))) {
+       !containerContent->IsHTMLElement(nsGkAtoms::table))) {
     pointToPutCaret.SetToEndOf(containerContent);
   }
   // Otherwise, i.e., it's an atomic element, `<table>` element or data node,
   // put caret after it.
   else {
-    pointToPutCaret.Set(containerContent);
-    DebugOnly<bool> advanced = pointToPutCaret.AdvanceOffset();
-    NS_WARNING_ASSERTION(advanced, "Failed to advance offset from found node");
+    pointToPutCaret.SetAfter(containerContent);
   }
 
   // Make sure we don't end up with selection collapsed after an invisible
   // `<br>` element.
-  Element* editingHost = mHTMLEditor.ComputeEditingHost();
-  WSRunScanner wsRunScannerAtCaret(editingHost, pointToPutCaret,
-                                   BlockInlineCheck::UseComputedDisplayStyle);
-  if (wsRunScannerAtCaret
-          .ScanPreviousVisibleNodeOrBlockBoundaryFrom(pointToPutCaret)
-          .ReachedInvisibleBRElement()) {
-    WSRunScanner wsRunScannerAtStartReason(
-        editingHost,
-        EditorDOMPoint(wsRunScannerAtCaret.GetStartReasonContent()),
-        BlockInlineCheck::UseComputedDisplayStyle);
-    const WSScanResult backwardScanFromPointToCaretResult =
-        wsRunScannerAtStartReason.ScanPreviousVisibleNodeOrBlockBoundaryFrom(
-            pointToPutCaret);
-    if (backwardScanFromPointToCaretResult.InVisibleOrCollapsibleCharacters()) {
-      pointToPutCaret = backwardScanFromPointToCaretResult
+  const WSScanResult prevVisibleThing =
+      WSRunScanner::ScanPreviousVisibleNodeOrBlockBoundary(
+          // We want to put caret to an editable point so that we need to scan
+          // only editable nodes.
+          {WSRunScanner::Option::OnlyEditableNodes}, pointToPutCaret);
+  if (prevVisibleThing.ReachedInvisibleBRElement()) {
+    const WSScanResult prevVisibleThingOfBRElement =
+        WSRunScanner::ScanPreviousVisibleNodeOrBlockBoundary(
+            {WSRunScanner::Option::OnlyEditableNodes},
+            EditorRawDOMPoint(prevVisibleThing.BRElementPtr()));
+    if (prevVisibleThingOfBRElement.InVisibleOrCollapsibleCharacters()) {
+      pointToPutCaret = prevVisibleThingOfBRElement
                             .PointAfterReachedContent<EditorDOMPoint>();
-    } else if (backwardScanFromPointToCaretResult.ReachedSpecialContent()) {
-      // XXX In my understanding, this is odd.  The end reason may not be
-      //     same as the reached special content because the equality is
-      //     guaranteed only when ReachedCurrentBlockBoundary() returns true.
-      //     However, looks like that this code assumes that
-      //     GetStartReasonContent() returns the content.
-      NS_ASSERTION(wsRunScannerAtStartReason.GetStartReasonContent() ==
-                       backwardScanFromPointToCaretResult.GetContent(),
-                   "Start reason is not the reached special content");
-      pointToPutCaret.SetAfter(
-          wsRunScannerAtStartReason.GetStartReasonContent());
+    } else if (prevVisibleThingOfBRElement.ReachedSpecialContent()) {
+      pointToPutCaret = prevVisibleThingOfBRElement
+                            .PointAfterReachedContentNode<EditorDOMPoint>();
     }
   }
 
@@ -534,7 +575,8 @@ nsresult HTMLEditor::InsertHTMLWithContextAsSubAction(
     const nsAString& aInfoStr, const nsAString& aFlavor,
     SafeToInsertData aSafeToInsertData, const EditorDOMPoint& aPointToInsert,
     DeleteSelectedContent aDeleteSelectedContent,
-    InlineStylesAtInsertionPoint aInlineStylesAtInsertionPoint) {
+    InlineStylesAtInsertionPoint aInlineStylesAtInsertionPoint,
+    const Element& aEditingHost) {
   MOZ_ASSERT(IsEditActionDataAvailable());
 
   if (NS_WARN_IF(!mInitSucceeded)) {
@@ -582,7 +624,7 @@ nsresult HTMLEditor::InsertHTMLWithContextAsSubAction(
     aDeleteSelectedContent = DeleteSelectedContent::No;
   }
 
-  HTMLWithContextInserter htmlWithContextInserter(*this);
+  HTMLWithContextInserter htmlWithContextInserter(*this, aEditingHost);
 
   Result<EditActionResult, nsresult> result = htmlWithContextInserter.Run(
       aInputString, aContextStr, aInfoStr, aSafeToInsertData,
@@ -641,8 +683,8 @@ Result<EditActionResult, nsresult> HTMLEditor::HTMLWithContextInserter::Run(
       streamStartParent ? EditorRawDOMPoint(streamEndParent, streamEndOffset)
                         : EditorRawDOMPoint::AtEndOf(fragmentAsNode);
 
-  Unused << streamStartPoint;
-  Unused << streamEndPoint;
+  (void)streamStartPoint;
+  (void)streamEndPoint;
 
   HTMLWithContextInserter::CollectTopMostChildContentsCompletelyInRange(
       EditorRawDOMPoint(streamStartParent,
@@ -666,7 +708,8 @@ Result<EditActionResult, nsresult> HTMLEditor::HTMLWithContextInserter::Run(
     // but if not we want to delete _contents_ of cells and replace
     // with non-table elements.  Use cellSelectionMode bool to
     // indicate results.
-    if (!HTMLEditUtils::IsAnyTableElement(arrayOfTopMostChildContents[0])) {
+    if (!HTMLEditUtils::IsAnyTableElementExceptColumnElement(
+            *arrayOfTopMostChildContents[0])) {
       cellSelectionMode = false;
     }
   }
@@ -683,7 +726,8 @@ Result<EditActionResult, nsresult> HTMLEditor::HTMLWithContextInserter::Run(
       Result<EditorDOMPoint, nsresult> pointToPutCaretOrError =
           mHTMLEditor.ClearStyleAt(
               EditorDOMPoint(mHTMLEditor.SelectionRef().AnchorRef()),
-              EditorInlineStyle::RemoveAllStyles(), SpecifiedStyle::Preserve);
+              EditorInlineStyle::RemoveAllStyles(), SpecifiedStyle::Preserve,
+              mEditingHost);
       if (MOZ_UNLIKELY(pointToPutCaretOrError.isErr())) {
         NS_WARNING("HTMLEditor::ClearStyleAt() failed");
         return pointToPutCaretOrError.propagateErr();
@@ -741,7 +785,8 @@ Result<EditActionResult, nsresult> HTMLEditor::HTMLWithContextInserter::Run(
                        "failed, but ignored");
 
   if (NS_SUCCEEDED(rv) && mHTMLEditor.SelectionRef().IsCollapsed()) {
-    nsresult rv = mHTMLEditor.EnsureCaretNotAfterInvisibleBRElement();
+    nsresult rv =
+        mHTMLEditor.EnsureCaretNotAfterInvisibleBRElement(mEditingHost);
     if (NS_WARN_IF(rv == NS_ERROR_EDITOR_DESTROYED)) {
       return Err(NS_ERROR_EDITOR_DESTROYED);
     }
@@ -759,35 +804,36 @@ Result<EditActionResult, nsresult> HTMLEditor::HTMLWithContextInserter::Run(
     }
   }
 
-  Element* editingHost =
-      mHTMLEditor.ComputeEditingHost(HTMLEditor::LimitInBodyElement::No);
-  if (NS_WARN_IF(!editingHost)) {
+  // Adjust position based on the first node we are going to insert.
+  const auto candidatePointToInsert =
+      mHTMLEditor.GetFirstSelectionStartPoint<EditorRawDOMPoint>();
+  if (NS_WARN_IF(!candidatePointToInsert.IsSet()) ||
+      NS_WARN_IF(
+          !candidatePointToInsert.GetContainer()->IsInclusiveDescendantOf(
+              &mEditingHost))) {
     return Err(NS_ERROR_FAILURE);
   }
-
-  // Adjust position based on the first node we are going to insert.
   EditorDOMPoint pointToInsert =
       HTMLEditUtils::GetBetterInsertionPointFor<EditorDOMPoint>(
           arrayOfTopMostChildContents[0],
-          mHTMLEditor.GetFirstSelectionStartPoint<EditorRawDOMPoint>(),
-          *editingHost);
+          mHTMLEditor.GetFirstSelectionStartPoint<EditorRawDOMPoint>());
   if (!pointToInsert.IsSet()) {
     NS_WARNING("HTMLEditor::GetBetterInsertionPointFor() failed");
     return Err(NS_ERROR_FAILURE);
   }
-
-  // Remove invisible `<br>` element at the point because if there is a `<br>`
-  // element at end of what we paste, it will make the existing invisible
-  // `<br>` element visible.
-  if (HTMLBRElement* invisibleBRElement =
-          GetInvisibleBRElementAtPoint(pointToInsert)) {
-    AutoEditorDOMPointChildInvalidator lockOffset(pointToInsert);
-    nsresult rv = mHTMLEditor.DeleteNodeWithTransaction(
-        MOZ_KnownLive(*invisibleBRElement));
-    if (NS_FAILED(rv)) {
-      NS_WARNING("EditorBase::DeleteNodeWithTransaction() failed.");
-      return Err(rv);
-    }
+  Result<EditorDOMPoint, nsresult> pointToInsertOrError =
+      WhiteSpaceVisibilityKeeper::NormalizeWhiteSpacesToSplitAt(
+          mHTMLEditor, pointToInsert,
+          {WhiteSpaceVisibilityKeeper::NormalizeOption::
+               StopIfFollowingWhiteSpacesStartsWithNBSP});
+  if (MOZ_UNLIKELY(pointToInsertOrError.isErr())) {
+    NS_WARNING(
+        "WhiteSpaceVisibilityKeeper::NormalizeWhiteSpacesToSplitAt() failed");
+    return pointToInsertOrError.propagateErr();
+  }
+  pointToInsert = pointToInsertOrError.unwrap();
+  if (NS_WARN_IF(!pointToInsert.IsSetAndValidInComposedDoc())) {
+    return Err(NS_ERROR_EDITOR_UNEXPECTED_DOM_TREE);
   }
 
   const bool insertionPointWasInLink =
@@ -827,75 +873,96 @@ Result<EditActionResult, nsresult> HTMLEditor::HTMLWithContextInserter::Run(
   MOZ_ASSERT(pointToInsert.GetContainer()->GetChildAt_Deprecated(
                  pointToInsert.Offset()) == pointToInsert.GetChild());
 
-  Result<EditorDOMPoint, nsresult> lastInsertedPoint = InsertContents(
-      pointToInsert, arrayOfTopMostChildContents, fragmentAsNode);
-  if (lastInsertedPoint.isErr()) {
+  Result<CreateContentResult, nsresult> insertNodeResultOrError =
+      InsertContents(pointToInsert, arrayOfTopMostChildContents,
+                     fragmentAsNode);
+  if (MOZ_UNLIKELY(insertNodeResultOrError.isErr())) {
     NS_WARNING("HTMLWithContextInserter::InsertContents() failed.");
-    return lastInsertedPoint.propagateErr();
+    return insertNodeResultOrError.propagateErr();
   }
 
+  // The inserting content may contain empty container elements.  However, it's
+  // intended.  Therefore, we should not clean up them in the post-processing.
   mHTMLEditor.TopLevelEditSubActionDataRef().mNeedsToCleanUpEmptyElements =
       false;
 
-  if (MOZ_UNLIKELY(!lastInsertedPoint.inspect().IsInComposedDoc())) {
+  CreateContentResult insertNodeResult = insertNodeResultOrError.unwrap();
+  if (MOZ_UNLIKELY(!insertNodeResult.Handled())) {
+    // Even if we haven't inserted new content nodes, we "handled" to insert
+    // them so that return "handled" state.
     return EditActionResult::HandledResult();
   }
 
-  const EditorDOMPoint pointToPutCaret =
-      GetNewCaretPointAfterInsertingHTML(lastInsertedPoint.inspect());
-  // Now collapse the selection to the end of what we just inserted.
-  rv = mHTMLEditor.CollapseSelectionTo(pointToPutCaret);
-  if (MOZ_UNLIKELY(rv == NS_ERROR_EDITOR_DESTROYED)) {
-    NS_WARNING(
-        "EditorBase::CollapseSelectionTo() caused destroying the editor");
-    return Err(NS_ERROR_EDITOR_DESTROYED);
+  if (MOZ_LIKELY(insertNodeResult.GetNewNode()->IsInComposedDoc())) {
+    const auto afterLastInsertedContent =
+        EditorRawDOMPoint(insertNodeResult.GetNewNode())
+            .NextPointOrAfterContainer<EditorDOMPoint>();
+    if (MOZ_LIKELY(afterLastInsertedContent.IsInContentNode())) {
+      nsresult rv = mHTMLEditor.EnsureNoFollowingUnnecessaryLineBreak(
+          afterLastInsertedContent);
+      if (NS_FAILED(rv)) {
+        NS_WARNING(
+            "HTMLEditor::EnsureNoFollowingUnnecessaryLineBreak() failed");
+        return Err(rv);
+      }
+    }
   }
-  NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
-                       "EditorBase::CollapseSelectionTo() failed, but ignored");
+
+  MOZ_ASSERT(insertNodeResult.HasCaretPointSuggestion());
+  rv = insertNodeResult.SuggestCaretPointTo(
+      mHTMLEditor, {SuggestCaret::AndIgnoreTrivialError});
+  if (NS_FAILED(rv)) {
+    NS_WARNING("CaretPoint::SuggestCaretPointTo() failed");
+    return Err(rv);
+  }
+  NS_WARNING_ASSERTION(rv != NS_SUCCESS_EDITOR_BUT_IGNORED_TRIVIAL_ERROR,
+                       "CaretPoint::SuggestCaretPointTo() failed, but ignored");
 
   // If we didn't start from an `<a href>` element, we should not keep
   // caret in the link to make users type something outside the link.
   if (insertionPointWasInLink) {
     return EditActionResult::HandledResult();
   }
-  RefPtr<Element> linkElement = GetLinkElement(pointToPutCaret.GetContainer());
+  if (Element* const parentElement =
+          insertNodeResult.GetNewNode()->GetParentElement()) {
+    const RefPtr<Element> linkElement = GetLinkElement(parentElement);
+    if (MOZ_LIKELY(!linkElement)) {
+      return EditActionResult::HandledResult();
+    }
 
-  if (!linkElement) {
-    return EditActionResult::HandledResult();
-  }
-
-  rv = MoveCaretOutsideOfLink(*linkElement, pointToPutCaret);
-  if (NS_FAILED(rv)) {
-    NS_WARNING(
-        "HTMLEditor::HTMLWithContextInserter::MoveCaretOutsideOfLink "
-        "failed.");
-    return Err(rv);
+    nsresult rv =
+        MoveCaretOutsideOfLink(*linkElement, insertNodeResult.CaretPointRef());
+    if (NS_FAILED(rv)) {
+      NS_WARNING(
+          "HTMLEditor::HTMLWithContextInserter::MoveCaretOutsideOfLink() "
+          "failed");
+      return Err(rv);
+    }
   }
 
   return EditActionResult::HandledResult();
 }
 
-Result<EditorDOMPoint, nsresult>
+Result<CreateContentResult, nsresult>
 HTMLEditor::HTMLWithContextInserter::InsertContents(
     const EditorDOMPoint& aPointToInsert,
     nsTArray<OwningNonNull<nsIContent>>& aArrayOfTopMostChildContents,
     const nsINode* aFragmentAsNode) {
   MOZ_ASSERT(aPointToInsert.IsSetAndValidInComposedDoc());
 
-  EditorDOMPoint pointToInsert{aPointToInsert};
-
   // Loop over the node list and paste the nodes:
   const RefPtr<const Element> maybeNonEditableBlockElement =
-      pointToInsert.IsInContentNode()
+      aPointToInsert.IsInContentNode()
           ? HTMLEditUtils::GetInclusiveAncestorElement(
-                *pointToInsert.ContainerAs<nsIContent>(),
+                *aPointToInsert.ContainerAs<nsIContent>(),
                 HTMLEditUtils::ClosestBlockElement,
                 BlockInlineCheck::UseComputedDisplayOutsideStyle)
           : nullptr;
 
-  EditorDOMPoint lastInsertedPoint;
   nsCOMPtr<nsIContent> insertedContextParentContent;
-  for (OwningNonNull<nsIContent>& content : aArrayOfTopMostChildContents) {
+  RefPtr<nsIContent> lastInsertedContent;
+  for (const OwningNonNull<nsIContent>& content :
+       aArrayOfTopMostChildContents) {
     if (NS_WARN_IF(content == aFragmentAsNode) ||
         NS_WARN_IF(content->IsHTMLElement(nsGkAtoms::body))) {
       return Err(NS_ERROR_FAILURE);
@@ -907,129 +974,142 @@ HTMLEditor::HTMLWithContextInserter::InsertContents(
       // Else we will paste twice.
       // XXX This check may be really expensive.  Cannot we check whether
       //     the node's `ownerDocument` is the `aFragmentAsNode` or not?
-      // XXX If content was moved to outside of insertedContextParentContent
-      //     by mutation event listeners, we will anyway duplicate it.
       if (EditorUtils::IsDescendantOf(*content,
                                       *insertedContextParentContent)) {
         continue;
       }
+      // Okay, now, we finished moving nodes in insertedContextParentContent.
+      // We can forget it now to skip the expensive check.
+      insertedContextParentContent = nullptr;
     }
+
+    // In the most cases, we want to move `content` into the DOM as-is. However,
+    // in some cases, we don't want to insert content but do want to insert its
+    // children into the existing proper container.  Therefore, we will check
+    // the `content` type and insertion point's container below.  However, even
+    // in such case, we may not be able to move only its children.  Then, we
+    // need to fall it back to the default behavior.  Therefore, let's wrap the
+    // default behavior into this lambda.
+    const auto InsertCurrentContentToNextInsertionPoint =
+        [&](const EditorDOMPoint& aPointToInsertContent)
+            MOZ_CAN_RUN_SCRIPT MOZ_NEVER_INLINE_DEBUG -> Result<Ok, nsresult> {
+      // MOZ_KnownLive(content) because 'aArrayOfTopMostChildContents'
+      // guarantees its lifetime.
+      Result<CreateContentResult, nsresult> moveContentResult =
+          mHTMLEditor.InsertNodeIntoProperAncestorWithTransaction<nsIContent>(
+              MOZ_KnownLive(content), aPointToInsertContent,
+              SplitAtEdges::eDoNotCreateEmptyContainer);
+      if (MOZ_LIKELY(moveContentResult.isOk())) {
+        moveContentResult.inspect().IgnoreCaretPointSuggestion();
+        if (MOZ_UNLIKELY(!moveContentResult.inspect().Handled())) {
+          MOZ_ASSERT(aPointToInsertContent.IsSetAndValidInComposedDoc());
+          MOZ_ASSERT_IF(lastInsertedContent,
+                        lastInsertedContent->IsInComposedDoc());
+          return Ok{};
+        }
+        lastInsertedContent = content;
+        MOZ_ASSERT(lastInsertedContent->IsInComposedDoc());
+        return Ok{};
+      }
+      // If we got unexpected DOM tree, let's abort.
+      if (NS_WARN_IF(moveContentResult.inspectErr() ==
+                     NS_ERROR_EDITOR_DESTROYED) ||
+          NS_WARN_IF(moveContentResult.inspectErr() ==
+                     NS_ERROR_EDITOR_UNEXPECTED_DOM_TREE)) {
+        return moveContentResult.propagateErr();
+      }
+      // If we the next insertion point becomes invalid, it means that we
+      // got unexpected DOM tree which couldn't be detected by
+      // InsertNodeIntoProperAncestorWithTransaction().  Let's abort to
+      // avoid to move the node into unexpected position/documents.
+      if (NS_WARN_IF(!aPointToInsertContent.IsSetAndValidInComposedDoc())) {
+        return Err(NS_ERROR_EDITOR_UNEXPECTED_DOM_TREE);
+      }
+      // Assume failure means no legal parent in the document hierarchy,
+      // try again with the parent of content in the paste hierarchy.
+      // FYI: We cannot use `InclusiveAncestorOfType` here because of
+      //      calling `InsertNodeIntoProperAncestorWithTransaction()`.
+      EditorDOMPoint pointToInsert = aPointToInsertContent;
+      for (nsCOMPtr<nsIContent> parent = content->GetParent(); parent;
+           parent = parent->GetParent()) {
+        if (NS_WARN_IF(parent->IsHTMLElement(nsGkAtoms::body))) {
+          break;  // for the inner `for` loop
+        }
+        Result<CreateContentResult, nsresult> moveParentResult =
+            mHTMLEditor.InsertNodeIntoProperAncestorWithTransaction<nsIContent>(
+                *parent, pointToInsert,
+                SplitAtEdges::eDoNotCreateEmptyContainer);
+        if (MOZ_UNLIKELY(moveParentResult.isErr())) {
+          // If we got unexpected DOM tree, let's abort.
+          if (NS_WARN_IF(moveParentResult.inspectErr() ==
+                         NS_ERROR_EDITOR_DESTROYED) ||
+              NS_WARN_IF(moveParentResult.inspectErr() ==
+                         NS_ERROR_EDITOR_UNEXPECTED_DOM_TREE)) {
+            return moveParentResult.propagateErr();
+          }
+          // If we the next insertion point becomes invalid, it means that we
+          // got unexpected DOM tree which couldn't be detected by
+          // InsertNodeIntoProperAncestorWithTransaction().  Let's abort to
+          // avoid to move the node into unexpected position/documents.
+          if (NS_WARN_IF(!pointToInsert.IsSetAndValidInComposedDoc())) {
+            return Err(NS_ERROR_EDITOR_UNEXPECTED_DOM_TREE);
+          }
+          // If the parent cannot be inserted into the DOM tree, the node may be
+          // an element to make a specific structure like a table. Then, we can
+          // insert one of its ancestors to the inserting position.  So, let's
+          // retry with its parent.
+          continue;  // the inner `for` loop
+        }
+        moveParentResult.inspect().IgnoreCaretPointSuggestion();
+        if (MOZ_UNLIKELY(!moveParentResult.inspect().Handled())) {
+          MOZ_ASSERT(pointToInsert.IsSetAndValidInComposedDoc());
+          MOZ_ASSERT_IF(lastInsertedContent,
+                        lastInsertedContent->IsInComposedDoc());
+          continue;
+        }
+        pointToInsert = EditorDOMPoint::After(*parent);
+        lastInsertedContent = parent;
+        MOZ_ASSERT(lastInsertedContent->IsInComposedDoc());
+        insertedContextParentContent = std::move(parent);
+        break;  // from the inner `for` loop
+      }  // end of the inner `for` loop iterating ancestors of content
+      return Ok{};
+    };
 
     // If a `<table>` or `<tr>` element on the clipboard, and pasting it into
     // a `<table>` or `<tr>` element, insert only the appropriate children
     // instead.
-    bool inserted = false;
-    if (HTMLEditUtils::IsTableRow(content) &&
-        HTMLEditUtils::IsTableRow(pointToInsert.GetContainer()) &&
-        (HTMLEditUtils::IsTable(content) ||
-         HTMLEditUtils::IsTable(pointToInsert.GetContainer()))) {
-      // Move children of current node to the insertion point.
-      AutoTArray<OwningNonNull<nsIContent>, 24> children;
-      HTMLEditUtils::CollectAllChildren(*content, children);
-      EditorDOMPoint pointToPutCaret;
-      for (const OwningNonNull<nsIContent>& child : children) {
-        // MOZ_KnownLive(child) because of bug 1622253
-        Result<CreateContentResult, nsresult> moveChildResult =
-            mHTMLEditor.InsertNodeIntoProperAncestorWithTransaction<nsIContent>(
-                MOZ_KnownLive(child), pointToInsert,
-                SplitAtEdges::eDoNotCreateEmptyContainer);
-        if (MOZ_UNLIKELY(moveChildResult.isErr())) {
-          // If moving node is moved to different place, we should ignore
-          // this result and keep trying to insert next content node to same
-          // position.
-          if (moveChildResult.inspectErr() ==
-              NS_ERROR_EDITOR_UNEXPECTED_DOM_TREE) {
-            inserted = true;
-            continue;  // the inner `for` loop
-          }
-          NS_WARNING(
-              "HTMLEditor::InsertNodeIntoProperAncestorWithTransaction("
-              "SplitAtEdges::eDoNotCreateEmptyContainer) failed, maybe "
-              "ignored");
-          break;  // from the inner `for` loop
-        }
-        if (MOZ_UNLIKELY(!moveChildResult.inspect().Handled())) {
-          continue;
-        }
-        inserted = true;
-        lastInsertedPoint.Set(child);
-        pointToInsert = lastInsertedPoint.NextPoint();
-        MOZ_ASSERT(pointToInsert.IsSetAndValidInComposedDoc());
-        CreateContentResult unwrappedMoveChildResult = moveChildResult.unwrap();
-        unwrappedMoveChildResult.MoveCaretPointTo(
-            pointToPutCaret, mHTMLEditor,
-            {SuggestCaret::OnlyIfHasSuggestion,
-             SuggestCaret::OnlyIfTransactionsAllowedToDoIt});
-      }  // end of the inner `for` loop
-
-      if (pointToPutCaret.IsSet()) {
-        nsresult rv = mHTMLEditor.CollapseSelectionTo(pointToPutCaret);
-        if (MOZ_UNLIKELY(rv == NS_ERROR_EDITOR_DESTROYED)) {
-          NS_WARNING(
-              "EditorBase::CollapseSelectionTo() caused destroying the editor");
-          return Err(NS_ERROR_EDITOR_DESTROYED);
-        }
-        NS_WARNING_ASSERTION(
-            NS_SUCCEEDED(rv),
-            "EditorBase::CollapseSelectionTo() failed, but ignored");
-      }
-    }
-    // If a list element on the clipboard, and pasting it into a list or
-    // list item element, insert the appropriate children instead.  I.e.,
-    // merge the list elements instead of pasting as a sublist.
-    else if (HTMLEditUtils::IsAnyListElement(content) &&
-             (HTMLEditUtils::IsAnyListElement(pointToInsert.GetContainer()) ||
-              HTMLEditUtils::IsListItem(pointToInsert.GetContainer()))) {
-      AutoTArray<OwningNonNull<nsIContent>, 24> children;
-      HTMLEditUtils::CollectAllChildren(*content, children);
-      EditorDOMPoint pointToPutCaret;
-      for (const OwningNonNull<nsIContent>& child : children) {
-        if (HTMLEditUtils::IsListItem(child) ||
-            HTMLEditUtils::IsAnyListElement(child)) {
-          // If we're pasting into empty list item, we should remove it
-          // and past current node into the parent list directly.
-          // XXX This creates invalid structure if current list item element
-          //     is not proper child of the parent element, or current node
-          //     is a list element.
-          if (HTMLEditUtils::IsListItem(pointToInsert.GetContainer()) &&
-              HTMLEditUtils::IsEmptyNode(
-                  *pointToInsert.GetContainer(),
-                  {EmptyCheckOption::TreatNonEditableContentAsInvisible})) {
-            NS_WARNING_ASSERTION(pointToInsert.GetContainerParent(),
-                                 "Insertion point is out of the DOM tree");
-            if (pointToInsert.GetContainerParent()) {
-              pointToInsert.Set(pointToInsert.GetContainer());
-              MOZ_ASSERT(pointToInsert.IsSetAndValidInComposedDoc());
-              AutoEditorDOMPointChildInvalidator lockOffset(pointToInsert);
-              nsresult rv = mHTMLEditor.DeleteNodeWithTransaction(
-                  MOZ_KnownLive(*pointToInsert.GetChild()));
-              if (MOZ_UNLIKELY(rv == NS_ERROR_EDITOR_DESTROYED)) {
-                NS_WARNING("EditorBase::DeleteNodeWithTransaction() failed");
-                return Err(NS_ERROR_EDITOR_DESTROYED);
-              }
-              NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
-                                   "EditorBase::DeleteNodeWithTransaction() "
-                                   "failed, but ignored");
-            }
-          }
-          // MOZ_KnownLive(child) because of bug 1622253
+    if (HTMLEditUtils::IsTableRowElement(*content)) {
+      EditorDOMPoint pointToInsert =
+          lastInsertedContent ? EditorDOMPoint::After(*lastInsertedContent)
+                              : aPointToInsert;
+      if (HTMLEditUtils::IsTableRowElement(
+              pointToInsert.GetContainerAs<nsIContent>()) &&
+          (content->IsHTMLElement(nsGkAtoms::table) ||
+           pointToInsert.IsContainerHTMLElement(nsGkAtoms::table))) {
+        MOZ_ASSERT(!content->IsInComposedDoc());
+        bool inserted = false;
+        for (RefPtr<nsIContent> child = content->GetFirstChild(); child;
+             child = content->GetFirstChild()) {
           Result<CreateContentResult, nsresult> moveChildResult =
               mHTMLEditor
                   .InsertNodeIntoProperAncestorWithTransaction<nsIContent>(
-                      MOZ_KnownLive(child), pointToInsert,
+                      *child, pointToInsert,
                       SplitAtEdges::eDoNotCreateEmptyContainer);
           if (MOZ_UNLIKELY(moveChildResult.isErr())) {
-            // If moving node is moved to different place, we should ignore
-            // this result and keep trying to insert next content node to
-            // same position.
-            if (moveChildResult.inspectErr() ==
-                NS_ERROR_EDITOR_UNEXPECTED_DOM_TREE) {
-              inserted = true;
-              continue;  // the inner `for` loop
-            }
+            // If we got unexpected DOM tree, let's abort.
             if (NS_WARN_IF(moveChildResult.inspectErr() ==
-                           NS_ERROR_EDITOR_DESTROYED)) {
-              return Err(NS_ERROR_EDITOR_DESTROYED);
+                           NS_ERROR_EDITOR_DESTROYED) ||
+                NS_WARN_IF(moveChildResult.inspectErr() ==
+                           NS_ERROR_EDITOR_UNEXPECTED_DOM_TREE)) {
+              return moveChildResult.propagateErr();
+            }
+            // If we the next insertion point becomes invalid, it means that
+            // we got unexpected DOM tree which couldn't be detected by
+            // InsertNodeIntoProperAncestorWithTransaction().  Let's abort to
+            // avoid to move the node into unexpected position/documents.
+            if (NS_WARN_IF(!pointToInsert.IsSetAndValidInComposedDoc())) {
+              return Err(NS_ERROR_EDITOR_UNEXPECTED_DOM_TREE);
             }
             NS_WARNING(
                 "HTMLEditor::InsertNodeIntoProperAncestorWithTransaction("
@@ -1037,82 +1117,176 @@ HTMLEditor::HTMLWithContextInserter::InsertContents(
                 "ignored");
             break;  // from the inner `for` loop
           }
+          moveChildResult.inspect().IgnoreCaretPointSuggestion();
           if (MOZ_UNLIKELY(!moveChildResult.inspect().Handled())) {
+            MOZ_ASSERT(pointToInsert.IsSetAndValidInComposedDoc());
+            MOZ_ASSERT_IF(lastInsertedContent,
+                          lastInsertedContent->IsInComposedDoc());
             continue;
           }
           inserted = true;
-          lastInsertedPoint.Set(child);
-          pointToInsert = lastInsertedPoint.NextPoint();
+          pointToInsert = EditorDOMPoint::After(*child);
           MOZ_ASSERT(pointToInsert.IsSetAndValidInComposedDoc());
-          CreateContentResult unwrappedMoveChildResult =
-              moveChildResult.unwrap();
-          unwrappedMoveChildResult.MoveCaretPointTo(
-              pointToPutCaret, mHTMLEditor,
-              {SuggestCaret::OnlyIfHasSuggestion,
-               SuggestCaret::OnlyIfTransactionsAllowedToDoIt});
-        }
-        // If the child of current node is not list item nor list element,
-        // we should remove it from the DOM tree.
-        else if (HTMLEditUtils::IsRemovableNode(child)) {
-          AutoEditorDOMPointChildInvalidator lockOffset(pointToInsert);
-          IgnoredErrorResult ignoredError;
-          content->RemoveChild(child, ignoredError);
-          if (MOZ_UNLIKELY(mHTMLEditor.Destroyed())) {
-            NS_WARNING(
-                "nsIContent::RemoveChild() caused destroying the editor");
-            return Err(NS_ERROR_EDITOR_DESTROYED);
+          lastInsertedContent = std::move(child);
+          MOZ_ASSERT(lastInsertedContent->IsInComposedDoc());
+        }  // end of the inner `for` loop iterating children of `content`
+        if (!inserted) {
+          Result<Ok, nsresult> moveContentOrParentResultOrError =
+              InsertCurrentContentToNextInsertionPoint(pointToInsert);
+          if (MOZ_UNLIKELY(moveContentOrParentResultOrError.isErr())) {
+            NS_WARNING("InsertCurrentContentToNextInsertionPoint() failed");
+            return moveContentOrParentResultOrError.propagateErr();
           }
-          NS_WARNING_ASSERTION(!ignoredError.Failed(),
-                               "nsINode::RemoveChild() failed, but ignored");
-        } else {
-          NS_WARNING(
-              "Failed to delete the first child of a list element because the "
-              "list element non-editable");
-          break;  // from the inner `for` loop
         }
-      }  // end of the inner `for` loop
+        continue;
+      }
+    }  // if <tr>
 
-      if (MOZ_UNLIKELY(mHTMLEditor.Destroyed())) {
-        NS_WARNING("The editor has been destroyed");
-        return Err(NS_ERROR_EDITOR_DESTROYED);
-      }
-      if (pointToPutCaret.IsSet()) {
-        nsresult rv = mHTMLEditor.CollapseSelectionTo(pointToPutCaret);
-        if (MOZ_UNLIKELY(rv == NS_ERROR_EDITOR_DESTROYED)) {
-          NS_WARNING(
-              "EditorBase::CollapseSelectionTo() caused destroying the editor");
-          return Err(NS_ERROR_EDITOR_DESTROYED);
+    // If a list element on the clipboard, and pasting it into a list or
+    // list item element, insert the appropriate children instead.  I.e.,
+    // merge the list elements instead of pasting as a sublist.
+    if (HTMLEditUtils::IsListElement(*content)) {
+      EditorDOMPoint pointToInsert =
+          lastInsertedContent ? EditorDOMPoint::After(*lastInsertedContent)
+                              : aPointToInsert;
+      if (HTMLEditUtils::IsListElement(
+              pointToInsert.GetContainerAs<nsIContent>()) ||
+          HTMLEditUtils::IsListItemElement(
+              pointToInsert.GetContainerAs<nsIContent>())) {
+        MOZ_ASSERT(!content->IsInComposedDoc());
+        bool inserted = false;
+        for (RefPtr<nsIContent> child = content->GetFirstChild(); child;
+             child = content->GetFirstChild()) {
+          // Ignore invisible nodes like `Comment` or white-space only `Text`
+          // and invalid children of the list element.
+          // XXX Although we should not construct invalid structure, but
+          // shouldn't we preserve invalid children for avoiding dataloss?
+          if (!HTMLEditUtils::IsListItemElement(*child) &&
+              !HTMLEditUtils::IsListElement(*child)) {
+            continue;
+          }
+          // If we're pasting into empty list item, we should remove it
+          // and past current node into the parent list directly.
+          // XXX This creates invalid structure if current list item element
+          //     is not proper child of the parent element, or current node
+          //     is a list element.
+          if (HTMLEditUtils::IsListItemElement(
+                  pointToInsert.GetContainerAs<nsIContent>()) &&
+              HTMLEditUtils::IsRemovableNode(
+                  *pointToInsert.ContainerAs<Element>()) &&
+              HTMLEditUtils::IsEmptyNode(
+                  *pointToInsert.ContainerAs<Element>(),
+                  {EmptyCheckOption::TreatNonEditableContentAsInvisible})) {
+            const OwningNonNull<Element> emptyListItemElement =
+                *pointToInsert.ContainerAs<Element>();
+            nsCOMPtr<nsINode> parentNode =
+                emptyListItemElement->GetParentNode();
+            MOZ_ASSERT(parentNode);
+            nsCOMPtr<nsIContent> nextSibling =
+                emptyListItemElement->GetNextSibling();
+            nsresult rv =
+                mHTMLEditor.DeleteNodeWithTransaction(*emptyListItemElement);
+            if (MOZ_UNLIKELY(rv == NS_ERROR_EDITOR_DESTROYED)) {
+              NS_WARNING("EditorBase::DeleteNodeWithTransaction() failed");
+              return Err(NS_ERROR_EDITOR_DESTROYED);
+            }
+            if (NS_WARN_IF(!parentNode->IsInComposedDoc()) ||
+                NS_WARN_IF(nextSibling &&
+                           nextSibling->GetParentNode() != parentNode)) {
+              return Err(NS_ERROR_EDITOR_UNEXPECTED_DOM_TREE);
+            }
+            NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
+                                 "EditorBase::DeleteNodeWithTransaction() "
+                                 "failed, but ignored");
+            pointToInsert =
+                nextSibling ? EditorDOMPoint(std::move(nextSibling))
+                            : EditorDOMPoint::AtEndOf(std::move(parentNode));
+            MOZ_ASSERT(pointToInsert.IsSetAndValidInComposedDoc());
+          }
+          NS_WARNING(nsPrintfCString("%s into %s", ToString(*child).c_str(),
+                                     ToString(pointToInsert).c_str())
+                         .get());
+          Result<CreateContentResult, nsresult> moveChildResult =
+              mHTMLEditor
+                  .InsertNodeIntoProperAncestorWithTransaction<nsIContent>(
+                      *child, pointToInsert,
+                      SplitAtEdges::eDoNotCreateEmptyContainer);
+          if (MOZ_UNLIKELY(moveChildResult.isErr())) {
+            // If we got unexpected DOM tree, let's abort.
+            if (NS_WARN_IF(moveChildResult.inspectErr() ==
+                           NS_ERROR_EDITOR_DESTROYED) ||
+                NS_WARN_IF(moveChildResult.inspectErr() ==
+                           NS_ERROR_EDITOR_UNEXPECTED_DOM_TREE)) {
+              return moveChildResult.propagateErr();
+            }
+            // If we the next insertion point becomes invalid, it means that
+            // we got unexpected DOM tree which couldn't be detected by
+            // InsertNodeIntoProperAncestorWithTransaction().  Let's abort to
+            // avoid to move the node into unexpected position/documents.
+            if (NS_WARN_IF(!pointToInsert.IsSetAndValidInComposedDoc())) {
+              return Err(NS_ERROR_EDITOR_UNEXPECTED_DOM_TREE);
+            }
+            NS_WARNING(
+                "HTMLEditor::InsertNodeIntoProperAncestorWithTransaction("
+                "SplitAtEdges::eDoNotCreateEmptyContainer) failed, but maybe "
+                "ignored");
+            break;  // from the inner `for` loop
+          }
+          moveChildResult.inspect().IgnoreCaretPointSuggestion();
+          if (MOZ_UNLIKELY(!moveChildResult.inspect().Handled())) {
+            MOZ_ASSERT(pointToInsert.IsSetAndValidInComposedDoc());
+            MOZ_ASSERT_IF(lastInsertedContent,
+                          lastInsertedContent->IsInComposedDoc());
+            continue;
+          }
+          inserted = true;
+          pointToInsert = EditorDOMPoint::After(*child);
+          MOZ_ASSERT(pointToInsert.IsSetAndValidInComposedDoc());
+          lastInsertedContent = std::move(child);
+          MOZ_ASSERT(lastInsertedContent->IsInComposedDoc());
+        }  // end of the inner `for` loop iterating children of `content`
+        if (!inserted) {
+          Result<Ok, nsresult> moveContentOrParentResultOrError =
+              InsertCurrentContentToNextInsertionPoint(pointToInsert);
+          if (MOZ_UNLIKELY(moveContentOrParentResultOrError.isErr())) {
+            NS_WARNING("InsertCurrentContentToNextInsertionPoint() failed");
+            return moveContentOrParentResultOrError.propagateErr();
+          }
         }
-        NS_WARNING_ASSERTION(
-            NS_SUCCEEDED(rv),
-            "EditorBase::CollapseSelectionTo() failed, but ignored");
+        continue;
       }
-    }
+    }  // if <ul>, <ol> or <dl>
+
     // If pasting into a `<pre>` element and current node is a `<pre>` element,
     // move only its children.
-    else if (HTMLEditUtils::IsPre(maybeNonEditableBlockElement) &&
-             HTMLEditUtils::IsPre(content)) {
-      // Check for pre's going into pre's.
-      AutoTArray<OwningNonNull<nsIContent>, 24> children;
-      HTMLEditUtils::CollectAllChildren(*content, children);
-      EditorDOMPoint pointToPutCaret;
-      for (const OwningNonNull<nsIContent>& child : children) {
-        // MOZ_KnownLive(child) because of bug 1622253
+    if (maybeNonEditableBlockElement &&
+        maybeNonEditableBlockElement->IsHTMLElement(nsGkAtoms::pre) &&
+        content->IsHTMLElement(nsGkAtoms::pre)) {
+      MOZ_ASSERT(!content->IsInComposedDoc());
+      EditorDOMPoint pointToInsert =
+          lastInsertedContent ? EditorDOMPoint::After(*lastInsertedContent)
+                              : aPointToInsert;
+      bool inserted = false;
+      for (RefPtr<nsIContent> child = content->GetFirstChild(); child;
+           child = content->GetFirstChild()) {
         Result<CreateContentResult, nsresult> moveChildResult =
             mHTMLEditor.InsertNodeIntoProperAncestorWithTransaction<nsIContent>(
-                MOZ_KnownLive(child), pointToInsert,
+                *child, pointToInsert,
                 SplitAtEdges::eDoNotCreateEmptyContainer);
         if (MOZ_UNLIKELY(moveChildResult.isErr())) {
-          // If moving node is moved to different place, we should ignore
-          // this result and keep trying to insert next content node there.
-          if (moveChildResult.inspectErr() ==
-              NS_ERROR_EDITOR_UNEXPECTED_DOM_TREE) {
-            inserted = true;
-            continue;  // the inner `for` loop
-          }
+          // If we got unexpected DOM tree, let's abort.
           if (NS_WARN_IF(moveChildResult.inspectErr() ==
-                         NS_ERROR_EDITOR_DESTROYED)) {
+                         NS_ERROR_EDITOR_DESTROYED) ||
+              NS_WARN_IF(moveChildResult.inspectErr() ==
+                         NS_ERROR_EDITOR_UNEXPECTED_DOM_TREE)) {
             return moveChildResult.propagateErr();
+          }
+          // If we the next insertion point becomes invalid, it means that we
+          // got unexpected DOM tree which couldn't be detected by
+          // InsertNodeIntoProperAncestorWithTransaction().  Let's abort to
+          // avoid to move the node into unexpected position/documents.
+          if (NS_WARN_IF(!pointToInsert.IsSetAndValidInComposedDoc())) {
+            return Err(NS_ERROR_EDITOR_UNEXPECTED_DOM_TREE);
           }
           NS_WARNING(
               "HTMLEditor::InsertNodeIntoProperAncestorWithTransaction("
@@ -1120,145 +1294,53 @@ HTMLEditor::HTMLWithContextInserter::InsertContents(
               "ignored");
           break;  // from the inner `for` loop
         }
+        moveChildResult.inspect().IgnoreCaretPointSuggestion();
         if (MOZ_UNLIKELY(!moveChildResult.inspect().Handled())) {
-          continue;
-        }
-        CreateContentResult unwrappedMoveChildResult = moveChildResult.unwrap();
-        inserted = true;
-        lastInsertedPoint.Set(child);
-        pointToInsert = lastInsertedPoint.NextPoint();
-        MOZ_ASSERT(pointToInsert.IsSetAndValidInComposedDoc());
-        unwrappedMoveChildResult.MoveCaretPointTo(
-            pointToPutCaret, mHTMLEditor,
-            {SuggestCaret::OnlyIfHasSuggestion,
-             SuggestCaret::OnlyIfTransactionsAllowedToDoIt});
-      }  // end of the inner `for` loop
-
-      if (pointToPutCaret.IsSet()) {
-        nsresult rv = mHTMLEditor.CollapseSelectionTo(pointToPutCaret);
-        if (MOZ_UNLIKELY(rv == NS_ERROR_EDITOR_DESTROYED)) {
-          NS_WARNING(
-              "EditorBase::CollapseSelectionTo() caused destroying the editor");
-          return Err(NS_ERROR_EDITOR_DESTROYED);
-        }
-        NS_WARNING_ASSERTION(
-            NS_SUCCEEDED(rv),
-            "EditorBase::CollapseSelectionTo() failed, but ignored");
-      }
-    }
-
-    // TODO: For making the above code clearer, we should move this fallback
-    //       path into a lambda and call it in each if/else-if block.
-    // If we haven't inserted current node nor its children, move current node
-    // to the insertion point.
-    if (!inserted) {
-      // MOZ_KnownLive(content) because 'aArrayOfTopMostChildContents' is
-      // guaranteed to keep it alive.
-      Result<CreateContentResult, nsresult> moveContentResult =
-          mHTMLEditor.InsertNodeIntoProperAncestorWithTransaction<nsIContent>(
-              MOZ_KnownLive(content), pointToInsert,
-              SplitAtEdges::eDoNotCreateEmptyContainer);
-      if (MOZ_LIKELY(moveContentResult.isOk())) {
-        if (MOZ_UNLIKELY(!moveContentResult.inspect().Handled())) {
-          continue;
-        }
-        lastInsertedPoint.Set(content);
-        pointToInsert = lastInsertedPoint;
-        MOZ_ASSERT(pointToInsert.IsSetAndValidInComposedDoc());
-        nsresult rv = moveContentResult.inspect().SuggestCaretPointTo(
-            mHTMLEditor, {SuggestCaret::OnlyIfHasSuggestion,
-                          SuggestCaret::OnlyIfTransactionsAllowedToDoIt,
-                          SuggestCaret::AndIgnoreTrivialError});
-        if (NS_FAILED(rv)) {
-          NS_WARNING("CreateContentResult::SuggestCaretPointTo() failed");
-          return Err(rv);
-        }
-        NS_WARNING_ASSERTION(
-            rv != NS_SUCCESS_EDITOR_BUT_IGNORED_TRIVIAL_ERROR,
-            "CreateContentResult::SuggestCaretPointTo() failed, but ignored");
-      } else if (moveContentResult.inspectErr() ==
-                 NS_ERROR_EDITOR_UNEXPECTED_DOM_TREE) {
-        // Moving node is moved to different place, we should keep trying to
-        // insert the next content to same position.
-      } else {
-        NS_WARNING(
-            "HTMLEditor::InsertNodeIntoProperAncestorWithTransaction("
-            "SplitAtEdges::eDoNotCreateEmptyContainer) failed, but ignored");
-        // Assume failure means no legal parent in the document hierarchy,
-        // try again with the parent of content in the paste hierarchy.
-        // FYI: We cannot use `InclusiveAncestorOfType` here because of
-        //      calling `InsertNodeIntoProperAncestorWithTransaction()`.
-        for (nsCOMPtr<nsIContent> childContent = content; childContent;
-             childContent = childContent->GetParent()) {
-          if (NS_WARN_IF(!childContent->GetParent()) ||
-              NS_WARN_IF(
-                  childContent->GetParent()->IsHTMLElement(nsGkAtoms::body))) {
-            break;  // for the inner `for` loop
-          }
-          const OwningNonNull<nsIContent> oldParentContent =
-              *childContent->GetParent();
-          Result<CreateContentResult, nsresult> moveParentResult =
-              mHTMLEditor
-                  .InsertNodeIntoProperAncestorWithTransaction<nsIContent>(
-                      oldParentContent, pointToInsert,
-                      SplitAtEdges::eDoNotCreateEmptyContainer);
-          if (MOZ_UNLIKELY(moveParentResult.isErr())) {
-            // Moving node is moved to different place, we should keep trying to
-            // insert the next content to same position.
-            if (moveParentResult.inspectErr() ==
-                NS_ERROR_EDITOR_UNEXPECTED_DOM_TREE) {
-              break;  // from the inner `for` loop
-            }
-            if (NS_WARN_IF(moveParentResult.inspectErr() ==
-                           NS_ERROR_EDITOR_DESTROYED)) {
-              return Err(NS_ERROR_EDITOR_DESTROYED);
-            }
-            NS_WARNING(
-                "HTMLEditor::InsertNodeInToProperAncestorWithTransaction("
-                "SplitAtEdges::eDoNotCreateEmptyContainer) failed, but "
-                "ignored");
-            continue;  // the inner `for` loop
-          }
-          if (MOZ_UNLIKELY(!moveParentResult.inspect().Handled())) {
-            continue;
-          }
-          insertedContextParentContent = oldParentContent;
-          pointToInsert.Set(oldParentContent);
           MOZ_ASSERT(pointToInsert.IsSetAndValidInComposedDoc());
-          nsresult rv = moveParentResult.inspect().SuggestCaretPointTo(
-              mHTMLEditor, {SuggestCaret::OnlyIfHasSuggestion,
-                            SuggestCaret::OnlyIfTransactionsAllowedToDoIt,
-                            SuggestCaret::AndIgnoreTrivialError});
-          if (NS_FAILED(rv)) {
-            NS_WARNING("CreateContentResult::SuggestCaretPointTo() failed");
-            return Err(rv);
-          }
-          NS_WARNING_ASSERTION(
-              rv != NS_SUCCESS_EDITOR_BUT_IGNORED_TRIVIAL_ERROR,
-              "CreateContentResult::SuggestCaretPointTo() failed, but ignored");
-          break;  // from the inner `for` loop
-        }  // end of the inner `for` loop
+          MOZ_ASSERT_IF(lastInsertedContent,
+                        lastInsertedContent->IsInComposedDoc());
+          continue;
+        }
+        inserted = true;
+        pointToInsert = EditorDOMPoint::After(*child);
+        MOZ_ASSERT(pointToInsert.IsSetAndValidInComposedDoc());
+        lastInsertedContent = std::move(child);
+        MOZ_ASSERT(lastInsertedContent->IsInComposedDoc());
+      }  // end of the inner `for` loop iterating children of `content`
+      if (!inserted) {
+        Result<Ok, nsresult> moveContentOrParentResultOrError =
+            InsertCurrentContentToNextInsertionPoint(pointToInsert);
+        if (MOZ_UNLIKELY(moveContentOrParentResultOrError.isErr())) {
+          NS_WARNING("InsertCurrentContentToNextInsertionPoint() failed");
+          return moveContentOrParentResultOrError.propagateErr();
+        }
       }
-    }
-    if (lastInsertedPoint.IsSet()) {
-      if (MOZ_UNLIKELY(lastInsertedPoint.GetContainer() !=
-                       lastInsertedPoint.GetChild()->GetParentNode())) {
-        NS_WARNING(
-            "HTMLEditor::InsertHTMLWithContextAsSubAction() got lost insertion "
-            "point");
-        return Err(NS_ERROR_EDITOR_UNEXPECTED_DOM_TREE);
-      }
-      pointToInsert = lastInsertedPoint.NextPoint();
-      MOZ_ASSERT(pointToInsert.IsSetAndValidInComposedDoc());
-    }
-  }  // end of the `for` loop
+      continue;
+    }  // if <pre> and inserting into a connected <pre>
 
-  return lastInsertedPoint;
+    // By default, we should move `content` into the DOM.
+    Result<Ok, nsresult> moveContentOrParentResultOrError =
+        InsertCurrentContentToNextInsertionPoint(
+            lastInsertedContent ? EditorDOMPoint::After(*lastInsertedContent)
+                                : aPointToInsert);
+    if (MOZ_UNLIKELY(moveContentOrParentResultOrError.isErr())) {
+      NS_WARNING("InsertCurrentContentToNextInsertionPoint() failed");
+      return moveContentOrParentResultOrError.propagateErr();
+    }
+  }  // end of the `for` loop iterating aArrayOfTopMostChildContents
+
+  if (!lastInsertedContent) {
+    return CreateContentResult::NotHandled();
+  }
+  EditorDOMPoint pointToPutCaret =
+      GetNewCaretPointAfterInsertingHTML(EditorDOMPoint(lastInsertedContent));
+  return CreateContentResult(std::move(lastInsertedContent),
+                             std::move(pointToPutCaret));
 }
 
 nsresult HTMLEditor::HTMLWithContextInserter::MoveCaretOutsideOfLink(
     Element& aLinkElement, const EditorDOMPoint& aPointToPutCaret) {
-  MOZ_ASSERT(HTMLEditUtils::IsLink(&aLinkElement));
+  MOZ_ASSERT(HTMLEditUtils::IsHyperlinkElement(aLinkElement));
 
   // The reason why do that instead of just moving caret after it is, the
   // link might have ended in an invisible `<br>` element.  If so, the code
@@ -1307,7 +1389,8 @@ Element* HTMLEditor::GetLinkElement(nsINode* aNode) {
   }
   nsINode* node = aNode;
   while (node) {
-    if (HTMLEditUtils::IsLink(node)) {
+    if (node->IsElement() &&
+        HTMLEditUtils::IsHyperlinkElement(*node->AsElement())) {
       return node->AsElement();
     }
     node = node->GetParentNode();
@@ -1325,7 +1408,7 @@ nsresult HTMLEditor::HTMLWithContextInserter::FragmentFromPasteCreator::
     // shouldn't be removed.
     if (parent) {
       if (aNodesToRemove == NodesToRemove::eAll ||
-          HTMLEditUtils::IsAnyListElement(parent)) {
+          HTMLEditUtils::IsListElement(nsIContent::FromNode(parent))) {
         ErrorResult error;
         parent->RemoveChild(aNode, error);
         NS_WARNING_ASSERTION(!error.Failed(), "nsINode::RemoveChild() failed");
@@ -1359,7 +1442,8 @@ nsresult HTMLEditor::HTMLWithContextInserter::FragmentFromPasteCreator::
 class MOZ_STACK_CLASS HTMLEditor::HTMLTransferablePreparer {
  public:
   HTMLTransferablePreparer(const HTMLEditor& aHTMLEditor,
-                           nsITransferable** aTransferable);
+                           nsITransferable** aTransferable,
+                           const Element* aEditingHost);
 
   nsresult Run();
 
@@ -1367,19 +1451,24 @@ class MOZ_STACK_CLASS HTMLEditor::HTMLTransferablePreparer {
   void AddDataFlavorsInBestOrder(nsITransferable& aTransferable) const;
 
   const HTMLEditor& mHTMLEditor;
+  const Element* const mEditingHost;
   nsITransferable** mTransferable;
 };
 
 HTMLEditor::HTMLTransferablePreparer::HTMLTransferablePreparer(
-    const HTMLEditor& aHTMLEditor, nsITransferable** aTransferable)
-    : mHTMLEditor{aHTMLEditor}, mTransferable{aTransferable} {
+    const HTMLEditor& aHTMLEditor, nsITransferable** aTransferable,
+    const Element* aEditingHost)
+    : mHTMLEditor{aHTMLEditor},
+      mEditingHost(aEditingHost),
+      mTransferable{aTransferable} {
   MOZ_ASSERT(mTransferable);
   MOZ_ASSERT(!*mTransferable);
 }
 
 nsresult HTMLEditor::PrepareHTMLTransferable(
-    nsITransferable** aTransferable) const {
-  HTMLTransferablePreparer htmlTransferablePreparer{*this, aTransferable};
+    nsITransferable** aTransferable, const Element* aEditingHost) const {
+  HTMLTransferablePreparer htmlTransferablePreparer{*this, aTransferable,
+                                                    aEditingHost};
   return htmlTransferablePreparer.Run();
 }
 
@@ -1418,7 +1507,10 @@ void HTMLEditor::HTMLTransferablePreparer::AddDataFlavorsInBestOrder(
   // Create the desired DataFlavor for the type of data
   // we want to get out of the transferable
   // This should only happen in html editors, not plaintext
-  if (!mHTMLEditor.IsPlaintextMailComposer()) {
+  // Note that if you add more flavors here you will need to add them
+  // to DataTransfer::GetExternalClipboardFormats as well.
+  if (!mHTMLEditor.IsPlaintextMailComposer() &&
+      !(mEditingHost && mEditingHost->IsContentEditablePlainTextOnly())) {
     DebugOnly<nsresult> rvIgnored =
         aTransferable.AddDataFlavor(kNativeHTMLMime);
     NS_WARNING_ASSERTION(
@@ -1576,7 +1668,7 @@ nsresult HTMLEditor::ParseCFHTML(const nsCString& aCfhtml,
     if (endHTML == -1) {
       return NS_OK;
     }
-    endHTML += ArrayLength(endFragmentMarker) - 1;
+    endHTML += std::size(endFragmentMarker) - 1;
   }
 
   // create context string
@@ -1683,9 +1775,11 @@ NS_IMPL_CYCLE_COLLECTION_TRAVERSE_END
 HTMLEditor::BlobReader::BlobReader(BlobImpl* aBlob, HTMLEditor* aHTMLEditor,
                                    SafeToInsertData aSafeToInsertData,
                                    const EditorDOMPoint& aPointToInsert,
-                                   DeleteSelectedContent aDeleteSelectedContent)
+                                   DeleteSelectedContent aDeleteSelectedContent,
+                                   const Element& aEditingHost)
     : mBlob(aBlob),
       mHTMLEditor(aHTMLEditor),
+      mEditingHost(&aEditingHost),
       // "beforeinput" event should've been dispatched before we read blob,
       // but anyway, we need to clone dataTransfer for "input" event.
       mDataTransfer(mHTMLEditor->GetInputEventDataTransfer()),
@@ -1707,10 +1801,13 @@ HTMLEditor::BlobReader::BlobReader(BlobImpl* aBlob, HTMLEditor* aHTMLEditor,
 }
 
 nsresult HTMLEditor::BlobReader::OnResult(const nsACString& aResult) {
+  if (NS_WARN_IF(!mEditingHost)) {
+    return NS_ERROR_FAILURE;
+  }
   AutoEditActionDataSetter editActionData(*mHTMLEditor, mEditAction);
   editActionData.InitializeDataTransfer(mDataTransfer);
   if (NS_WARN_IF(!editActionData.CanHandle())) {
-    return EditorBase::ToGenericNSResult(NS_ERROR_FAILURE);
+    return NS_ERROR_FAILURE;
   }
 
   if (NS_WARN_IF(mNeedsToDispatchBeforeInputEvent)) {
@@ -1744,10 +1841,11 @@ nsresult HTMLEditor::BlobReader::OnResult(const nsACString& aResult) {
   AutoPlaceholderBatch treatAsOneTransaction(
       *htmlEditor, ScrollSelectionIntoView::Yes, __FUNCTION__);
   EditorDOMPoint pointToInsert = std::move(mPointToInsert);
+  const RefPtr<const Element> editingHost = std::move(mEditingHost);
   rv = htmlEditor->InsertHTMLWithContextAsSubAction(
       stuffToPaste, u""_ns, u""_ns, NS_LITERAL_STRING_FROM_CSTRING(kFileMime),
       mSafeToInsertData, pointToInsert, mDeleteSelectedContent,
-      InlineStylesAtInsertionPoint::Preserve);
+      InlineStylesAtInsertionPoint::Preserve, *editingHost);
   NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
                        "HTMLEditor::InsertHTMLWithContextAsSubAction("
                        "InlineStylesAtInsertionPoint::Preserve) failed");
@@ -1861,10 +1959,11 @@ nsresult HTMLEditor::SlurpBlob(Blob* aBlob, nsIGlobalObject* aGlobal,
   return error.StealNSResult();
 }
 
-nsresult HTMLEditor::InsertObject(
-    const nsACString& aType, nsISupports* aObject,
-    SafeToInsertData aSafeToInsertData, const EditorDOMPoint& aPointToInsert,
-    DeleteSelectedContent aDeleteSelectedContent) {
+nsresult HTMLEditor::InsertObject(const nsACString& aType, nsISupports* aObject,
+                                  SafeToInsertData aSafeToInsertData,
+                                  const EditorDOMPoint& aPointToInsert,
+                                  DeleteSelectedContent aDeleteSelectedContent,
+                                  const Element& aEditingHost) {
   MOZ_ASSERT(IsEditActionDataAvailable());
 
   // Check to see if we the file is actually an image.
@@ -1921,7 +2020,7 @@ nsresult HTMLEditor::InsertObject(
           stuffToPaste, u""_ns, u""_ns,
           NS_LITERAL_STRING_FROM_CSTRING(kFileMime), aSafeToInsertData,
           aPointToInsert, aDeleteSelectedContent,
-          InlineStylesAtInsertionPoint::Preserve);
+          InlineStylesAtInsertionPoint::Preserve, aEditingHost);
       NS_WARNING_ASSERTION(
           NS_SUCCEEDED(rv),
           "HTMLEditor::InsertHTMLWithContextAsSubAction("
@@ -1939,8 +2038,9 @@ nsresult HTMLEditor::InsertObject(
     return NS_OK;
   }
 
-  RefPtr<BlobReader> br = new BlobReader(
-      blob, this, aSafeToInsertData, aPointToInsert, aDeleteSelectedContent);
+  RefPtr<BlobReader> br =
+      new BlobReader(blob, this, aSafeToInsertData, aPointToInsert,
+                     aDeleteSelectedContent, aEditingHost);
 
   nsCOMPtr<nsPIDOMWindowInner> inner = GetInnerWindow();
   nsCOMPtr<nsIGlobalObject> global = do_QueryInterface(inner);
@@ -1984,7 +2084,8 @@ static bool GetCString(nsISupports* aData, nsACString& aText) {
 
 nsresult HTMLEditor::InsertFromTransferableAtSelection(
     nsITransferable* aTransferable, const nsAString& aContextStr,
-    const nsAString& aInfoStr, HavePrivateHTMLFlavor aHavePrivateHTMLFlavor) {
+    const nsAString& aInfoStr, HavePrivateHTMLFlavor aHavePrivateHTMLFlavor,
+    const Element& aEditingHost) {
   nsAutoCString bestFlavor;
   nsCOMPtr<nsISupports> genericDataObj;
 
@@ -2006,7 +2107,8 @@ nsresult HTMLEditor::InsertFromTransferableAtSelection(
         bestFlavor.EqualsLiteral(kPNGImageMime) ||
         bestFlavor.EqualsLiteral(kGIFImageMime)) {
       nsresult rv = InsertObject(bestFlavor, genericDataObj, safeToInsertData,
-                                 EditorDOMPoint(), DeleteSelectedContent::Yes);
+                                 EditorDOMPoint(), DeleteSelectedContent::Yes,
+                                 aEditingHost);
       if (NS_FAILED(rv)) {
         NS_WARNING("HTMLEditor::InsertObject() failed");
         return rv;
@@ -2028,7 +2130,7 @@ nsresult HTMLEditor::InsertFromTransferableAtSelection(
             rv = InsertHTMLWithContextAsSubAction(
                 cffragment, aContextStr, aInfoStr, flavor, safeToInsertData,
                 EditorDOMPoint(), DeleteSelectedContent::Yes,
-                InlineStylesAtInsertionPoint::Clear);
+                InlineStylesAtInsertionPoint::Clear, aEditingHost);
             if (NS_FAILED(rv)) {
               NS_WARNING(
                   "HTMLEditor::InsertHTMLWithContextAsSubAction("
@@ -2042,7 +2144,7 @@ nsresult HTMLEditor::InsertFromTransferableAtSelection(
             rv = InsertHTMLWithContextAsSubAction(
                 cffragment, cfcontext, cfselection, flavor, safeToInsertData,
                 EditorDOMPoint(), DeleteSelectedContent::Yes,
-                InlineStylesAtInsertionPoint::Clear);
+                InlineStylesAtInsertionPoint::Clear, aEditingHost);
             if (NS_FAILED(rv)) {
               NS_WARNING(
                   "HTMLEditor::InsertHTMLWithContextAsSubAction("
@@ -2080,7 +2182,7 @@ nsresult HTMLEditor::InsertFromTransferableAtSelection(
           nsresult rv = InsertHTMLWithContextAsSubAction(
               stuffToPaste, aContextStr, aInfoStr, flavor, safeToInsertData,
               EditorDOMPoint(), DeleteSelectedContent::Yes,
-              InlineStylesAtInsertionPoint::Clear);
+              InlineStylesAtInsertionPoint::Clear, aEditingHost);
           if (NS_FAILED(rv)) {
             NS_WARNING(
                 "HTMLEditor::InsertHTMLWithContextAsSubAction("
@@ -2092,7 +2194,7 @@ nsresult HTMLEditor::InsertFromTransferableAtSelection(
           AutoPlaceholderBatch treatAsOneTransaction(
               *this, ScrollSelectionIntoView::Yes, __FUNCTION__);
           nsresult rv =
-              InsertTextAsSubAction(stuffToPaste, SelectionHandling::Delete);
+              InsertTextAsSubAction(stuffToPaste, InsertTextFor::NormalText);
           if (NS_FAILED(rv)) {
             NS_WARNING("EditorBase::InsertTextAsSubAction() failed");
             return rv;
@@ -2130,7 +2232,7 @@ static void GetStringFromDataTransfer(const DataTransfer* aDataTransfer,
 nsresult HTMLEditor::InsertFromDataTransfer(
     const DataTransfer* aDataTransfer, uint32_t aIndex,
     nsIPrincipal* aSourcePrincipal, const EditorDOMPoint& aDroppedAt,
-    DeleteSelectedContent aDeleteSelectedContent) {
+    DeleteSelectedContent aDeleteSelectedContent, const Element& aEditingHost) {
   MOZ_ASSERT(GetEditAction() == EditAction::eDrop ||
              GetEditAction() == EditAction::ePaste);
   MOZ_ASSERT(mPlaceholderBatch,
@@ -2149,7 +2251,8 @@ nsresult HTMLEditor::InsertFromDataTransfer(
   const bool hasPrivateHTMLFlavor =
       types->Contains(NS_LITERAL_STRING_FROM_CSTRING(kHTMLContext));
 
-  const bool isPlaintextEditor = IsPlaintextMailComposer();
+  const bool isPlaintextEditor = IsPlaintextMailComposer() ||
+                                 aEditingHost.IsContentEditablePlainTextOnly();
   const SafeToInsertData safeToInsertData =
       IsSafeToInsertData(aSourcePrincipal);
 
@@ -2177,7 +2280,7 @@ nsresult HTMLEditor::InsertFromDataTransfer(
               "nsIVariant::GetAsISupports() failed, but ignored");
           nsresult rv = InsertObject(NS_ConvertUTF16toUTF8(type), object,
                                      safeToInsertData, aDroppedAt,
-                                     aDeleteSelectedContent);
+                                     aDeleteSelectedContent, aEditingHost);
           NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
                                "HTMLEditor::InsertObject() failed");
           return rv;
@@ -2209,7 +2312,7 @@ nsresult HTMLEditor::InsertFromDataTransfer(
             nsresult rv = InsertHTMLWithContextAsSubAction(
                 cffragment, contextString, infoString, type, safeToInsertData,
                 aDroppedAt, aDeleteSelectedContent,
-                InlineStylesAtInsertionPoint::Clear);
+                InlineStylesAtInsertionPoint::Clear, aEditingHost);
             NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
                                  "HTMLEditor::InsertHTMLWithContextAsSubAction("
                                  "InlineStylesAtInsertionPoint::Clear) failed");
@@ -2220,7 +2323,7 @@ nsresult HTMLEditor::InsertFromDataTransfer(
           nsresult rv = InsertHTMLWithContextAsSubAction(
               cffragment, cfcontext, cfselection, type, safeToInsertData,
               aDroppedAt, aDeleteSelectedContent,
-              InlineStylesAtInsertionPoint::Clear);
+              InlineStylesAtInsertionPoint::Clear, aEditingHost);
           NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
                                "HTMLEditor::InsertHTMLWithContextAsSubAction("
                                "InlineStylesAtInsertionPoint::Clear) failed");
@@ -2241,7 +2344,7 @@ nsresult HTMLEditor::InsertFromDataTransfer(
           nsresult rv = InsertHTMLWithContextAsSubAction(
               text, contextString, infoString, type, safeToInsertData,
               aDroppedAt, aDeleteSelectedContent,
-              InlineStylesAtInsertionPoint::Clear);
+              InlineStylesAtInsertionPoint::Clear, aEditingHost);
           NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
                                "HTMLEditor::InsertHTMLWithContextAsSubAction("
                                "InlineStylesAtInsertionPoint::Clear) failed");
@@ -2266,8 +2369,15 @@ nsresult HTMLEditor::InsertFromDataTransfer(
 }
 
 // static
-HTMLEditor::HavePrivateHTMLFlavor HTMLEditor::ClipboardHasPrivateHTMLFlavor(
-    nsIClipboard* aClipboard) {
+HTMLEditor::HavePrivateHTMLFlavor
+HTMLEditor::DataTransferOrClipboardHasPrivateHTMLFlavor(
+    DataTransfer* aDataTransfer, nsIClipboard* aClipboard) {
+  nsresult rv;
+  if (aDataTransfer) {
+    return aDataTransfer->HasPrivateHTMLFlavor() ? HavePrivateHTMLFlavor::Yes
+                                                 : HavePrivateHTMLFlavor::No;
+  }
+  // otherwise, fall back to clipboard
   if (NS_WARN_IF(!aClipboard)) {
     return HavePrivateHTMLFlavor::No;
   }
@@ -2276,7 +2386,7 @@ HTMLEditor::HavePrivateHTMLFlavor HTMLEditor::ClipboardHasPrivateHTMLFlavor(
   // we know we have our own internal html format on clipboard.
   bool hasPrivateHTMLFlavor = false;
   AutoTArray<nsCString, 1> flavArray = {nsDependentCString(kHTMLContext)};
-  nsresult rv = aClipboard->HasDataMatchingFlavors(
+  rv = aClipboard->HasDataMatchingFlavors(
       flavArray, nsIClipboard::kGlobalClipboard, &hasPrivateHTMLFlavor);
   NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
                        "nsIClipboard::HasDataMatchingFlavors(nsIClipboard::"
@@ -2286,22 +2396,34 @@ HTMLEditor::HavePrivateHTMLFlavor HTMLEditor::ClipboardHasPrivateHTMLFlavor(
 }
 
 nsresult HTMLEditor::HandlePaste(AutoEditActionDataSetter& aEditActionData,
-                                 nsIClipboard::ClipboardType aClipboardType) {
+                                 nsIClipboard::ClipboardType aClipboardType,
+                                 DataTransfer* aDataTransfer) {
   aEditActionData.InitializeDataTransferWithClipboard(
-      SettingDataTransfer::eWithFormat, aClipboardType);
+      SettingDataTransfer::eWithFormat, aDataTransfer, aClipboardType);
   nsresult rv = aEditActionData.CanHandleAndMaybeDispatchBeforeInputEvent();
   if (NS_FAILED(rv)) {
     NS_WARNING_ASSERTION(rv == NS_ERROR_EDITOR_ACTION_CANCELED,
                          "CanHandleAndMaybeDispatchBeforeInputEvent() failed");
     return rv;
   }
-  rv = PasteInternal(aClipboardType);
+  const RefPtr<Element> editingHost =
+      ComputeEditingHost(LimitInBodyElement::No);
+  if (NS_WARN_IF(!editingHost)) {
+    return NS_ERROR_FAILURE;
+  }
+  rv = PasteInternal(aClipboardType, aDataTransfer, *editingHost);
   NS_WARNING_ASSERTION(NS_SUCCEEDED(rv), "HTMLEditor::PasteInternal() failed");
   return rv;
 }
 
-nsresult HTMLEditor::PasteInternal(nsIClipboard::ClipboardType aClipboardType) {
+nsresult HTMLEditor::PasteInternal(nsIClipboard::ClipboardType aClipboardType,
+                                   DataTransfer* aDataTransfer,
+                                   const Element& aEditingHost) {
   MOZ_ASSERT(IsEditActionDataAvailable());
+
+  if (MOZ_UNLIKELY(!IsModifiable())) {
+    return NS_OK;
+  }
 
   // Get Clipboard Service
   nsresult rv = NS_OK;
@@ -2314,7 +2436,7 @@ nsresult HTMLEditor::PasteInternal(nsIClipboard::ClipboardType aClipboardType) {
 
   // Get the nsITransferable interface for getting the data from the clipboard
   nsCOMPtr<nsITransferable> transferable;
-  rv = PrepareHTMLTransferable(getter_AddRefs(transferable));
+  rv = PrepareHTMLTransferable(getter_AddRefs(transferable), &aEditingHost);
   if (NS_FAILED(rv)) {
     NS_WARNING("HTMLEditor::PrepareHTMLTransferable() failed");
     return rv;
@@ -2324,20 +2446,11 @@ nsresult HTMLEditor::PasteInternal(nsIClipboard::ClipboardType aClipboardType) {
     return NS_ERROR_FAILURE;
   }
   // Get the Data from the clipboard
-  auto* windowContext = GetDocument()->GetWindowContext();
-  if (!windowContext) {
-    NS_WARNING("No window context");
-    return NS_ERROR_FAILURE;
-  }
-  rv = clipboard->GetData(transferable, aClipboardType, windowContext);
+  rv = GetDataFromDataTransferOrClipboard(aDataTransfer, transferable,
+                                          aClipboardType);
   if (NS_FAILED(rv)) {
-    NS_WARNING("nsIClipboard::GetData() failed");
+    NS_WARNING("EditorBase::GetDataFromDataTransferOrClipboard() failed");
     return rv;
-  }
-
-  // XXX Why don't you check this first?
-  if (!IsModifiable()) {
-    return NS_OK;
   }
 
   // also get additional html copy hints, if present
@@ -2346,7 +2459,7 @@ nsresult HTMLEditor::PasteInternal(nsIClipboard::ClipboardType aClipboardType) {
   // If we have our internal html flavor on the clipboard, there is special
   // context to use instead of cfhtml context.
   const HavePrivateHTMLFlavor clipboardHasPrivateHTMLFlavor =
-      ClipboardHasPrivateHTMLFlavor(clipboard);
+      DataTransferOrClipboardHasPrivateHTMLFlavor(aDataTransfer, clipboard);
   if (clipboardHasPrivateHTMLFlavor == HavePrivateHTMLFlavor::Yes) {
     nsCOMPtr<nsITransferable> contextTransferable =
         do_CreateInstance("@mozilla.org/widget/transferable;1");
@@ -2363,10 +2476,8 @@ nsresult HTMLEditor::PasteInternal(nsIClipboard::ClipboardType aClipboardType) {
     NS_WARNING_ASSERTION(
         NS_SUCCEEDED(rvIgnored),
         "nsITransferable::AddDataFlavor(kHTMLContext) failed, but ignored");
-    rvIgnored =
-        clipboard->GetData(contextTransferable, aClipboardType, windowContext);
-    NS_WARNING_ASSERTION(NS_SUCCEEDED(rvIgnored),
-                         "nsIClipboard::GetData() failed, but ignored");
+    GetDataFromDataTransferOrClipboard(aDataTransfer, contextTransferable,
+                                       aClipboardType);
     nsCOMPtr<nsISupports> contextDataObj;
     rv = contextTransferable->GetTransferData(kHTMLContext,
                                               getter_AddRefs(contextDataObj));
@@ -2395,10 +2506,8 @@ nsresult HTMLEditor::PasteInternal(nsIClipboard::ClipboardType aClipboardType) {
         NS_SUCCEEDED(rvIgnored),
         "nsITransferable::AddDataFlavor(kHTMLInfo) failed, but ignored");
 
-    rvIgnored =
-        clipboard->GetData(infoTransferable, aClipboardType, windowContext);
-    NS_WARNING_ASSERTION(NS_SUCCEEDED(rvIgnored),
-                         "nsIClipboard::GetData() failed, but ignored");
+    GetDataFromDataTransferOrClipboard(aDataTransfer, infoTransferable,
+                                       aClipboardType);
     nsCOMPtr<nsISupports> infoDataObj;
     rv = infoTransferable->GetTransferData(kHTMLInfo,
                                            getter_AddRefs(infoDataObj));
@@ -2413,7 +2522,8 @@ nsresult HTMLEditor::PasteInternal(nsIClipboard::ClipboardType aClipboardType) {
   }
 
   rv = InsertFromTransferableAtSelection(transferable, contextStr, infoStr,
-                                         clipboardHasPrivateHTMLFlavor);
+                                         clipboardHasPrivateHTMLFlavor,
+                                         aEditingHost);
   NS_WARNING_ASSERTION(
       NS_SUCCEEDED(rv),
       "HTMLEditor::InsertFromTransferableAtSelection() failed");
@@ -2433,6 +2543,12 @@ nsresult HTMLEditor::HandlePasteTransferable(
     return rv;
   }
 
+  const RefPtr<Element> editingHost =
+      ComputeEditingHost(LimitInBodyElement::No);
+  if (NS_WARN_IF(!editingHost)) {
+    return NS_ERROR_FAILURE;
+  }
+
   RefPtr<DataTransfer> dataTransfer = GetInputEventDataTransfer();
   if (dataTransfer->HasFile() && dataTransfer->MozItemCount() > 0) {
     // Now aTransferable has moved to DataTransfer. Use DataTransfer.
@@ -2440,7 +2556,7 @@ nsresult HTMLEditor::HandlePasteTransferable(
         *this, ScrollSelectionIntoView::Yes, __FUNCTION__);
 
     rv = InsertFromDataTransfer(dataTransfer, 0, nullptr, EditorDOMPoint(),
-                                DeleteSelectedContent::Yes);
+                                DeleteSelectedContent::Yes, *editingHost);
     NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
                          "HTMLEditor::InsertFromDataTransfer("
                          "DeleteSelectedContent::Yes) failed");
@@ -2449,7 +2565,8 @@ nsresult HTMLEditor::HandlePasteTransferable(
 
   nsAutoString contextStr, infoStr;
   rv = InsertFromTransferableAtSelection(&aTransferable, contextStr, infoStr,
-                                         HavePrivateHTMLFlavor::No);
+                                         HavePrivateHTMLFlavor::No,
+                                         *editingHost);
   NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
                        "HTMLEditor::InsertFromTransferableAtSelection("
                        "HavePrivateHTMLFlavor::No) failed");
@@ -2458,10 +2575,28 @@ nsresult HTMLEditor::HandlePasteTransferable(
 
 nsresult HTMLEditor::PasteNoFormattingAsAction(
     nsIClipboard::ClipboardType aClipboardType,
-    DispatchPasteEvent aDispatchPasteEvent, nsIPrincipal* aPrincipal) {
+    DispatchPasteEvent aDispatchPasteEvent,
+    DataTransfer* aDataTransfer /* = nullptr */,
+    nsIPrincipal* aPrincipal /* = nullptr */) {
   if (IsReadonly()) {
     return NS_OK;
   }
+  // Create the same DataTransfer object here so we can share it between
+  // the clipboard event and its data with the call to
+  // InsertFromTransferableWithSelection below. This prevents
+  // race conditions with Content Analysis on like we see in bug 1918027.
+  RefPtr<DataTransfer> dataTransfer =
+      aDataTransfer ? RefPtr<DataTransfer>(aDataTransfer)
+                    : RefPtr<DataTransfer>(CreateDataTransferForPaste(
+                          ePasteNoFormatting, aClipboardType));
+
+  auto clearDataTransfer = MakeScopeExit([&] {
+    // If the caller passed in aDataTransfer, they are responsible for clearing
+    // this.
+    if (!aDataTransfer && dataTransfer) {
+      dataTransfer->ClearForPaste();
+    }
+  });
 
   AutoEditActionDataSetter editActionData(*this, EditAction::ePaste,
                                           aPrincipal);
@@ -2469,7 +2604,7 @@ nsresult HTMLEditor::PasteNoFormattingAsAction(
     return NS_ERROR_NOT_INITIALIZED;
   }
   editActionData.InitializeDataTransferWithClipboard(
-      SettingDataTransfer::eWithoutFormat, aClipboardType);
+      SettingDataTransfer::eWithoutFormat, dataTransfer, aClipboardType);
 
   if (aDispatchPasteEvent == DispatchPasteEvent::Yes) {
     RefPtr<nsFocusManager> focusManager = nsFocusManager::GetFocusManager();
@@ -2478,14 +2613,22 @@ nsresult HTMLEditor::PasteNoFormattingAsAction(
     }
     const RefPtr<Element> focusedElement = focusManager->GetFocusedElement();
 
-    Result<ClipboardEventResult, nsresult> ret =
-        DispatchClipboardEventAndUpdateClipboard(ePasteNoFormatting,
-                                                 Some(aClipboardType));
-    if (MOZ_UNLIKELY(ret.isErr())) {
-      NS_WARNING(
-          "EditorBase::DispatchClipboardEventAndUpdateClipboard("
-          "ePasteNoFormatting) failed");
-      return EditorBase::ToGenericNSResult(ret.unwrapErr());
+    Result<ClipboardEventResult, nsresult> ret = Err(NS_ERROR_FAILURE);
+    {
+      // This method is not set up to pass back the new aDataTransfer
+      // if it changes. If we need this in the future, we can change
+      // aDataTransfer to be a RefPtr<DataTransfer>*.
+      MOZ_ASSERT(!aDataTransfer);
+      AutoTrackDataTransferForPaste trackDataTransfer(*this, dataTransfer);
+
+      ret = DispatchClipboardEventAndUpdateClipboard(
+          ePasteNoFormatting, Some(aClipboardType), dataTransfer);
+      if (MOZ_UNLIKELY(ret.isErr())) {
+        NS_WARNING(
+            "EditorBase::DispatchClipboardEventAndUpdateClipboard("
+            "ePasteNoFormatting) failed");
+        return EditorBase::ToGenericNSResult(ret.unwrapErr());
+      }
     }
     switch (ret.inspect()) {
       case ClipboardEventResult::DoDefault:
@@ -2514,23 +2657,29 @@ nsresult HTMLEditor::PasteNoFormattingAsAction(
       }
       if (editorBase != this) {
         if (editorBase->IsHTMLEditor()) {
-          nsresult rv =
-              MOZ_KnownLive(editorBase->AsHTMLEditor())
-                  ->PasteNoFormattingAsAction(
-                      aClipboardType, DispatchPasteEvent::No, aPrincipal);
+          nsresult rv = MOZ_KnownLive(editorBase->AsHTMLEditor())
+                            ->PasteNoFormattingAsAction(
+                                aClipboardType, DispatchPasteEvent::No,
+                                dataTransfer, aPrincipal);
           NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
                                "HTMLEditor::PasteNoFormattingAsAction("
                                "DispatchPasteEvent::No) failed");
           return EditorBase::ToGenericNSResult(rv);
         }
         nsresult rv = editorBase->PasteAsAction(
-            aClipboardType, DispatchPasteEvent::No, aPrincipal);
+            aClipboardType, DispatchPasteEvent::No, dataTransfer, aPrincipal);
         NS_WARNING_ASSERTION(
             NS_SUCCEEDED(rv),
             "EditorBase::PasteAsAction(DispatchPasteEvent::No) failed");
         return EditorBase::ToGenericNSResult(rv);
       }
     }
+  }
+
+  const RefPtr<Element> editingHost =
+      ComputeEditingHost(LimitInBodyElement::No);
+  if (NS_WARN_IF(!editingHost)) {
+    return NS_ERROR_FAILURE;
   }
 
   // Dispatch "beforeinput" event after "paste" event.  And perhaps, before
@@ -2549,22 +2698,7 @@ nsresult HTMLEditor::PasteNoFormattingAsAction(
   }
   NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
                        "EditorBase::CommitComposition() failed, but ignored");
-
-  // Get Clipboard Service
-  nsCOMPtr<nsIClipboard> clipboard(
-      do_GetService("@mozilla.org/widget/clipboard;1", &rv));
-  if (NS_FAILED(rv)) {
-    NS_WARNING("Failed to get nsIClipboard service");
-    return rv;
-  }
-
-  if (!GetDocument()) {
-    NS_WARNING("Editor didn't have document, but ignored");
-    return NS_OK;
-  }
-  auto* windowContext = GetDocument()->GetWindowContext();
-  if (!windowContext) {
-    NS_WARNING("Editor didn't have document window context, but ignored");
+  if (MOZ_UNLIKELY(!IsModifiable())) {
     return NS_OK;
   }
 
@@ -2581,20 +2715,15 @@ nsresult HTMLEditor::PasteNoFormattingAsAction(
         "ignored");
     return NS_OK;
   }
-
-  if (!IsModifiable()) {
-    return NS_OK;
-  }
-
-  // Get the Data from the clipboard
-  rv = clipboard->GetData(transferable, aClipboardType, windowContext);
+  rv = GetDataFromDataTransferOrClipboard(dataTransfer, transferable,
+                                          aClipboardType);
   if (NS_FAILED(rv)) {
-    NS_WARNING("nsIClipboard::GetData() failed");
+    NS_WARNING("EditorBase::GetDataFromDataTransferOrClipboard() failed");
     return rv;
   }
 
-  rv = InsertFromTransferableAtSelection(transferable, u""_ns, u""_ns,
-                                         HavePrivateHTMLFlavor::No);
+  rv = InsertFromTransferableAtSelection(
+      transferable, u""_ns, u""_ns, HavePrivateHTMLFlavor::No, *editingHost);
   NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
                        "HTMLEditor::InsertFromTransferableAtSelection("
                        "HavePrivateHTMLFlavor::No) failed");
@@ -2619,6 +2748,12 @@ bool HTMLEditor::CanPaste(nsIClipboard::ClipboardType aClipboardType) const {
     return false;
   }
 
+  const RefPtr<Element> editingHost =
+      ComputeEditingHost(LimitInBodyElement::No);
+  if (!editingHost) {
+    return false;
+  }
+
   nsresult rv;
   nsCOMPtr<nsIClipboard> clipboard(
       do_GetService("@mozilla.org/widget/clipboard;1", &rv));
@@ -2628,8 +2763,9 @@ bool HTMLEditor::CanPaste(nsIClipboard::ClipboardType aClipboardType) const {
   }
 
   // Use the flavors depending on the current editor mask
-  if (IsPlaintextMailComposer()) {
-    AutoTArray<nsCString, ArrayLength(textEditorFlavors)> flavors;
+  if (IsPlaintextMailComposer() ||
+      editingHost->IsContentEditablePlainTextOnly()) {
+    AutoTArray<nsCString, std::size(textEditorFlavors)> flavors;
     flavors.AppendElements<const char*>(Span<const char*>(textEditorFlavors));
     bool haveFlavors;
     nsresult rv = clipboard->HasDataMatchingFlavors(flavors, aClipboardType,
@@ -2639,7 +2775,7 @@ bool HTMLEditor::CanPaste(nsIClipboard::ClipboardType aClipboardType) const {
     return NS_SUCCEEDED(rv) && haveFlavors;
   }
 
-  AutoTArray<nsCString, ArrayLength(textHtmlEditorFlavors)> flavors;
+  AutoTArray<nsCString, std::size(textHtmlEditorFlavors)> flavors;
   flavors.AppendElements<const char*>(Span<const char*>(textHtmlEditorFlavors));
   bool haveFlavors;
   rv = clipboard->HasDataMatchingFlavors(flavors, aClipboardType, &haveFlavors);
@@ -2654,6 +2790,12 @@ bool HTMLEditor::CanPasteTransferable(nsITransferable* aTransferable) {
     return false;
   }
 
+  const RefPtr<Element> editingHost =
+      ComputeEditingHost(LimitInBodyElement::No);
+  if (!editingHost) {
+    return false;
+  }
+
   // If |aTransferable| is null, assume that a paste will succeed.
   if (!aTransferable) {
     return true;
@@ -2664,12 +2806,13 @@ bool HTMLEditor::CanPasteTransferable(nsITransferable* aTransferable) {
   // Use the flavors depending on the current editor mask
   const char** flavors;
   size_t length;
-  if (IsPlaintextMailComposer()) {
+  if (IsPlaintextMailComposer() ||
+      editingHost->IsContentEditablePlainTextOnly()) {
     flavors = textEditorFlavors;
-    length = ArrayLength(textEditorFlavors);
+    length = std::size(textEditorFlavors);
   } else {
     flavors = textHtmlEditorFlavors;
-    length = ArrayLength(textHtmlEditorFlavors);
+    length = std::size(textHtmlEditorFlavors);
   }
 
   for (size_t i = 0; i < length; i++, flavors++) {
@@ -2686,11 +2829,11 @@ bool HTMLEditor::CanPasteTransferable(nsITransferable* aTransferable) {
 
 nsresult HTMLEditor::HandlePasteAsQuotation(
     AutoEditActionDataSetter& aEditActionData,
-    nsIClipboard::ClipboardType aClipboardType) {
+    nsIClipboard::ClipboardType aClipboardType, DataTransfer* aDataTransfer) {
   MOZ_ASSERT(aClipboardType == nsIClipboard::kGlobalClipboard ||
              aClipboardType == nsIClipboard::kSelectionClipboard);
   aEditActionData.InitializeDataTransferWithClipboard(
-      SettingDataTransfer::eWithFormat, aClipboardType);
+      SettingDataTransfer::eWithFormat, aDataTransfer, aClipboardType);
   if (NS_WARN_IF(!aEditActionData.CanHandle())) {
     return NS_ERROR_NOT_INITIALIZED;
   }
@@ -2702,8 +2845,16 @@ nsresult HTMLEditor::HandlePasteAsQuotation(
     return rv;
   }
 
-  if (IsPlaintextMailComposer()) {
-    nsresult rv = PasteAsPlaintextQuotation(aClipboardType);
+  const RefPtr<Element> editingHost =
+      ComputeEditingHost(LimitInBodyElement::No);
+  if (NS_WARN_IF(!editingHost)) {
+    return NS_ERROR_FAILURE;
+  }
+
+  if (IsPlaintextMailComposer() ||
+      editingHost->IsContentEditablePlainTextOnly()) {
+    nsresult rv =
+        PasteAsPlaintextQuotation(aClipboardType, aDataTransfer, *editingHost);
     NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
                          "HTMLEditor::PasteAsPlaintextQuotation() failed");
     return rv;
@@ -2747,7 +2898,7 @@ nsresult HTMLEditor::HandlePasteAsQuotation(
                        "failed, but ignored");
 
   if (NS_SUCCEEDED(rv) && SelectionRef().IsCollapsed()) {
-    nsresult rv = EnsureCaretNotAfterInvisibleBRElement();
+    nsresult rv = EnsureCaretNotAfterInvisibleBRElement(*editingHost);
     if (NS_WARN_IF(rv == NS_ERROR_EDITOR_DESTROYED)) {
       return NS_ERROR_EDITOR_DESTROYED;
     }
@@ -2804,22 +2955,15 @@ nsresult HTMLEditor::HandlePasteAsQuotation(
     return rv;
   }
 
-  rv = PasteInternal(aClipboardType);
+  rv = PasteInternal(aClipboardType, aDataTransfer, *editingHost);
   NS_WARNING_ASSERTION(NS_SUCCEEDED(rv), "HTMLEditor::PasteInternal() failed");
   return rv;
 }
 
 nsresult HTMLEditor::PasteAsPlaintextQuotation(
-    nsIClipboard::ClipboardType aSelectionType) {
-  // Get Clipboard Service
+    nsIClipboard::ClipboardType aSelectionType, DataTransfer* aDataTransfer,
+    const Element& aEditingHost) {
   nsresult rv;
-  nsCOMPtr<nsIClipboard> clipboard =
-      do_GetService("@mozilla.org/widget/clipboard;1", &rv);
-  if (NS_FAILED(rv)) {
-    NS_WARNING("Failed to get nsIClipboard service");
-    return rv;
-  }
-
   // Create generic Transferable for getting the data
   nsCOMPtr<nsITransferable> transferable =
       do_CreateInstance("@mozilla.org/widget/transferable;1", &rv);
@@ -2851,9 +2995,8 @@ nsresult HTMLEditor::PasteAsPlaintextQuotation(
       "nsITransferable::AddDataFlavor(kTextMime) failed, but ignored");
 
   // Get the Data from the clipboard
-  rvIgnored = clipboard->GetData(transferable, aSelectionType, windowContext);
-  NS_WARNING_ASSERTION(NS_SUCCEEDED(rvIgnored),
-                       "nsIClipboard::GetData() failed, but ignored");
+  GetDataFromDataTransferOrClipboard(aDataTransfer, transferable,
+                                     aSelectionType);
 
   // Now we ask the transferable for the data
   // it still owns the data, we just have a pointer to it.
@@ -2877,7 +3020,7 @@ nsresult HTMLEditor::PasteAsPlaintextQuotation(
 
   AutoPlaceholderBatch treatAsOneTransaction(
       *this, ScrollSelectionIntoView::Yes, __FUNCTION__);
-  rv = InsertAsPlaintextQuotation(stuffToPaste, true, 0);
+  rv = InsertAsPlaintextQuotation(stuffToPaste, AddCites::Yes, aEditingHost);
   NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
                        "HTMLEditor::InsertAsPlaintextQuotation() failed");
   return rv;
@@ -2886,6 +3029,12 @@ nsresult HTMLEditor::PasteAsPlaintextQuotation(
 nsresult HTMLEditor::InsertWithQuotationsAsSubAction(
     const nsAString& aQuotedText) {
   MOZ_ASSERT(IsEditActionDataAvailable());
+
+  const RefPtr<Element> editingHost =
+      ComputeEditingHost(LimitInBodyElement::No);
+  if (NS_WARN_IF(!editingHost)) {
+    return NS_ERROR_FAILURE;
+  }
 
   {
     Result<EditActionResult, nsresult> result = CanHandleHTMLEditSubAction();
@@ -2930,7 +3079,7 @@ nsresult HTMLEditor::InsertWithQuotationsAsSubAction(
                        "failed, but ignored");
 
   if (NS_SUCCEEDED(rv) && SelectionRef().IsCollapsed()) {
-    nsresult rv = EnsureCaretNotAfterInvisibleBRElement();
+    nsresult rv = EnsureCaretNotAfterInvisibleBRElement(*editingHost);
     if (NS_WARN_IF(rv == NS_ERROR_EDITOR_DESTROYED)) {
       return NS_ERROR_EDITOR_DESTROYED;
     }
@@ -2948,7 +3097,7 @@ nsresult HTMLEditor::InsertWithQuotationsAsSubAction(
     }
   }
 
-  rv = InsertTextAsSubAction(quotedStuff, SelectionHandling::Delete);
+  rv = InsertTextAsSubAction(quotedStuff, InsertTextFor::NormalText);
   NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
                        "EditorBase::InsertTextAsSubAction() failed");
   return rv;
@@ -2969,20 +3118,26 @@ NS_IMETHODIMP HTMLEditor::InsertTextWithQuotations(
     return NS_OK;
   }
 
+  const RefPtr<Element> editingHost =
+      ComputeEditingHost(LimitInBodyElement::No);
+  if (NS_WARN_IF(!editingHost)) {
+    return NS_ERROR_FAILURE;
+  }
+
   // The whole operation should be undoable in one transaction:
   // XXX Why isn't enough to use only AutoPlaceholderBatch here?
   AutoTransactionBatch bundleAllTransactions(*this, __FUNCTION__);
   AutoPlaceholderBatch treatAsOneTransaction(
       *this, ScrollSelectionIntoView::Yes, __FUNCTION__);
 
-  rv = InsertTextWithQuotationsInternal(aStringToInsert);
+  rv = InsertTextWithQuotationsInternal(aStringToInsert, *editingHost);
   NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
                        "HTMLEditor::InsertTextWithQuotationsInternal() failed");
   return EditorBase::ToGenericNSResult(rv);
 }
 
 nsresult HTMLEditor::InsertTextWithQuotationsInternal(
-    const nsAString& aStringToInsert) {
+    const nsAString& aStringToInsert, const Element& aEditingHost) {
   MOZ_ASSERT(!aStringToInsert.IsEmpty());
   // We're going to loop over the string, collecting up a "hunk"
   // that's all the same type (quoted or not),
@@ -3052,10 +3207,8 @@ nsresult HTMLEditor::InsertTextWithQuotationsInternal(
     // If no newline found, lineStart is now strEnd and we can finish up,
     // inserting from curHunk to lineStart then returning.
     const nsAString& curHunk = Substring(hunkStart, lineStart);
-    nsCOMPtr<nsINode> dummyNode;
     if (curHunkIsQuoted) {
-      rv =
-          InsertAsPlaintextQuotation(curHunk, false, getter_AddRefs(dummyNode));
+      rv = InsertAsPlaintextQuotation(curHunk, AddCites::No, aEditingHost);
       if (NS_WARN_IF(rv == NS_ERROR_EDITOR_DESTROYED)) {
         return NS_ERROR_EDITOR_DESTROYED;
       }
@@ -3063,7 +3216,7 @@ nsresult HTMLEditor::InsertTextWithQuotationsInternal(
                            "HTMLEditor::InsertAsPlaintextQuotation() failed, "
                            "but might be ignored");
     } else {
-      rv = InsertTextAsSubAction(curHunk, SelectionHandling::Delete);
+      rv = InsertTextAsSubAction(curHunk, InsertTextFor::NormalText);
       NS_WARNING_ASSERTION(
           NS_SUCCEEDED(rv),
           "EditorBase::InsertTextAsSubAction() failed, but might be ignored");
@@ -3082,7 +3235,14 @@ nsresult HTMLEditor::InsertTextWithQuotationsInternal(
 
 nsresult HTMLEditor::InsertAsQuotation(const nsAString& aQuotedText,
                                        nsINode** aNodeInserted) {
-  if (IsPlaintextMailComposer()) {
+  const RefPtr<Element> editingHost =
+      ComputeEditingHost(LimitInBodyElement::No);
+  if (NS_WARN_IF(!editingHost)) {
+    return NS_ERROR_FAILURE;
+  }
+
+  if (IsPlaintextMailComposer() ||
+      editingHost->IsContentEditablePlainTextOnly()) {
     AutoEditActionDataSetter editActionData(*this, EditAction::eInsertText);
     MOZ_ASSERT(!aQuotedText.IsVoid());
     editActionData.SetData(aQuotedText);
@@ -3095,7 +3255,8 @@ nsresult HTMLEditor::InsertAsQuotation(const nsAString& aQuotedText,
     }
     AutoPlaceholderBatch treatAsOneTransaction(
         *this, ScrollSelectionIntoView::Yes, __FUNCTION__);
-    rv = InsertAsPlaintextQuotation(aQuotedText, true, aNodeInserted);
+    rv = InsertAsPlaintextQuotation(aQuotedText, AddCites::Yes, *editingHost,
+                                    aNodeInserted);
     NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
                          "HTMLEditor::InsertAsPlaintextQuotation() failed");
     return EditorBase::ToGenericNSResult(rv);
@@ -3114,7 +3275,7 @@ nsresult HTMLEditor::InsertAsQuotation(const nsAString& aQuotedText,
       *this, ScrollSelectionIntoView::Yes, __FUNCTION__);
   nsAutoString citation;
   rv = InsertAsCitedQuotationInternal(aQuotedText, citation, false,
-                                      aNodeInserted);
+                                      *editingHost, aNodeInserted);
   NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
                        "HTMLEditor::InsertAsCitedQuotationInternal() failed");
   return EditorBase::ToGenericNSResult(rv);
@@ -3125,7 +3286,8 @@ nsresult HTMLEditor::InsertAsQuotation(const nsAString& aQuotedText,
 // in that here, quoted material is enclosed in a <pre> tag
 // in order to preserve the original line wrapping.
 nsresult HTMLEditor::InsertAsPlaintextQuotation(const nsAString& aQuotedText,
-                                                bool aAddCites,
+                                                AddCites aAddCites,
+                                                const Element& aEditingHost,
                                                 nsINode** aNodeInserted) {
   MOZ_ASSERT(IsEditActionDataAvailable());
 
@@ -3165,7 +3327,7 @@ nsresult HTMLEditor::InsertAsPlaintextQuotation(const nsAString& aQuotedText,
                        "failed, but ignored");
 
   if (NS_SUCCEEDED(rv) && SelectionRef().IsCollapsed()) {
-    nsresult rv = EnsureCaretNotAfterInvisibleBRElement();
+    nsresult rv = EnsureCaretNotAfterInvisibleBRElement(aEditingHost);
     if (NS_WARN_IF(rv == NS_ERROR_EDITOR_DESTROYED)) {
       return NS_ERROR_EDITOR_DESTROYED;
     }
@@ -3183,59 +3345,67 @@ nsresult HTMLEditor::InsertAsPlaintextQuotation(const nsAString& aQuotedText,
     }
   }
 
-  // Wrap the inserted quote in a <span> so we can distinguish it. If we're
-  // inserting into the <body>, we use a <span> which is displayed as a block
-  // and sized to the screen using 98 viewport width units.
-  // We could use 100vw, but 98vw avoids a horizontal scroll bar where possible.
-  // All this is done to wrap overlong lines to the screen and not to the
-  // container element, the width-restricted body.
-  Result<RefPtr<Element>, nsresult> spanElementOrError =
-      DeleteSelectionAndCreateElement(
-          *nsGkAtoms::span, [](HTMLEditor&, Element& aSpanElement,
-                               const EditorDOMPoint& aPointToInsert) {
-            // Add an attribute on the pre node so we'll know it's a quotation.
-            DebugOnly<nsresult> rvIgnored = aSpanElement.SetAttr(
-                kNameSpaceID_None, nsGkAtoms::mozquote, u"true"_ns,
-                aSpanElement.IsInComposedDoc());
-            NS_WARNING_ASSERTION(
-                NS_SUCCEEDED(rvIgnored),
-                nsPrintfCString(
-                    "Element::SetAttr(nsGkAtoms::mozquote, \"true\", %s) "
-                    "failed",
-                    aSpanElement.IsInComposedDoc() ? "true" : "false")
-                    .get());
-            // Allow wrapping on spans so long lines get wrapped to the screen.
-            if (aPointToInsert.IsContainerHTMLElement(nsGkAtoms::body)) {
+  RefPtr<Element> containerSpanElement;
+  if (!aEditingHost.IsContentEditablePlainTextOnly()) {
+    // Wrap the inserted quote in a <span> so we can distinguish it. If we're
+    // inserting into the <body>, we use a <span> which is displayed as a block
+    // and sized to the screen using 98 viewport width units.
+    // We could use 100vw, but 98vw avoids a horizontal scroll bar where
+    // possible. All this is done to wrap overlong lines to the screen and not
+    // to the container element, the width-restricted body.
+    // XXX I think that we don't need to do this in the web.  This should be
+    // done only for Thunderbird.
+    Result<RefPtr<Element>, nsresult> spanElementOrError =
+        DeleteSelectionAndCreateElement(
+            *nsGkAtoms::span, [](HTMLEditor&, Element& aSpanElement,
+                                 const EditorDOMPoint& aPointToInsert) {
+              // Add an attribute on the pre node so we'll know it's a
+              // quotation.
               DebugOnly<nsresult> rvIgnored = aSpanElement.SetAttr(
-                  kNameSpaceID_None, nsGkAtoms::style,
-                  nsLiteralString(u"white-space: pre-wrap; display: block; "
-                                  u"width: 98vw;"),
-                  false);
+                  kNameSpaceID_None, nsGkAtoms::mozquote, u"true"_ns,
+                  aSpanElement.IsInComposedDoc());
               NS_WARNING_ASSERTION(
                   NS_SUCCEEDED(rvIgnored),
-                  "Element::SetAttr(nsGkAtoms::style, \"pre-wrap, block\", "
-                  "false) failed, but ignored");
-            } else {
-              DebugOnly<nsresult> rvIgnored =
-                  aSpanElement.SetAttr(kNameSpaceID_None, nsGkAtoms::style,
-                                       u"white-space: pre-wrap;"_ns, false);
-              NS_WARNING_ASSERTION(NS_SUCCEEDED(rvIgnored),
-                                   "Element::SetAttr(nsGkAtoms::style, "
-                                   "\"pre-wrap\", false) failed, but ignored");
-            }
-            return NS_OK;
-          });
-  NS_WARNING_ASSERTION(spanElementOrError.isOk(),
-                       "HTMLEditor::DeleteSelectionAndCreateElement(nsGkAtoms::"
-                       "span) failed, but ignored");
-
-  // If this succeeded, then set selection inside the pre
-  // so the inserted text will end up there.
-  // If it failed, we don't care what the return value was,
-  // but we'll fall through and try to insert the text anyway.
-  if (spanElementOrError.isOk()) {
+                  nsPrintfCString(
+                      "Element::SetAttr(nsGkAtoms::mozquote, \"true\", %s) "
+                      "failed",
+                      aSpanElement.IsInComposedDoc() ? "true" : "false")
+                      .get());
+              // Allow wrapping on spans so long lines get wrapped to the
+              // screen.
+              if (aPointToInsert.IsContainerHTMLElement(nsGkAtoms::body)) {
+                DebugOnly<nsresult> rvIgnored = aSpanElement.SetAttr(
+                    kNameSpaceID_None, nsGkAtoms::style,
+                    nsLiteralString(u"white-space: pre-wrap; display: block; "
+                                    u"width: 98vw;"),
+                    false);
+                NS_WARNING_ASSERTION(
+                    NS_SUCCEEDED(rvIgnored),
+                    "Element::SetAttr(nsGkAtoms::style, \"pre-wrap, block\", "
+                    "false) failed, but ignored");
+              } else {
+                DebugOnly<nsresult> rvIgnored =
+                    aSpanElement.SetAttr(kNameSpaceID_None, nsGkAtoms::style,
+                                         u"white-space: pre-wrap;"_ns, false);
+                NS_WARNING_ASSERTION(
+                    NS_SUCCEEDED(rvIgnored),
+                    "Element::SetAttr(nsGkAtoms::style, "
+                    "\"pre-wrap\", false) failed, but ignored");
+              }
+              return NS_OK;
+            });
+    if (MOZ_UNLIKELY(spanElementOrError.isErr())) {
+      NS_WARNING(
+          "HTMLEditor::DeleteSelectionAndCreateElement(nsGkAtoms::span) "
+          "failed");
+      return NS_OK;
+    }
+    // If this succeeded, then set selection inside the pre
+    // so the inserted text will end up there.
+    // If it failed, we don't care what the return value was,
+    // but we'll fall through and try to insert the text anyway.
     MOZ_ASSERT(spanElementOrError.inspect());
-    rv = CollapseSelectionToStartOf(
+    nsresult rv = CollapseSelectionToStartOf(
         MOZ_KnownLive(*spanElementOrError.inspect()));
     if (MOZ_UNLIKELY(rv == NS_ERROR_EDITOR_DESTROYED)) {
       NS_WARNING(
@@ -3246,52 +3416,51 @@ nsresult HTMLEditor::InsertAsPlaintextQuotation(const nsAString& aQuotedText,
     NS_WARNING_ASSERTION(
         NS_SUCCEEDED(rv),
         "EditorBase::CollapseSelectionToStartOf() failed, but ignored");
+    containerSpanElement = spanElementOrError.unwrap();
   }
 
   // TODO: We should insert text at specific point rather than at selection.
   //       Then, we can do this before inserting the <span> element.
-  if (aAddCites) {
-    rv = InsertWithQuotationsAsSubAction(aQuotedText);
+  if (aAddCites == AddCites::Yes) {
+    nsresult rv = InsertWithQuotationsAsSubAction(aQuotedText);
     if (NS_FAILED(rv)) {
       NS_WARNING("HTMLEditor::InsertWithQuotationsAsSubAction() failed");
       return rv;
     }
   } else {
-    rv = InsertTextAsSubAction(aQuotedText, SelectionHandling::Delete);
+    nsresult rv = InsertTextAsSubAction(aQuotedText, InsertTextFor::NormalText);
     if (NS_FAILED(rv)) {
       NS_WARNING("EditorBase::InsertTextAsSubAction() failed");
       return rv;
     }
   }
 
-  // XXX Why don't we check this before inserting the quoted text?
-  if (spanElementOrError.isErr()) {
-    return NS_OK;
-  }
-
-  // Set the selection to just after the inserted node:
-  EditorRawDOMPoint afterNewSpanElement(
-      EditorRawDOMPoint::After(*spanElementOrError.inspect()));
-  NS_WARNING_ASSERTION(
-      afterNewSpanElement.IsSet(),
-      "Failed to set after the new <span> element, but ignored");
-  if (afterNewSpanElement.IsSet()) {
-    nsresult rv = CollapseSelectionTo(afterNewSpanElement);
-    if (MOZ_UNLIKELY(rv == NS_ERROR_EDITOR_DESTROYED)) {
-      NS_WARNING(
-          "EditorBase::CollapseSelectionTo() caused destroying the editor");
-      return NS_ERROR_EDITOR_DESTROYED;
-    }
+  // Set the selection to after the <span> if and only if we wrap the text into
+  // it.
+  if (containerSpanElement) {
+    EditorRawDOMPoint afterNewSpanElement(
+        EditorRawDOMPoint::After(*containerSpanElement));
     NS_WARNING_ASSERTION(
-        NS_SUCCEEDED(rv),
-        "EditorBase::CollapseSelectionTo() failed, but ignored");
-  }
+        afterNewSpanElement.IsSet(),
+        "Failed to set after the new <span> element, but ignored");
+    if (afterNewSpanElement.IsSet()) {
+      nsresult rv = CollapseSelectionTo(afterNewSpanElement);
+      if (MOZ_UNLIKELY(rv == NS_ERROR_EDITOR_DESTROYED)) {
+        NS_WARNING(
+            "EditorBase::CollapseSelectionTo() caused destroying the editor");
+        return NS_ERROR_EDITOR_DESTROYED;
+      }
+      NS_WARNING_ASSERTION(
+          NS_SUCCEEDED(rv),
+          "EditorBase::CollapseSelectionTo() failed, but ignored");
+    }
 
-  // Note that if !aAddCites, aNodeInserted isn't set.
-  // That's okay because the routines that use aAddCites
-  // don't need to know the inserted node.
-  if (aNodeInserted) {
-    spanElementOrError.unwrap().forget(aNodeInserted);
+    // Note that if !aAddCites, aNodeInserted isn't set.
+    // That's okay because the routines that use aAddCites
+    // don't need to know the inserted node.
+    if (aNodeInserted) {
+      containerSpanElement.forget(aNodeInserted);
+    }
   }
 
   return NS_OK;
@@ -3304,6 +3473,12 @@ NS_IMETHODIMP HTMLEditor::Rewrap(bool aRespectNewlines) {
     NS_WARNING_ASSERTION(rv == NS_ERROR_EDITOR_ACTION_CANCELED,
                          "CanHandleAndMaybeDispatchBeforeInputEvent(), failed");
     return EditorBase::ToGenericNSResult(rv);
+  }
+
+  const RefPtr<Element> editingHost =
+      ComputeEditingHost(LimitInBodyElement::No);
+  if (NS_WARN_IF(!editingHost)) {
+    return NS_ERROR_FAILURE;
   }
 
   // Rewrap makes no sense if there's no wrap column; default to 72.
@@ -3351,7 +3526,7 @@ NS_IMETHODIMP HTMLEditor::Rewrap(bool aRespectNewlines) {
   AutoTransactionBatch bundleAllTransactions(*this, __FUNCTION__);
   AutoPlaceholderBatch treatAsOneTransaction(
       *this, ScrollSelectionIntoView::Yes, __FUNCTION__);
-  rv = InsertTextWithQuotationsInternal(wrapped);
+  rv = InsertTextWithQuotationsInternal(wrapped, *editingHost);
   NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
                        "HTMLEditor::InsertTextWithQuotationsInternal() failed");
   return EditorBase::ToGenericNSResult(rv);
@@ -3361,8 +3536,15 @@ NS_IMETHODIMP HTMLEditor::InsertAsCitedQuotation(const nsAString& aQuotedText,
                                                  const nsAString& aCitation,
                                                  bool aInsertHTML,
                                                  nsINode** aNodeInserted) {
+  const RefPtr<Element> editingHost =
+      ComputeEditingHost(LimitInBodyElement::No);
+  if (NS_WARN_IF(!editingHost)) {
+    return NS_ERROR_FAILURE;
+  }
+
   // Don't let anyone insert HTML when we're in plaintext mode.
-  if (IsPlaintextMailComposer()) {
+  if (IsPlaintextMailComposer() ||
+      editingHost->IsContentEditablePlainTextOnly()) {
     NS_ASSERTION(
         !aInsertHTML,
         "InsertAsCitedQuotation: trying to insert html into plaintext editor");
@@ -3380,7 +3562,8 @@ NS_IMETHODIMP HTMLEditor::InsertAsCitedQuotation(const nsAString& aQuotedText,
 
     AutoPlaceholderBatch treatAsOneTransaction(
         *this, ScrollSelectionIntoView::Yes, __FUNCTION__);
-    rv = InsertAsPlaintextQuotation(aQuotedText, true, aNodeInserted);
+    rv = InsertAsPlaintextQuotation(aQuotedText, AddCites::Yes, *editingHost,
+                                    aNodeInserted);
     NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
                          "HTMLEditor::InsertAsPlaintextQuotation() failed");
     return EditorBase::ToGenericNSResult(rv);
@@ -3398,7 +3581,7 @@ NS_IMETHODIMP HTMLEditor::InsertAsCitedQuotation(const nsAString& aQuotedText,
   AutoPlaceholderBatch treatAsOneTransaction(
       *this, ScrollSelectionIntoView::Yes, __FUNCTION__);
   rv = InsertAsCitedQuotationInternal(aQuotedText, aCitation, aInsertHTML,
-                                      aNodeInserted);
+                                      *editingHost, aNodeInserted);
   NS_WARNING_ASSERTION(NS_SUCCEEDED(rv),
                        "HTMLEditor::InsertAsCitedQuotationInternal() failed");
   return EditorBase::ToGenericNSResult(rv);
@@ -3406,7 +3589,7 @@ NS_IMETHODIMP HTMLEditor::InsertAsCitedQuotation(const nsAString& aQuotedText,
 
 nsresult HTMLEditor::InsertAsCitedQuotationInternal(
     const nsAString& aQuotedText, const nsAString& aCitation, bool aInsertHTML,
-    nsINode** aNodeInserted) {
+    const Element& aEditingHost, nsINode** aNodeInserted) {
   MOZ_ASSERT(IsEditActionDataAvailable());
   MOZ_ASSERT(!IsPlaintextMailComposer());
 
@@ -3442,7 +3625,7 @@ nsresult HTMLEditor::InsertAsCitedQuotationInternal(
                        "failed, but ignored");
 
   if (NS_SUCCEEDED(rv) && SelectionRef().IsCollapsed()) {
-    nsresult rv = EnsureCaretNotAfterInvisibleBRElement();
+    nsresult rv = EnsureCaretNotAfterInvisibleBRElement(aEditingHost);
     if (NS_WARN_IF(rv == NS_ERROR_EDITOR_DESTROYED)) {
       return NS_ERROR_EDITOR_DESTROYED;
     }
@@ -3525,7 +3708,7 @@ nsresult HTMLEditor::InsertAsCitedQuotationInternal(
     }
   } else {
     rv = InsertTextAsSubAction(
-        aQuotedText, SelectionHandling::Delete);  // XXX ignore charset
+        aQuotedText, InsertTextFor::NormalText);  // XXX ignore charset
     if (NS_WARN_IF(Destroyed())) {
       return NS_ERROR_EDITOR_DESTROYED;
     }
@@ -3596,7 +3779,7 @@ void HTMLEditor::HTMLWithContextInserter::FragmentFromPasteCreator::
   nsIContent* child = aNode.GetFirstChild();
   while (child) {
     bool isEmptyNodeShouldNotInserted = false;
-    if (HTMLEditUtils::IsAnyListElement(child)) {
+    if (HTMLEditUtils::IsListElement(*child)) {
       // Current limitation of HTMLEditor:
       //   Cannot put caret in a list element which does not have list item
       //   element even as a descendant.  I.e., HTMLEditor does not support
@@ -4112,8 +4295,8 @@ void HTMLEditor::AutoHTMLFragmentBoundariesFixer::
         nsTArray<OwningNonNull<Element>>& aOutArrayOfListAndTableElements) {
   for (Element* element = aContent.GetAsElementOrParentElement(); element;
        element = element->GetParentElement()) {
-    if (HTMLEditUtils::IsAnyListElement(element) ||
-        HTMLEditUtils::IsTable(element)) {
+    if (HTMLEditUtils::IsListElement(*element) ||
+        element->IsHTMLElement(nsGkAtoms::table)) {
       aOutArrayOfListAndTableElements.AppendElement(*element);
     }
   }
@@ -4126,8 +4309,10 @@ Element* HTMLEditor::AutoHTMLFragmentBoundariesFixer::
         const nsTArray<OwningNonNull<Element>>&
             aInclusiveAncestorsTableOrListElements) {
   Element* lastFoundAncestorListOrTableElement = nullptr;
-  for (auto& content : aArrayOfTopMostChildContents) {
-    if (HTMLEditUtils::IsAnyTableElementButNotTable(content)) {
+  for (const OwningNonNull<nsIContent>& content :
+       aArrayOfTopMostChildContents) {
+    if (HTMLEditUtils::IsAnyTableElementExceptTableElementAndColumElement(
+            content)) {
       Element* tableElement =
           HTMLEditUtils::GetClosestAncestorTableElement(*content);
       if (!tableElement) {
@@ -4153,7 +4338,7 @@ Element* HTMLEditor::AutoHTMLFragmentBoundariesFixer::
       continue;
     }
 
-    if (!HTMLEditUtils::IsListItem(content)) {
+    if (!HTMLEditUtils::IsListItemElement(*content)) {
       continue;
     }
     Element* listElement =
@@ -4199,7 +4384,7 @@ HTMLEditor::AutoHTMLFragmentBoundariesFixer::FindReplaceableTableElement(
   for (Element* element =
            aContentMaybeInTableElement.GetAsElementOrParentElement();
        element; element = element->GetParentElement()) {
-    if (!HTMLEditUtils::IsAnyTableElement(element) ||
+    if (!HTMLEditUtils::IsAnyTableElementExceptColumnElement(*element) ||
         element->IsHTMLElement(nsGkAtoms::table)) {
       // XXX Perhaps, the original developer of this method assumed that
       //     aTableElement won't be skipped because if it's assumed, we can
@@ -4228,7 +4413,7 @@ HTMLEditor::AutoHTMLFragmentBoundariesFixer::FindReplaceableTableElement(
 
 bool HTMLEditor::AutoHTMLFragmentBoundariesFixer::IsReplaceableListElement(
     Element& aListElement, nsIContent& aContentMaybeInListElement) const {
-  MOZ_ASSERT(HTMLEditUtils::IsAnyListElement(&aListElement));
+  MOZ_ASSERT(HTMLEditUtils::IsListElement(aListElement));
   // Perhaps, this is designed for climbing up the DOM tree from
   // aContentMaybeInListElement to aListElement and making sure that
   // aContentMaybeInListElement itself or its ancestor is an list item.
@@ -4238,7 +4423,7 @@ bool HTMLEditor::AutoHTMLFragmentBoundariesFixer::IsReplaceableListElement(
   for (Element* element =
            aContentMaybeInListElement.GetAsElementOrParentElement();
        element; element = element->GetParentElement()) {
-    if (!HTMLEditUtils::IsListItem(element)) {
+    if (!HTMLEditUtils::IsListItemElement(*element)) {
       // XXX Perhaps, the original developer of this method assumed that
       //     aListElement won't be skipped because if it's assumed, we can
       //     stop climbing up the tree in that case.
@@ -4303,7 +4488,7 @@ void HTMLEditor::AutoHTMLFragmentBoundariesFixer::
 
   // Find substructure of list or table that must be included in paste.
   Element* replaceElement;
-  if (HTMLEditUtils::IsAnyListElement(listOrTableElement)) {
+  if (HTMLEditUtils::IsListElement(*listOrTableElement)) {
     if (!IsReplaceableListElement(*listOrTableElement,
                                   firstOrLastChildContent)) {
       return;

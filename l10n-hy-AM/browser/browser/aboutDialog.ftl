@@ -45,12 +45,14 @@ update-internal-error2 = Ներքին սխալի պատճառով հնարավո
 #   $channel (String): description of the update channel (e.g. "release", "beta", "nightly" etc.)
 aboutdialog-channel-description = Այժմ գործում է <label data-l10n-name="current-channel">{ $channel }</label> թարմացումների աղբյուրը:
 warningDesc-version = { -brand-short-name }-ն փորձնական է և կայուն չի աշխատի:
-aboutdialog-help-user = { -brand-product-name }-ի օգնությունը
+aboutdialog-help-user = { -brand-product-name } օգնություն
 aboutdialog-submit-feedback = Ուղարկել արձագանքը
 community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-short-name }</label> հանդիսանում է <label data-l10n-name="community-exp-creditsLink">գլոբալ համայնք</label>, որն աշխատում է միասին՝ ապահովելու համացանցի հասանելիությունը բոլորի համար:
 community-2 = { -brand-short-name }-ը ստեղծել է <label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label>-ն՝ <label data-l10n-name="community-creditsLink">գլոբալ համայնք</label>, որն աշխատում է միասին՝ ապահովելու համացանցի հասանելիությունը բոլորի համար:
 helpus = Ցանկանու՞մ եք օգնել: <label data-l10n-name="helpus-donateLink">Կատարեք նվիրատվություն</label> կամ <label data-l10n-name="helpus-getInvolvedLink">միացեք մեր համայնքին:</label>
 bottomLinks-license = Արտոնագրի տվյալներ
+bottom-links-terms = Օգտագործման պայմաններ
+bottom-links-privacy = Գաղտնիության ծանուցում
 bottomLinks-rights = Օգտագործողի իրավունքները
 bottomLinks-privacy = Գաղտնիության դրույթներ
 # Example of resulting string: 66.0.1 (64-bit)
@@ -64,3 +66,14 @@ aboutDialog-version = { $version } ({ $bits }-բիթ)
 #   $isodate (String): date in ISO format, e.g. 2019-01-16
 #   $bits (Number): bits of the architecture (32 or 64)
 aboutDialog-version-nightly = { $version } ({ $isodate }) ({ $bits }-բիթ)
+# Example of resulting string: 131.0a1 (aarch64)
+# Variables:
+#   $version (String): version of Firefox, e.g. 66.0.1
+#   $arch (String): name of the architecture (arm, aarch64, etc.)
+aboutdialog-version-arch = { $version } ({ $arch })
+# Example of resulting string: 131.0a1 (2024-08-27) (aarch64)
+# Variables:
+#   $version (String): version of Firefox for Nightly builds, e.g. 66.0a1
+#   $isodate (String): date in ISO format, e.g. 2019-01-16
+#   $arch (String): name of the architecture (arm, aarch64, etc.)
+aboutdialog-version-arch-nightly = { $version } ({ $isodate }) ({ $arch })

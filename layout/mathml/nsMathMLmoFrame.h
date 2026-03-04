@@ -7,9 +7,8 @@
 #ifndef nsMathMLmoFrame_h___
 #define nsMathMLmoFrame_h___
 
-#include "mozilla/Attributes.h"
-#include "nsMathMLTokenFrame.h"
 #include "nsMathMLChar.h"
+#include "nsMathMLTokenFrame.h"
 
 namespace mozilla {
 class PresShell;
@@ -26,7 +25,7 @@ class nsMathMLmoFrame final : public nsMathMLTokenFrame {
   friend nsIFrame* NS_NewMathMLmoFrame(mozilla::PresShell* aPresShell,
                                        ComputedStyle* aStyle);
 
-  eMathMLFrameType GetMathMLFrameType() override;
+  MathMLFrameType GetMathMLFrameType() override;
 
   void DidSetComputedStyle(ComputedStyle* aOldStyle) override;
 
@@ -42,20 +41,20 @@ class nsMathMLmoFrame final : public nsMathMLTokenFrame {
   void SetInitialChildList(ChildListID aListID,
                            nsFrameList&& aChildList) override;
 
-  virtual void Reflow(nsPresContext* aPresContext, ReflowOutput& aDesiredSize,
-                      const ReflowInput& aReflowInput,
-                      nsReflowStatus& aStatus) override;
+  void Reflow(nsPresContext* aPresContext, ReflowOutput& aDesiredSize,
+              const ReflowInput& aReflowInput,
+              nsReflowStatus& aStatus) override;
 
-  nsresult Place(DrawTarget* aDrawTarget, const PlaceFlags& aFlags,
-                 ReflowOutput& aDesiredSize) override;
+  void Place(DrawTarget* aDrawTarget, const PlaceFlags& aFlags,
+             ReflowOutput& aDesiredSize) override;
 
-  virtual void MarkIntrinsicISizesDirty() override;
+  void MarkIntrinsicISizesDirty() override;
 
-  virtual void GetIntrinsicISizeMetrics(gfxContext* aRenderingContext,
-                                        ReflowOutput& aDesiredSize) override;
+  void GetIntrinsicISizeMetrics(gfxContext* aRenderingContext,
+                                ReflowOutput& aDesiredSize) override;
 
-  virtual nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
-                                    int32_t aModType) override;
+  nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
+                            AttrModType aModType) override;
 
   // This method is called by the parent frame to ask <mo>
   // to stretch itself.
@@ -64,9 +63,9 @@ class nsMathMLmoFrame final : public nsMathMLTokenFrame {
           nsBoundingMetrics& aContainerSize,
           ReflowOutput& aDesiredStretchSize) override;
 
-  virtual nsresult ChildListChanged(int32_t aModType) override {
+  nsresult ChildListChanged() override {
     ProcessTextData();
-    return nsMathMLContainerFrame::ChildListChanged(aModType);
+    return nsMathMLContainerFrame::ChildListChanged();
   }
 
  protected:

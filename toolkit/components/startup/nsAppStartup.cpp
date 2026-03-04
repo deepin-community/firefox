@@ -27,7 +27,6 @@
 #include "mozilla/ProfilerMarkers.h"
 #include "mozilla/ResultExtensions.h"
 #include "mozilla/Try.h"
-#include "mozilla/Unused.h"
 
 #include "GeckoProfiler.h"
 #include "prprf.h"
@@ -77,35 +76,31 @@ static NS_DEFINE_CID(kAppShellCID, NS_APPSHELL_CID);
 // Process-wide GUID, used by the OS to differentiate sources
 // {509962E0-406B-46F4-99BA-5A009F8D2225}
 // Keep it synchronized with the .mof file
-#  define NS_APPLICATION_TRACING_CID                   \
-    {                                                  \
-      0x509962E0, 0x406B, 0x46F4, {                    \
-        0x99, 0xBA, 0x5A, 0x00, 0x9F, 0x8D, 0x22, 0x25 \
-      }                                                \
-    }
+#  define NS_APPLICATION_TRACING_CID \
+    {0x509962E0,                     \
+     0x406B,                         \
+     0x46F4,                         \
+     {0x99, 0xBA, 0x5A, 0x00, 0x9F, 0x8D, 0x22, 0x25}}
 
 // Event-specific GUIDs, used by the OS to differentiate events
 // {A3DA04E0-57D7-482A-A1C1-61DA5F95BACB}
-#  define NS_PLACES_INIT_COMPLETE_EVENT_CID            \
-    {                                                  \
-      0xA3DA04E0, 0x57D7, 0x482A, {                    \
-        0xA1, 0xC1, 0x61, 0xDA, 0x5F, 0x95, 0xBA, 0xCB \
-      }                                                \
-    }
+#  define NS_PLACES_INIT_COMPLETE_EVENT_CID \
+    {0xA3DA04E0,                            \
+     0x57D7,                                \
+     0x482A,                                \
+     {0xA1, 0xC1, 0x61, 0xDA, 0x5F, 0x95, 0xBA, 0xCB}}
 // {917B96B1-ECAD-4DAB-A760-8D49027748AE}
-#  define NS_SESSION_STORE_WINDOW_RESTORED_EVENT_CID   \
-    {                                                  \
-      0x917B96B1, 0xECAD, 0x4DAB, {                    \
-        0xA7, 0x60, 0x8D, 0x49, 0x02, 0x77, 0x48, 0xAE \
-      }                                                \
-    }
+#  define NS_SESSION_STORE_WINDOW_RESTORED_EVENT_CID \
+    {0x917B96B1,                                     \
+     0xECAD,                                         \
+     0x4DAB,                                         \
+     {0xA7, 0x60, 0x8D, 0x49, 0x02, 0x77, 0x48, 0xAE}}
 // {26D1E091-0AE7-4F49-A554-4214445C505C}
-#  define NS_XPCOM_SHUTDOWN_EVENT_CID                  \
-    {                                                  \
-      0x26D1E091, 0x0AE7, 0x4F49, {                    \
-        0xA5, 0x54, 0x42, 0x14, 0x44, 0x5C, 0x50, 0x5C \
-      }                                                \
-    }
+#  define NS_XPCOM_SHUTDOWN_EVENT_CID \
+    {0x26D1E091,                      \
+     0x0AE7,                          \
+     0x4F49,                          \
+     {0xA5, 0x54, 0x42, 0x14, 0x44, 0x5C, 0x50, 0x5C}}
 
 static NS_DEFINE_CID(kApplicationTracingCID, NS_APPLICATION_TRACING_CID);
 static NS_DEFINE_CID(kPlacesInitCompleteCID, NS_PLACES_INIT_COMPLETE_EVENT_CID);
@@ -159,7 +154,6 @@ nsAppStartup::nsAppStartup()
       mShuttingDown(false),
       mStartingUp(true),
       mAttemptingQuit(false),
-      mInterrupted(false),
       mIsSafeModeNecessary(false),
       mStartupCrashTrackingEnded(false) {
   char* mozAppSilentStart = PR_GetEnv("MOZ_APP_SILENT_START");
@@ -347,17 +341,12 @@ nsAppStartup::Quit(uint32_t aMode, int aExitCode, bool* aUserAllowedQuit) {
     }
 #ifdef XP_MACOSX
     else if (mConsiderQuitStopper == suspiciousCount) {
-      // ... or there is only a hiddenWindow left, and it's useless:
-
       // Failure shouldn't be fatal, but will abort quit attempt:
       if (!appShell) return NS_OK;
-
-      bool usefulHiddenWindow;
-      appShell->GetApplicationProvidedHiddenWindow(&usefulHiddenWindow);
-      nsCOMPtr<nsIAppWindow> hiddenWindow;
-      appShell->GetHiddenWindow(getter_AddRefs(hiddenWindow));
-      // If the remaining windows are useful, we won't quit:
-      if (!hiddenWindow || usefulHiddenWindow) {
+      bool hasHiddenWindow = false;
+      appShell->GetHasHiddenWindow(&hasHiddenWindow);
+      // If there's a hidden window, we won't quit:
+      if (hasHiddenWindow) {
         return NS_OK;
       }
 
@@ -393,6 +382,10 @@ nsAppStartup::Quit(uint32_t aMode, int aExitCode, bool* aUserAllowedQuit) {
         }
       }
     }
+
+    // We passed the last line of a shutdown to maybe not happen for legit
+    // reasons after checking CanClose() for all windows above. Now we are
+    // supposed to go away (or restart), for sure.
 
     PROFILER_MARKER_UNTYPED("Shutdown start", OTHER);
     mozilla::RecordShutdownStartTimeStamp();
@@ -442,15 +435,20 @@ nsAppStartup::Quit(uint32_t aMode, int aExitCode, bool* aUserAllowedQuit) {
                                     nullptr);
     }
 
-    /* Enumerate through each open window and close it. It's important to do
-       this before we forcequit because this can control whether we really quit
-       at all. e.g. if one of these windows has an unload handler that
-       opens a new window. Ugh. I know. */
+    // Enumerate through each open window and close it.
     CloseAllWindows();
 
     if (mediator) {
       if (ferocity == eAttemptQuit) {
         ferocity = eForceQuit;  // assume success
+
+        // TODO: The above CloseAllWindows() does a window->ForceClose() which
+        // seems to have no way of saying that we refuse to close. It dispatches
+        // events and sends notifications which might race with the below check.
+        // However the flag we check below with domWindow->Closed() should have
+        // always been set synchronously above. In other words: most likely this
+        // entire check can go away and maybe CloseAllWindows could be renamed
+        // to ForceCloseAllWindows.
 
         /* Were we able to immediately close all windows? if not, eAttemptQuit
            failed. This could happen for a variety of reasons; in fact it's
@@ -471,6 +469,8 @@ nsAppStartup::Quit(uint32_t aMode, int aExitCode, bool* aUserAllowedQuit) {
             nsCOMPtr<nsPIDOMWindowOuter> domWindow = do_QueryInterface(window);
             if (domWindow) {
               if (!domWindow->Closed()) {
+                MOZ_DIAGNOSTIC_ASSERT(false,
+                                      "CloseAllWindows() did not succeed.");
                 rv = NS_ERROR_FAILURE;
                 break;
               }
@@ -548,8 +548,7 @@ Result<ShutdownPhase, nsresult> IDLShutdownPhaseToNative(
 
 NS_IMETHODIMP
 nsAppStartup::AdvanceShutdownPhase(IDLShutdownPhase aPhase) {
-  ShutdownPhase nativePhase;
-  MOZ_TRY_VAR(nativePhase, IDLShutdownPhaseToNative(aPhase));
+  ShutdownPhase nativePhase = MOZ_TRY(IDLShutdownPhaseToNative(aPhase));
   AppShutdown::AdvanceShutdownPhase(nativePhase);
   return NS_OK;
 }
@@ -557,8 +556,7 @@ nsAppStartup::AdvanceShutdownPhase(IDLShutdownPhase aPhase) {
 NS_IMETHODIMP
 nsAppStartup::IsInOrBeyondShutdownPhase(IDLShutdownPhase aPhase,
                                         bool* aIsInOrBeyond) {
-  ShutdownPhase nativePhase;
-  MOZ_TRY_VAR(nativePhase, IDLShutdownPhaseToNative(aPhase));
+  ShutdownPhase nativePhase = MOZ_TRY(IDLShutdownPhaseToNative(aPhase));
   *aIsInOrBeyond = AppShutdown::IsInOrBeyond(nativePhase);
   return NS_OK;
 }
@@ -617,6 +615,12 @@ nsAppStartup::ExitLastWindowClosingSurvivalArea(void) {
 NS_IMETHODIMP
 nsAppStartup::GetShuttingDown(bool* aResult) {
   *aResult = AppShutdown::IsInOrBeyond(ShutdownPhase::AppShutdownConfirmed);
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+nsAppStartup::GetAttemptingQuit(bool* aResult) {
+  *aResult = mAttemptingQuit;
   return NS_OK;
 }
 
@@ -685,18 +689,6 @@ nsAppStartup::GetShowedPreXULSkeletonUI(bool* aResult) {
 #else
   *aResult = false;
 #endif
-  return NS_OK;
-}
-
-NS_IMETHODIMP
-nsAppStartup::SetInterrupted(bool aInterrupted) {
-  mInterrupted = aInterrupted;
-  return NS_OK;
-}
-
-NS_IMETHODIMP
-nsAppStartup::GetInterrupted(bool* aInterrupted) {
-  *aInterrupted = mInterrupted;
   return NS_OK;
 }
 
@@ -951,10 +943,6 @@ nsAppStartup::TrackStartupCrashBegin(bool* aIsSafeModeNecessary) {
   if (PR_Now() / PR_USEC_PER_SEC <= lastSuccessfulStartup)
     return NS_ERROR_FAILURE;
 
-  // The last startup was a crash so include it in the count regardless of when
-  // it happened.
-  Telemetry::Accumulate(Telemetry::STARTUP_CRASH_DETECTED, true);
-
   if (inSafeMode) {
     GetAutomaticSafeModeNecessary(aIsSafeModeNecessary);
     return NS_OK;
@@ -1000,8 +988,7 @@ static nsresult RemoveIncompleteStartupFile() {
         if (NS_WARN_IF(incompleteStartup.isErr())) {
           return;
         }
-        Unused << NS_WARN_IF(
-            NS_FAILED(incompleteStartup.unwrap()->Remove(false)));
+        (void)NS_WARN_IF(NS_FAILED(incompleteStartup.unwrap()->Remove(false)));
       }));
 }
 
@@ -1020,7 +1007,7 @@ nsAppStartup::TrackStartupCrashEnd() {
 
   // Remove the incomplete startup canary file, so the next startup doesn't
   // detect a recent startup crash.
-  Unused << NS_WARN_IF(NS_FAILED(RemoveIncompleteStartupFile()));
+  (void)NS_WARN_IF(NS_FAILED(RemoveIncompleteStartupFile()));
 
   // Use the timestamp of XRE_main as an approximation for the lock file
   // timestamp. See MAX_STARTUP_BUFFER for the buffer time period.
@@ -1078,7 +1065,8 @@ nsAppStartup::RestartInSafeMode(uint32_t aQuitMode) {
 }
 
 NS_IMETHODIMP
-nsAppStartup::CreateInstanceWithProfile(nsIToolkitProfile* aProfile) {
+nsAppStartup::CreateInstanceWithProfile(nsIToolkitProfile* aProfile,
+                                        const nsTArray<nsString>& aArgs) {
   if (NS_WARN_IF(!aProfile)) {
     return NS_ERROR_FAILURE;
   }
@@ -1088,8 +1076,7 @@ nsAppStartup::CreateInstanceWithProfile(nsIToolkitProfile* aProfile) {
   }
 
   nsCOMPtr<nsIFile> execPath;
-  nsresult rv =
-      NS_NewLocalFile(gAbsoluteArgv0Path, true, getter_AddRefs(execPath));
+  nsresult rv = NS_NewLocalFile(gAbsoluteArgv0Path, getter_AddRefs(execPath));
   if (NS_WARN_IF(NS_FAILED(rv))) {
     return rv;
   }
@@ -1112,8 +1099,15 @@ nsAppStartup::CreateInstanceWithProfile(nsIToolkitProfile* aProfile) {
 
   NS_ConvertUTF8toUTF16 wideName(profileName);
 
-  const char16_t* args[] = {u"-P", wideName.get()};
-  rv = process->Runw(false, args, 2);
+  // Build argument list: -P <profile_name> followed by any additional args
+  AutoTArray<const char16_t*, 2> args = {u"-P", wideName.get()};
+
+  // Add optional arguments if provided
+  for (const auto& arg : aArgs) {
+    args.AppendElement(arg.get());
+  }
+
+  rv = process->Runw(false, args.Elements(), args.Length());
   if (NS_WARN_IF(NS_FAILED(rv))) {
     return rv;
   }

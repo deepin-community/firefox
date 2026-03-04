@@ -149,9 +149,7 @@ main-context-menu-save-link-to-pocket =
     .label = { -pocket-brand-name } ᱨᱮ ᱥᱟᱺᱪᱟᱣ ᱢᱮ
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = ᱤᱢᱮᱞ ᱴᱷᱤᱠᱬᱟᱹ ᱱᱚᱠᱚᱞ ᱢᱮ
@@ -162,11 +160,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = ᱞᱤᱝᱠ ᱱᱚᱠᱚᱞ ᱢᱮ
     .accesskey = ᱱ
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = ᱵᱤᱱᱟ ᱥᱟᱭᱤᱴ ᱴᱨᱮᱠᱤᱝ ᱠᱟᱛᱮ ᱞᱤᱝᱠ ᱱᱚᱠᱚᱞ ᱢᱮ
-    .accesskey = y
+main-context-menu-preview-link =
+    .label = ᱞᱤᱝᱠ ᱧᱮᱞᱵᱤᱲᱟᱹᱣ ᱢᱮ
+    .accesskey = r
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = ᱥᱟᱯᱷᱟ ᱞᱤᱝᱠ ᱱᱚᱠᱚᱞ ᱢᱮ
+    .accesskey = ᱥ
 
 ## Media (video/audio) controls
 ##
@@ -290,9 +292,7 @@ main-context-menu-send-to-device =
     .label = ᱥᱟᱫᱷᱚᱱ ᱛᱮ ᱥᱟᱦᱴᱟ ᱵᱷᱮᱡᱟᱭ ᱢᱮ
     .accesskey = n
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = ᱥᱟᱺᱪᱟᱣ ᱠᱟᱱ ᱵᱚᱞᱚ ᱠᱚ ᱵᱮᱵᱷᱟᱨ ᱢᱮ
@@ -319,6 +319,9 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = ᱱᱚᱶᱟ ᱯᱟᱱᱛᱮ ᱞᱟᱹᱜᱤᱫ ᱢᱤᱫ ᱠᱟᱹᱴᱷᱤ ᱵᱚᱲ ᱥᱮᱞᱮᱫ ᱢᱮ …
     .accesskey = ᱱ
+main-context-menu-add-engine =
+    .label = ᱥᱮᱸᱫᱽᱨᱟ ᱤᱧᱡᱤᱱ ᱥᱮᱞᱮᱫ ᱢᱮ
+    .accesskey = ᱥ
 main-context-menu-link-send-to-device =
     .label = ᱞᱤᱝᱠ ᱥᱟᱫᱷᱚᱱ ᱛᱮ ᱵᱷᱮᱡᱟᱭ ᱢᱮ
     .accesskey = n

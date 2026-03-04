@@ -149,9 +149,7 @@ main-context-menu-save-link-to-pocket =
     .label = احفظ الرابط في { -pocket-brand-name }
     .accesskey = ط
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = انسخ عنوان البريد الإلكتروني
@@ -162,11 +160,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = انسخ الرابط
     .accesskey = ن
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = انسخ الرابط دون تعقب الموقع
-    .accesskey = خ
+main-context-menu-preview-link =
+    .label = عاين الرابط
+    .accesskey = ط
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = انسخ الرابط النظيف
+    .accesskey = ن
 
 ## Media (video/audio) controls
 ##
@@ -290,9 +292,7 @@ main-context-menu-send-to-device =
     .label = أرسِل الصفحة إلى جهاز
     .accesskey = ه
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = استعمل جلسة ولوج محفوظة
@@ -319,6 +319,9 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = أضِف كلمة رئيسية لهذا البحث…
     .accesskey = ك
+main-context-menu-add-engine =
+    .label = أضف محرك بحث
+    .accesskey = ض
 main-context-menu-link-send-to-device =
     .label = أرسل الرابط إلى جهاز
     .accesskey = ه

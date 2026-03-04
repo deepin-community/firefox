@@ -13,7 +13,6 @@
 #include "AsyncPanZoomController.h"         // for AsyncPanZoomController
 #include "FrameMetrics.h"                   // for FrameMetrics
 #include "SimpleVelocityTracker.h"          // for FrameMetrics
-#include "mozilla/Attributes.h"             // for final
 #include "mozilla/Preferences.h"            // for Preferences
 #include "mozilla/gfx/Rect.h"               // for RoundedIn
 #include "mozilla/layers/APZThreadUtils.h"  // for AssertOnControllerThread
@@ -141,7 +140,7 @@ ParentLayerCoord Axis::ApplyResistance(
       (1 - fabsf(GetOverscroll()) / GetCompositionLength()) / 16;
   float result = resistanceFactor < 0 ? ParentLayerCoord(0)
                                       : aRequestedOverscroll * resistanceFactor;
-  result = clamped(result, -8.0f, 8.0f);
+  result = std::clamp(result, -8.0f, 8.0f);
   return result;
 }
 
@@ -192,7 +191,7 @@ void Axis::RestoreOverscroll(ParentLayerCoord aOverscroll) {
 
 void Axis::StartOverscrollAnimation(float aVelocity) {
   const float maxVelocity = StaticPrefs::apz_overscroll_max_velocity();
-  aVelocity = clamped(aVelocity / 2.0f, -maxVelocity, maxVelocity);
+  aVelocity = std::clamp(aVelocity / 2.0f, -maxVelocity, maxVelocity);
   SetVelocity(aVelocity);
   mMSDModel.SetPosition(mOverscroll);
   // Convert velocity from ParentLayerCoords/millisecond to

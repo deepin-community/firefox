@@ -4,15 +4,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include <algorithm>
-
 #include "mozilla/IOInterposer.h"
 #include "mozilla/PoisonIOInterposer.h"
 #include "mozilla/ProcessedStack.h"
 #include "mozilla/SHA1.h"
 #include "mozilla/StaticPtr.h"
 #include "mozilla/Telemetry.h"
-#include "mozilla/Unused.h"
 #include "nsAppDirectoryServiceDefs.h"
 #include "nsDirectoryServiceUtils.h"
 #include "nsLocalFile.h"
@@ -61,7 +58,7 @@ class SHA1Stream {
     str.AppendVprintf(aFormat, list);
     va_end(list);
     mSHA1.update(str.get(), str.Length());
-    mozilla::Unused << fwrite(str.get(), 1, str.Length(), mFile);
+    (void)fwrite(str.get(), 1, str.Length(), mFile);
   }
   void Finish(mozilla::SHA1Sum::Hash& aHash) {
     int fd = fileno(mFile);
@@ -206,8 +203,10 @@ void LateWriteObserver::Observe(
   for (int i = 0; i < 20; ++i) {
     finalName.AppendPrintf("%02x", sha1[i]);
   }
-  RefPtr<nsLocalFile> file = new nsLocalFile(nameAux);
-  file->RenameTo(nullptr, finalName);
+  RefPtr<nsIFile> file;
+  if (NS_SUCCEEDED(NS_NewPathStringLocalFile(nameAux, getter_AddRefs(file)))) {
+    file->RenameTo(nullptr, finalName);
+  }
 }
 
 /******************************* Setup/Teardown *******************************/

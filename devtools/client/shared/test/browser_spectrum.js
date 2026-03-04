@@ -54,9 +54,9 @@ add_task(async function () {
  * Helper method for extracting the rgba overlay value of the color preview's background
  * image style.
  *
- * @param   {String} linearGradientStr
+ * @param   {string} linearGradientStr
  *          The linear gradient CSS string.
- * @return  {String} Returns the rgba string for the color overlay.
+ * @return  {string} Returns the rgba string for the color overlay.
  */
 function extractRgbaOverlayString(linearGradientStr) {
   const start = linearGradientStr.indexOf("(");
@@ -192,7 +192,7 @@ async function testChangingColorShouldEmitEvents(container, doc) {
   );
   testChangingColorShouldEmitEventsHelper(s, sendDownKey, [125, 62, 62, 1]);
   testChangingColorShouldEmitEventsHelper(s, sendLeftKey, [125, 63, 63, 1]);
-  testChangingColorShouldEmitEventsHelper(s, sendUpKey, [128, 64, 64, 1]);
+  testChangingColorShouldEmitEventsHelper(s, sendUpKey, [127, 64, 64, 1]);
   testChangingColorShouldEmitEventsHelper(s, sendRightKey, [128, 63, 63, 1]);
 
   info(
@@ -275,7 +275,7 @@ async function testSettingColorShoudUpdateTheUI(container) {
   const alphaSliderOriginalVal = s.alphaSlider.value;
   let hueSliderOriginalVal = s.hueSlider.value;
 
-  setSpectrumProps(s, { rgb: [50, 240, 234, 0.2] });
+  setSpectrumProps(s, { rgb: [50, 240, 0, 0.2] });
 
   Assert.notEqual(
     s.alphaSlider.value,
@@ -299,21 +299,21 @@ async function testSettingColorShoudUpdateTheUI(container) {
   );
   testAriaAttributesOnSpectrumElements(
     s,
-    "Closest to: aqua",
-    "rgba(50, 240, 234, 0.2)",
+    "Closest to: lime",
+    "rgba(50, 240, 0, 0.2)",
     0.2
   );
 
   hueSliderOriginalVal = s.hueSlider.value;
 
-  setSpectrumProps(s, { rgb: ZERO_ALPHA_COLOR });
+  setSpectrumProps(s, { rgb: [0, 255, 0, 0] });
   is(s.alphaSlider.value, "0", "Alpha range UI has been updated again");
   Assert.notStrictEqual(
     hueSliderOriginalVal,
     s.hueSlider.value,
     "Hue slider should have move again"
   );
-  testAriaAttributesOnSpectrumElements(s, "aqua", "rgba(0, 255, 255, 0)", 0);
+  testAriaAttributesOnSpectrumElements(s, "lime", "rgba(0, 255, 0, 0)", 0);
 
   s.destroy();
 }

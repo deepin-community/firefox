@@ -2,6 +2,9 @@
 
 ["test_pdf_file_in_iframe.html"]
 skip-if = [
-    "os == 'android' && !nightly_build"
+  "os == 'android' && !nightly_build",
 ]
+support-files = ["file_pdfjs_test.pdf"]
+
+["test_pdf_file_in_object.html"]
 support-files = ["file_pdfjs_test.pdf"]

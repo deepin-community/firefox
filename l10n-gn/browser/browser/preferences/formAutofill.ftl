@@ -17,7 +17,9 @@ autofill-manage-remove-button = Mboguete
 autofill-manage-add-button = Embojuaju…
 autofill-manage-edit-button = Mbosako’i…
 
-## The address capture doorhanger
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 address-capture-save-doorhanger-header = ¿Eñongatu kundaharape?
 address-capture-save-doorhanger-description = Eñongatu marandu { -brand-short-name } ndive ehai hag̃ua myanyhẽha pya’e.
@@ -39,8 +41,6 @@ address-capture-manage-address-button =
     .label = Kundaharape ñemboheko
 address-capture-learn-more-button =
     .label = Kuaave
-# The dialog title for creating addresses in browser preferences.
-autofill-add-new-address-title = Embojuaju kundaharape pyahu
 address-capture-open-menu-button =
     .aria-label = Embojuruja poravorã
 address-capture-edit-address-button =
@@ -49,68 +49,78 @@ address-capture-edit-address-button =
 autofill-add-address-title = Embojuaju kundaharape
 # The dialog title for editing addresses in browser preferences.
 autofill-edit-address-title = Embosako’i kundaharape
-autofill-address-name = Téra
 autofill-address-given-name = Téra ñepyrũ
 autofill-address-additional-name = Téra mokõiha
 autofill-address-family-name = Terajoapy
+autofill-address-name = Téra
 autofill-address-organization = Atyguasu
 autofill-address-street-address = Kundaharape
 autofill-address-street = Tape réra
 
-## address-level-3 (Sublocality) names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IR, MX
+# Used in Iran (IR), Mexico (MX) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-neighborhood = Jeikohaguasu
-# Used in MY
+# Used in Malaysia (MY) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-village-township = Okaraygua térã táva
 autofill-address-island = Ymbytépe
-# Used in IE
+# Used in Ireland (IE) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-townland = Táva
 
-## address-level-2 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-city = Táva
-# Used in HK, SD, SY, TR as Address Level-2 and used in KR as Sublocality.
+# Used in Hong Kong (HK), Sudan (SD), Syria (SY), Türkiye (TR) as as secondary address information (2 levels below the country level).
+# Used in Korea as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-district = Tavarã
-# Used in GB, NO, SE
+# Used in United Kingdom (GB), Norway (NO), Sweden (SE) as as secondary address information (2 levels below the country level).
 autofill-address-post-town = Post town
-# Used in AU as Address Level-2 and used in ZZ as Sublocality.
+# Used in Australia (AU) as as secondary address information (below the country level).
+# Used for international addresses as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-suburb = Tembe’ygua
 
-## address-level-1 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-province = Tetãpehẽ
 autofill-address-state = Tekotee
 autofill-address-county = Kondado
-# Used in BB, JM
+# Used in Barbados (BB), Jamaica (JM) as primary address information (1 level below the country level).
 autofill-address-parish = Parrokia
-# Used in JP
+# Used in Japan (JP) as primary address information (1 level below the country level).
 autofill-address-prefecture = Prefectura
-# Used in HK
+# Used in Honk Kong (HK) as primary address information (1 level below the country level).
 autofill-address-area = Tendaguasu
-# Used in KR
+# Used in Korea (KO) as primary address information (1 level below the country level).
 autofill-address-do-si = Do/Si
-# Used in NI, CO
+# Used in Nicaragua (NI), Colombia (CO) as primary address information (1 level below the country level).
 autofill-address-department = Tetãvore
-# Used in AE
+# Used in United Arab Emirates (AE) as primary address information (1 level below the country level).
 autofill-address-emirate = Emirato
-# Used in RU and UA
+# Used in Russia (RU), Ukraine (UA) as primary address information (1 level below the country level).
 autofill-address-oblast = Tendaguasu ijeheguíva
 
-## Postal code name types
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IN
+# Postal code field used in India (IN).
 autofill-address-pin = Pin
 autofill-address-postal-code = Código postal
+# Postal code field.
 autofill-address-zip = ZIP ayvu
-# Used in IE
+# Postal code field used in Ireland (IE).
 autofill-address-eircode = Eircode
 
 ##
 
-
-##
-
+# The dialog title for creating addresses in browser preferences.
+autofill-add-new-address-title = Embojuaju kundaharape pyahu
 autofill-address-country = Tetã térã tendaguasu
 autofill-address-country-only = Tetã
 autofill-address-tel = Pumbyry
@@ -122,11 +132,6 @@ autofill-country-warning-message = Pe myanyhẽha ijeheguíva ko’ág̃a ikatu 
 autofill-add-new-card-title = Embojoaju kuatia’atã ñemurã pyahu
 # The dialog title for editing credit cards in browser preferences.
 autofill-edit-card-title = Embosako’i kuatia’atã ñemurã
-autofill-message-tooltip = Ehecha ñe’ẽmondo myanyhẽjehegui rehegua
-# The dialog title for creating credit cards in browser preferences.
-autofill-add-card-title = Embojuaju kuatia’atã
-# The dialog title for editing credit cards in browser preferences.
-autofill-edit-card-title2 = Embosako’i kuatia’atã
 # In macOS, this string is preceded by the operating system with "Firefox is trying to ",
 # and has a period added to its end. Make sure to test in your locale.
 autofill-edit-card-password-prompt =
@@ -135,6 +140,11 @@ autofill-edit-card-password-prompt =
         [windows] { -brand-short-name } ohechaukase marandu kuatia’atã ñemurã rehegua. Emoneĩ ko’ág̃a ko Windows mba’etépe jeike.
        *[other] { -brand-short-name } ohechaukase marandu kuatia’atã ñemurãva.
     }
+autofill-message-tooltip = Ehecha ñe’ẽmondo myanyhẽjehegui rehegua
+# The dialog title for creating credit cards in browser preferences.
+autofill-add-card-title = Embojuaju kuatia’atã
+# The dialog title for editing credit cards in browser preferences.
+autofill-edit-card-title2 = Embosako’i kuatia’atã
 autofill-card-number = Kuatia’atã papapy
 autofill-card-invalid-number = Ikatúpa emoinge kuatia’atã papapy oikóva
 autofill-card-name-on-card = Kuatia’atã réra
@@ -142,6 +152,12 @@ autofill-card-expires-month = Exp. Jasy
 autofill-card-expires-year = Exp. Ary
 autofill-card-billing-address = Kundaharape ñemondo hag̃ua
 autofill-card-network = Peteĩchagua kuatia’atã
+# This string is never actually displayed, but is used to make it easier to
+# find the payment methods section of about:settings via the search input. It's
+# simply a comma separated list of additional search keywords for the payment
+# methods section. Localizers should choose terms that make sense for payment
+# methods in their region.
+autofill-card-search-term-credit-cards = kuatia’atã ñemurã, jedeverã, kuatia’atã, kuatia’atã débito, débito, viruryru, hepyme’ẽ
 
 ## These are brand names and should only be translated when a locale-specific name for that brand is in common use
 

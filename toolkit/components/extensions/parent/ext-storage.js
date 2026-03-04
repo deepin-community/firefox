@@ -30,6 +30,13 @@ ChromeUtils.defineLazyGetter(this, "extensionStorageSync", () => {
   return extensionStorageSync;
 });
 
+XPCOMUtils.defineLazyPreferenceGetter(
+  this,
+  "prefStorageSyncEnabled",
+  "webextensions.storage.sync.enabled",
+  true
+);
+
 const enforceNoTemporaryAddon = extensionId => {
   const EXCEPTION_MESSAGE =
     "The storage API will not work with a temporary addon ID. " +
@@ -39,6 +46,35 @@ const enforceNoTemporaryAddon = extensionId => {
     throw new ExtensionError(EXCEPTION_MESSAGE);
   }
 };
+
+// Set of extensions that already recorded the sync quota event.
+const syncQuotasRecorded = new WeakSet();
+const QUOTA_BYTES_PER_ITEM = 8_192;
+
+async function recordSyncQuotaTelemetry(extension, context) {
+  if (syncQuotasRecorded.has(extension) || !prefStorageSyncEnabled) {
+    return;
+  }
+  syncQuotasRecorded.add(extension);
+  let items = await extensionStorageSync.get(extension, null, context);
+  let items_over_quota = 0;
+  let total_size_bytes = 0;
+  let entries = Object.entries(items);
+  for (let [key, value] of entries) {
+    let bytes = JSON.stringify(value).length;
+    total_size_bytes += key.length + bytes;
+    if (bytes > QUOTA_BYTES_PER_ITEM) {
+      items_over_quota++;
+    }
+  }
+  Glean.extensionsData.syncUsageQuotas.record({
+    addon_id: extension.id,
+    total_size_bytes,
+    items_count: entries.length,
+    items_over_quota,
+    backend: extensionStorageSync.backend,
+  });
+}
 
 // WeakMap[extension -> Promise<SerializableMap?>]
 const managedStorage = new WeakMap();
@@ -59,6 +95,21 @@ const lookupManagedStorage = async (extensionId, context) => {
     return ExtensionStorage._serializableMap(info.manifest.data);
   }
   return null;
+};
+
+const getManagedStorageManifestData = async (extension, context) => {
+  let lookup = managedStorage.get(extension);
+
+  if (!lookup) {
+    lookup = await lookupManagedStorage(extension.id, context);
+    managedStorage.set(extension, lookup);
+  }
+
+  if (!lookup) {
+    throw new ExtensionError("Managed storage manifest not found");
+  }
+
+  return lookup;
 };
 
 this.storage = class extends ExtensionAPIPersistent {
@@ -257,6 +308,12 @@ this.storage = class extends ExtensionAPIPersistent {
             get(spec) {
               return ExtensionStorage.get(extension.id, spec);
             },
+            getBytesInUse(keys) {
+              return ExtensionStorage.getBytesInUse(extension.id, keys);
+            },
+            getKeys() {
+              return ExtensionStorage.getKeys(extension.id);
+            },
             set(items) {
               return ExtensionStorage.set(extension.id, items);
             },
@@ -289,6 +346,9 @@ this.storage = class extends ExtensionAPIPersistent {
           get(items) {
             return extensionStorageSession.get(extension, items);
           },
+          getKeys() {
+            return extensionStorageSession.getKeys(extension);
+          },
           set(items) {
             extensionStorageSession.set(extension, items);
           },
@@ -312,22 +372,32 @@ this.storage = class extends ExtensionAPIPersistent {
         sync: {
           get(spec) {
             enforceNoTemporaryAddon(extension.id);
+            recordSyncQuotaTelemetry(extension, context);
             return extensionStorageSync.get(extension, spec, context);
+          },
+          getKeys() {
+            enforceNoTemporaryAddon(extension.id);
+            recordSyncQuotaTelemetry(extension, context);
+            return extensionStorageSync.getKeys(extension, context);
           },
           set(items) {
             enforceNoTemporaryAddon(extension.id);
+            recordSyncQuotaTelemetry(extension, context);
             return extensionStorageSync.set(extension, items, context);
           },
           remove(keys) {
             enforceNoTemporaryAddon(extension.id);
+            recordSyncQuotaTelemetry(extension, context);
             return extensionStorageSync.remove(extension, keys, context);
           },
           clear() {
             enforceNoTemporaryAddon(extension.id);
+            recordSyncQuotaTelemetry(extension, context);
             return extensionStorageSync.clear(extension, context);
           },
           getBytesInUse(keys) {
             enforceNoTemporaryAddon(extension.id);
+            recordSyncQuotaTelemetry(extension, context);
             return extensionStorageSync.getBytesInUse(extension, keys, context);
           },
           onChanged: new EventManager({
@@ -341,20 +411,19 @@ this.storage = class extends ExtensionAPIPersistent {
         managed: {
           async get(keys) {
             enforceNoTemporaryAddon(extension.id);
-            let lookup = managedStorage.get(extension);
-
-            if (!lookup) {
-              lookup = lookupManagedStorage(extension.id, context);
-              managedStorage.set(extension, lookup);
-            }
-
-            let data = await lookup;
-            if (!data) {
-              return Promise.reject({
-                message: "Managed storage manifest not found",
-              });
-            }
+            let data = await getManagedStorageManifestData(extension, context);
             return ExtensionStorage._filterProperties(extension.id, data, keys);
+          },
+          async getBytesInUse() {
+            enforceNoTemporaryAddon(extension.id);
+            // Always returns 0 for consistency with other browsers. For details
+            // see https://bugzilla.mozilla.org/show_bug.cgi?id=1385832#c27
+            return 0;
+          },
+          async getKeys() {
+            enforceNoTemporaryAddon(extension.id);
+            let data = await getManagedStorageManifestData(extension, context);
+            return data.keys().toArray();
           },
           // managed storage is currently initialized once.
           onChanged: ignoreEvent(context, "storage.managed.onChanged"),

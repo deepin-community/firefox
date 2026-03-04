@@ -70,6 +70,14 @@ perftools-button-add-directory = Add a directory
 perftools-button-remove-directory = Remove selected
 perftools-button-edit-settings = Edit Settings…
 
+## More actions menu
+
+perftools-menu-more-actions-button =
+  .title = More actions
+perftools-menu-more-actions-restart-with-profiling = Restart { -brand-shorter-name } with startup profiling enabled
+perftools-menu-more-actions-copy-for-startup = Copy environment variables for startup profiling
+perftools-menu-more-actions-copy-for-perf-tests = Copy parameters for performance tests
+
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
 perftools-thread-gecko-main =
@@ -143,6 +151,9 @@ perftools-presets-graphics-description = Preset for investigating graphics bugs 
 perftools-presets-media-label = Media
 perftools-presets-media-description2 = Preset for investigating audio and video bugs in { -brand-shorter-name }.
 
+perftools-presets-ml-label = Machine Learning
+perftools-presets-ml-description2 = Preset for investigating machine learning bugs in { -brand-shorter-name }.
+
 perftools-presets-networking-label = Networking
 perftools-presets-networking-description = Preset for investigating networking bugs in { -brand-shorter-name }.
 
@@ -152,6 +163,9 @@ perftools-presets-power-description = Preset for investigating power use bugs in
 
 perftools-presets-debug-label = Debug
 perftools-presets-debug-description = Preset for debugging in { -brand-shorter-name }. High overhead, do not use for performance work but use for focusing on understanding browser behavior.
+
+perftools-presets-web-compat-label = Web Compat
+perftools-presets-web-compat-description = Recommended preset for debugging web compatibility issues in websites, rather than tracking performance.
 
 perftools-presets-custom-label = Custom
 

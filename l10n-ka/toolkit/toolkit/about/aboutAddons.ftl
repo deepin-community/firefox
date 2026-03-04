@@ -170,6 +170,8 @@ extensions-warning-update-security-button = ჩართვა
 extensions-warning-imported-addons2 =
     .message = გთხოვთ დაასრულოთ გადმოტანილი გაფართოების ჩადგმა – { -brand-short-name }.
 extensions-warning-imported-addons-button = გაფართოებების ჩაყენება
+extensions-warning-safe-mode3 =
+    .message = ყველა დამატება ამორთულია გაუმართაობის მოსაგვარებელი რეჟიმით.
 
 ## Strings connected to add-on updates
 
@@ -206,6 +208,10 @@ addon-updates-manual-updates-found = ხელმისაწვდომი გ
 
 addon-install-from-file = დამატების დაყენება ფაილის მეშვეობით…
     .accesskey = ფ
+# Like `addon-install-from-file` but used when the `extensions.webextensions.prefer-update-over-install-for-existing-addon`
+# pref is set.
+addon-install-or-update-from-file = დამატების დაყენება ან განახლება ფაილიდან…
+    .accesskey = ფ
 addon-install-from-file-dialog-title = დამატებების შერჩევა დასაყენებლად
 addon-install-from-file-filter-name = დამატებები
 addon-open-about-debugging = დამატებების გამართვა
@@ -220,6 +226,9 @@ shortcuts-no-addons = არცერთი გაფართოება ა�
 shortcuts-no-commands = სწრაფი ღილაკები არ აქვს შემდეგ გაფართოებებს:
 shortcuts-input =
     .placeholder = სწრაფი ღილაკის აკრეფა
+# Accessible name for a trashcan icon button that removes an existent shortcut
+shortcuts-remove-button =
+    .aria-label = მალსახმობის მოცილება
 shortcuts-browserAction2 = ხელსაწყოთა ზოლზე ღილაკის ამოქმედება
 shortcuts-pageAction = გვერდზე მოქმედების ჩართვა
 shortcuts-sidebarAction = გვერდითა ზოლის გამოჩენა/დამალვა
@@ -258,10 +267,10 @@ header-back-button =
 # Explanatory introduction to the list of recommended add-ons. The action word
 # ("recommends") in the final sentence is a link to external documentation.
 discopane-intro =
-    გაფართოებები ბრაუზერისთვის ერთგვარი პროგრამებია, რომლებიც საშუალებას გაძლევთ
-    დაიცვათ პაროლები, ჩამოტვირთოთ ვიდეოები, მოიძიოთ საყიდლები, შეზღუდოთ
-    მომაბეზრებელი რეკლამები, შეცვალოთ იერსახე და კიდევ უამრავი რამ.
-    ეს პატარა პროგრამული ნაწილები ხშირ შემთხვევაში შექმნილია გარეშე პირების მიერ.
+    გაფართოებები ერთგვარი პროგრამებია ბრაუზერისთვის, მათი მეშვეობით შესაძლებელია
+    პაროლების დაცვა, ვიდეოების ჩამოტვირთვა, საყიდლების მოძიება,
+    მომაბეზრებელი რეკლამების შეზღუდვა, იერსახის შეცვლა და კიდევ უამრავი რამ.
+    ეს პატარა პროგრამული ნაწილები უმეტესად შექმნილია გარეშე პირების მიერ.
     აქ მოცემულია ისინი, რომელთაც { -brand-product-name } <a data-l10n-name="learn-more-trigger">გირჩევთ</a>
     მეტი უსაფრთხოებისთვის, წარმადობისა და შესაძლებლობებისთვის.
 # Notice to make user aware that the recommendations are personalized.
@@ -274,6 +283,19 @@ discopane-notice-recommendations2 =
         შემოთავაზებების ნაწილი მორგებულია თქვენზე. ითვალისწინებს თქვენ მიერ
         დაყენებულ სხვა გაფართოებებს, პროფილის პარამეტრებსა და გამოყენების სიხშირეს.
 discopane-notice-learn-more = ვრცლად
+# Notice for the colorway theme removal
+colorway-removal-notice-message =
+    .heading = თქვენი შეფერილობის თემა(ები) წაიშალა.
+    .message =
+        { -brand-product-name } აახლებს შეფერილობების კრებულს. მოცილებულია
+        მოძველებული ვერსიები თქვენი „შენახული თემებიდან“. ახლების მისაღებად კი ეწვიეთ
+        დამატებების საიტს.
+colorway-removal-notice-learn-more = ვრცლად
+colorway-removal-notice-button = მიიღეთ განახლებული შეფერილობები
+# Notice to make user aware that themes are not applied in forced colors mode.
+# This notice is only visible on Windows.
+forced-colors-theme-notice =
+    .message = თქვენი Windows ფერების გამოკვეთის პარამეტრებითაა მომართული და { -brand-short-name } ვერ იყენებს გაფორმებებს. გამორთეთ ეს პარამეტრები, რომ გააფორმოთ { -brand-short-name }.
 privacy-policy = პირადულობის დებულება
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
@@ -294,6 +316,14 @@ find-more-themes = სხვა თემების მოძიება
 # used for screen readers.
 addon-options-button =
     .aria-label = დამატებითი პარამეტრები
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+# We hard code "Firefox" because we do not want to imply that a Firefox fork is
+# making this recommendation.
+discopane-intro3 =
+    გაფართოებებითა და გაფორმებებით შეგიძლიათ მეტად მოირგოთ { -brand-product-name }. მათი მეშვეობით შეძლებთ გაიუმჯობესოთ პირადულობა,
+    შედეგიანობა, მასალებით სარგებლობა, შეამკოთ { -brand-product-name } სურვილისამებრ და გააკეთოთ სხვა უამრავი რამ. ეს მცირე პროგრამები უმეტესად რიგითი, უცხო ხალხის მიერაა შექმნილი. იხილეთ მათგან საუკეთესო, რომელთაც <a data-l10n-name="learn-more-trigger">გირჩევთ</a> Firefox
+    მათი გამორჩეულობიდან გამომდინარე უსაფრთხოების, წარმადობისა და შესაძლებლობების კუთხით.
 
 ## Add-on actions
 
@@ -380,6 +410,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = დაშვებულია პირად ფანჯრებში
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = დაშვებულია პირად ფანჯრებში
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -419,6 +453,24 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = მოცემული გაფართოება შემოწმებულია და აკმაყოფილებს უსაფრთხოებისა და წარმადობის სათანადო მოთხოვნებს.
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Mozilla-ს მიერ შექმნილი ოფიციალური გაფართოება. სრულად აკმაყოფილებს უსაფრთხოებისა და წარმადობის მოთხოვნებს.
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are performing the
+# security or performance reviews. As such, we avoid personalising language
+# like the words "our" or "we".
+addon-badge-verified4 =
+    .title = მოცემული გაფართოება შემოწმებულია და აკმაყოფილებს უსაფრთხოებისა და წარმადობის სათანადო მოთხოვნებს
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are making the
+# recommendation. As such, we hard code "Firefox" and avoid personalising
+# language like the words "our" or "we".
+addon-badge-recommended4 =
+    .title = Firefox მხოლოდ იმ გაფართოებებს გირჩევთ, რომლებიც აკმაყოფილებს უსაფრთხოებისა და წარმადობის მაღალ მოთხოვნებს
 
 ##
 
@@ -426,6 +478,10 @@ available-updates-heading = ხელმისწვდომი განახ
 recent-updates-heading = ბოლო განახლებები
 release-notes-loading = იტვირთება...
 release-notes-error = სამწუხაროდ, ვერსიის მონაცემების ჩვენებისას მოხდა შეცდომა.
+addon-permissions-heading = ნებართვები
+addon-permissions-empty2 = გაფართოება არ ითხოვს რამე ნებართვას.
+addon-permissions-required-label = აუცილებელი:
+addon-permissions-optional-label = არააუცილებელი:
 addon-permissions-empty = გაფართოება არ ითხოვს რამე ნებართვას
 addon-permissions-required = მოთხოვნილი ნებართვები ძირითადი შესაძლებლობებისთვის:
 addon-permissions-optional = მოთხოვნილი ნებართვები დამატებითი შესაძლებლობებისთვის:
@@ -453,6 +509,9 @@ shortcuts-heading = გაფართოებების ღილაკე�
 default-heading-search-label = სხვა დამატებების მონახვა
 addons-heading-search-input =
     .placeholder = addons.mozilla.org საიტზე მოძიება
+addons-heading-search-button =
+    .title = addons.mozilla.org საიტზე ძიება
+    .aria-label = addons.mozilla.org საიტზე ძიება
 addon-page-options-button =
     .title = ხელსაწყოები ყველა დამატებისთვის
 
@@ -475,14 +534,32 @@ details-notification-unsigned-and-disabled-link = ვრცლად
 details-notification-unsigned = ვერ დასტურდება, რომ { -brand-short-name } შეძლებს აამუშაოს { $name }. სიფრთხილით გამოიყენეთ.
 details-notification-unsigned2 =
     .message = ვერ დასტურდება, რომ { -brand-short-name } შეძლებს აამუშაოს { $name }. სიფრთხილით გამოიყენეთ.
+details-notification-hard-blocked-extension =
+    .message = გაფართოება შეიზღუდა Mozilla-ს დებულებების დარღვევის გამო და ამორთულია.
+details-notification-hard-blocked-other =
+    .message = დამატება შეიზღუდა Mozilla-ს დებულებების დარღვევის გამო და ამორთულია.
 details-notification-unsigned-link = ვრცლად
 details-notification-blocked = { $name } გამორთულია უსაფრთხოების მიზნით ან არამდგრადობის გამო.
-details-notification-blocked2 =
-    .message = { $name } გამორთულია უსაფრთხოების მიზნით ან არამდგრადობის გამო.
+details-notification-blocked-link2 = ვრცლად
+details-notification-soft-blocked-extension-disabled2 =
+    .message = გაფართოება შეიზღუდა და ამორთულია. შეგიძლიათ მაინც ჩართოთ, მაგრამ სახიფათო შეიძლება იყოს.
+details-notification-soft-blocked-extension-enabled2 =
+    .message = ეს გაფართოება შეზღუდულია. მისი გამოყენება შესაძლოა, სახიფათო იყოს.
+details-notification-soft-blocked-other-disabled2 =
+    .message = ეს დამატება შეიზღუდა და ამორთულია. შეგიძლიათ მაინც ჩართოთ, მაგრამ სახიფათო შეიძლება იყოს.
+details-notification-soft-blocked-other-enabled2 =
+    .message = ეს დამატება შეზღუდულია. მისი გამოყენება სახიფათო შესაძლოა იყოს.
+details-notification-soft-blocked-extension-disabled =
+    .message = გაფართოება შეიზღუდა Mozilla-ს დებულებების დარღვევის გამო და ამორთულია. შეგიძლიათ ჩართოთ, მაგრამ სახიფათოა.
+details-notification-soft-blocked-extension-enabled =
+    .message = გაფართოება არღვევს Mozilla-ს დებულებებს. მისი გამოყენება შეიძლება სახიფათო იყოს.
+details-notification-soft-blocked-other-disabled =
+    .message = დამატება შეიზღუდა Mozilla-ს დებულებების დარღვევის გამო და ამორთულია. შეგიძლიათ ჩართოთ, მაგრამ სახიფათოა.
+details-notification-soft-blocked-other-enabled =
+    .message = დამატება არღვევს Mozilla-ს დებულებებს. მისი გამოყენება შეიძლება სახიფათო იყოს.
+details-notification-softblocked-link2 = ვრცლად
 details-notification-blocked-link = ვრცლად
 details-notification-softblocked = { $name } მიჩნეულია არამდგრადად და საფრთხის შემცველად.
-details-notification-softblocked2 =
-    .message = { $name } მიჩნეულია არამდგრადად და საფრთხის შემცველად.
 details-notification-softblocked-link = ვრცლად
 details-notification-gmp-pending = { $name } მალე ჩაიდგმება.
 details-notification-gmp-pending2 =
@@ -493,6 +570,48 @@ details-notification-gmp-pending2 =
 plugins-gmp-license-info = ლიცენზიის შესახებ
 plugins-gmp-privacy-info = პირადი მონაცემების დაცვის დებულება
 plugins-openh264-name = OpenH264-ვიდეომშიფრავი, უზრუნველყოფს Cisco Systems, Inc.
-plugins-openh264-description = ეს მოდული ავტომატურად ჩადგა Mozilla-მ WebRTC-თან სამუშაოდ და WebRTC-ზარების ასამოქმედებლად იმ მოწყობილობებზე, რომლებიც საჭიროებს H.264-სახის ვიდეომშიფრავს. ვრცლად, მათ შორის ამ მშიფრავის წყაროს შესახებ, იხილავთ http://www.openh264.org/ ბმულზე.
+plugins-openh264-description = ამ მოდულს Mozilla თავადვე ამატებს WebRTC-მოთხოვნების დასაკმაყოფილებლად და WebRTC-ზარების ასამოქმედებლად იმ მოწყობილობებზე, რომელთაც ესაჭიროება ვიდეომშიფრავი H.264. ვრცლად იხილეთ https://www.openh264.org/ დანიშულებისა და მშიფრავის წყაროს შესახებ.
 plugins-widevine-name = Widevine შიგთავსის გამშიფრავი მოდული. მომწოდებელი: Google Inc.
-plugins-widevine-description = ეს მოდული საშუალებას იძლევა გაეშვას დაშიფრული ფაილები, Encrypted Media Extensions-ის მოთხოვნების შესაბამისად. დაშიფრულ ფაილებს ჩვეულებრივ საიტები იყენებენ, ძვირადღირებული მასალების უნებართვო მოპარვისა და გავრცელებისგან დასაცავად. იხილეთ https://www.w3.org/TR/encrypted-media/ დამატებითი ინფორმაციისთვის Encrypted Media Extensions-ის შესახებ.
+plugins-widevine-description = ეს მოდული დაშიფრული ფაილების გაშვების საშუალებას იძლევა, რომელთა მოთხოვნებსაც განსაზღვრავს Encrypted Media Extensions. ჩვეულებრივ, დაშიფრულ ფაილებს საიტები იყენებენ ძვირადღირებული მასალების უნებართვო მოპარვისა და გავრცელებისგან დასაცავად. ინახულეთ https://www.w3.org/TR/encrypted-media/ და იხილეთ ვრცლად Encrypted Media Extensions.
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-permissions-required-data-collection = აუცილებელ მონაცემთა აღრიცხვა:
+addon-permissions-optional-data-collection = უმნიშვნელო მონაცემთა აღრიცხვა:
+# Name of the Permissions tab in `about:addons` when the data collection feature is enabled.
+permissions-data-addon-button = ნებართვები და მონაცემები
+# This is a description for extension that use this AI model
+# Variables:
+#   $extensionName (String) - Name of the extension
+mlmodel-extension-label = იყენებს გაფართოება { $extensionName }
+addon-permissions-data-collection-heading = მონაცემთა აღრიცხვა
+addon-permissions-data-collection-empty = შემქმნელის თქმით ეს გაფართოება არ საჭიროებს მონაცემთა აღრიცხვას.
+addon-data-collection-provided = ინფორმაცია გაფართოების შემმუშავებლისგანაა
+addon-data-collection-learnmore = ვრცლად მონაცემთა აღრიცხვის შესახებ
+
+## Mapping Engine IDs from AI models to how that feature represented by the engine Id is described in the used by section in local model management
+
+mlmodel-about-inference = { -brand-short-name } იყენებს გვერდისთვის about:inference
+mlmodel-link-preview = { -brand-short-name } იყენებს ბმულების შეთვალიერებისას საკვანძო საკითხების გამოსაყოფად.
+mlmodel-pdfjs = { -brand-short-name } იყენებს PDF-ში ჩასასმელ სურათზე დართული წარწერის შესაქმნელად
+mlmodel-smart-tab-topic-engine = { -brand-short-name } იყენებს თქვენი ჩანართების ჯგუფებისთვის სახელების შემოსათავაზებლად
+mlmodel-smart-tab-embedding-engine = { -brand-short-name } იყენებს ჩანართების ჯგუფებში დასამატებელი ჩანართების შემოსათავაზებლად
+# AI Model will be downloaded on the users device and used locally
+addon-category-mlmodel = მოწყობილობაზე გაშვებული AI
+addon-category-mlmodel-title =
+    .title = მოწყობილობაზე გაშვებული AI
+mlmodel-heading = მოწყობილობაზე გაშვებული AI-მოდელების მართვა
+mlmodel-description = { -brand-short-name } ზოგიერთი შესაძლებლობისა თუ გაფართოების მუშაობისთვის იყენებს ხელოვნური გონის მოდელებს, რომლებიც ადგილობრივადაა განთავსებული თქვენს მოწყობილობაზე. ამგვარი მიდგომა უზრუნველყოფს პირადულობის დაცვას და ხშირ შემთხვევაში წარმადობასაც კი ზრდის. <a data-l10n-name="learn-more">ვრცლად</a>
+# Label for button that when clicked removed local model
+mlmodel-remove-addon-button =
+    .aria-label = მოცილება
+# Label for the aggregated value of all files for a model
+mlmodel-addon-detail-totalsize-label = ფაილის მოცულობა
+mlmodel-addon-detail-last-used-label = ბოლო გამოყენება
+# This is a section label to describe what extensions or features use a specific local AI model
+mlmodel-addon-detail-used-by-label = მომხმარებელი
+# This is a section label to describe the link to the model card on the Hugging Face website
+mlmodel-addon-detail-model-card = მოდელის ბარათი
+# This is a label for the Model Card link to Hugging face
+mlmodel-addon-detail-model-card-link-label = გაიხსნას Hugging Face

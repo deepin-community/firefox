@@ -31,15 +31,13 @@ EXCLUSION_FILES = [
 
 def setup(root, **setupargs):
     if setupargs.get("substs", {}).get("MOZ_BUILD_APP") != "mobile/android":
-        return 1
+        return -1
 
     if "topobjdir" not in setupargs:
-        print(
-            "Skipping {}: a configured Android build is required!".format(
-                setupargs["name"]
-            )
+        setupargs["log"].debug(
+            f"Skipping {setupargs['name']}: a configured Android build is required!"
         )
-        return 1
+        return -1
 
     return 0
 
@@ -90,42 +88,7 @@ def gradle(log, topsrcdir=None, topobjdir=None, tasks=[], extra_args=[], verbose
         return proc.returncode
 
 
-def gradlew(log, topsrcdir=None, topobjdir=None, tasks=[], cwd=None):
-    sys.path.insert(0, os.path.join(topsrcdir, "mobile", "android"))
-    from gradle import gradle_lock
-
-    with gradle_lock(topobjdir, max_wait_seconds=GRADLE_LOCK_MAX_WAIT_SECONDS):
-        # The android-lint parameter can be used by gradle tasks to run special
-        # logic when they are run for a lint using
-        #   project.hasProperty('android-lint')
-        cmd_args = ["./gradlew"] + tasks
-
-        cmd = " ".join(shlex.quote(arg) for arg in cmd_args)
-        log.debug(cmd)
-
-        # Gradle and mozprocess do not get along well, so we use subprocess
-        # directly.
-        proc = subprocess.Popen(cmd_args, cwd=cwd)
-        status = None
-        # Leave it to the subprocess to handle Ctrl+C. If it terminates as a result
-        # of Ctrl+C, proc.wait() will return a status code, and, we get out of the
-        # loop. If it doesn't, like e.g. gdb, we continue waiting.
-        while status is None:
-            try:
-                status = proc.wait()
-            except KeyboardInterrupt:
-                pass
-
-        try:
-            proc.wait()
-        except KeyboardInterrupt:
-            proc.kill()
-            raise
-
-        return proc.returncode
-
-
-def format(config, fix=None, **lintargs):
+def format(_paths, config, fix=None, **lintargs):
     topsrcdir = lintargs["root"]
     topobjdir = lintargs["topobjdir"]
 
@@ -144,36 +107,37 @@ def format(config, fix=None, **lintargs):
 
     results = []
     for path in lintargs["substs"]["GRADLE_ANDROID_FORMAT_LINT_FOLDERS"]:
-        folder = os.path.join(
-            topobjdir, "gradle", "build", path, "spotless", "spotlessJava"
-        )
-        for filename in glob.iglob(folder + "/**/*.java", recursive=True):
-            err = {
-                "rule": "spotless-java",
-                "path": os.path.join(
-                    topsrcdir, path, mozpath.relpath(filename, folder)
-                ),
-                "lineno": 0,
-                "column": 0,
-                "message": "Formatting error, please run ./mach lint -l android-format --fix",
-                "level": "error",
-            }
-            results.append(result.from_config(config, **err))
-        folder = os.path.join(
-            topobjdir, "gradle", "build", path, "spotless", "spotlessKotlin"
-        )
-        for filename in glob.iglob(folder + "/**/*.kt", recursive=True):
-            err = {
-                "rule": "spotless-kt",
-                "path": os.path.join(
-                    topsrcdir, path, mozpath.relpath(filename, folder)
-                ),
-                "lineno": 0,
-                "column": 0,
-                "message": "Formatting error, please run ./mach lint -l android-format --fix",
-                "level": "error",
-            }
-            results.append(result.from_config(config, **err))
+        for outdir in ("spotless-clean", "spotless-lints"):
+            folder = os.path.join(
+                topobjdir, "gradle", "build", path, outdir, "spotlessJava"
+            )
+            for filename in glob.iglob(folder + "/**/*.java", recursive=True):
+                err = {
+                    "rule": "spotless-java",
+                    "path": os.path.join(
+                        topsrcdir, path, mozpath.relpath(filename, folder)
+                    ),
+                    "lineno": 0,
+                    "column": 0,
+                    "message": "Formatting error, please run ./mach lint -l android-format --fix",
+                    "level": "error",
+                }
+                results.append(result.from_config(config, **err))
+            folder = os.path.join(
+                topobjdir, "gradle", "build", path, outdir, "spotlessKotlin"
+            )
+            for filename in glob.iglob(folder + "/**/*.kt", recursive=True):
+                err = {
+                    "rule": "spotless-kt",
+                    "path": os.path.join(
+                        topsrcdir, path, mozpath.relpath(filename, folder)
+                    ),
+                    "lineno": 0,
+                    "column": 0,
+                    "message": "Formatting error, please run ./mach lint -l android-format --fix",
+                    "level": "error",
+                }
+                results.append(result.from_config(config, **err))
 
     if len(results) == 0 and ret != 0:
         # spotless seems to hit unfixed error.
@@ -193,34 +157,40 @@ def format(config, fix=None, **lintargs):
     return results
 
 
-def fenix_format(config, fix=None, **lintargs):
+def fenix_format(_paths, config, fix=None, **lintargs):
     return report_gradlew(
         config,
         fix,
         os.path.join("mobile", "android", "fenix"),
+        lint_tasks=[
+            "fenix:lint",
+            "fenix:lintDebug",
+        ],
         **lintargs,
     )
 
 
-def ac_format(config, fix=None, **lintargs):
+def ac_format(_paths, config, fix=None, **lintargs):
     return report_gradlew(
         config,
         fix,
         os.path.join("mobile", "android", "android-components"),
+        lint_tasks=["lint-a-c"],
         **lintargs,
     )
 
 
-def focus_format(config, fix=None, **lintargs):
+def focus_format(_paths, config, fix=None, **lintargs):
     return report_gradlew(
         config,
         fix,
         os.path.join("mobile", "android", "focus-android"),
+        lint_tasks=["focus-android:lint"],
         **lintargs,
     )
 
 
-def report_gradlew(config, fix, subdir, **lintargs):
+def report_gradlew(config, fix, subdir, lint_tasks=[], **lintargs):
     topsrcdir = lintargs["root"]
     topobjdir = lintargs["topobjdir"]
 
@@ -229,38 +199,43 @@ def report_gradlew(config, fix, subdir, **lintargs):
     else:
         tasks = ["ktlint", "detekt"]
 
-    for task in tasks:
-        gradlew(
-            lintargs["log"],
-            topsrcdir=topsrcdir,
-            topobjdir=topobjdir,
-            tasks=[task],
-            cwd=os.path.join(topsrcdir, subdir),
-        )
+    extra_args = lintargs.get("extra_args") or []
+
+    gradle(
+        lintargs["log"],
+        topsrcdir=topsrcdir,
+        topobjdir=topobjdir,
+        tasks=tasks,
+        extra_args=extra_args + ["-p", os.path.join(topsrcdir, subdir), "--continue"],
+    )
 
     reports = os.path.join(topsrcdir, subdir, "build", "reports")
     results = []
 
     excludes = []
     for path in EXCLUSION_FILES:
-        with open(os.path.join(topsrcdir, path), "r") as fh:
+        with open(os.path.join(topsrcdir, path)) as fh:
             for f in fh.readlines():
                 if "*" in f:
                     excludes.extend(glob.glob(f.strip()))
                 elif f.startswith(subdir):
                     excludes.append(f.strip())
 
-    try:
-        tree = ET.parse(
-            open(
-                os.path.join(
-                    reports,
-                    "detekt",
-                    "detekt.xml",
-                ),
-                "rt",
-            )
+    detekt_report = None
+    if os.path.exists(os.path.join(reports, "detekt", "detekt.xml")):
+        detekt_report = os.path.join(reports, "detekt", "detekt.xml")
+    elif os.path.join(
+        topobjdir, "gradle", "build", subdir, "reports", "detekt", "detekt.xml"
+    ):
+        detekt_report = os.path.join(
+            topobjdir, "gradle", "build", subdir, "reports", "detekt", "detekt.xml"
         )
+    else:
+        print(f"Could not read detekt report: '{detekt_report}'")
+        pass
+
+    try:
+        tree = ET.parse(open(detekt_report))
         root = tree.getroot()
 
         for file in root.findall("file"):
@@ -278,17 +253,20 @@ def report_gradlew(config, fix, subdir, **lintargs):
                 }
                 results.append(result.from_config(config, **err))
     except FileNotFoundError:
+        print(f"Could not read detekt report: '{detekt_report}'")
         pass
 
+    ktlint_file = "ktlint.json"
+    if fix:
+        ktlint_file = "ktlintFormat.json"
     try:
         issues = json.load(
             open(
                 os.path.join(
                     reports,
                     "ktlint",
-                    "ktlint.json",
+                    ktlint_file,
                 ),
-                "rt",
             )
         )
 
@@ -307,9 +285,10 @@ def report_gradlew(config, fix, subdir, **lintargs):
                 }
                 results.append(result.from_config(config, **err))
     except FileNotFoundError:
+        print(f"Could not read ktlint report: `{ktlint_file}`")
         pass
 
-    return results
+    return results + read_lint_report(config, subdir, tasks=lint_tasks, **lintargs)
 
 
 def is_excluded_file(topsrcdir, excludes, file):
@@ -319,7 +298,7 @@ def is_excluded_file(topsrcdir, excludes, file):
     return False
 
 
-def api_lint(config, **lintargs):
+def api_lint(_paths, config, **lintargs):
     topsrcdir = lintargs["root"]
     topobjdir = lintargs["topobjdir"]
 
@@ -366,7 +345,7 @@ def api_lint(config, **lintargs):
     return results
 
 
-def javadoc(config, **lintargs):
+def javadoc(_paths, config, **lintargs):
     topsrcdir = lintargs["root"]
     topobjdir = lintargs["topobjdir"]
 
@@ -388,17 +367,15 @@ def javadoc(config, **lintargs):
             issues = json.load(f)
 
             for issue in issues:
-                # We want warnings to be errors for linting purposes.
-                # TODO: Bug 1316188 - resolve missing javadoc comments
-                issue["level"] = (
-                    "error" if issue["message"] != ": no comment" else "warning"
-                )
+                # We want all warnings to be errors for linting purposes.
+                # This ensures javadoc warnings can no longer be ignored.
+                issue["level"] = "error"
                 results.append(result.from_config(config, **issue))
 
     return results
 
 
-def lint(config, **lintargs):
+def lint(_paths, config, **lintargs):
     topsrcdir = lintargs["root"]
     topobjdir = lintargs["topobjdir"]
 
@@ -410,9 +387,6 @@ def lint(config, **lintargs):
         extra_args=lintargs.get("extra_args") or [],
     )
 
-    # It's surprising that this is the App variant name, but this is "withoutGeckoBinariesDebug"
-    # right now and the GeckoView variant name is "withGeckoBinariesDebug".  This will be addressed
-    # as we unify variants.
     path = os.path.join(
         lintargs["topobjdir"],
         "gradle/build/mobile/android/geckoview/reports",
@@ -420,7 +394,7 @@ def lint(config, **lintargs):
             lintargs["substs"]["GRADLE_ANDROID_GECKOVIEW_VARIANT_NAME"]
         ),
     )
-    tree = ET.parse(open(path, "rt"))
+    tree = ET.parse(open(path))
     root = tree.getroot()
 
     results = []
@@ -443,8 +417,108 @@ def lint(config, **lintargs):
     return results
 
 
+def read_lint_report(config, subdir, tasks=[], **lintargs):
+    topsrcdir = lintargs["root"]
+    topobjdir = lintargs["topobjdir"]
+
+    ret = gradle(
+        lintargs["log"],
+        topsrcdir=topsrcdir,
+        topobjdir=topobjdir,
+        tasks=tasks,
+        extra_args=lintargs.get("extra_args") or [],
+    )
+
+    reports = os.path.join(topsrcdir, subdir, "build", "reports")
+
+    excludes = []
+    for path in EXCLUSION_FILES:
+        with open(os.path.join(topsrcdir, path)) as fh:
+            for f in fh.readlines():
+                if "*" in f:
+                    excludes.extend(glob.glob(f.strip()))
+                elif f.startswith(subdir):
+                    excludes.append(f.strip())
+
+    try:
+        files = os.listdir(
+            os.path.join(
+                reports,
+                "lint",
+            )
+        )
+
+        results = []
+        for file in files:
+            data = json.load(
+                open(
+                    os.path.join(reports, "lint", file),
+                )
+            ).get("runs", [{}])[0]
+
+            issues = data.get("results", [])
+            rules = data.get("tool", {}).get("driver", {}).get("rules", [])
+
+            for issue in issues:
+                dir = os.path.join(topsrcdir)
+                if subdir == os.path.join("mobile", "android", "android-components"):
+                    dir = os.path.join(topsrcdir, subdir)
+                name = os.path.join(
+                    dir,
+                    issue.get("locations", [{}])[0]
+                    .get("physicalLocation", {})
+                    .get("artifactLocation", {})
+                    .get("uri"),
+                )
+
+                if is_excluded_file(topsrcdir, excludes, name) and not "/res/" in name:
+                    continue
+
+                level = "error"
+                if "level" in issue:
+                    level = issue["level"]
+                elif "ruleIndex" in issue and len(rules) > issue["ruleIndex"]:
+                    rule_level = (
+                        rules[issue["ruleIndex"]]
+                        .get("defaultConfiguration", {})
+                        .get("level")
+                    )
+                    if rule_level:
+                        level = rule_level
+
+                err = {
+                    "rule": issue.get("ruleId"),
+                    "path": name,
+                    "lineno": issue.get("locations", [{}])[0]
+                    .get("physicalLocation", {})
+                    .get("region", {})
+                    .get("startLine"),
+                    "column": issue.get("locations", [{}])[0]
+                    .get("physicalLocation", {})
+                    .get("region", {})
+                    .get("startColumn"),
+                    "message": issue.get("message", {}).get("text"),
+                    "level": level,
+                }
+                results.append(result.from_config(config, **err))
+
+        if ret != 0 and results == []:
+            err = {
+                "level": "error",
+                "rule": "build-failure",
+                "message": f"Build Failed running {tasks} - Please check logs for more information",
+                "path": os.path.join(topsrcdir, subdir),
+                "lineno": 0,
+            }
+            results.append(result.from_config(config, **err))
+        return results
+    except FileNotFoundError:
+        print("Could not read lint report from ", subdir)
+        return []
+
+
 def _parse_checkstyle_output(config, topsrcdir=None, report_path=None):
-    tree = ET.parse(open(report_path, "rt"))
+    tree = ET.parse(open(report_path))
     root = tree.getroot()
 
     for file in root.findall("file"):
@@ -461,7 +535,7 @@ def _parse_checkstyle_output(config, topsrcdir=None, report_path=None):
             yield result.from_config(config, **err)
 
 
-def checkstyle(config, **lintargs):
+def checkstyle(_paths, config, **lintargs):
     topsrcdir = lintargs["root"]
     topobjdir = lintargs["topobjdir"]
 
@@ -494,10 +568,10 @@ def _parse_android_test_results(config, topsrcdir=None, report_dir=None):
     finder = FileFinder(report_dir)
     reports = list(finder.find("TEST-*.xml"))
     if not reports:
-        raise RuntimeError("No reports found under {}".format(report_dir))
+        raise RuntimeError(f"No reports found under {report_dir}")
 
     for report, _ in reports:
-        tree = ET.parse(open(os.path.join(finder.base, report), "rt"))
+        tree = ET.parse(open(os.path.join(finder.base, report)))
         root = tree.getroot()
 
         class_name = root.get(
@@ -516,11 +590,7 @@ def _parse_android_test_results(config, topsrcdir=None, report_dir=None):
             ):
                 sourcepaths = list(sourcepath_finder.find(path))
                 if not sourcepaths:
-                    raise RuntimeError(
-                        "No sourcepath found for class {class_name}".format(
-                            class_name=class_name
-                        )
-                    )
+                    raise RuntimeError(f"No sourcepath found for class {class_name}")
 
                 for sourcepath, _ in sourcepaths:
                     lineno = 0
@@ -534,9 +604,7 @@ def _parse_android_test_results(config, topsrcdir=None, report_dir=None):
                     if match:
                         lineno = int(match.group(1))
                     else:
-                        msg = "No source line found for {class_name}.{function_name}".format(
-                            class_name=class_name, function_name=function_name
-                        )
+                        msg = f"No source line found for {class_name}.{function_name}"
                         raise RuntimeError(msg)
 
                     err = {
@@ -551,7 +619,7 @@ def _parse_android_test_results(config, topsrcdir=None, report_dir=None):
                     yield result.from_config(config, **err)
 
 
-def test(config, **lintargs):
+def test(_paths, config, **lintargs):
     topsrcdir = lintargs["root"]
     topobjdir = lintargs["topobjdir"]
 
@@ -573,9 +641,7 @@ def test(config, **lintargs):
     for project, variant in pairs:
         report_dir = os.path.join(
             lintargs["topobjdir"],
-            "gradle/build/mobile/android/{}/test-results/test{}UnitTest".format(
-                project, capitalize(variant)
-            ),
+            f"gradle/build/mobile/android/{project}/test-results/test{capitalize(variant)}UnitTest",
         )
     results.extend(
         _parse_android_test_results(

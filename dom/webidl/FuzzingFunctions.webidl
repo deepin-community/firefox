@@ -29,6 +29,11 @@ namespace FuzzingFunctions {
   undefined crash(optional DOMString reason = "");
 
   /**
+   * Gracefully kill the GPU process
+   */
+  undefined killGPUProcess();
+
+  /**
    * Synchronously perform a cycle collection.
    */
   undefined cycleCollect();
@@ -132,4 +137,9 @@ namespace FuzzingFunctions {
   [Throws]
   undefined synthesizeKeyboardEvents(DOMString aKeyValue,
                                      optional KeyboardEventInit aDictionary = {});
+
+  /**
+   * Spin the event loop for aMilliseconds.
+   */
+  undefined spinEventLoopFor(unsigned long aMilliseconds);
 };

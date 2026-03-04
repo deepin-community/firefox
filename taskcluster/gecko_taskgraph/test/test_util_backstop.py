@@ -28,13 +28,10 @@ DEFAULT_RESPONSES = {
     "artifact": {
         "status": 200,
         "body": dedent(
-            """
-            pushdate: {}
-            pushlog_id: "{}"
-        """.format(
-                LAST_BACKSTOP_PUSHDATE,
-                LAST_BACKSTOP_PUSHID,
-            )
+            f"""
+            pushdate: {LAST_BACKSTOP_PUSHDATE}
+            pushlog_id: "{LAST_BACKSTOP_PUSHID}"
+        """
         ),
     },
     "status": {
@@ -53,6 +50,7 @@ def params():
         "project": "autoland",
         "pushdate": LAST_BACKSTOP_PUSHDATE + 1,
         "pushlog_id": f"{LAST_BACKSTOP_PUSHID + 1}",
+        "repository_type": "hg",
         "target_tasks_method": "default",
     }
 
@@ -148,16 +146,36 @@ def params():
             True,
             id="last backstop failed",
         ),
+        pytest.param(
+            {},
+            {
+                "repository_type": "git",
+            },
+            True,
+            id="git",
+        ),
     ),
 )
-def test_is_backstop(responses, params, response_args, extra_params, expected):
+def test_is_backstop(
+    monkeypatch,
+    responses,
+    params,
+    response_args,
+    extra_params,
+    expected,
+):
+    root_url = "https://taskcluster.example.com"
+    monkeypatch.delenv("TASKCLUSTER_PROXY_URL", raising=False)
+    monkeypatch.setenv("TASKCLUSTER_ROOT_URL", root_url)
+
     urls = {
         "index": get_index_url(
-            BACKSTOP_INDEX.format(
-                **{"trust-domain": "gecko", "project": params["project"]}
-            )
+            BACKSTOP_INDEX.format(**{
+                "trust-domain": "gecko",
+                "project": params["project"],
+            })
         ),
-        "artifact": get_artifact_url(LAST_BACKSTOP_PUSHID, "public/parameters.yml"),
+        "artifact": get_artifact_url(LAST_BACKSTOP_PUSHID, "public%2Fparameters.yml"),
         "status": get_task_url(LAST_BACKSTOP_PUSHID) + "/status",
     }
 

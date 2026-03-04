@@ -1,10 +1,11 @@
+use core::fmt::Write;
+
 use super::{BackendResult, Error, Version, Writer};
 use crate::{
     back::glsl::{Options, WriterFlags},
     AddressSpace, Binding, Expression, Handle, ImageClass, ImageDimension, Interpolation,
     SampleLevel, Sampling, Scalar, ScalarKind, ShaderStage, StorageFormat, Type, TypeInner,
 };
-use std::fmt::Write;
 
 bitflags::bitflags! {
     /// Structure used to encode additions to GLSL that aren't supported by all versions.
@@ -52,6 +53,10 @@ bitflags::bitflags! {
         const TEXTURE_SHADOW_LOD = 1 << 23;
         /// Subgroup operations
         const SUBGROUP_OPERATIONS = 1 << 24;
+        /// Image atomics
+        const TEXTURE_ATOMICS = 1 << 25;
+        /// Image atomics
+        const SHADER_BARYCENTRICS = 1 << 26;
     }
 }
 
@@ -120,6 +125,7 @@ impl FeaturesManager {
         check_feature!(DYNAMIC_ARRAY_SIZE, 430, 310);
         check_feature!(DUAL_SOURCE_BLENDING, 330, 300 /* with extension */);
         check_feature!(SUBGROUP_OPERATIONS, 430, 310);
+        check_feature!(TEXTURE_ATOMICS, 420, 310);
         match version {
             Version::Embedded { is_webgl: true, .. } => check_feature!(MULTI_VIEW, 140, 300),
             _ => check_feature!(MULTI_VIEW, 140, 310),
@@ -276,13 +282,27 @@ impl FeaturesManager {
                 out,
                 "#extension GL_KHR_shader_subgroup_shuffle_relative : require"
             )?;
+            writeln!(out, "#extension GL_KHR_shader_subgroup_quad : require")?;
+        }
+
+        if self.0.contains(Features::TEXTURE_ATOMICS) {
+            // https://www.khronos.org/registry/OpenGL/extensions/OES/OES_shader_image_atomic.txt
+            writeln!(out, "#extension GL_OES_shader_image_atomic : require")?;
+        }
+
+        if self.0.contains(Features::SHADER_BARYCENTRICS) {
+            // https://github.com/KhronosGroup/GLSL/blob/main/extensions/ext/GLSL_EXT_fragment_shader_barycentric.txt
+            writeln!(
+                out,
+                "#extension GL_EXT_fragment_shader_barycentric : require"
+            )?;
         }
 
         Ok(())
     }
 }
 
-impl<'a, W> Writer<'a, W> {
+impl<W> Writer<'_, W> {
     /// Helper method that searches the module for all the needed [`Features`]
     ///
     /// # Errors
@@ -291,14 +311,16 @@ impl<'a, W> Writer<'a, W> {
     pub(super) fn collect_required_features(&mut self) -> BackendResult {
         let ep_info = self.info.get_entry_point(self.entry_point_idx as usize);
 
-        if let Some(depth_test) = self.entry_point.early_depth_test {
-            // If IMAGE_LOAD_STORE is supported for this version of GLSL
-            if self.options.version.supports_early_depth_test() {
-                self.features.request(Features::IMAGE_LOAD_STORE);
-            }
-
-            if depth_test.conservative.is_some() {
-                self.features.request(Features::CONSERVATIVE_DEPTH);
+        if let Some(early_depth_test) = self.entry_point.early_depth_test {
+            match early_depth_test {
+                crate::EarlyDepthTest::Force => {
+                    if self.options.version.supports_early_depth_test() {
+                        self.features.request(Features::IMAGE_LOAD_STORE);
+                    }
+                }
+                crate::EarlyDepthTest::Allow { .. } => {
+                    self.features.request(Features::CONSERVATIVE_DEPTH);
+                }
             }
         }
 
@@ -399,7 +421,8 @@ impl<'a, W> Writer<'a, W> {
                             | StorageFormat::Rg16Float
                             | StorageFormat::Rgb10a2Uint
                             | StorageFormat::Rgb10a2Unorm
-                            | StorageFormat::Rg11b10UFloat
+                            | StorageFormat::Rg11b10Ufloat
+                            | StorageFormat::R64Uint
                             | StorageFormat::Rg32Uint
                             | StorageFormat::Rg32Sint
                             | StorageFormat::Rg32Float => {
@@ -408,14 +431,15 @@ impl<'a, W> Writer<'a, W> {
                             _ => {}
                         },
                         ImageClass::Sampled { multi: false, .. }
-                        | ImageClass::Depth { multi: false } => {}
+                        | ImageClass::Depth { multi: false }
+                        | ImageClass::External => {}
                     }
                 }
                 _ => {}
             }
         }
 
-        let mut push_constant_used = false;
+        let mut immediates_used = false;
 
         for (handle, global) in self.module.global_variables.iter() {
             if ep_info[handle].is_empty() {
@@ -424,11 +448,11 @@ impl<'a, W> Writer<'a, W> {
             match global.space {
                 AddressSpace::WorkGroup => self.features.request(Features::COMPUTE_SHADER),
                 AddressSpace::Storage { .. } => self.features.request(Features::BUFFER_STORAGE),
-                AddressSpace::PushConstant => {
-                    if push_constant_used {
-                        return Err(Error::MultiplePushConstants);
+                AddressSpace::Immediate => {
+                    if immediates_used {
+                        return Err(Error::MultipleImmediateData);
                     }
-                    push_constant_used = true;
+                    immediates_used = true;
                 }
                 _ => {}
             }
@@ -453,7 +477,7 @@ impl<'a, W> Writer<'a, W> {
             .functions
             .iter()
             .map(|(h, f)| (&f.expressions, &info[h]))
-            .chain(std::iter::once((
+            .chain(core::iter::once((
                 &entry_point.function.expressions,
                 info.get_entry_point(entry_point_idx as usize),
             )))
@@ -546,6 +570,22 @@ impl<'a, W> Writer<'a, W> {
             }
         }
 
+        for blocks in module
+            .functions
+            .iter()
+            .map(|(_, f)| &f.body)
+            .chain(core::iter::once(&entry_point.function.body))
+        {
+            for (stmt, _) in blocks.span_iter() {
+                match *stmt {
+                    crate::Statement::ImageAtomic { .. } => {
+                        features.request(Features::TEXTURE_ATOMICS)
+                    }
+                    _ => {}
+                }
+            }
+        }
+
         self.features.check_availability(self.options.version)
     }
 
@@ -557,49 +597,42 @@ impl<'a, W> Writer<'a, W> {
     }
 
     fn varying_required_features(&mut self, binding: Option<&Binding>, ty: Handle<Type>) {
-        match self.module.types[ty].inner {
-            TypeInner::Struct { ref members, .. } => {
-                for member in members {
-                    self.varying_required_features(member.binding.as_ref(), member.ty);
-                }
+        if let TypeInner::Struct { ref members, .. } = self.module.types[ty].inner {
+            for member in members {
+                self.varying_required_features(member.binding.as_ref(), member.ty);
             }
-            _ => {
-                if let Some(binding) = binding {
-                    match *binding {
-                        Binding::BuiltIn(built_in) => match built_in {
-                            crate::BuiltIn::ClipDistance => {
-                                self.features.request(Features::CLIP_DISTANCE)
-                            }
-                            crate::BuiltIn::CullDistance => {
-                                self.features.request(Features::CULL_DISTANCE)
-                            }
-                            crate::BuiltIn::SampleIndex => {
-                                self.features.request(Features::SAMPLE_VARIABLES)
-                            }
-                            crate::BuiltIn::ViewIndex => {
-                                self.features.request(Features::MULTI_VIEW)
-                            }
-                            crate::BuiltIn::InstanceIndex => {
-                                self.features.request(Features::INSTANCE_INDEX)
-                            }
-                            _ => {}
-                        },
-                        Binding::Location {
-                            location: _,
-                            interpolation,
-                            sampling,
-                            second_blend_source,
-                        } => {
-                            if interpolation == Some(Interpolation::Linear) {
-                                self.features.request(Features::NOPERSPECTIVE_QUALIFIER);
-                            }
-                            if sampling == Some(Sampling::Sample) {
-                                self.features.request(Features::SAMPLE_QUALIFIER);
-                            }
-                            if second_blend_source {
-                                self.features.request(Features::DUAL_SOURCE_BLENDING);
-                            }
-                        }
+        } else if let Some(binding) = binding {
+            match *binding {
+                Binding::BuiltIn(built_in) => match built_in {
+                    crate::BuiltIn::ClipDistance => self.features.request(Features::CLIP_DISTANCE),
+                    crate::BuiltIn::CullDistance => self.features.request(Features::CULL_DISTANCE),
+                    crate::BuiltIn::SampleIndex => {
+                        self.features.request(Features::SAMPLE_VARIABLES)
+                    }
+                    crate::BuiltIn::ViewIndex => self.features.request(Features::MULTI_VIEW),
+                    crate::BuiltIn::InstanceIndex | crate::BuiltIn::DrawID => {
+                        self.features.request(Features::INSTANCE_INDEX)
+                    }
+                    crate::BuiltIn::Barycentric => {
+                        self.features.request(Features::SHADER_BARYCENTRICS)
+                    }
+                    _ => {}
+                },
+                Binding::Location {
+                    location: _,
+                    interpolation,
+                    sampling,
+                    blend_src,
+                    per_primitive: _,
+                } => {
+                    if interpolation == Some(Interpolation::Linear) {
+                        self.features.request(Features::NOPERSPECTIVE_QUALIFIER);
+                    }
+                    if sampling == Some(Sampling::Sample) {
+                        self.features.request(Features::SAMPLE_QUALIFIER);
+                    }
+                    if blend_src.is_some() {
+                        self.features.request(Features::DUAL_SOURCE_BLENDING);
                     }
                 }
             }

@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # These are the default window titles everywhere except macOS.
 # .data-title-default and .data-title-private are used when the web content
 # opened has no title:
@@ -51,6 +48,84 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = Navegació privada del { -brand-shortcut-name }
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } (Navegació privada)
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } (Navegació privada)
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — { -brand-full-name } (Navegació privada)
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — { -brand-full-name } (Navegació privada)
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — (Navegació privada)
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } (Navegació privada)
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — (Navegació privada)
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — (Navegació privada)
+# This is the initial default title for the browser window.
+# It gets updated based on loaded tabs or private browsing state.
+browser-main-window-default-title = { -brand-full-name }
+# Note: only on macOS do we use a `-` separator between the brand name and the
+# "Private Browsing" suffix.
+browser-main-private-window-title =
+    { PLATFORM() ->
+        [macos] { -brand-full-name } — (Navegació privada)
+       *[other] { -brand-full-name } (Navegació privada)
+    }
+# This is only used on macOS; on other OSes we use the full private window
+# title (so including the brand name) as a suffix
+browser-main-private-suffix-for-content = Navegació privada
+popups-infobar-dont-show-message2 =
+    .label = No mostris aquest missatge quan les finestres emergents o les redireccions de tercers estiguin bloquejades
+    .accesskey = N
+edit-popup-settings2 =
+    .label = Gestioneu la configuració de les finestres emergents i la redirecció de tercers…
+    .accesskey = G
 
 ##
 
@@ -77,6 +152,10 @@ urlbar-default-notification-anchor =
     .tooltiptext = Obre la subfinestra del missatge
 urlbar-geolocation-notification-anchor =
     .tooltiptext = Obre la subfinestra de la sol·licitud d'ubicació
+urlbar-localhost-notification-anchor =
+    .tooltiptext = Gestiona l’accés als dispositius locals per a aquest lloc
+urlbar-local-network-notification-anchor =
+    .tooltiptext = Gestiona la compartició de l’accés a la xarxa local amb el lloc
 urlbar-xr-notification-anchor =
     .tooltiptext = Obre el tauler de permisos de realitat virtual
 urlbar-storage-access-anchor =
@@ -123,6 +202,35 @@ urlbar-result-menu-remove-from-history =
 urlbar-result-menu-tip-get-help =
     .label = Obteniu ajuda
     .accesskey = j
+urlbar-result-menu-dismiss-suggestion =
+    .label = Descarta aquest suggeriment
+    .accesskey = D
+urlbar-result-menu-learn-more-about-firefox-suggest =
+    .label = Més informació sobre el { -firefox-suggest-brand-name }
+    .accesskey = M
+urlbar-result-menu-manage-firefox-suggest =
+    .label = Gestiona el { -firefox-suggest-brand-name }
+    .accesskey = G
+# Some urlbar suggestions show the user's approximate location as automatically
+# detected by Firefox (e.g., weather suggestions), and this menu item lets the
+# user tell Firefox that the location is not accurate. Typically the location
+# will be a city name, or a city name combined with the name of its parent
+# administrative division (e.g., a province, prefecture, or state).
+urlbar-result-menu-report-inaccurate-location =
+    .label = Informa d’una ubicació incorrecta
+urlbar-result-menu-show-less-frequently =
+    .label = Mostra-ho menys sovint
+urlbar-result-menu-dont-show-weather-suggestions =
+    .label = No mostris la informació meteorològica
+# Used for Split Button.
+urlbar-splitbutton-dropmarker =
+    .title = Obre el menú
+# A message shown in the urlbar when the user submits feedback on a suggestion
+# (e.g., it shows an inaccurate location, it's shown too often, etc.).
+urlbar-feedback-acknowledgment = Gràcies per la vostra opinió
+# A message shown in the urlbar when the user dismisses weather suggestions.
+# Weather suggestions won't be shown at all anymore.
+urlbar-dismissal-acknowledgment-weather = Gràcies pels vostres comentaris. Ja no veureu la informació meteorològica.
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -148,6 +256,10 @@ urlbar-search-mode-actions = Accions
 
 urlbar-geolocation-blocked =
     .tooltiptext = Heu blocat la informació d'ubicació per a aquest lloc web.
+urlbar-localhost-blocked =
+    .tooltiptext = Heu blocat les connexions a dispositius locals per a aquest lloc web.
+urlbar-local-network-blocked =
+    .tooltiptext = Heu blocat les connexions a la xarxa local per a aquest lloc web.
 urlbar-xr-blocked =
     .tooltiptext = Heu blocat l'accés a dispositius de realitat virtual per a aquest lloc web.
 urlbar-web-notifications-blocked =
@@ -160,6 +272,8 @@ urlbar-screen-blocked =
     .tooltiptext = Heu blocat la compartició de la pantalla en aquest lloc web.
 urlbar-persistent-storage-blocked =
     .tooltiptext = Heu blocat l'emmagatzematge persistent per a aquest lloc web.
+urlbar-popup-blocked2 =
+    .tooltiptext = Heu blocat les finestres emergents i les redireccions de tercers per a aquest lloc web.
 urlbar-popup-blocked =
     .tooltiptext = Heu blocat les finestres emergents per a aquest lloc web.
 urlbar-autoplay-media-blocked =
@@ -178,6 +292,9 @@ urlbar-star-edit-bookmark =
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
 urlbar-star-add-bookmark =
     .tooltiptext = Afegeix la pàgina a les adreces d'interès ({ $shortcut })
+urlbar-split-view-button =
+    .tooltiptext = Vista dividida
+    .aria-label = Vista dividida
 
 ## Page Action Context Menu
 
@@ -254,10 +371,17 @@ search-one-offs-actions =
 
 # Opens the about:addons page in the home / recommendations section
 quickactions-addons = Mostra els complements
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-addons3 = extensions, temes, complements
 quickactions-cmd-addons2 = complements
 # Opens the bookmarks library window
 quickactions-bookmarks2 = Gestiona les adreces d'interès
 quickactions-cmd-bookmarks = adreces d'interès
+# Opens a SUMO article explaining how to clear history
+quickactions-clearrecenthistory = Esborra l’historial recent
+quickactions-cmd-clearrecenthistory = esborra l’historial recent, neteja l’historial recent, historial
 # Opens a SUMO article explaining how to clear history
 quickactions-clearhistory = Esborra l'historial
 quickactions-cmd-clearhistory = esborra l'historial
@@ -266,9 +390,20 @@ quickactions-downloads2 = Mostra les baixades
 quickactions-cmd-downloads = baixades, descàrregues
 # Opens about:addons page in the extensions section
 quickactions-extensions = Gestiona les extensions
+quickactions-cmd-extensions2 = extensions, complements, add-ons, addons
 quickactions-cmd-extensions = extensions
+# Opens Firefox View
+quickactions-firefoxview = Obre la { -firefoxview-brand-name }
+# English is using "view" and "open view", since the feature name is
+# "Firefox View". If you have translated the name in your language, you
+# should use a word related to the existing translation.
+quickactions-cmd-firefoxview = obre la { -firefoxview-brand-name }, { -firefoxview-brand-name }, obre la vista, vista
+# Opens SUMO home page
+quickactions-help = Ajuda del { -brand-product-name }
+quickactions-cmd-help = ajuda, assistència, suport
 # Opens the devtools web inspector
 quickactions-inspector2 = Obre les eines per a desenvolupadors
+quickactions-cmd-inspector2 = inspector, eines de desenvolupament, devtools, dev tools
 quickactions-cmd-inspector = inspector, devtools, desenvolupador
 # Opens about:logins
 quickactions-logins2 = Gestiona les contrasenyes
@@ -281,7 +416,7 @@ quickactions-print2 = Imprimeix la pàgina
 quickactions-cmd-print = imprimir, impressió, imprimeix
 # Opens the print dialog at the save to PDF option
 quickactions-savepdf = Desa la pàgina com a PDF
-quickactions-cmd-savepdf = pdf
+quickactions-cmd-savepdf2 = pdf, desa pàgina, desar pàgina
 # Opens a new private browsing window
 quickactions-private2 = Obre una finestra privada
 quickactions-cmd-private = navegació privada
@@ -293,22 +428,37 @@ quickactions-restart = Reinicia el { -brand-short-name }
 quickactions-cmd-restart = reiniciar
 # Opens the screenshot tool
 quickactions-screenshot3 = Fes una captura de pantalla
+quickactions-cmd-screenshot2 = captura de pantalla, fes una captura de pantalla, fer una captura de pantalla
+# Opens about:translations
+quickactions-translate = Tradueix
+quickactions-cmd-translate = tradueix
 quickactions-cmd-screenshot = captura de pantalla
 # Opens about:preferences
 quickactions-settings2 = Gestiona els paràmetres
+# "manage" should match the corresponding command, which is “Manage settings” in English.
+quickactions-cmd-settings2 = paràmetres, configuració, preferències, opcions, gestiona
 quickactions-cmd-settings = paràmetres, configuració, preferències, opcions
 # Opens about:addons page in the themes section
 quickactions-themes = Gestiona els temes
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-themes2 = temes, complements, add-ons, addons
 quickactions-cmd-themes = temes
 # Opens a SUMO article explaining how to update the browser
 quickactions-update = Actualitza el { -brand-short-name }
 quickactions-cmd-update = actualitzar
 # Opens the view-source UI with current pages source
 quickactions-viewsource2 = Codi font de la pàgina
+quickactions-cmd-viewsource2 = mostra font, mostrar font, veure font, font, codi font, font de la pàgina
 quickactions-cmd-viewsource = mostra codi font, codi font
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = Més informació sobre les accions ràpides
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = Premeu el tabulador per seleccionar:
 
 ## Bookmark Panel
 
@@ -382,6 +532,8 @@ identity-clear-site-data =
 identity-connection-not-secure-security-view = No esteu connectat de forma segura a aquest lloc.
 identity-connection-verified = Esteu connectat de forma segura a aquest lloc.
 identity-ev-owner-label = Certificat emès per a:
+# "qualified" here refers to the qualified website authentication certificate presented by the site.
+identity-etsi = Qualificat segons l'especificació del Reglament (UE) 2024/1183.
 identity-description-custom-root2 = Mozilla no reconeix aquest emissor de certificats. És possible que l'hagi afegit el vostre sistema operatiu o un administrador.
 identity-remove-cert-exception =
     .label = Elimina l'excepció
@@ -495,6 +647,10 @@ urlbar-search-mode-indicator-close =
 # engine is unknown.
 urlbar-placeholder =
     .placeholder = Escriviu una cerca o adreça
+# This placeholder is used when not in search mode and searching in the urlbar
+# is disabled via the keyword.enabled pref.
+urlbar-placeholder-keyword-disabled =
+    .placeholder = Escriviu una adreça
 # This placeholder is used in search mode with search engines that search the
 # entire web.
 # Variables
@@ -547,6 +703,8 @@ urlbar-go-button =
     .tooltiptext = Vés a l'adreça de la barra d'ubicació
 urlbar-page-action-button =
     .tooltiptext = Accions de la pàgina
+urlbar-revert-button =
+    .tooltiptext = Mostra l'adreça a la barra d'ubicació
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -572,6 +730,8 @@ urlbar-result-action-visit = Visita
 # Variables
 # $container (String): the name of the target container
 urlbar-result-action-switch-tab-with-container = Canvia a la pestanya · <span>{ $container }</span>
+# Used when the target tab is in a tab group that doesn't have a label.
+urlbar-result-action-tab-group-unnamed = Grup sense nom
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Obre l'adreça del porta-retalls
 # Directs a user to press the Tab key to perform a search with the specified
@@ -601,12 +761,183 @@ urlbar-result-action-copy-to-clipboard = Copia
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+# The string returned for an undefined calculator result such as when dividing by 0
+urlbar-result-action-undefined-calculator-result = indefinit
+# Shows the result of a formula expression being calculated, in scientific notation.
+# The last = sign will be shown as part of the result (e.g. "= 1.0e17").
+# Variables
+#  $result (String): the string representation for a result in scientific notation
+#  (e.g. "1.0e17").
+urlbar-result-action-calculator-result-scientific-notation = = { $result }
+# Shows the result of a formula expression being calculated, this is used for numbers >= 1.
+# The last = sign will be shown as part of the result (e.g. "= 2").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-3 = = { NUMBER($result, useGrouping: "false", maximumFractionDigits: 8) }
+# Shows the result of a formula expression being calculated, to a maximum of 9 significant
+# digits. This is used for numbers < 1.
+# The last = sign will be shown as part of the result (e.g. "= 0.333333333").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-decimal = = { NUMBER($result, maximumSignificantDigits: 9) }
+# The title of a weather suggestion in the urlbar. The temperature and unit
+# substring should be inside a <strong> tag. If the temperature and unit are not
+# adjacent in the localization, it's OK to include only the temperature in the
+# tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name of the city's region or country. Depending on
+#       the user's location in relation to the city, this may be the name or
+#       abbreviation of one of the city's administrative divisions like a
+#       province or state, or it may be the name of the city's country.
+urlbar-result-weather-title = <strong>{ $temperature }°{ $unit }</strong> a { $city }, { $region }
+# The title of a weather suggestion in the urlbar including a region and
+# country. The temperature and unit substring should be inside a <strong> tag.
+# If the temperature and unit are not adjacent in the localization, it's OK to
+# include only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name or abbreviation of one of the city's
+#       administrative divisions like a province or state.
+#   $country (String) - The name of the city's country.
+urlbar-result-weather-title-with-country = <strong>{ $temperature }°{ $unit }</strong> a { $city }, { $region }, { $country }
+# The title of a weather suggestion in the urlbar only including the city. The
+# temperature and unit substring should be inside a <strong> tag. If the
+# temperature and unit are not adjacent in the localization, it's OK to include
+# only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+urlbar-result-weather-title-city-only = <strong>{ $temperature }°{ $unit }</strong> a { $city }
+# Shows the name of the provider of weather data in a weather suggestion in the
+# urlbar.
+# Variables:
+#   $provider (String) - The name of the weather-data provider. It will be the
+#       name of a company, organization, or service.
+urlbar-result-weather-provider-sponsored = { $provider } · Patrocinat
+
+## These strings are used for Realtime suggestions in the urlbar.
+## Market refers to stocks, indexes, and funds.
+
+# This string is shown as title when Market suggestion are disabled.
+urlbar-result-market-opt-in-title = Obteniu dades del mercat de valors directament a la barra de cerca
+# This string is shown as description when Market suggestion are disabled.
+urlbar-result-market-opt-in-description = Mostra actualitzacions dels mercats i més informació dels nostres socis quan compartiu dades de consultes de cerca amb { -vendor-short-name }. <a data-l10n-name="learn-more-link">Més informació</a>
+# This string is shown as button to activate online when realtime suggestion are disabled.
+urlbar-result-realtime-opt-in-allow = Mostra suggeriments
+# This string is shown in split button to dismiss activation the Realtime suggestion.
+urlbar-result-realtime-opt-in-not-now = Ara no
+urlbar-result-realtime-opt-in-dismiss = Descarta
+urlbar-result-realtime-opt-in-dismiss-all =
+    .label = No mostris aquests suggeriments
+# This string is shown in the result menu.
+urlbar-result-menu-dont-show-market =
+    .label = No mostris suggeriments dels mercats
+# A message that replaces a result when the user dismisses Market suggestions.
+urlbar-result-dismissal-acknowledgment-market = Gràcies pels vostres comentaris. Ja no veureu suggeriments dels mercats.
+# This a11y label is read by screen readers when an item in the row is selected.
+urlbar-result-aria-group-market =
+    .aria-label = Suggeriments del mercat de valors
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-result-dismissal-acknowledgment-all = Gràcies pels vostres comentaris. Ja no veureu aquests suggeriments.
+
+## These strings are used for suggestions of important dates in the urlbar.
+
+# The name of an event and the number of days until it starts separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown =
+    { $daysUntilStart ->
+        [one] { $name } · D’aquí a { $daysUntilStart } dia
+       *[other] { $name } · D’aquí a { $daysUntilStart } dies
+    }
+# The name of a multiple day long event and the number of days until it starts
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown-range =
+    { $daysUntilStart ->
+        [one] { $name } · Comença d’aquí a { $daysUntilStart } dia
+       *[other] { $name } · Comença d’aquí a { $daysUntilStart } dies
+    }
+# The name of a multiple day long event and the number of days until it ends
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilEnd (integer) - The number of days until the event ends.
+urlbar-result-dates-ongoing =
+    { $daysUntilEnd ->
+        [one] { $name } · Acaba d’aquí a { $daysUntilEnd } dia
+       *[other] { $name } · Acaba d’aquí a { $daysUntilEnd } dies
+    }
+# The name of an event and a note that it is happening today separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-today = { $name } · Avui
+# The name of multiple day long event and a note that it is ends today
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-ends-today = { $name } · Acaba avui
 
 ## Strings used for buttons in the urlbar
 
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = Cerca amb { $engine }
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - Cerca { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - Cerca amb { $engine }
+urlbar-searchmode-dropmarker =
+    .tooltiptext = Trieu un motor de cerca
+urlbar-searchmode-bookmarks =
+    .label = Adreces d'interès
+urlbar-searchmode-tabs =
+    .label = Pestanyes
+urlbar-searchmode-history =
+    .label = Historial
+urlbar-searchmode-actions =
+    .label = Accions
+urlbar-searchmode-exit-button =
+    .tooltiptext = Tanca
+urlbar-searchmode-default =
+    .tooltiptext = Motor de cerca per defecte
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = Aquesta vegada, cerca amb:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = Paràmetres de cerca
+# Label shown next to a new search engine in the Searchmode Switcher popup to promote it.
+urlbar-searchmode-new = Nou
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, trieu un motor de cerca
+    .tooltiptext = { $engine }, trieu un motor de cerca
+urlbar-searchmode-button-no-engine =
+    .label = No s'ha seleccionat cap drecera, trieu una drecera
+    .tooltiptext = No s'ha seleccionat cap drecera, trieu una drecera
+# Refers to the ability to search using keywords in the address bar
+urlbar-searchmode-no-keyword =
+    .label = La cerca de paraules clau està desactivada
+    .tooltiptext = La cerca de paraules clau està desactivada
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -616,6 +947,12 @@ urlbar-result-action-search-bookmarks = Cerca en les adreces d'interès
 urlbar-result-action-search-history = Cerca en l'historial
 urlbar-result-action-search-tabs = Cerca en les pestanyes
 urlbar-result-action-search-actions = Cerca accions
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = Canvia a { $group }
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = Obre { $group }
 
 ## Labels shown above groups of urlbar results
 
@@ -637,6 +974,24 @@ urlbar-group-quickactions =
 #  $engine (String): the name of the search engine used to search.
 urlbar-group-recent-searches =
     .label = Cerques recents
+# The header shown above trending results.
+# Variables:
+#  $engine (String): the name of the search engine providing the trending suggestions
+urlbar-group-trending =
+    .label = És tendència a { $engine }
+# Label shown above sponsored suggestions in the urlbar results.
+urlbar-group-sponsored =
+    .label = Patrocinat
+# The result menu labels shown next to trending results.
+urlbar-result-menu-trending-dont-show =
+    .label = No mostris les cerques que són tendència
+    .accesskey = N
+urlbar-result-menu-trending-why =
+    .label = Per què veig això?
+    .accesskey = P
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = Gràcies pels vostres comentaris. Ja no veureu les cerques que són tendència.
 
 ## Reader View toolbar buttons
 
@@ -823,6 +1178,9 @@ panel-save-update-password = Contrasenya
 # "More" item in macOS share menu
 menu-share-more =
     .label = Més…
+menu-share-copy-link =
+    .label = Copia l’enllaç
+    .accesskey = l
 ui-tour-info-panel-close =
     .tooltiptext = Tanca
 
@@ -835,6 +1193,9 @@ popups-infobar-allow =
 popups-infobar-block =
     .label = Bloca les finestres emergents per a { $uriHost }
     .accesskey = p
+popups-infobar-allow2 =
+    .label = Permet les finestres emergents i les redireccions de tercers per a { $uriHost }
+    .accesskey = P
 
 ##
 
@@ -870,6 +1231,8 @@ navbar-accessible =
     .aria-label = Navegació
 navbar-downloads =
     .label = Baixades
+navbar-overflow-2 =
+    .tooltiptext = Més eines
 navbar-overflow =
     .tooltiptext = Més eines…
 # Variables:
@@ -896,6 +1259,10 @@ tabs-toolbar-list-all-tabs =
     .label = Llista totes les pestanyes
     .tooltiptext = Llista totes les pestanyes
 
+## Drop indicator text for pinned tabs when no tabs are pinned.
+
+pinned-tabs-drop-indicator = Deixeu anar la pestanya aquí per a fixar-la
+
 ## Infobar shown at startup to suggest session-restore
 
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
@@ -914,7 +1281,18 @@ data-reporting-notification-button =
     .accesskey = c
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Navegació privada
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = Navegació privada
+# Tooltip for the indicator shown in the window titlebar when content analysis is active.
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-indicator-tooltip =
+    .tooltiptext = Prevenció de pèrdua de dades (DLP) de { $agentName }. Feu clic per a més informació.
 content-analysis-panel-title = Protecció de dades
+# Variables:
+#   $agentName (String): The name of the DLP agent that is connected
+content-analysis-panel-text-styled = La vostra organització utilitza <b>{ $agentName }</b> per a protegir-se contra la pèrdua de dades. <a data-l10n-name="info">Més informació</a>
 
 ## Unified extensions (toolbar) button
 
@@ -939,6 +1317,15 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Extensions
         No es permeten algunes extensions
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = Extensions
+    .tooltiptext =
+        Extensions
+        Algunes extensions estan desactivades
 
 ## Private browsing reset button
 
@@ -973,12 +1360,23 @@ firefox-relay-offer-why-to-use-relay = Les màscares, segures i fàcils d'utilit
 #  $useremail (String): user email that will receive messages
 firefox-relay-offer-what-relay-provides = Tots els missatges de correu enviats a les vostres màscares d'adreça electrònica es reenviaran a <strong>{ $useremail }</strong> (tret que decidiu blocar-los).
 firefox-relay-offer-legal-notice = En fer clic a «Utilitza una màscara d'adreça electrònica», accepteu les <label data-l10n-name="tos-url">condicions d'ús del servei</label> i l'<label data-l10n-name="privacy-url">avís de privadesa</label>.
+firefox-relay-offer-legal-notice-1 = En registrar-vos i crear una màscara d'adreça electrònica, accepteu les <label data-l10n-name="tos-url">Condicions del servei</label> i l'<label data-l10n-name="privacy-url">Avís de privadesa</label>.
 
 ## Add-on Pop-up Notifications
 
 popup-notification-addon-install-unsigned =
     .value = (No verificat)
 popup-notification-xpinstall-prompt-learn-more = Més informació sobre la instal·lació de complements de forma segura
+popup-notification-xpinstall-prompt-block-url = Mostra detalls
+# Note: Access key is set to p to match "private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox2 =
+    .label = Permet que l’extensió s’executi en finestres privades
+    .accesskey = P
+# This string is similar to `webext-perms-description-data-long-technicalAndInteraction`
+# but it is used in the install prompt, and it needs an access key.
+popup-notification-addon-technical-and-interaction-checkbox =
+    .label = Comparteix dades tècniques i d’interacció amb el desenvolupador de l’extensió
+    .accesskey = d
 
 ## Pop-up warning
 
@@ -989,10 +1387,26 @@ popup-warning-message =
         [one] El { -brand-short-name } ha impedit que aquest lloc obrís una finestra emergent.
        *[other] El { -brand-short-name } ha impedit que aquest lloc obrís { $popupCount } finestres emergents.
     }
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+redirect-warning-with-popup-message =
+    { $popupCount ->
+        [0] { -brand-short-name } ha evitat que aquest lloc redirigeixi.
+        [1] { -brand-short-name } ha evitat que aquest lloc obri una finestra emergent i redirigeixi.
+        [one] { -brand-short-name } ha evitat que aquest lloc obri una finestra emergent i redirigeixi.
+       *[other] { -brand-short-name } ha evitat que aquest lloc obri { $popupCount } finestres emergents i redirigeixi.
+    }
 # The singular form is left out for English, since the number of blocked pop-ups is always greater than 1.
 # Variables:
 #   $popupCount (Number): the number of pop-ups blocked.
 popup-warning-exceeded-message = El { -brand-short-name } ha impedit que aquest lloc obrís més de { $popupCount } finestres emergents.
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-exceeded-with-redirect-message =
+    { $popupCount ->
+        [one] { -brand-short-name } ha evitat que aquest lloc obri més d'{ $popupCount } finestra emergent i redirigeixi.
+       *[other] { -brand-short-name } ha evitat que aquest lloc obri més de { $popupCount } finestres emergents i redirigeixi.
+    }
 popup-warning-button =
     .label =
         { PLATFORM() ->
@@ -1008,3 +1422,178 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Mostra «{ $popupURI }»
+# Variables:
+#   $redirectURI (String): the URI for the redirect
+popup-trigger-redirect-menuitem =
+    .label = Mostra “{ $redirectURI }”
+
+## File-picker crash notification ("FilePickerCrashed.sys.mjs")
+
+file-picker-failed-open = No s'ha pogut obrir el diàleg de fitxers del Windows. No s'ha pogut seleccionar cap fitxer ni carpeta.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = No s'ha pogut obrir el diàleg de fitxers del Windows. El fitxer es desarà a { $path }.
+file-picker-failed-save-nowhere = No s'ha pogut obrir el diàleg de fitxers del Windows. No s'ha trobat cap carpeta per defecte; el fitxer no es desarà.
+file-picker-crashed-open = El diàleg de fitxers del Windows ha fallat. No s'ha pogut seleccionar cap fitxer ni carpeta.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = El diàleg de fitxers del Windows ha fallat. El fitxer es desarà a { $path }.
+file-picker-crashed-save-nowhere = El diàleg de fitxers del Windows ha fallat. No s'ha trobat cap carpeta per defecte; el fitxer no es desarà.
+
+# Button used with file-picker-crashed-save-default. Opens the folder in Windows
+# Explorer, with the saved file selected and in focus.
+#
+# The wording here should be consistent with the Windows variant of
+# `downloads-cmd-show-menuitem-2` and similar messages.
+
+file-picker-crashed-show-in-folder =
+    .label = Mostra en la carpeta
+    .accessKey = M
+
+## Onboarding Finish Setup checklist
+
+onboarding-checklist-button-label = Finalitza la configuració
+onboarding-aw-finish-setup-button =
+    .label = Finalitza la configuració
+    .tooltiptext = Finalitza la configuració del { -brand-short-name }
+
+## The urlbar trust icon & panel
+
+trustpanel-etp-label-enabled = La protecció contra el seguiment millorada està activada
+trustpanel-etp-label-disabled = La protecció contra el seguiment millorada està desactivada
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-on =
+    .aria-label = Protecció contra el seguiment millorada: Activada per a { $host }
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-off =
+    .aria-label = Protecció contra el seguiment millorada: Desactivada per a { $host }
+trustpanel-etp-description-enabled = Si us sembla que aquest lloc no funciona bé, proveu de desactivar les proteccions.
+trustpanel-etp-description-disabled = El { -brand-product-name } creu que les empreses us haurien de fer menys seguiment. Bloquem tants elements de seguiment com podem quan activeu les proteccions.
+trustpanel-connection-label-secure = Connexió segura
+trustpanel-connection-label-insecure = La connexió no és segura
+trustpanel-header-enabled = El { -brand-product-name } està en guàrdia
+trustpanel-description-enabled2 = Esteu protegit. Si detectem alguna cosa, us ho farem saber.
+trustpanel-header-enabled-insecure = Aneu amb compte en aquest lloc
+trustpanel-description-enabled-insecure = El { -brand-product-name } ha notat alguna cosa sospitosa.
+trustpanel-header-disabled = Heu desactivat les proteccions
+trustpanel-description-disabled = El { -brand-product-name } està fora de servei. Us recomanem reactivar les proteccions.
+trustpanel-clear-cookies-button = Esborra les galetes i dades del lloc
+trustpanel-privacy-link = Paràmetres de privadesa
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-clear-cookies-header =
+    .title = Esborra les galetes i les dades del lloc { $host }
+trustpanel-clear-cookies-description = En eliminar les galetes i les dades del lloc, pot ser que se us tanquin les sessions o que se us buidin els carros de la compra dels llocs web.
+trustpanel-clear-cookies-subview-button-clear = Esborra
+trustpanel-clear-cookies-subview-button-cancel = Cancel·la
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-site-information-header =
+    .title = Proteccions de connexió per a { $host }
+trustpanel-siteinformation-morelink = Més informació del lloc
+trustpanel-blocker-see-all = Mostra-ho tot
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-blocker-header =
+    .title = Proteccions conta el seguiment per a { $host }
+
+## The urlbar trust icon & panel
+
+# LOCALIZATION NOTE (trustpanel-urlbar-notsecure-label):
+# Keep this string as short as possible, this is displayed in the URL bar
+# use a synonym for "safe" or "private" if "secure" is too long.
+urlbar-trust-icon-notsecure-label = Insegur
+
+## Variables
+##  $count (String): the number of trackers blocked.
+
+trustpanel-blocker-section-header =
+    { $count ->
+        [one] <span>{ $count }</span> element de seguiment blocat en aquest lloc
+       *[other] <span>{ $count }</span> elements de seguiment blocats en aquest lloc
+    }
+trustpanel-blocker-description = El { -brand-product-name } creu que les empreses us haurien de fer menys seguiment, així que bloquem tot allò que podem.
+trustpanel-blocked-header = El { -brand-product-name } ha blocat això:
+trustpanel-tracking-header = El { -brand-product-name } ha permès això perquè els llocs web funcionin bé:
+trustpanel-tracking-description = Sense elements de seguiment, és possible que no funcionin alguns botons, formularis o camps d’inici de sessió.
+trustpanel-insecure-section-header = La connexió no és segura
+trustpanel-insecure-description = Les dades que envieu a aquest lloc no estan xifrades. Es podrien visualitzar, robar alterar.
+trustpanel-list-label-tracking-cookies =
+    { $count ->
+        [one] { $count } galeta de seguiment entre llocs
+       *[other] { $count } galetes de seguiment entre llocs
+    }
+trustpanel-list-label-tracking-content = Contingut que fa seguiment
+trustpanel-list-label-fingerprinter =
+    { $count ->
+        [one] { $count } generador d’empremtes digitals
+       *[other] { $count } generadors d’empremtes digitals
+    }
+trustpanel-list-label-social-tracking =
+    { $count ->
+        [one] { $count } element de seguiment de xarxes socials
+       *[other] { $count } elements de seguiment de xarxes socials
+    }
+trustpanel-list-label-cryptominer =
+    { $count ->
+        [one] { $count } miner de criptomonedes
+       *[other] { $count } miners de criptomonedes
+    }
+trustpanel-social-tracking-blocking-tab-header =
+    { $count ->
+        [one] El { -brand-product-name } ha blocat { $count } element de seguiment de xarxes socials
+       *[other] El { -brand-product-name } ha blocat { $count } elements de seguiment de xarxes socials
+    }
+trustpanel-social-tracking-not-blocking-tab-header =
+    { $count ->
+        [one] El { -brand-product-name } ha permès { $count } element de seguiment de xarxes socials
+       *[other] El { -brand-product-name } ha permès { $count } elements de seguiment de xarxes socials
+    }
+trustpanel-tracking-cookies-blocking-tab-header =
+    { $count ->
+        [one] El { -brand-product-name } ha blocat { $count } galeta de seguiment entre llocs
+       *[other] El { -brand-product-name } ha blocat { $count } galetes de seguiment entre llocs
+    }
+trustpanel-tracking-cookies-not-blocking-tab-header =
+    { $count ->
+        [one] El { -brand-product-name } ha permès { $count } galeta de seguiment entre llocs
+       *[other] El { -brand-product-name } ha permès { $count } galetes de seguiment entre llocs
+    }
+trustpanel-tracking-content-blocking-tab-header =
+    { $count ->
+        [one] El { -brand-product-name } ha blocat { $count } element de seguiment
+       *[other] El { -brand-product-name } ha blocat { $count } elements de seguiment
+    }
+trustpanel-tracking-content-not-blocking-tab-header =
+    { $count ->
+        [one] El { -brand-product-name } ha permès { $count } element de seguiment
+       *[other] El { -brand-product-name } ha permès { $count } elements de seguiment
+    }
+trustpanel-tracking-content-tab-list-header = Aquests llocs us intenten fer seguiment:
+trustpanel-fingerprinter-blocking-tab-header =
+    { $count ->
+        [one] El { -brand-product-name } ha blocat { $count } generador d’empremtes digitals
+       *[other] El { -brand-product-name } ha blocat { $count } generadors d’empremtes digitals
+    }
+trustpanel-fingerprinter-not-blocking-tab-header =
+    { $count ->
+        [one] El { -brand-product-name } ha permès { $count } generador d’empremtes digitals
+       *[other] El { -brand-product-name } ha permès { $count } generadors d’empremtes digitals
+    }
+trustpanel-fingerprinter-list-header = Aquests llocs intenten generar la vostra empremta digital:
+trustpanel-cryptominer-blocking-tab-header =
+    { $count ->
+        [one] El { -brand-product-name } ha blocat { $count } miner de criptomonedes
+       *[other] El { -brand-product-name } ha blocat { $count } miners de criptomonedes
+    }
+trustpanel-cryptominer-not-blocking-tab-header =
+    { $count ->
+        [one] El { -brand-product-name } ha permès { $count } miner de criptomonedes
+       *[other] El { -brand-product-name } ha permès { $count } miners de criptomonedes
+    }
+trustpanel-cryptominer-tab-list-header = Aquests llocs intenten minar criptomonedes:
+trustpanel-blocker-section-header2 =
+    { $count ->
+        [one] S'ha bloquejat <span data-l10n-name="count">{ $count }</span> element de seguiment en aquest lloc
+       *[other] S'han bloquejat <span data-l10n-name="count">{ $count }</span> elements de seguiment en aquest lloc
+    }

@@ -31,6 +31,7 @@ perftools-description-local-build =
     Wenn Sie einen auf diesem Computer selbst kompilierten Build untersuchen,
     fügen Sie bitte das objdir des Build zur folgenden Liste hinzu, sodass es
     genutzt werden kann, um Symbolinformationen nachzuschlagen.
+perftools-pick-local-build-directory = Build-Ordner auswählen
 
 ## The controls for the interval at which the profiler samples the code.
 
@@ -66,6 +67,14 @@ perftools-button-restart = Neu starten
 perftools-button-add-directory = Ordner hinzufügen
 perftools-button-remove-directory = Ausgewählten Ordner entfernen
 perftools-button-edit-settings = Einstellungen bearbeiten…
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Weitere Aktionen
+perftools-menu-more-actions-restart-with-profiling = { -brand-shorter-name } mit aktiviertem Start-Profiling neu starten
+perftools-menu-more-actions-copy-for-startup = Umgebungsvariablen für das Startup-Profiling kopieren
+perftools-menu-more-actions-copy-for-perf-tests = Parameter für Leistungs-Tests kopieren
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -139,6 +148,8 @@ perftools-presets-graphics-label = Grafik
 perftools-presets-graphics-description = Voreinstellung zur Untersuchung von Grafikproblemen in { -brand-shorter-name }.
 perftools-presets-media-label = Medien
 perftools-presets-media-description2 = Voreinstellung für die Untersuchung von Audio- und Videoproblemen in { -brand-shorter-name }.
+perftools-presets-ml-label = Maschinelles Lernen
+perftools-presets-ml-description2 = Voreinstellung für die Untersuchung von Problemen mit maschinellem Lernen in { -brand-shorter-name }.
 perftools-presets-networking-label = Netzwerkverbindungen
 perftools-presets-networking-description = Voreinstellung für die Untersuchung von Problemen mit Netzwerkverbindungen in { -brand-shorter-name }.
 # "Power" is used in the sense of energy (electricity used by the computer).
@@ -146,7 +157,6 @@ perftools-presets-power-label = Leistung
 perftools-presets-power-description = Voreinstellung für die Untersuchung von Problemen beim Energieverbrauch in { -brand-shorter-name }, mit geringem Overhead.
 perftools-presets-debug-label = Debuggen
 perftools-presets-debug-description = Voreinstellung für das Debuggen in { -brand-shorter-name }. Großer Overhead, nicht für Arbeiten an der Leistung verwenden, sondern für Fokus auf das Verständnis des Browser-Verhaltens.
+perftools-presets-web-compat-label = Web Compat
+perftools-presets-web-compat-description = Empfohlene Voreinstellung für das Debuggen von Web-Kompatibilitätsproblemen in Websites, anstatt die Leistung zu verfolgen.
 perftools-presets-custom-label = Benutzerdefiniert
-
-##
-

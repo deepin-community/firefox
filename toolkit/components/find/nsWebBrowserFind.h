@@ -57,22 +57,20 @@ class nsWebBrowserFind : public nsIWebBrowserFind,
   nsresult OnEndSearchFrame(nsPIDOMWindowOuter* aWindow);
 
   already_AddRefed<mozilla::dom::Selection> GetFrameSelection(
-      nsPIDOMWindowOuter* aWindow);
+      nsPIDOMWindowOuter* aWindow) const;
   MOZ_CAN_RUN_SCRIPT_BOUNDARY nsresult
   ClearFrameSelection(nsPIDOMWindowOuter* aWindow);
 
   MOZ_CAN_RUN_SCRIPT_BOUNDARY nsresult OnFind(nsPIDOMWindowOuter* aFoundWindow);
 
-  MOZ_CAN_RUN_SCRIPT_BOUNDARY void SetSelectionAndScroll(
-      nsPIDOMWindowOuter* aWindow, nsRange* aRange);
+  MOZ_CAN_RUN_SCRIPT_BOUNDARY already_AddRefed<mozilla::dom::Selection>
+  UpdateSelection(nsPIDOMWindowOuter* aWindow, nsRange* aRange);
 
-  nsresult GetRootNode(mozilla::dom::Document* aDomDoc,
-                       mozilla::dom::Element** aNode);
-  nsresult GetSearchLimits(nsRange* aRange, nsRange* aStartPt, nsRange* aEndPt,
-                           mozilla::dom::Document* aDoc,
+  nsresult GetSearchLimits(nsRange* aSearchRange, nsRange* aStartPt,
+                           nsRange* aEndPt, mozilla::dom::Document* aDoc,
                            mozilla::dom::Selection* aSel, bool aWrap);
-  nsresult SetRangeAroundDocument(nsRange* aSearchRange, nsRange* aStartPoint,
-                                  nsRange* aEndPoint,
+  nsresult SetRangeAroundDocument(nsRange* aSearchRange, nsRange* aStartPt,
+                                  nsRange* aEndPt,
                                   mozilla::dom::Document* aDoc);
 
  protected:

@@ -27,6 +27,10 @@ appmenuitem-downloads =
     .label = Letöltések
 appmenuitem-passwords =
     .label = Jelszavak
+appmenuitem-extensions-and-themes =
+    .label = Kiegészítők és témák
+appmenuitem-extensions =
+    .label = Kiegészítők
 appmenuitem-addons-and-themes =
     .label = Kiegészítők és témák
 appmenuitem-print =
@@ -108,8 +112,11 @@ appmenu-fxa-sync-and-save-data2 = Adatok szinkronizálása és mentése
 appmenu-fxa-signed-in-label = Bejelentkezés
 appmenu-fxa-setup-sync =
     .label = Szinkronizálás bekapcsolása…
+appmenu-fxa-setup-sync-new = Bekapcsolás
 appmenuitem-save-page =
     .label = Oldal mentése…
+appmenuitem-fxa-sync-off-title = A Sync ki van kapcsolva
+appmenuitem-fxa-sync-off-description = Védje és érje el bárhol könyvjelzőit, jelszavait és egyebeit.
 
 ## What's New panel in App menu.
 
@@ -163,6 +170,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = A profilozó panel megnyitása
+    .tooltiptext = A profilozó panel megnyitása
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +199,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Előbeállítás a { -brand-shorter-name } hang- és videóhibáinak kivizsgálásához.
 profiler-popup-presets-media-label =
     .label = Média
+profiler-popup-presets-ml-description = Előbeállítás a { -brand-shorter-name } gépi tanulási hibáinak kivizsgálásához.
+profiler-popup-presets-ml-label =
+    .label = Gépi tanulás
 profiler-popup-presets-networking-description = Előbeállítás a { -brand-shorter-name } hálózati hibák kivizsgálásához.
 profiler-popup-presets-networking-label =
     .label = Hálózat
@@ -199,6 +212,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = Előbeállítás a { -brand-shorter-name }ban való hibakereséshez. Magas többletterhelés, ne teljesítménykritikus munkához használja, hanem a böngésző viselkedésének megértéséhez.
 profiler-popup-presets-debug-label =
     .label = Hibakeresés
+profiler-popup-presets-web-compat-description = Ajánlott előbeállítás a weboldalak webes kompatibilitási problémáinak kereséséhez, nem pedig a teljesítmény követéséhez.
+profiler-popup-presets-web-compat-label =
+    .label = Webkompatibilitás
 profiler-popup-presets-custom-label =
     .label = Egyéni
 
@@ -277,5 +293,27 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Kapjon figyelmeztetést az adatvédelmi incidensekről
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Maszkolja a valódi e-mail-címét és telefonszámát
+appmenuitem-services-relay-description = E-mail-maszkok irányítópultjának elindítása
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Kapjon teljes eszközvédelmet
 appmenuitem-vpn-description = Védje meg az online tevékenységét
+appmenu-services-header = Saját szolgáltatások
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Próbálja ki a Mozilla más védelmi eszközeit:
+appmenu-other-protection-header = Próbálja ki a { -vendor-short-name } egyéb védelmi eszközeit:
+
+## Profiles panel
+
+appmenu-other-profiles = Egyéb profilok
+appmenu-manage-profiles =
+    .label = Profilok kezelése
+appmenu-copy-profile =
+    .label = Profil másolása
+appmenu-create-profile =
+    .label = Új profil
+appmenu-edit-profile =
+    .aria-label = Profil szerkesztése
+appmenu-profiles-2 =
+    .label = Profilok

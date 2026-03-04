@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* eslint-env mozilla/browser-window */
-
 /**
  * The base view implements everything that's common to all the views.
  * It should not be instanced directly, use a derived class instead.
@@ -429,7 +427,7 @@ class PlacesViewBase {
 
       let icon = aPlacesNode.icon;
       if (icon) {
-        element.setAttribute("image", icon);
+        element.setAttribute("image", ChromeUtils.encodeURIForSrcset(icon));
       }
     }
 
@@ -496,7 +494,7 @@ class PlacesViewBase {
     }
     // We must remove and reset the attribute to force an update.
     elt.removeAttribute("image");
-    elt.setAttribute("image", aPlacesNode.icon);
+    elt.setAttribute("image", ChromeUtils.encodeURIForSrcset(aPlacesNode.icon));
   }
 
   nodeTitleChanged(aPlacesNode, aNewTitle) {
@@ -730,16 +728,17 @@ class PlacesViewBase {
       // Add the "Open All in Tabs" menuitem.
       aPopup._endOptOpenAllInTabs = document.createXULElement("menuitem");
       aPopup._endOptOpenAllInTabs.className = "openintabs-menuitem";
-
-      aPopup._endOptOpenAllInTabs.setAttribute(
-        "oncommand",
-        "PlacesUIUtils.openMultipleLinksInTabs(this.parentNode._placesNode, event, " +
-          "PlacesUIUtils.getViewForNode(this));"
-      );
       aPopup._endOptOpenAllInTabs.setAttribute(
         "label",
         gNavigatorBundle.getString("menuOpenAllInTabs.label")
       );
+      aPopup._endOptOpenAllInTabs.addEventListener("command", event => {
+        PlacesUIUtils.openMultipleLinksInTabs(
+          event.currentTarget.parentNode._placesNode,
+          event,
+          PlacesUIUtils.getViewForNode(event.currentTarget)
+        );
+      });
       aPopup.appendChild(aPopup._endOptOpenAllInTabs);
     }
   }
@@ -796,6 +795,15 @@ class PlacesViewBase {
     }
 
     if (popup._placesNode && PlacesUIUtils.getViewForNode(popup) == this) {
+      if (this.#isPopupForRecursiveFolderShortcut(popup)) {
+        // Show as an empty container for now. We may want to show a better
+        // message in the future, but since we are likely to remove recursive
+        // shortcuts in maintenance at a certain point, this should be enough.
+        this._setEmptyPopupStatus(popup, true);
+        popup._built = true;
+        return;
+      }
+
       if (!popup._placesNode.containerOpen) {
         popup._placesNode.containerOpen = true;
       }
@@ -818,6 +826,33 @@ class PlacesViewBase {
       aObject.removeEventListener(aEventNames[i], this, aCapturing);
     }
   }
+
+  /**
+   * Walks up the parent chain to detect whether a folder shortcut resolves to
+   * a folder already present in the ancestry.
+   *
+   * @param {DOMElement} popup
+   * @returns {boolean} Whether this popup is for a recursive folder shortcut.
+   */
+  #isPopupForRecursiveFolderShortcut(popup) {
+    if (
+      !popup._placesNode ||
+      !PlacesUtils.nodeIsFolderOrShortcut(popup._placesNode)
+    ) {
+      return false;
+    }
+    let guid = PlacesUtils.getConcreteItemGuid(popup._placesNode);
+    for (
+      let parentView = popup.parentNode?.parentNode;
+      parentView?._placesNode;
+      parentView = parentView.parentNode?.parentNode
+    ) {
+      if (PlacesUtils.getConcreteItemGuid(parentView._placesNode) == guid) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
 
 /**
@@ -825,7 +860,7 @@ class PlacesViewBase {
  */
 class PlacesToolbar extends PlacesViewBase {
   constructor(placesUrl, rootElt, viewElt) {
-    let startTime = Date.now();
+    let timerId = Glean.bookmarksToolbar.init.start();
     super(placesUrl, rootElt, viewElt);
     this._addEventListeners(this._dragRoot, this._cbEvents, false);
     this._addEventListeners(
@@ -851,9 +886,7 @@ class PlacesToolbar extends PlacesViewBase {
       );
     }
 
-    Services.telemetry
-      .getHistogramById("FX_BOOKMARKS_TOOLBAR_INIT_MS")
-      .add(Date.now() - startTime);
+    Glean.bookmarksToolbar.init.stopAndAccumulate(timerId);
   }
 
   // Called by PlacesViewBase so we can init properties that class
@@ -1339,7 +1372,7 @@ class PlacesToolbar extends PlacesViewBase {
       } else {
         let icon = aPlacesNode.icon;
         if (icon) {
-          button.setAttribute("image", icon);
+          button.setAttribute("image", ChromeUtils.encodeURIForSrcset(icon));
         }
         this.updateNodesVisibility();
       }
@@ -1428,7 +1461,7 @@ class PlacesToolbar extends PlacesViewBase {
         );
         let icon = aPlacesNode.icon;
         if (icon) {
-          elt.setAttribute("image", icon);
+          elt.setAttribute("image", ChromeUtils.encodeURIForSrcset(icon));
         }
       } else {
         this._rootElt.insertBefore(elt, this._rootElt.children[aNewIndex]);
@@ -1738,9 +1771,7 @@ class PlacesToolbar extends PlacesViewBase {
         this._allowPopupShowing = false;
       }
     }
-    if (target._placesNode?.uri) {
-      PlacesUIUtils.setupSpeculativeConnection(target._placesNode.uri, window);
-    }
+    PlacesUIUtils.maybeSpeculativeConnectOnMouseDown(aEvent);
   }
 
   _cleanupDragDetails() {
@@ -2063,10 +2094,7 @@ class PlacesMenu extends PlacesViewBase {
   // We don't have a facility for catch "mousedown" events on the native
   // Mac menus because Mac doesn't expose it
   _onMouseDown(aEvent) {
-    let target = aEvent.target;
-    if (target._placesNode?.uri) {
-      PlacesUIUtils.setupSpeculativeConnection(target._placesNode.uri, window);
-    }
+    PlacesUIUtils.maybeSpeculativeConnectOnMouseDown(aEvent);
   }
 }
 
@@ -2094,6 +2122,7 @@ this.PlacesPanelview = class PlacesPanelview extends PlacesViewBase {
       "dragstart",
       "ViewHiding",
       "ViewShown",
+      "mousedown",
     ]);
   }
 
@@ -2122,6 +2151,9 @@ this.PlacesPanelview = class PlacesPanelview extends PlacesViewBase {
         break;
       case "ViewShown":
         this._onViewShown(event);
+        break;
+      case "mousedown":
+        this._onMouseDown(event);
         break;
     }
   }
@@ -2152,6 +2184,39 @@ this.PlacesPanelview = class PlacesPanelview extends PlacesViewBase {
         PlacesUIUtils.openInTabClosesMenu)
     ) {
       this.panelMultiView.closest("panel").hidePopup();
+    }
+  }
+
+  destroyContextMenu() {
+    super.destroyContextMenu();
+    this.maybeClosePanel(PlacesUIUtils.lastContextMenuCommand);
+  }
+
+  /**
+   * Closes the view depending on the command.
+   *
+   * This is necessary because PlacesPanelview's buttons are not
+   * XUL menuitems and are not affected by the closemenu attribute.
+   *
+   * @param {string} command the placesCommands command
+   */
+  maybeClosePanel(command) {
+    switch (command) {
+      // placesCmd_open:newcontainertab is not a placesCommand but it
+      // is set by PlacesUIUtils.openInContainerTab to close the panel.
+      case "placesCmd_open:newcontainertab":
+      case "placesCmd_open:tab":
+        if (
+          this._viewElt.id != "PanelUI-bookmarks" ||
+          PlacesUIUtils.openInTabClosesMenu
+        ) {
+          this.panelMultiView.closest("panel").hidePopup();
+        }
+        break;
+      case "placesCmd_createBookmark":
+      case "placesCmd_deleteDataHost":
+        this.panelMultiView.closest("panel").hidePopup();
+        break;
     }
   }
 
@@ -2290,5 +2355,9 @@ this.PlacesPanelview = class PlacesPanelview extends PlacesViewBase {
     if (!this.controllers.getControllerCount() && this._controller) {
       this.controllers.appendController(this._controller);
     }
+  }
+
+  _onMouseDown(aEvent) {
+    PlacesUIUtils.maybeSpeculativeConnectOnMouseDown(aEvent);
   }
 };

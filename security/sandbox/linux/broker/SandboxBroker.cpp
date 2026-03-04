@@ -31,7 +31,7 @@
 #include "SpecialSystemDirectory.h"
 #include "base/string_util.h"
 #include "mozilla/Assertions.h"
-#include "mozilla/DebugOnly.h"
+#include "mozilla/Atomics.h"
 #include "mozilla/Sprintf.h"
 #include "mozilla/ipc/FileDescriptor.h"
 #include "nsAppDirectoryServiceDefs.h"
@@ -41,8 +41,7 @@
 
 namespace mozilla {
 
-// Default/fallback temporary directory
-static const nsLiteralCString tempDirPrefix("/tmp");
+namespace {
 
 // kernel level limit defined at
 // https://elixir.bootlin.com/linux/latest/source/include/linux/sched.h#L301
@@ -50,13 +49,19 @@ static const nsLiteralCString tempDirPrefix("/tmp");
 // https://elixir.bootlin.com/linux/latest/source/include/linux/sched.h#L1087
 static const int kThreadNameMaxSize = 16;
 
+static Atomic<size_t> gNumBrokers;
+
+}  // namespace
+
 // This constructor signals failure by setting mFileDesc and aClientFd to -1.
 SandboxBroker::SandboxBroker(UniquePtr<const Policy> aPolicy, int aChildPid,
                              int& aClientFd)
     : mChildPid(aChildPid), mPolicy(std::move(aPolicy)) {
+  ++gNumBrokers;
   int fds[2];
   if (0 != socketpair(AF_UNIX, SOCK_SEQPACKET | SOCK_CLOEXEC, 0, fds)) {
-    SANDBOX_LOG_ERRNO("SandboxBroker: socketpair failed");
+    SANDBOX_LOG_ERRNO("SandboxBroker: socketpair failed (%d brokers)",
+                      gNumBrokers.operator size_t());
     mFileDesc = -1;
     aClientFd = -1;
     return;
@@ -64,32 +69,27 @@ SandboxBroker::SandboxBroker(UniquePtr<const Policy> aPolicy, int aChildPid,
   mFileDesc = fds[0];
   aClientFd = fds[1];
 
+  // When the thread will start it may already be too late to correctly care
+  // about reference handling. Make sure the increment happens before the thread
+  // is created to avoid races. Details in SandboxBroker::ThreadMain().
+  NS_ADDREF_THIS();
+
   if (!PlatformThread::Create(0, this, &mThread)) {
-    SANDBOX_LOG_ERRNO("SandboxBroker: thread creation failed");
+    SANDBOX_LOG_ERRNO("SandboxBroker: thread creation failed (%d brokers)",
+                      gNumBrokers.operator size_t());
     close(mFileDesc);
     close(aClientFd);
     mFileDesc = -1;
     aClientFd = -1;
   }
-#if defined(MOZ_CONTENT_TEMP_DIR)
-  nsCOMPtr<nsIFile> tmpDir;
-  nsresult rv = NS_GetSpecialDirectory(NS_APP_CONTENT_PROCESS_TEMP_DIR,
-                                       getter_AddRefs(tmpDir));
-  if (NS_SUCCEEDED(rv)) {
-    rv = tmpDir->GetNativePath(mContentTempPath);
-    if (NS_FAILED(rv)) {
-      mContentTempPath.Truncate();
-    }
-  }
-#endif
 }
 
-UniquePtr<SandboxBroker> SandboxBroker::Create(
+already_AddRefed<SandboxBroker> SandboxBroker::Create(
     UniquePtr<const Policy> aPolicy, int aChildPid,
     ipc::FileDescriptor& aClientFdOut) {
   int clientFd;
-  // Can't use MakeUnique here because the constructor is private.
-  UniquePtr<SandboxBroker> rv(
+  // Can't use MakeRefPtr here because the constructor is private.
+  RefPtr<SandboxBroker> rv(
       new SandboxBroker(std::move(aPolicy), aChildPid, clientFd));
   if (clientFd < 0) {
     rv = nullptr;
@@ -98,22 +98,40 @@ UniquePtr<SandboxBroker> SandboxBroker::Create(
     // the fd; instead, transfer ownership:
     aClientFdOut = ipc::FileDescriptor(UniqueFileHandle(clientFd));
   }
-  return rv;
+  return rv.forget();
 }
 
-SandboxBroker::~SandboxBroker() {
+void SandboxBroker::Terminate() {
   // If the constructor failed, there's nothing to be done here.
   if (mFileDesc < 0) {
     return;
   }
 
-  shutdown(mFileDesc, SHUT_RD);
-  // The thread will now get EOF even if the client hasn't exited.
-  PlatformThread::Join(mThread);
+  // Join() on the same thread while working with errno EDEADLK is technically
+  // not POSIX compliant:
+  // https://pubs.opengroup.org/onlinepubs/9799919799/functions/pthread_join.html#:~:text=refers%20to%20the%20calling%20thread
+  if (mThread != pthread_self()) {
+    shutdown(mFileDesc, SHUT_RD);
+    // The thread will now get EOF even if the client hasn't exited.
+    PlatformThread::Join(mThread);
+  } else {
+    // Nothing is waiting for this thread, so detach it to avoid
+    // memory leaks.
+    int rv = pthread_detach(pthread_self());
+    MOZ_ALWAYS_TRUE(rv == 0);
+  }
+
   // Now that the thread has exited, the fd will no longer be accessed.
   close(mFileDesc);
   // Having ensured that this object outlives the thread, this
   // destructor can now return.
+
+  mFileDesc = -1;
+}
+
+SandboxBroker::~SandboxBroker() {
+  Terminate();
+  --gNumBrokers;
 }
 
 SandboxBroker::Policy::Policy() = default;
@@ -171,53 +189,34 @@ void SandboxBroker::Policy::AddPath(int aPerms, const char* aPath,
   perms |= aPerms;
 }
 
+void SandboxBroker::Policy::RemoveAllDenyRules() {
+  for (auto iter = mMap.Iter(); !iter.Done(); iter.Next()) {
+    iter.Data() &= ~FORCE_DENY;
+    if ((iter.Data() & ~RECURSIVE) == 0) {
+      iter.Remove();
+    }
+  }
+}
+
 void SandboxBroker::Policy::AddTree(int aPerms, const char* aPath) {
   struct stat statBuf;
 
   if (stat(aPath, &statBuf) != 0) {
     return;
   }
-  if (!S_ISDIR(statBuf.st_mode)) {
-    AddPath(aPerms, aPath, AddAlways);
-  } else {
-    DIR* dirp = opendir(aPath);
-    if (!dirp) {
-      return;
-    }
-    while (struct dirent* de = readdir(dirp)) {
-      if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0) {
-        continue;
-      }
-      // Note: could optimize the string handling.
-      nsAutoCString subPath;
-      subPath.Assign(aPath);
-      subPath.Append('/');
-      subPath.Append(de->d_name);
-      AddTree(aPerms, subPath.get());
-    }
-    closedir(dirp);
-  }
-}
-
-void SandboxBroker::Policy::AddDir(int aPerms, const char* aPath) {
-  struct stat statBuf;
-
-  if (stat(aPath, &statBuf) != 0) {
-    return;
-  }
 
   if (!S_ISDIR(statBuf.st_mode)) {
     return;
   }
 
-  Policy::AddDirInternal(aPerms, aPath);
+  Policy::AddTreeInternal(aPerms, aPath);
 }
 
 void SandboxBroker::Policy::AddFutureDir(int aPerms, const char* aPath) {
-  Policy::AddDirInternal(aPerms, aPath);
+  Policy::AddTreeInternal(aPerms, aPath);
 }
 
-void SandboxBroker::Policy::AddDirInternal(int aPerms, const char* aPath) {
+void SandboxBroker::Policy::AddTreeInternal(int aPerms, const char* aPath) {
   // Add a Prefix permission on things inside the dir.
   nsDependentCString path(aPath);
   MOZ_ASSERT(path.Length() <= kMaxPathLen - 1);
@@ -284,7 +283,7 @@ void SandboxBroker::Policy::AddDynamic(int aPerms, const char* aPath) {
     size_t len = strlen(aPath);
     if (!len) return;
     if (aPath[len - 1] == '/') {
-      AddDir(aPerms, aPath);
+      AddTree(aPerms, aPath);
     } else {
       AddPath(aPerms, aPath);
     }
@@ -295,7 +294,7 @@ void SandboxBroker::Policy::AddAncestors(const char* aPath, int aPerms) {
   nsAutoCString path(aPath);
 
   while (true) {
-    const auto lastSlash = path.RFindCharInSet("/");
+    const auto lastSlash = path.RFindChar('/');
     if (lastSlash <= 0) {
       MOZ_ASSERT(lastSlash == 0);
       return;
@@ -303,6 +302,91 @@ void SandboxBroker::Policy::AddAncestors(const char* aPath, int aPerms) {
     path.Truncate(lastSlash);
     AddPath(aPerms, path.get());
   }
+}
+
+enum class IterationDecision : uint8_t { Continue, Break };
+
+// This is slightly different from the loop in AddAncestors: it leaves the
+// trailing slashes attached so they'll match AddTree entries.
+template <typename Fn>
+void ForEachAncestorDirectoryWithTrailingSlash(const nsACString& aPath,
+                                               Fn&& aCallback) {
+  if (aPath.IsEmpty()) {
+    return;
+  }
+  nsAutoCString ancestor(aPath);
+  while (true) {
+    // Last() release-asserts that the string is not empty. We bail out on empty
+    // strings above, and the Truncate() below will always give us a non-empty
+    // string.
+    if (ancestor.Last() == '/') {
+      ancestor.Truncate(ancestor.Length() - 1);
+    }
+    const auto lastSlash = ancestor.RFindChar('/');
+    if (lastSlash < 0) {
+      MOZ_ASSERT(ancestor.IsEmpty());
+      break;
+    }
+    ancestor.Truncate(lastSlash + 1);
+    if (aCallback(ancestor) == IterationDecision::Break) {
+      break;
+    }
+  }
+}
+
+struct Match {
+  size_t mPrefixLength;
+  int mPerms;
+
+  bool operator<(const Match& aOther) const {
+    // We want longer matches first.
+    return mPrefixLength > aOther.mPrefixLength;
+  }
+};
+static int ComputeInheritedPerms(const Span<Match> aAncestorMatches,
+                                 bool aIncludeDeny) {
+  MOZ_ASSERT(std::is_sorted(aAncestorMatches.begin(), aAncestorMatches.end()));
+  MOZ_ASSERT(std::all_of(aAncestorMatches.begin(), aAncestorMatches.end(),
+                         [](const Match& aMatch) {
+                           return aMatch.mPerms & SandboxBroker::RECURSIVE;
+                         }));
+
+  int inheritedPerms = 0;
+  for (const Match& match : aAncestorMatches) {
+    if (match.mPerms & SandboxBroker::FORCE_DENY) {
+      // If we have anything under a FORCE_DENY dir, then we want to stop
+      // the inheritance chain now.
+      if (aIncludeDeny) {
+        inheritedPerms |= match.mPerms & ~SandboxBroker::RECURSIVE;
+      }
+      break;
+    }
+    inheritedPerms |= match.mPerms & ~SandboxBroker::RECURSIVE;
+    // We've found a more specific rule, if we hit a DENY, we want to stop at
+    // that point without including it.
+    aIncludeDeny = false;
+  }
+  MOZ_ASSERT(!(inheritedPerms & SandboxBroker::RECURSIVE));
+  return inheritedPerms;
+}
+
+// FIXME(emilio): This duplicates some logic with Lookup(), and doesn't deal
+// with prefix rules that don't fall onto a directory boundary. Consider
+// changing PathPermissionMap to some sort of radix tree data structure instead
+// (which will also make Lookup() faster), or deal with prefixes here like
+// Lookup() does by iterating the whole map (would be quadratic and slower).
+static int ComputeInheritedPerms(const SandboxBroker::PathPermissionMap& aMap,
+                                 const nsACString& aPath, bool aIncludeDeny) {
+  AutoTArray<Match, 4> matches;
+  ForEachAncestorDirectoryWithTrailingSlash(
+      aPath, [&](const nsACString& aAncestor) {
+        const int ancestorPerms = aMap.Get(aAncestor);
+        if (ancestorPerms & SandboxBroker::RECURSIVE) {
+          matches.AppendElement(Match{aAncestor.Length(), ancestorPerms});
+        }
+        return IterationDecision::Continue;
+      });
+  return ComputeInheritedPerms(matches, aIncludeDeny);
 }
 
 void SandboxBroker::Policy::FixRecursivePermissions() {
@@ -317,40 +401,9 @@ void SandboxBroker::Policy::FixRecursivePermissions() {
 
   for (const auto& entry : oldMap) {
     const nsACString& path = entry.GetKey();
-    const int& localPerms = entry.GetData();
-    int inheritedPerms = 0;
-
-    nsAutoCString ancestor(path);
-    // This is slightly different from the loop in AddAncestors: it
-    // leaves the trailing slashes attached so they'll match AddDir
-    // entries.
-    while (true) {
-      // Last() release-asserts that the string is not empty.  We
-      // should never have empty keys in the map, and the Truncate()
-      // below will always give us a non-empty string.
-      if (ancestor.Last() == '/') {
-        ancestor.Truncate(ancestor.Length() - 1);
-      }
-      const auto lastSlash = ancestor.RFindCharInSet("/");
-      if (lastSlash < 0) {
-        MOZ_ASSERT(ancestor.IsEmpty());
-        break;
-      }
-      ancestor.Truncate(lastSlash + 1);
-      const int ancestorPerms = oldMap.Get(ancestor);
-      if (ancestorPerms & RECURSIVE) {
-        // if a child is set with FORCE_DENY, do not compute inheritedPerms
-        if ((localPerms & FORCE_DENY) == FORCE_DENY) {
-          if (SandboxInfo::Get().Test(SandboxInfo::kVerbose)) {
-            SANDBOX_LOG("skip inheritence policy for %s: %d",
-                        PromiseFlatCString(path).get(), localPerms);
-          }
-        } else {
-          inheritedPerms |= ancestorPerms & ~RECURSIVE;
-        }
-      }
-    }
-
+    const int localPerms = entry.GetData();
+    const int inheritedPerms =
+        ComputeInheritedPerms(oldMap, path, /* aIncludeDeny = */ false);
     const int newPerms = localPerms | inheritedPerms;
     if ((newPerms & ~RECURSIVE) == inheritedPerms) {
       if (SandboxInfo::Get().Test(SandboxInfo::kVerbose)) {
@@ -377,29 +430,23 @@ int SandboxBroker::Policy::Lookup(const nsACString& aPath) const {
   if (perms) {
     return perms;
   }
-
   // Not a legally constructed path
-  if (!ValidatePath(PromiseFlatCString(aPath).get())) return 0;
-
-  // Now it's either an illegal access, or a recursive
-  // directory permission. We'll have to check the entire
-  // whitelist for the best match (slower).
-  int allPerms = 0;
+  if (!ValidatePath(PromiseFlatCString(aPath).get())) {
+    return 0;
+  }
+  // Now it's either an illegal access, or a recursive directory permission.
+  // We'll have to check the entire whitelist for the best match (slower).
+  AutoTArray<Match, 4> matches;
   for (const auto& entry : mMap) {
-    const nsACString& whiteListPath = entry.GetKey();
-    const int& perms = entry.GetData();
-
-    if (!(perms & RECURSIVE)) continue;
-
-    // passed part starts with something on the whitelist
-    if (StringBeginsWith(aPath, whiteListPath)) {
-      allPerms |= perms;
+    if ((entry.GetData() & RECURSIVE) &&
+        StringBeginsWith(aPath, entry.GetKey())) {
+      matches.AppendElement(Match{entry.GetKey().Length(), entry.GetData()});
     }
   }
-
-  // Strip away the RECURSIVE flag as it doesn't
-  // necessarily apply to aPath.
-  return allPerms & ~RECURSIVE;
+  if (matches.Length() > 1) {
+    matches.Sort();
+  }
+  return ComputeInheritedPerms(matches, /* aIncludeDeny= */ true);
 }
 
 static bool AllowOperation(int aReqFlags, int aPerms) {
@@ -572,36 +619,6 @@ size_t SandboxBroker::ConvertRelativePath(char* aPath, size_t aBufSize,
   return aPathLen;
 }
 
-#if defined(MOZ_CONTENT_TEMP_DIR)
-size_t SandboxBroker::RemapTempDirs(char* aPath, size_t aBufSize,
-                                    size_t aPathLen) {
-  nsAutoCString path(aPath);
-
-  size_t prefixLen = 0;
-  if (!mTempPath.IsEmpty() && StringBeginsWith(path, mTempPath)) {
-    prefixLen = mTempPath.Length();
-  } else if (StringBeginsWith(path, tempDirPrefix)) {
-    prefixLen = tempDirPrefix.Length();
-  }
-
-  if (prefixLen) {
-    const nsDependentCSubstring cutPath =
-        Substring(path, prefixLen, path.Length() - prefixLen);
-
-    // Only now try to get the content process temp dir
-    if (!mContentTempPath.IsEmpty()) {
-      nsAutoCString tmpPath;
-      tmpPath.Assign(mContentTempPath);
-      tmpPath.Append(cutPath);
-      base::strlcpy(aPath, tmpPath.get(), aBufSize);
-      return strlen(aPath);
-    }
-  }
-
-  return aPathLen;
-}
-#endif
-
 nsCString SandboxBroker::ReverseSymlinks(const nsACString& aPath) {
   // Revert any symlinks we previously resolved.
   int32_t cutLength = aPath.Length();
@@ -674,42 +691,29 @@ void SandboxBroker::ThreadMain(void) {
 
   AUTO_PROFILER_REGISTER_THREAD(threadName);
 
+  // The gtest SandboxBrokerMisc.* will loop and create / destroy SandboxBroker
+  // taking a RefPtr<SandboxBroker> that gets destructed when getting out of
+  // scope.
+  //
+  // Because Create() will start this thread we get into a situation where:
+  //  - SandboxBrokerMisc creates SandboxBroker
+  //    RefPtr = 1
+  //  - SandboxBrokerMisc gtest is leaving the scope so destructor got called
+  //    RefPtr = 0
+  //  - this thread starts and add a new reference via that RefPtr
+  //    RefPtr = 1
+  //  - destructor does its job and closes the FD which triggers EOF and ends
+  //    the while {} here
+  //  - thread ends and gets out of scope so destructor gets called
+  //    RefPtr = 0
+  //
+  // NS_ADDREF_THIS() / dont_AddRef(this) avoid this.
+  RefPtr<SandboxBroker> deathGrip = dont_AddRef(this);
+
   // Permissive mode can only be enabled through an environment variable,
   // therefore it is sufficient to fetch the value once
   // before the main thread loop starts
   bool permissive = SandboxInfo::Get().Test(SandboxInfo::kPermissive);
-
-#if defined(MOZ_CONTENT_TEMP_DIR)
-  // Find the current temporary directory
-  nsCOMPtr<nsIFile> tmpDir;
-  nsresult rv =
-      GetSpecialSystemDirectory(OS_TemporaryDirectory, getter_AddRefs(tmpDir));
-  if (NS_SUCCEEDED(rv)) {
-    rv = tmpDir->GetNativePath(mTempPath);
-    if (NS_SUCCEEDED(rv)) {
-      // Make sure there's no terminating /
-      if (mTempPath.Last() == '/') {
-        mTempPath.Truncate(mTempPath.Length() - 1);
-      }
-    }
-  }
-  // If we can't find it, we aren't bothered much: we will
-  // always try /tmp anyway in the substitution code
-  if (NS_FAILED(rv) || mTempPath.IsEmpty()) {
-    if (SandboxInfo::Get().Test(SandboxInfo::kVerbose)) {
-      SANDBOX_LOG("Tempdir: /tmp");
-    }
-  } else {
-    if (SandboxInfo::Get().Test(SandboxInfo::kVerbose)) {
-      SANDBOX_LOG("Tempdir: %s", mTempPath.get());
-    }
-    // If it's /tmp, clear it here so we don't compare against
-    // it twice. Just let the fallback code do the work.
-    if (mTempPath.Equals(tempDirPrefix)) {
-      mTempPath.Truncate();
-    }
-  }
-#endif
 
   while (true) {
     struct iovec ios[2];
@@ -802,14 +806,6 @@ void SandboxBroker::ThreadMain(void) {
       pathLen = ConvertRelativePath(pathBuf, sizeof(pathBuf), pathLen);
       perms = mPolicy->Lookup(nsDependentCString(pathBuf, pathLen));
 
-      // We don't have permissions on the requested dir.
-#if defined(MOZ_CONTENT_TEMP_DIR)
-      if (!perms) {
-        // Was it a tempdir that we can remap?
-        pathLen = RemapTempDirs(pathBuf, sizeof(pathBuf), pathLen);
-        perms = mPolicy->Lookup(nsDependentCString(pathBuf, pathLen));
-      }
-#endif
       if (!perms) {
         // Did we arrive from a symlink in a path that is not writable?
         // Then try to figure out the original path and see if that is

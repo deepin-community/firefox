@@ -5,11 +5,16 @@
 url-classifier-title = ข้อมูลตัวจําแนก URL
 url-classifier-search-title = ค้นหา
 url-classifier-search-result-title = ผลลัพธ์
+# Variables:
+#   $uri (string) - URI of blocked page
 url-classifier-search-result-uri = URI: { $uri }
+# Variables:
+#   $list (string) - List of tables where the page is blocked
 url-classifier-search-result-list = รายการตาราง: { $list }
 url-classifier-search-input = URL
 url-classifier-search-error-invalid-url = URL ไม่ถูกต้อง
 url-classifier-search-error-no-features = ไม่ได้เลือกคุณลักษณะใด
+url-classifier-search-error-no-results = ไม่พบข้อมูลสำหรับ URL นี้
 url-classifier-search-btn = เริ่มการค้นหา
 url-classifier-search-features = คุณลักษณะ
 url-classifier-search-listType = ชนิดรายการ
@@ -40,7 +45,6 @@ url-classifier-debug-sb-modules = โมดูลรายการบันท�
 url-classifier-debug-modules = โมดูลรายการบันทึกปัจจุบัน
 url-classifier-debug-sbjs-modules = รายการบันทึก JS การเรียกดูแบบปลอดภัย
 url-classifier-debug-file = ไฟล์รายการบันทึกปัจจุบัน
-
 url-classifier-trigger-update = กระตุ้นการอัปเดต
 url-classifier-not-available = ไม่มี
 url-classifier-disable-sbjs-log = ปิดใช้งานรายการบันทึก JS การเรียกดูแบบปลอดภัย

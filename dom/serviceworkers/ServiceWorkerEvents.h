@@ -15,10 +15,10 @@
 #include "mozilla/dom/File.h"
 #include "mozilla/dom/Promise.h"
 #include "mozilla/dom/Response.h"
+#include "mozilla/dom/ServiceWorkerUtils.h"
 #include "mozilla/dom/WorkerCommon.h"
-
-#include "nsProxyRelease.h"
 #include "nsContentUtils.h"
+#include "nsProxyRelease.h"
 
 class nsIInterceptedChannel;
 
@@ -33,9 +33,6 @@ class Request;
 class ResponseOrPromise;
 class ServiceWorker;
 class ServiceWorkerRegistrationInfo;
-
-// Defined in ServiceWorker.cpp
-bool ServiceWorkerVisible(JSContext* aCx, JSObject* aObj);
 
 class CancelChannelRunnable final : public Runnable {
   nsMainThreadPtrHandle<nsIInterceptedChannel> mChannel;
@@ -226,6 +223,7 @@ class PushMessageData final : public nsISupports, public nsWrapperCache {
 
   nsresult EnsureDecodedText();
   uint8_t* GetContentsCopy();
+  void SetUseCounterIfDeclarative(JSContext* aCx);
 };
 
 class PushEvent final : public ExtendableEvent {

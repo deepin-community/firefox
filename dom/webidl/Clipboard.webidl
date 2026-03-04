@@ -13,15 +13,14 @@
 typedef sequence<ClipboardItem> ClipboardItems;
 
 [SecureContext,
- Exposed=Window,
- InstrumentedProps=(read,readText,write)]
+ Exposed=Window]
 interface Clipboard : EventTarget {
-  [Pref="dom.events.asyncClipboard.clipboardItem", NewObject, NeedsSubjectPrincipal]
+  [NewObject, NeedsSubjectPrincipal]
   Promise<ClipboardItems> read();
-  [Func="Clipboard::ReadTextEnabled", NewObject, NeedsSubjectPrincipal]
+  [NewObject, NeedsSubjectPrincipal]
   Promise<DOMString> readText();
 
-  [Pref="dom.events.asyncClipboard.clipboardItem", NewObject, NeedsSubjectPrincipal]
+  [NewObject, NeedsSubjectPrincipal]
   Promise<undefined> write(ClipboardItems data);
 
   [NewObject, NeedsSubjectPrincipal]
@@ -32,7 +31,7 @@ typedef (DOMString or Blob) ClipboardItemDataType;
 typedef Promise<ClipboardItemDataType> ClipboardItemData;
 // callback ClipboardItemDelayedCallback = ClipboardItemData ();
 
-[SecureContext, Exposed=Window, Pref="dom.events.asyncClipboard.clipboardItem"]
+[SecureContext, Exposed=Window]
 interface ClipboardItem {
   [Throws]
   constructor(record<DOMString, ClipboardItemData> items,

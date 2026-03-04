@@ -4,8 +4,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/ArrayUtils.h"
+#include "mozilla/Assertions.h"
 #include "mozilla/DebugOnly.h"
+#include "mozilla/Maybe.h"
 #include "mozilla/ProfilerLabels.h"
 #include "mozilla/TextUtils.h"
 #include "mozilla/UniquePtrExtensions.h"
@@ -96,7 +97,6 @@ nsresult NewLocalFile(const nsAString& aPath, bool aUseDOSDevicePathSyntax,
   file.forget(aResult);
   return NS_OK;
 }
-
 }  // anonymous namespace
 
 static HWND GetMostRecentNavigatorHWND() {
@@ -139,7 +139,7 @@ nsresult nsLocalFile::RevealFile(const nsString& aResolvedPath) {
     }
 
     LPCITEMIDLIST selection[] = {dir};
-    UINT count = ArrayLength(selection);
+    UINT count = std::size(selection);
 
     // Perform the open of the directory.
     hr = SHOpenFolderAndSelectItems(dir, count, selection, 0);
@@ -169,7 +169,7 @@ nsresult nsLocalFile::RevealFile(const nsString& aResolvedPath) {
     }
 
     LPCITEMIDLIST selection[] = {item};
-    UINT count = ArrayLength(selection);
+    UINT count = std::size(selection);
 
     // Perform the selection of the file.
     hr = SHOpenFolderAndSelectItems(dir, count, selection, 0);
@@ -182,7 +182,7 @@ nsresult nsLocalFile::RevealFile(const nsString& aResolvedPath) {
 }
 
 // static
-bool nsLocalFile::CheckForReservedFileName(const nsString& aFileName) {
+bool nsLocalFile::CheckForReservedFileName(const nsAString& aFileName) {
   static const nsLiteralString forbiddenNames[] = {
       u"COM1"_ns, u"COM2"_ns, u"COM3"_ns, u"COM4"_ns, u"COM5"_ns,  u"COM6"_ns,
       u"COM7"_ns, u"COM8"_ns, u"COM9"_ns, u"LPT1"_ns, u"LPT2"_ns,  u"LPT3"_ns,
@@ -201,6 +201,81 @@ bool nsLocalFile::CheckForReservedFileName(const nsString& aFileName) {
   }
 
   return false;
+}
+
+/* static */
+bool nsLocalFile::ChildAclMatchesAclInheritedFromParent(
+    const NotNull<ACL*> aChildDacl, bool aIsChildDir,
+    const AutoFreeSecurityDescriptor& aChildSecDesc, nsIFile* aParentDir) {
+  // If the child inherits no ACEs or we fail at any point return false.
+  auto getInheritedAceCount = [](const ACL* aAcl) {
+    AclAceRange aclAceRange(WrapNotNull(aAcl));
+    return std::count_if(
+        aclAceRange.begin(), aclAceRange.end(),
+        [](const auto& hdr) { return hdr.AceFlags & INHERITED_ACE; });
+  };
+
+  auto childInheritedCount = getInheritedAceCount(aChildDacl);
+  if (childInheritedCount == 0) {
+    // This could happen if aParentDir has no inheritable ACEs, but that should
+    // be rare and returning false here ensures that the file will get its ACL
+    // reset to inherit in case the parent gets inheritable ACEs added later.
+    return false;
+  }
+
+  ACL* parentDacl = nullptr;
+  AutoFreeSecurityDescriptor parentSecDesc;
+  nsAutoString parentPath;
+  MOZ_ALWAYS_SUCCEEDS(aParentDir->GetTarget(parentPath));
+  DWORD errCode = ::GetNamedSecurityInfoW(
+      parentPath.getW(), SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr,
+      nullptr, &parentDacl, nullptr, getter_Transfers(parentSecDesc));
+  if (errCode != ERROR_SUCCESS || !parentDacl) {
+    NS_ERROR(nsPrintfCString(
+                 "Failed to get parent dir DACL for comparison: %lx", errCode)
+                 .get());
+    return false;
+  }
+
+  // Create a new security descriptor with a DACL that just inherits from the
+  // parent. We can then compare the current childs DACL to make sure the counts
+  // of inherited ACEs match. We pass the child security descriptor as the
+  // creator to get the owner and group information.
+  AutoDestroySecurityDescriptor newSecDesc;
+  GENERIC_MAPPING mapping;
+  mapping.GenericRead = FILE_GENERIC_READ;
+  mapping.GenericWrite = FILE_GENERIC_WRITE;
+  mapping.GenericExecute = FILE_GENERIC_EXECUTE;
+  mapping.GenericAll = FILE_ALL_ACCESS;
+  if (!::CreatePrivateObjectSecurityEx(
+          parentSecDesc.get(), aChildSecDesc.get(),
+          getter_Transfers(newSecDesc), nullptr, aIsChildDir,
+          SEF_DACL_AUTO_INHERIT | SEF_AVOID_OWNER_CHECK |
+              SEF_AVOID_PRIVILEGE_CHECK,
+          nullptr, &mapping)) {
+    // There may be legitimate reasons for this to fail, so we might have to
+    // remove this if it causes problems.
+    NS_ERROR(nsPrintfCString(
+                 "Failed to create new inherited DACL for comparison: %lx",
+                 ::GetLastError())
+                 .get());
+    return false;
+  }
+
+  BOOL daclPresent;
+  ACL* newDacl = nullptr;
+  BOOL daclDefaulted;
+  if (!::GetSecurityDescriptorDacl(newSecDesc.get(), &daclPresent, &newDacl,
+                                   &daclDefaulted) ||
+      !daclPresent || !newDacl) {
+    NS_ERROR(
+        nsPrintfCString("Failed to get new DACL from security descriptor: %lx",
+                        ::GetLastError())
+            .get());
+    return false;
+  }
+
+  return childInheritedCount == getInheritedAceCount(newDacl);
 }
 
 class nsDriveEnumerator : public nsSimpleEnumerator,
@@ -878,11 +953,6 @@ NS_IMPL_ISUPPORTS_INHERITED(nsDirEnumerator, nsSimpleEnumerator,
 
 nsLocalFile::nsLocalFile()
     : mDirty(true), mResolveDirty(true), mUseDOSDevicePathSyntax(false) {}
-
-nsLocalFile::nsLocalFile(const nsAString& aFilePath)
-    : mUseDOSDevicePathSyntax(false) {
-  InitWithPath(aFilePath);
-}
 
 nsresult nsLocalFile::nsLocalFileConstructor(const nsIID& aIID,
                                              void** aInstancePtr) {
@@ -1745,9 +1815,9 @@ static bool IsRemoteFilePath(LPCWSTR aPath, bool& aRemote) {
   return true;
 }
 
-nsresult nsLocalFile::CopySingleFile(nsIFile* aSourceFile, nsIFile* aDestParent,
-                                     const nsAString& aNewName,
-                                     uint32_t aOptions) {
+nsresult nsLocalFile::MoveOrCopyAsSingleFileOrDir(nsIFile* aDestParent,
+                                                  const nsAString& aNewName,
+                                                  uint32_t aOptions) {
   nsresult rv = NS_OK;
   nsAutoString filePath;
 
@@ -1767,19 +1837,19 @@ nsresult nsLocalFile::CopySingleFile(nsIFile* aSourceFile, nsIFile* aDestParent,
 
   if (aNewName.IsEmpty()) {
     nsAutoString aFileName;
-    aSourceFile->GetLeafName(aFileName);
+    GetLeafName(aFileName);
     destPath.Append(aFileName);
   } else {
     destPath.Append(aNewName);
   }
 
   if (aOptions & FollowSymlinks) {
-    rv = aSourceFile->GetTarget(filePath);
+    rv = GetTarget(filePath);
     if (filePath.IsEmpty()) {
-      rv = aSourceFile->GetPath(filePath);
+      rv = GetPath(filePath);
     }
   } else {
-    rv = aSourceFile->GetPath(filePath);
+    rv = GetPath(filePath);
   }
 
   if (NS_FAILED(rv)) {
@@ -1787,11 +1857,8 @@ nsresult nsLocalFile::CopySingleFile(nsIFile* aSourceFile, nsIFile* aDestParent,
   }
 
 #ifdef DEBUG
-  nsCOMPtr<nsILocalFileWin> srcWinFile = do_QueryInterface(aSourceFile);
-  MOZ_ASSERT(srcWinFile);
-
   bool srcUseDOSDevicePathSyntax;
-  srcWinFile->GetUseDOSDevicePathSyntax(&srcUseDOSDevicePathSyntax);
+  GetUseDOSDevicePathSyntax(&srcUseDOSDevicePathSyntax);
 
   nsCOMPtr<nsILocalFileWin> destWinFile = do_QueryInterface(aDestParent);
   MOZ_ASSERT(destWinFile);
@@ -1806,6 +1873,12 @@ nsresult nsLocalFile::CopySingleFile(nsIFile* aSourceFile, nsIFile* aDestParent,
 
   if (FilePreferences::IsBlockedUNCPath(destPath)) {
     return NS_ERROR_FILE_ACCESS_DENIED;
+  }
+
+  // Attempt to determine if we are a directory before any move/copy.
+  auto isDir = Some(false);
+  if (NS_FAILED(IsDirectory(isDir.ptr()))) {
+    isDir.reset();
   }
 
   int copyOK = 0;
@@ -1858,31 +1931,29 @@ nsresult nsLocalFile::CopySingleFile(nsIFile* aSourceFile, nsIFile* aDestParent,
   } else if (move && !(aOptions & SkipNtfsAclReset)) {
     // Set security permissions to inherit from parent.
     // Note: propagates to all children: slow for big file trees
-    PACL pOldDACL = nullptr;
-    PSECURITY_DESCRIPTOR pSD = nullptr;
-    ::GetNamedSecurityInfoW((LPWSTR)destPath.get(), SE_FILE_OBJECT,
-                            DACL_SECURITY_INFORMATION, nullptr, nullptr,
-                            &pOldDACL, nullptr, &pSD);
-    UniquePtr<VOID, LocalFreeDeleter> autoFreeSecDesc(pSD);
-    if (pOldDACL) {
-      // Test the current DACL, if we find one that is inherited then we can
-      // skip the reset. This avoids a request for SeTcbPrivilege, which can
-      // cause a lot of audit events if enabled (Bug 1816694).
-      bool inherited = false;
-      for (DWORD i = 0; i < pOldDACL->AceCount; ++i) {
-        VOID* pAce = nullptr;
-        if (::GetAce(pOldDACL, i, &pAce) &&
-            static_cast<PACE_HEADER>(pAce)->AceFlags & INHERITED_ACE) {
-          inherited = true;
-          break;
-        }
-      }
-
-      if (!inherited) {
+    ACL* childDacl = nullptr;
+    AutoFreeSecurityDescriptor childSecDesc;
+    // We need owner and group information for the parent ACL check.
+    DWORD errCode = ::GetNamedSecurityInfoW(
+        destPath.getW(), SE_FILE_OBJECT,
+        DACL_SECURITY_INFORMATION | OWNER_SECURITY_INFORMATION |
+            GROUP_SECURITY_INFORMATION,
+        nullptr, nullptr, &childDacl, nullptr, getter_Transfers(childSecDesc));
+    if (errCode == ERROR_SUCCESS && childDacl) {
+      // Compare the number of inherited ACEs on the child to the number we
+      // expect from the parent. If they don't match then we reset. This is
+      // because we can get old inherited ACEs from the previous dir if moved
+      // within the same volume. We check this to prevent unnecessary calls to
+      // SetNamedSecurityInfoW, this avoids a request for SeTcbPrivilege, which
+      // can cause a lot of audit events if enabled (Bug 1816694).
+      if (isDir.isNothing() ||
+          !ChildAclMatchesAclInheritedFromParent(WrapNotNull(childDacl), *isDir,
+                                                 childSecDesc, aDestParent)) {
+        // This may fail if the destination file is not available.
         ::SetNamedSecurityInfoW(
-            (LPWSTR)destPath.get(), SE_FILE_OBJECT,
+            destPath.get(), SE_FILE_OBJECT,
             DACL_SECURITY_INFORMATION | UNPROTECTED_DACL_SECURITY_INFORMATION,
-            nullptr, nullptr, pOldDACL, nullptr);
+            nullptr, nullptr, childDacl, nullptr);
       }
     }
   }
@@ -1998,7 +2069,7 @@ nsresult nsLocalFile::CopyMove(nsIFile* aParentDir, const nsAString& aNewName,
     if (!aParentDir) {
       aOptions |= SkipNtfsAclReset;
     }
-    rv = CopySingleFile(this, newParentDir, aNewName, aOptions);
+    rv = MoveOrCopyAsSingleFileOrDir(newParentDir, aNewName, aOptions);
     done = NS_SUCCEEDED(rv);
     // If we are moving a directory and that fails, fallback on directory
     // enumeration.  See bug 231300 for details.
@@ -2152,22 +2223,17 @@ nsresult nsLocalFile::CopyMove(nsIFile* aParentDir, const nsAString& aNewName,
     MakeDirty();
 
     nsAutoString newParentPath;
-    newParentDir->GetPath(newParentPath);
+    MOZ_ALWAYS_SUCCEEDS(newParentDir->GetPath(newParentPath));
 
-    if (newParentPath.IsEmpty()) {
-      return NS_ERROR_FAILURE;
-    }
-
+    nsAutoString newLeafName;
     if (aNewName.IsEmpty()) {
-      nsAutoString aFileName;
-      GetLeafName(aFileName);
-
-      InitWithPath(newParentPath);
-      Append(aFileName);
+      MOZ_ALWAYS_SUCCEEDS(GetLeafName(newLeafName));
     } else {
-      InitWithPath(newParentPath);
-      Append(aNewName);
+      newLeafName = aNewName;
     }
+
+    MOZ_ALWAYS_SUCCEEDS(InitWithPath(newParentPath));
+    MOZ_ALWAYS_SUCCEEDS(Append(newLeafName));
   }
 
   return NS_OK;
@@ -2257,7 +2323,7 @@ nsLocalFile::RenameTo(nsIFile* aNewParentDir, const nsAString& aNewName) {
     options |= SkipNtfsAclReset;
   }
   // Move single file, or move a directory
-  return CopySingleFile(this, targetParentDir, aNewName, options);
+  return MoveOrCopyAsSingleFileOrDir(targetParentDir, aNewName, options);
 }
 
 NS_IMETHODIMP
@@ -3018,7 +3084,7 @@ nsresult nsLocalFile::LookupExtensionIn(const char* const* aExtensionsArray,
 
 NS_IMETHODIMP
 nsLocalFile::IsExecutable(bool* aResult) {
-  return LookupExtensionIn(sExecutableExts, ArrayLength(sExecutableExts),
+  return LookupExtensionIn(sExecutableExts, std::size(sExecutableExts),
                            aResult);
 }
 
@@ -3149,6 +3215,12 @@ NS_IMETHODIMP
 nsLocalFile::Contains(nsIFile* aInFile, bool* aResult) {
   // Check we are correctly initialized.
   CHECK_mWorkingPath();
+  if (NS_WARN_IF(!aInFile)) {
+    return NS_ERROR_INVALID_ARG;
+  }
+  if (NS_WARN_IF(!aResult)) {
+    return NS_ERROR_INVALID_ARG;
+  }
 
   *aResult = false;
 
@@ -3415,7 +3487,7 @@ nsLocalFile::Launch() {
   static const char* const onlyExeExt[] = {".exe"};
   bool isExecutable;
   nsresult rv =
-      LookupExtensionIn(onlyExeExt, ArrayLength(onlyExeExt), &isExecutable);
+      LookupExtensionIn(onlyExeExt, std::size(onlyExeExt), &isExecutable);
   if (NS_FAILED(rv)) {
     isExecutable = false;
   }
@@ -3448,8 +3520,7 @@ nsLocalFile::Launch() {
   return NS_OK;
 }
 
-nsresult NS_NewLocalFile(const nsAString& aPath, bool aFollowLinks,
-                         nsIFile** aResult) {
+nsresult NS_NewLocalFile(const nsAString& aPath, nsIFile** aResult) {
   RefPtr<nsLocalFile> file = new nsLocalFile();
 
   if (!aPath.IsEmpty()) {
@@ -3461,6 +3532,15 @@ nsresult NS_NewLocalFile(const nsAString& aPath, bool aFollowLinks,
 
   file.forget(aResult);
   return NS_OK;
+}
+
+nsresult NS_NewUTF8LocalFile(const nsACString& aPath, nsIFile** aResult) {
+  return NS_NewLocalFile(NS_ConvertUTF8toUTF16(aPath), aResult);
+}
+
+nsresult NS_NewPathStringLocalFile(const PathSubstring& aPath,
+                                   nsIFile** aResult) {
+  return NS_NewLocalFile(aPath, aResult);
 }
 
 //-----------------------------------------------------------------------------
@@ -3622,15 +3702,14 @@ nsLocalFile::GetNativeTarget(nsACString& aResult) {
   return rv;
 }
 
-nsresult NS_NewNativeLocalFile(const nsACString& aPath, bool aFollowLinks,
-                               nsIFile** aResult) {
+nsresult NS_NewNativeLocalFile(const nsACString& aPath, nsIFile** aResult) {
   nsAutoString buf;
   nsresult rv = NS_CopyNativeToUnicode(aPath, buf);
   if (NS_FAILED(rv)) {
     *aResult = nullptr;
     return rv;
   }
-  return NS_NewLocalFile(buf, aFollowLinks, aResult);
+  return NS_NewLocalFile(buf, aResult);
 }
 
 void nsLocalFile::EnsureShortPath() {
@@ -3639,12 +3718,12 @@ void nsLocalFile::EnsureShortPath() {
   }
 
   WCHAR shortPath[MAX_PATH + 1];
-  DWORD lengthNeeded = ::GetShortPathNameW(mWorkingPath.get(), shortPath,
-                                           ArrayLength(shortPath));
+  DWORD lengthNeeded =
+      ::GetShortPathNameW(mWorkingPath.get(), shortPath, std::size(shortPath));
   // If an error occurred then lengthNeeded is set to 0 or the length of the
   // needed buffer including null termination.  If it succeeds the number of
   // wide characters not including null termination is returned.
-  if (lengthNeeded != 0 && lengthNeeded < ArrayLength(shortPath)) {
+  if (lengthNeeded != 0 && lengthNeeded < std::size(shortPath)) {
     mShortWorkingPath.Assign(shortPath);
   } else {
     mShortWorkingPath.Assign(mWorkingPath);

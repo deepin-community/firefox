@@ -3,7 +3,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/gfx/PrintTargetCG.h"
 #include "mozilla/Preferences.h"
 
@@ -135,7 +134,9 @@ nsPrintDialogServiceX::ShowPrintDialog(mozIDOMWindowProxy* aParent,
   [viewController release];
 
   // Show the dialog.
-  nsCocoaUtils::PrepareForNativeAppModalDialog();
+  if (!nsCocoaUtils::PrepareForNativeAppModalDialog()) {
+    return NS_ERROR_FAILURE;
+  }
   int button = [panel runModal];
   nsCocoaUtils::CleanUpAfterNativeAppModalDialog();
 
@@ -390,7 +391,7 @@ static const char sHeaderFooterTags[][4] = {"", "&T", "&U", "&D", "&P", "&PT"};
   [list addItemsWithTitles:items];
 
   NS_ConvertUTF16toUTF8 currentStringUTF8(aCurrentString);
-  for (unsigned int i = 0; i < ArrayLength(sHeaderFooterTags); i++) {
+  for (unsigned int i = 0; i < std::size(sHeaderFooterTags); i++) {
     if (!strcmp(currentStringUTF8.get(), sHeaderFooterTags[i])) {
       [list selectItemAtIndex:i];
       break;
@@ -507,7 +508,7 @@ static const char sHeaderFooterTags[][4] = {"", "&T", "&U", "&D", "&P", "&PT"};
 
 - (const char*)headerFooterStringForList:(NSPopUpButton*)aList {
   NSInteger index = [aList indexOfSelectedItem];
-  NS_ASSERTION(index < NSInteger(ArrayLength(sHeaderFooterTags)),
+  NS_ASSERTION(index < NSInteger(std::size(sHeaderFooterTags)),
                "Index of dropdown is higher than expected!");
   return sHeaderFooterTags[index];
 }

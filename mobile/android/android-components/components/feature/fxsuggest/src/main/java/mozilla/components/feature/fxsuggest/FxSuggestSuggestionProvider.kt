@@ -4,7 +4,6 @@
 
 package mozilla.components.feature.fxsuggest
 
-import android.content.res.Resources
 import mozilla.appservices.suggest.Suggestion
 import mozilla.appservices.suggest.SuggestionProvider
 import mozilla.appservices.suggest.SuggestionQuery
@@ -18,20 +17,22 @@ private const val MAX_NUM_OF_FIREFOX_SUGGESTIONS = 1
 /**
  * An [AwesomeBar.SuggestionProvider] that returns Firefox Suggest search suggestions.
  *
- * @param resources Your application's [Resources] instance.
  * @param loadUrlUseCase A use case that loads a suggestion's URL when clicked.
  * @param includeSponsoredSuggestions Whether to return suggestions for sponsored content.
  * @param includeNonSponsoredSuggestions Whether to return suggestions for web content.
  * @param suggestionsHeader An optional header title for grouping the returned suggestions.
+ * @param sponsoredSuggestionDescription The description to display for sponsored suggestions.
  * @param contextId The contextual services user identifier, used for telemetry.
+ * @param scorer An [AwesomeBar.SuggestionProvider.Scorer] used to rank the suggestions.
  */
 class FxSuggestSuggestionProvider(
-    private val resources: Resources,
     private val loadUrlUseCase: SessionUseCases.LoadUrlUseCase,
     private val includeSponsoredSuggestions: Boolean,
     private val includeNonSponsoredSuggestions: Boolean,
     private val suggestionsHeader: String? = null,
+    private val sponsoredSuggestionDescription: String,
     private val contextId: String? = null,
+    private val scorer: AwesomeBar.SuggestionProvider.Scorer = DefaultScorer(),
 ) : AwesomeBar.SuggestionProvider {
     /**
      * [AwesomeBar.Suggestion.metadata] keys for this provider's suggestions.
@@ -49,7 +50,7 @@ class FxSuggestSuggestionProvider(
         if (text.isEmpty()) {
             emptyList()
         } else {
-            val providers = buildList() {
+            val providers = buildList {
                 val availableSuggestionTypes = FxSuggestNimbus.features
                     .awesomebarSuggestionProvider
                     .value()
@@ -58,7 +59,7 @@ class FxSuggestSuggestionProvider(
                     add(SuggestionProvider.AMP)
                 }
                 if (includeSponsoredSuggestions && availableSuggestionTypes[SuggestionType.AMP_MOBILE] == true) {
-                    add(SuggestionProvider.AMP_MOBILE)
+                    add(SuggestionProvider.AMP)
                 }
                 if (includeNonSponsoredSuggestions && availableSuggestionTypes[SuggestionType.WIKIPEDIA] == true) {
                     add(SuggestionProvider.WIKIPEDIA)
@@ -123,23 +124,35 @@ class FxSuggestSuggestionProvider(
             }
             AwesomeBar.Suggestion(
                 provider = this@FxSuggestSuggestionProvider,
-                icon = details.icon?.toUByteArray()?.asByteArray()?.toBitmap(),
+                icon = details.icon?.toBitmap(),
                 title = details.title,
                 description = if (details.isSponsored) {
-                    resources.getString(R.string.sponsored_suggestion_description)
+                    sponsoredSuggestionDescription
                 } else {
                     null
                 },
                 onSuggestionClicked = {
-                    loadUrlUseCase.invoke(details.url)
+                    loadUrlUseCase(details.url)
                 },
-                score = Int.MIN_VALUE,
                 metadata = buildMap {
                     details.clickInfo?.let { put(MetadataKeys.CLICK_INFO, it) }
                     details.impressionInfo?.let { put(MetadataKeys.IMPRESSION_INFO, it) }
                 },
             )
+        }.let {
+            scorer.score(it)
         }
+
+    /**
+     * A default implementation of [AwesomeBar.SuggestionProvider.Scorer] used by [FxSuggestSuggestionProvider].
+     * */
+    private class DefaultScorer : AwesomeBar.SuggestionProvider.Scorer {
+        override fun score(suggestions: List<AwesomeBar.Suggestion>): List<AwesomeBar.Suggestion> {
+            return suggestions.map { suggestion ->
+                suggestion.copy(score = Int.MIN_VALUE)
+            }
+        }
+    }
 }
 
 internal data class SuggestionDetails(
@@ -147,7 +160,7 @@ internal data class SuggestionDetails(
     val url: String,
     val fullKeyword: String,
     val isSponsored: Boolean,
-    val icon: List<UByte>?,
+    val icon: ByteArray?,
     val clickInfo: FxSuggestInteractionInfo? = null,
     val impressionInfo: FxSuggestInteractionInfo? = null,
 )

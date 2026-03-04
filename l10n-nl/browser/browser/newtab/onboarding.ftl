@@ -25,6 +25,8 @@ return-to-amo-subtitle = Geweldig, u hebt { -brand-short-name }
 return-to-amo-addon-title = Laten we nu <img data-l10n-name="icon"/> <b>{ $addon-name }</b> ophalen.
 return-to-amo-add-extension-label = De extensie toevoegen
 return-to-amo-add-theme-label = Het thema toevoegen
+return-to-amo-theme-install-complete-label = Thema geïnstalleerd
+return-to-amo-extension-install-complete-label = Extensie geïnstalleerd
 
 ##  Variables: $addon-name (String) - Name of the add-on to be installed
 
@@ -53,9 +55,6 @@ mr1-onboarding-import-primary-button-label-attribution = Importeren uit { $previ
 mr1-onboarding-theme-header = Maak het van uzelf
 mr1-onboarding-theme-subtitle = Personaliseer { -brand-short-name } met een thema.
 mr1-onboarding-theme-secondary-button-label = Niet nu
-newtab-wallpaper-onboarding-title = Probeer een vleugje kleur
-newtab-wallpaper-onboarding-subtitle = Kies een achtergrond om uw Nieuw-tabbladpagina een frisse uitstraling te geven.
-newtab-wallpaper-onboarding-primary-button-label = Achtergrond instellen
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Systeemthema
 mr1-onboarding-theme-label-light = Licht
@@ -226,7 +225,9 @@ mr2022-onboarding-set-default-subtitle = Gebruik een browser die wordt ondersteu
 mr2022-onboarding-get-started-primary-subtitle = Onze nieuwste versie is rondom u gebouwd, waardoor het eenvoudiger dan ooit is om over het internet te surfen. Het zit boordevol functies waarvan we denken dat u er dol op zult zijn.
 mr2022-onboarding-get-started-primary-button-label = Binnen enkele seconden opgezet
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Razendsnelle installatie
 mr2022-onboarding-import-subtitle = Stel { -brand-short-name } in zoals u het wilt. Voeg uw bladwijzers, wachtwoorden en meer toe vanuit uw oude browser.
@@ -357,6 +358,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Wanneer u bent gesync
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } is er voor u
 onboarding-gratitude-security-and-privacy-subtitle = Bedankt voor het gebruik van { -brand-short-name }, ondersteund door de Mozilla Foundation. Met uw steun werken we eraan om het internet voor iedereen veiliger en meer toegankelijk te maken.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Uw gegevens tussen apparaten synchroniseren
+onboarding-sign-up-description = Schrijf u in voor een account en al uw belangrijke gegevens – wachtwoorden, bladwijzers en meer – worden veilig opgeslagen en zijn beschikbaar wanneer u zich aanmeldt op een apparaat.
+onboarding-sign-up-button = Registreren of aanmelden
+onboarding-sign-up-secondary-button = Beginnen met browsen
 
 ## New user time and familiarity survey strings
 
@@ -376,3 +382,191 @@ onboarding-new-user-survey-familiarity-based-option-1 = Ik ben helemaal nieuw
 onboarding-new-user-survey-familiarity-based-option-2 = Ik heb het wat gebruikt
 onboarding-new-user-survey-familiarity-based-option-3 = Ik ben er heel bekend mee
 onboarding-new-user-survey-familiarity-based-option-4 = Ik heb het in het verleden gebruikt, maar het is een poosje geleden
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Vertel ons waar u uw tabbladen wilt hebben
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Wijzig het wanneer u maar wilt in de zijbalkinstellingen.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Uw tabbladen, op uw manier
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Veel tabbladen open houden? Probeer uw tabbladen aan de zijkant voor een meer gestroomlijnde weergave. Of houd het klassiek met tabbladen bovenaan. Wissel op elk gewenst moment.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Kies uw tabbladindeling
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Probeer uw tabbladen aan de zijkant voor een gestroomlijnde weergave die u kan helpen gefocust te blijven. Of houd het klassiek met tabbladen bovenaan. Wissel op elk gewenst moment.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Tabbladen aan de zijkant
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Tabbladen bovenaan
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Er zijn verticale tabbladen
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Nieuw: verticale tabbladen
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Probeer uw tabbladen aan de zijkant. Wijzig het wanneer u maar wilt in de zijbalkinstellingen.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Verticale tabbladen proberen
+onboarding-flair-text = Nieuw!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Horizontale tabbladen behouden
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Een browservenster dat tabbladen langs de zijkant van het scherm toont als onderdeel van de { -brand-shorter-name }-zijbalk.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Een browservenster dat tabbladen langs de zijkant van het scherm toont als onderdeel van de { -brand-shorter-name }-zijbalk.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Een browservenster met bovenaan tabbladen.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Een browservenster met bovenaan tabbladen.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Probeer een AI-chatbot in de zijbalk
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Vat webinhoud samen, brainstorm over ideeën, stel berichten op – allemaal terwijl u surft. Kies uit meerdere providers. Wissel op elk gewenst moment. <a data-l10n-name="learn-more">Meer info</a>
+onboarding-genai-sidebar-primary-button = Kies een chatbot
+onboarding-genai-sidebar-secondary-button = Beginnen met surfen
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Instellen van { -brand-short-name } voltooien
+onboarding-checklist-subtitle = Voltooi deze stappen om het meeste uit uw surfervaring te halen.
+onboarding-checklist-set-default = { -brand-short-name } instellen als standaardbrowser
+onboarding-checklist-pin = { -brand-short-name } aan de taakbalk vastmaken
+onboarding-checklist-import = Importeren uit vorige browser
+onboarding-checklist-extension = Een extensie toevoegen
+onboarding-checklist-sign-up = Registreren of aanmelden bij uw account
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Probeer tabbladgroepen voor minder rommel, meer focus
+tab-groups-onboarding-feature-callout-subtitle = Orden door het ene tabblad op het andere te slepen om uw eerste groep aan te maken.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-create-group-title-3 = Vind uw tabbladgroepen altijd terug in het menu Alle tabbladtitels tonen.
+tab-groups-onboarding-create-group-title-2 = Vind hier altijd uw tabbladgroepen.
+tab-groups-onboarding-create-group-no-alltabs-button-title = Vind uw groepen door ernaar te zoeken in de adresbalk.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-saved-groups-title-3 = Wanneer u een tabbladgroep sluit, kunt u deze op elk gewenst moment opnieuw openen vanuit het menu Alle tabbladtitels tonen.
+tab-groups-onboarding-saved-groups-title-2 = Wanneer u een tabbladgroep sluit, kunt u deze hier altijd opnieuw openen.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title-2 = Vind uw gesloten groepen door ernaar te zoeken in de adresbalk.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-session-restore-title-2 = U kunt uw tabbladgroepen op elk gewenst moment opnieuw openen vanuit het menu Alle tabbladtitels tonen.
+tab-groups-onboarding-session-restore-title = Open hier altijd uw tabbladgroepen.
+tab-groups-onboarding-dismiss = OK
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Hartelijk welkom bij { -brand-product-name }-profielen
+multi-profile-spotlight-body = Wissel eenvoudig tussen browsen voor werk en plezier. Profielen houden uw navigatiegegevens, waaronder zoekgeschiedenis en wachtwoorden, volledig gescheiden, zodat u geordend kunt blijven.
+multi-profile-spotlight-cta = Een profiel aanmaken
+multi-profile-callout-title = Maak verschillende profielen voor werk en plezier
+multi-profile-callout-subtitle = Met profielen kunt u uw navigatiegegevens, zoals zoekgeschiedenis en wachtwoorden, volledig gescheiden houden.
+multi-profile-callout-cta = Een profiel aanmaken
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Downloaden, synchroniseren en gaan!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Scan de QR-code om { -brand-product-name } voor mobiel te downloaden. Selecteer na installatie ‘Synchroniseren met mobiel’ om onderweg toegang tot uw wachtwoorden, bladwijzers en meer te krijgen.
+dismiss-button-label = Sluiten
+sync-to-mobile-button-label = Synchroniseren met mobiel
+desktop-to-mobile-qr-code-alt =
+    .aria-label = QR-code om { -brand-product-name } voor mobiel te downloaden
+
+## Fx Backup onboarding: Create Backup spotlight
+
+create-backup-screen-1-title =
+    Upgraden naar Windows 11?
+    Laten we een reservekopie van uw { -brand-product-name }-gegevens maken
+create-backup-screen-1-subtitle = Bescherm automatisch uw wachtwoorden, bladwijzers en meer in 1–2 minuten.
+create-backup-screen-1-flair = Aanbevolen
+create-backup-learn-more-link = <a data-l10n-name="learn-more-label">Meer info</a>
+create-backup-screen-1-sync-label = Synchroniseren met { -brand-product-name }
+create-backup-screen-1-sync-body = Maakt een reservekopie van alle aangemelde apparaten
+create-backup-screen-1-backup-label = Reservekopie maken op pc
+create-backup-screen-1-backup-body = Slaat naar uw apparaat of OneDrive op
+create-backup-select-tile-button-label = Selecteren
+create-backup-back-button-label = Terug
+create-backup-show-fewer =
+    .label = Minder zoals dit tonen
+create-backup-screen-2-title = Kies { -brand-product-name }-gegevens om een reservekopie van te maken
+create-backup-screen-2-subtitle = Duurt maar een minuutje. Er wordt eenmaal per dag een reservekopie van uw gegevens gemaakt.
+# Label for the "Easy setup" backup option
+create-backup-screen-2-easy-label = Eenvoudige instellingen
+# Preceded by a green check mark indicating that these are included in "Easy setup" backup
+create-backup-screen-2-easy-list-1 = Bladwijzers, geschiedenis, instellingen en meer
+# Preceded by a red X indicating that these are not included in the "Easy setup" backup
+create-backup-screen-2-easy-list-2 = Bevat geen wachtwoorden en betaalmethoden
+# Preceded by a red X indicating that "Easy setup" backups are not encrypted
+create-backup-screen-2-easy-list-3 = Niet versleuteld
+# Label for the "All data" backup option
+create-backup-screen-2-all-label = Alle gegevens
+# Preceded by a green check mark indicating that these are included in the "All data" backup
+create-backup-screen-2-all-list-2 = Bevat wachtwoorden en betaalmethoden
+# Preceded by a green check mark and shield indicating "All data" backups are encrypted
+create-backup-screen-2-all-list-3 = Versleuteld met een wachtwoord
+# Title for a screen asking users to choose a file location
+create-backup-screen-3-location = Waar wilt u uw reservekopie opslaan?
+# Title for a screen asking users to create a password that will encrypt the backup
+create-backup-screen-3-title = Wachtwoord voor een reservekopiebestand aanmaken
+create-backup-screen-3-subtitle = Vereist om uw gegevens te versleutelen. Bewaar het op een plek die u kunt onthouden.
+fx-backup-opt-in-header = Bestandslocatie kiezen
+fx-backup-opt-in-filepath-label = Kies een locatie die u naar een nieuw apparaat wilt overzetten, zoals OneDrive.
+fx-backup-opt-in-create-password-label = Voer wachtwoord in
+fx-backup-opt-in-confirm-btn-label = Doorgaan
+fx-backup-opt-in-cancel-btn-label = Terug
+
+## Fx Backup confirmation screen strings
+
+fx-backup-confirmation-screen-title = Uw reservekopie is ingepland
+fx-backup-confirmation-screen-close-button = Sluiten
+
+## These strings appear as a confirmation of which items will or won't be included as part of the selected backup method.
+
+fx-backup-confirmation-screen-all-data-item-text-1 = Alle navigatiegegevens inbegrepen
+fx-backup-confirmation-screen-all-data-item-text-2 = Opgeslagen op uw apparaat
+fx-backup-confirmation-screen-all-data-item-text-3 = Versleuteld en beveiligd met een wachtwoord
+fx-backup-confirmation-screen-easy-setup-item-text-1 = Inclusief bladwijzers, geschiedenis, instellingen en andere gegevens
+fx-backup-confirmation-screen-easy-setup-item-text-2 = Opgeslagen op uw apparaat
+fx-backup-confirmation-screen-easy-setup-item-text-3 = Wachtwoorden en betaalmethoden niet inbegrepen
+fx-backup-confirmation-screen-easy-setup-item-subtext-3 = Ga naar <a data-l10n-name="settings">Instellingen</a> om gevoelige gegevens op te nemen.
+fx-backup-confirmation-screen-item-subtext-1 = Het maken van uw reservekopie begint over een paar minuten en wordt eenmaal per dag uitgevoerd. U kunt de voortgang controleren in <a data-l10n-name="settings">Instellingen</a>.
+fx-backup-confirmation-screen-item-subtext-2 = { -brand-short-name } zoekt naar uw reservekopie als u opnieuw moet installeren.
+
+## Restore from Backup Flow about:welcome screens
+
+restore-from-backup-secondary-top-button = Herstellen vanuit reservekopie
+restore-from-backup-title = Laten we { -brand-short-name } terugkrijgen zoals u het wilt
+restore-from-backup-subtitle = Herstel al uw bladwijzers, geschiedenis en andere gegevens om terug te keren naar surfen.
+restore-from-backup-secondary-button = Niet herstellen
+
+## Restored from Backup spotlight
+
+restored-from-backup-success-title = We zijn terug! { -brand-short-name }-gegevens zijn hersteld.
+restored-from-backup-success-with-checklist-subtitle = Wilt u uw favoriete op privacy gerichte browser één klik verwijderd houden?
+restored-from-backup-success-no-checklist-subtitle = U kunt back-ups voor dit apparaat inschakelen in <a data-l10n-name="settings">Instellingen</a>.
+restored-from-backup-success-with-checklist-primary-button = Opslaan en doorgaan
+restored-from-backup-success-with-checklist-secondary-button = Deze stap overslaan
+restored-from-backup-success-no-checklist-primary-button = Doorgaan
+restored-from-backup-error-title = Hmm, er is een probleem met uw reservekopiebestand.
+restored-from-backup-error-subtitle = Als u een ander { -brand-short-name }-reservekopiebestand hebt, probeer dat dan terug te zetten. <a data-l10n-name="restore-problems">Ondervindt u nog steeds problemen?</a>
+restored-from-backup-error-primary-button = Sluiten
+
+## Onboarding Personalization Screen
+## A screen shown to users during the onboarding process that asks them two qualifying questions about their use of the browser
+
+onboarding-personalization-title = Pas uw { -brand-short-name }-ervaring aan
+onboarding-personalization-subtitle = Beantwoord een paar vragen en we zullen functies en extensies aanbevelen om uw gebruik van { -brand-short-name } te verbeteren.
+onboarding-personalization-use-case-title = Waar gaat u { -brand-short-name } voor gebruiken?
+onboarding-personalization-use-case-personal-option = Persoonlijk
+onboarding-personalization-use-case-school-option = School
+onboarding-personalization-use-case-work-option = Werk
+onboarding-personalization-motivation-title = Welke functies van { -brand-short-name } zijn het belangrijkst voor u?
+onboarding-personalization-motivation-privacy-option = Privacy en beveiliging
+onboarding-personalization-motivation-productivity-option = Productiviteit
+onboarding-personalization-motivation-other-option = Overig

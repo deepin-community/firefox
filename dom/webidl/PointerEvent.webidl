@@ -12,20 +12,33 @@ interface PointerEvent : MouseEvent
 {
   constructor(DOMString type, optional PointerEventInit eventInitDict = {});
 
+  [NeedsCallerType]
   readonly attribute long pointerId;
 
-  readonly attribute long width;
-  readonly attribute long height;
+  [NeedsCallerType]
+  readonly attribute double width;
+  [NeedsCallerType]
+  readonly attribute double height;
+  [NeedsCallerType]
   readonly attribute float pressure;
+  [NeedsCallerType]
   readonly attribute float tangentialPressure;
+  [NeedsCallerType]
   readonly attribute long tiltX;
+  [NeedsCallerType]
   readonly attribute long tiltY;
+  [NeedsCallerType]
   readonly attribute long twist;
+  [NeedsCallerType]
   readonly attribute double altitudeAngle;
+  [NeedsCallerType]
   readonly attribute double azimuthAngle;
 
+  [NeedsCallerType]
   readonly attribute DOMString pointerType;
   readonly attribute boolean isPrimary;
+  [NeedsCallerType]
+  readonly attribute long persistentDeviceId;
 
   [Func="mozilla::dom::PointerEvent::EnableGetCoalescedEvents"]
   sequence<PointerEvent> getCoalescedEvents();
@@ -35,8 +48,8 @@ interface PointerEvent : MouseEvent
 dictionary PointerEventInit : MouseEventInit
 {
   long pointerId = 0;
-  long width = 1;
-  long height = 1;
+  double width = 1.0;
+  double height = 1.0;
   float pressure = 0;
   float tangentialPressure = 0;
   long tiltX;
@@ -46,6 +59,7 @@ dictionary PointerEventInit : MouseEventInit
   double azimuthAngle;
   DOMString pointerType = "";
   boolean isPrimary = false;
+  long persistentDeviceId = 0;
   sequence<PointerEvent> coalescedEvents = [];
   sequence<PointerEvent> predictedEvents = [];
 };

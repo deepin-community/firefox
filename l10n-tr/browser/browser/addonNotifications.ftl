@@ -34,7 +34,7 @@ xpinstall-prompt-install =
 
 # These messages are shown when a website invokes navigator.requestMIDIAccess.
 
-site-permission-install-first-prompt-midi-header = Bu site, MIDI (Müzik Enstrümanı Dijital Arabirimi) cihazlarınıza erişmek istiyor. Bir eklenti kurularak cihaz erişimi etkinleştirilebilir.
+site-permission-install-first-prompt-midi-header = Bu site MIDI (Müzik Enstrümanı Dijital Arabirimi) cihazlarınıza erişmek istiyor. Bir eklenti yükleyerek cihaz erişimini etkinleştirebilirsiniz.
 site-permission-install-first-prompt-midi-message = Bu erişimin güvenli olduğunu garanti edemiyoruz. Yalnızca bu siteye güveniyorsanız devam edin.
 
 ##
@@ -59,7 +59,7 @@ addon-domain-blocked-by-policy = Sistem yöneticiniz bu sitenin bilgisayarınız
 addon-installation-blocked-by-policy = { $addonName } ({ $addonId }) eklentisi kuruluşunuz tarafından engellenmiştir.
 # This message is shown when the installation of add-ons from a domain is blocked by enterprise policy.
 addon-install-domain-blocked-by-policy = Kuruluşunuz bu sitenin bilgisayarınıza yazılım yüklemeyi istemesini engelledi.
-addon-install-full-screen-blocked = Tam ekran modundayken veya tam ekran moduna girerken eklenti kurulamaz.
+addon-install-full-screen-blocked = Tam ekran modundayken veya tam ekran moduna girerken eklenti yüklenemez.
 # Variables:
 #   $addonName (String): the localized name of the sideloaded add-on.
 webext-perms-sideload-menu-item = { $addonName } { -brand-short-name } uygulamasına eklendi
@@ -81,6 +81,8 @@ addon-removal-title = { $name } kaldırılsın mı?
 addon-removal-message = { $name }, { -brand-shorter-name } tarayıcınızdan kaldırılsın mı?
 addon-removal-button = Kaldır
 addon-removal-abuse-report-checkbox = Bu uzantıyı { -vendor-short-name }’ya şikâyet et
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Bu modeli kullanan özellikleri veya uzantıları kullanırsanız model yeniden eklenecektir.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -90,8 +92,8 @@ addon-downloading-and-verifying =
     }
 addon-download-verifying = Doğrulanıyor
 addon-install-cancel-button =
-    .label = İptal
-    .accesskey = a
+    .label = Vazgeç
+    .accesskey = V
 addon-install-accept-button =
     .label = Ekle
     .accesskey = E
@@ -115,18 +117,23 @@ addon-confirm-install-some-unsigned-message = Uyarı: Bu site { -brand-short-nam
 
 addon-install-error-network-failure = Bir bağlantı sorunu nedeniyle eklenti indirilemedi.
 addon-install-error-incorrect-hash = Bu eklenti yüklenemedi çünkü { -brand-short-name } tarafından beklenen eklenti ile eşleşmiyor.
-addon-install-error-corrupt-file = Bu siteden indirilen eklenti yüklenemiyor çünkü görünüşe göre eklenti bozuk.
+addon-install-error-corrupt-file = Bu siteden indirilen eklenti bozuk göründüğü için yüklenemedi.
 addon-install-error-file-access = { $addonName } yüklenemedi çünkü { -brand-short-name } gerekli dosyayı değiştiremiyor.
 addon-install-error-not-signed = { -brand-short-name } bu sitenin doğrulanmamış bir eklenti yüklemesini önledi.
 addon-install-error-invalid-domain = { $addonName } eklentisi bu konumdan yüklenemez.
+addon-install-error-no-addon-name-file-access = { -brand-short-name } gerekli dosyayı değiştiremediği için eklenti yüklenemedi.
 addon-local-install-error-network-failure = Bu eklenti, bir dosya sistemi hatası nedeniyle yüklenemedi.
 addon-local-install-error-incorrect-hash = Bu eklenti yüklenemedi çünkü { -brand-short-name } tarafından beklenen eklenti ile eşleşmiyor.
-addon-local-install-error-corrupt-file = Bu eklenti yüklenemedi çünkü görünüşe göre eklenti bozuk.
+addon-local-install-error-corrupt-file = Bu eklenti bozuk göründüğü için yüklenemedi.
 addon-local-install-error-file-access = { $addonName } yüklenemedi çünkü { -brand-short-name } gerekli dosyayı değiştiremiyor.
 addon-local-install-error-not-signed = Bu eklenti doğrulanmadığı için yüklenemiyor.
+addon-local-install-no-addon-name-error-file-access = { -brand-short-name } gerekli dosyayı değiştiremediği için eklenti yüklenemedi.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = { $addonName } yüklenemedi çünkü { -brand-short-name } { $appVersion } ile uyumlu değil.
+addon-install-error-hard-blocked = { $addonName } Mozilla politikalarını ihlal ettiği için { -brand-short-name } uygulamasına yüklenemiyor.
+addon-install-error-soft-blocked2 = { $addonName } kısıtlanmış olduğu için { -brand-short-name } uygulamasına yüklenemez.
 addon-install-error-blocklisted = { $addonName } yüklenemedi çünkü kararsızlık veya güvenlik sorunlarına yol açma riski yüksek.
+addon-install-error-soft-blocked = { $addonName } Mozilla politikalarını ihlal ettiği için { -brand-short-name } uygulamasına yüklenemiyor.
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = { $addonName } eklentisini son kullanıcı olarak yükleyemezsiniz. Yalnızca kurumsal ilkeleri kullanan bir kuruluş tarafından yüklenebilir.

@@ -13,9 +13,12 @@
 #include "mozilla/gfx/gfxVars.h"
 #include "mozilla/gfx/Logging.h"
 #include "mozilla/layers/CompositionRecorder.h"
+#include "mozilla/layers/GpuFence.h"
 #include "mozilla/layers/NativeLayer.h"
+#include "mozilla/layers/ProfilerScreenshots.h"
 #include "mozilla/layers/SurfacePool.h"
 #include "mozilla/StaticPrefs_gfx.h"
+#include "mozilla/webrender/RenderTextureHost.h"
 #include "mozilla/webrender/RenderThread.h"
 #include "mozilla/widget/CompositorWidget.h"
 #include "RenderCompositorRecordedFrame.h"
@@ -30,6 +33,8 @@ RenderCompositorNative::RenderCompositorNative(
     : RenderCompositor(aWidget),
       mNativeLayerRoot(GetWidget()->GetNativeLayerRoot()) {
   LOG("RenderCompositorNative::RenderCompositorNative()");
+
+  MOZ_ASSERT(mNativeLayerRoot);
 
 #if defined(XP_DARWIN) || defined(MOZ_WAYLAND)
   auto pool = RenderThread::Get()->SharedSurfacePool();
@@ -88,6 +93,8 @@ RenderedFrameId RenderCompositorNative::EndFrame(
 
   DoSwap();
 
+  MOZ_ASSERT(mPendingGpuFeces.empty());
+
   if (mNativeLayerForEntireWindow) {
     mNativeLayerForEntireWindow->NotifySurfaceReady();
     mNativeLayerRoot->CommitToScreen();
@@ -127,6 +134,12 @@ void RenderCompositorNative::GetCompositorCapabilities(
   aCaps->supports_surface_for_backdrop = !gfx::gfxVars::UseSoftwareWebRender();
 #endif
 }
+
+RenderCompositorNative::Surface::~Surface() = default;
+
+RenderCompositorNative::Surface::Surface(wr::DeviceIntSize aTileSize,
+                                         bool aIsOpaque)
+    : mTileSize(aTileSize), mIsOpaque(aIsOpaque) {}
 
 bool RenderCompositorNative::MaybeReadback(
     const gfx::IntSize& aReadbackSize, const wr::ImageFormat& aReadbackFormat,
@@ -194,7 +207,8 @@ bool RenderCompositorNative::MaybeRecordFrame(
 
 bool RenderCompositorNative::MaybeGrabScreenshot(
     const gfx::IntSize& aWindowSize) {
-  if (!ShouldUseNativeCompositor()) {
+  if (!ShouldUseNativeCompositor() ||
+      !mozilla::layers::ProfilerScreenshots::IsEnabled()) {
     return false;
   }
 
@@ -228,6 +242,10 @@ bool RenderCompositorNative::MaybeProcessScreenshotQueue() {
   return true;
 }
 
+void RenderCompositorNative::WaitUntilPresentationFlushed() {
+  mNativeLayerRoot->WaitUntilCommitToScreenHasBeenProcessed();
+}
+
 void RenderCompositorNative::CompositorBeginFrame() {
   mAddedLayers.Clear();
   mAddedTilePixelCount = 0;
@@ -240,28 +258,33 @@ void RenderCompositorNative::CompositorBeginFrame() {
 void RenderCompositorNative::CompositorEndFrame() {
   if (profiler_thread_is_being_profiled_for_markers()) {
     auto bufferSize = GetBufferSize();
-    [[maybe_unused]] uint64_t windowPixelCount =
-        uint64_t(bufferSize.width) * bufferSize.height;
-    int nativeLayerCount = 0;
-    for (const auto& it : mSurfaces) {
-      nativeLayerCount += int(it.second.mNativeLayers.size());
+    uint64_t windowPixelCount = uint64_t(bufferSize.width) * bufferSize.height;
+    if (windowPixelCount) {
+      int nativeLayerCount = 0;
+      for (const auto& it : mSurfaces) {
+        nativeLayerCount += int(it.second.mNativeLayers.size());
+      }
+      PROFILER_MARKER_TEXT(
+          "WR OS Compositor frame", GRAPHICS,
+          MarkerTiming::IntervalUntilNowFrom(mBeginFrameTimeStamp),
+          nsPrintfCString(
+              "%d%% painting, %d%% overdraw, %d used "
+              "layers (%d%% memory) + %d unused layers (%d%% memory)",
+              int(mDrawnPixelCount * 100 / windowPixelCount),
+              int(mAddedClippedPixelCount * 100 / windowPixelCount),
+              int(mAddedLayers.Length()),
+              int(mAddedTilePixelCount * 100 / windowPixelCount),
+              int(nativeLayerCount - mAddedLayers.Length()),
+              int((mTotalTilePixelCount - mAddedTilePixelCount) * 100 /
+                  windowPixelCount)));
     }
-    PROFILER_MARKER_TEXT(
-        "WR OS Compositor frame", GRAPHICS,
-        MarkerTiming::IntervalUntilNowFrom(mBeginFrameTimeStamp),
-        nsPrintfCString("%d%% painting, %d%% overdraw, %d used "
-                        "layers (%d%% memory) + %d unused layers (%d%% memory)",
-                        int(mDrawnPixelCount * 100 / windowPixelCount),
-                        int(mAddedClippedPixelCount * 100 / windowPixelCount),
-                        int(mAddedLayers.Length()),
-                        int(mAddedTilePixelCount * 100 / windowPixelCount),
-                        int(nativeLayerCount - mAddedLayers.Length()),
-                        int((mTotalTilePixelCount - mAddedTilePixelCount) *
-                            100 / windowPixelCount)));
   }
   mDrawnPixelCount = 0;
 
+#if defined(XP_DARWIN)
+  // MacOS fails rendering without the flush here.
   DoFlush();
+#endif
 
   mNativeLayerRoot->SetLayers(mAddedLayers);
   mNativeLayerRoot->CommitToScreen();
@@ -343,6 +366,19 @@ void RenderCompositorNative::AttachExternalImage(
   surface.mNativeLayers.begin()->second->AttachExternalImage(image);
 }
 
+void RenderCompositorNativeOGL::AttachExternalImage(
+    wr::NativeSurfaceId aId, wr::ExternalImageId aExternalImage) {
+  RenderTextureHost* image =
+      RenderThread::Get()->GetRenderTexture(aExternalImage);
+
+  // image->Lock only uses the channel index to populate the returned
+  // `WrExternalImage`. Since we don't use that, it doesn't matter
+  // what channel index we pass.
+  image->Lock(0, mGL);
+
+  RenderCompositorNative::AttachExternalImage(aId, aExternalImage);
+}
+
 void RenderCompositorNative::DestroySurface(NativeSurfaceId aId) {
   auto surfaceCursor = mSurfaces.find(aId);
   MOZ_RELEASE_ASSERT(surfaceCursor != mSurfaces.end());
@@ -403,7 +439,8 @@ gfx::SamplingFilter ToSamplingFilter(wr::ImageRendering aImageRendering) {
 
 void RenderCompositorNative::AddSurface(
     wr::NativeSurfaceId aId, const wr::CompositorSurfaceTransform& aTransform,
-    wr::DeviceIntRect aClipRect, wr::ImageRendering aImageRendering) {
+    wr::DeviceIntRect aClipRect, wr::ImageRendering aImageRendering,
+    wr::DeviceIntRect aRoundedClipRect, wr::ClipRadius aClipRadius) {
   MOZ_RELEASE_ASSERT(!mCurrentlyBoundNativeLayer);
 
   auto surfaceCursor = mSurfaces.find(aId);
@@ -427,9 +464,24 @@ void RenderCompositorNative::AddSurface(
     gfx::IntRect clipRect(aClipRect.min.x, aClipRect.min.y, aClipRect.width(),
                           aClipRect.height());
     layer->SetClipRect(Some(clipRect));
+    gfx::Rect roundedClipRect(aRoundedClipRect.min.x, aRoundedClipRect.min.y,
+                              aRoundedClipRect.width(),
+                              aRoundedClipRect.height());
+    gfx::RectCornerRadii clipRadius(aClipRadius.top_left, aClipRadius.top_right,
+                                    aClipRadius.bottom_right,
+                                    aClipRadius.bottom_left);
+    gfx::RoundedRect roundedClip(roundedClipRect, clipRadius);
+    layer->SetRoundedClipRect(Some(roundedClip));
     layer->SetTransform(transform);
     layer->SetSamplingFilter(ToSamplingFilter(aImageRendering));
     mAddedLayers.AppendElement(layer);
+
+    if (surface.mIsExternal) {
+      RefPtr<layers::GpuFence> fence = layer->GetGpuFence();
+      if (fence && BackendType() == layers::WebRenderBackend::HARDWARE) {
+        mPendingGpuFeces.emplace_back(fence);
+      }
+    }
 
     if (!surface.mIsExternal) {
       mAddedTilePixelCount += layerSize.width * layerSize.height;
@@ -471,16 +523,16 @@ RenderCompositorNativeOGL::~RenderCompositorNativeOGL() {
     gfxCriticalNote
         << "Failed to make render context current during destroying.";
     // Leak resources!
-    mPreviousFrameDoneSync = nullptr;
-    mThisFrameDoneSync = nullptr;
+    mPreviousFrameDoneFences = nullptr;
+    mThisFrameDoneFences = nullptr;
     return;
   }
 
-  if (mPreviousFrameDoneSync) {
-    mGL->fDeleteSync(mPreviousFrameDoneSync);
+  if (mPreviousFrameDoneFences && mPreviousFrameDoneFences->mSync) {
+    mGL->fDeleteSync(mPreviousFrameDoneFences->mSync);
   }
-  if (mThisFrameDoneSync) {
-    mGL->fDeleteSync(mThisFrameDoneSync);
+  if (mThisFrameDoneFences && mThisFrameDoneFences->mSync) {
+    mGL->fDeleteSync(mThisFrameDoneFences->mSync);
   }
 }
 
@@ -512,23 +564,43 @@ void RenderCompositorNativeOGL::InsertFrameDoneSync() {
 #ifdef XP_DARWIN
   // Only do this on macOS.
   // On other platforms, SwapBuffers automatically applies back-pressure.
-  if (mThisFrameDoneSync) {
-    mGL->fDeleteSync(mThisFrameDoneSync);
+  if (mThisFrameDoneFences && mThisFrameDoneFences->mSync) {
+    mGL->fDeleteSync(mThisFrameDoneFences->mSync);
   }
-  mThisFrameDoneSync = mGL->fFenceSync(LOCAL_GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+  mThisFrameDoneFences =
+      MakeUnique<BackPressureFences>(std::move(mPendingGpuFeces));
+  mThisFrameDoneFences->mSync =
+      mGL->fFenceSync(LOCAL_GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 #endif
 }
 
 bool RenderCompositorNativeOGL::WaitForGPU() {
-  if (mPreviousFrameDoneSync) {
-    AUTO_PROFILER_LABEL("Waiting for GPU to finish previous frame", GRAPHICS);
-    mGL->fClientWaitSync(mPreviousFrameDoneSync,
-                         LOCAL_GL_SYNC_FLUSH_COMMANDS_BIT,
-                         LOCAL_GL_TIMEOUT_IGNORED);
-    mGL->fDeleteSync(mPreviousFrameDoneSync);
+  if (mPreviousFrameDoneFences) {
+    bool complete = false;
+    while (!complete) {
+      complete = true;
+      for (const auto& fence : mPreviousFrameDoneFences->mGpuFeces) {
+        if (!fence->HasCompleted()) {
+          complete = false;
+          break;
+        }
+      }
+
+      if (!complete) {
+        PR_Sleep(PR_MillisecondsToInterval(1));
+      }
+    }
+
+    if (mPreviousFrameDoneFences->mSync) {
+      AUTO_PROFILER_LABEL("Waiting for GPU to finish previous frame", GRAPHICS);
+      mGL->fClientWaitSync(mPreviousFrameDoneFences->mSync,
+                           LOCAL_GL_SYNC_FLUSH_COMMANDS_BIT,
+                           LOCAL_GL_TIMEOUT_IGNORED);
+      mGL->fDeleteSync(mPreviousFrameDoneFences->mSync);
+    }
   }
-  mPreviousFrameDoneSync = mThisFrameDoneSync;
-  mThisFrameDoneSync = nullptr;
+  mPreviousFrameDoneFences = std::move(mThisFrameDoneFences);
+  MOZ_ASSERT(!mThisFrameDoneFences);
 
   return true;
 }

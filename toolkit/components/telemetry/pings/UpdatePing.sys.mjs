@@ -25,6 +25,7 @@ const UPDATE_STAGED_TOPIC = "update-staged";
  */
 export var UpdatePing = {
   _enabled: false,
+  _observerRegistered: false,
 
   earlyInit() {
     this._log = Log.repository.getLoggerWithMessagePrefix(
@@ -42,18 +43,23 @@ export var UpdatePing = {
       return;
     }
 
-    Services.obs.addObserver(this, UPDATE_DOWNLOADED_TOPIC);
-    Services.obs.addObserver(this, UPDATE_STAGED_TOPIC);
+    if (!this._observerRegistered) {
+      Services.obs.addObserver(this, UPDATE_DOWNLOADED_TOPIC);
+      Services.obs.addObserver(this, UPDATE_STAGED_TOPIC);
+      this._observerRegistered = true;
+    }
   },
 
   /**
    * Generate an "update" ping with reason "success" and dispatch it
    * to the Telemetry system.
    *
-   * @param {String} aPreviousVersion The browser version we updated from.
-   * @param {String} aPreviousBuildId The browser build id we updated from.
+   * @param {string} aPreviousVersion The browser version we updated from.
+   * @param {string} aPreviousBuildId The browser build id we updated from.
+   * @param {string} progress An object to measure the progress of handleUpdateSuccess
+   *                          to provide to the shutdown blocker (Bug 1917651)
    */
-  handleUpdateSuccess(aPreviousVersion, aPreviousBuildId) {
+  async handleUpdateSuccess(aPreviousVersion, aPreviousBuildId, progress) {
     if (!this._enabled) {
       return;
     }
@@ -70,7 +76,11 @@ export var UpdatePing = {
     let updateManager = Cc["@mozilla.org/updates/update-manager;1"].getService(
       Ci.nsIUpdateManager
     );
-    let update = updateManager ? updateManager.updateInstalledAtStartup : null;
+    let update = updateManager
+      ? await updateManager.updateInstalledAtStartup()
+      : null;
+
+    progress.updateFetched = true;
 
     const payload = {
       reason: "success",
@@ -82,23 +92,33 @@ export var UpdatePing = {
     const options = {
       addClientId: true,
       addEnvironment: true,
-      usePingSender: false,
+      usePingSender: true,
     };
+
+    progress.payloadCreated = true;
 
     lazy.TelemetryController.submitExternalPing(
       PING_TYPE,
       payload,
       options
-    ).catch(e =>
-      this._log.error("handleUpdateSuccess - failed to submit update ping", e)
-    );
+    ).catch(e => {
+      progress.pingFailed = true;
+      this._log.error("handleUpdateSuccess - failed to submit update ping", e);
+    });
+
+    if (update) {
+      Glean.update.previousChannel.set(update.channel);
+    }
+    Glean.update.previousVersion.set(aPreviousVersion);
+    Glean.update.previousBuildId.set(aPreviousBuildId);
+    GleanPings.update.submit("success");
   },
 
   /**
    * Generate an "update" ping with reason "ready" and dispatch it
    * to the Telemetry system.
    *
-   * @param {String} aUpdateState The state of the downloaded patch. See
+   * @param {string} aUpdateState The state of the downloaded patch. See
    *        nsIUpdateService.idl for a list of possible values.
    */
   async _handleUpdateReady(aUpdateState) {
@@ -148,6 +168,12 @@ export var UpdatePing = {
     ).catch(e =>
       this._log.error("_handleUpdateReady - failed to submit update ping", e)
     );
+
+    Glean.update.targetChannel.set(update.channel);
+    Glean.update.targetVersion.set(update.appVersion);
+    Glean.update.targetBuildId.set(update.buildID);
+    Glean.update.targetDisplayVersion.set(update.displayVersion);
+    GleanPings.update.submit("ready");
   },
 
   /**
@@ -164,7 +190,10 @@ export var UpdatePing = {
     if (!this._enabled) {
       return;
     }
-    Services.obs.removeObserver(this, UPDATE_DOWNLOADED_TOPIC);
-    Services.obs.removeObserver(this, UPDATE_STAGED_TOPIC);
+    if (this._observerRegistered) {
+      Services.obs.removeObserver(this, UPDATE_DOWNLOADED_TOPIC);
+      Services.obs.removeObserver(this, UPDATE_STAGED_TOPIC);
+      this._observerRegistered = false;
+    }
   },
 };

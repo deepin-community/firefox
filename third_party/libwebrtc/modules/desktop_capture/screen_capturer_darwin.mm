@@ -12,6 +12,7 @@
 
 #include "modules/desktop_capture/mac/screen_capturer_mac.h"
 #include "modules/desktop_capture/mac/screen_capturer_sck.h"
+#include "rtc_base/logging.h"
 
 namespace webrtc {
 
@@ -24,14 +25,23 @@ std::unique_ptr<DesktopCapturer> DesktopCapturer::CreateRawScreenCapturer(
 
   if (options.allow_sck_capturer()) {
     // This will return nullptr on systems that don't support ScreenCaptureKit.
-    std::unique_ptr<DesktopCapturer> sck_capturer = CreateScreenCapturerSck(options);
+    std::unique_ptr<DesktopCapturer> sck_capturer =
+        CreateScreenCapturerSck(options);
     if (sck_capturer) {
+      RTC_LOG(LS_INFO)
+          << "video capture: DesktopCapturer::CreateRawScreenCapturer creates "
+             "DesktopCapturer of type ScreenCapturerSck";
       return sck_capturer;
     }
   }
 
-  auto capturer = std::make_unique<ScreenCapturerMac>(
-      options.configuration_monitor(), options.detect_updated_region(), options.allow_iosurface());
+  RTC_LOG(LS_INFO)
+      << "video capture: DesktopCapturer::CreateRawScreenCapturer creates "
+         "DesktopCapturer of type ScreenCapturerMac";
+  auto capturer =
+      std::make_unique<ScreenCapturerMac>(options.configuration_monitor(),
+                                          options.detect_updated_region(),
+                                          options.allow_iosurface());
   if (!capturer->Init()) {
     return nullptr;
   }

@@ -21,6 +21,9 @@ permissions-session =
 permissions-allow =
     .label = Caniatáu
     .accesskey = a
+permissions-add =
+    .label = Ychwanegu
+    .accesskey = Y
 permissions-button-off =
     .label = Diffodd
     .accesskey = D
@@ -92,6 +95,13 @@ permissions-exceptions-https-only-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-https-only-desc = Gallwch ddiffodd Modd HTTPS-yn-Unig ar gyfer gwefannau penodol. Ni fydd { -brand-short-name } yn ceisio uwchraddio'r cysylltiad i sicrhau HTTPS ar gyfer y gwefannau hynny. Nid oes eithriadau ar gyfer ffenestri preifat.
 permissions-exceptions-https-only-desc2 = Gallwch ddiffodd y Modd HTTPS-yn-Unig ar gyfer gwefannau penodol. Ni fydd { -brand-short-name } yn ceisio uwchraddio'r cysylltiad i sicrhau HTTPS ar gyfer y gwefannau hynny.
+
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-window3 =
+    .title = Gwefannau sy'n cael eu Caniatáu - Llamlenni ac Ailgyfeiriadau Trydydd Parti
+    .style = { permissions-window2.style }
+permissions-exceptions-popup-desc2 = Gallwch chi nodi pa wefannau sy'n cael agor llamlenni a chael eich ailgyfeirio gan fframiau trydydd parti.
 
 ## Exceptions - Pop-ups
 
@@ -167,6 +177,26 @@ permissions-site-camera-desc = Mae'r gwefannau canlynol wedi gofyn i gael mynedi
 permissions-site-camera-disable-label =
     .label = Rhwystro ceisiadau newydd sy'n gofyn i gael mynediad at eich camera
 permissions-site-camera-disable-desc = Bydd hyn yn rhwystro unrhyw wefan sydd heb ei rhestru uchod rhag gofyn am ganiatâd i gael mynediad at eich camera. Gall rhwystro mynediad at eich camera dorri nodweddion rhai gwefannau.
+
+## Site Permissions - Local host
+
+permissions-site-localhost-window =
+    .title = Gosodiadau - Apiau a gwasanaethau dyfais
+    .style = { permissions-window2.style }
+permissions-site-localhost-desc = Mae'r gwefannau hyn wedi gofyn am fynediad i apiau a gwasanaethau ar y ddyfais hon. Gallwch ddewis caniatáu neu rwystro gwefannau rhag gwneud hyn.
+permissions-site-localhost-disable-label =
+    .label = Rhwystrwch geisiadau newydd i gael mynediad at apiau a gwasanaethau ar y ddyfais hon
+permissions-site-localhost-disable-desc = Bydd hyn yn atal unrhyw wefan nad yw wedi'i rhestru uchod rhag gofyn am fynediad i apiau a gwasanaethau ar y ddyfais hon. Gall gwneud hyn dorri rhai o nodweddion gwefan.
+
+## Site Permissions - Local network
+
+permissions-site-local-network-window =
+    .title = Gosodiadau - Dyfeisiau Rhwydwaith Lleol
+    .style = { permissions-window2.style }
+permissions-site-local-network-desc = Mae'r gwefannau hyn wedi gofyn am fynediad i apiau a gwasanaethau ar ddyfeisiau sy'n gysylltiedig â'ch Wi-Fi neu rwydwaith lleol. Gallwch ddewis caniatáu neu rwystro gwefannau rhag gwneud hyn.
+permissions-site-local-network-disable-label =
+    .label = Rhwystrwch geisiadau newydd i gael mynediad at apiau a gwasanaethau ar ddyfeisiau sy'n gysylltiedig â'ch Wi-Fi neu rwydwaith lleol.
+permissions-site-local-network-disable-desc = Bydd hyn yn atal unrhyw wefan nad yw wedi'i rhestru uchod rhag gofyn am fynediad i apiau a gwasanaethau ar ddyfeisiau sy'n gysylltiedig â'ch Wi-Fi neu ddyfeisiau rhwydwaith lleol. Gall gwneud hyn dorri rhai o nodweddion gwefan.
 
 ## Site Permissions - Microphone
 

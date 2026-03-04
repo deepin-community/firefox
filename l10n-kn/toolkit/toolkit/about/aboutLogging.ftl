@@ -5,10 +5,3 @@
 about-logging-current-log-file = ಪ್ರಸ್ತುತ ಲಾಗ್ ಕಡತ:
 about-logging-start-logging = ದಿನಚರಿತುಂಬುವುದನ್ನು ಪ್ರಾರಂಭಿಸು
 about-logging-stop-logging = ದಿನಚರಿ ಪೇರಿಸುವುದನ್ನು ನಿಲ್ಲಿಸು
-
-## Logging presets
-
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
-

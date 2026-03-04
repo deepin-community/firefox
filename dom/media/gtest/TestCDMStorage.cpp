@@ -1,5 +1,5 @@
-/* -*- Mode: C++; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
-/* vim: set ts=8 sts=2 et sw=2 tw=80: */
+/* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
+/* vim: set ts=2 et sw=2 tw=80: */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -10,14 +10,14 @@
 #include "GMPTestMonitor.h"
 #include "MediaResult.h"
 #include "gtest/gtest.h"
-#include "mozilla/gtest/MozAssertions.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/SchedulerGroup.h"
 #include "mozilla/SpinEventLoopUntil.h"
-#include "nsIFile.h"
+#include "mozilla/gtest/MozAssertions.h"
 #include "nsCRTGlue.h"
 #include "nsDirectoryServiceDefs.h"
 #include "nsDirectoryServiceUtils.h"
+#include "nsIFile.h"
 #include "nsNSSComponent.h"  //For EnsureNSSInitializedChromeOrContent
 #include "nsThreadUtils.h"
 
@@ -1262,16 +1262,22 @@ void TestMatchBaseDomain_NoMatch() {
 }
 
 TEST(GeckoMediaPlugins, MatchBaseDomain_MatchOrigin)
-{ TestMatchBaseDomain_MatchOrigin(); }
+{
+  TestMatchBaseDomain_MatchOrigin();
+}
 
 TEST(GeckoMediaPlugins, MatchBaseDomain_MatchTLD)
-{ TestMatchBaseDomain_MatchTLD(); }
+{
+  TestMatchBaseDomain_MatchTLD();
+}
 
 TEST(GeckoMediaPlugins, MatchBaseDomain_NoMatch)
-{ TestMatchBaseDomain_NoMatch(); }
+{
+  TestMatchBaseDomain_NoMatch();
+}
 
-// Bug 1776767 - Skip all GMP tests on Windows ASAN
-#if !(defined(XP_WIN) && defined(MOZ_ASAN))
+// Bug 1776767 - Skip all GMP tests on Windows ASAN / CCOV
+#if !(defined(XP_WIN) && (defined(MOZ_ASAN) || defined(MOZ_CODE_COVERAGE)))
 TEST(GeckoMediaPlugins, CDMStorageGetNodeId)
 {
   RefPtr<CDMStorageTest> runner = new CDMStorageTest();
@@ -1339,4 +1345,5 @@ TEST(GeckoMediaPlugins, GMPOutputProtection)
   runner->DoTest(&CDMStorageTest::TestOutputProtection);
 }
 #  endif  // defined(XP_WIN)
-#endif    // !(defined(XP_WIN) && defined(MOZ_ASAN))
+#endif    // !(defined(XP_WIN) && (defined(MOZ_ASAN) ||
+          // defined(MOZ_CODE_COVERAGE)))

@@ -10,10 +10,13 @@
 
 #include "pc/sdp_utils.h"
 
+#include <memory>
 #include <utility>
-#include <vector>
 
+#include "api/jsep.h"
 #include "api/jsep_session_description.h"
+#include "p2p/base/transport_info.h"
+#include "pc/session_description.h"
 #include "rtc_base/checks.h"
 
 namespace webrtc {
@@ -28,22 +31,19 @@ std::unique_ptr<SessionDescriptionInterface> CloneSessionDescriptionAsType(
     const SessionDescriptionInterface* sdesc,
     SdpType type) {
   RTC_DCHECK(sdesc);
-  auto clone = std::make_unique<JsepSessionDescription>(type);
   if (sdesc->description()) {
-    clone->Initialize(sdesc->description()->Clone(), sdesc->session_id(),
-                      sdesc->session_version());
+    return CreateSessionDescription(type, sdesc->session_id(),
+                                    sdesc->session_version(),
+                                    sdesc->description()->Clone());
   }
-  // As of writing, our version of GCC does not allow returning a unique_ptr of
-  // a subclass as a unique_ptr of a base class. To get around this, we need to
-  // std::move the return value.
-  return std::move(clone);
+  RTC_DCHECK_EQ(type, SdpType::kRollback);
+  return SessionDescriptionInterface::Create(type, nullptr, "", "");
 }
 
-bool SdpContentsAll(SdpContentPredicate pred,
-                    const cricket::SessionDescription* desc) {
+bool SdpContentsAll(SdpContentPredicate pred, const SessionDescription* desc) {
   RTC_DCHECK(desc);
   for (const auto& content : desc->contents()) {
-    const auto* transport_info = desc->GetTransportInfoByName(content.name);
+    const auto* transport_info = desc->GetTransportInfoByName(content.mid());
     if (!pred(&content, transport_info)) {
       return false;
     }
@@ -51,21 +51,19 @@ bool SdpContentsAll(SdpContentPredicate pred,
   return true;
 }
 
-bool SdpContentsNone(SdpContentPredicate pred,
-                     const cricket::SessionDescription* desc) {
+bool SdpContentsNone(SdpContentPredicate pred, const SessionDescription* desc) {
   return SdpContentsAll(
-      [pred](const cricket::ContentInfo* content_info,
-             const cricket::TransportInfo* transport_info) {
+      [pred](const ContentInfo* content_info,
+             const TransportInfo* transport_info) {
         return !pred(content_info, transport_info);
       },
       desc);
 }
 
-void SdpContentsForEach(SdpContentMutator fn,
-                        cricket::SessionDescription* desc) {
+void SdpContentsForEach(SdpContentMutator fn, SessionDescription* desc) {
   RTC_DCHECK(desc);
   for (auto& content : desc->contents()) {
-    auto* transport_info = desc->GetTransportInfoByName(content.name);
+    auto* transport_info = desc->GetTransportInfoByName(content.mid());
     fn(&content, transport_info);
   }
 }

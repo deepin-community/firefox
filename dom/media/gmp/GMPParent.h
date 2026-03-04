@@ -9,20 +9,20 @@
 #include "GMPNativeTypes.h"
 #include "GMPProcessParent.h"
 #include "GMPServiceParent.h"
+#include "GMPStorageParent.h"
+#include "GMPTimerParent.h"
 #include "GMPVideoDecoderParent.h"
 #include "GMPVideoEncoderParent.h"
-#include "GMPTimerParent.h"
-#include "GMPStorageParent.h"
+#include "mozilla/Atomics.h"
+#include "mozilla/MozPromise.h"
 #include "mozilla/gmp/PGMPParent.h"
 #include "mozilla/ipc/CrashReporterHelper.h"
 #include "nsCOMPtr.h"
-#include "nscore.h"
+#include "nsIFile.h"
 #include "nsISupports.h"
 #include "nsString.h"
 #include "nsTArray.h"
-#include "nsIFile.h"
-#include "mozilla/Atomics.h"
-#include "mozilla/MozPromise.h"
+#include "nscore.h"
 
 namespace mozilla::gmp {
 
@@ -55,15 +55,20 @@ enum class GMPState : uint32_t {
 
 class GMPContentParent;
 
-class GMPParent final
-    : public PGMPParent,
-      public ipc::CrashReporterHelper<GeckoProcessType_GMPlugin> {
+class GMPParent final : public PGMPParent,
+                        public ipc::CrashReporterHelper<GMPParent> {
   friend class PGMPParent;
 
  public:
+  static constexpr GeckoProcessType PROCESS_TYPE = GeckoProcessType_GMPlugin;
+
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(GMPParent, final)
 
   GMPParent();
+
+#ifdef MOZ_WIDGET_ANDROID
+  void InitForClearkey(GeckoMediaPluginServiceParent* aService);
+#endif
 
   RefPtr<GenericPromise> Init(GeckoMediaPluginServiceParent* aService,
                               nsIFile* aPluginDir);
@@ -128,8 +133,6 @@ class GMPParent final
   already_AddRefed<nsIFile> GetDirectory() {
     return nsCOMPtr<nsIFile>(mDirectory).forget();
   }
-
-  void AbortAsyncShutdown();
 
   // Called when the child process has died.
   void ChildTerminated();

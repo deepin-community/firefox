@@ -16,7 +16,6 @@
 #  include "mozilla/Maybe.h"
 #  include "mozilla/RefPtr.h"
 #  include "mozilla/TypedEnumBits.h"
-#  include "mozilla/Unused.h"
 #  include "mozilla/Variant.h"
 #  include "mozilla/Vector.h"
 #  include "mozilla/WinHeaderOnlyUtils.h"
@@ -346,7 +345,7 @@ struct ParamTraits<mozilla::ModuleRecord> {
     if (resolvedDosName.IsEmpty()) {
       aResult->mResolvedDosName = nullptr;
     } else if (NS_FAILED(NS_NewLocalFile(
-                   resolvedDosName, false,
+                   resolvedDosName,
                    getter_AddRefs(aResult->mResolvedDosName)))) {
       return false;
     }

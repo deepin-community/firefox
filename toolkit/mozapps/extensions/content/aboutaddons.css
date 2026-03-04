@@ -5,7 +5,6 @@
 :root {
   --addon-icon-size: 32px;
   --main-margin-start: 28px;
-  --section-width: 664px;
   --sidebar-width: var(--in-content-sidebar-width);
   --z-index-sticky-container: 5;
   --z-index-popup: 10;
@@ -58,7 +57,8 @@ h2 {
     content: "";
     width: 1px;
     height: 100%;
-    background-color: var(--in-content-border-color);
+    /* stylelint-disable-next-line stylelint-plugin-mozilla/no-non-semantic-token-usage */
+    background-color: var(--border-color);
     top: 0;
     inset-inline-end: 0;
     position: absolute;
@@ -82,11 +82,11 @@ h2 {
 .category[badge-count]::after {
   display: inline-block;
   min-width: 20px;
-  background-color: var(--in-content-accent-color);
-  color: var(--in-content-primary-button-text-color);
-  font-weight: bold;
+  background-color: var(--color-accent-primary);
+  color: var(--button-text-color-primary);
+  font-weight: var(--font-weight-bold);
   /* Use a large border-radius to get semi-circles on the sides. */
-  border-radius: 1000px;
+  border-radius: var(--border-radius-circle);
   padding: 2px 6px;
   content: attr(badge-count);
   text-align: center;
@@ -95,7 +95,7 @@ h2 {
 }
 
 .category[name="discover"] {
-  background-image: url("chrome://mozapps/skin/extensions/category-discover.svg");
+  background-image: url("chrome://global/skin/icons/trophy.svg");
 }
 .category[name="locale"] {
   background-image: url("chrome://mozapps/skin/extensions/category-languages.svg");
@@ -121,9 +121,12 @@ h2 {
 .category[name="sitepermission"] {
   background-image: url("chrome://mozapps/skin/extensions/category-sitepermission.svg");
 }
+.category[name="mlmodel"] {
+  background-image: url("chrome://global/skin/icons/highlights.svg");
+}
 
 .sticky-container {
-  background: var(--in-content-page-background);
+  background: var(--background-color-canvas);
   width: 100%;
   position: sticky;
   top: 0;
@@ -131,20 +134,26 @@ h2 {
 }
 
 .main-search {
-  background: var(--in-content-page-background);
+  background: var(--background-color-canvas);
   display: flex;
   justify-content: flex-end;
   align-items: center;
   padding-inline-start: 28px;
   padding-top: 20px;
   padding-bottom: 30px;
-  max-width: var(--section-width);
+  max-width: var(--page-main-content-width);
 }
 
-search-addons > search-textbox {
-  margin: 0;
-  width: 20em;
-  min-height: 32px;
+search-addons {
+  display: inline-flex;
+
+  > moz-input-search {
+    width: 20em;
+  }
+
+  > moz-button {
+    margin-inline-start: var(--space-xsmall);
+  }
 }
 
 .search-label {
@@ -152,11 +161,11 @@ search-addons > search-textbox {
 }
 
 .main-heading {
-  background: var(--in-content-page-background);
+  background: var(--background-color-canvas);
   display: flex;
   margin-inline-start: var(--main-margin-start);
   padding-bottom: 16px;
-  max-width: var(--section-width);
+  max-width: var(--page-main-content-width);
 }
 
 .spacer {
@@ -182,12 +191,12 @@ search-addons > search-textbox {
 #main {
   margin-inline-start: var(--main-margin-start);
   margin-bottom: 28px;
-  max-width: var(--section-width);
+  max-width: var(--page-main-content-width);
 }
 
 global-warnings {
   margin-inline-start: var(--main-margin-start);
-  max-width: var(--section-width);
+  max-width: var(--page-main-content-width);
 }
 
 /* The margin between message bars. */
@@ -203,7 +212,7 @@ message-bar-stack > * {
 
 .list-section-subheading {
   font-size: 0.9em;
-  font-weight: 400;
+  font-weight: normal;
   margin-block-start: 0.5em;
 }
 
@@ -215,7 +224,14 @@ message-bar-stack > * {
 
 .addon.card {
   margin-bottom: 16px;
-  transition: opacity 150ms, box-shadow 150ms;
+  transition:
+    opacity 150ms,
+    box-shadow 150ms;
+  overflow: hidden;
+
+  & .addon-name-link {
+    transition: color 150ms;
+  }
 }
 
 addon-list:not([type="theme"]) addon-card:not([expanded]):not([panelopen]) > .addon.card[active="false"]:not(:focus-within):not(:hover) {
@@ -223,12 +239,16 @@ addon-list:not([type="theme"]) addon-card:not([expanded]):not([panelopen]) > .ad
 }
 
 .addon.card:hover {
-  box-shadow: var(--card-shadow);
+  box-shadow: var(--box-shadow-card);
 }
 
 addon-card:not([expanded]) > .addon.card:hover {
-  box-shadow: var(--card-shadow-hover);
+  box-shadow: var(--box-shadow-card-hover);
   cursor: pointer;
+
+  & .addon-name-link {
+    color: var(--link-color);
+  }
 }
 
 addon-card[expanded] .addon.card {
@@ -251,32 +271,30 @@ addon-list addon-card > .addon.card {
 }
 
 addon-card[expanded] .addon-card-message,
-addon-card[expanded] .update-postponed-bar {
+addon-card[expanded] .update-postponed-bar,
+.update-postponed-bar:has(+ .addon-card-message:not([hidden])) {
   border-radius: 0;
   margin-bottom: 0;
 }
 
-addon-card[expanded] .update-postponed-bar + .addon-card-message {
-  /* Remove margin between the two message bars when they are both
-   * visible in the detail view */
-  margin-top: 0px;
+.update-postponed-bar:has(+ .addon-card-message:not([hidden])) {
+  border-bottom: none;
 }
 
-.update-postponed-bar + .addon-card-message:not([hidden]) {
-  /* Prevent the small overlapping between the two message bars
-   * when they are both visible at the same time one after the
-   * other on the same addon card */
-  margin-top: 12px;
+.update-postponed-bar:not([hidden]) + .addon-card-message {
+  /* Remove margin between the two message bars when they are both
+   * visible at the same time. */
+  margin-top: 0;
 }
 
 /* Theme preview image. */
 .card-heading-image {
   /* If the width, height or aspect ratio changes, don't forget to update the
    * getScreenshotUrlForAddon function in aboutaddons.js */
-  width: var(--section-width);
+  width: var(--page-main-content-width);
   /* Adjust height so that the image preserves the aspect ratio from AMO.
    * For details, see https://bugzilla.mozilla.org/show_bug.cgi?id=1546123 */
-  height: calc(var(--section-width) * 92 / 680);
+  height: calc(var(--page-main-content-width) * 92 / 680);
   object-fit: cover;
 }
 
@@ -305,7 +323,7 @@ addon-card[expanded] .update-postponed-bar + .addon-card-message {
 
 .addon-name {
   font-size: 16px;
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-semibold);
   line-height: 22px;
   margin: 0;
   margin-inline-end: 8px;
@@ -313,7 +331,7 @@ addon-card[expanded] .update-postponed-bar + .addon-card-message {
 
 .addon-name-link,
 .addon-name-link:hover {
-  color: var(--in-content-text-color);
+  color: var(--text-color);
   text-decoration: none;
 }
 
@@ -333,26 +351,34 @@ addon-card[expanded] .update-postponed-bar + .addon-card-message {
   flex-shrink: 0;
   border-radius: 11px;
   -moz-context-properties: fill;
-  fill: #fff;
 }
 
 .addon-badge-private-browsing-allowed {
   background-image: url("chrome://global/skin/icons/indicator-private-browsing.svg");
+  /* This unusual value makes the badge the same size as the other badges. */
+  background-size: 23px;
+}
+
+.addon-badge-recommended,
+.addon-badge-line {
+  border: 1px solid #cfcfd8;
+  width: 20px;
+  height: 20px;
+
+  @media (prefers-color-scheme: dark) {
+    border-color: #3a3944;
+  }
 }
 
 .addon-badge-recommended {
-  background-color: var(--orange-50);
-  background-image: url("chrome://mozapps/skin/extensions/recommended.svg");
+  background-image: url("chrome://global/skin/icons/trophy.svg");
+  background-size: 14px;
+  fill: var(--orange-50);
 }
 
 .addon-badge-line {
-  background-color: #fff;
   background-image: url("chrome://mozapps/skin/extensions/line.svg");
   background-size: 16px;
-  border-radius: 10px;
-  border: 1px solid #CFCFD8;
-  width: 20px;
-  height: 20px;
 }
 
 .addon-badge-verified {
@@ -374,7 +400,7 @@ addon-card[expanded] .update-postponed-bar + .addon-card-message {
   font-size: 14px;
   line-height: 20px;
   color: var(--text-color-deemphasized);
-  font-weight: 400;
+  font-weight: normal;
 }
 
 /* Prevent the content from wrapping unless expanded. */
@@ -474,6 +500,7 @@ addon-details {
 
 .addon-detail-description-wrapper {
   margin: 16px 0;
+  overflow-wrap: break-word;
 }
 
 .addon-detail-description-collapse .addon-detail-description {
@@ -509,8 +536,8 @@ button.addon-detail-description-toggle {
 .addon-detail-contribute {
   display: flex;
   padding: var(--card-padding);
-  border: 1px solid var(--in-content-box-border-color);
-  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-small);
   margin-bottom: var(--card-padding);
   flex-direction: column;
 }
@@ -540,10 +567,10 @@ button.addon-detail-description-toggle {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px solid var(--in-content-border-color);
+  border-top: 1px solid var(--border-color);
   margin: 0 calc(var(--card-padding) * -1);
   padding: var(--card-padding);
-  color: var(--in-content-text-color);
+  color: var(--text-color);
 }
 
 .addon-detail-row.addon-detail-help-row {
@@ -602,8 +629,8 @@ button.addon-detail-description-toggle {
   display: block;
   width: 5px;
   height: 5px;
-  border-radius: 50%;
-  background-color: var(--in-content-accent-color);;
+  border-radius: var(--border-radius-circle);
+  background-color: var(--color-accent-primary);
 }
 
 panel-item[action="remove"]::part(button) {
@@ -654,6 +681,10 @@ panel-item[action="report"]::part(button) {
    * the min-height unchanged to avoid potential regressions in the short term.
    */
   min-height: 250px;
+
+  /* Setting display to grid to prevent the inline options page browser element
+   * from hitting the regression tracked by Bug 1939206. */
+  display: grid;
 }
 
 addon-permissions-list > .addon-detail-row {
@@ -663,33 +694,56 @@ addon-permissions-list > .addon-detail-row {
 .addon-permissions-list {
   list-style-type: none;
   margin: 0;
-  padding-inline-start: 8px;
+  padding-inline-start: var(--space-small);
 }
 
 .addon-permissions-list > li {
   border: none;
-  padding-block: 4px;
-  padding-inline-start: 2rem;
+  padding-block: var(--space-xsmall);
   background-image: none;
-  background-position: 0 center;
-  background-size: 1.6rem 1.6rem;
   background-repeat: no-repeat;
   word-break: break-all;
+
+  .addon-permissions-required &.permission-checked {
+    list-style-type: disc;
+    /* Align the list with the rest of the page, and use `list-style-position:
+     * outside` to keep long string correctly wrapped. */
+    margin-inline-start: 1em;
+  }
+
+  .addon-permissions-optional &,
+  .addon-data-collection-permissions-optional & {
+    padding-inline-start: 0;
+
+    moz-toggle > moz-message-bar {
+      /* decrease from default --space-large to appear closer to the permission
+       * message. Otherwise it is closer to the next permission than the
+       * permission associated with the toggle. */
+      margin-block-start: var(--space-small);
+    }
+  }
 }
 
-.addon-permissions-list > li:dir(rtl) {
-  background-position-x: right 0;
-}
-
-/* using a list-style-image prevents aligning the image */
-.addon-permissions-list > li.permission-checked {
-  background-image: url("chrome://global/skin/icons/check.svg");
-  -moz-context-properties: fill;
-  fill: var(--green-60);
-}
-
-.permission-header {
+.permission-header,
+.permission-subheader {
   font-size: 1em;
+  margin: 0;
+}
+
+.addon-permissions-list-wrapper {
+  color: var(--text-color);
+  padding: var(--space-large) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-small);
+}
+
+.permission-subsection {
+  padding-bottom: var(--space-xsmall);
+}
+
+addon-permissions-list .addon-permissions-list-wrapper:not(:first-child) {
+  border-top: 1px solid var(--border-color);
 }
 
 .tab-group {
@@ -697,8 +751,8 @@ addon-permissions-list > .addon-detail-row {
   margin-top: 8px;
   /* Pull the buttons flush with the side of the card */
   margin-inline: calc(var(--card-padding) * -1);
-  border-bottom: 1px solid var(--in-content-border-color);
-  border-top: 1px solid var(--in-content-border-color);
+  border-bottom: 1px solid var(--border-color);
+  border-top: 1px solid var(--border-color);
   font-size: 0;
   line-height: 0;
 }
@@ -716,20 +770,20 @@ button.tab-button {
 }
 
 button.tab-button:hover {
-  border-top-color: var(--in-content-box-border-color);
+  border-top-color: var(--border-color);
 }
 
 button.tab-button[selected],
 button.tab-button[selected]:hover {
   border-top-color: currentColor;
-  color: var(--in-content-accent-color);
+  color: var(--color-accent-primary);
 }
 
 @media (prefers-contrast) {
   button.tab-button[selected],
   button.tab-button[selected]:hover {
-    color: var(--in-content-primary-button-text-color);
-    background-color: var(--in-content-primary-button-background);
+    color: var(--button-text-color-primary);
+    background-color: var(--button-background-color-primary);
   }
 }
 
@@ -752,7 +806,7 @@ section:not(:empty) ~ #empty-addons-message {
     display: block;
     width: 5px;
     height: 5px;
-    border-radius: 50%;
+    border-radius: var(--border-radius-circle);
     min-width: auto;
     padding: 0;
     /* move the badged dot into the top-end (right in ltr, left in rtl) corner. */
@@ -761,5 +815,5 @@ section:not(:empty) ~ #empty-addons-message {
 }
 
 .permission-header > .addon-sitepermissions-host {
-  font-weight: bolder;
+  font-weight: var(--font-weight-bold);
 }

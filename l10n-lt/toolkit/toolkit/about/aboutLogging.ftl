@@ -8,10 +8,3 @@ about-logging-set-log-file = Parinkti žurnalo failą
 about-logging-set-log-modules = Parinkti žurnalo modulius
 about-logging-start-logging = Pradėti žurnalizavimą
 about-logging-stop-logging = Baigti žurnalizavimą
-
-## Logging presets
-
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
-

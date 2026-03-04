@@ -10,8 +10,7 @@ use std::marker::PhantomData;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::u32;
-use api::MinimapData;
-use time::precise_time_ns;
+use api::{MinimapData, SnapshotImageKey};
 use crate::api::channel::{Sender, single_msg_channel, unbounded_channel};
 use crate::api::{BuiltDisplayList, IdNamespace, ExternalScrollId, Parameter, BoolParameter};
 use crate::api::{FontKey, FontInstanceKey, NativeFontHandle};
@@ -29,6 +28,8 @@ use glyph_rasterizer::SharedFontResources;
 use crate::scene_builder_thread::{SceneBuilderRequest, SceneBuilderResult};
 use crate::intern::InterningMemoryReport;
 use crate::profiler::{self, TransactionProfile};
+#[cfg(feature = "debugger")]
+use crate::debugger::{DebugQuery, DebuggerClient};
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug)]
@@ -59,6 +60,10 @@ pub enum ResourceUpdate {
     DeleteBlobImage(BlobImageKey),
     /// See `AddBlobImage::visible_area`.
     SetBlobImageVisibleArea(BlobImageKey, DeviceIntRect),
+    /// See `AddSnapshotImage`.
+    AddSnapshotImage(AddSnapshotImage),
+    /// See `AddSnapshotImage`.
+    DeleteSnapshotImage(SnapshotImageKey),
     /// See `AddFont`.
     AddFont(AddFont),
     /// Deletes an already existing font resource.
@@ -99,6 +104,8 @@ impl fmt::Debug for ResourceUpdate {
             ResourceUpdate::DeleteImage(..) => f.write_str("ResourceUpdate::DeleteImage"),
             ResourceUpdate::DeleteBlobImage(..) => f.write_str("ResourceUpdate::DeleteBlobImage"),
             ResourceUpdate::SetBlobImageVisibleArea(..) => f.write_str("ResourceUpdate::SetBlobImageVisibleArea"),
+            ResourceUpdate::AddSnapshotImage(..) => f.write_str("ResourceUpdate::AddSnapshotImage"),
+            ResourceUpdate::DeleteSnapshotImage(..) => f.write_str("ResourceUpdate::DeleteSnapshotImage"),
             ResourceUpdate::AddFont(..) => f.write_str("ResourceUpdate::AddFont"),
             ResourceUpdate::DeleteFont(..) => f.write_str("ResourceUpdate::DeleteFont"),
             ResourceUpdate::AddFontInstance(..) => f.write_str("ResourceUpdate::AddFontInstance"),
@@ -116,6 +123,12 @@ pub enum GenerateFrame {
         /// An id that allows tracking the frame transaction through the various
         /// frame stages. Specified by the caller of generate_frame().
         id: u64,
+        /// If false, (a subset of) the frame will be rendered, but nothing will
+        /// be presented on the window.
+        present: bool,
+        /// This flag is used by Firefox to differentiate between frames that
+        /// participate or not in the frame throttling mechanism.
+        tracked: bool,
     },
     /// Don't generate a frame even if something has changed.
     No,
@@ -130,10 +143,28 @@ impl GenerateFrame {
         }
     }
 
+    /// If false, a frame may be (partially) generated but it will not be
+    /// presented to the window.
+    pub fn present(&self) -> bool {
+        match self {
+            GenerateFrame::Yes { present, .. } => *present,
+            GenerateFrame::No => false,
+        }
+    }
+
+    /// This flag is used by Gecko to indicate whether the transaction
+    /// participates in frame throttling mechanisms.
+    pub fn tracked(&self) -> bool {
+        match self {
+            GenerateFrame::Yes { tracked, .. } => *tracked,
+            GenerateFrame::No => false,
+        }
+    }
+
     /// Return the frame ID, if a frame is generated.
     pub fn id(&self) -> Option<u64> {
         match self {
-            GenerateFrame::Yes { id } => Some(*id),
+            GenerateFrame::Yes { id, .. } => Some(*id),
             GenerateFrame::No => None,
         }
     }
@@ -193,7 +224,7 @@ impl Transaction {
             notifications: Vec::new(),
             use_scene_builder_thread: true,
             generate_frame: GenerateFrame::No,
-            creation_time: precise_time_ns(),
+            creation_time: zeitstempel::now(),
             invalidate_rendered_frame: false,
             low_priority: false,
             render_reasons: RenderReasons::empty(),
@@ -281,7 +312,7 @@ impl Transaction {
         epoch: Epoch,
         (pipeline_id, mut display_list): (PipelineId, BuiltDisplayList),
     ) {
-        display_list.set_send_time_ns(precise_time_ns());
+        display_list.set_send_time_ns(zeitstempel::now());
         self.scene_ops.push(
             SceneMsg::SetDisplayList {
                 display_list,
@@ -357,8 +388,8 @@ impl Transaction {
     /// as to when happened.
     ///
     /// [notifier]: trait.RenderNotifier.html#tymethod.new_frame_ready
-    pub fn generate_frame(&mut self, id: u64, reasons: RenderReasons) {
-        self.generate_frame = GenerateFrame::Yes{ id };
+    pub fn generate_frame(&mut self, id: u64, present: bool, tracked: bool, reasons: RenderReasons) {
+        self.generate_frame = GenerateFrame::Yes{ id, present, tracked };
         self.render_reasons |= reasons;
     }
 
@@ -505,6 +536,21 @@ impl Transaction {
         self.resource_updates.push(ResourceUpdate::SetBlobImageVisibleArea(key, area));
     }
 
+    /// See `ResourceUpdate::AddSnapshotImage`.
+    pub fn add_snapshot_image(
+        &mut self,
+        key: SnapshotImageKey,
+    ) {
+        self.resource_updates.push(
+            ResourceUpdate::AddSnapshotImage(AddSnapshotImage { key })
+        );
+    }
+
+    /// See `ResourceUpdate::DeleteSnapshotImage`.
+    pub fn delete_snapshot_image(&mut self, key: SnapshotImageKey) {
+        self.resource_updates.push(ResourceUpdate::DeleteSnapshotImage(key));
+    }
+
     /// See `ResourceUpdate::AddFont`.
     pub fn add_raw_font(&mut self, key: FontKey, bytes: Vec<u8>, index: u32) {
         self.resource_updates
@@ -559,6 +605,14 @@ impl Transaction {
     /// Returns whether this transaction is marked as low priority.
     pub fn is_low_priority(&self) -> bool {
         self.low_priority
+    }
+
+    /// Render a pipeline offscreen immediately without waiting for vsync
+    /// and without affecting the state of the current scene.
+    ///
+    /// Snapshotted stacking contexts will be persisted in the texture cache.
+    pub fn render_offscreen(&mut self, pipeline_id: PipelineId) {
+        self.scene_ops.push(SceneMsg::RenderOffscreen(pipeline_id));
     }
 }
 
@@ -724,6 +778,16 @@ pub struct UpdateBlobImage {
     pub dirty_rect: BlobDirtyRect,
 }
 
+/// Creates a snapshot image resource.
+///
+/// Must be matched with a `DeleteSnapshotImage` at some point to prevent memory leaks.
+#[derive(Clone)]
+#[cfg_attr(any(feature = "serde"), derive(Deserialize, Serialize))]
+pub struct AddSnapshotImage {
+    /// The key identfying the snapshot resource.
+    pub key: SnapshotImageKey,
+}
+
 /// Creates a font resource.
 ///
 /// Must be matched with a corresponding `ResourceUpdate::DeleteFont` at some point to prevent
@@ -775,6 +839,11 @@ pub enum SceneMsg {
         ///
         pipeline_id: PipelineId,
     },
+    /// Build a scene without affecting any retained state.
+    ///
+    /// Useful to render an offscreen scene in the background without affecting
+    /// what is currently displayed.
+    RenderOffscreen(PipelineId),
     ///
     SetDocumentView {
         ///
@@ -818,6 +887,7 @@ impl fmt::Debug for SceneMsg {
             SceneMsg::SetDocumentView { .. } => "SceneMsg::SetDocumentView",
             SceneMsg::SetRootPipeline(..) => "SceneMsg::SetRootPipeline",
             SceneMsg::SetQualitySettings { .. } => "SceneMsg::SetQualitySettings",
+            SceneMsg::RenderOffscreen(..) => "SceneMsg::BuildOffscreen",
         })
     }
 }
@@ -884,10 +954,13 @@ pub struct CapturedDocument {
 }
 
 /// Update of the state of built-in debugging facilities.
-#[derive(Clone)]
 pub enum DebugCommand {
     /// Sets the provided debug flags.
     SetFlags(DebugFlags),
+    /// Get current debug flags
+    GetDebugFlags(Sender<DebugFlags>),
+    /// Enable/Disable render command logging.
+    SetRenderCommandLog(bool),
     /// Save a capture of all the documents state.
     SaveCapture(PathBuf, CaptureBits),
     /// Load a capture of all the documents state.
@@ -902,8 +975,6 @@ pub enum DebugCommand {
     EnableNativeCompositor(bool),
     /// Sets the maximum amount of existing batches to visit before creating a new one.
     SetBatchingLookback(u32),
-    /// Invalidate GPU cache, forcing the update from the CPU mirror.
-    InvalidateGpuCache,
     /// Causes the scene builder to pause for a given amount of milliseconds each time it
     /// processes a transaction.
     SimulateLongSceneBuild(u32),
@@ -911,6 +982,14 @@ pub enum DebugCommand {
     SetPictureTileSize(Option<DeviceIntSize>),
     /// Set an override for max off-screen surface size
     SetMaximumSurfaceSize(Option<usize>),
+    /// Generate a frame to force a redraw / recomposite
+    GenerateFrame,
+    #[cfg(feature = "debugger")]
+    /// Query internal information about WR
+    Query(DebugQuery),
+    #[cfg(feature = "debugger")]
+    /// Add a new profiler consumer
+    AddDebugClient(DebuggerClient),
 }
 
 /// Message sent by the `RenderApi` to the render backend thread.
@@ -1033,6 +1112,12 @@ impl RenderApi {
     /// Returns the namespace ID used by this API object.
     pub fn get_namespace_id(&self) -> IdNamespace {
         self.namespace_id
+    }
+
+    /// Returns a clone of the API message sender for internal use
+    #[allow(unused)]
+    pub(crate) fn get_api_sender(&self) -> Sender<ApiMsg> {
+        self.api_sender.clone()
     }
 
     ///
@@ -1351,6 +1436,14 @@ impl RenderApi {
         self.send_message(msg);
     }
 
+    /// Get the current debug flags
+    pub fn get_debug_flags(&self) -> DebugFlags {
+        let (tx, rx) = unbounded_channel();
+        let msg = ApiMsg::DebugCommand(DebugCommand::GetDebugFlags(tx));
+        self.send_message(msg);
+        rx.recv().unwrap()
+    }
+
     /// Update the state of builtin debugging facilities.
     pub fn send_debug_cmd(&self, cmd: DebugCommand) {
         let msg = ApiMsg::DebugCommand(cmd);
@@ -1397,9 +1490,6 @@ pub struct MemoryReport {
     // CPU Memory.
     //
     pub clip_stores: usize,
-    pub gpu_cache_metadata: usize,
-    pub gpu_cache_cpu_mirror: usize,
-    pub render_tasks: usize,
     pub hit_testers: usize,
     pub fonts: usize,
     pub weak_fonts: usize,
@@ -1410,11 +1500,12 @@ pub struct MemoryReport {
     pub display_list: usize,
     pub upload_staging_memory: usize,
     pub swgl: usize,
+    pub frame_allocator: usize,
+    pub render_tasks: usize,
 
     //
     // GPU memory.
     //
-    pub gpu_cache_textures: usize,
     pub vertex_data_textures: usize,
     pub render_target_textures: usize,
     pub picture_tile_textures: usize,

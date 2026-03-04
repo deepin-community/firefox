@@ -6,11 +6,17 @@
 #ifndef GPU_CommandEncoder_H_
 #define GPU_CommandEncoder_H_
 
-#include "mozilla/dom/TypedArray.h"
-#include "mozilla/WeakPtr.h"
-#include "mozilla/webgpu/WebGPUTypes.h"
-#include "nsWrapperCache.h"
+#include "CanvasContext.h"
 #include "ObjectModel.h"
+#include "QuerySet.h"
+#include "mozilla/RefPtr.h"
+#include "mozilla/Span.h"
+#include "mozilla/WeakPtr.h"
+#include "mozilla/dom/TypedArray.h"
+#include "mozilla/webgpu/WebGPUTypes.h"
+#include "mozilla/webgpu/ffi/wgpu.h"
+#include "nsTArrayForwardDeclare.h"
+#include "nsWrapperCache.h"
 
 namespace mozilla {
 class ErrorResult;
@@ -22,21 +28,14 @@ class Sequence;
 struct GPUCommandBufferDescriptor;
 class GPUComputePipelineOrGPURenderPipeline;
 class RangeEnforcedUnsignedLongSequenceOrGPUExtent3DDict;
-struct GPUImageCopyBuffer;
-struct GPUImageCopyTexture;
+struct GPUTexelCopyBufferInfo;
+struct GPUTexelCopyTextureInfo;
 struct GPUImageBitmapCopyView;
-struct GPUImageDataLayout;
+struct GPUTexelCopyBufferLayout;
 struct GPURenderPassDescriptor;
 using GPUExtent3D = RangeEnforcedUnsignedLongSequenceOrGPUExtent3DDict;
 }  // namespace dom
 namespace webgpu {
-namespace ffi {
-struct WGPUComputePass;
-struct WGPURecordedRenderPass;
-struct WGPUImageDataLayout;
-struct WGPUImageCopyTexture_TextureId;
-struct WGPUExtent3d;
-}  // namespace ffi
 
 class BindGroup;
 class Buffer;
@@ -44,51 +43,66 @@ class CanvasContext;
 class CommandBuffer;
 class ComputePassEncoder;
 class Device;
+class ExternalTexture;
 class RenderPassEncoder;
+class WebGPUChild;
 
-class CommandEncoder final : public ObjectBase, public ChildOf<Device> {
+enum class CommandEncoderState { Open, Locked, Ended };
+
+class CommandEncoder final : public nsWrapperCache,
+                             public ObjectBase,
+                             public ChildOf<Device> {
  public:
   GPU_DECL_CYCLE_COLLECTION(CommandEncoder)
   GPU_DECL_JS_WRAP(CommandEncoder)
 
-  CommandEncoder(Device* const aParent, WebGPUChild* const aBridge, RawId aId);
-
-  const RawId mId;
+  CommandEncoder(Device* const aParent, RawId aId);
 
   static void ConvertTextureDataLayoutToFFI(
-      const dom::GPUImageDataLayout& aLayout,
-      ffi::WGPUImageDataLayout* aLayoutFFI);
+      const dom::GPUTexelCopyBufferLayout& aLayout,
+      ffi::WGPUTexelCopyBufferLayout* aLayoutFFI);
   static void ConvertTextureCopyViewToFFI(
-      const dom::GPUImageCopyTexture& aCopy,
-      ffi::WGPUImageCopyTexture_TextureId* aViewFFI);
+      const dom::GPUTexelCopyTextureInfo& aCopy,
+      ffi::WGPUTexelCopyTextureInfo_TextureId* aViewFFI);
 
  private:
-  ~CommandEncoder();
-  void Cleanup();
+  virtual ~CommandEncoder();
 
-  RefPtr<WebGPUChild> mBridge;
-  nsTArray<WeakPtr<CanvasContext>> mPresentationContexts;
+  CommandEncoderState mState;
 
-  void TrackPresentationContext(CanvasContext* aTargetContext);
+  CanvasContextArray mPresentationContexts;
+  nsTArray<RefPtr<ExternalTexture>> mExternalTextures;
+
+  void TrackPresentationContext(WeakPtr<CanvasContext> aTargetContext);
 
  public:
   const auto& GetDevice() const { return mParent; };
 
-  void EndComputePass(ffi::WGPURecordedComputePass& aPass);
-  void EndRenderPass(ffi::WGPURecordedRenderPass& aPass);
+  CommandEncoderState GetState() const { return mState; };
 
+  void EndComputePass(ffi::WGPURecordedComputePass& aPass,
+                      CanvasContextArray& aCanvasContexts,
+                      Span<RefPtr<ExternalTexture>> aExternalTextures);
+  void EndRenderPass(ffi::WGPURecordedRenderPass& aPass,
+                     CanvasContextArray& aCanvasContexts,
+                     Span<RefPtr<ExternalTexture>> aExternalTextures);
+
+  void CopyBufferToBuffer(const Buffer& aSource, const Buffer& aDestination,
+                          const dom::Optional<BufferAddress>& aSize) {
+    this->CopyBufferToBuffer(aSource, 0, aDestination, 0, aSize);
+  }
   void CopyBufferToBuffer(const Buffer& aSource, BufferAddress aSourceOffset,
                           const Buffer& aDestination,
                           BufferAddress aDestinationOffset,
-                          BufferAddress aSize);
-  void CopyBufferToTexture(const dom::GPUImageCopyBuffer& aSource,
-                           const dom::GPUImageCopyTexture& aDestination,
+                          const dom::Optional<BufferAddress>& aSize);
+  void CopyBufferToTexture(const dom::GPUTexelCopyBufferInfo& aSource,
+                           const dom::GPUTexelCopyTextureInfo& aDestination,
                            const dom::GPUExtent3D& aCopySize);
-  void CopyTextureToBuffer(const dom::GPUImageCopyTexture& aSource,
-                           const dom::GPUImageCopyBuffer& aDestination,
+  void CopyTextureToBuffer(const dom::GPUTexelCopyTextureInfo& aSource,
+                           const dom::GPUTexelCopyBufferInfo& aDestination,
                            const dom::GPUExtent3D& aCopySize);
-  void CopyTextureToTexture(const dom::GPUImageCopyTexture& aSource,
-                            const dom::GPUImageCopyTexture& aDestination,
+  void CopyTextureToTexture(const dom::GPUTexelCopyTextureInfo& aSource,
+                            const dom::GPUTexelCopyTextureInfo& aDestination,
                             const dom::GPUExtent3D& aCopySize);
   void ClearBuffer(const Buffer& aBuffer, const uint64_t aOffset,
                    const dom::Optional<uint64_t>& aSize);
@@ -101,9 +115,31 @@ class CommandEncoder final : public ObjectBase, public ChildOf<Device> {
       const dom::GPUComputePassDescriptor& aDesc);
   already_AddRefed<RenderPassEncoder> BeginRenderPass(
       const dom::GPURenderPassDescriptor& aDesc);
+  void ResolveQuerySet(QuerySet& aQuerySet, uint32_t aFirstQuery,
+                       uint32_t aQueryCount, webgpu::Buffer& aDestination,
+                       uint64_t aDestinationOffset);
   already_AddRefed<CommandBuffer> Finish(
       const dom::GPUCommandBufferDescriptor& aDesc);
 };
+
+template <typename T>
+void AssignPassTimestampWrites(const T& src,
+                               ffi::WGPUPassTimestampWrites& dest) {
+  if (src.mBeginningOfPassWriteIndex.WasPassed()) {
+    dest.beginning_of_pass_write_index =
+        &src.mBeginningOfPassWriteIndex.Value();
+  } else {
+    dest.beginning_of_pass_write_index = nullptr;
+  }
+
+  if (src.mEndOfPassWriteIndex.WasPassed()) {
+    dest.end_of_pass_write_index = &src.mEndOfPassWriteIndex.Value();
+  } else {
+    dest.end_of_pass_write_index = nullptr;
+  }
+
+  dest.query_set = src.mQuerySet->GetId();
+}
 
 }  // namespace webgpu
 }  // namespace mozilla

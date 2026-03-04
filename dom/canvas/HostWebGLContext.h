@@ -6,21 +6,21 @@
 #ifndef HOSTWEBGLCONTEXT_H_
 #define HOSTWEBGLCONTEXT_H_
 
-#include "mozilla/dom/BindingUtils.h"
-#include "mozilla/GfxMessageUtils.h"
-#include "ClientWebGLContext.h"
-#include "mozilla/Maybe.h"
-#include "mozilla/UniquePtr.h"
-#include "GLContext.h"
-#include "WebGLContext.h"
-#include "WebGL2Context.h"
-#include "WebGLFramebuffer.h"
-#include "WebGLTypes.h"
-#include "WebGLCommandQueue.h"
-
+#include <memory>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
+#include "ClientWebGLContext.h"
+#include "GLContext.h"
+#include "WebGL2Context.h"
+#include "WebGLCommandQueue.h"
+#include "WebGLContext.h"
+#include "WebGLFramebuffer.h"
+#include "WebGLTypes.h"
+#include "mozilla/GfxMessageUtils.h"
+#include "mozilla/Maybe.h"
+#include "mozilla/dom/BindingUtils.h"
 
 namespace mozilla {
 
@@ -73,9 +73,9 @@ class HostWebGLContext final : public SupportsWeakPtr {
     dom::WebGLParent* outOfProcess = nullptr;
   };
 
-  static UniquePtr<HostWebGLContext> Create(const OwnerData&,
-                                            const webgl::InitContextDesc&,
-                                            webgl::InitContextResult* out);
+  static std::unique_ptr<HostWebGLContext> Create(
+      const OwnerData&, const webgl::InitContextDesc&,
+      webgl::InitContextResult* out);
 
  private:
   explicit HostWebGLContext(const OwnerData&);
@@ -203,6 +203,9 @@ class HostWebGLContext final : public SupportsWeakPtr {
 
   void SetDrawingBufferColorSpace(const dom::PredefinedColorSpace val) const {
     mContext->SetDrawingBufferColorSpace(val);
+  }
+  void SetUnpackColorSpace(const dom::PredefinedColorSpace val) const {
+    mContext->SetUnpackColorSpace(val);
   }
   void Resize(const uvec2& size) { return mContext->Resize(size); }
 
@@ -402,11 +405,6 @@ class HostWebGLContext final : public SupportsWeakPtr {
     const auto obj = ById<WebGLRenderbuffer>(id);
     if (!obj) return {};
     return mContext->GetRenderbufferParameter(*obj, pname);
-  }
-
-  Maybe<webgl::ShaderPrecisionFormat> GetShaderPrecisionFormat(
-      GLenum shaderType, GLenum precisionType) const {
-    return mContext->GetShaderPrecisionFormat(shaderType, precisionType);
   }
 
   webgl::GetUniformData GetUniform(ObjectId id, uint32_t loc) const {

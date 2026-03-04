@@ -6,6 +6,7 @@ import {
   classMap,
   html,
   ifDefined,
+  when,
 } from "chrome://global/content/vendor/lit.all.mjs";
 
 import {
@@ -18,6 +19,12 @@ export class SidebarTabList extends FxviewTabListBase {
     super();
     // Panel is open, assume we always want to react to updates.
     this.updatesPaused = false;
+    this.multiSelect = true;
+    this.selectedGuids = new Set();
+    this.shortcutsLocalization = new Localization(
+      ["toolkit/global/textActions.ftl"],
+      true
+    );
   }
 
   static queries = {
@@ -33,31 +40,166 @@ export class SidebarTabList extends FxviewTabListBase {
    * @param {KeyboardEvent} e
    */
   handleFocusElementInRow(e) {
-    if (e.code == "ArrowUp" || e.code == "ArrowDown") {
+    // Handle vertical navigation.
+    if (
+      (e.code == "ArrowUp" && this.activeIndex > 0) ||
+      (e.code == "ArrowDown" && this.activeIndex < this.rowEls.length - 1)
+    ) {
       super.handleFocusElementInRow(e);
+    } else if (
+      (e.code == "ArrowUp" && this.activeIndex == 0) ||
+      e.code === "ArrowLeft"
+    ) {
+      this.#focusParentHeader(e.target);
+    } else if (
+      e.code == "ArrowDown" &&
+      this.activeIndex == this.rowEls.length - 1
+    ) {
+      this.#focusNextHeader(e.target);
+    }
+
+    // Update or clear multi-selection (depending on whether shift key is used).
+    if (this.multiSelect && (e.code === "ArrowUp" || e.code === "ArrowDown")) {
+      this.#updateSelection(e);
+    }
+
+    // (Ctrl / Cmd) + A should select all rows.
+    if (
+      e.getModifierState("Accel") &&
+      e.key.toUpperCase() === this.selectAllShortcut
+    ) {
+      e.preventDefault();
+      this.#selectAll();
     }
   }
 
+  #focusParentHeader(row) {
+    let parentCard = row.getRootNode().host.closest("moz-card");
+    if (parentCard) {
+      parentCard.summaryEl.focus();
+    }
+  }
+
+  #focusNextHeader(row) {
+    let parentCard = row.getRootNode().host.closest("moz-card");
+    if (
+      this.sortOption == "datesite" &&
+      parentCard.classList.contains("last-card")
+    ) {
+      // If we're going down from the last site, then focus the next date.
+      const dateCard = parentCard.parentElement;
+      const nextDate = dateCard.nextElementSibling;
+      nextDate?.summaryEl.focus();
+    }
+    let nextCard = parentCard.nextElementSibling;
+    if (nextCard && nextCard.localName == "moz-card") {
+      nextCard.summaryEl.focus();
+    }
+  }
+
+  #updateSelection(event) {
+    if (!event.shiftKey) {
+      // Clear the selection when navigating without shift key.
+      // Dispatch event so that other lists will also clear their selection.
+      this.clearSelection();
+      this.dispatchEvent(
+        new CustomEvent("clear-selection", {
+          bubbles: true,
+          composed: true,
+        })
+      );
+      return;
+    }
+
+    // Select the current row.
+    const row = event.target;
+    const {
+      guid,
+      previousElementSibling: prevRow,
+      nextElementSibling: nextRow,
+    } = row;
+    this.selectedGuids.add(guid);
+
+    // Select the previous or next sibling, depending on which arrow key was used.
+    if (event.code === "ArrowUp" && prevRow) {
+      this.selectedGuids.add(prevRow.guid);
+    } else if (event.code === "ArrowDown" && nextRow) {
+      this.selectedGuids.add(nextRow.guid);
+    } else {
+      this.requestVirtualListUpdate();
+    }
+
+    // Notify the host component.
+    this.dispatchEvent(
+      new CustomEvent("update-selection", {
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
+  clearSelection() {
+    this.selectedGuids.clear();
+    this.requestVirtualListUpdate();
+  }
+
+  get selectAllShortcut() {
+    const [l10nMessage] = this.shortcutsLocalization.formatMessagesSync([
+      "text-action-select-all-shortcut",
+    ]);
+    const shortcutKey = l10nMessage.attributes[0].value;
+    return shortcutKey;
+  }
+
+  #selectAll() {
+    for (const { guid } of this.tabItems) {
+      this.selectedGuids.add(guid);
+    }
+    this.requestVirtualListUpdate();
+    this.dispatchEvent(
+      new CustomEvent("update-selection", {
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
   itemTemplate = (tabItem, i) => {
+    let tabIndex = -1;
+    if ((this.searchQuery || this.sortOption == "lastvisited") && i == 0) {
+      // Make the first row focusable if there is no header.
+      tabIndex = 0;
+    } else if (!this.searchQuery) {
+      tabIndex = 0;
+    }
     return html`
       <sidebar-tab-row
         ?active=${i == this.activeIndex}
-        .closedId=${ifDefined(tabItem.closedId || tabItem.closedId)}
+        .canClose=${ifDefined(tabItem.canClose)}
+        .closedId=${ifDefined(tabItem.closedId)}
         compact
         .currentActiveElementId=${this.currentActiveElementId}
+        .closeRequested=${tabItem.closeRequested}
+        .containerObj=${tabItem.containerObj}
+        .fxaDeviceId=${ifDefined(tabItem.fxaDeviceId)}
         .favicon=${tabItem.icon}
+        .guid=${tabItem.guid}
         .hasPopup=${this.hasPopup}
+        .indicators=${tabItem.indicators}
         .primaryL10nArgs=${ifDefined(tabItem.primaryL10nArgs)}
         .primaryL10nId=${tabItem.primaryL10nId}
         role="listitem"
         .searchQuery=${ifDefined(this.searchQuery)}
-        .secondaryActionClass=${this.secondaryActionClass}
+        .secondaryActionClass=${ifDefined(
+          this.secondaryActionClass ?? tabItem.secondaryActionClass
+        )}
         .secondaryL10nArgs=${ifDefined(tabItem.secondaryL10nArgs)}
         .secondaryL10nId=${tabItem.secondaryL10nId}
+        .selected=${this.selectedGuids.has(tabItem.guid)}
         .sourceClosedId=${ifDefined(tabItem.sourceClosedId)}
         .sourceWindowId=${ifDefined(tabItem.sourceWindowId)}
         .tabElement=${ifDefined(tabItem.tabElement)}
-        tabindex="0"
+        tabindex=${tabIndex}
         .title=${tabItem.title}
         .url=${tabItem.url}
         @keydown=${e => e.currentTarget.primaryActionHandler(e)}
@@ -78,6 +220,13 @@ export class SidebarTabList extends FxviewTabListBase {
 customElements.define("sidebar-tab-list", SidebarTabList);
 
 export class SidebarTabRow extends FxviewTabRowBase {
+  static properties = {
+    containerObj: { type: Object },
+    guid: { type: String },
+    selected: { type: Boolean, reflect: true },
+    indicators: { type: Array },
+  };
+
   /**
    * Fallback to the native implementation in sidebar. We want to focus the
    * entire row instead of delegating it to link or hover buttons.
@@ -86,30 +235,73 @@ export class SidebarTabRow extends FxviewTabRowBase {
     HTMLElement.prototype.focus.call(this);
   }
 
+  #getContainerClasses() {
+    let containerClasses = ["fxview-tab-row-container-indicator", "icon"];
+    if (this.containerObj) {
+      let { icon, color } = this.containerObj;
+      containerClasses.push(`identity-icon-${icon}`);
+      containerClasses.push(`identity-color-${color}`);
+    }
+    return containerClasses;
+  }
+
+  #containerIndicatorTemplate() {
+    let tabList = this.getRootNode().host;
+    let tabsToCheck = tabList.tabItems;
+    return html`${when(
+      tabsToCheck.some(tab => tab.containerObj),
+      () => html`<span class=${this.#getContainerClasses().join(" ")}></span>`
+    )}`;
+  }
+
   secondaryButtonTemplate() {
-    return html`<moz-button
-      aria-haspopup=${ifDefined(this.hasPopup)}
-      class=${classMap({
-        "fxview-tab-row-button": true,
-        [this.secondaryActionClass]: this.secondaryActionClass,
-      })}
-      data-l10n-args=${ifDefined(this.secondaryL10nArgs)}
-      data-l10n-id=${this.secondaryL10nId}
-      id="fxview-tab-row-secondary-button"
-      type="icon ghost"
-      @click=${this.secondaryActionHandler}
-    ></moz-button>`;
+    return html`${when(
+      this.secondaryL10nId && this.secondaryActionClass,
+      () =>
+        html`<moz-button
+          aria-haspopup=${ifDefined(this.hasPopup)}
+          class=${classMap({
+            "fxview-tab-row-button": true,
+            [this.secondaryActionClass]: this.secondaryActionClass,
+          })}
+          data-l10n-args=${ifDefined(this.secondaryL10nArgs)}
+          data-l10n-id=${this.secondaryL10nId}
+          id="fxview-tab-row-secondary-button"
+          type="icon ghost"
+          @click=${this.secondaryActionHandler}
+          iconSrc=${this.getIconSrc(this.secondaryActionClass)}
+        ></moz-button>`
+    )}`;
   }
 
   render() {
     return html`
       ${this.stylesheets()}
+      ${when(
+        this.containerObj,
+        () => html`
+          <link
+            rel="stylesheet"
+            href="chrome://browser/content/usercontext/usercontext.css"
+          />
+        `
+      )}
       <link
         rel="stylesheet"
         href="chrome://browser/content/sidebar/sidebar-tab-row.css"
       />
       <a
-        class="fxview-tab-row-main"
+        class=${classMap({
+          "fxview-tab-row-main": true,
+          "no-action-button-row": this.canClose === false,
+          muted: this.indicators?.includes("muted"),
+          attention: this.indicators?.includes("attention"),
+          soundplaying: this.indicators?.includes("soundplaying"),
+          "activemedia-blocked": this.indicators?.includes(
+            "activemedia-blocked"
+          ),
+        })}
+        disabled=${this.closeRequested}
         data-l10n-args=${ifDefined(this.primaryL10nArgs)}
         data-l10n-id=${ifDefined(this.primaryL10nId)}
         href=${ifDefined(this.url)}
@@ -121,7 +313,7 @@ export class SidebarTabRow extends FxviewTabRowBase {
       >
         ${this.faviconTemplate()} ${this.titleTemplate()}
       </a>
-      ${this.secondaryButtonTemplate()}
+      ${this.secondaryButtonTemplate()} ${this.#containerIndicatorTemplate()}
     `;
   }
 }

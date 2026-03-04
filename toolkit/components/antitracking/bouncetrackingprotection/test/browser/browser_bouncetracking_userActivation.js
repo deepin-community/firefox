@@ -7,6 +7,10 @@
  * Tests that user activation is correctly recorded for BTP.
  */
 
+let bounceTrackingProtection = Cc[
+  "@mozilla.org/bounce-tracking-protection;1"
+].getService(Ci.nsIBounceTrackingProtection);
+
 function assertNoUserActivationHosts() {
   is(
     bounceTrackingProtection.testGetUserActivationHosts({}).length,
@@ -33,6 +37,7 @@ function getURL(origin) {
 
 /**
  * Inserts an iframe element and resolves once the iframe has loaded.
+ *
  * @param {*} browserOrBrowsingContext - Browser or BrowsingContext to insert the iframe into.
  * @param {string} url - URL to load in the iframe.
  * @returns {Promise<BrowsingContext>} Promise which resolves to the iframe's
@@ -53,6 +58,7 @@ function insertIframeAndWaitForLoad(browserOrBrowsingContext, url) {
 /**
  * Runs a test that spawns an iframe, interacts with it, and checks the BTP user
  * activation state.
+ *
  * @param {boolean} useIframeSameSite - Whether the iframe interacted with
  * should be same or cross-site to the top-level window.
  */
@@ -79,7 +85,16 @@ async function runIframeTest(useIframeSameSite) {
   bounceTrackingProtection.clearAll();
 }
 
-add_setup(function () {
+add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [
+      ["test.wait300msAfterTabSwitch", true],
+      [
+        "privacy.bounceTrackingProtection.mode",
+        Ci.nsIBounceTrackingProtection.MODE_ENABLED,
+      ],
+    ],
+  });
   bounceTrackingProtection.clearAll();
 });
 

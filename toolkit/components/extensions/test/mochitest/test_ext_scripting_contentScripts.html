@@ -465,6 +465,7 @@ add_task(async function test_registerContentScripts_js() {
             runAt: "document_idle",
             world: "ISOLATED",
             persistAcrossSessions: false,
+            cssOrigin: "author",
             js: ["script-1.js"],
           },
           {
@@ -478,6 +479,7 @@ add_task(async function test_registerContentScripts_js() {
             runAt: "document_idle",
             world: "ISOLATED",
             persistAcrossSessions: false,
+            cssOrigin: "author",
             js: ["script-2.js"],
           },
           {
@@ -491,6 +493,7 @@ add_task(async function test_registerContentScripts_js() {
             runAt: "document_idle",
             world: "ISOLATED",
             persistAcrossSessions: false,
+            cssOrigin: "author",
             excludeMatches: ["*://test1.example.com/*"],
             js: ["script-3.js"],
           },
@@ -502,6 +505,7 @@ add_task(async function test_registerContentScripts_js() {
             runAt: "document_idle",
             world: "ISOLATED",
             persistAcrossSessions: false,
+            cssOrigin: "author",
             js: ["script-4-1.js", "script-4-2.js"],
           },
           {
@@ -512,6 +516,7 @@ add_task(async function test_registerContentScripts_js() {
             runAt: "document_idle",
             world: "ISOLATED",
             persistAcrossSessions: false,
+            cssOrigin: "author",
             js: ["script-5.js"],
           },
         ]),
@@ -870,10 +875,6 @@ add_task(async function test_registerContentScripts_on_about_blank_frames() {
 add_task(async function test_registerContentScripts_on_top_level_about_blank() {
   // This is the default behavior, but fix pref value in case that is not the
   // case. The flipped-pref case is tested later in this test.
-  // TODO bug 1856071: Remove this pref setter when the pref is removed.
-  await SpecialPowers.pushPrefEnv({
-    set: [["extensions.script_about_blank_without_permission", false]],
-  });
   let extension = makeExtension({
     async background() {
       await browser.scripting.registerContentScripts([
@@ -934,8 +935,6 @@ add_task(async function test_registerContentScripts_on_top_level_about_blank() {
   // We remove the tab after having unloaded the extensions to avoid failures
   // on Windows, see: Bug 1761550.
   await AppTestDelegate.removeTab(window, tab);
-  await SpecialPowers.popPrefEnv(); // Balances pushPrefEnv at start of task.
-  // TODO bug bug 1856071: Remove the above popPrefEnv call.
 });
 
 add_task(async function test_registerContentScripts_twice_with_same_id() {
@@ -1008,6 +1007,7 @@ add_task(async function test_getRegisteredContentScripts_during_a_registration()
             runAt: "document_idle",
             world: "ISOLATED",
             persistAcrossSessions: false,
+            cssOrigin: "author",
             js: ["script.js"],
           },
         ]),
@@ -1408,6 +1408,7 @@ add_task(async function test_validate_updateContentScripts_params() {
             runAt: "document_idle",
             world: "ISOLATED",
             persistAcrossSessions: false,
+            cssOrigin: "author",
             js: script.js,
           },
         ]),
@@ -1559,6 +1560,7 @@ add_task(async function test_updateContentScripts() {
       runAt: "document_idle",
       world: "ISOLATED",
       persistAcrossSessions: false,
+      cssOrigin: "author",
       js: ["script-1.js"],
     },
     expectedMessages: ["script-1 executed in file_contains_iframe.html"],
@@ -1578,6 +1580,7 @@ add_task(async function test_updateContentScripts() {
       runAt: "document_idle",
       world: "ISOLATED",
       persistAcrossSessions: false,
+      cssOrigin: "author",
       js: ["script-2.js"],
     },
     expectedMessages: ["script-2 executed in file_contains_iframe.html"],
@@ -1604,6 +1607,7 @@ add_task(async function test_updateContentScripts() {
       runAt: "document_idle",
       world: "ISOLATED",
       persistAcrossSessions: false,
+      cssOrigin: "author",
       js: ["script-2.js"],
     },
     expectedMessages: [
@@ -1631,6 +1635,7 @@ add_task(async function test_updateContentScripts() {
       runAt: "document_idle",
       world: "ISOLATED",
       persistAcrossSessions: false,
+      cssOrigin: "author",
       excludeMatches: ["*://test1.example.com/*"],
       js: ["script-3.js"],
     },
@@ -1660,6 +1665,7 @@ add_task(async function test_updateContentScripts() {
       runAt: "document_start",
       world: "ISOLATED",
       persistAcrossSessions: false,
+      cssOrigin: "author",
       js: ["script-4.js"],
     },
     expectedMessages: [
@@ -1688,6 +1694,7 @@ add_task(async function test_updateContentScripts() {
       runAt: "document_idle",
       world: "ISOLATED",
       persistAcrossSessions: false,
+      cssOrigin: "author",
       css: ["style.css"],
       js: ["script-check-style.js"],
     },

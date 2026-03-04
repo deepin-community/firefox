@@ -18,18 +18,22 @@ add_task(async function () {
   // If this should fail, it means MAX_FAVICON_BUFFER_SIZE has been made bigger
   // than this icon. For this test to make sense the icon shoul always be
   // bigger than MAX_FAVICON_BUFFER_SIZE. Please update the icon!
-  Assert.ok(
-    icon.data.length > Ci.nsIFaviconService.MAX_FAVICON_BUFFER_SIZE,
+  Assert.greater(
+    icon.data.length,
+    Ci.nsIFaviconService.MAX_FAVICON_BUFFER_SIZE,
     "The test icon file size must be larger than Ci.nsIFaviconService.MAX_FAVICON_BUFFER_SIZE"
   );
 
   let pageURI = uri("http://foo.bar/");
   await PlacesTestUtils.addVisits(pageURI);
 
-  let dataURI = await fileDataToDataURL(icon.data, icon.mimetype);
+  let dataURI = await PlacesTestUtils.fileDataToDataURL(
+    icon.data,
+    icon.mimetype
+  );
   await PlacesTestUtils.setFaviconForPage(pageURI.spec, icon.uri.spec, dataURI);
   Assert.equal(
-    await getFaviconUrlForPage(pageURI),
+    (await PlacesTestUtils.getFaviconForPage(pageURI)).uri.spec,
     icon.uri.spec,
     "A resampled version of the icon should be stored"
   );

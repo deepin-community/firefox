@@ -5,13 +5,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/SVGAnimationElement.h"
-#include "mozilla/dom/SVGSVGElement.h"
-#include "mozilla/dom/SVGSwitchElement.h"
-#include "mozilla/dom/BindContext.h"
-#include "mozilla/dom/ElementInlines.h"
+
 #include "mozilla/SMILAnimationController.h"
 #include "mozilla/SMILAnimationFunction.h"
 #include "mozilla/SMILTimeContainer.h"
+#include "mozilla/dom/BindContext.h"
+#include "mozilla/dom/ElementInlines.h"
+#include "mozilla/dom/SVGSVGElement.h"
+#include "mozilla/dom/SVGSwitchElement.h"
+#include "nsAttrValueOrString.h"
 #include "nsContentUtils.h"
 #include "nsIContentInlines.h"
 
@@ -89,12 +91,12 @@ SVGElement* SVGAnimationElement::GetTargetElement() {
   return SVGElement::FromNodeOrNull(GetTargetElementContent());
 }
 
-float SVGAnimationElement::GetStartTime(ErrorResult& rv) {
+float SVGAnimationElement::GetStartTime(ErrorResult& aRv) {
   FlushAnimations();
 
   SMILTimeValue startTime = mTimedElement.GetStartTime();
   if (!startTime.IsDefinite()) {
-    rv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
+    aRv.ThrowInvalidStateError("Indefinite start time");
     return 0.f;
   }
 
@@ -112,12 +114,12 @@ float SVGAnimationElement::GetCurrentTimeAsFloat() {
   return 0.0f;
 }
 
-float SVGAnimationElement::GetSimpleDuration(ErrorResult& rv) {
+float SVGAnimationElement::GetSimpleDuration(ErrorResult& aRv) {
   // Not necessary to call FlushAnimations() for this
 
   SMILTimeValue simpleDur = mTimedElement.GetSimpleDuration();
   if (!simpleDur.IsDefinite()) {
-    rv.Throw(NS_ERROR_DOM_NOT_SUPPORTED_ERR);
+    aRv.ThrowNotSupportedError("Duration is indefinite");
     return 0.f;
   }
 
@@ -255,7 +257,7 @@ void SVGAnimationElement::AfterSetAttr(int32_t aNamespaceID, nsAtom* aName,
       const nsAttrValue* xlinkHref =
           mAttrs.GetAttr(nsGkAtoms::href, kNameSpaceID_XLink);
       if (xlinkHref) {
-        UpdateHrefTarget(xlinkHref->GetStringValue());
+        UpdateHrefTarget(nsAttrValueOrString(xlinkHref).String());
       }
     } else if (!HasAttr(nsGkAtoms::href)) {
       mHrefTarget.Unlink();
@@ -266,9 +268,10 @@ void SVGAnimationElement::AfterSetAttr(int32_t aNamespaceID, nsAtom* aName,
                HasAttr(nsGkAtoms::href))) {
     // Note: "href" takes priority over xlink:href. So if "xlink:href" is being
     // set here, we only let that update our target if "href" is *unset*.
-    MOZ_ASSERT(aValue->Type() == nsAttrValue::eString,
-               "Expected href attribute to be string type");
-    UpdateHrefTarget(aValue->GetStringValue());
+    MOZ_ASSERT(aValue->Type() == nsAttrValue::eString ||
+                   aValue->Type() == nsAttrValue::eAtom,
+               "Expected href attribute to be string or atom type");
+    UpdateHrefTarget(nsAttrValueOrString(aValue).String());
   }  // else: we're not yet in a document -- we'll update the target on
      // next BindToTree call.
 }
@@ -344,14 +347,14 @@ SMILTimeContainer* SVGAnimationElement::GetTimeContainer() {
   return nullptr;
 }
 
-void SVGAnimationElement::BeginElementAt(float offset, ErrorResult& rv) {
+void SVGAnimationElement::BeginElementAt(float offset, ErrorResult& aRv) {
   // Make sure the timegraph is up-to-date
   FlushAnimations();
 
   // This will fail if we're not attached to a time container (SVG document
   // fragment).
-  rv = mTimedElement.BeginElementAt(offset);
-  if (rv.Failed()) return;
+  aRv = mTimedElement.BeginElementAt(offset);
+  if (aRv.Failed()) return;
 
   AnimationNeedsResample();
   // Force synchronous sample so that events resulting from this call arrive in
@@ -359,12 +362,12 @@ void SVGAnimationElement::BeginElementAt(float offset, ErrorResult& rv) {
   FlushAnimations();
 }
 
-void SVGAnimationElement::EndElementAt(float offset, ErrorResult& rv) {
+void SVGAnimationElement::EndElementAt(float offset, ErrorResult& aRv) {
   // Make sure the timegraph is up-to-date
   FlushAnimations();
 
-  rv = mTimedElement.EndElementAt(offset);
-  if (rv.Failed()) return;
+  aRv = mTimedElement.EndElementAt(offset);
+  if (aRv.Failed()) return;
 
   AnimationNeedsResample();
   // Force synchronous sample
@@ -377,7 +380,7 @@ bool SVGAnimationElement::IsEventAttributeNameInternal(nsAtom* aName) {
 
 void SVGAnimationElement::UpdateHrefTarget(const nsAString& aHrefStr) {
   if (nsContentUtils::IsLocalRefURL(aHrefStr)) {
-    mHrefTarget.ResetWithLocalRef(*this, aHrefStr);
+    mHrefTarget.ResetToLocalFragmentID(*this, aHrefStr);
   } else {
     mHrefTarget.Unlink();
   }

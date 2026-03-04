@@ -7,13 +7,11 @@
 #ifndef mozilla_dom_PushNotifier_h
 #define mozilla_dom_PushNotifier_h
 
-#include "nsIPushNotifier.h"
-
+#include "mozilla/Maybe.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsIPrincipal.h"
+#include "nsIPushNotifier.h"
 #include "nsString.h"
-
-#include "mozilla/Maybe.h"
 
 namespace mozilla::dom {
 
@@ -149,13 +147,17 @@ class PushMessageDispatcher final : public PushDispatcher {
 class PushSubscriptionChangeDispatcher final : public PushDispatcher {
  public:
   PushSubscriptionChangeDispatcher(const nsACString& aScope,
-                                   nsIPrincipal* aPrincipal);
+                                   nsIPrincipal* aPrincipal,
+                                   nsIPushSubscription* aOldSubscription);
   ~PushSubscriptionChangeDispatcher();
 
   nsresult NotifyObservers() override;
   nsresult NotifyWorkers() override;
   bool SendToParent(ContentChild* aParentActor) override;
   bool SendToChild(ContentParent* aContentActor) override;
+
+ private:
+  nsCOMPtr<nsIPushSubscription> mOldSubscription;
 };
 
 class PushSubscriptionModifiedDispatcher : public PushDispatcher {

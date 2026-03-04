@@ -14,15 +14,20 @@
 
 #include "mozilla/dom/BrowsingContext.h"
 #include "mozilla/dom/PFilePickerChild.h"
-#include "mozilla/dom/UnionTypes.h"
 
 class nsIWidget;
 class nsIFile;
 class nsPIDOMWindowInner;
 
+namespace mozilla::dom {
+
+class OwningFileOrDirectory;
+
+}  // namespace mozilla::dom
+
 /**
   This class creates a proxy file picker to be used in content processes.
-  The file picker just collects the initialization data and when Show() is
+  The file picker just collects the initialization data and when Open() is
   called, remotes everything to the chrome process which in turn can show a
   platform specific file picker.
 */
@@ -53,6 +58,8 @@ class nsFilePickerProxy : public nsBaseFilePicker,
   NS_IMETHOD GetDomFileOrDirectory(nsISupports** aValue) override;
   NS_IMETHOD GetDomFileOrDirectoryEnumerator(
       nsISimpleEnumerator** aValue) override;
+  NS_IMETHOD GetDomFilesInWebKitDirectory(
+      nsISimpleEnumerator** aValue) override;
 
   NS_IMETHOD Open(nsIFilePickerShownCallback* aCallback) override;
 
@@ -64,13 +71,13 @@ class nsFilePickerProxy : public nsBaseFilePicker,
  private:
   ~nsFilePickerProxy();
   void InitNative(nsIWidget*, const nsAString&) override;
-  nsresult Show(nsIFilePicker::ResultCode* aReturn) override;
   nsresult ResolveSpecialDirectory(const nsAString& aSpecialDirectory) override;
 
   void ActorDestroy(ActorDestroyReason aWhy) override;
 
   nsTArray<mozilla::dom::OwningFileOrDirectory> mFilesOrDirectories;
   nsCOMPtr<nsIFilePickerShownCallback> mCallback;
+  nsTArray<mozilla::dom::OwningFileOrDirectory> mFilesInWebKitDirectory;
 
   int16_t mSelectedType;
   nsString mFile;

@@ -29,7 +29,7 @@ class APZCBasicTester : public APZCTesterBase {
     APZThreadUtils::SetThreadAssertionsEnabled(false);
     APZThreadUtils::SetControllerThread(NS_GetCurrentThread());
 
-    tm = new TestAPZCTreeManager(mcc);
+    tm = CreateTreeManager();
     updater = new APZUpdater(tm, false);
     sampler = new APZSampler(tm, false);
     apzc =
@@ -55,6 +55,10 @@ class APZCBasicTester : public APZCTesterBase {
     return CSSRect(metrics.GetScrollableRect().TopLeft(),
                    metrics.GetScrollableRect().Size() -
                        metrics.CalculateCompositedSizeInCssPixels());
+  }
+
+  virtual TestAPZCTreeManager* CreateTreeManager() {
+    return new TestAPZCTreeManager(mcc);
   }
 
   virtual void TearDown() {
@@ -83,22 +87,22 @@ class APZCBasicTester : public APZCTesterBase {
   /**
    * Sample animations once, 1 ms later than the last sample.
    */
-  void SampleAnimationOnce() {
+  bool SampleAnimationOnce() {
     const TimeDuration increment = TimeDuration::FromMilliseconds(1);
     ParentLayerPoint pointOut;
     AsyncTransform viewTransformOut;
     mcc->AdvanceBy(increment);
-    apzc->SampleContentTransformForFrame(&viewTransformOut, pointOut);
+    return apzc->SampleContentTransformForFrame(&viewTransformOut, pointOut);
   }
   /**
    * Sample animations one frame, 17 ms later than the last sample.
    */
-  void SampleAnimationOneFrame() {
+  bool SampleAnimationOneFrame() {
     const TimeDuration increment = TimeDuration::FromMilliseconds(17);
     ParentLayerPoint pointOut;
     AsyncTransform viewTransformOut;
     mcc->AdvanceBy(increment);
-    apzc->SampleContentTransformForFrame(&viewTransformOut, pointOut);
+    return apzc->SampleContentTransformForFrame(&viewTransformOut, pointOut);
   }
 
   AsyncPanZoomController::GestureBehavior mGestureBehavior;

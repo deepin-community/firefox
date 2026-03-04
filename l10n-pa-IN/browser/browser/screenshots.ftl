@@ -40,7 +40,7 @@ screenshots-login-error-details = { -screenshots-brand-name } ਸੇਵਾ ਨ�
 screenshots-unshootable-page-error-title = ਅਸੀਂ ਇਸ ਸਫੇ ਦਾ ਸਕਰੀਨਸ਼ਾਟ ਨਹੀਂ ਲੈ ਸਕਦੇ।
 screenshots-unshootable-page-error-details = ਇਹ ਸਟੈਂਡਰਡ ਵੈੱਬ ਸਫ਼ਾ ਨਹੀਂ ਹੈ, ਇਸਕਰਕੇ ਤੁਸੀਂ ਇਸ ਦਾ ਸਕਰੀਨਸ਼ਾਟ ਨਹੀਂ ਲੈ ਸਕਦੇ ਹੋ।
 screenshots-empty-selection-error-title = ਤੁਹਾਡੀ ਚੋਣ ਬਹੁਤ ਛੋਟੀ ਹੈ
-screenshots-private-window-error-title = ਨਿੱਜੀ ਬਰਾਊਜਿੰਗ ਮੋਡ ਵਿੱਚ { -screenshots-brand-name } ਸਮਰੱਥ ਹੈ
+screenshots-private-window-error-title = ਪ੍ਰਾਈਵੇਟ ਬਰਾਊਜਿੰਗ ਮੋਡ ਵਿੱਚ { -screenshots-brand-name } ਸਮਰੱਥ ਹੈ
 screenshots-private-window-error-details = ਔਖਿਆਈ ਲਈ ਅਫ਼ਸੋਸ ਹੈ। ਅਸੀਂ ਆਉਣ ਵਾਲੇ ਰੀਲਿਜ਼ ਲਈ ਇਹ ਫੀਚਰ ਉੱਤੇ ਕੰਮ ਕਰ ਰਹੇ ਹਨ।
 screenshots-generic-error-title = ਠਹਿਰੋ! { -screenshots-brand-name } ਲੈਣ 'ਚ ਸਮੱਸਿਆ ਆਈ
 screenshots-generic-error-details = ਸਾਨੂੰ ਨਹੀਂ ਪਤਾ ਹੈ ਕਿ ਹੁਣੇ ਕੀ ਵਾਪਰਿਆ ਹੈ। ਮੁੜ ਕੋਸ਼ਿਸ਼ ਕਰਨੀ ਹੈ ਜਾਂ ਵੱਖਰੇ ਸਫ਼ੇ ਉੱਤੇ ਫੋਟੋ ਖਿੱਚਣੀ ਹੈ?
@@ -66,6 +66,11 @@ screenshots-component-copy-button-2 = ਕਾਪੀ
 screenshots-component-download-button-2 = ਡਾਊਨਲੋਡ
     .title = ਡਾਊਨਲੋਡ ਕਰੋ ({ $shortcut })
     .aria-label = ਡਾਊਨਲੋਡ ਕਰੋ
+# Variables
+#   $shortcut (String) - A keyboard shortcut for the screenshot command.
+screenshot-toolbar-button =
+    .label = ਸਕਰੀਨਸ਼ਾਟ
+    .tooltiptext = ਸਕਰੀਨਸ਼ਾਟ ਲਵੋ ({ $shortcut })
 
 ## The below strings are used to capture keydown events so the strings should
 ## not be changed unless the keyboard layout in the locale requires it.

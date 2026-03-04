@@ -1,5 +1,5 @@
 import { RemoteL10n, _RemoteL10n } from "modules/RemoteL10n.sys.mjs";
-import { GlobalOverrider } from "test/unit/utils";
+import { GlobalOverrider } from "tests/unit/utils";
 
 describe("RemoteL10n", () => {
   let sandbox;
@@ -81,6 +81,8 @@ describe("RemoteL10n", () => {
         "branding/brand.ftl",
         "browser/defaultBrowserNotification.ftl",
         "browser/newtab/asrouter.ftl",
+        "browser/profiles.ftl",
+        "browser/termsofuse.ftl",
         "toolkit/branding/brandings.ftl",
       ]);
       assert.isFalse(args[1]);
@@ -102,6 +104,8 @@ describe("RemoteL10n", () => {
         "branding/brand.ftl",
         "browser/defaultBrowserNotification.ftl",
         "browser/newtab/asrouter.ftl",
+        "browser/profiles.ftl",
+        "browser/termsofuse.ftl",
         "toolkit/branding/brandings.ftl",
       ]);
       assert.isFalse(args[1]);

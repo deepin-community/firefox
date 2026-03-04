@@ -3,9 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Send nettsider eit «Ikkje spor»-signal om at du ikkje vil bli spora
-do-not-track-description2 =
-    .label = Send nettstadar ein «Ikkje spor»-førespurnad
-    .accesskey = d
+do-not-track-removal = Vi støtter ikkje lenger «Ikkje spor»-signalet
 do-not-track-learn-more = Les meir
 do-not-track-option-default-content-blocking-known =
     .label = Berre når { -brand-short-name } er innstilt for å blokkere kjende sporarar
@@ -14,7 +12,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Fortel nettstadar om å ikkje selje eller dele mine data
     .accesskey = o
+non-technical-privacy-group =
+    .label = Personverninnstillingar for nettstaden
 non-technical-privacy-header = Personverninnstillingar for nettstaden
+non-technical-privacy-label =
+    .aria-label = { non-technical-privacy-header }
 # Do not translate.
 # "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
 # included to facilitate power-user search of the about:preferences page.
@@ -51,6 +53,9 @@ category-privacy =
 pane-sync-title3 = Synkronisering
 category-sync3 =
     .tooltiptext = { pane-sync-title3 }
+pane-ai-controls-title = AI-kontrollar
+category-ai-controls =
+    .tooltiptext = { pane-ai-controls-title }
 pane-experimental-title = { -brand-short-name }-eksperiment
 category-experimental =
     .tooltiptext = { -brand-short-name }-eksperiment
@@ -60,6 +65,7 @@ pane-experimental-description2 = Endrar du avanserte konfigurasjonsinnstillingar
 settings-pane-labs-title = { -firefoxlabs-brand-name }
 settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description4 = Prøv dei eksperimentelle funksjonane våre! Dei er under utvikling og i endring, noko som kan påverke korleis { -brand-short-name } fungerer. Vi får berre data om bruken din av desse funksjonane om du har <a data-l10n-name="data-collection">tekniske data og interaksjonsdata</a> slått på.
 pane-experimental-description3 = Prøv dei eksperimentelle funksjonane våre! Dei er framleis under utvikling og vert kontinuerleg forbetra, noko som kan påverke korleis { -brand-short-name } fungerer.
 pane-experimental-reset =
     .label = Gjenopprett standard
@@ -70,6 +76,8 @@ focus-search =
     .key = f
 close-button =
     .aria-label = Lat att
+do-not-track-removal2 =
+    .label = Vi støttar ikkje lenger «Ikkje spor»-signalet
 
 ## Browser Restart Dialog
 
@@ -111,6 +119,10 @@ extension-controlling-proxy-config = <img data-l10n-name ="icon"/> <strong>{ $na
 # <img data-l10n-name="addons-icon"/> will be replaced with Add-ons icon
 # <img data-l10n-name="menu-icon"/> will be replaced with Menu icon
 extension-controlled-enable = For å aktivere utvidinga, gå til <img data-l10n-name="addons-icon"/> Utviding i menyen <img data-l10n-name="menu-icon"/>.
+extension-controlled-enable-2 = For å aktivere denne utvidinga på nytt, gå til <a data-l10n-name="addons-link">utvidingar og tema</a>.
+# This string is shown to notify the user that their home page or new tab preferences
+# are being controlled by an extension.
+extension-controlling-homepage = { $name } styrer nokre av startsideinnstillingane dine.
 
 ## Preferences UI Search Results
 
@@ -125,6 +137,10 @@ startup-header = Startside
 always-check-default =
     .label = Kontroller alltid om { -brand-short-name } er standard-nettlesar
     .accesskey = a
+is-default-browser =
+    .message = { -brand-short-name } er standard-nettlesar
+is-not-default-browser =
+    .message = { -brand-short-name } er ikkje standard nettlesar
 is-default = { -brand-short-name } er standard-nettlesar
 is-not-default = { -brand-short-name } er ikkje standard nettlesar
 set-as-my-default-browser =
@@ -133,19 +149,63 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Opne tidlegare vindauge og faner
     .accesskey = p
+startup-windows-launch-on-login-profile-disabled =
+    .message = Aktiver denne innstillinga ved å merke av for «{ profile-manager-use-selected.label }» i «Vel brukarprofil»-vindauget.
 windows-launch-on-login =
     .label = Opne { -brand-short-name } automatisk når datamaskina di startar opp
     .accesskey = O
-windows-launch-on-login-disabled = Denne innstillinga er deaktivert i Windows. For å endre, gå til <a data-l10n-name="startup-link">Oppstartsapper</a> i Systeminnstillingar.
+windows-launch-on-login-disabled = Denne innstillinga er deaktivert i Windows. For å endre, gå til <a data-l10n-name="startup-link">Appar > Oppstart</a> i Systeminnstillingar.
+windows-launch-on-login-profile-disabled = Aktiver denne innstillinga ved å merke av for «{ profile-manager-use-selected.label }» i «Vel brukarprofil»-vindauget.
 startup-restore-warn-on-quit =
     .label = Åtvar meg når eg avsluttar nettlesaren
 disable-extension =
     .label = Slå av utviding
+preferences-data-migration-group =
+    .label = Importer nettlesardata
+    .description = Ta med bokmerke, passord, historikk, utvidingar og autoutfyllingsdata frå ein annan nettlesar.
 preferences-data-migration-header = Importer nettlesardata
 preferences-data-migration-description = Importer bokmerke, passord, historikk og autofylldata til { -brand-short-name }.
 preferences-data-migration-button =
     .label = Importer data
     .accesskey = m
+preferences-profiles-group-header =
+    .heading = Profilar
+preferences-profiles-subpane-description =
+    .description = Kvar profil har eigne nettlesardata og innstillingar, medrekna historikk, passord og meir.
+preferences-profiles-section-header =
+    .label = Profilar
+    .description = Kvar profil har eigne nettlesardata og innstillingar, medrekna historikk, passord og meir.
+preferences-profiles-header = Profilar
+preferences-manage-profiles-description = Kvar profil har eigne nettlesardata og innstillingar, medrekna historikk, passord og meir.
+preferences-manage-profiles-learn-more = Les meir
+preferences-manage-profiles-button =
+    .label = Handsam profilar
+preferences-profiles-settings-button =
+    .label = Innstillingar
+# This string labels the entire copy profile section in the profiles sub-pane.
+preferences-copy-profile-header =
+    .label = Kopier ein eksisterande profil
+    .description = Den nye profilen vil kopiere innstillingane dine, utvidingar, historikk og lagra data som bokmerke og passord — men ikkje kontoen din eller synkroniseringsinformasjonen.
+# This string sits next to the copy controls, both the copy-profile-select
+# drop-down and the copy-profile-button, so that the user understands they
+# need to first pick a profile to copy, and then click the copy button.
+preferences-profile-to-copy =
+    .label = Profil som skal kopierast
+# This string is a placeholder that will be shown in a drop-down list of
+# profiles. The user will select a profile, then click the copy button
+# to make a copy of that profile.
+preferences-copy-profile-select = Vel profil
+preferences-copy-profile-button = Kopier
+tabs-group-header2 =
+    .label = Faner
+tabs-opening-heading =
+    .label = Opning
+tabs-interaction-heading =
+    .label = Samhandling
+tabs-containers-heading =
+    .label = Behaldarar
+tabs-closing-heading =
+    .label = Attlating
 tabs-group-header = Faner
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab vekslar mellom faner i nyleg brukt-rekkjefølgje
@@ -153,6 +213,19 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Opne lenker i faner i staden for nye vindauge
     .accesskey = l
+open-external-link-next-to-active-tab =
+    .label = Opne lenker frå appar ved sida av den aktive fana di
+ask-on-close-multiple-tabs =
+    .label = Spør før attlating av fleire faner
+    .accesskey = S
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = Spør før du avsluttar med { $quitKey }
+    .accesskey = a
 confirm-on-close-multiple-tabs =
     .label = Stadfest før attlating av fleire faner
     .accesskey = S
@@ -181,6 +254,8 @@ browser-containers-settings =
     .label = Innstillingar…
     .accesskey = I
 containers-disable-alert-title = Late att alle behaldarfaner?
+startup-group =
+    .label = Startside
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -212,12 +287,49 @@ containers-remove-cancel-button = Ikkje fjern denne behaldaren
 settings-tabs-show-image-in-preview =
     .label = Vis ei førehandsvising når du held musepeikaren over ei fane
     .accessKey = f
+browser-layout-header2 =
+    .label = Nettlesarutforming
+browser-layout-horizontal-tabs2 =
+    .label = Horisontale faner
+    .title = Faner øvst
+    .description = Faner øvst
+browser-layout-vertical-tabs2 =
+    .label = Vertikale faner
+    .title = Faner på sida, i sidestolpen
+    .description = Faner på sida, i sidestolpen
+browser-layout-show-sidebar2 =
+    .label = Vis sidestolpe
+    .description = Få rask tilgang til bokmerke, faner frå mobilen din, AI-chatbotar og meir utan å forlate hovudvisinga.
+browser-layout-header = Nettlesarutforming
+browser-layout-horizontal-tabs =
+    .label = Horisontale faner
+browser-layout-horizontal-tabs-desc = Vis øvst i nettlesaren
+browser-layout-vertical-tabs =
+    .label = Vertikale faner
+browser-layout-vertical-tabs-desc = Vis på sida, i sidestolpen
+browser-layout-show-sidebar =
+    .label = Vis sidestolpe
+browser-layout-show-sidebar-desc = Få rask tilgang til bokmerke, faner frå mobilen din, AI-chatbotar og meir utan å forlate hovudvisinga.
 
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Språk og utsjånad
+appearance-group =
+    .label = Utsjånaden på nettstaden
+    .description = Nokre nettstadar tilpassar fargeskjemaet basert på innstillingane dine. Vel kva for fargeskjema du vil bruke for desse nettstadane.
 preferences-web-appearance-header = Utsjånaden på nettstaden
 preferences-web-appearance-description = Nokre nettstadar tilpassar fargeskjemaet basert på innstillingane dine. Vel kva for fargeskjema du vil bruke for desse nettstadane.
+preferences-web-appearance-choice-auto2 =
+    .label = Automatisk
+    .title = Endre nettsidebakgrunn og innhald automatisk basert på systeminnstillingane og { -brand-short-name }-temaet.
+preferences-web-appearance-choice-light2 =
+    .label = Lyst
+    .title = Bruk ein lys utsjånad for nettsidebakgrunn og innhald.
+preferences-web-appearance-choice-dark2 =
+    .label = Mørkt
+    .title = Bruk ein mørk utsjånad for nettsidebakgrunn og innhald.
+web-appearance-group =
+    .aria-label = Utsjånaden på nettstaden
 preferences-web-appearance-choice-auto = Automatisk
 preferences-web-appearance-choice-light = Lyst
 preferences-web-appearance-choice-dark = Mørkt
@@ -235,19 +347,45 @@ preferences-web-appearance-choice-input-dark =
     .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
-preferences-web-appearance-override-warning = Fargevala dine overstyrer utsjånaden til nettstaden. <a data-l10n-name="colors-link">Handsam fargar</a>
+preferences-web-appearance-override-warning3 =
+    .message = Kontrastinnstillingane dine overstyrer utsjånaden til nettstaden.
+preferences-web-appearance-link =
+    .label = Handsam { -brand-short-name }-tema i Utvidingar og tema
+preferences-contrast-control-group =
+    .label = Nettstadkontrast
+    .description = Nettstadar brukar ulike forgrunns- og bakgrunnsfargar. For jamn kontrast kan du bruke dei same fargane på tvers av nettstadar.
+preferences-contrast-control-radio-group =
+    .label = Overstyr fargar
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
-preferences-web-appearance-override-warning2 =
-    .message = Fargevala dine overstyrer utsjånaden til nettstaden.
+preferences-web-appearance-override-warning = Fargevala dine overstyrer utsjånaden til nettstaden. <a data-l10n-name="colors-link">Handsam fargar</a>
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = Handsam { -brand-short-name }-tema i <a data-l10n-name="themes-link">Utvidingar og tema</a>
+preferences-contrast-control-header = Kontrastkontroll
+preferences-contrast-control-description = Nettstadar har ei rekkje forgrunns- og bakgrunnsfargar. Konfigurer { -brand-short-name } for å bruke dei same fargane på tvers av nettstadar for forbetra lesbarheit.
+preferences-contrast-control-use-platform-settings =
+    .label = Automatisk (bruk systeminnstillingar)
+    .accesskey = A
+preferences-contrast-control-off =
+    .label = Av
+    .accesskey = A
+preferences-contrast-control-custom =
+    .label = Tilpassa
+    .accesskey = T
 preferences-colors-header = Fargar
 preferences-colors-description = Overstyr { -brand-short-name } sine standardfargar for tekst, nettsidebakgrunnar og lenker.
 preferences-colors-manage-button =
     .label = Handsam fargar…
     .accesskey = H
+preferences-fonts-header2 =
+    .label = Skrifttypar
+default-font-2 =
+    .label = Standardskrift
+    .accesskey = t
+default-font-size-2 =
+    .label = Storleik
+    .accesskey = S
 preferences-fonts-header = Skrifttypar
 default-font = Standardskrift
     .accesskey = t
@@ -256,6 +394,12 @@ default-font-size = Storleik
 advanced-fonts =
     .label = Avansert…
     .accesskey = A
+# Zoom is a noun, and the message is used as header for a group of options
+preferences-zoom-header2 =
+    .label = Skalering
+preferences-default-zoom-label =
+    .label = Standardskalering
+    .accesskey = s
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Skalering
 preferences-default-zoom = Standardskalering
@@ -271,6 +415,28 @@ preferences-text-zoom-override-warning =
     .message = Åtvaring: Viss du vel «Forstørr bere tekst» og standard-zoomen ikkje er sett til 100 %, kan det føre til at enkelte nettstadar eller innhald ikkje fungerer korrekt.
 language-header = Språk
 choose-language-description = Vel føretrekte språk på nettsider
+website-language-heading =
+    .label = Nettstadspråk
+    .description = Nokre nettsider blir viste på fleire språk. Vel språk i ønskt rekkjefølgje.
+website-preferred-language =
+    .label = Føretrekt språk
+website-add-language =
+    .label = Legg til språk
+website-add-language-button =
+    .aria-label = Legg til valt språk
+    .title = Legg til valt språk
+# The pattern used to generate strings presented to the user in the
+# website languages selection list.
+#
+# Example:
+#   Icelandic
+#   Spanish (Chile)
+#
+# Variables:
+#   $locale (String) - A name of the locale (for example: "Icelandic", "Spanish (Chile)")
+website-remove-language-button =
+    .aria-label = Fjern { $locale }
+    .title = Fjern { $locale }
 choose-button =
     .label = Vel…
     .accesskey = V
@@ -290,6 +456,68 @@ translate-attribution = Omsettingar av <img data-l10n-name="logo"/>
 translate-exceptions =
     .label = Unntak…
     .accesskey = n
+settings-translations-header =
+    .label = Omsettingar
+    .aria-label = Omsettingar
+    .description = Omset sider eller vald tekst. For å verne om privatlivet ditt, blir omsetjingar verande på eininga di.
+settings-translations-offer-to-translate-label =
+    .label = Tilby omsetting av heile sida
+settings-translations-more-settings-button =
+    .label = Fleire omsettingsinnstillingar
+    .description = Angi innstillingar for språk, nettstadar og fråkopla omsetting.
+settings-translations-subpage-header =
+    .heading = Fleire omsettingsinnstillingar
+settings-translations-subpage-speed-up-translation-header =
+    .label = Raskare omsetting
+    .description = Last ned komplette språk for raskare omsettingar og for å omsette utan nettsamband.
+settings-translations-subpage-automatic-translation-header =
+    .label = Automatisk omsetting
+settings-translations-subpage-always-translate-header =
+    .label = Omset alltid desse språka
+settings-translations-subpage-never-translate-header =
+    .label = Omset aldri desse språka
+settings-translations-subpage-never-translate-sites-header =
+    .label = Omset aldri desse nettstadane
+# The icon placeholders show the translations button and the settings gear in the urlbar panel.
+settings-translations-subpage-never-translate-sites-description = For å leggje til ein nettstad opnar du <img data-l10n-name="translations-icon"/> omsettingspanelet, vel <img data-l10n-name="settings-icon"/> omsettingsinnstillingar og deretter «Omset aldri denne nettstaden»
+settings-translations-subpage-language-select-option =
+    .label = Legg til språk
+settings-translations-subpage-language-add-button =
+    .aria-label = Legg til språk
+    .title = Legg til språk
+settings-translations-subpage-download-languages-header =
+    .label = Last ned språk
+settings-translations-subpage-download-languages-select-option =
+    .label = Vel språk
+settings-translations-subpage-download-languages-button =
+    .aria-label = Last ned språk
+    .title = Last ned språk
+# Variables:
+#   $language (string) - Localized name of the language to download.
+#   $size (string) - Download size in megabytes, formatted for the locale.
+settings-translations-subpage-download-language-option = { $language } ({ $size }MB)
+    .label = { $language } ({ $size }MB)
+settings-translations-subpage-no-languages-downloaded =
+    .label = Ingen språk er lasta ned
+settings-translations-subpage-no-languages-added =
+    .label = Ingen språk er lagt til
+settings-translations-subpage-download-progress = Nedlasting i framdrift…
+# Variables:
+#   $language (string) - The localized display name of the language.
+#   $size (string) - The download size of the language in megabytes.
+settings-translations-subpage-download-error = Klarte ikkje å laste ned { $language } ({ $size }MB)
+settings-translations-subpage-download-retry-button =
+    .label = Prøv igjen
+# Variables:
+#   $language (string) - The localized display name of the language.
+#   $size (string) - The download size of the language in megabytes.
+settings-translations-subpage-download-delete-confirm = Slette { $language } ({ $size }MB)?
+settings-translations-subpage-download-delete-button =
+    .label = Slett
+settings-translations-subpage-download-cancel-button =
+    .label = Avbryt
+settings-translations-subpage-no-sites-added =
+    .label = Ingen nettstadar lagt til
 # Variables:
 #    $localeName (string) - Localized name of the locale to be used.
 use-system-locale =
@@ -301,6 +529,11 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = Filer og program
+downloads-header-2 =
+    .label = Nedlastingar
+download-save-where-2 =
+    .label = Lagre filer i
+    .accesskey = L
 download-header = Nedlastingar
 download-save-where = Lagre filer i
     .accesskey = L
@@ -318,6 +551,9 @@ download-choose-folder =
 download-always-ask-where =
     .label = Spør alltid om kvar eg vil lagre filer
     .accesskey = a
+download-private-browsing-delete =
+    .label = Slett filer som er lasta ned i privat nettlesing når alle private vindauge er attlatne
+    .accesskey = S
 applications-header = Program
 applications-description = Vel korleis { -brand-short-name } handsamar filer du hentar frå nettet eller programma du brukar når du surfar.
 applications-filter =
@@ -400,6 +636,8 @@ applications-save-for-new-types =
 applications-ask-before-handling =
     .label = Spør om du vil opne eller lagre filer
     .accesskey = S
+drm-group =
+    .label = Digital Rights Management (DRM) innhald
 drm-content-header = Digital Rights Management (DRM) innhald
 play-drm-content =
     .label = Spel DRM-kontrollert innhald
@@ -449,6 +687,16 @@ update-in-progress-ok-button = &Avvis
 # method of closing the UI will not discard the update.
 update-in-progress-cancel-button = &Fortset
 
+## Firefox support
+
+support-application-heading =
+    .label = { -brand-short-name } brukerstøtte
+    .description = Feilsøk problem eller del idear med fellesskapet.
+support-get-help =
+    .label = Få hjelp
+support-share-ideas =
+    .label = Del idear og tilbakemeldingar
+
 ## General Section - Performance
 
 performance-title = Yting
@@ -468,10 +716,14 @@ performance-limit-content-process-blocked-desc = Endring av talet på innhaldspr
 #   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (standard)
+performance-group =
+    .label = Yting
 
 ## General Section - Browsing
 
 browsing-title = Nettlesing
+browsing-group-label =
+    .aria-label = Nettlesing
 browsing-use-autoscroll =
     .label = Bruk automatisk rulling
     .accesskey = B
@@ -499,6 +751,9 @@ browsing-search-on-start-typing =
 browsing-picture-in-picture-toggle-enabled =
     .label = Slå på videokontrollar for bilde-i-bilde
     .accesskey = e
+browsing-picture-in-picture-enable-when-switching-tabs =
+    .label = Fortset å spele av videoar i bilde-i-bilde når du byter fane
+    .accesskey = s
 browsing-picture-in-picture-learn-more = Les meir
 browsing-media-control =
     .label = Kontroller media via tastatur, hovudsett eller virtuelt grensesnitt
@@ -511,6 +766,8 @@ browsing-cfr-features =
     .label = Tilrå funksjonar medan du surfar
     .accesskey = T
 browsing-cfr-recommendations-learn-more = Les meir
+browsing-group =
+    .label = Nettlesing
 
 ## General Section - Proxy
 
@@ -520,16 +777,36 @@ network-proxy-connection-learn-more = Les meir
 network-proxy-connection-settings =
     .label = Innstillingar…
     .accesskey = I
+network-proxy-group =
+    .label = Nettverksinnstillingar
+    .description = Konfigurer korleis { -brand-short-name } koplar seg til internett.
 
 ## Home Section
 
 home-new-windows-tabs-header = Nye vindauge og faner
 home-new-windows-tabs-description2 = Vel kva du vil sjå når du opnar startsida, nye vindauge og nye faner.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+home-default-browser-title =
+    .label = Standard nettlesar
+is-default-browser-2 =
+    .message = { -brand-short-name } er standardnettlesar. Godt val.
+is-not-default-browser-2 =
+    .message = Psst, { -brand-short-name } er ikkje standardnettlesar.
+set-as-my-default-browser-2 =
+    .label = Bruk som standard
+    .accesskey = S
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = Startside og nye vindauge
+home-homepage-new-windows =
+    .label = Nye vindauge
+home-homepage-mode-label2 = Nye vindauge
 home-newtabs-mode-label = Nye faner
+home-homepage-new-tabs =
+    .label = Nye faner
 home-restore-defaults =
     .label = Bruk standardinnstillingar
     .accesskey = r
@@ -541,6 +818,14 @@ home-mode-choice-blank =
     .label = Tom side
 home-homepage-custom-url =
     .placeholder = Lim inn ein URL…
+# This button is shown when the homepage is managed by an extension and is placed below extension-controlling-homepage.
+home-homepage-manage-extension-button =
+    .label = Handsam utviding
+# This option leads to the "Custom Homepage" subpage
+home-homepage-custom-homepage-button =
+    .label = Vel ein bestemt nettstad
+# This option leads to the "Custom Homepage" subpage
+home-homepage-custom-homepage-url = Vel ein bestemt nettstad
 # This string has a special case for '1' and [other] (default). If necessary for
 # your language, you can add {$tabCount} to your translations and use the
 # standard CLDR forms, or only use the form for [other] if both strings should
@@ -555,21 +840,62 @@ use-current-pages =
 choose-bookmark =
     .label = Bruk bokmerke…
     .accesskey = u
+home-homepage-header = Startside
+
+## Home Section - Home Page Customization
+
+home-homepage-title =
+    .label = Startside
+
+## Custom Homepage subpage
+
+home-custom-homepage-header = Tilpassa startside
+home-custom-homepage-subpage =
+    .heading = Tilpassa startside
+# Subheader on the Custom Homepage subpage. Followed by a form to enter URLs and a list of URLs already saved, if any.
+home-custom-homepage-card-header =
+    .label = Nettadresse(r)
+# Subheader on the Custom Homepage subpage. Followed by a form to enter URLs and a list of URLs already saved, if any.
+home-custom-homepage-subheader = Nettadresse(r)
+home-custom-homepage-address =
+    .placeholder = Skriv inn adresse
+home-custom-homepage-address-button =
+    .label = Legg til adresse
+# Shown when no custom websites/URLs to use as a homepage have been added yet
+home-custom-homepage-no-results =
+    .label = Ingen nettstadar lagt til enno.
+home-custom-homepage-delete-address-button =
+    .aria-label = Slett adresse
+    .title = Slett adresse
+# Shown when no custom websites/URLs to use as a homepage have been added yet
+home-custom-homepage-no-websites-yet = Ingen nettstadar lagt til enno.
+# Further options to use when setting the home page. Two action buttons are placed in line with this prompt
+# to replace the current home page with a currently open page or bookmark.
+home-custom-homepage-replace-with = Erstatt med:
+# Button that appears in-line after text "Replace with" (home-custom-homepage-replace-with)
+home-custom-homepage-current-pages-button =
+    .label = Gjeldande opna sider
+# Button that appears in-line after text "Replace with" (home-custom-homepage-replace-with)
+home-custom-homepage-bookmarks-button =
+    .label = Bokmerke…
 
 ## Home Section - Firefox Home Content Customization
 
-home-prefs-content-header2 = { -firefox-home-brand-name } Innhald
-home-prefs-content-description2 = Velg kva for innhald som du vil ha på { -firefox-home-brand-name }-skjermen din.
+home-prefs-content-header2 = { -firefox-home-brand-name }-innhald
+home-prefs-content-description2 = Vel kva for innhald som du vil ha på { -firefox-home-brand-name }-skjermen din.
 home-prefs-search-header =
     .label = Nettsøk
+home-prefs-search-header2 =
+    .label = Søk
 home-prefs-shortcuts-header =
     .label = Snarvegar
 home-prefs-shortcuts-description = Nettstadar du lagrar eller besøkjer
 home-prefs-shortcuts-by-option-sponsored =
     .label = Sponsa snarvegar
+home-prefs-content-header =
+    .label = { -firefox-home-brand-name }
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Tilrådd av { $provider }
@@ -577,10 +903,16 @@ home-prefs-recommended-by-description-new = Eksepsjonelt innhald sett saman av {
 home-prefs-recommended-by-header-generic =
     .label = Tilrådde artiklar
 home-prefs-recommended-by-description-generic = Eineståande innhald utvalt av { -brand-product-name }-familien
+home-prefs-stories-header =
+    .label = Artiklar
+home-prefs-stories-description = Personlege artiklar basert på aktiviteten din
+home-prefs-stories-header2 =
+    .label = Artiklar
+    .description = Eineståande innhald utvalt av { -brand-product-name }-familien
 
 ##
 
-home-prefs-recommended-by-learn-more = Korleis det fungerar
+home-prefs-recommended-by-learn-more = Korleis det fungerer
 home-prefs-recommended-by-option-sponsored-stories =
     .label = Sponsa historiar
 home-prefs-recommended-by-option-recent-saves =
@@ -607,6 +939,27 @@ home-prefs-weather-header =
     .label = Vêr
 home-prefs-weather-description = Vêrmeldinga i dag, i korte trekk
 home-prefs-weather-learn-more-link = Les meir
+home-prefs-widgets-header =
+    .label = Widgetar
+# Lists is a widget on New Tab, similar to a to-do widget
+home-prefs-lists-header =
+    .label = Lister
+# Timer is a widget on New Tab, similar to the Pomodoro timer.
+home-prefs-timer-header =
+    .label = Nedteljing
+# "Support" here means to help sustain or contribute to something, especially through funding or sponsorship.
+home-prefs-support-firefox-header =
+    .label = Støtt { -brand-product-name }
+home-prefs-mission-message = Sponsorane våre støttar oppdraget vårt om å byggje eit betre internett
+home-prefs-mission-message-learn-more-link = Finn ut korleis
+home-prefs-mission-message2 =
+    .message = Sponsorane våre støttar oppdraget vårt om å byggje eit betre internett.
+home-prefs-manage-topics-link = Handsam emne
+home-prefs-manage-topics-link2 =
+    .label = Handsam emne
+home-prefs-choose-wallpaper-link = Vel eit bakgrunnsbilde
+home-prefs-choose-wallpaper-link2 =
+    .label = Vel eit bakgrunnsbilde
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -640,6 +993,35 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Vis søkjeforslag i adresselinja
     .accesskey = l
+# This string describes what the user will observe when the system
+# prioritizes search suggestions over browsing history in the results
+# that extend down from the address bar. In the original English string,
+# "before" refers to location (appearing most proximate to), not time
+# (appearing before).
+search-show-suggestions-above-history-option-2 =
+    .label = Vis søkjeforslag før nettlesarhistorikk i adressefeltresultata
+search-show-suggestions-private-windows-2 =
+    .label = Søkjeforslag i private vindauge
+search-suggestions-cant-show-2 =
+    .message = Søkjeforslag vil ikkje visast i adresselinjeresultata fordi du har konfigurert { -brand-short-name } til å aldri hugse historikk.
+addressbar-header-1 =
+    .label = Adresselinje
+    .description = Vel kva forslag som skal visast i adresselinja
+# When Firefox Suggest is enabled, this replaces `addressbar-header-1`.
+addressbar-header-firefox-suggest-2 =
+    .label = { -firefox-suggest-brand-name }
+    .description = Forslag frå { -brand-short-name } og partnarane våre i adresselinja di.
+# With this option enabled, while on a SERP, the URL normally displayed in the
+# address bar will be replaced with the search term used to generate that SERP.
+search-show-search-term-option-2 =
+    .label = Vis søkjeord i adressefeltet på resultatsidene
+search-separate-default-engine-2 =
+    .label = Bruk ein annan standard søkjemotor i private vindauge
+    .accesskey = B
+search-separate-default-engine-dropdown =
+    .aria-label = Standard søkjemotor i private vindauge
+search-suggestions-header-2 =
+    .label = Søkjemotorforslag
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -658,6 +1040,9 @@ suggestions-addressbar-settings-generic2 = Endre innstillingar for andre adresse
 search-suggestions-cant-show = Søkjeforslag vil ikkje visast i adresselinjeresultata fordi du har konfigurert { -brand-short-name } til å aldri hugse historikk.
 search-one-click-header2 = Søkesnarvegar
 search-one-click-desc = Vel alternative søkjemotorar som vert viste under adresselinja og søkelinja når du byrjar å skrive inn eit søkjeord.
+search-one-click-header-3 =
+    .label = Fleire søkjemotorar
+    .description = Vel kva søkjemotorar og snarvegar som blir viste i adressefeltet.
 search-choose-engine-column =
     .label = Søkjemotor
 search-choose-keyword-column =
@@ -671,6 +1056,12 @@ search-remove-engine =
 search-add-engine =
     .label = Legg til
     .accesskey = L
+search-add-engine-2 =
+    .label = Legg til søkjemotor
+    .accesskey = L
+search-edit-engine =
+    .label = Rediger
+    .accesskey = R
 search-find-more-link = Finn fleire søkjemotorar
 # This warning is displayed when the chosen keyword is already in use
 # ('Duplicate' is an adjective)
@@ -679,12 +1070,25 @@ search-keyword-warning-title = Kopiere stikkord
 #   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Du har valt eit nøkkelord som allereie er i bruk av «{ $name }». Vel eit anna nøkkelord.
 search-keyword-warning-bookmark = Du har valt eit nøkkelord som allereie vert brukt av eit bokmerke. Vel eit anna nøkkelord.
+# This warning is displayed when the chosen name is already in use.
+# Variables:
+#   $name (string) - Name of a search engine.
+edit-engine-name-warning-duplicate = Det finst allereie ein søkjemotor med namnet «{ $name }». Vel eit anna namn.
+remove-engine-confirmation = Er du sikker på at du vil fjerne denne søkjemotoren?
+remove-engine-remove = Fjern
+remove-addon-engine-alert = For å fjerne denne søkjemotoren, fjern det tilknytte tillegget.
+search-engine-group =
+    .label = Standard søkjemotor
+search-default-engine =
+    .aria-label = Standard søkjemotor
 
 ## Containers Section
 
 containers-back-button2 =
     .aria-label = Tilbake til innstillingar
 containers-header = Behaldarfaner
+containers-section-header =
+    .heading = Behaldarfaner
 containers-add-button =
     .label = Legg til ny behaldar
     .accesskey = L
@@ -696,6 +1100,16 @@ containers-settings-button =
 containers-remove-button =
     .label = Fjern
 
+## Account and sync
+
+sync-group-label =
+    .label = Synkronisering
+account-group-label =
+    .label = { -vendor-short-name }-konto
+account-placeholder =
+    .label = Du er ikkje innlogga
+    .description = Logg inn for å halde dataa dine private, krypterte og synkroniserte på tvers av einingar.
+
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
@@ -704,6 +1118,12 @@ sync-signedout-description2 = Synkroniser bokmerke, historikk, faner, passord, u
 sync-signedout-account-signin3 =
     .label = Logg in for å synkronisere…
     .accesskey = L
+sync-signedout-account-signin-4 =
+    .label = Logg på kontoen din for å starte synkroniseringa
+    .accesskey = o
+sync-signedout-account-short =
+    .label = Logg inn
+    .accesskey = i
 # This message contains two links and two icon images.
 #   `<img data-l10n-name="android-icon"/>` - Android logo icon
 #   `<a data-l10n-name="android-link">` - Link to Android Download
@@ -728,14 +1148,37 @@ fxa-login-rejected-warning =
 sync-sign-out =
     .label = Logg ut…
     .accesskey = g
+sync-sign-out2 =
+    .label = Logg ut
+    .accesskey = g
 sync-manage-account = Handsam kontoen
+    .accesskey = k
+sync-manage-account2 =
+    .label = Handsam kontoen
     .accesskey = k
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } er ikkje stadfesta.
+sync-signedin-unverified2 =
+    .label = { $email } er ikkje stadfesta enno
+    .description = Sjekk innboksen din for å stadfeste kontoen og gjere han offisiell.
 sync-signedin-login-failure = Logg inn for å kople til på nytt { $email }
+sync-signedin-login-failure2 =
+    .label = Du er logga ut av { $email }
+    .description = Logg inn igjen for å kople til på nytt og byrje å synkronisere dataa dine.
+
+## Variables
+## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
+
+sync-account-signed-in =
+    .label = { $email }
+sync-account-signed-in-display-name =
+    .label = { $name }
+    .description = { $email }
 
 ##
 
@@ -755,9 +1198,17 @@ sync-sign-in =
 ## Sync section - enabling or disabling sync.
 
 prefs-syncing-on = Synkronisering: PÅ
+prefs-syncing-on-2 =
+    .label = Synkronisering er PÅ
 prefs-syncing-off = Synkronisering: AV
+prefs-syncing-off-2 =
+    .label = Synkronisering er AV
+    .description = Slå på synkronisering for å få bokmerka, passorda, historikken, og meir, tilgjengeleg på alle einingane dine.
 prefs-sync-turn-on-syncing =
     .label = Slå på synkronisering…
+    .accesskey = S
+prefs-sync-turn-on-syncing-2 =
+    .label = Slå på synkronisering
     .accesskey = S
 prefs-sync-offer-setup-label2 = Synkroniser bokmerke, historikk, faner, passord, utvidingar og innstillingar på tvers av alle einingane dine.
 prefs-sync-now =
@@ -767,12 +1218,22 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = Synkroniser no
     .accesskey = n
+prefs-sync-now-button-2 =
+    .label = Synkroniser no
+    .accesskey = n
 prefs-syncing-button =
     .label = Synkroniserer…
+prefs-syncing-button-2 =
+    .label = Synkroniserer…
+    .title = Synkroniser no
 
 ## The list of things currently syncing.
 
 sync-syncing-across-devices-heading = Du synkroniserer desse elementa mellom alle dei tilkopla einingane dine:
+sync-syncing-across-devices-heading-2 = Data synkroniserte på tvers av einingar
+sync-syncing-across-devices-empty-state =
+    .label = Du synkroniserer ingenting … enno.
+    .description = Start synkronisering for å få alle dataa dine på alle einingane dine.
 sync-currently-syncing-bookmarks = Bokmerke
 sync-currently-syncing-history = Historikk
 sync-currently-syncing-tabs = Opne faner
@@ -783,6 +1244,12 @@ sync-currently-syncing-creditcards = Kredittkort
 sync-currently-syncing-payment-methods = Betalingsmåtar
 sync-currently-syncing-addons = Tillegg
 sync-currently-syncing-settings = Innstillingar
+sync-manage-options =
+    .label = Handsam synkronisering…
+    .accesskey = H
+sync-manage-options-2 =
+    .label = Handsam synkroniserte data
+    .accesskey = H
 sync-change-options =
     .label = Endre…
     .accesskey = E
@@ -835,10 +1302,27 @@ sync-engine-settings =
     .label = Innstillingar
     .tooltiptext = Generelle, personvern- og sikkerheitsinnstillingar du har endra
     .accesskey = n
+sync-choose-what-to-sync-dialog4 =
+    .title = Handsam kva som skal synkroniserast på dei tilkopla einingane dine
+    .style = min-width: 36em;
+    .buttonlabelaccept = Lagre
+    .buttonaccesskeyaccept = L
+    .buttonlabelextra2 = Kople frå…
+    .buttonaccesskeyextra2 = f
 
 ## The device name controls.
 
 sync-device-name-header = Namn på eininga
+sync-device-name-header-2 =
+    .label = Namn på eininga
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Namn på eininga
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Endre namn på eininga
+    .accesskey = E
 sync-device-name-change =
     .label = Endre namn på eininga…
     .accesskey = E
@@ -849,6 +1333,8 @@ sync-device-name-save =
     .label = Lagre
     .accesskey = L
 sync-connect-another-device = Kople til ei anna eining
+sync-connect-another-device-2 =
+    .label = Kople til ei anna eining
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -880,10 +1366,16 @@ forms-ask-to-save-logins =
 # by searching for the former term "logins". It's not displayed in the UI.
 pane-privacy-passwords-header = Passord
     .searchkeywords = innloggingar
+forms-passwords-header =
+    .label = Passord
+    .aria-label = Passord
 # Checkbox to control whether UI is shown to users to save or fill logins/passwords.
 forms-ask-to-save-passwords =
     .label = Spør om å lagre passord
     .accesskey = S
+forms-manage-password-exceptions =
+    .label = Handsam passordunntak
+    .accesskey = H
 forms-exceptions =
     .label = Unntak…
     .accesskey = n
@@ -914,15 +1406,40 @@ forms-saved-logins =
 forms-fill-usernames-and-passwords =
     .label = Fyll ut brukarnamn og passord automatisk
     .accesskey = F
+forms-fill-usernames-and-passwords-2 =
+    .label = Lagre og fyll ut brukarnamn og passord automatisk
+    .accesskey = f
 forms-saved-passwords =
     .label = Lagra passord
     .accesskey = L
+forms-saved-passwords-2 =
+    .label = Handsam lagra passord
+    .accesskey = H
+forms-saved-passwords-searchkeywords = Innloggingar for følgjande nettstadar er lagra på datamaskina di
+# Header for additional protections when managing password settings.
+forms-additional-protections-header =
+    .label = Ytterlegare vern
 forms-primary-pw-use =
     .label = Bruk eit hovudpassord
     .accesskey = B
+forms-primary-pw-use-2 =
+    .label = Bruk eit hovudpassord
+    .description = Legg til eit ekstra sikkerheitslag for å verne lagra passord.
+    .accesskey = B
+forms-primary-pw-set =
+    .label = Angje hovudpassord
+forms-primary-pw-on =
+    .label = Hovudpassord er PÅ
+forms-primary-pw-change-2 =
+    .label = Endre hovudpassord
+# Label for button to disable primary password.
+forms-primary-pw-turn-off =
+    .label = Slå det av
 # This operation requires the user to authenticate with the operating system (device sign-in)
 forms-os-reauth =
-    .label = Krev einingsinnlogging for å fylle ut og behandle passord
+    .label = Krev einingsinnlogging for å fylle ut og handsame passord
+forms-os-reauth-2 =
+    .label = Krev einingsinnlogging for å handsame passord
 forms-primary-pw-learn-more-link = Les meir
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -974,15 +1491,100 @@ autofill-payment-methods-checkbox-message = Lagre og fyll inn betalingsmåtar
     .accesskey = L
 autofill-payment-methods-checkbox-submessage = Inkluderer kreditt- og debetkort
     .accesskey = I
-autofill-saved-payment-methods-button = Lagra betaslingsmetodar
+autofill-saved-payment-methods-button = Lagra betalingsmetodar
     .accesskey = a
 # This operation requires the user to authenticate with the operating system (device sign-in)
-autofill-reauth-payment-methods-checkbox = Krev einingsinnlogging for å fylle ut og behandle betalingsmåtar
+autofill-reauth-payment-methods-checkbox = Krev einingsinnlogging for å fylle ut og handsame betalingsmåtar
     .accesskey = o
+autofill-payment-methods-title = Betalingsmåtar
+autofill-payment-methods-header =
+    .aria-label = Betalingsmåtar
+autofill-payment-methods-checkbox-message-2 =
+    .label = Lagre og fyll ut betalingsinformasjon automatisk
+    .accesskey = a
+autofill-payment-methods-manage-payments-title =
+    .heading = Handsam betalingsmåtar
+autofill-payment-methods-manage-payments-button =
+    .label = Handsam betalingsmåtar
+    .accesskey = H
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox-2 =
+    .label = Krev einingspålogging for å automatisk fylle ut og handsame betalingsmåter
+    .accesskey = K
+autofill-payment-methods-add-button = Legg til ny betalingsmåte
+payments-list-header =
+    .label = Betalingsmåtar
+payments-list-item-label = <strong>Betalingsmåtar</strong>
+payments-delete-payment-prompt-title = Slette denne betalingsmåten?
+payments-delete-payment-prompt-confirm-button = Slett
+payments-delete-payment-prompt-cancel-button = Avbryt
+payments-delete-payment-button-label =
+    .aria-label = Slett
+payments-edit-payment-button-label =
+    .aria-label = Rediger
+# This message is displayed when no payment methods such as credit card are stored in Firefox
+payments-no-payments-stored-message =
+    .label = Ingen betalingsmåtar lagt til
+payments-remove-payment-prompt-title = Fjerne denne betalingsmåten?
+payments-remove-payment-prompt-confirm-button = Fjern
+payments-remove-payment-prompt-cancel-button = Avbryt
+autofill-addresses-title = Adresser og meir
+autofill-addresses-header =
+    .aria-label = Adresser og meir
+autofill-addresses-checkbox-message =
+    .label = Lagre og autoutfyll adresser
+    .accesskey = L
+autofill-addresses-manage-addresses-button =
+    .label = Handsam adresser, og meir
+    .accesskey = H
+addresses-list-header =
+    .label = Adresser
+addreses-delete-address-button-label =
+    .aria-label = Slett
+addreses-edit-address-button-label =
+    .aria-label = Rediger
+addresses-delete-address-prompt-title = Slette denne adressa?
+addresses-delete-address-prompt-confirm-button = Slett
+addresses-delete-address-prompt-cancel-button = Avbryt
+autofill-addresses-add-button = Legg til ny adresse
+autofill-addresses-manage-addresses-title =
+    .heading = Handsam adresser, og meir
+# This message is displayed when no addresses are stored in Firefox
+addresses-no-addresses-stored-message =
+    .label = Ingen adresser lagt til
+# These values are displayed for each address record listed on the "Manage addresses and more" subpage.
+# Variables:
+#   $name (string) - The name associated with the address
+#   $address (string) - The address
+address-moz-box-item =
+    .label = { $name }
+    .description = { $address }
+# These values are displayed for each credit card record listed on the Manage Payment methods
+# settings page.
+# Variables:
+#   $cardNumber (string) - The obscured credit card number (for example: ********* 2423)
+#   $expDate (string) - The obscured expiry date of the credit card (for example: XX/2027)
+payment-moz-box-item =
+    .label = { $cardNumber }
+    .description = { $expDate }
+addresses-group =
+    .label = Adresser og meir
+payments-group =
+    .label = Betalingsmåtar
 
 ## Privacy Section - History
 
 history-header = Historikk
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label2 = { -brand-short-name } vil
 # This label is followed, on the same line, by a dropdown list of options
 # (Remember history, etc.).
 # In English it visually creates a full sentence, e.g.
@@ -1000,6 +1602,24 @@ history-remember-option-never =
     .label = Aldri hugse historikk
 history-remember-option-custom =
     .label = Bruke eigne innstillingar for historikk
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } vil lagre informasjon om besøkte nettsider, skjema- og søkjehistorikk.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } vil bruke dei same innstillingane som privat nettlesing og vil ikkje hugse historikk medan du brukar nettet.
+history-custom-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } vil bruke eigendefinerte innstillingar for nettlesar-, nedlastings-, skjema- og søkjehistorikk.
+history-remember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } vil lagre informasjon om besøkte nettsider, skjema- og søkjehistorikk.
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } vil bruke dei same innstillingane som privat nettlesing og vil ikkje hugse historikk medan du brukar nettet.
+history-custom-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } vil bruke eigendefinerte innstillingar for nettlesar-, nedlastings-, skjema- og søkjehistorikk.
 history-remember-description = { -brand-short-name } vil lagre informasjon om besøkte nettsider, skjema- og søkjehistorikk.
 history-dontremember-description = { -brand-short-name } vil bruke dei same innstillingane som privat nettlesing og vil ikkje hugse historikk medan du brukar nettet.
 history-private-browsing-permanent =
@@ -1020,20 +1640,30 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = Tøm historikk…
     .accesskey = s
+history-group =
+    .label = Historikk
 
 ## Privacy Section - Site Data
 
 sitedata-header = Infokapslar og sidedata
+sitedata-label =
+    .aria-label = { sitedata-header }
 sitedata-total-size-calculating = Reknar ut storleik på nettstad-data og snøgglager…
 # Variables:
 #   $value (number) - Value of the unit (for example: 4.6, 500)
 #   $unit (string) - Name of the unit (for example: "bytes", "KB")
-sitedata-total-size = Dei lagra infokapslane dine, nettstaddata og hurtiglager brukar for tida { $value } { $unit } diskplass.
+sitedata-total-size2 = Dei lagra infokapslane dine, historikk, nettstad-data og hurtiglager brukar akkurat no <strong>{ $value } { $unit }</strong> diskplass.
+# Variables:
+#   $value (number) - Value of the unit (for example: 4.6, 500)
+#   $unit (string) - Name of the unit (for example: "bytes", "KB")
+sitedata-total-size = Dei lagra infokapslane dine, nettstad-data og hurtiglager brukar for tida { $value } { $unit } diskplass.
 sitedata-learn-more = Les meir
 sitedata-delete-on-close =
-    .label = Slett infokapslar og nettstaddata når { -brand-short-name } stenger
+    .label = Slett infokapslar og nettstad-data når { -brand-short-name } stenger
     .accesskey = S
-sitedata-delete-on-close-private-browsing = I permanent privat nettlesingsmodus vil infokapslar og nettstaddata alltid bli sletta når { -brand-short-name } er avslutta.
+sitedata-delete-on-close-private-browsing3 =
+    .message = Basert på historikkinnstillingane dine, slettar { -brand-short-name } infokapslar og nettstadsdata frå økta di når du lèt att nettlesaren.
+sitedata-delete-on-close-private-browsing = I permanent privat nettlesingsmodus vil infokapslar og nettstad-data alltid bli sletta når { -brand-short-name } er avslutta.
 sitedata-delete-on-close-private-browsing2 = Basert på historikkinnstillingane dine, slettar { -brand-short-name } infokapslar og nettstadsdata frå økta di når du lèt att nettlesaren.
 sitedata-allow-cookies-option =
     .label = Tillat infokapslar og nettsidedata
@@ -1049,6 +1679,8 @@ sitedata-option-block-cross-site-trackers =
     .label = Sporing på tvers av nettstadar
 sitedata-option-block-cross-site-tracking-cookies =
     .label = Sporingsinfokapslar på tvers av nettstadar
+sitedata-option-block-cross-site-cookies2 =
+    .label = Isoler infokapslar på tvers av nettstadar
 sitedata-option-block-cross-site-cookies =
     .label = Sporingsinfokapslear på tvers av nettstadar, isolering av andre infokapslar på tvers av nettstadar
 sitedata-option-block-unvisited =
@@ -1057,6 +1689,12 @@ sitedata-option-block-all-cross-site-cookies =
     .label = Alle infokapslar på tvers av nettstadar (kan føre til at nettstadar ikkje fungerer)
 sitedata-option-block-all =
     .label = Alle infokapslar (vil føre til feil på nettsider)
+sitedata-clear2 =
+    .label = Fjern nettlesardata
+    .accesskey = F
+sitedata-settings2 =
+    .label = Handsam nettleserdata
+    .accesskey = H
 sitedata-clear =
     .label = Tøm data…
     .accesskey = T
@@ -1066,6 +1704,12 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = Handsam unntak…
     .accesskey = H
+sitedata-cookies-exceptions2 =
+    .label = Handsam unntak
+    .accesskey = H
+    .description = Du kan angi kva nettstadar som alltid eller aldri har lov til å bruke infokapslar og nettstad-data.
+cookies-site-data-group =
+    .label = Infokapslar og sidedata
 
 ## Privacy Section - Cookie Banner Handling
 
@@ -1082,10 +1726,22 @@ forms-handle-cookie-banners =
 cookie-banner-blocker-checkbox-label =
     .label = Avslå automatisk infokapselbanner
 
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = Adresselinje
+addressbar-suggest-1 = Vel kva forslag som skal visast i adresselinja
+# When Firefox Suggest is enabled, this replaces `addressbar-header`.
+addressbar-header-firefox-suggest-1 = { -firefox-suggest-brand-name }
+# When Firefox Suggest is enabled, this replaces `addressbar-suggest`.
+addressbar-suggest-firefox-suggest-1 = Forslag frå { -brand-short-name } og partnarane våre i adresselinja di.
 addressbar-suggest = Når du brukar adresselinja, føreslå
+# When Firefox Suggest is enabled, this replaces `addressbar-header`.
+addressbar-header-firefox-suggest = Adresselinje — { -firefox-suggest-brand-name }
+# When Firefox Suggest is enabled, this replaces `addressbar-suggest`.
+addressbar-suggest-firefox-suggest = Vel typen forslag som skal visast i adresselinja.
+# When Firefox Suggest is enabled, a "Learn more" link appears at the end of
+# `addressbar-suggest-firefox-suggest`.
+addressbar-locbar-firefox-suggest-learn-more = Les meir
 addressbar-locbar-history-option =
     .label = Nettlesarhistorikk
     .accesskey = h
@@ -1105,20 +1761,64 @@ addressbar-locbar-shortcuts-option =
 addressbar-locbar-topsites-option =
     .label = Mest besøkte nettstadar
     .accesskey = M
+addressbar-locbar-engines-option-1 =
+    .label = Foreslå søkjemotorar å bruke
+    .accesskey = s
 addressbar-locbar-engines-option =
     .label = Søkjemotorar
     .accesskey = k
 addressbar-locbar-quickactions-option =
     .label = Snøgghandlingar
     .accesskey = S
+addressbar-locbar-showrecentsearches-option-2 =
+    .label = Nylege søk
+    .accesskey = y
+addressbar-locbar-showtrendingsuggestions-option-2 =
+    .label = Populære søkjeforslag
+    .accesskey = o
+# Toggles whether suggestions are obtained from Firefox Suggest or not (local or online).
+addressbar-locbar-suggest-all-option-2 =
+    .label = Forslag frå { -brand-short-name }
+    .description = Få forslag frå nettet relatert til søkinga di.
+addressbar-locbar-suggest-sponsored-option-2 =
+    .label = Forslag frå sponsorar
+    .description = Støtt { -brand-short-name } med sporadiske sponsa forslag.
 addressbar-suggestions-settings = Endre innstillingar for søkjeforslag
 addressbar-locbar-showrecentsearches-option =
     .label = Vis nylege søk
     .accesskey = V
 addressbar-locbar-showtrendingsuggestions-option =
-    .label = Vi populære søkjeforslag
+    .label = Vis populære søkjeforslag
     .accesskey = V
+# Toggles whether suggestions are obtained from Firefox Suggest or not (local or online).
+addressbar-locbar-suggest-all-option =
+    .label = Forslag frå { -brand-short-name }
+addressbar-locbar-suggest-all-option-desc = Få forslag frå nettet relatert til søkinga di.
+# Nonsponsored suggestions refers to Firefox Suggest suggestions like Wikipedia.
+addressbar-locbar-suggest-nonsponsored-option =
+    .label = Forslag frå { -brand-short-name }
+addressbar-locbar-suggest-nonsponsored-desc = Få forslag frå nettet relatert til søkinga di.
+addressbar-locbar-suggest-sponsored-option =
+    .label = Forslag frå sponsorar
+addressbar-locbar-suggest-sponsored-desc = Støtt { -brand-short-name } med sporadiske sponsa forslag.
+# This string is used for a checkbox in the settings UI that opts the
+# user into "online" Firefox Suggest, allowing them to receive suggestions from
+# Mozilla's Merino server.
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since the online suggest is created and maintained
+# by Mozilla.
+addressbar-firefox-suggest-online =
+    .label = Hent forslag frå Mozilla medan du skriv
+addressbar-dismissed-suggestions-label-2 =
+    .label = Avviste forslag
+    .description = Gjenopprett avviste forslag frå sponsorar og { -brand-short-name }.
+addressbar-restore-dismissed-suggestions-button-2 =
+    .label = Gjenopprett forslag
 addressbar-quickactions-learn-more = Les meir
+addressbar-dismissed-suggestions-label = Avviste forslag
+addressbar-restore-dismissed-suggestions-description = Gjenopprett avviste forslag frå sponsorar og { -brand-short-name }.
+addressbar-restore-dismissed-suggestions-button =
+    .label = Bygg oppatt
 
 ## Privacy Section - Content Blocking
 
@@ -1155,6 +1855,7 @@ content-blocking-private-windows = Sporingsinnhald i private vindauge
 content-blocking-cross-site-cookies-in-all-windows2 = Infokapslar på tvers av nettstadar i alle vindauge
 content-blocking-cross-site-tracking-cookies = Sporingsinfokapslar på tvers av nettstadar
 content-blocking-all-cross-site-cookies-private-windows = Infokapslar på tvers av nettstadar i private vindauge
+content-blocking-isolate-cross-site-cookies = Isoler infokapslar på tvers av nettstadar
 content-blocking-cross-site-tracking-cookies-plus-isolate = Sporingsinfokapsler på tvers av nettstadar, isolering av attståande infokapslar
 content-blocking-social-media-trackers = Sporing via sosiale medium
 content-blocking-all-cookies = Alle infokapslar
@@ -1175,8 +1876,23 @@ content-blocking-etp-standard-tcp-rollout-description = Totalt vern mot infokaps
 content-blocking-etp-standard-tcp-rollout-learn-more = Les meir
 content-blocking-etp-standard-tcp-title = Inkluderer totalt vern mot infokapslar, den kraftigaste personvernfunksjonen vår nokon gong
 content-blocking-warning-title = Viktig!
+content-blocking-warning-title-2 = Nokre nettstadar kan slutte å fungere med strengt sporingsvern
+content-blocking-warning-title-custom = Nokre nettstadar kan slutte å fungere med tilpassa sporingsvern
+# “Fix site issues” references the string content-blocking-exceptions-subheader
+content-blocking-and-isolating-etp-warning-description-4 = { -brand-short-name } tilrår å bruke innstillingane «Fiks nettstadproblem» for å redusere øydelagde funksjonar og innhald på nettstadar. Viss ein nettstad verkar øydelagd, kan du prøve å slå av sporingsvern for den nettstaden for å laste alt innhald.
 content-blocking-and-isolating-etp-warning-description-2 = Denne innstillinga kan føre til at enkelte nettstadar ikkje viser innhald eller fungerer rett. Dersom ein nettstad verkar øydelagd, kan det vere lurt å slå av sporingsvernet for nettsaden for å få laste inn alt innhaldet.
 content-blocking-warning-learn-how = Les korleis
+content-blocking-baseline-exceptions-3 =
+    .label = Fiks større nettstadsproblem (tilrådd)
+    .description = Hjelper med å laste inn nettstadar og funksjonar ved å oppheve blokkering av berre nødvendige element som kan innehalde sporarar. Dekkjer dei fleste vanlege problem.
+# This option to fix minor site issues must be used with the option to fix major site issues (string content-blocking-baseline-exceptions-3)
+content-blocking-convenience-exceptions-3 =
+    .label = Fiks mindre nettstadsproblem
+    .description = Gjenopprettar ting som videoar i ein artikkel eller kommentarfelt ved å oppheve blokkering av element som kan innehalde sporarar. Dette kan redusere problem på nettstadar, men gir mindre vern. Må brukast saman med fiksar for større problem.
+content-blocking-baseline-uncheck-warning-dialog-title = Er du sikker på at du vil slå av fiksane?
+content-blocking-baseline-uncheck-warning-dialog-body = Denne innstillinga bidreg til å fikse dei vanlegaste nettstadproblema. Om du slår henne av, kan det hende at nokre nettstadar ikkje fungerer, og { -brand-short-name } vil ikkje kunne hjelpe med å feilsøke desse problema.
+content-blocking-baseline-uncheck-warning-dialog-ok-button = Slå av fiksane
+content-blocking-baseline-uncheck-warning-dialog-cancel-button = Behald fiksane på
 content-blocking-reload-description = Du må oppdatere fanene dine for å kunne bruke desse endringane.
 content-blocking-reload-tabs-button =
     .label = Oppdater alle faner
@@ -1233,7 +1949,7 @@ permissions-location-settings =
     .accesskey = t
 permissions-xr = Virtuell røyndom
 permissions-xr-settings =
-    .label = Innstillingear…
+    .label = Innstillingar…
     .accesskey = s
 permissions-camera = Kamera
 permissions-camera-settings =
@@ -1256,10 +1972,27 @@ permissions-notification-link = Les meir
 permissions-notification-pause =
     .label = Set varsel på pause til { -brand-short-name } startar på nytt
     .accesskey = n
+permissions-autoplay2 =
+    .label = Automatisk avspeling
 permissions-autoplay = Automatisk avspeling
 permissions-autoplay-settings =
     .label = Innstillingar
     .accesskey = n
+permissions-block-popups2 =
+    .label = Blokker sprettoppvindauge og tredjepartsvidaresendingar
+    .accesskey = B
+# "popup" is a misspelling that is more popular than the correct spelling of
+# "pop-up" so it's included as a search keyword, not displayed in the UI.
+permissions-block-popups-exceptions-button2 =
+    .label = Handsam unntak for sprettoppvindauge og tredjepartsvidaresendingar
+    .accesskey = a
+    .searchkeywords = sprettopp
+permissions-addon-install-warning2 =
+    .label = Åtvar når nettstadar prøver å installere utvidingar
+    .accesskey = Å
+permissions-addon-exceptions2 =
+    .label = Vel kva for nokre nettstadar som kan installere utvidingar
+    .accesskey = V
 permissions-block-popups =
     .label = Blokker sprettoppvindauge
     .accesskey = B
@@ -1275,23 +2008,71 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = Unntak…
     .accesskey = U
+permissions-header2 =
+    .label = Løyve
+    .description = Løyve du gir til nettstadar du besøkjer.
+permissions-location2 =
+    .label = Plassering
+permissions-localhost2 =
+    .label = Einingsappar og -tenester
+permissions-local-network2 =
+    .label = Lokale nettverkseiningar
+permissions-xr2 =
+    .label = Virtuell røyndom
+permissions-camera2 =
+    .label = Kamera
+permissions-microphone2 =
+    .label = Mikrofon
+# Privacy permission for sound output devices.
+permissions-speaker2 =
+    .label = Høgtalar
+permissions-notification2 =
+    .label = Varsel
 
 ## Privacy Section - Data Collection
 
 collection-header = Datainnsamling og bruk for { -brand-short-name }
 collection-header2 = Datainnsamling og bruk for { -brand-short-name }
     .searchkeywords = telemetri
+preferences-collection-description = Vi strevar etter å gi deg valmoglegheiter og samlar berre inn minimalt med data som er nødvendig for å forbetre { -brand-product-name } for alle.
+preferences-collection-privacy-notice = Vis personvernfråsegn
+preferences-across-profiles = Desse innstillingane gjeld for alle { -brand-product-name }-profilane på denne eininga.
+preferences-view-profiles = VIs alle profilar
 collection-description = Vi prøver alltid å gje deg val og samlar inn berre det vi treng for å levere og forbetre { -brand-short-name } for alle. Vi ber alltid om løyve før vi får personopplysningar.
-collection-privacy-notice = Personvernpraksis
+collection-privacy-notice = Personvernfråsegn
 collection-health-report-telemetry-disabled = Du tillèt ikkje lenger { -vendor-short-name } å samle inn teknisk- og interaksjonsdata. Alle tidlegare data vil bli sletta innan 30 dagar.
 collection-health-report-telemetry-disabled-link = Les meir
+collection-usage-ping =
+    .label = Send ping for dagleg bruk til { -vendor-short-name }
+    .accesskey = e
+collection-usage-ping-description = Dette hjelper { -vendor-short-name } med å berekne aktive brukarar.
+collection-health-report2 =
+    .label = Send tekniske data og data om bruk til { -vendor-short-name }
+    .accesskey = e
 collection-health-report =
     .label = Tillat { -brand-short-name } å sende tekniske data og data for bruk til { -vendor-short-name }
     .accesskey = r
 collection-health-report-link = Les meir
+collection-health-report-description = Dette hjelper oss med å forbetre { -brand-product-name }-funksjonar, yting og stabilitet.
+collection-studies2 =
+    .label = Installer og køyr studium
+collection-studies-description = Prøv nye funksjonar og idéar før dei blir tilgjengelege for alle.
 collection-studies =
     .label = Tillat { -brand-short-name } å installere og køyre studium
 collection-studies-link = Vis { -brand-short-name }-studium
+nimbus-rollouts-enabled =
+    .label = Tillat at { -brand-short-name } forbetrar funksjonar, yting og stabilitet mellom oppdateringar
+nimbus-rollouts-enabled-description = Endringane vil bli implementerte eksternt.
+addon-recommendations2 =
+    .label = Tillat personleg tilpassa utvidingstilrådingar
+addon-recommendations-description = Få utvidingstilrådingar for å forbetre nettlesaropplevinga di.
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = Datarapportering er deaktivert for denne byggekonfigurasjonen.
+collection-backlogged-crash-reports2 =
+    .label = Send inn krasjrapportar automatisk
+    .accesskey = k
+collection-backlogged-crash-reports-description = Dette hjelper { -vendor-short-name } med å diagnostisere og løyse problem med nettlesaren. Rapportar kan innehalde personlege eller sensitive data.
 addon-recommendations =
     .label = Tillat { -brand-short-name } å kome med tilpassa utvidingstilrådingar
 addon-recommendations-link = Les meir
@@ -1299,8 +2080,6 @@ addon-recommendations-link = Les meir
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Datarapportering er deaktivert for denne byggekonfigurasjonen
 collection-backlogged-crash-reports-with-link = Tillat { -brand-short-name } å sende etterslepne krasjrapportar på dine vegne <a data-l10n-name="crash-reports-link">Les meir</a>
-    .accesskey = T
-collection-backlogged-crash-reports = Tillat { -brand-short-name } å sende etterslepne krasjrapportar på dine vegne
     .accesskey = T
 privacy-segmentation-section-header = Nye funksjonar som forbetrar surfinga di
 privacy-segmentation-section-description = Når vi tilbyr funksjonar som brukar dine data for å gi deg ei meir personleg oppleving:
@@ -1323,6 +2102,8 @@ website-advertising-private-attribution-description = Dette hjelper nettstadar m
 ## https://developers.google.com/safe-browsing/developers_guide_v2#AcceptableUsage
 
 security-header = Sikkerheit
+browsing-protection-group =
+    .label = Vern mot villeiande innhald og skadeleg programvare
 security-browsing-protection = Vern mot villeiande innhald og skadeleg programvare
 security-enable-safe-browsing =
     .label = Blokker farleg og villeiande innhald
@@ -1350,34 +2131,46 @@ certs-devices =
 certs-thirdparty-toggle =
     .label = Tillat { -brand-short-name } å automatiskt stole på rotsertifikat frå tredjepart som du installerer
     .accesskey = T
+certs-devices-enable-fips = Bruk FIPS
 space-alert-over-5gb-settings-button =
     .label = Opne Innstillingar
     .accesskey = p
-space-alert-over-5gb-message2 = <strong>{ -brand-short-name } er i ferd med å gå tom for plass på disken.</strong> Det kan hende at innhaldet på nettstaden ikkje vert vist skikkeleg. Du kan tøme lagra data i Innstillingar > Personvern og sikkerheit > Infokapslar og nettstaddata.
+space-alert-over-5gb-message2 = <strong>{ -brand-short-name } er i ferd med å gå tom for plass på disken.</strong> Det kan hende at innhaldet på nettstaden ikkje vert vist skikkeleg. Du kan tøme lagra data i Innstillingar > Personvern og sikkerheit > Infokapslar og nettstad-data.
 space-alert-under-5gb-message2 = <strong>{ -brand-short-name } er i ferd med å gå tom for plass på disken.</strong> Det kan hende at innhaldet på nettsida ikkje vert vist skikkeleg. Gå til «Les meir» for å optimalisere diskbruken din for ei betre nettoppleving.
+certs-description2 =
+    .label = Sertifikat
+    .description = Konfigurer sertifikata som { -brand-short-name } brukar for autentisering.
 
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = Berre HTTPS-modus
+httpsonly-label =
+    .aria-label = { httpsonly-header }
+    .description = Tillèt berre sikre tilkoplingar til nettstadar. { -brand-short-name } vil spørje før du koplar til på ein usikker måte.
+httpsonly-description3 = Tillèt berre sikre tilkoplingar til nettstadar. { -brand-short-name } vil spørje før du koplar til på ein usikker måte.
+httpsonly-learn-more2 = Korleis Berre-HTTPS fungerer
 httpsonly-description = HTTPS gir eit trygt, kryptert samband mellom { -brand-short-name } og nettstadane du besøkjer. Dei fleste nettstadar støttar HTTPS, og dersom berre HTTPS-modus er slått på, vil { -brand-short-name } oppgradere alle tilkoplingar til HTTPS.
-httpsonly-description2 = { -brand-short-name } opprettar sikre og krypterte tilkoplingar til nettstadar du besøkjer. { -brand-short-name } vil åtvare deg dersom ei tilkopling ikkje er sikker når Berre-HTTPS er på.
 httpsonly-learn-more = Les meir
 httpsonly-radio-enabled =
     .label = Slå på berre HTTPS-modus i alle vindauge
-httpsonly-radio-enabled2 =
-    .label = Bruk berre HTTPS i alle vindauge
 httpsonly-radio-enabled-pbm =
     .label = Slå på berre HTTPS-modus kun i private vindauge
-httpsonly-radio-enabled-pbm2 =
-    .label = Bruk berre HTTPS i private vindauge
+httpsonly-radio-disabled3 =
+    .label = Ikkje slå på Berre-HTTPS-modus
+    .description = { -brand-short-name } kan framleis oppgradere nokre tilkoplingar
 httpsonly-radio-disabled =
     .label = Ikkje slå på berre HTTPS-modus
-httpsonly-radio-disabled2 =
-    .label = Prøv HTTPS først, bmen tillat tilkoplingar som ikkje er trygge
+httpsonly-group =
+    .label = Berre HTTPS-modus
+    .description = Tillèt berre sikre tilkoplingar til nettstadar. { -brand-short-name } vil spørje før du koplar til på ein usikker måte.
+httpsonly-label2 =
+    .aria-label = { httpsonly-group.label }
 
 ## DoH Section
 
 preferences-doh-header = DNS over HTTPS
+dns-over-https-group =
+    .label = DNS over HTTPS
 preferences-doh-description = Domain Name System (DNS) over HTTPS sender førespurnaden din om eit domennamn via ei kryptert tilkopling, lagar ein sikker DNS og gjer det vanskelegare for andre å sjå kva for nettstad du er i ferd med å besøkje.
 preferences-doh-description2 = Domain Name System (DNS) over HTTPS sender førespurnaden din om eit domenenamn gjennom ei kryptert tilkopling, og gir eit sikkert DNS og gjer det vanskelegare for andre å sjå kva for nettstad du er i ferd med å besøke.
 # Variables:
@@ -1400,7 +2193,7 @@ preferences-doh-group-message2 = Aktiver DNS-over-HTTPS med:
 preferences-doh-expand-section =
     .tooltiptext = Meir informasjon
 preferences-doh-setting-default =
-    .label = Standard vern
+    .label = Standardvern
     .accesskey = S
 preferences-doh-default-desc = { -brand-short-name } avgjer når sikker DNS skal brukast for å ta vare på personvernet ditt.
 preferences-doh-default-detailed-desc-1 = Bruk sikker DNS i regionar der det er tilgjengeleg
@@ -1439,3 +2232,62 @@ preferences-doh-manage-exceptions =
 desktop-folder-name = Skrivebord
 downloads-folder-name = Nedlastingar
 choose-download-folder-title = Vel nedlastingsmappe:
+
+## AI controls page
+
+preferences-ai-controls-header =
+    .heading = { pane-ai-controls-title }
+preferences-ai-controls-description = Du har alltid eit val i { -brand-short-name }, også om du vil bruke funksjonar som er forbetra med AI. Fleire kontrollar kjem snart.
+preferences-ai-controls-block-ai-label = Blokker AI-forbetringar
+preferences-ai-controls-block-ai =
+    .label = { preferences-ai-controls-block-ai-label }
+preferences-ai-controls-block-ai-description = Blokkering betyr at du ikkje vil sjå nye eller eksisterande AI-forbetringar i { -brand-short-name }, eller varsel om dei. <a data-l10n-name="link">Få fleire detaljar</a> om kva som er inkludert og korleis du kan styre tradisjonelle maskinlæringsfunksjonar, som søkjeforslag og tilrådingar.
+preferences-ai-controls-blocked-message =
+    .message = Nye og eksisterande AI-forbetringar er blokkerte som standard. For å oppheve blokkeringa av ein viss funksjon, bruk kontrollane nedanfor.
+preferences-ai-controls-on-device-group =
+    .label = AI på eininga
+    .description = Desse brukar små AI-modellar som blir lasta ned til eininga di om du brukar funksjonen. Denne tilnærminga bidreg til å verne personvernet ditt.
+preferences-ai-controls-translations-control =
+    .label = Omsetjingar
+    .description = Surf saumlaust på nettet på språket du føretrekkjer.
+preferences-ai-controls-translations-more-link = Fleire omsettingsinnstillingar
+preferences-ai-controls-pdfjs-control =
+    .label = Bildetekst (alt-tekst) i PDF-visningsprogrammet i { -brand-short-name }
+    .description = Når du legg til bilete i PDF-filer, blir det lagt til beskrivingar for å gjere dei tilgjengelege.
+preferences-ai-controls-tab-group-suggestions-control =
+    .label = Forslag til fanegrupper
+    .description = Få forslag om namngiving og organisering av fanene dine.
+preferences-ai-controls-key-points-control =
+    .label = Hovudpunkt i førehandsvisning av lenker
+    .description = Sjå eit raskt samandrag før du opnar ei lenkje.
+preferences-ai-controls-sidebar-chatbot-group =
+    .label = AI-chatbotleverandørar i sidestolpen
+    .description = Ha ein chatbot synleg medan du surfar. Vel mellom Anthropic Claude, ChatGPT, Copilot, Google Gemini og Le Chat Mistral.
+preferences-ai-controls-sidebar-chatbot-control =
+    .label = Chatbot i sidestolpen
+# This option means that a user will see the feature and can use it.
+preferences-ai-controls-state-available =
+    .label = Tilgjengeleg
+# This option means a user has opted in to use the feature.
+preferences-ai-controls-state-enabled =
+    .label = Slå på
+# This option means the user won't see and can't use the feature. For on-device AI, any models already downloaded are removed.
+preferences-ai-controls-state-blocked =
+    .label = Blokkert
+preferences-ai-controls-state-description-before = Kva alternativa betyr:
+preferences-ai-controls-state-description-available = <strong>Tilgjengeleg:</strong> Du vil sjå funksjonen og kan bruke han.
+preferences-ai-controls-state-description-enabled = <strong>Påslått:</strong> Du har valt å bruke funksjonen.
+preferences-ai-controls-state-description-blocked = <strong>Blokkert:</strong> Du vil ikkje sjå og kan ikkje bruke funksjonen. For AI på eninga blir alle modellar som allereie er lasta ned, fjerna.
+preferences-ai-controls-block-confirmation-heading = Blokkere AI-forbetringer?
+preferences-ai-controls-block-confirmation-description = Du vil ikkje sjå nye eller eksisterande AI-forbetringar i { -brand-short-name }, eller varsel om dei. Etterpå kan du oppheve blokkeringa av det du ønskjer å halde fram med å bruke.
+preferences-ai-controls-block-confirmation-features-start = Kva som vil bli blokkert:
+preferences-ai-controls-block-confirmation-translations = Omsetjingar
+preferences-ai-controls-block-confirmation-pdfjs = Bildetekst (alt-tekst) i PDF-visningsprogrammet i { -brand-short-name }
+preferences-ai-controls-block-confirmation-tab-group-suggestions = Forslag til fanegrupper
+preferences-ai-controls-block-confirmation-key-points = Hovudpunkt i førehandsvisning av lenker
+preferences-ai-controls-block-confirmation-sidebar-chatbot = Chatbotleverandørar i sidestolpen
+preferences-ai-controls-block-confirmation-features-after = Blokkering påverkar også utvidingar som brukar AI levert av { -brand-short-name }.
+preferences-ai-controls-block-confirmation-cancel =
+    .label = Avbryt
+preferences-ai-controls-block-confirmation-confirm =
+    .label = Blokker

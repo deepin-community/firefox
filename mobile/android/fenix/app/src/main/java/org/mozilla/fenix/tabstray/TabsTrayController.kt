@@ -10,6 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import mozilla.appservices.places.BookmarkRoot
 import mozilla.components.browser.state.action.DebugAction
 import mozilla.components.browser.state.action.LastAccessAction
 import mozilla.components.browser.state.selector.findTab
@@ -23,6 +24,8 @@ import mozilla.components.browser.storage.sync.Tab
 import mozilla.components.concept.base.profiler.Profiler
 import mozilla.components.concept.engine.mediasession.MediaSession.PlaybackState
 import mozilla.components.concept.engine.prompt.ShareData
+import mozilla.components.concept.engine.utils.ABOUT_HOME_URL
+import mozilla.components.concept.storage.BookmarksStorage
 import mozilla.components.feature.accounts.push.CloseTabsUseCases
 import mozilla.components.feature.downloads.ui.DownloadCancelDialogFragment
 import mozilla.components.feature.tabs.TabsUseCases
@@ -41,11 +44,11 @@ import org.mozilla.fenix.collections.show
 import org.mozilla.fenix.components.AppStore
 import org.mozilla.fenix.components.TabCollectionStorage
 import org.mozilla.fenix.components.appstate.AppAction
-import org.mozilla.fenix.components.bookmarks.BookmarksUseCase
+import org.mozilla.fenix.components.usecases.FenixBrowserUseCases
 import org.mozilla.fenix.ext.DEFAULT_ACTIVE_DAYS
 import org.mozilla.fenix.ext.potentialInactiveTabs
-import org.mozilla.fenix.home.HomeFragment
-import org.mozilla.fenix.library.bookmarks.BookmarksSharedViewModel
+import org.mozilla.fenix.home.HomeScreenViewModel.Companion.ALL_NORMAL_TABS
+import org.mozilla.fenix.home.HomeScreenViewModel.Companion.ALL_PRIVATE_TABS
 import org.mozilla.fenix.tabstray.browser.InactiveTabsController
 import org.mozilla.fenix.tabstray.browser.TabsTrayFabController
 import org.mozilla.fenix.tabstray.ext.getTabSessionState
@@ -57,6 +60,8 @@ import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 import org.mozilla.fenix.GleanMetrics.Tab as GleanTab
 
+const val INACTIVE_TABS_FEATURE_NAME = "Inactive tabs"
+
 /**
  * Controller for handling any actions in the tabs tray.
  */
@@ -65,15 +70,19 @@ interface TabsTrayController : SyncedTabsController, InactiveTabsController, Tab
     /**
      * Set the current tray item to the clamped [position].
      *
-     * @param position The position on the tray to focus.
-     * @param smoothScroll If true, animate the scrolling from the current tab to [position].
+     * @param page The page on the tab tray to focus.
      */
-    fun handleTrayScrollingToPosition(position: Int, smoothScroll: Boolean)
+    fun handleTabPageClicked(page: Page)
 
     /**
      * Navigate from TabsTray to Browser.
      */
     fun handleNavigateToBrowser()
+
+    /**
+     * Navigates from the tabs tray to the homepage.
+     */
+    fun handleNavigateToHome()
 
     /**
      * Deletes the [TabSessionState] with the specified [tabId] or calls [DownloadCancelDialogFragment]
@@ -159,13 +168,6 @@ interface TabsTrayController : SyncedTabsController, InactiveTabsController, Tab
     )
 
     /**
-     * Removes the provided tab from the current selection of tabs.
-     *
-     * @param tab [TabSessionState] to be unselected.
-     */
-    fun handleTabUnselected(tab: TabSessionState)
-
-    /**
      * Exits multi select mode when the back button was pressed.
      *
      * @return true if the button press was consumed.
@@ -187,11 +189,11 @@ interface TabsTrayController : SyncedTabsController, InactiveTabsController, Tab
  * @param profiler [Profiler] used to add profiler markers.
  * @param navigationInteractor [NavigationInteractor] used to perform navigation actions with side effects.
  * @param tabsUseCases Use case wrapper for interacting with tabs.
- * @param bookmarksUseCase Use case wrapper for interacting with bookmarks.
+ * @param fenixBrowserUseCases [FenixBrowserUseCases] used for adding new homepage tabs.
+ * @param bookmarksStorage Storage layer for retrieving and saving bookmarks.
  * @param closeSyncedTabsUseCases Use cases for closing synced tabs.
  * @param ioDispatcher [CoroutineContext] used for storage operations.
  * @param collectionStorage Storage layer for interacting with collections.
- * @param selectTabPosition Lambda used to scroll the tabs tray to the desired position.
  * @param dismissTray Lambda used to dismiss/minimize the tabs tray.
  * @param showUndoSnackbarForTab Lambda used to display an undo snackbar when a normal or private tab is closed.
  * @param showUndoSnackbarForInactiveTab Lambda used to display an undo snackbar when an inactive tab is closed.
@@ -200,7 +202,6 @@ interface TabsTrayController : SyncedTabsController, InactiveTabsController, Tab
  * @param showBookmarkSnackbar Lambda used to display a snackbar upon saving tabs as bookmarks.
  * @param showCollectionSnackbar Lambda used to display a snackbar upon successfully saving tabs
  * to a collection.
- * @param bookmarksSharedViewModel [BookmarksSharedViewModel] used to get currently selected bookmark root.
  */
 @Suppress("TooManyFunctions", "LongParameterList")
 class DefaultTabsTrayController(
@@ -215,22 +216,21 @@ class DefaultTabsTrayController(
     private val profiler: Profiler?,
     private val navigationInteractor: NavigationInteractor,
     private val tabsUseCases: TabsUseCases,
-    private val bookmarksUseCase: BookmarksUseCase,
+    private val fenixBrowserUseCases: FenixBrowserUseCases,
+    private val bookmarksStorage: BookmarksStorage,
     private val closeSyncedTabsUseCases: CloseTabsUseCases,
     private val ioDispatcher: CoroutineContext,
     private val collectionStorage: TabCollectionStorage,
-    private val selectTabPosition: (Int, Boolean) -> Unit,
     private val dismissTray: () -> Unit,
     private val showUndoSnackbarForTab: (Boolean) -> Unit,
     private val showUndoSnackbarForInactiveTab: (Int) -> Unit,
     private val showUndoSnackbarForSyncedTab: (CloseTabsUseCases.UndoableOperation) -> Unit,
     internal val showCancelledDownloadWarning: (downloadCount: Int, tabId: String?, source: String?) -> Unit,
-    private val showBookmarkSnackbar: (tabSize: Int) -> Unit,
+    private val showBookmarkSnackbar: (tabSize: Int, parentFolderTitle: String?) -> Unit,
     private val showCollectionSnackbar: (
         tabSize: Int,
         isNewCollection: Boolean,
     ) -> Unit,
-    private val bookmarksSharedViewModel: BookmarksSharedViewModel,
 ) : TabsTrayController {
 
     override fun handleNormalTabsFabClick() {
@@ -257,15 +257,15 @@ class DefaultTabsTrayController(
         browsingModeManager.mode = BrowsingMode.fromBoolean(isPrivate)
 
         if (settings.enableHomepageAsNewTab) {
-            tabsUseCases.addTab.invoke(
-                startLoading = false,
+            fenixBrowserUseCases.addNewHomepageTab(
                 private = isPrivate,
+            )
+        } else {
+            navController.navigate(
+                TabsTrayFragmentDirections.actionGlobalHome(focusOnAddressBar = true),
             )
         }
 
-        navController.navigate(
-            TabsTrayFragmentDirections.actionGlobalHome(focusOnAddressBar = true),
-        )
         navigationInteractor.onTabTrayDismissed()
         profiler?.addMarker(
             "DefaultTabTrayController.onNewTabTapped",
@@ -274,9 +274,7 @@ class DefaultTabsTrayController(
         sendNewTabEvent(isPrivate)
     }
 
-    override fun handleTrayScrollingToPosition(position: Int, smoothScroll: Boolean) {
-        val page = Page.positionToPage(position)
-
+    override fun handleTabPageClicked(page: Page) {
         if (page != tabsTrayStore.state.selectedPage) {
             when (page) {
                 Page.NormalTabs -> TabsTray.normalModeTapped.record(NoExtras())
@@ -284,8 +282,6 @@ class DefaultTabsTrayController(
                 Page.SyncedTabs -> TabsTray.syncedModeTapped.record(NoExtras())
             }
         }
-
-        selectTabPosition(position, smoothScroll)
         tabsTrayStore.dispatch(TabsTrayAction.PageSelected(page))
     }
 
@@ -299,6 +295,21 @@ class DefaultTabsTrayController(
             return
         } else if (!navController.popBackStack(R.id.browserFragment, false)) {
             navController.navigate(R.id.browserFragment)
+        }
+    }
+
+    /**
+     * Dismisses the tabs tray and navigates to the homepage.
+     */
+    override fun handleNavigateToHome() {
+        dismissTray()
+
+        if (navController.currentDestination?.id == R.id.homeFragment) {
+            return
+        } else if (!navController.popBackStack(R.id.homeFragment, false)) {
+            navController.navigate(
+                TabsTrayFragmentDirections.actionGlobalHome(),
+            )
         }
     }
 
@@ -363,7 +374,7 @@ class DefaultTabsTrayController(
         // If user closes all the tabs from selected tabs page dismiss tray and navigate home.
         if (tabs.size == browserStore.state.getNormalOrPrivateTabs(isPrivate).size) {
             dismissTabsTrayAndNavigateHome(
-                if (isPrivate) HomeFragment.ALL_PRIVATE_TABS else HomeFragment.ALL_NORMAL_TABS,
+                if (isPrivate) ALL_PRIVATE_TABS else ALL_NORMAL_TABS,
             )
         } else {
             tabs.map { it.id }.let {
@@ -420,22 +431,37 @@ class DefaultTabsTrayController(
     override fun handleBookmarkSelectedTabsClicked() {
         val tabs = tabsTrayStore.state.mode.selectedTabs
 
-        TabsTray.bookmarkSelectedTabs.record(TabsTray.BookmarkSelectedTabsExtra(tabCount = tabs.size))
+        tabsTrayStore.dispatch(TabsTrayAction.BookmarkSelectedTabs(tabCount = tabs.size))
 
-        tabs.forEach { tab ->
-            // We don't combine the context with lifecycleScope so that our jobs are not cancelled
-            // if we leave the fragment, i.e. we still want the bookmarks to be added if the
-            // tabs tray closes before the job is done.
-            CoroutineScope(ioDispatcher).launch {
-                bookmarksUseCase.addBookmark(
-                    tab.content.url,
-                    tab.content.title,
-                    parentGuid = bookmarksSharedViewModel.selectedFolder?.guid,
-                )
+        // We don't combine the context with lifecycleScope so that our jobs are not cancelled
+        // if we leave the fragment, i.e. we still want the bookmarks to be added if the
+        // tabs tray closes before the job is done.
+        CoroutineScope(ioDispatcher).launch {
+            Result.runCatching {
+                val parentGuid = bookmarksStorage
+                    .getRecentBookmarks(1)
+                    .getOrDefault(listOf())
+                    .firstOrNull()
+                    ?.parentGuid
+                    ?: BookmarkRoot.Mobile.id
+
+                val parentNode = bookmarksStorage.getBookmark(parentGuid).getOrNull()
+
+                tabs.forEach { tab ->
+                    bookmarksStorage.addItem(
+                        parentGuid = parentNode!!.guid,
+                        url = tab.content.url,
+                        title = tab.content.title,
+                        position = null,
+                    )
+                }
+                withContext(Dispatchers.Main) {
+                    showBookmarkSnackbar(tabs.size, parentNode?.title)
+                }
+            }.getOrElse {
+                // silently fail
             }
         }
-
-        showBookmarkSnackbar(tabs.size)
 
         tabsTrayStore.dispatch(TabsTrayAction.ExitSelectMode)
     }
@@ -566,18 +592,22 @@ class DefaultTabsTrayController(
                 tabsUseCases.selectTab(tab.id)
                 val mode = BrowsingMode.fromBoolean(tab.content.private)
                 browsingModeManager.mode = mode
-                appStore.dispatch(AppAction.ModeChange(mode))
-                handleNavigateToBrowser()
+
+                if (tab.content.url == ABOUT_HOME_URL) {
+                    handleNavigateToHome()
+                } else {
+                    handleNavigateToBrowser()
+                }
             }
-            tab.id in selected.map { it.id } -> handleTabUnselected(tab)
-            source != TrayPagerAdapter.INACTIVE_TABS_FEATURE_NAME -> {
+
+            tab.id in selected.map { it.id } -> {
+                tabsTrayStore.dispatch(TabsTrayAction.RemoveSelectTab(tab))
+            }
+
+            source != INACTIVE_TABS_FEATURE_NAME -> {
                 tabsTrayStore.dispatch(TabsTrayAction.AddSelectTab(tab))
             }
         }
-    }
-
-    override fun handleTabUnselected(tab: TabSessionState) {
-        tabsTrayStore.dispatch(TabsTrayAction.RemoveSelectTab(tab))
     }
 
     override fun handleBackPressed(): Boolean {
@@ -590,12 +620,12 @@ class DefaultTabsTrayController(
 
     override fun handleInactiveTabClicked(tab: TabSessionState) {
         TabsTray.openInactiveTab.add()
-        handleTabSelected(tab, TrayPagerAdapter.INACTIVE_TABS_FEATURE_NAME)
+        handleTabSelected(tab, INACTIVE_TABS_FEATURE_NAME)
     }
 
     override fun handleCloseInactiveTabClicked(tab: TabSessionState) {
         TabsTray.closeInactiveTab.add()
-        handleTabDeletion(tab.id, TrayPagerAdapter.INACTIVE_TABS_FEATURE_NAME)
+        handleTabDeletion(tab.id, INACTIVE_TABS_FEATURE_NAME)
     }
 
     override fun handleInactiveTabsHeaderClicked(expanded: Boolean) {

@@ -20,7 +20,6 @@ about-private-browsing-handoff-text = Çerca con { $engine } ò scrivi indirisso
 about-private-browsing-handoff-text-no-engine = Çerca ò scrivi indirisso
 about-private-browsing-not-private = Sto chi o no l'é 'n barcon privòu.
 about-private-browsing-learn-more-link = Atre informaçioin
-
 about-private-browsing-focus-promo-cta = Scarega { -focus-brand-name }
 about-private-browsing-focus-promo-header = { -focus-brand-name }: navegaçion anònima donde se segge
 
@@ -38,7 +37,6 @@ about-private-browsing-search-banner-description =
     }
 about-private-browsing-search-banner-close-button =
     .aria-label = Særa
-
 about-private-browsing-promo-close-button =
     .title = Særa
 

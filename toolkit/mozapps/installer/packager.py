@@ -259,9 +259,13 @@ def main():
         copier_items = [(p, f) for p, f in copier]
         for p, f in copier_items:
             if isinstance(f, ExecutableFile):
-                pdbname = os.path.splitext(f.inputs()[0])[0] + ".pdb"
+                fpath = f.inputs()[0]
+                pdbname = os.path.splitext(fpath)[0] + ".pdb"
                 if os.path.exists(pdbname):
-                    copier.add(os.path.basename(pdbname), File(pdbname))
+                    copier.add(
+                        mozpath.join(mozpath.dirname(p), mozpath.basename(pdbname)),
+                        File(pdbname),
+                    )
 
     # Setup preloading
     if args.jarlog:

@@ -421,6 +421,7 @@ this.AntiTracking = {
           "tracking.example.com,tracking.example.org",
         ],
         ["privacy.antitracking.testing", true],
+        ["network.lna.block_trackers", false],
       ],
     });
 
@@ -445,8 +446,12 @@ this.AntiTracking = {
             ].getService(Ci.nsIURIClassifier);
             let feature = classifier.getFeatureByName("tracking-annotation");
             await TestUtils.waitForCondition(() => {
-              for (let x of item[1].toLowerCase().split(",")) {
-                if (feature.exceptionHostList.split(",").includes(x)) {
+              for (let x of item[1].split(",")) {
+                if (
+                  feature.exceptionList
+                    .testGetEntries()
+                    .some(e => e.urlPattern == x)
+                ) {
                   return true;
                 }
               }
@@ -601,6 +606,33 @@ this.AntiTracking = {
         consoleWarningPromise = Promise.resolve();
       }
 
+      let { expectedPartitioningNotifications } = options;
+      if (!Array.isArray(expectedPartitioningNotifications)) {
+        expectedPartitioningNotifications = [expectedPartitioningNotifications];
+      }
+
+      let consolePartitioningWarningPromise;
+      if (options.expectedPartitioningNotifications) {
+        consolePartitioningWarningPromise = new Promise(resolve => {
+          let consoleListener = {
+            observe(msg) {
+              if (
+                msg
+                  .QueryInterface(Ci.nsIScriptError)
+                  .category.startsWith("cookiePartitioned")
+              ) {
+                Services.console.unregisterListener(consoleListener);
+                resolve();
+              }
+            },
+          };
+
+          Services.console.registerListener(consoleListener);
+        });
+      } else {
+        consolePartitioningWarningPromise = Promise.resolve();
+      }
+
       info("Creating a new tab");
       let tab = BrowserTestUtils.addTab(win.gBrowser, topPage);
       win.gBrowser.selectedTab = tab;
@@ -688,8 +720,8 @@ this.AntiTracking = {
               ok(false, "Unknown message");
             });
 
-            content.document.body.appendChild(ifr);
             ifr.src = obj.page;
+            content.document.body.appendChild(ifr);
           });
 
           if (obj.doAccessRemovalChecks) {
@@ -807,21 +839,29 @@ this.AntiTracking = {
               ok(false, "Unknown message");
             });
 
-            content.document.body.appendChild(ifr);
             ifr.src = obj.page;
+            content.document.body.appendChild(ifr);
           }
         );
       }
 
       // Wait until the message appears on the console.
       await consoleWarningPromise;
+      await consolePartitioningWarningPromise;
 
       let allMessages = Services.console.getMessageArray().filter(msg => {
         try {
           // Select all messages that the anti-tracking backend could generate.
-          return msg
-            .QueryInterface(Ci.nsIScriptError)
-            .category.startsWith("cookieBlocked");
+          let category = msg.QueryInterface(Ci.nsIScriptError).category;
+
+          let isBlocking = category.startsWith("cookieBlocked");
+
+          // Only look for partitioning notifications if we expect them.
+          let isPartitioning =
+            options.expectedPartitioningNotifications &&
+            category.startsWith("cookiePartitioned");
+
+          return isBlocking || isPartitioning;
         } catch (e) {
           return false;
         }
@@ -829,7 +869,9 @@ this.AntiTracking = {
       // When changing this list, please make sure to update the corresponding
       // code in ReportBlockingToConsole().
       let expectedCategories = [];
-      let rawExpectedCategories = options.expectedBlockingNotifications;
+      let rawExpectedCategories =
+        options.expectedBlockingNotifications ??
+        options.expectedPartitioningNotifications;
       if (!Array.isArray(rawExpectedCategories)) {
         // if given a single value to match, expect each message to match it
         rawExpectedCategories = Array(allMessages.length).fill(
@@ -849,6 +891,9 @@ this.AntiTracking = {
             break;
           case Ci.nsIWebProgressListener.STATE_COOKIES_BLOCKED_FOREIGN:
             expectedCategories.push("cookieBlockedForeign");
+            break;
+          case Ci.nsIWebProgressListener.STATE_COOKIES_PARTITIONED_TRACKER:
+            expectedCategories.push("cookiePartitionedForeign");
             break;
         }
       }
@@ -948,6 +993,15 @@ this.AntiTracking = {
         await TestUtils.topicObserved("browser-delayed-startup-finished");
       }
 
+      // Enable SA heuristics for trackers because the test depends on it.
+      extraPrefs = [
+        ...(extraPrefs || []),
+        [
+          "privacy.restrict3rdpartystorage.heuristic.exclude_third_party_trackers",
+          false,
+        ],
+      ];
+
       await AntiTracking._setupTest(
         win,
         cookieBehavior,
@@ -970,11 +1024,9 @@ this.AntiTracking = {
           async function (obj) {
             // Add an iframe.
             let ifr = content.document.createElement("iframe");
-            let loading = new content.Promise(resolve => {
-              ifr.onload = resolve;
-            });
-            content.document.body.appendChild(ifr);
+            const loading = ContentTaskUtils.waitForEvent(ifr, "load");
             ifr.src = obj.page;
+            content.document.body.appendChild(ifr);
             await loading;
 
             return ifr.browsingContext;
@@ -1035,8 +1087,8 @@ this.AntiTracking = {
               ok(false, "Unknown message");
             });
 
-            content.document.body.appendChild(ifr);
             ifr.src = obj.page;
+            content.document.body.appendChild(ifr);
           });
         }
       );
@@ -1074,6 +1126,15 @@ this.AntiTracking = {
         await TestUtils.topicObserved("browser-delayed-startup-finished");
       }
 
+      // Enable SA heuristics for trackers because the test depends on it.
+      extraPrefs = [
+        ...(extraPrefs || []),
+        [
+          "privacy.restrict3rdpartystorage.heuristic.exclude_third_party_trackers",
+          false,
+        ],
+      ];
+
       await AntiTracking._setupTest(
         win,
         cookieBehavior,
@@ -1096,11 +1157,9 @@ this.AntiTracking = {
           async function (obj) {
             // Add an iframe.
             let ifr = content.document.createElement("iframe");
-            let loading = new content.Promise(resolve => {
-              ifr.onload = resolve;
-            });
-            content.document.body.appendChild(ifr);
+            const loading = ContentTaskUtils.waitForEvent(ifr, "load");
             ifr.src = obj.page;
+            content.document.body.appendChild(ifr);
             await loading;
 
             return ifr.browsingContext;
@@ -1129,17 +1188,15 @@ this.AntiTracking = {
         ],
         async function (obj) {
           let ifr = content.document.createElement("iframe");
-          let loading = new content.Promise(resolve => {
-            ifr.onload = resolve;
-          });
+          const loading = ContentTaskUtils.waitForEvent(ifr, "load");
           if (typeof obj.iframeSandbox == "string") {
             ifr.setAttribute("sandbox", obj.iframeSandbox);
           }
           if (typeof obj.iframeAllow == "string") {
             ifr.setAttribute("allow", obj.iframeAllow);
           }
-          content.document.body.appendChild(ifr);
           ifr.src = obj.page;
+          content.document.body.appendChild(ifr);
           await loading;
 
           info(
@@ -1172,15 +1229,14 @@ this.AntiTracking = {
           });
 
           let windowClosed = new content.Promise(resolve => {
-            Services.ww.registerNotification(function notification(
-              aSubject,
-              aTopic
-            ) {
-              if (aTopic == "domwindowclosed") {
-                Services.ww.unregisterNotification(notification);
-                resolve();
+            Services.ww.registerNotification(
+              function notification(aSubject, aTopic) {
+                if (aTopic == "domwindowclosed") {
+                  Services.ww.unregisterNotification(notification);
+                  resolve();
+                }
               }
-            });
+            );
           });
 
           info("Opening a window from the iframe.");
@@ -1262,29 +1318,26 @@ this.AntiTracking = {
         ],
         async function (obj) {
           let ifr = content.document.createElement("iframe");
-          let loading = new content.Promise(resolve => {
-            ifr.onload = resolve;
-          });
+          const loading = ContentTaskUtils.waitForEvent(ifr, "load");
           if (typeof obj.iframeSandbox == "string") {
             ifr.setAttribute("sandbox", obj.iframeSandbox);
           }
           if (typeof obj.iframeAllow == "string") {
             ifr.setAttribute("allow", obj.iframeAllow);
           }
-          content.document.body.appendChild(ifr);
           ifr.src = obj.page;
+          content.document.body.appendChild(ifr);
           await loading;
 
           let windowClosed = new content.Promise(resolve => {
-            Services.ww.registerNotification(function notification(
-              aSubject,
-              aTopic
-            ) {
-              if (aTopic == "domwindowclosed") {
-                Services.ww.unregisterNotification(notification);
-                resolve();
+            Services.ww.registerNotification(
+              function notification(aSubject, aTopic) {
+                if (aTopic == "domwindowclosed") {
+                  Services.ww.unregisterNotification(notification);
+                  resolve();
+                }
               }
-            });
+            );
           });
 
           info("Opening a window from the iframe.");

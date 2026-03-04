@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = Pestanya nova
     .accesskey = n
@@ -28,14 +32,20 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Tanca les pestanyes de l'esquerra
     .accesskey = l
+close-tabs-to-the-start-vertical =
+    .label = Tanca les pestanyes de sobre
+    .accesskey = l
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Tanca les pestanyes de la dreta
     .accesskey = d
+close-tabs-to-the-end-vertical =
+    .label = Tanca les pestanyes de sota
+    .accesskey = d
 close-other-tabs =
     .label = Tanca les altres pestanyes
-    .accesskey = l
+    .accesskey = a
 reload-tabs =
     .label = Torna a carregar les pestanyes
     .accesskey = r
@@ -78,6 +88,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Comparteix
     .accesskey = x
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Pestanya nova a la dreta
+    .accesskey = P
+tab-context-new-tab-open-vertical =
+    .label = Pestanya nova a sota
+    .accesskey = P
+tab-context-new-group =
+    .label = Grup nou
+    .accesskey = G
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -110,3 +130,10 @@ tab-context-send-tabs-to-device =
            *[other] Envia { $tabCount } pestanyes a un dispositiu
         }
     .accesskey = v
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [1] Descarrega la pestanya de la memòria
+           *[other] Unload { $tabCount } Tabs
+        }
+    .accesskey = e

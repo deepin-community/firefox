@@ -7,11 +7,11 @@
 #ifndef gc_GCMarker_h
 #define gc_GCMarker_h
 
-#include "mozilla/Maybe.h"
 #include "mozilla/Variant.h"
+#include "mozilla/XorShift128PlusRNG.h"
 
-#include "ds/OrderedHashTable.h"
 #include "gc/Barrier.h"
+#include "js/HashTable.h"
 #include "js/TracingAPI.h"
 #include "js/TypeDecls.h"
 #include "threading/ProtectedData.h"
@@ -49,37 +49,44 @@ class AutoSetMarkColor;
 class AutoUpdateMarkStackRanges;
 struct Cell;
 class MarkStackIter;
-class ParallelMarker;
+class ParallelMarkTask;
 class UnmarkGrayTracer;
 
-struct EphemeronEdgeTableHashPolicy {
-  using Lookup = Cell*;
-  static HashNumber hash(const Lookup& v,
-                         const mozilla::HashCodeScrambler& hcs) {
-    return hcs.scramble(mozilla::HashGeneric(v));
+// Ephemerons are edges from a source to a target that are only materialized
+// into a table when the owner is marked. (The owner is something like a
+// WeakMap, which contains a set of ephemerons each going from a WeakMap key to
+// its value.) When marking a ephemeron, only the color of the owner is needed:
+// the target is marked with the minimum (least-marked) color of the owner and
+// source. So an EphemeronEdge need store only the owner color and the target
+// pointer, which can fit into a tagged pointer since targets are aligned Cells.
+//
+// Note: if the owner's color changes, new EphemeronEdges will be created for
+// it.
+class EphemeronEdge {
+  static constexpr uintptr_t ColorMask = 0x3;
+  static_assert(uintptr_t(MarkColor::Gray) <= ColorMask);
+  static_assert(uintptr_t(MarkColor::Black) <= ColorMask);
+  static_assert(ColorMask < CellAlignBytes);
+
+  uintptr_t taggedTarget;
+
+ public:
+  EphemeronEdge(MarkColor color, TenuredCell* cell)
+      : taggedTarget(uintptr_t(cell) | uintptr_t(color)) {
+    MOZ_ASSERT((uintptr_t(cell) & ColorMask) == 0);
   }
-  static bool match(Cell* const& k, const Lookup& l) { return k == l; }
-  static bool isEmpty(Cell* const& v) { return !v; }
-  static void makeEmpty(Cell** vp) { *vp = nullptr; }
-};
 
-// Ephemeron edges have two source nodes and one target, and mark the target
-// with the minimum (least-marked) color of the sources. Currently, one of
-// those sources will always be a WeakMapBase, so this will refer to its color
-// at the time the edge is traced through. The other source's color will be
-// given by the current mark color of the GCMarker.
-struct EphemeronEdge {
-  MarkColor color;
-  Cell* target;
-
-  EphemeronEdge(MarkColor color_, Cell* cell) : color(color_), target(cell) {}
+  MarkColor color() const { return MarkColor(taggedTarget & ColorMask); }
+  TenuredCell* target() const {
+    return reinterpret_cast<TenuredCell*>(taggedTarget & ~ColorMask);
+  }
 };
 
 using EphemeronEdgeVector = Vector<EphemeronEdge, 2, js::SystemAllocPolicy>;
 
 using EphemeronEdgeTable =
-    OrderedHashMap<Cell*, EphemeronEdgeVector, EphemeronEdgeTableHashPolicy,
-                   js::SystemAllocPolicy>;
+    HashMap<TenuredCell*, EphemeronEdgeVector, PointerHasher<TenuredCell*>,
+            js::SystemAllocPolicy>;
 
 /*
  * The mark stack. Pointers in this stack are "gray" in the GC sense, but
@@ -106,6 +113,7 @@ class MarkStack {
   enum Tag {
     SlotsOrElementsRangeTag = 0,  // Must match SlotsOrElementsKind::Unused.
     ObjectTag,
+    SymbolTag,
     JitCodeTag,
     ScriptTag,
     TempRopeTag,
@@ -188,6 +196,7 @@ class MarkStack {
 
   template <typename T>
   [[nodiscard]] bool push(T* ptr);
+  void infalliblePush(const SlotsOrElementsRange& range);
   void infalliblePush(JSObject* obj, SlotsOrElementsKind kind, size_t start);
   [[nodiscard]] bool push(const TaggedPtr& ptr);
   void infalliblePush(const TaggedPtr& ptr);
@@ -210,7 +219,8 @@ class MarkStack {
 
   [[nodiscard]] bool ensureSpace(size_t count);
 
-  static void moveWork(MarkStack& dst, MarkStack& src);
+  static size_t moveWork(GCMarker* marker, MarkStack& dst, MarkStack& src,
+                         bool allowDistribute);
 
   size_t sizeOfExcludingThis(mozilla::MallocSizeOf mallocSizeOf) const;
 
@@ -279,13 +289,13 @@ class MOZ_STACK_CLASS MarkStackIter {
   void next();
 
   MarkStack::Tag peekTag() const;
+  MarkStack::TaggedPtr peekPtr() const;
   bool isSlotsOrElementsRange() const;
   MarkStack::SlotsOrElementsRange slotsOrElementsRange() const;
   void setSlotsOrElementsRange(const MarkStack::SlotsOrElementsRange& range);
 
  private:
   size_t position() const;
-  MarkStack::TaggedPtr peekPtr() const;
 };
 
 // Bitmask of options to parameterize MarkingTracerT.
@@ -403,7 +413,7 @@ class GCMarker {
   bool enterWeakMarkingMode();
   void leaveWeakMarkingMode();
 
-  void enterParallelMarkingMode(gc::ParallelMarker* pm);
+  void enterParallelMarkingMode();
   void leaveParallelMarkingMode();
 
   // Do not use linear-time weak marking for the rest of this collection.
@@ -421,12 +431,13 @@ class GCMarker {
   bool markOneObjectForTest(JSObject* obj);
 #endif
 
-  bool markCurrentColorInParallel(JS::SliceBudget& budget);
+  bool markCurrentColorInParallel(gc::ParallelMarkTask* task,
+                                  JS::SliceBudget& budget);
 
   template <uint32_t markingOptions, gc::MarkColor>
   bool markOneColor(JS::SliceBudget& budget);
 
-  static void moveWork(GCMarker* dst, GCMarker* src);
+  static size_t moveWork(GCMarker* dst, GCMarker* src, bool allowDistribute);
 
   [[nodiscard]] bool initStack();
   void resetStackCapacity();
@@ -493,7 +504,10 @@ class GCMarker {
   void markAndTraverseEdge(S* source, const T& target);
 
   template <uint32_t markingOptions>
-  bool markAndTraversePrivateGCThing(JSObject* source, gc::TenuredCell* target);
+  bool markAndTraversePrivateGCThing(JSObject* source, gc::Cell* target);
+
+  template <uint32_t markingOptions>
+  bool markAndTraverseSymbol(JSObject* source, JS::Symbol* target);
 
   template <typename S, typename T>
   void checkTraversedEdge(S source, T* target);
@@ -552,9 +566,9 @@ class GCMarker {
   friend class JS::Zone;
 
 #ifdef DEBUG
-  void checkZone(void* p);
+  void checkZone(gc::Cell* cell);
 #else
-  void checkZone(void* p) {}
+  void checkZone(gc::Cell* cell) {}
 #endif
 
   template <uint32_t markingOptions>
@@ -584,8 +598,6 @@ class GCMarker {
   // The current mark stack color.
   MainThreadOrGCTaskData<gc::MarkColor> markColor_;
 
-  MainThreadOrGCTaskData<gc::ParallelMarker*> parallelMarker_;
-
   Vector<JS::GCCellPtr, 0, SystemAllocPolicy> unmarkGrayStack;
   friend class gc::UnmarkGrayTracer;
 
@@ -603,6 +615,9 @@ class GCMarker {
    * pref: javascript.options.mem.incremental_weakmap
    */
   MainThreadOrGCTaskData<bool> incrementalWeakMapMarkingEnabled;
+
+  /* Random number generator state. */
+  MainThreadOrGCTaskData<mozilla::non_crypto::XorShift128PlusRNG> random;
 
 #ifdef DEBUG
  private:

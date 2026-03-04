@@ -11,6 +11,7 @@ more-from-moz-category =
 more-from-moz-subtitle = Wuslědźće druhe produkty { -vendor-short-name }, kotrež strowy internet podpěruja.
 more-from-moz-firefox-mobile-title = Mobilny { -brand-product-name }
 more-from-moz-firefox-mobile-description = Mobilny wobhladowak, kotryž wašu priwatnosć na prěnje městno staja.
+more-from-moz-firefox-mobile-title-1 = { -brand-product-name } za mobilne graty
 more-from-moz-mozilla-vpn-title = { -mozilla-vpn-brand-name }
 more-from-moz-mozilla-vpn-description = Wotkryjće přidatu runinu anonymneho přehladowanja a škita.
 more-from-moz-qr-code-box-firefox-mobile-title = Sćehńće z pomocu swojeho mobilneho grata. Měrće swoju kameru na QR-kod. Hdyž so wotkaz jewi, podótkńće so jeho.
@@ -32,3 +33,17 @@ more-from-moz-mozilla-monitor-title = { -mozmonitor-brand-name }
 more-from-moz-mozilla-monitor-us-description = Waše wotkryte wosobinske informacije awtomatisce cofnyć
 more-from-moz-mozilla-monitor-global-description = Warnowanja dóstać, hdyž su waše daty w dźěrje datow byli.
 more-from-moz-mozilla-monitor-button = { -monitor-brand-short-name } wobstarać
+
+## These strings are for the Solo card in about:preferences moreFromMozilla page
+
+more-from-moz-solo-title = KI { -solo-ai-brand-name }
+more-from-moz-solo-description = Wutworće swoje websydło hnydom a zwjazajće swójsku domenu zadarmo.
+more-from-moz-solo-button = Spytajće { -solo-ai-brand-name }
+more-from-moz-solo-title-2 = Twórc websydłow KI { -solo-ai-brand-name }
+
+## These strings are for the MDN card in about:preferences moreFromMozilla page
+
+more-from-moz-mdn-title = Web-dokumentacija MDN
+more-from-moz-mdn-description = Wukńće webwuwiće z darmotnymi, wobšěrnymi nawodami a referencami.
+more-from-moz-mdn-button = Webwuwiće wuknyć
+more-from-moz-mdn-title2 = { -mdn-brand-name }

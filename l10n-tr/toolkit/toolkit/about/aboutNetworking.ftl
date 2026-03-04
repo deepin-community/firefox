@@ -39,6 +39,7 @@ about-networking-dns-lookup = DNS Çözümleme
 about-networking-dns-lookup-button = Çözümle
 about-networking-dns-domain = Alan adı:
 about-networking-dns-lookup-table-column = IP’ler
+about-networking-dns-https-rrs-lookup-table-column = HTTPS RR’leri
 about-networking-dns-https-rr-lookup-table-column = HTTP RR’leri
 about-networking-rcwn = RCWN İstatistikleri
 about-networking-rcwn-status = RCWN durumu
@@ -55,7 +56,7 @@ about-networking-rcwn-avg-long = Uzun ortalama
 about-networking-rcwn-std-dev-long = Uzun standart sapma
 about-networking-rcwn-cache-slow = Yavaş önbellek sayısı
 about-networking-rcwn-cache-not-slow = Yavaş olmayan önbellek sayısı
-about-networking-networkid = Ağ Kimliği
+about-networking-networkid = Ağ kimliği
 about-networking-networkid-id = Ağ Kimliği
 # Note: do not translate about:logging, as it is a URL.
 about-networking-moved-about-logging = Bu sayfa <a data-l10n-name="about-logging-url">about:logging</a>’e taşındı.
@@ -64,6 +65,3 @@ about-networking-moved-about-logging = Bu sayfa <a data-l10n-name="about-logging
 
 about-networking-networkid-is-up = Bağlantı çalışıyor
 about-networking-networkid-status-known = Bağlantı durumu bilinmiyor
-
-##
-

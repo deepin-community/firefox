@@ -19,7 +19,6 @@ open-location = Voer zoekterm of adres in
 share = Delen
 close-window = Venster sluiten
 open-sidebar = Zijbalken
-
 # This string describes shortcuts for search.
 search-popover = Zoeksnelkoppelingen
 # Describes searches limited to a specific scope
@@ -33,6 +32,3 @@ search-history = Geschiedenis
 search-opentabs = Open tabbladen
 search-tags = Labels
 search-titles = Titels
-
-##
-

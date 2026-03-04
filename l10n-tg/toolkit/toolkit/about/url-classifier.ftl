@@ -5,11 +5,16 @@
 url-classifier-title = Маълумот дар бораи таснифгари URL
 url-classifier-search-title = Ҷустуҷӯ
 url-classifier-search-result-title = Натиҷаҳо
+# Variables:
+#   $uri (string) - URI of blocked page
 url-classifier-search-result-uri = Нишонии URI: { $uri }
+# Variables:
+#   $list (string) - List of tables where the page is blocked
 url-classifier-search-result-list = Рӯйхати ҷадвалҳо: { $list }
 url-classifier-search-input = Нишонии URL
 url-classifier-search-error-invalid-url = Нишонии URL беэътибор аст
 url-classifier-search-error-no-features = Ягон хусусият интихоб карда нашуд
+url-classifier-search-error-no-results = Барои нишонии «URL» ягон сабт ёфт нашуд
 url-classifier-search-btn = Оғози ҷустуҷӯ
 url-classifier-search-features = Хусусиятҳо
 url-classifier-search-listType = Намуди рӯйхат
@@ -36,15 +41,14 @@ url-classifier-debug-title = Ислоҳ кардани хатоҳо
 url-classifier-debug-module-btn = Танзими модули сабти рӯйдодҳо
 url-classifier-debug-file-btn = Танзими файли сабти рӯйдодҳо
 url-classifier-debug-js-log-chk = Танзими сабти рӯйдодҳои JS
-url-classifier-debug-sb-modules = Модулҳои сабти рӯйдодҳои тамошокунии бехатар
+url-classifier-debug-sb-modules = Модулҳои сабти рӯйдодҳои тамошобинии бехатар
 url-classifier-debug-modules = Модулҳои сабти рӯйдодҳои ҷорӣ
-url-classifier-debug-sbjs-modules = Сабти рӯйдодҳои JS-и тамошокунии бехатар
+url-classifier-debug-sbjs-modules = Сабти рӯйдодҳои JS-и тамошобинии бехатар
 url-classifier-debug-file = Файли сабти рӯйдодҳои ҷорӣ
-
 url-classifier-trigger-update = Оғоз кардани навсозӣ
 url-classifier-not-available = Дастнорас
-url-classifier-disable-sbjs-log = Ғайрифаъол кардани сабти рӯйдодҳои JS-и тамошокунии бехатар
-url-classifier-enable-sbjs-log = Фаъол кардани сабти рӯйдодҳои JS-и тамошокунии бехатар
+url-classifier-disable-sbjs-log = Ғайрифаъол кардани сабти рӯйдодҳои JS-и тамошобинии бехатар
+url-classifier-enable-sbjs-log = Фаъол кардани сабти рӯйдодҳои JS-и тамошобинии бехатар
 url-classifier-enabled = Фаъол аст
 url-classifier-disabled = Ғайрифаъол аст
 url-classifier-updating = навсозӣ

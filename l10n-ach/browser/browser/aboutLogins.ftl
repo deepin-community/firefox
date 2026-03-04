@@ -4,6 +4,9 @@
 # NOTE: New strings should use the about-logins- prefix.
 
 about-logins-page-title = Donyo iyie ki Mung me donyo
+about-logins-login-filter =
+    .placeholder = Yeny Donyo iyie
+    .key = F
 fxaccounts-sign-in-text = Nong mung me donyo mamegi i nyonyo ni mukene
 fxaccounts-avatar-button =
     .title = Lo akaunt
@@ -186,16 +189,3 @@ about-logins-import-dialog-error-unable-to-read-title = Pe twero Ngiyo Pwail
 about-logins-import-dialog-error-unable-to-read-description = Nen ni meno iyero pwail me CSV onyo TSV.
 about-logins-import-dialog-error-learn-more = Nong ngec mapol
 about-logins-import-dialog-error-cancel = Juki
-
-##
-## Variables:
-##  $field (String) - The name of the field from the CSV file for example url, username or password
-
-
-##
-## Variables:
-##  $count (number) - The number of affected elements
-
-
-## Logins import report page
-

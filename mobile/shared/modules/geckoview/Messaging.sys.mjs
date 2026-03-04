@@ -5,39 +5,6 @@
 const IS_PARENT_PROCESS =
   Services.appinfo.processType == Services.appinfo.PROCESS_TYPE_DEFAULT;
 
-class ChildActorDispatcher {
-  constructor(actor) {
-    this._actor = actor;
-  }
-
-  // TODO: Bug 1658980
-  registerListener() {
-    throw new Error("Cannot registerListener in child actor");
-  }
-  unregisterListener() {
-    throw new Error("Cannot registerListener in child actor");
-  }
-
-  /**
-   * Sends a request to Java.
-   *
-   * @param aMsg      Message to send; must be an object with a "type" property
-   */
-  sendRequest(aMsg) {
-    this._actor.sendAsyncMessage("DispatcherMessage", aMsg);
-  }
-
-  /**
-   * Sends a request to Java, returning a Promise that resolves to the response.
-   *
-   * @param aMsg Message to send; must be an object with a "type" property
-   * @return A Promise resolving to the response
-   */
-  sendRequestForResult(aMsg) {
-    return this._actor.sendQuery("DispatcherQuery", aMsg);
-  }
-}
-
 function DispatcherDelegate(aDispatcher, aMessageManager) {
   this._dispatcher = aDispatcher;
   this._messageManager = aMessageManager;
@@ -58,7 +25,7 @@ DispatcherDelegate.prototype = {
   /**
    * Register a listener to be notified of event(s).
    *
-   * @param aListener Target listener implementing nsIAndroidEventListener.
+   * @param aListener Target listener implementing nsIGeckoViewEventListener.
    * @param aEvents   String or array of strings of events to listen to.
    */
   registerListener(aListener, aEvents) {
@@ -71,7 +38,7 @@ DispatcherDelegate.prototype = {
   /**
    * Unregister a previously-registered listener.
    *
-   * @param aListener Registered listener implementing nsIAndroidEventListener.
+   * @param aListener Registered listener implementing nsIGeckoViewEventListener.
    * @param aEvents   String or array of strings of events to stop listening to.
    */
   unregisterListener(aListener, aEvents) {
@@ -88,8 +55,8 @@ DispatcherDelegate.prototype = {
    *
    * @param aEvent     Name of event to dispatch.
    * @param aData      Optional object containing data for the event.
-   * @param aCallback  Optional callback implementing nsIAndroidEventCallback.
-   * @param aFinalizer Optional finalizer implementing nsIAndroidEventFinalizer.
+   * @param aCallback  Optional callback implementing nsIGeckoViewEventCallback.
+   * @param aFinalizer Optional finalizer implementing nsIGeckoViewEventFinalizer.
    */
   dispatch(aEvent, aData, aCallback, aFinalizer) {
     if (this._dispatcher) {
@@ -120,7 +87,7 @@ DispatcherDelegate.prototype = {
    * Sends a request to Java.
    *
    * @param aMsg      Message to send; must be an object with a "type" property
-   * @param aCallback Optional callback implementing nsIAndroidEventCallback.
+   * @param aCallback Optional callback implementing nsIGeckoViewEventCallback.
    */
   sendRequest(aMsg, aCallback) {
     const type = aMsg.type;
@@ -197,7 +164,7 @@ DispatcherDelegate.prototype = {
 
 export var EventDispatcher = {
   instance: new DispatcherDelegate(
-    IS_PARENT_PROCESS ? Services.androidBridge : undefined
+    IS_PARENT_PROCESS ? Services.geckoviewBridge : undefined
   ),
 
   /**
@@ -215,7 +182,7 @@ export var EventDispatcher = {
       aWindow &&
       aWindow.arguments &&
       aWindow.arguments[0] &&
-      aWindow.arguments[0].QueryInterface(Ci.nsIAndroidView);
+      aWindow.arguments[0].QueryInterface(Ci.nsIGeckoViewView);
 
     if (!view) {
       const mm = !IS_PARENT_PROCESS && aWindow && aWindow.messageManager;
@@ -239,7 +206,7 @@ export var EventDispatcher = {
     if (!IS_PARENT_PROCESS) {
       return undefined;
     }
-    const dispatcher = Services.androidBridge.getDispatcherByName(aName);
+    const dispatcher = Services.geckoviewBridge.getDispatcherByName(aName);
     return new DispatcherDelegate(dispatcher);
   },
 
@@ -251,15 +218,6 @@ export var EventDispatcher = {
    */
   forMessageManager(aMessageManager) {
     return new DispatcherDelegate(null, aMessageManager);
-  },
-
-  /**
-   * Return the EventDispatcher instance associated with an actor.
-   *
-   * @param aActor an actor
-   */
-  forActor(aActor) {
-    return new ChildActorDispatcher(aActor);
   },
 
   receiveMessage(aMsg) {

@@ -8,13 +8,14 @@
 #define mozilla_dom_workernavigator_h__
 
 #include <stdint.h>
+
 #include "js/RootingAPI.h"
 #include "mozilla/AlreadyAddRefed.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/RefPtr.h"
+#include "mozilla/StaticPrefs_privacy.h"
 #include "mozilla/dom/BindingDeclarations.h"
 #include "mozilla/dom/workerinternals/RuntimeService.h"
-#include "mozilla/StaticPrefs_privacy.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsISupports.h"
 #include "nsStringFwd.h"
@@ -31,6 +32,8 @@ namespace dom {
 class StorageManager;
 class MediaCapabilities;
 class LockManager;
+class Permissions;
+class ServiceWorkerContainer;
 
 namespace network {
 class Connection;
@@ -46,6 +49,8 @@ class WorkerNavigator final : public nsWrapperCache {
   RefPtr<dom::MediaCapabilities> mMediaCapabilities;
   RefPtr<webgpu::Instance> mWebGpu;
   RefPtr<dom::LockManager> mLocks;
+  RefPtr<dom::Permissions> mPermissions;
+  RefPtr<ServiceWorkerContainer> mServiceWorkerContainer;
   bool mOnline;
 
   WorkerNavigator(const NavigatorProperties& aProperties, bool aOnline);
@@ -113,6 +118,10 @@ class WorkerNavigator final : public nsWrapperCache {
   webgpu::Instance* Gpu();
 
   dom::LockManager* Locks();
+
+  dom::Permissions* Permissions();
+
+  already_AddRefed<ServiceWorkerContainer> ServiceWorker();
 };
 
 }  // namespace dom

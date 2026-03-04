@@ -21,6 +21,9 @@ permissions-session =
 permissions-allow =
     .label = Permitir
     .accesskey = P
+permissions-add =
+    .label = Agregar
+    .accesskey = A
 permissions-button-off =
     .label = Desactivar
     .accesskey = D
@@ -93,6 +96,12 @@ permissions-exceptions-https-only-window2 =
 permissions-exceptions-https-only-desc = Puedes desactivar el modo solo HTTPS para sitios web específicos. { -brand-short-name } no intentará actualizar la conexión a HTTPS seguro para esos sitios. Las excepciones no se aplican a las ventanas privadas.
 permissions-exceptions-https-only-desc2 = Puedes desactivar el modo solo HTTPS para sitios web específicos. { -brand-short-name } no intentará actualizar la conexión a HTTPS seguro para esos sitios.
 
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-window3 =
+    .title = Sitios web permitidos: ventanas emergentes y redirecciones de terceros
+    .style = { permissions-window2.style }
+
 ## Exceptions - Pop-ups
 
 permissions-exceptions-popup-window2 =
@@ -124,7 +133,7 @@ permissions-exceptions-addons-desc = Puedes especificar los sitios web que podr�
 ## Site Permissions - Autoplay
 
 permissions-site-autoplay-window2 =
-    .title = Configuración. Reproducción automática
+    .title = Configuración - Reproducción automática
     .style = { permissions-window2.style }
 permissions-site-autoplay-desc = Puedes administrar aquí los sitios que no siguen la configuración predeterminada de reproducción automática.
 

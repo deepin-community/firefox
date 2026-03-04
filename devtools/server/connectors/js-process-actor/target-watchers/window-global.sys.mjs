@@ -8,10 +8,12 @@ const lazy = {};
 ChromeUtils.defineESModuleGetters(
   lazy,
   {
+    HTMLSourcesCache:
+      "resource://devtools/server/actors/utils/HTMLSourcesCache.sys.mjs",
     isWindowGlobalPartOfContext:
       "resource://devtools/server/actors/watcher/browsing-context-helpers.sys.mjs",
-    WindowGlobalLogger:
-      "resource://devtools/server/connectors/js-window-actor/WindowGlobalLogger.sys.mjs",
+    WEBEXTENSION_FALLBACK_DOC_URL:
+      "resource://devtools/server/actors/watcher/browsing-context-helpers.sys.mjs",
   },
   { global: "contextual" }
 );
@@ -26,29 +28,6 @@ ChromeUtils.defineESModuleGetters(
   },
   { global: "shared" }
 );
-
-const isEveryFrameTargetEnabled = Services.prefs.getBoolPref(
-  "devtools.every-frame-target.enabled",
-  false
-);
-
-// If true, log info about DOMProcess's being created.
-const DEBUG = false;
-
-/**
- * Print information about operation being done against each Window Global.
- *
- * @param {WindowGlobalChild} windowGlobal
- *        The window global for which we should log a message.
- * @param {String} message
- *        Message to log.
- */
-function logWindowGlobal(windowGlobal, message) {
-  if (!DEBUG) {
-    return;
-  }
-  lazy.WindowGlobalLogger.logWindowGlobal(windowGlobal, message);
-}
 
 function watch() {
   // Set the following preference in this function, so that we can easily
@@ -132,11 +111,11 @@ function createTargetsForWatcher(watcherDataObject, isProcessActorStartup) {
       //
       // We want to avoid creating transient targets for initial about blank when a new WindowGlobal
       // just get created as it will most likely navigate away just after and confuse the frontend with short lived target.
-      const acceptInitialDocument = !isProcessActorStartup;
+      const acceptUncommitedInitialDocument = !isProcessActorStartup;
 
       if (
         lazy.isWindowGlobalPartOfContext(windowGlobalChild, sessionContext, {
-          acceptInitialDocument,
+          acceptUncommitedInitialDocument,
         })
       ) {
         createWindowGlobalTargetActor(watcherDataObject, windowGlobalChild);
@@ -153,7 +132,32 @@ function createTargetsForWatcher(watcherDataObject, isProcessActorStartup) {
       }
     }
   }
-  for (const window of Services.ww.getWindowEnumerator()) {
+
+  const topWindows = [];
+  // Do not use a for loop on `windowEnumerator` as underlying call to `getNext` may throw on some windows
+  const windowEnumerator = Services.ww.getWindowEnumerator();
+  while (windowEnumerator.hasMoreElements()) {
+    try {
+      const window = windowEnumerator.getNext();
+      topWindows.push(window);
+    } catch (e) {
+      console.error("Failed to process a top level window", e);
+    }
+  }
+
+  // When debugging an extension, we have to ensure create the top level target first.
+  // The top level target is the one for the fallback document.
+  if (sessionContext.type == "webextension") {
+    const fallbackWindowIndex = topWindows.findIndex(window =>
+      window.location.href.startsWith(lazy.WEBEXTENSION_FALLBACK_DOC_URL)
+    );
+    if (fallbackWindowIndex != -1) {
+      const [fallbackWindow] = topWindows.splice(fallbackWindowIndex, 1);
+      topWindows.unshift(fallbackWindow);
+    }
+  }
+
+  for (const window of topWindows) {
     lookupForTargets(window);
 
     // `lookupForTargets` uses `getAllBrowsingContextsInSubTree`, but this will ignore browser elements
@@ -164,13 +168,21 @@ function createTargetsForWatcher(watcherDataObject, isProcessActorStartup) {
     for (const browser of window.document.querySelectorAll(
       `browser[type="content"]`
     )) {
-      const childWindow = browser.browsingContext.window;
+      // Bug 1947777 - the browser context may not have an active DOM Window
+      const childWindow = browser.browsingContext?.window;
       // If the tab isn't on a document loaded in the parent process,
       // the window will be null.
       if (childWindow) {
         lookupForTargets(childWindow);
       }
     }
+  }
+
+  // Utility class to watch for HTML Sources text content emitted by the HTML Parser.
+  // As this can come from the previous WindowGlobal, we need this logic to be running outside
+  // of individual WindowGlobal targets.
+  if (sessionContext.type != "all") {
+    lazy.HTMLSourcesCache.watch(sessionContext.browserId);
   }
 }
 
@@ -190,6 +202,10 @@ function destroyTargetsForWatcher(watcherDataObject, options) {
       options
     );
   }
+
+  if (watcherDataObject.sessionContext.type != "all") {
+    lazy.HTMLSourcesCache.unwatch(watcherDataObject.sessionContext.browserId);
+  }
 }
 
 /**
@@ -198,12 +214,12 @@ function destroyTargetsForWatcher(watcherDataObject, options) {
  *  - by a bfcache navigation (pageshow)
  *
  * @param {Window} window
- * @param {Object} options
- * @param {Boolean} options.isBFCache
+ * @param {object} options
+ * @param {boolean} options.isBFCache
  *        True, if the request to instantiate a new target comes from a bfcache navigation.
  *        i.e. when we receive a pageshow event with persisted=true.
  *        This will be true regardless of bfcacheInParent being enabled or disabled.
- * @param {Boolean} options.ignoreIfExisting
+ * @param {boolean} options.ignoreIfExisting
  *        By default to false. If true is passed, we avoid instantiating a target actor
  *        if one already exists for this windowGlobal.
  */
@@ -224,6 +240,14 @@ function onWindowGlobalCreated(
       "frame"
     )) {
       const { sessionContext } = watcherDataObject;
+      /*
+      try {
+        windowGlobal.browsingContext.watchedByDevTools = true;
+      } catch (e) {}
+      try {
+        windowGlobal.browsingContext.top.watchedByDevTools = true;
+      } catch (e) {}
+      */
       if (
         lazy.isWindowGlobalPartOfContext(windowGlobal, sessionContext, {
           forceAcceptTopLevelTarget,
@@ -242,6 +266,16 @@ function onWindowGlobalCreated(
         const existingTarget = findTargetActor({
           watcherDataObject,
           innerWindowId: windowGlobal.innerWindowId,
+          // Also use a loose match per browsing context's ID instead of only window global's innerWindowId
+          // as we would like to destroy eagerly the previous target actor,
+          // which will anyway be wiped by the frontend as soon as we notify it about this new target.
+          // TargetCommand wipes all existing targets as soon as we receive a new Top Level target.
+          //
+          // Matching only per innerWindowId was making browser_webconsole_message_categories.js test to fail
+          // because some very early message resource was attached to this `existingTarget` actor.
+          // The `existingTarget` actor is actually destroyed and their related resource ignored.
+          // Instead we bind these early resources to the new target actor.
+          browsingContextID: windowGlobal.browsingContext.id,
         });
 
         // See comment in `observe()` method and `DOMDocElementInserted` condition to know why we sometime
@@ -364,17 +398,15 @@ function onWindowGlobalDestroyed(innerWindowId) {
  * Instantiate a WindowGlobal target actor for a given browsing context
  * and for a given watcher actor.
  *
- * @param {Object} watcherDataObject
+ * @param {object} watcherDataObject
  * @param {BrowsingContext} windowGlobalChild
- * @param {Boolean} isDocumentCreation
+ * @param {boolean} isDocumentCreation
  */
 function createWindowGlobalTargetActor(
   watcherDataObject,
   windowGlobalChild,
   isDocumentCreation = false
 ) {
-  logWindowGlobal(windowGlobalChild, "Instantiate WindowGlobalTarget");
-
   // When debugging privileged pages running a the shared system compartment, and we aren't in the browser toolbox (which already uses a distinct loader),
   // we have to use the distinct loader in order to ensure running DevTools in a distinct compartment than the page we are about to debug
   // Such page could be about:addons, chrome://browser/content/browser.xhtml,...
@@ -395,9 +427,24 @@ function createWindowGlobalTargetActor(
   // any parent BC and shouldn't be considered as top-level.
   // This is why we check for browserId's.
   const { sessionContext } = watcherDataObject;
-  const isTopLevelTarget =
+  let isTopLevelTarget =
     !browsingContext.parent &&
     browsingContext.browserId == sessionContext.browserId;
+
+  // Web Extension are many of many "top level" browsing context.
+  // i.e. browsing context with no parent.
+  // The background page and popup top browsing context have no parent.
+  // Given that none of these browsing context are guaranteed to be active,
+  // not guarantee to be always active while debugging an add-on,
+  // the WebExtension Descriptor Actor will spawn an "fallback document",
+  // which is guaranteed to be always active and dedicated to eachd debugged addon.
+  // Thus, allowing us to have an identifier top level document to be provided
+  // to an unique top level target actor.
+  if (sessionContext.type == "webextension") {
+    isTopLevelTarget = browsingContext.window.location.href.startsWith(
+      lazy.WEBEXTENSION_FALLBACK_DOC_URL
+    );
+  }
 
   // Create the actual target actor.
   const targetActor = new WindowGlobalTargetActor(connection, {
@@ -407,7 +454,7 @@ function createWindowGlobalTargetActor(
     // type of navigation/reload.
     followWindowGlobalLifeCycle: true,
     isTopLevelTarget,
-    ignoreSubFrames: isEveryFrameTargetEnabled,
+    ignoreSubFrames: true,
     sessionContext,
   });
   targetActor.createdFromJsWindowActor = true;
@@ -425,13 +472,23 @@ function createWindowGlobalTargetActor(
  * @param {DOMWindow|Document} subject
  *        A window for *-document-global-created
  *        A document for *-page-{shown|hide}
- * @param {String} topic
+ * @param {string} topic
  */
 function observe(subject, topic) {
   if (
     topic == "content-document-global-created" ||
     topic == "chrome-document-global-created"
   ) {
+    if (subject.isUncommittedInitialDocument) {
+      // If this is the initial document, it might be a short-lived transient one, and
+      // onWindowGlobalCreated will ignore such documents. If we receive a load
+      // event, the document has been committed to, and we know the initial document
+      // will persist. In that case, we need to call onWindowGlobalCreated again.
+      subject.addEventListener("DOMContentLoaded", handleEvent, {
+        capture: true,
+        once: true,
+      });
+    }
     onWindowGlobalCreated(subject);
   } else if (topic == "inner-window-destroyed") {
     const innerWindowId = subject.QueryInterface(Ci.nsISupportsPRUint64).data;
@@ -473,9 +530,9 @@ function observe(subject, topic) {
 /**
  * DOM Event handler.
  *
- * @param {String} type
+ * @param {string} type
  *        DOM event name
- * @param {Boolean} persisted
+ * @param {boolean} persisted
  *        A flag set to true in cache of BFCache navigation
  * @param {Document} target
  *        The navigating document
@@ -528,25 +585,51 @@ function handleEvent({ type, persisted, target }) {
     // if we navigate back to it, the next DOMWindowCreated won't create a new target for it.
     onWindowGlobalDestroyed(target.defaultView.windowGlobalChild.innerWindowId);
   }
+
+  if (type == "DOMContentLoaded") {
+    if (!target.isInitialDocument) {
+      return;
+    }
+
+    // This is similar to initial-document-element-inserted. onWindowGlobalCreated likely
+    // ignored the earlier call for this document because it was the uncommitted initial one. Now
+    // that we got a load event we know that the document is not transient but the destination of a
+    // load. Its state will have changed and onWindowGlobalCreated won't skip it anymore.
+    onWindowGlobalCreated(target.defaultView, {
+      ignoreIfExisting: true,
+    });
+  }
 }
 
 /**
  * Return an existing Window Global target for given a WatcherActor
  * and against a given WindowGlobal.
  *
- * @param {Object} options
- * @param {String} options.watcherDataObject
- * @param {Number} options.innerWindowId
+ * @param {object} options
+ * @param {string} options.watcherDataObject
+ * @param {number} options.innerWindowId
  *                 The WindowGlobal inner window ID.
  *
  * @returns {WindowGlobalTargetActor|null}
  */
-function findTargetActor({ watcherDataObject, innerWindowId }) {
+function findTargetActor({
+  watcherDataObject,
+  innerWindowId,
+  browsingContextID,
+}) {
   // First let's check if a target was created for this watcher actor in this specific
   // DevToolsProcessChild instance.
-  const targetActor = watcherDataObject.actors.find(
+  //
+  // And start by checking if there is a perfect match first by doing a WindowGlobal / innerWindowId lookup,
+  // before falling back to a BrowsingContext / browsingContextID lookup.
+  let targetActor = watcherDataObject.actors.find(
     actor => actor.innerWindowId == innerWindowId
   );
+  if (!targetActor && browsingContextID) {
+    targetActor = watcherDataObject.actors.find(
+      actor => actor.browsingContextID == browsingContextID
+    );
+  }
   if (targetActor) {
     return targetActor;
   }

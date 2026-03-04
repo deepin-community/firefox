@@ -107,6 +107,12 @@ bool KeyAlgorithmProxy::ReadStructuredClone(JSStructuredCloneReader* aReader) {
       mEc.mName = mName;
       return true;
     }
+
+    case OKP: {
+      mType = OKP;
+      mEd.mName = mName;
+      return true;
+    }
   }
 
   return false;
@@ -228,6 +234,10 @@ nsString KeyAlgorithmProxy::JwkAlg() const {
     if (curveName.EqualsLiteral(WEBCRYPTO_NAMED_CURVE_P521)) {
       return NS_LITERAL_STRING_FROM_CSTRING(JWK_ALG_ECDSA_P_521);
     }
+  }
+
+  if (mName.EqualsLiteral(WEBCRYPTO_ALG_ED25519)) {
+    return NS_LITERAL_STRING_FROM_CSTRING(JWK_ALG_ED25519);
   }
 
   return nsString();

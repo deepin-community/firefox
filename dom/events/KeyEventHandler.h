@@ -7,16 +7,16 @@
 #ifndef mozilla_KeyEventHandler_h_
 #define mozilla_KeyEventHandler_h_
 
+#include "js/TypeDecls.h"
 #include "mozilla/EventForwards.h"
 #include "mozilla/MemoryReporting.h"
+#include "mozilla/ShortcutKeys.h"
 #include "nsAtom.h"
-#include "nsString.h"
 #include "nsCOMPtr.h"
+#include "nsCycleCollectionParticipant.h"
 #include "nsIController.h"
 #include "nsIWeakReference.h"
-#include "nsCycleCollectionParticipant.h"
-#include "js/TypeDecls.h"
-#include "mozilla/ShortcutKeys.h"
+#include "nsString.h"
 
 namespace mozilla {
 
@@ -133,13 +133,11 @@ class KeyEventHandler final {
   static const int32_t cAlt;
   static const int32_t cControl;
   static const int32_t cMeta;
-  static const int32_t cOS;
 
   static const int32_t cShiftMask;
   static const int32_t cAltMask;
   static const int32_t cControlMask;
   static const int32_t cMetaMask;
-  static const int32_t cOSMask;
 
   static const int32_t cAllModifiers;
 

@@ -9,23 +9,16 @@
 #ifndef mozilla_StyleAnimationValue_h_
 #define mozilla_StyleAnimationValue_h_
 
-#include "mozilla/gfx/MatrixFwd.h"
-#include "mozilla/gfx/Point.h"
+#include "NonCustomCSSPropertyId.h"
+#include "mozilla/CSSPropertyId.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/ServoBindingTypes.h"
 #include "mozilla/ServoStyleConsts.h"  // Servo_AnimationValue_Dump
-#include "mozilla/DbgMacro.h"
-#include "mozilla/AnimatedPropertyID.h"
-#include "nsStringFwd.h"
-#include "nsCoord.h"
 #include "nsColor.h"
-#include "nsCSSPropertyID.h"
-#include "nsCSSValue.h"
-#include "nsStyleConsts.h"
+#include "nsStringFwd.h"
 #include "nsStyleTransformMatrix.h"
 
 class nsIFrame;
-class gfx3DMatrix;
 
 namespace mozilla {
 
@@ -91,12 +84,12 @@ struct AnimationValue {
   mozilla::gfx::MatrixScales GetScaleValue(const nsIFrame* aFrame) const;
 
   // Uncompute this AnimationValue and then serialize it.
-  void SerializeSpecifiedValue(const AnimatedPropertyID& aProperty,
+  void SerializeSpecifiedValue(const CSSPropertyId& aProperty,
                                const StylePerDocumentStyleData* aRawData,
                                nsACString& aString) const;
 
   // Check if |*this| and |aToValue| can be interpolated.
-  bool IsInterpolableWith(const AnimatedPropertyID& aProperty,
+  bool IsInterpolableWith(const CSSPropertyId& aProperty,
                           const AnimationValue& aToValue) const;
 
   // Compute the distance between *this and aOther.
@@ -105,7 +98,7 @@ struct AnimationValue {
   // Create an AnimaitonValue from a string. This method flushes style, so we
   // should use this carefully. Now, it is only used by
   // nsDOMWindowUtils::ComputeAnimationDistance.
-  static AnimationValue FromString(AnimatedPropertyID& aProperty,
+  static AnimationValue FromString(CSSPropertyId& aProperty,
                                    const nsACString& aValue,
                                    dom::Element* aElement);
 
@@ -115,7 +108,7 @@ struct AnimationValue {
   // StyleAnimationValue, so we return its already_AddRefed<> to avoid
   // adding/removing a redundant ref-count.
   static already_AddRefed<StyleAnimationValue> FromAnimatable(
-      nsCSSPropertyID aProperty, const layers::Animatable& aAnimatable);
+      NonCustomCSSPropertyId aProperty, const layers::Animatable& aAnimatable);
 
   RefPtr<StyleAnimationValue> mServo;
 };
@@ -129,7 +122,7 @@ inline std::ostream& operator<<(std::ostream& aOut,
 }
 
 struct PropertyStyleAnimationValuePair {
-  AnimatedPropertyID mProperty;
+  CSSPropertyId mProperty;
   AnimationValue mValue;
 };
 }  // namespace mozilla

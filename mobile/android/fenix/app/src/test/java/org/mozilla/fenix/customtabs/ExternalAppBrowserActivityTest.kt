@@ -32,10 +32,10 @@ import org.mozilla.fenix.browser.browsingmode.BrowsingModeManager
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.getIntentSource
 import org.mozilla.fenix.ext.getNavDirections
-import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
 import org.mozilla.fenix.utils.Settings
+import org.robolectric.RobolectricTestRunner
 
-@RunWith(FenixRobolectricTestRunner::class)
+@RunWith(RobolectricTestRunner::class)
 class ExternalAppBrowserActivityTest {
 
     @Test
@@ -99,6 +99,8 @@ class ExternalAppBrowserActivityTest {
                     every { bundle.getString(any()) } returns ""
                     every { intent.extras } returns bundle
                     every { intent.getBooleanExtra(any(), any()) } returns false
+                    every { intent.dataString } returns null
+
                     return intent
                 }
             },
@@ -123,6 +125,8 @@ class ExternalAppBrowserActivityTest {
                     every { bundle.getString(any()) } returns ""
                     every { intent.getBooleanExtra(any(), any()) } returns true
                     every { intent.extras } returns bundle
+                    every { intent.dataString } returns null
+
                     return intent
                 }
             },
@@ -151,6 +155,8 @@ class ExternalAppBrowserActivityTest {
                     every { bundle.getString(any()) } returns ""
                     every { intent.getBooleanExtra(any(), any()) } returns false
                     every { intent.extras } returns bundle
+                    every { intent.dataString } returns null
+
                     return intent
                 }
             },

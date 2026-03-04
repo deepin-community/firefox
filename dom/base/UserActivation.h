@@ -11,8 +11,8 @@
 #include "mozilla/EventForwards.h"
 #include "mozilla/TimeStamp.h"
 #include "nsCycleCollectionParticipant.h"
-#include "nsWrapperCache.h"
 #include "nsPIDOMWindow.h"
+#include "nsWrapperCache.h"
 
 namespace IPC {
 template <class P>
@@ -21,11 +21,20 @@ struct ParamTraits;
 
 namespace mozilla::dom {
 
+/**
+ * Most of this class is for the old user activation model. The new model
+ * defined in the spec [1] is implemented by `dom::WindowContext` (see
+ * `WindowContext::GetUserActivationState` etc.) since the state defined in the
+ * spec is associated with the `window` object.
+ *
+ * [1]:
+ * https://html.spec.whatwg.org/multipage/interaction.html#user-activation-data-model
+ */
 class UserActivation final : public nsISupports, public nsWrapperCache {
  public:
   // WebIDL UserActivation
 
-  NS_DECL_CYCLE_COLLECTING_ISUPPORTS
+  NS_DECL_CYCLE_COLLECTING_ISUPPORTS_FINAL
   NS_DECL_CYCLE_COLLECTION_WRAPPERCACHE_CLASS(UserActivation)
 
   explicit UserActivation(nsPIDOMWindowInner* aWindow);

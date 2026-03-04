@@ -125,12 +125,7 @@ bool SwitchEmitter::emitLexical(LexicalScope::ParserData* bindings) {
 
   tdzCacheLexical_.emplace(bce_);
   emitterScope_.emplace(bce_);
-  if (!emitterScope_->enterLexical(bce_, ScopeKind::Lexical, bindings
-#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
-                                   ,
-                                   EmitterScope::IsSwitchBlock::Yes
-#endif
-                                   )) {
+  if (!emitterScope_->enterLexical(bce_, ScopeKind::Lexical, bindings)) {
     return false;
   }
 
@@ -401,10 +396,13 @@ bool SwitchEmitter::emitEnd() {
     return false;
   }
 
-  emitterScope_.reset();
   tdzCacheLexical_.reset();
 
   controlInfo_.reset();
+
+  // LIFO construction order is enforced hence we should reset the
+  // emitterScope_ after controlInfo_ has been reset.
+  emitterScope_.reset();
 
   state_ = State::End;
   return true;

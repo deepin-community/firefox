@@ -14,8 +14,6 @@ import android.widget.TextView
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ActivityScenario.launch
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.advanceUntilIdle
 import mozilla.components.lib.crash.Crash
 import mozilla.components.lib.crash.CrashReporter
 import mozilla.components.lib.crash.prompt.CrashReporterActivity.Companion.PREFERENCE_KEY_SEND_REPORT
@@ -37,12 +35,12 @@ import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations.openMocks
 import kotlin.coroutines.CoroutineContext
 
-@ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
 class CrashReporterActivityTest {
 
     @get:Rule
     val coroutinesTestRule = MainCoroutineRule()
+    private val dispatcher = coroutinesTestRule.testDispatcher
     private val scope = coroutinesTestRule.scope
 
     @Mock
@@ -60,7 +58,6 @@ class CrashReporterActivityTest {
             shouldPrompt = CrashReporter.Prompt.ALWAYS,
             services = listOf(service),
             scope = scope,
-            notificationsDelegate = mock(),
         ).install(testContext)
 
         val crash = Crash.UncaughtExceptionCrash(0, RuntimeException("Hello World"), arrayListOf())
@@ -72,7 +69,7 @@ class CrashReporterActivityTest {
         }
 
         // Await for all coroutines to be finished
-        advanceUntilIdle()
+        dispatcher.scheduler.advanceUntilIdle()
 
         // Then
         verify(service).report(crash)
@@ -85,7 +82,6 @@ class CrashReporterActivityTest {
             shouldPrompt = CrashReporter.Prompt.ALWAYS,
             services = listOf(service),
             scope = scope,
-            notificationsDelegate = mock(),
         ).install(testContext)
 
         val crash = Crash.UncaughtExceptionCrash(0, RuntimeException("Hello World"), arrayListOf())
@@ -97,7 +93,7 @@ class CrashReporterActivityTest {
         }
 
         // Await for all coroutines to be finished
-        advanceUntilIdle()
+        dispatcher.scheduler.advanceUntilIdle()
 
         // Then
         verify(service).report(crash)
@@ -113,7 +109,6 @@ class CrashReporterActivityTest {
                 theme = android.R.style.Theme_DeviceDefault, // Yolo!
             ),
             services = listOf(mock()),
-            notificationsDelegate = mock(),
         ).install(testContext)
 
         val crash = Crash.UncaughtExceptionCrash(0, RuntimeException("Hello World"), arrayListOf())
@@ -132,7 +127,6 @@ class CrashReporterActivityTest {
             shouldPrompt = CrashReporter.Prompt.ALWAYS,
             services = listOf(service),
             scope = scope,
-            notificationsDelegate = mock(),
         ).install(testContext)
 
         val crash = Crash.UncaughtExceptionCrash(0, RuntimeException("Hello World"), arrayListOf())
@@ -160,15 +154,14 @@ class CrashReporterActivityTest {
             shouldPrompt = CrashReporter.Prompt.ALWAYS,
             services = listOf(service),
             scope = scope,
-            notificationsDelegate = mock(),
         ).install(testContext)
 
         val crash = Crash.NativeCodeCrash(
             0,
             "",
-            true,
             "",
-            Crash.NativeCodeCrash.PROCESS_TYPE_MAIN,
+            Crash.NativeCodeCrash.PROCESS_VISIBILITY_MAIN,
+            processType = "main",
             breadcrumbs = arrayListOf(),
             remoteType = null,
         )
@@ -186,15 +179,14 @@ class CrashReporterActivityTest {
             shouldPrompt = CrashReporter.Prompt.ALWAYS,
             services = listOf(service),
             scope = scope,
-            notificationsDelegate = mock(),
         ).install(testContext)
 
         val crash = Crash.NativeCodeCrash(
             0,
             "",
-            true,
             "",
-            Crash.NativeCodeCrash.PROCESS_TYPE_BACKGROUND_CHILD,
+            Crash.NativeCodeCrash.PROCESS_VISIBILITY_BACKGROUND_CHILD,
+            processType = "utility",
             breadcrumbs = arrayListOf(),
             remoteType = null,
         )
@@ -212,15 +204,14 @@ class CrashReporterActivityTest {
             shouldPrompt = CrashReporter.Prompt.ALWAYS,
             services = listOf(service),
             scope = scope,
-            notificationsDelegate = mock(),
         ).install(testContext)
 
         val crash = Crash.NativeCodeCrash(
             123,
             "",
-            true,
             "",
-            Crash.NativeCodeCrash.PROCESS_TYPE_BACKGROUND_CHILD,
+            Crash.NativeCodeCrash.PROCESS_VISIBILITY_BACKGROUND_CHILD,
+            processType = "utility",
             breadcrumbs = arrayListOf(),
             remoteType = null,
         )
@@ -236,7 +227,6 @@ class CrashReporterActivityTest {
 /**
  * Launch activity scenario for certain [crash].
  */
-@ExperimentalCoroutinesApi
 private fun CoroutineContext.launchActivityWithCrash(
     crash: Crash,
 ): ActivityScenario<CrashReporterActivity> = run {

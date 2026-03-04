@@ -149,9 +149,7 @@ main-context-menu-save-link-to-pocket =
     .label = लिङ्क सुरक्षित गर्नुहोस् { -pocket-brand-name } मा
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = इमेल ठेगाना प्रतिलिपि गर्नुहोस्
@@ -162,11 +160,6 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = लिङ्कको प्रतिलिपि बनाउनुहोस्
     .accesskey = L
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = साइट ट्र्याकिङ बिना लिङ्क प्रतिलिपि गर्नुहोस्
-    .accesskey = u
 
 ## Media (video/audio) controls
 ##
@@ -290,9 +283,7 @@ main-context-menu-send-to-device =
     .label = पृष्ठलाई यन्त्रमा पठाउनुहोस्
     .accesskey = D
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = सुरक्षित लगइन प्रयोग गर्नुहोस्

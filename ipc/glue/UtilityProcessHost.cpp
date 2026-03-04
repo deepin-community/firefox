@@ -91,7 +91,7 @@ UtilityProcessHost::~UtilityProcessHost() {
 #endif
 }
 
-bool UtilityProcessHost::Launch(StringVector aExtraOpts) {
+bool UtilityProcessHost::Launch(geckoargs::ChildProcessArgs aExtraOpts) {
   MOZ_ASSERT(NS_IsMainThread());
 
   MOZ_ASSERT(mLaunchPhase == LaunchPhase::Unlaunched);
@@ -110,13 +110,9 @@ bool UtilityProcessHost::Launch(StringVector aExtraOpts) {
   EnsureWidevineL1PathForSandbox(aExtraOpts);
 #endif
 
-#if defined(MOZ_WMF_CDM) && defined(MOZ_SANDBOX)
-  EnanbleMFCDMTelemetryEventIfNeeded();
-#endif
-
   mLaunchPhase = LaunchPhase::Waiting;
 
-  if (!GeckoChildProcessHost::AsyncLaunch(aExtraOpts)) {
+  if (!GeckoChildProcessHost::AsyncLaunch(std::move(aExtraOpts))) {
     NS_WARNING("UtilityProcess AsyncLaunch failed, aborting.");
     mLaunchPhase = LaunchPhase::Complete;
     mPrefSerializer = nullptr;
@@ -216,7 +212,7 @@ void UtilityProcessHost::InitAfterConnect(bool aSucceeded) {
         std::move(policy), GetActor()->OtherPid(), brokerFd.ref());
     // This is unlikely to fail and probably indicates OS resource
     // exhaustion, but we can at least try to recover.
-    Unused << NS_WARN_IF(mSandboxBroker == nullptr);
+    (void)NS_WARN_IF(mSandboxBroker == nullptr);
     MOZ_ASSERT(brokerFd.ref().IsValid());
   }
 #endif  // XP_LINUX && MOZ_SANDBOX
@@ -227,10 +223,10 @@ void UtilityProcessHost::InitAfterConnect(bool aSucceeded) {
   isReadyForBackgroundProcessing = dllSvc->IsReadyForBackgroundProcessing();
 #endif
 
-  Unused << GetActor()->SendInit(brokerFd, Telemetry::CanRecordReleaseData(),
-                                 isReadyForBackgroundProcessing);
+  (void)GetActor()->SendInit(brokerFd, Telemetry::CanRecordReleaseData(),
+                             isReadyForBackgroundProcessing);
 
-  Unused << GetActor()->SendInitProfiler(
+  (void)GetActor()->SendInitProfiler(
       ProfilerParent::CreateForProcess(GetActor()->OtherPid()));
 
   LOGD("[%p] UtilityProcessHost::InitAfterConnect succeeded", this);
@@ -365,7 +361,7 @@ MacSandboxType UtilityProcessHost::GetMacSandboxType() {
 
 #ifdef MOZ_WMF_CDM_LPAC_SANDBOX
 void UtilityProcessHost::EnsureWidevineL1PathForSandbox(
-    StringVector& aExtraOpts) {
+    geckoargs::ChildProcessArgs& aExtraOpts) {
   if (mSandbox != SandboxingKind::MF_MEDIA_ENGINE_CDM) {
     return;
   }
@@ -412,19 +408,6 @@ void UtilityProcessHost::EnsureWidevineL1PathForSandbox(
 
 #  undef WMF_LOG
 
-#endif
-
-#if defined(MOZ_WMF_CDM) && defined(MOZ_SANDBOX)
-void UtilityProcessHost::EnanbleMFCDMTelemetryEventIfNeeded() const {
-  if (mSandbox != SandboxingKind::MF_MEDIA_ENGINE_CDM) {
-    return;
-  }
-  static bool sTelemetryEventEnabled = false;
-  if (!sTelemetryEventEnabled) {
-    sTelemetryEventEnabled = true;
-    Telemetry::SetEventRecordingEnabled("mfcdm"_ns, true);
-  }
-}
 #endif
 
 }  // namespace mozilla::ipc

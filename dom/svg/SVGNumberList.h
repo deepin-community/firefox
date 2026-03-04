@@ -7,12 +7,12 @@
 #ifndef DOM_SVG_SVGNUMBERLIST_H_
 #define DOM_SVG_SVGNUMBERLIST_H_
 
+#include "SVGElement.h"
 #include "nsCOMPtr.h"
 #include "nsDebug.h"
 #include "nsIContent.h"
 #include "nsINode.h"
 #include "nsIWeakReferenceUtils.h"
-#include "SVGElement.h"
 #include "nsTArray.h"
 
 namespace mozilla {
@@ -43,7 +43,7 @@ class SVGNumberList {
   SVGNumberList& operator=(const SVGNumberList& aOther) {
     mNumbers.ClearAndRetainStorage();
     // Best-effort, really.
-    Unused << mNumbers.AppendElements(aOther.mNumbers, fallible);
+    (void)mNumbers.AppendElements(aOther.mNumbers, fallible);
     return *this;
   }
 
@@ -60,6 +60,13 @@ class SVGNumberList {
   uint32_t Length() const { return mNumbers.Length(); }
 
   const float& operator[](uint32_t aIndex) const { return mNumbers[aIndex]; }
+
+  [[nodiscard]] FallibleTArray<float>::const_iterator begin() const {
+    return mNumbers.begin();
+  }
+  [[nodiscard]] FallibleTArray<float>::const_iterator end() const {
+    return mNumbers.end();
+  }
 
   bool operator==(const SVGNumberList& rhs) const {
     return mNumbers == rhs.mNumbers;

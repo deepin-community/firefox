@@ -18,7 +18,7 @@ xpinstall-prompt-dont-allow =
     .label = Tiltás
     .accesskey = L
 xpinstall-prompt-never-allow =
-    .label = Soha ne engedélyezze
+    .label = Sosem engedélyezze
     .accesskey = S
 # Long text in this context make the dropdown menu extend awkwardly to the left,
 # avoid a localization that's significantly longer than the English version.
@@ -81,6 +81,8 @@ addon-removal-title = Eltávolítja a következőt: { $name }?
 addon-removal-message = Eltávolítja a(z) { $name } kiegészítőt a { -brand-shorter-name }ból?
 addon-removal-button = Eltávolítás
 addon-removal-abuse-report-checkbox = A kiegészítő jelentése a { -vendor-short-name } felé
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Ha azokat a funkciókat vagy kiegészítőket használja, amelyek használják ezt a modellt, akkor újra hozzáadásra kerül.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -123,14 +125,19 @@ addon-install-error-corrupt-file = Az oldalról származó kiegészítő nem vol
 addon-install-error-file-access = A(z) { $addonName } nem telepíthető, mert a { -brand-short-name } nem tudja módosítani a szükséges fájlt.
 addon-install-error-not-signed = A { -brand-short-name } megakadályozta, hogy az oldal ellenőrizetlen kiegészítőt telepítsen.
 addon-install-error-invalid-domain = A(z) { $addonName } kiegészítő nem telepíthető erről a helyről.
+addon-install-error-no-addon-name-file-access = A kiegészítő nem telepíthető, mert a { -brand-short-name } nem tudja módosítani a szükséges fájlt.
 addon-local-install-error-network-failure = Ez a kiegészítő nem volt telepíthető fájlrendszerhiba miatt.
 addon-local-install-error-incorrect-hash = Ez a kiegészítő nem volt telepíthető, mert nem egyezik meg a { -brand-short-name } által várt kiegészítővel.
 addon-local-install-error-corrupt-file = Ez a kiegészítő nem volt telepíthető, mert úgy tűnik, hogy megsérült.
 addon-local-install-error-file-access = A(z) { $addonName } nem volt telepíthető, mert a { -brand-short-name } nem tudja módosítani a szükséges fájlt.
 addon-local-install-error-not-signed = Ez a kiegészítő nem telepíthető, mert nincs ellenőrizve.
+addon-local-install-no-addon-name-error-file-access = A kiegészítő nem telepíthető, mert a { -brand-short-name } nem tudja módosítani a szükséges fájlt.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = A(z) { $addonName } nem volt telepíthető, mert nem kompatibilis a { -brand-short-name } { $appVersion } verzióval.
+addon-install-error-hard-blocked = A(z) { $addonName } sérti a Mozilla házirendjeit, és nem telepíthető a { -brand-short-name }ra.
+addon-install-error-soft-blocked2 = A(z) { $addonName } korlátozott, és nem telepíthető a { -brand-short-name }ra.
 addon-install-error-blocklisted = A(z) { $addonName } nem volt telepíthető, mert stabilitási és biztonsági szempontból magas kockázatú.
+addon-install-error-soft-blocked = A(z) { $addonName } sérti a Mozilla házirendjeit, és nem telepíthető a { -brand-short-name }ra.
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = Végfelhasználóként nem telepítheti a(z) { $addonName } kiegészítőt, csak a szervezete telepítheti vállalati házirendek használatával.

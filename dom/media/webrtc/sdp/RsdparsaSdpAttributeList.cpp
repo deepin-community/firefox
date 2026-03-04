@@ -4,20 +4,20 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "nsCRT.h"
-
 #include "sdp/RsdparsaSdpAttributeList.h"
-#include "sdp/RsdparsaSdpInc.h"
-#include "sdp/RsdparsaSdpGlue.h"
-
-#include <ostream>
-#include "mozilla/Assertions.h"
 
 #include <limits>
+#include <ostream>
+
+#include "SdpAttribute.h"
+#include "mozilla/Assertions.h"
+#include "nsCRT.h"
+#include "sdp/RsdparsaSdpGlue.h"
+#include "sdp/RsdparsaSdpInc.h"
 
 namespace mozilla {
 
-const std::string RsdparsaSdpAttributeList::kEmptyString = "";
+MOZ_RUNINIT const std::string RsdparsaSdpAttributeList::kEmptyString = "";
 
 RsdparsaSdpAttributeList::~RsdparsaSdpAttributeList() {
   for (size_t i = 0; i < kNumAttributeTypes; ++i) {
@@ -378,6 +378,7 @@ void RsdparsaSdpAttributeList::LoadAttribute(RustAttributeList* attributeList,
       case SdpAttribute::kRtcpRsizeAttribute:
       case SdpAttribute::kBundleOnlyAttribute:
       case SdpAttribute::kEndOfCandidatesAttribute:
+      case SdpAttribute::kExtmapAllowMixedAttribute:
         LoadFlags(attributeList);
         return;
       case SdpAttribute::kMaxMessageSizeAttribute:
@@ -796,6 +797,21 @@ void RsdparsaSdpAttributeList::LoadFmtp(RustAttributeList* attributeList) {
 
       fmtpParameters.reset(
           new SdpFmtpAttributeList::RtxParameters(rtxParameters));
+    } else if (codecName == "AV1") {
+      SdpFmtpAttributeList::Av1Parameters av1Parameters;
+
+      av1Parameters.profile = rustFmtpParameters.av1.has_profile
+                                  ? Some(rustFmtpParameters.av1.profile)
+                                  : Nothing();
+      av1Parameters.levelIdx = rustFmtpParameters.av1.has_level_idx
+                                   ? Some(rustFmtpParameters.av1.level_idx)
+                                   : Nothing();
+      av1Parameters.tier = rustFmtpParameters.av1.has_tier
+                               ? Some(rustFmtpParameters.av1.tier)
+                               : Nothing();
+      fmtpParameters.reset(
+          new SdpFmtpAttributeList::Av1Parameters(av1Parameters));
+
     } else {
       // The parameter set is unknown so skip it
       continue;
@@ -829,6 +845,10 @@ void RsdparsaSdpAttributeList::LoadFlags(RustAttributeList* attributeList) {
   }
   if (flags.endOfCandidates) {
     SetAttribute(new SdpFlagAttribute(SdpAttribute::kEndOfCandidatesAttribute));
+  }
+  if (flags.extmapAllowMixed) {
+    SetAttribute(
+        new SdpFlagAttribute(SdpAttribute::kExtmapAllowMixedAttribute));
   }
 }
 
@@ -1185,7 +1205,7 @@ void RsdparsaSdpAttributeList::LoadRids(RustAttributeList* attributeList) {
     auto direction = static_cast<sdp::Direction>(rid.direction);
     std::vector<uint16_t> formats = convertU16Vec(rid.formats);
 
-    EncodingConstraints parameters;
+    VideoEncodingConstraints parameters;
     parameters.maxWidth = rid.params.max_width;
     parameters.maxHeight = rid.params.max_height;
     // Right now, we treat max-fps=0 and the absence of max-fps as no limit.

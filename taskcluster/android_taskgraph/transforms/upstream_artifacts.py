@@ -28,28 +28,26 @@ def build_upstream_artifacts(config, tasks):
             # Beetmover-apk tasks use declarative artifacts.
             locale = task["attributes"].get("locale")
             build_type = task["attributes"]["build-type"]
-            worker_definition[
-                "upstream-artifacts"
-            ] = generate_beetmover_upstream_artifacts(config, task, build_type, locale)
+            worker_definition["upstream-artifacts"] = (
+                generate_beetmover_upstream_artifacts(config, task, build_type, locale)
+            )
         else:
+            only_archs = task.pop("only-archs", [])
             for dep in get_dependencies(config, task):
                 paths = list(dep.attributes.get("artifacts", {}).values())
-                paths.extend(
-                    [
-                        apk_metadata["name"]
-                        for apk_metadata in dep.attributes.get("apks", {}).values()
-                    ]
-                )
+                paths.extend([
+                    apk_metadata["name"]
+                    for arch, apk_metadata in dep.attributes.get("apks", {}).items()
+                    if not only_archs or arch in only_archs
+                ])
                 if dep.attributes.get("aab"):
                     paths.extend([dep.attributes.get("aab")])
                 if paths:
-                    worker_definition["upstream-artifacts"].append(
-                        {
-                            "taskId": {"task-reference": f"<{dep.kind}>"},
-                            "taskType": _get_task_type(dep.kind),
-                            "paths": sorted(paths),
-                        }
-                    )
+                    worker_definition["upstream-artifacts"].append({
+                        "taskId": {"task-reference": f"<{dep.kind}>"},
+                        "taskType": _get_task_type(dep.kind),
+                        "paths": sorted(paths),
+                    })
 
         task.setdefault("worker", {}).update(worker_definition)
         yield task

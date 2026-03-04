@@ -7,83 +7,90 @@
 
 autofill-manage-addresses-title = जतन केलेले पत्ते
 autofill-manage-addresses-list-header = पत्ते
-
 autofill-manage-credit-cards-title = जतन केलेले क्रेडिट कार्ड
 autofill-manage-credit-cards-list-header = क्रेडिट कार्ड्स
-
 autofill-manage-dialog =
     .style = min-width: 560px
 autofill-manage-remove-button = काढून टाका
 autofill-manage-add-button = जोडा…
 autofill-manage-edit-button = संपादित करा…
 
-##
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# The dialog title for creating addresses in browser preferences.
-autofill-add-new-address-title = नवीन पत्ता जोडा
 # The dialog title for editing addresses in browser preferences.
 autofill-edit-address-title = पत्ता संपादित करा
-
 autofill-address-given-name = प्रथम नाव
 autofill-address-additional-name = मधले नाव
 autofill-address-family-name = आडनाव
 autofill-address-organization = संस्था
 autofill-address-street = रस्ता
 
-## address-level-3 (Sublocality) names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IR, MX
+# Used in Iran (IR), Mexico (MX) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-neighborhood = शेजार
-# Used in MY
+# Used in Malaysia (MY) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-village-township = गाव किंवा वसाहत
 autofill-address-island = बेट
-# Used in IE
+# Used in Ireland (IE) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-townland = प्रभाग
 
-## address-level-2 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-city = शहर
-# Used in HK, SD, SY, TR as Address Level-2 and used in KR as Sublocality.
+# Used in Hong Kong (HK), Sudan (SD), Syria (SY), Türkiye (TR) as as secondary address information (2 levels below the country level).
+# Used in Korea as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-district = जिल्हा
-# Used in GB, NO, SE
+# Used in United Kingdom (GB), Norway (NO), Sweden (SE) as as secondary address information (2 levels below the country level).
 autofill-address-post-town = टपाल नगर
-# Used in AU as Address Level-2 and used in ZZ as Sublocality.
+# Used in Australia (AU) as as secondary address information (below the country level).
+# Used for international addresses as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-suburb = उपनगर
 
-## address-level-1 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-province = प्रांत
 autofill-address-state = राज्य
 autofill-address-county = देश
-# Used in BB, JM
+# Used in Barbados (BB), Jamaica (JM) as primary address information (1 level below the country level).
 autofill-address-parish = पॅरीश
-# Used in HK
+# Used in Honk Kong (HK) as primary address information (1 level below the country level).
 autofill-address-area = क्षेत्र
-# Used in NI, CO
+# Used in Nicaragua (NI), Colombia (CO) as primary address information (1 level below the country level).
 autofill-address-department = विभाग
 
-## Postal code name types
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IN
+# Postal code field used in India (IN).
 autofill-address-pin = पिन
 autofill-address-postal-code = पोस्ट कोड
+# Postal code field.
 autofill-address-zip = झिप कोड
 
 ##
 
+# The dialog title for creating addresses in browser preferences.
+autofill-add-new-address-title = नवीन पत्ता जोडा
 autofill-address-country = देश किंवा प्रदेश
 autofill-address-tel = दूरध्वनी
 autofill-address-email = ईमेल
-
 autofill-cancel-button = रद्द करा
 autofill-save-button = साठवा
 autofill-country-warning-message = सध्या फक्त काही देशांसाठीच फॉर्म स्वयंपूर्ण होणे उपलब्ध आहे.
-
 # The dialog title for creating credit cards in browser preferences.
 autofill-add-new-card-title = नवीन क्रेडिट कार्ड जोडा
 # The dialog title for editing credit cards in browser preferences.
 autofill-edit-card-title = क्रेडिट कार्ड संपादित करा
-
 autofill-card-number = कार्ड क्रमांक
 autofill-card-invalid-number = कृपया वैध कार्ड क्रमांक प्रविष्ट करा
 autofill-card-name-on-card = कार्ड वरील नाव

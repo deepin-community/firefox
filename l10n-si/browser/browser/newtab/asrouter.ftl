@@ -59,7 +59,7 @@ cfr-doorhanger-extension-total-users =
        *[other] පරිශ්‍රීලකයින් { $total }
     }
 
-## Firefox Accounts Message
+## Mozilla Account messages
 
 cfr-doorhanger-bookmark-fxa-header = පොත්යොමු ඕනෑම තැනකට සමමුහූර්ත කරන්න.
 cfr-doorhanger-bookmark-fxa-body = කදිම සොයා ගැනීමක්! ඔබගේ ජංගම උපාංගවල මෙම පොත්යොමුව රහිතව නොසිටින්න. { -fxaccount-brand-name } සමඟ පටන් ගන්න.
@@ -199,6 +199,7 @@ cfr-cbh-confirm-button = දත්තකඩ පතාක ඉවතලීම
     .accesskey = R
 cfr-cbh-dismiss-button = දැන් නොවේ
     .accesskey = N
+cookie-banner-blocker-onboarding-learn-more = තව දැනගන්න
 
 ## These strings are used in the Fox doodle Pin/set default spotlights
 
@@ -258,3 +259,17 @@ launch-on-login-infobar-final-reject-button = එපා, ස්තුතිය�
 ## Tail Fox Set Default Spotlight
 
 tail-fox-spotlight-primary-button = { -brand-short-name } සමඟ මාගේ සබැඳි අරින්න
+tail-fox-spotlight-secondary-button = දැන් නොවේ
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-primary-button =
+    .label = යාවත්කාල කරන්න
+    .accesskey = U
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = වසන්න
+    .aria-label = වසන්න
+fxa-menu-message-mobile-primary-text = ඔබගේ දුරකථනයට පටිති යවන්න

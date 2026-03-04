@@ -11,7 +11,7 @@ ${helpers.predefined_type(
     engines="gecko servo",
     flags="CAN_ANIMATE_ON_COMPOSITOR",
     spec="https://drafts.csswg.org/css-color/#transparency",
-    servo_restyle_damage = "reflow_out_of_flow",
+    servo_restyle_damage="repaint",
     affects="paint",
 )}
 
@@ -53,19 +53,21 @@ ${helpers.predefined_type(
     extra_prefixes="webkit",
     spec="https://drafts.fxtf.org/filters/#propdef-filter",
     affects="overflow",
+    servo_restyle_damage="repaint",
 )}
 
 ${helpers.predefined_type(
     "backdrop-filter",
     "Filter",
     None,
-    engines="gecko",
+    engines="gecko servo",
     vector=True,
     simple_vector_bindings=True,
     gecko_ffi_name="mBackdropFilters",
     separator="Space",
     vector_animation_type="with_zero",
     gecko_pref="layout.css.backdrop-filter.enabled",
+    servo_pref="layout.unimplemented",
     spec="https://drafts.fxtf.org/filter-effects-2/#propdef-backdrop-filter",
     affects="overflow",
 )}
@@ -80,4 +82,5 @@ ${helpers.single_keyword(
     animation_type="discrete",
     spec="https://drafts.fxtf.org/compositing/#propdef-mix-blend-mode",
     affects="paint",
+    servo_restyle_damage="repaint",
 )}

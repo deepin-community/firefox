@@ -53,6 +53,8 @@ fxviewtabrow-move-tab-end = Di chuyển xuống cuối
     .accesskey = E
 fxviewtabrow-move-tab-window = Di chuyển sang cửa sổ mới
     .accesskey = W
+fxviewtabrow-send-to-device = Gửi đến thiết bị
+    .accesskey = n
 fxviewtabrow-send-tab = Gửi thẻ đến thiết bị
     .accesskey = n
 fxviewtabrow-pin-tab = Ghim thẻ
@@ -67,14 +69,6 @@ fxviewtabrow-unmute-tab = Bỏ tắt tiếng thẻ
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Tùy chọn cho { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = Tắt tiếng { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = Bỏ tắt tiếng { $tabTitle }
 
 ## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
 

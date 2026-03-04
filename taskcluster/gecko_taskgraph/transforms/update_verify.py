@@ -5,10 +5,8 @@
 Transform the beetmover task into an actual task description.
 """
 
-
-from copy import deepcopy
-
 from taskgraph.transforms.base import TransformSequence
+from taskgraph.util.copy import deepcopy
 from taskgraph.util.treeherder import add_suffix, inherit_treeherder_from_dep
 
 from gecko_taskgraph.util.attributes import task_name
@@ -47,11 +45,21 @@ def add_command(config, tasks):
             )
             if not chunked["worker"].get("env"):
                 chunked["worker"]["env"] = {}
+
+            command = [
+                "tools/update-verify/scripts/chunked-verify.sh",
+                f"--total-chunks={total_chunks} --this-chunk={this_chunk}",
+            ]
+
+            # Add upstream tools to the path
+            if "linux64-libdmg" in chunked.get("fetches", {}).get("toolchain", []):
+                path_override = "export PATH=$PATH:$MOZ_FETCHES_DIR/dmg &&"
+                command.insert(0, path_override)
+
             chunked["run"] = {
                 "using": "run-task",
                 "cwd": "{checkout}",
-                "command": "tools/update-verify/scripts/chunked-verify.sh "
-                f"--total-chunks={total_chunks} --this-chunk={this_chunk}",
+                "command": " ".join(command),
                 "sparse-profile": "update-verify",
             }
 

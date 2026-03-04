@@ -15,10 +15,8 @@
 #include "mozilla/Encoding.h"
 #include "nsCOMPtr.h"
 #include "nsURLHelper.h"
-#include "nsISizeOf.h"
-#include "mozilla/Attributes.h"
+#include "mozilla/Atomics.h"
 #include "mozilla/LinkedList.h"
-#include "mozilla/MemoryReporting.h"
 #include "nsISensitiveInfoHiddenURI.h"
 #include "nsIURIMutator.h"
 
@@ -112,7 +110,6 @@ class URLSegmentNumber {
 class nsStandardURL : public nsIFileURL,
                       public nsIStandardURL,
                       public nsISerializable,
-                      public nsISizeOf,
                       public nsISensitiveInfoHiddenURI
 #ifdef DEBUG_DUMP_URLS_AT_SHUTDOWN
     ,
@@ -131,10 +128,6 @@ class nsStandardURL : public nsIFileURL,
   NS_DECL_NSISTANDARDURL
   NS_DECL_NSISERIALIZABLE
   NS_DECL_NSISENSITIVEINFOHIDDENURI
-
-  // nsISizeOf
-  virtual size_t SizeOfExcludingThis(MallocSizeOf aMallocSizeOf) const override;
-  virtual size_t SizeOfIncludingThis(MallocSizeOf aMallocSizeOf) const override;
 
   static void InitGlobalObjects();
   static void ShutdownGlobalObjects();
@@ -195,8 +188,6 @@ class nsStandardURL : public nsIFileURL,
     const Encoding* mEncoding;
   };
   friend class nsSegmentEncoder;
-
-  static nsresult NormalizeIPv4(const nsACString& host, nsCString& result);
 
   static nsIIDNService* GetIDNService();
 
@@ -262,7 +253,7 @@ class nsStandardURL : public nsIFileURL,
   static bool IsValidOfBase(unsigned char c, const uint32_t base);
   nsresult NormalizeIDN(const nsACString& aHost, nsACString& aResult);
   nsresult CheckIfHostIsAscii();
-  void CoalescePath(netCoalesceFlags coalesceFlag, char* path);
+  void CoalescePath(char* path);
 
   uint32_t AppendSegmentToBuf(char*, uint32_t, const char*,
                               const URLSegment& input, URLSegment& output,
@@ -338,6 +329,9 @@ class nsStandardURL : public nsIFileURL,
 
   // Checks if the URL has a valid representation.
   bool IsValid();
+
+  // This value will only be updated on the main thread once.
+  static Atomic<bool, Relaxed> gInitialized;
 
   // mSpec contains the normalized version of the URL spec (UTF-8 encoded).
   nsCString mSpec;
@@ -544,12 +538,12 @@ class nsStandardURL : public nsIFileURL,
   friend BaseURIMutator<nsStandardURL>;
 };
 
-#define NS_THIS_STANDARDURL_IMPL_CID                 \
-  { /* b8e3e97b-1ccd-4b45-af5a-79596770f5d7 */       \
-    0xb8e3e97b, 0x1ccd, 0x4b45, {                    \
-      0xaf, 0x5a, 0x79, 0x59, 0x67, 0x70, 0xf5, 0xd7 \
-    }                                                \
-  }
+#define NS_THIS_STANDARDURL_IMPL_CID          \
+  {/* b8e3e97b-1ccd-4b45-af5a-79596770f5d7 */ \
+   0xb8e3e97b,                                \
+   0x1ccd,                                    \
+   0x4b45,                                    \
+   {0xaf, 0x5a, 0x79, 0x59, 0x67, 0x70, 0xf5, 0xd7}}
 
 //-----------------------------------------------------------------------------
 // Dependent substring getters

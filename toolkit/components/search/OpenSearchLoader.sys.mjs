@@ -8,17 +8,15 @@
 
 /* eslint no-shadow: error, mozilla/no-aArgs: error */
 
-const lazy = {};
+import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
-ChromeUtils.defineESModuleGetters(lazy, {
-  SearchUtils: "resource://gre/modules/SearchUtils.sys.mjs",
-});
-
-ChromeUtils.defineLazyGetter(lazy, "logConsole", () => {
-  return console.createInstance({
-    prefix: "OpenSearchLoader",
-    maxLogLevel: lazy.SearchUtils.loggingEnabled ? "Debug" : "Warn",
-  });
+const lazy = XPCOMUtils.declareLazy({
+  SearchUtils: "moz-src:///toolkit/components/search/SearchUtils.sys.mjs",
+  logConsole: () =>
+    console.createInstance({
+      prefix: "OpenSearchLoader",
+      maxLogLevel: lazy.SearchUtils.loggingEnabled ? "Debug" : "Warn",
+    }),
 });
 
 // The namespaces from the specification at
@@ -48,18 +46,16 @@ const MOZSEARCH_LOCALNAME = "SearchPlugin";
  * @typedef {object} OpenSearchProperties
  * @property {string} name
  *   The display name of the engine.
- * @property {nsIURI} installURL
+ * @property {nsIURI} [installURL]
  *   The URL that the engine was initially loaded from.
- * @property {string} [description]
- *   The description of the engine.
  * @property {string} [queryCharset]
  *   The character set to use for encoding query values.
- * @property {string} [UpdateUrl]
+ * @property {string} [searchForm]
+ *   Non-standard. The search form URL.
+ * @property {string} [updateURL]
  *   Non-standard. The update URL for the engine.
- * @property {number} [UpdateInterval]
+ * @property {number} [updateInterval]
  *   Non-standard. The update interval for the engine.
- * @property {string} [IconUpdateUrl]
- *   Non-standard. The update URL for the icon.
  * @property {OpenSearchURL[]} urls
  *   An array of URLs associated with the engine.
  * @property {OpenSearchImage[]} images
@@ -88,12 +84,8 @@ const MOZSEARCH_LOCALNAME = "SearchPlugin";
  * @typedef {object} OpenSearchImage
  * @property {string} url
  *   The source URL of the image.
- * @property {boolean} isPrefered
- *   If this image is of the preferred 16x16 size.
- * @property {width} width
- *   The reported width of the image.
- * @property {height} height
- *   The reported height of the image.
+ * @property {number} size
+ *   The reported width and height of the image.
  */
 
 /**
@@ -103,13 +95,20 @@ const MOZSEARCH_LOCALNAME = "SearchPlugin";
  *   The uri from which to load the OpenSearch engine data.
  * @param {string} [lastModified]
  *   The UTC date when the engine was last updated, if any.
- * @returns {OpenSearchProperties}
+ * @param {OriginAttributesDictionary} [originAttributes]
+ *   The origin attributes of the site loading the manifest. If none are
+ *   specified, the origin attributes will be formed of the first party domain
+ *   based on the domain of the manifest.
+ * @returns {Promise<OpenSearchProperties>}
  *   The properties of the loaded OpenSearch engine.
  */
-export async function loadAndParseOpenSearchEngine(sourceURI, lastModified) {
+export async function loadAndParseOpenSearchEngine(
+  sourceURI,
+  lastModified,
+  originAttributes
+) {
   if (!sourceURI) {
     throw Components.Exception(
-      sourceURI,
       "Must have URI when calling _install!",
       Cr.NS_ERROR_UNEXPECTED
     );
@@ -123,7 +122,7 @@ export async function loadAndParseOpenSearchEngine(sourceURI, lastModified) {
 
   lazy.logConsole.debug("Downloading OpenSearch engine from:", sourceURI.spec);
 
-  let xmlData = await loadEngineXML(sourceURI, lastModified);
+  let xmlData = await loadEngineXML(sourceURI, lastModified, originAttributes);
   let xmlDocument = await parseXML(xmlData);
 
   lazy.logConsole.debug("Loading search plugin");
@@ -154,16 +153,19 @@ export async function loadAndParseOpenSearchEngine(sourceURI, lastModified) {
  *   The uri from which to load the OpenSearch engine data.
  * @param {string} [lastModified]
  *   The UTC date when the engine was last updated, if any.
+ * @param {object} [originAttributes]
+ *   The origin attributes to use to load the manifest.
  * @returns {Promise}
  *   A promise that is resolved with the data if the engine is successfully loaded
  *   and rejected otherwise.
  */
-function loadEngineXML(sourceURI, lastModified) {
+function loadEngineXML(sourceURI, lastModified, originAttributes = null) {
   var chan = lazy.SearchUtils.makeChannel(
     sourceURI,
     // OpenSearchEngine is loading a definition file for a search engine,
     // TYPE_DOCUMENT captures that load best.
-    Ci.nsIContentPolicy.TYPE_DOCUMENT
+    Ci.nsIContentPolicy.TYPE_DOCUMENT,
+    originAttributes
   );
 
   // we collect https telemetry for all top-level (document) loads.
@@ -231,20 +233,16 @@ function parseXML(xmlData) {
  *
  * @param {Element} xmlDocument
  *   The document to examine.
- * @returns {OpenSearchProperties}
- *   The properties of the OpenSearch engine.
  */
 function processXMLDocument(xmlDocument) {
-  let result = { urls: [], images: [] };
+  /** @type {OpenSearchProperties} */
+  let result = { name: "", urls: [], images: [] };
 
   for (let i = 0; i < xmlDocument.children.length; ++i) {
     var child = xmlDocument.children[i];
     switch (child.localName) {
       case "ShortName":
         result.name = child.textContent;
-        break;
-      case "Description":
-        result.description = child.textContent;
         break;
       case "Url":
         try {
@@ -269,14 +267,14 @@ function processXMLDocument(xmlDocument) {
         break;
 
       // Non-OpenSearch elements
+      case "SearchForm":
+        result.searchForm = child.textContent;
+        break;
       case "UpdateUrl":
         result.updateURL = child.textContent;
         break;
       case "UpdateInterval":
         result.updateInterval = parseInt(child.textContent);
-        break;
-      case "IconUpdateUrl":
-        result.iconUpdateURL = child.textContent;
         break;
     }
   }
@@ -358,27 +356,24 @@ function parseURL(element) {
 function parseImage(element) {
   let width = parseInt(element.getAttribute("width"), 10);
   let height = parseInt(element.getAttribute("height"), 10);
-  let isPrefered = width == 16 && height == 16;
 
-  if (isNaN(width) || isNaN(height) || width <= 0 || height <= 0) {
+  if (isNaN(width) || isNaN(height) || width <= 0 || width != height) {
     lazy.logConsole.warn(
-      "OpenSearch image element must have positive width and height."
+      "OpenSearch image element must have equal and positive width and height."
     );
     return null;
   }
 
   return {
     url: element.textContent,
-    isPrefered,
-    width,
-    height,
+    size: width,
   };
 }
 
 /**
  * Confirms if the document has the expected namespace.
  *
- * @param {DOMElement} element
+ * @param {Element} element
  *   The document to check.
  * @returns {boolean}
  *   True if the document matches the namespace.

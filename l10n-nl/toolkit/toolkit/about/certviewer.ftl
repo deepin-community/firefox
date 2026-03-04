@@ -36,6 +36,9 @@ certificate-viewer-key-size = Sleutelgrootte
 certificate-viewer-inc-locality = Vestigingsplaats
 certificate-viewer-locality = Plaats
 certificate-viewer-location = Locatie
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Logboeknaam
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = Log-ID
 certificate-viewer-method = Methode
 certificate-viewer-modulus = Modulus
@@ -81,7 +84,6 @@ certificate-viewer-authority-info-aia = Autoriteit-info (AIA)
 certificate-viewer-certificate-policies = Certificaatbeleid
 certificate-viewer-embedded-scts = Ingebedde SCT’s
 certificate-viewer-crl-endpoints = CRL-eindpunten
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Downloaden
@@ -101,7 +103,6 @@ certificate-viewer-download-pem = PEM (cert)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (keten)
     .download = { $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Deze extensie is als kritiek gemarkeerd, wat betekent dat clients het certificaat moeten weigeren als ze het niet begrijpen.
@@ -112,6 +113,8 @@ certificate-viewer-export = Exporteren
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (onbekend)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = certificaat
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

@@ -20,6 +20,7 @@
 #include "jit/ExecutableAllocator.h"
 #include "jit/MacroAssembler.h"
 #include "vm/Realm.h"
+#include "wasm/WasmFrame.h"
 
 using namespace js;
 using namespace js::jit;
@@ -36,10 +37,10 @@ void dbg_break() {}
 // calls. The system ABI can either be SoftFp or HardFp, and inter-wasm calls
 // are always HardFp calls. The initialization defaults to HardFp, and the ABI
 // choice is made before any system ABI calls with the method "setUseHardFp".
-ABIArgGenerator::ABIArgGenerator()
-    : intRegIndex_(0),
+ABIArgGenerator::ABIArgGenerator(ABIKind kind)
+    : ABIArgGeneratorShared(kind),
+      intRegIndex_(0),
       floatRegIndex_(0),
-      stackOffset_(0),
       current_(),
       useHardFp_(true) {}
 
@@ -50,6 +51,7 @@ ABIArg ABIArgGenerator::softNext(MIRType type) {
     case MIRType::Int32:
     case MIRType::Pointer:
     case MIRType::WasmAnyRef:
+    case MIRType::WasmArrayData:
     case MIRType::StackResults:
       if (intRegIndex_ == NumIntArgRegs) {
         current_ = ABIArg(stackOffset_);
@@ -112,6 +114,7 @@ ABIArg ABIArgGenerator::hardNext(MIRType type) {
     case MIRType::Int32:
     case MIRType::Pointer:
     case MIRType::WasmAnyRef:
+    case MIRType::WasmArrayData:
     case MIRType::StackResults:
       if (intRegIndex_ == NumIntArgRegs) {
         current_ = ABIArg(stackOffset_);
@@ -1065,7 +1068,7 @@ O2RegRegShift jit::asr(Register r, Register amt) {
 static js::jit::DoubleEncoder doubleEncoder;
 
 /* static */
-const js::jit::VFPImm js::jit::VFPImm::One(0x3FF00000);
+MOZ_RUNINIT const js::jit::VFPImm js::jit::VFPImm::One(0x3FF00000);
 
 js::jit::VFPImm::VFPImm(uint32_t top) {
   data_ = -1;
@@ -1780,6 +1783,15 @@ BufferOffset Assembler::as_csdb() {
   // https://developer.arm.com/-/media/developer/pdf/Cache_Speculation_Side-channels_22Feb18.pdf
   // CSDB A32: 1110_0011_0010_0000_1111_0000_0001_0100
   return writeInst(0xe320f000 | 0x14);
+}
+
+// Move Special Register and Hints:
+
+BufferOffset Assembler::as_yield() {
+  // YIELD hint instruction.
+  //
+  // YIELD A32: 1110_0011_0010_0000_1111_0000_0000_0001
+  return writeInst(0xe320f001);
 }
 
 // Control flow stuff:

@@ -4,13 +4,13 @@
 
 #include "MFCDMChild.h"
 
+#include "RemoteMediaManagerChild.h"
 #include "mozilla/EMEUtils.h"
 #include "mozilla/KeySystemConfig.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/StaticString.h"
 #include "mozilla/WMFCDMProxyCallback.h"
 #include "nsString.h"
-#include "RemoteDecoderManagerChild.h"
 
 namespace mozilla {
 
@@ -24,6 +24,7 @@ namespace mozilla {
         self->mManagerThread, callsite,                                      \
         [self, promiseId, callsite](                                         \
             PMFCDMChild::method##Promise::ResolveOrRejectValue&& result) {   \
+          MutexAutoLock lock(self->mMutex);                                  \
           auto iter = self->mPendingGenericPromises.find(promiseId);         \
           if (iter == self->mPendingGenericPromises.end()) {                 \
             return;                                                          \
@@ -71,31 +72,37 @@ namespace mozilla {
 
 MFCDMChild::MFCDMChild(const nsAString& aKeySystem)
     : mKeySystem(aKeySystem),
-      mManagerThread(RemoteDecoderManagerChild::GetManagerThread()),
+      mManagerThread(RemoteMediaManagerChild::GetManagerThread()),
       mState(NS_ERROR_NOT_INITIALIZED),
-      mShutdown(false) {
-  mRemotePromise = EnsureRemote();
-}
+      mShutdown(false) {}
 
 MFCDMChild::~MFCDMChild() {}
 
-RefPtr<MFCDMChild::RemotePromise> MFCDMChild::EnsureRemote() {
+void MFCDMChild::EnsureRemote() {
+  if (mRemotePromise) {
+    LOG("already created remote promise");
+    return;
+  }
+
   if (!mManagerThread) {
     LOG("no manager thread");
     mState = NS_ERROR_NOT_AVAILABLE;
-    return RemotePromise::CreateAndReject(mState, __func__);
+    mRemotePromise = RemotePromise::CreateAndReject(mState, __func__);
+    return;
   }
 
+  mRemotePromise = mRemotePromiseHolder.Ensure(__func__);
+
   RefPtr<MFCDMChild> self = this;
-  RemoteDecoderManagerChild::LaunchUtilityProcessIfNeeded(
-      RemoteDecodeIn::UtilityProcess_MFMediaEngineCDM)
+  RemoteMediaManagerChild::LaunchUtilityProcessIfNeeded(
+      RemoteMediaIn::UtilityProcess_MFMediaEngineCDM)
       ->Then(
           mManagerThread, __func__,
           [self, this](bool) {
             mRemoteRequest.Complete();
-            RefPtr<RemoteDecoderManagerChild> manager =
-                RemoteDecoderManagerChild::GetSingleton(
-                    RemoteDecodeIn::UtilityProcess_MFMediaEngineCDM);
+            RefPtr<RemoteMediaManagerChild> manager =
+                RemoteMediaManagerChild::GetSingleton(
+                    RemoteMediaIn::UtilityProcess_MFMediaEngineCDM);
             if (!manager || !manager->CanSend()) {
               LOG("manager not exists or can't send");
               mState = NS_ERROR_NOT_AVAILABLE;
@@ -115,30 +122,30 @@ RefPtr<MFCDMChild::RemotePromise> MFCDMChild::EnsureRemote() {
             mRemotePromiseHolder.RejectIfExists(rv, __func__);
           })
       ->Track(mRemoteRequest);
-  return mRemotePromiseHolder.Ensure(__func__);
 }
 
 void MFCDMChild::Shutdown() {
   MOZ_ASSERT(!mShutdown);
-
   mShutdown = true;
-  mProxyCallback = nullptr;
-
   if (mState == NS_OK) {
     mManagerThread->Dispatch(
         NS_NewRunnableFunction(__func__, [self = RefPtr{this}, this]() {
           mRemoteRequest.DisconnectIfExists();
           mInitRequest.DisconnectIfExists();
+          mProxyCallback = nullptr;
 
-          for (auto& promise : mPendingSessionPromises) {
-            promise.second.RejectIfExists(NS_ERROR_ABORT, __func__);
-          }
-          mPendingSessionPromises.clear();
+          {
+            MutexAutoLock lock(mMutex);
+            for (auto& promise : mPendingSessionPromises) {
+              promise.second.RejectIfExists(NS_ERROR_ABORT, __func__);
+            }
+            mPendingSessionPromises.clear();
 
-          for (auto& promise : mPendingGenericPromises) {
-            promise.second.RejectIfExists(NS_ERROR_ABORT, __func__);
+            for (auto& promise : mPendingGenericPromises) {
+              promise.second.RejectIfExists(NS_ERROR_ABORT, __func__);
+            }
+            mPendingGenericPromises.clear();
           }
-          mPendingGenericPromises.clear();
 
           mRemotePromiseHolder.RejectIfExists(NS_ERROR_ABORT, __func__);
           mCapabilitiesPromiseHolder.RejectIfExists(NS_ERROR_ABORT, __func__);
@@ -229,21 +236,22 @@ RefPtr<MFCDMChild::InitPromise> MFCDMChild::Init(
     return InitPromise::CreateAndReject(mState, __func__);
   }
 
-  mProxyCallback = aProxyCallback;
+  RefPtr<WMFCDMProxyCallback> callback = aProxyCallback;
   MFCDMInitParamsIPDL params{nsString(aOrigin),  aInitDataTypes,
                              aDistinctiveID,     aPersistentState,
                              aAudioCapabilities, aVideoCapabilities};
-  auto doSend = [self = RefPtr{this}, this, params]() {
+  auto doSend = [self = RefPtr{this}, this, params, callback]() {
     SendInit(params)
         ->Then(
             mManagerThread, __func__,
-            [self, this](MFCDMInitResult&& aResult) {
+            [self, callback, this](MFCDMInitResult&& aResult) {
               mInitRequest.Complete();
               if (aResult.type() == MFCDMInitResult::Tnsresult) {
                 nsresult rv = aResult.get_nsresult();
                 mInitPromiseHolder.RejectIfExists(rv, __func__);
                 return;
               }
+              mProxyCallback = callback;
               mId = aResult.get_MFCDMInitIPDL().id();
               mInitPromiseHolder.ResolveIfExists(aResult.get_MFCDMInitIPDL(),
                                                  __func__);
@@ -269,6 +277,7 @@ RefPtr<MFCDMChild::SessionPromise> MFCDMChild::CreateSessionAndGenerateRequest(
                                                        __func__);
   }
 
+  MutexAutoLock lock(mMutex);
   MOZ_ASSERT(mPendingSessionPromises.find(aPromiseId) ==
              mPendingSessionPromises.end());
   mPendingSessionPromises.emplace(aPromiseId,
@@ -282,6 +291,7 @@ RefPtr<MFCDMChild::SessionPromise> MFCDMChild::CreateSessionAndGenerateRequest(
         SendCreateSessionAndGenerateRequest(params)->Then(
             mManagerThread, __func__,
             [self, aPromiseId, this](const MFCDMSessionResult& result) {
+              MutexAutoLock lock(mMutex);
               auto iter = mPendingSessionPromises.find(aPromiseId);
               if (iter == mPendingSessionPromises.end()) {
                 return;
@@ -298,6 +308,7 @@ RefPtr<MFCDMChild::SessionPromise> MFCDMChild::CreateSessionAndGenerateRequest(
             },
             [self, aPromiseId,
              this](const mozilla::ipc::ResponseRejectReason& aReason) {
+              MutexAutoLock lock(mMutex);
               auto iter = mPendingSessionPromises.find(aPromiseId);
               if (iter == mPendingSessionPromises.end()) {
                 return;
@@ -320,6 +331,7 @@ RefPtr<GenericPromise> MFCDMChild::LoadSession(
     return GenericPromise::CreateAndReject(NS_ERROR_ABORT, __func__);
   }
 
+  MutexAutoLock lock(mMutex);
   MOZ_ASSERT(mPendingGenericPromises.find(aPromiseId) ==
              mPendingGenericPromises.end());
   mPendingGenericPromises.emplace(aPromiseId,
@@ -338,6 +350,7 @@ RefPtr<GenericPromise> MFCDMChild::UpdateSession(uint32_t aPromiseId,
     return GenericPromise::CreateAndReject(NS_ERROR_ABORT, __func__);
   }
 
+  MutexAutoLock lock(mMutex);
   MOZ_ASSERT(mPendingGenericPromises.find(aPromiseId) ==
              mPendingGenericPromises.end());
   mPendingGenericPromises.emplace(aPromiseId,
@@ -356,6 +369,7 @@ RefPtr<GenericPromise> MFCDMChild::CloseSession(uint32_t aPromiseId,
     return GenericPromise::CreateAndReject(NS_ERROR_ABORT, __func__);
   }
 
+  MutexAutoLock lock(mMutex);
   MOZ_ASSERT(mPendingGenericPromises.find(aPromiseId) ==
              mPendingGenericPromises.end());
   mPendingGenericPromises.emplace(aPromiseId,
@@ -373,6 +387,7 @@ RefPtr<GenericPromise> MFCDMChild::RemoveSession(uint32_t aPromiseId,
     return GenericPromise::CreateAndReject(NS_ERROR_ABORT, __func__);
   }
 
+  MutexAutoLock lock(mMutex);
   MOZ_ASSERT(mPendingGenericPromises.find(aPromiseId) ==
              mPendingGenericPromises.end());
   mPendingGenericPromises.emplace(aPromiseId,
@@ -390,6 +405,7 @@ RefPtr<GenericPromise> MFCDMChild::SetServerCertificate(
     return GenericPromise::CreateAndReject(NS_ERROR_ABORT, __func__);
   }
 
+  MutexAutoLock lock(mMutex);
   MOZ_ASSERT(mPendingGenericPromises.find(aPromiseId) ==
              mPendingGenericPromises.end());
   mPendingGenericPromises.emplace(aPromiseId,
@@ -407,6 +423,7 @@ RefPtr<GenericPromise> MFCDMChild::GetStatusForPolicy(
     return GenericPromise::CreateAndReject(NS_ERROR_ABORT, __func__);
   }
 
+  MutexAutoLock lock(mMutex);
   MOZ_ASSERT(mPendingGenericPromises.find(aPromiseId) ==
              mPendingGenericPromises.end());
   mPendingGenericPromises.emplace(aPromiseId,
@@ -419,6 +436,7 @@ mozilla::ipc::IPCResult MFCDMChild::RecvOnSessionKeyMessage(
     const MFCDMKeyMessage& aMessage) {
   LOG("RecvOnSessionKeyMessage, sessionId=%s",
       NS_ConvertUTF16toUTF8(aMessage.sessionId()).get());
+  MOZ_ASSERT(mManagerThread);
   MOZ_ASSERT(mProxyCallback);
   mProxyCallback->OnSessionMessage(aMessage);
   return IPC_OK();
@@ -428,6 +446,7 @@ mozilla::ipc::IPCResult MFCDMChild::RecvOnSessionKeyStatusesChanged(
     const MFCDMKeyStatusChange& aKeyStatuses) {
   LOG("RecvOnSessionKeyStatusesChanged, sessionId=%s",
       NS_ConvertUTF16toUTF8(aKeyStatuses.sessionId()).get());
+  MOZ_ASSERT(mManagerThread);
   MOZ_ASSERT(mProxyCallback);
   mProxyCallback->OnSessionKeyStatusesChange(aKeyStatuses);
   return IPC_OK();
@@ -437,9 +456,32 @@ mozilla::ipc::IPCResult MFCDMChild::RecvOnSessionKeyExpiration(
     const MFCDMKeyExpiration& aExpiration) {
   LOG("RecvOnSessionKeyExpiration, sessionId=%s",
       NS_ConvertUTF16toUTF8(aExpiration.sessionId()).get());
+  MOZ_ASSERT(mManagerThread);
   MOZ_ASSERT(mProxyCallback);
   mProxyCallback->OnSessionKeyExpiration(aExpiration);
   return IPC_OK();
+}
+
+mozilla::ipc::IPCResult MFCDMChild::RecvOnSessionClosed(
+    const MFCDMSessionClosedResult& aResult) {
+  LOG("RecvOnSessionClosed, sessionId=%s",
+      NS_ConvertUTF16toUTF8(aResult.sessionId()).get());
+  MOZ_ASSERT(mManagerThread);
+  MOZ_ASSERT(mProxyCallback);
+  mProxyCallback->OnSessionClosed(aResult);
+  return IPC_OK();
+}
+
+void MFCDMChild::IPDLActorDestroyed() {
+  AssertOnManagerThread();
+  mIPDLSelfRef = nullptr;
+  if (!mShutdown) {
+    LOG("IPDLActorDestroyed, remote process crashed!");
+    mState = NS_ERROR_NOT_AVAILABLE;
+    if (mProxyCallback) {
+      mProxyCallback->OnRemoteProcessCrashed();
+    }
+  }
 }
 
 #undef SLOG

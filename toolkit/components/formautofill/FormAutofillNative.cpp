@@ -16,7 +16,6 @@
 #include "mozilla/dom/HTMLLabelElement.h"
 #include "mozilla/dom/HTMLOptionElement.h"
 #include "mozilla/dom/HTMLSelectElement.h"
-#include "mozilla/HashTable.h"
 #include "mozilla/RustRegex.h"
 #include "nsContentUtils.h"
 #include "nsIFrame.h"
@@ -679,10 +678,10 @@ class FormAutofillImpl {
 
 FormAutofillImpl::FormAutofillImpl() {
   const Rule* rulesets[] = {&kFirefoxRules[0], &kCreditCardRules[0]};
-  size_t rulesetLengths[] = {ArrayLength(kFirefoxRules),
-                             ArrayLength(kCreditCardRules)};
+  size_t rulesetLengths[] = {std::size(kFirefoxRules),
+                             std::size(kCreditCardRules)};
 
-  for (uint32_t i = 0; i < ArrayLength(rulesetLengths); ++i) {
+  for (uint32_t i = 0; i < std::size(rulesetLengths); ++i) {
     for (uint32_t j = 0; j < rulesetLengths[i]; ++j) {
       nsCString& rule = mRuleMap[rulesets[i][j].key];
       if (!rule.IsEmpty()) {

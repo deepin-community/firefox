@@ -7,13 +7,13 @@
 #ifndef mozilla_dom_quota_QuotaManagerService_h
 #define mozilla_dom_quota_QuotaManagerService_h
 
-#include <cstdint>
 #include "ErrorList.h"
 #include "mozilla/AlreadyAddRefed.h"
 #include "mozilla/HalBatteryInformation.h"
 #include "mozilla/dom/ipc/IdType.h"
 #include "nsIObserver.h"
 #include "nsIQuotaManagerService.h"
+#include "nsIQuotaManagerServiceInternal.h"
 #include "nsISupports.h"
 
 #define QUOTAMANAGER_SERVICE_CONTRACTID \
@@ -41,6 +41,7 @@ class QuotaChild;
 class QuotaManager;
 
 class QuotaManagerService final : public nsIQuotaManagerService,
+                                  public nsIQuotaManagerServiceInternal,
                                   public nsIObserver,
                                   public hal::BatteryObserver {
   using PBackgroundChild = mozilla::ipc::PBackgroundChild;
@@ -90,6 +91,7 @@ class QuotaManagerService final : public nsIQuotaManagerService,
 
   NS_DECL_ISUPPORTS
   NS_DECL_NSIQUOTAMANAGERSERVICE
+  NS_DECL_NSIQUOTAMANAGERSERVICEINTERNAL
   NS_DECL_NSIOBSERVER
 
   // BatteryObserver override

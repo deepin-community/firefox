@@ -3,9 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Mandar als sites web lo senhal « Me pistar pas » per lor dire que volètz pas èsser pistat
-do-not-track-description2 =
-    .label = Demandar als sites web de « Me pistar pas »
-    .accesskey = d
 do-not-track-learn-more = Ne saber mai
 do-not-track-option-default-content-blocking-known =
     .label = Solament quand { -brand-short-name } es configurat per blocar los traçadors coneguts
@@ -14,6 +11,8 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Indicar als sites web de vendre pas nimai partejar mas donadas
     .accesskey = s
+non-technical-privacy-group =
+    .label = Preferéncias de confidencialitat dels sites web
 non-technical-privacy-header = Preferéncias de confidencialitat dels sites web
 # Do not translate.
 # "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
@@ -32,6 +31,8 @@ search-input-box2 =
     .style = width: 19em
     .placeholder = Cercar pels paramètres
 managed-notice = Vòstra organizacion gerís vòstre navegador.
+managed-notice-info-icon =
+    .alt = Informacions
 category-list =
     .aria-label = Categorias
 pane-general-title = General
@@ -122,6 +123,10 @@ startup-header = Aviada
 always-check-default =
     .label = Totjorn verificar se { -brand-short-name } es vòstre navegador per defaut
     .accesskey = T
+is-default-browser =
+    .message = { -brand-short-name } es actualament vòstre navegador per defaut
+is-not-default-browser =
+    .message = { -brand-short-name } es pas vòstre navegador per defaut
 is-default = { -brand-short-name } es actualament vòstre navegador per defaut
 is-not-default = { -brand-short-name } es pas vòstre navegador per defaut
 set-as-my-default-browser =
@@ -142,6 +147,8 @@ preferences-data-migration-description = Importar los marcapaginas, senhals, l�
 preferences-data-migration-button =
     .label = Importar las donadas
     .accesskey = m
+tabs-group-header2 =
+    .label = Onglets
 tabs-group-header = Onglets
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab fa passar los onglets dins l'òrdre de darrièra utilizacion
@@ -149,6 +156,17 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Dobrir los ligams dins d’onglets allòc de fenèstras
     .accesskey = f
+ask-on-close-multiple-tabs =
+    .label = Demandar abans de tampar mantun onglet
+    .accesskey = m
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = Demandar abans de quitar { $quitKey }
+    .accesskey = a
 confirm-on-close-multiple-tabs =
     .label = Confirmar abans la tampadura de mantun onglet
     .accesskey = a
@@ -177,6 +195,8 @@ browser-containers-settings =
     .label = Paramètres…
     .accesskey = t
 containers-disable-alert-title = Tampar totes los onglets de contenedor ?
+startup-group =
+    .label = Aviada
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -200,7 +220,7 @@ containers-remove-alert-title = Suprimir aqueste contenedor ?
 #   $count (number) - Number of tabs that will be closed.
 containers-remove-alert-msg =
     { $count ->
-        [one] Se suprimiscatz aquel contenedor ara, { $count } onglet isolat serà tampat. Segur que volètz suprimir aqueste contenidor ? 
+        [one] Se suprimiscatz aquel contenedor ara, { $count } onglet isolat serà tampat. Segur que volètz suprimir aqueste contenidor ?
        *[other] Se suprimiscatz aquel contenedor ara, { $count } onglets isolats seràn tampats. Segur que volètz suprimir aqueste contenidor ?
     }
 containers-remove-ok-button = Suprimir aqueste contenedor
@@ -212,8 +232,20 @@ settings-tabs-show-image-in-preview =
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Lenga e aparéncia
+appearance-group =
+    .label = Aparéncia dels sites web
+    .description = D’unes sites web adaptan lor jòc de colors segon vòstras preferéncias. Causissètz lo jòc de colors que volètz emplegar per aqueles sites.
 preferences-web-appearance-header = Aparéncia dels sites web
 preferences-web-appearance-description = D’unes sites web adaptan lor jòc de colors segon vòstras preferéncias. Causissètz lo jòc de colors que volètz emplegar per aqueles sites.
+preferences-web-appearance-choice-auto2 =
+    .label = Automatic
+    .title = Cambiament automatic dels rèireplans e dels contenguts dels sites Web segon los paramètres sistèma e del tèma de { -brand-short-name }.
+preferences-web-appearance-choice-light2 =
+    .label = Clar
+    .title = Utilizar una aparéncia clara pels rèireplans e lo contengut dels sites web.
+preferences-web-appearance-choice-dark2 =
+    .label = Escur
+    .title = Utilizar una aparéncia escura pels rèireplans e lo contengut dels sites web.
 preferences-web-appearance-choice-auto = Automatic
 preferences-web-appearance-choice-light = Clar
 preferences-web-appearance-choice-dark = Escur
@@ -229,13 +261,11 @@ preferences-web-appearance-choice-input-light =
     .aria-description = { preferences-web-appearance-choice-tooltip-light.title }
 preferences-web-appearance-choice-input-dark =
     .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
+preferences-web-appearance-link =
+    .label = Gerissètz los tèmas de { -brand-short-name } dins Extensions e tèma
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = Vòstras seleccion de colors subrecargan l’aparéncia dels sites web. <a data-l10n-name="colors-link">Gerir las colors</a>
-# This can appear when using windows HCM or "Override colors: always" without
-# system colors.
-preferences-web-appearance-override-warning2 =
-    .message = Vòstras seleccion de colors subrecargan l’aparéncia dels sites web.
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = Gerissètz los tèmas de { -brand-short-name } dins <a data-l10n-name="themes-link">Extensions e tèma</a>
@@ -244,6 +274,14 @@ preferences-colors-description = Subrecargar las colors per defaut de { -brand-s
 preferences-colors-manage-button =
     .label = Gestion de las colors…
     .accesskey = c
+preferences-fonts-header2 =
+    .label = Polissas
+default-font-2 =
+    .label = Polissa per defaut
+    .accesskey = D
+default-font-size-2 =
+    .label = Talha
+    .accesskey = l
 preferences-fonts-header = Polissas
 default-font = Polissa per defaut
     .accesskey = D
@@ -252,6 +290,12 @@ default-font-size = Talha
 advanced-fonts =
     .label = Avançat…
     .accesskey = A
+# Zoom is a noun, and the message is used as header for a group of options
+preferences-zoom-header2 =
+    .label = Zoom
+preferences-default-zoom-label =
+    .label = Zoom per defaut
+    .accesskey = Z
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Zoom
 preferences-default-zoom = Zoom per defaut
@@ -295,6 +339,11 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = Fichièrs e aplicacions
+downloads-header-2 =
+    .label = Telecargaments
+download-save-where-2 =
+    .label = Enregistrar los fichièrs dins lo dossièr
+    .accesskey = n
 download-header = Telecargaments
 download-save-where = Enregistrar los fichièrs dins lo dossièr
     .accesskey = n
@@ -394,6 +443,8 @@ applications-save-for-new-types =
 applications-ask-before-handling =
     .label = Demandar se cal dobrir o salvar los fichièrs
     .accesskey = D
+drm-group =
+    .label = Contengut amb Digital Rights Management (DRM)
 drm-content-header = Contengut amb Digital Rights Management (DRM)
 play-drm-content =
     .label = Legir lo contengut contrarotlat per DRM
@@ -462,6 +513,8 @@ performance-limit-content-process-blocked-desc = Modificar lo nombre de procedim
 #   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (defaut)
+performance-group =
+    .label = Performanças
 
 ## General Section - Browsing
 
@@ -502,6 +555,8 @@ browsing-cfr-features =
     .label = Recomandar de foncionalitats pendent la navegacion
     .accesskey = R
 browsing-cfr-recommendations-learn-more = Ne saber mai
+browsing-group =
+    .label = Navegacion
 
 ## General Section - Proxy
 
@@ -511,16 +566,27 @@ network-proxy-connection-learn-more = Ne saber mai
 network-proxy-connection-settings =
     .label = Paramètres…
     .accesskey = e
+network-proxy-group =
+    .label = Paramètres ret
+    .description = Configurar lo biais de { -brand-short-name } de se connectar a Internet.
 
 ## Home Section
 
 home-new-windows-tabs-header = Novèlas fenèstras e novèls onglets
 home-new-windows-tabs-description2 = Causissètz çò que volètz veire en dobrir la pagina d’acuèlh, de fenèstras novèlas o d’onglets novèls.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = Definir per defaut
+    .accesskey = D
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = Pagina d’acuèlh e novèlas fenèstras
 home-newtabs-mode-label = Onglets novèls
+home-homepage-new-tabs =
+    .label = Onglets novèls
 home-restore-defaults =
     .label = Restablir los paramètres per defaut
     .accesskey = R
@@ -559,8 +625,7 @@ home-prefs-shortcuts-description = Los sites qu’enregistratz o consultatz
 home-prefs-shortcuts-by-option-sponsored =
     .label = Acorchis pairinejats
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Recomandat per { $provider }
@@ -593,6 +658,7 @@ home-prefs-snippets-header =
 home-prefs-snippets-description-new = Astúcias e novetats de { -vendor-short-name } e { -brand-product-name }
 home-prefs-weather-header =
     .label = Metèo
+home-prefs-weather-learn-more-link = Ne saber mai
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -626,6 +692,8 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Mostrar las suggestions dins los resultats de la barra d'adreça
     .accesskey = l
+search-suggestions-cant-show-2 =
+    .message = Recercar las suggestions que son pas afichadas dins los resultats de la barra d'adreça qu'avètz configurat { -brand-short-name } per pas jamai servar l'istoric.
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -665,12 +733,18 @@ search-keyword-warning-title = Doblon de mot clau
 #   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Avètz causit un mot clau que ja es utilizat per « { $name } ». Causissètz-ne un autre.
 search-keyword-warning-bookmark = Avètz causit un mot clau que ja es utilizat per un marcapaginas. Causissètz-ne un autre.
+search-engine-group =
+    .label = Motor de cerca per defaut
+search-default-engine =
+    .aria-label = Motor de cerca per defaut
 
 ## Containers Section
 
 containers-back-button2 =
     .aria-label = Tornar als paramètres
 containers-header = Onglets de contenedor
+containers-section-header =
+    .heading = Onglets de contenedor
 containers-add-button =
     .label = Apondre un contenedor novèl
     .accesskey = A
@@ -681,6 +755,11 @@ containers-settings-button =
     .label = Paramètres
 containers-remove-button =
     .label = Suprimir
+
+## Account and sync
+
+sync-group-label =
+    .label = Sincronizacion
 
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
@@ -707,14 +786,25 @@ sync-profile-picture =
 sync-profile-picture-with-alt =
     .tooltiptext = Cambiar la fòto de perfil de l'utilizaire
     .alt = Cambiar la fòto de perfil de l'utilizaire
+sync-profile-picture-account-problem =
+    .alt = Imatge de perfil del compte
+fxa-login-rejected-warning =
+    .alt = Avertiment
 sync-sign-out =
+    .label = Se desconnectar
+    .accesskey = d
+sync-sign-out2 =
     .label = Se desconnectar
     .accesskey = d
 sync-manage-account = Gestion del compte
     .accesskey = o
+sync-manage-account2 =
+    .label = Gestion del compte
+    .accesskey = o
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } es pas verificat.
 sync-signedin-login-failure = Vos cal reconnectar { $email }
@@ -741,6 +831,9 @@ prefs-syncing-off = Sincronizacion : DESACTIVADA
 prefs-sync-turn-on-syncing =
     .label = Activar la sincronizacion…
     .accesskey = s
+prefs-sync-turn-on-syncing-2 =
+    .label = Activar la sincronizacion
+    .accesskey = s
 prefs-sync-offer-setup-label2 = Sincronizar vòstres marcapaginas, istoric, onglets, senhals, moduls, e paramètres per totes vòstres periferics.
 prefs-sync-now =
     .labelnotsyncing = Sincronizar ara
@@ -749,8 +842,14 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = Sincronizar ara
     .accesskey = n
+prefs-sync-now-button-2 =
+    .label = Sincronizar ara
+    .accesskey = n
 prefs-syncing-button =
     .label = Sincronizacion…
+prefs-syncing-button-2 =
+    .label = Sincronizacion…
+    .title = Sincronizar ara
 
 ## The list of things currently syncing.
 
@@ -765,6 +864,9 @@ sync-currently-syncing-creditcards = Cartas de crèdit
 sync-currently-syncing-payment-methods = Metòdes de pagament
 sync-currently-syncing-addons = Moduls complementaris
 sync-currently-syncing-settings = Paramètres
+sync-manage-options =
+    .label = Gerir la sincronizacion…
+    .accesskey = G
 sync-change-options =
     .label = Modificar…
     .accesskey = M
@@ -821,6 +923,16 @@ sync-engine-settings =
 ## The device name controls.
 
 sync-device-name-header = Nom de l'aparelh
+sync-device-name-header-2 =
+    .label = Nom de l'aparelh
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Nom de l'aparelh
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Cambiar lo nom del periferic
+    .accesskey = h
 sync-device-name-change =
     .label = Cambiar lo nom del periferic…
     .accesskey = h
@@ -831,6 +943,8 @@ sync-device-name-save =
     .label = Enregistrar
     .accesskey = g
 sync-connect-another-device = Connectar un periferic de mai
+sync-connect-another-device-2 =
+    .label = Connectar un periferic de mai
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -968,6 +1082,16 @@ history-header = Istoric
 #   - Simply as "Firefox", moving the verb into each option.
 #     This will result in "Firefox" + "Will remember history", etc.
 #   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label2 = { -brand-short-name }
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
 history-remember-label = { -brand-short-name }
     .accesskey = w
 history-remember-option-all =
@@ -976,6 +1100,18 @@ history-remember-option-never =
     .label = Conservar pas jamai l'istoric
 history-remember-option-custom =
     .label = Utilizar los paramètres personalizats per l'istoric
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } enregistrarà vòstres istorics, telecargaments e recèrcas.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } utilizarà los meteisses paramètres que per la navegacion privada e conservarà pas cap d'istoric quand navegaretz sus internet.
+history-remember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } enregistrarà vòstres istorics, telecargaments e recèrcas.
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } utilizarà los meteisses paramètres que per la navegacion privada e conservarà pas cap d'istoric quand navegaretz sus internet.
 history-remember-description = { -brand-short-name } enregistrarà vòstres istorics, telecargaments e recèrcas.
 history-dontremember-description = { -brand-short-name } utilizarà los meteisses paramètres que per la navegacion privada e conservarà pas cap d'istoric quand navegaretz sus internet.
 history-private-browsing-permanent =
@@ -996,6 +1132,8 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = Escafar l’istoric…
     .accesskey = s
+history-group =
+    .label = Istoric
 
 ## Privacy Section - Site Data
 
@@ -1041,6 +1179,8 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = Gerir las excepcions…
     .accesskey = x
+cookies-site-data-group =
+    .label = Cookies e donadas de sites
 
 ## Privacy Section - Cookie Banner Handling
 
@@ -1057,7 +1197,7 @@ forms-handle-cookie-banners =
 cookie-banner-blocker-checkbox-label =
     .label = Refusar automaticament las banièras de cookies
 
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = Barra d'adreça
 addressbar-suggest = Quand utilizi la barra d'adreça, suggerir
@@ -1227,6 +1367,8 @@ permissions-notification-link = Ne saber mai
 permissions-notification-pause =
     .label = Pausar las notificacions fins que { -brand-short-name } reavie
     .accesskey = n
+permissions-autoplay2 =
+    .label = Lectura automatica
 permissions-autoplay = Lectura automatica
 permissions-autoplay-settings =
     .label = Paramètres…
@@ -1246,6 +1388,16 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = Excepcions…
     .accesskey = E
+permissions-location2 =
+    .label = Localizacion
+permissions-xr2 =
+    .label = Realitat virtuala
+permissions-camera2 =
+    .label = Camèra
+permissions-microphone2 =
+    .label = Microfòn
+permissions-notification2 =
+    .label = Notificacions
 
 ## Privacy Section - Data Collection
 
@@ -1271,8 +1423,6 @@ addon-recommendations-link = Ne saber mai
 collection-health-report-disabled = Lo rapòrt de donadas es desactivat per aquela configuracion de compilacion
 collection-backlogged-crash-reports-with-link = Autorizar { -brand-short-name } a enviar de rapòrt de plantatge en espèra a vòstre nom <a data-l10n-name="crash-reports-link">Ne saber mai</a>
     .accesskey = A
-collection-backlogged-crash-reports = Autorizar { -brand-short-name } a enviar de rapòrt de plantatge en espèra a vòstre nom
-    .accesskey = A
 privacy-segmentation-section-header = Foncionalitats novèlas per melhorar vòstra navegacion
 privacy-segmentation-section-description = Quand propausam foncionalitats qu’utilizan vòstras donadas per vos provesir una experiéncia mai personala :
 privacy-segmentation-radio-off =
@@ -1294,6 +1444,8 @@ website-advertising-private-attribution-description = Aquò ajuda los sites a co
 ## https://developers.google.com/safe-browsing/developers_guide_v2#AcceptableUsage
 
 security-header = Seguretat
+browsing-protection-group =
+    .label = Proteccion contra los contenguts enganaires e los logicials perilhoses
 security-browsing-protection = Proteccion contra los contenguts enganaires e los logicials perilhoses
 security-enable-safe-browsing =
     .label = Blocar lo contengut perilhós e enganaire
@@ -1318,6 +1470,7 @@ certs-view =
 certs-devices =
     .label = Periferics de seguretat…
     .accesskey = P
+certs-devices-enable-fips = Activar FIPS
 space-alert-over-5gb-settings-button =
     .label = Dobrir los paramètres
     .accesskey = D
@@ -1339,6 +1492,8 @@ httpsonly-radio-disabled =
 ## DoH Section
 
 preferences-doh-header = DNS sus HTTPS
+dns-over-https-group =
+    .label = DNS sus HTTPS
 preferences-doh-description = Lo DNS (Domain Name Sistèma) sus HTTPS envia vòstras requèstas per un nom de domeni via una connexion chifrada, en creant un DNS segur e en fasent venir mai complicat per los autres de veire quines sites sètz a mand de visitar.
 # Variables:
 #   $status (string) - The status of the DoH connection
@@ -1377,8 +1532,9 @@ preferences-doh-setting-strict =
     .label = Proteccion maximala
     .accesskey = m
 preferences-doh-strict-desc = { -brand-short-name } utilizarà totjorn lo DNS segur. Veiretz un avís de seguretat abans d’utilizar lo DNS de sistèma.
-preferences-doh-strict-detailed-desc-1 = Utilizar sonque lo prevesidor que seleccionèretz
+preferences-doh-strict-detailed-desc-1 = Utilizar sonque lo provesidor que seleccionèretz
 preferences-doh-strict-detailed-desc-2 = Totjorn avertir se lo DNS segur es pas disponible
+preferences-doh-strict-detailed-desc-3 = Se lo DNS segur es indisponible, los sites se cargaràn o foncionaràn pas corrèctament
 preferences-doh-setting-off =
     .label = Desactivat
     .accesskey = D

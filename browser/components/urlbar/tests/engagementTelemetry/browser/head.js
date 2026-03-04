@@ -9,7 +9,7 @@ Services.scriptloader.loadSubScript(
 );
 
 ChromeUtils.defineESModuleGetters(this, {
-  QuickSuggest: "resource:///modules/QuickSuggest.sys.mjs",
+  QuickSuggest: "moz-src:///browser/components/urlbar/QuickSuggest.sys.mjs",
   sinon: "resource://testing-common/Sinon.sys.mjs",
 });
 
@@ -26,6 +26,14 @@ ChromeUtils.defineLazyGetter(lazy, "QuickSuggestTestUtils", () => {
 ChromeUtils.defineLazyGetter(this, "MerinoTestUtils", () => {
   const { MerinoTestUtils: module } = ChromeUtils.importESModule(
     "resource://testing-common/MerinoTestUtils.sys.mjs"
+  );
+  module.init(this);
+  return module;
+});
+
+ChromeUtils.defineLazyGetter(this, "GeolocationTestUtils", () => {
+  const { GeolocationTestUtils: module } = ChromeUtils.importESModule(
+    "resource://testing-common/GeolocationTestUtils.sys.mjs"
   );
   module.init(this);
   return module;
@@ -63,6 +71,14 @@ function assertExposureTelemetry(expectedExtraList) {
   assertGleanTelemetry("exposure", expectedExtraList);
 }
 
+function assertDisableTelemetry(expectedExtraList) {
+  assertGleanTelemetry("disable", expectedExtraList);
+}
+
+function assertBounceTelemetry(expectedExtraList) {
+  assertGleanTelemetry("bounce", expectedExtraList);
+}
+
 function assertGleanTelemetry(telemetryName, expectedExtraList) {
   const camelName = telemetryName.replaceAll(/_(.)/g, (match, p1) =>
     p1.toUpperCase()
@@ -98,35 +114,56 @@ async function ensureQuickSuggestInit({ ...args } = {}) {
   return lazy.QuickSuggestTestUtils.ensureQuickSuggestInit({
     remoteSettingsRecords: [
       {
-        type: "data",
+        collection: lazy.QuickSuggestTestUtils.RS_COLLECTION.AMP,
+        type: lazy.QuickSuggestTestUtils.RS_TYPE.AMP,
+        attachment: [
+          lazy.QuickSuggestTestUtils.ampRemoteSettings({
+            keywords: ["amp", "amp and wikipedia"],
+          }),
+        ],
+      },
+      {
+        collection: lazy.QuickSuggestTestUtils.RS_COLLECTION.OTHER,
+        type: lazy.QuickSuggestTestUtils.RS_TYPE.WIKIPEDIA,
+        attachment: [
+          lazy.QuickSuggestTestUtils.wikipediaRemoteSettings({
+            keywords: ["wikipedia", "amp and wikipedia"],
+          }),
+        ],
+      },
+      lazy.QuickSuggestTestUtils.weatherRecord(),
+      {
+        type: "dynamic-suggestions",
+        suggestion_type: "test-exposure-aaa",
+        score: 1.0,
         attachment: [
           {
-            id: 1,
-            url: "https://example.com/sponsored",
-            title: "Sponsored suggestion",
-            keywords: ["sponsored"],
-            click_url: "https://example.com/click",
-            impression_url: "https://example.com/impression",
-            advertiser: "TestAdvertiser",
-            iab_category: "22 - Shopping",
-            icon: "1234",
-          },
-          {
-            id: 2,
-            url: `https://example.com/nonsponsored`,
-            title: "Non-sponsored suggestion",
-            keywords: ["nonsponsored"],
-            click_url: "https://example.com/click",
-            impression_url: "https://example.com/impression",
-            advertiser: "Wikipedia",
-            iab_category: "5 - Education",
-            icon: "1234",
+            keywords: ["aaa keyword"],
+            data: {
+              result: {
+                isHiddenExposure: true,
+              },
+            },
           },
         ],
       },
       {
-        type: "weather",
-        weather: MerinoTestUtils.WEATHER_RS_DATA,
+        type: "dynamic-suggestions",
+        suggestion_type: "important_dates",
+        score: 1.0,
+        attachment: [
+          {
+            keywords: ["important dates"],
+            data: {
+              result: {
+                payload: {
+                  dates: ["2025-03-05", "2026-02-18"],
+                  name: "Event 1",
+                },
+              },
+            },
+          },
+        ],
       },
     ],
     ...args,
@@ -211,8 +248,7 @@ async function doTest(testFn) {
   await PlacesTestUtils.clearHistoryVisits();
   await PlacesTestUtils.clearInputHistory();
   await UrlbarTestUtils.formHistory.clear(window);
-  await QuickSuggest.blockedSuggestions.clear();
-  await QuickSuggest.blockedSuggestions._test_readyPromise;
+  await QuickSuggest.clearDismissedSuggestions();
   await updateTopSites(() => true);
   await BrowserTestUtils.withNewTab(gBrowser, testFn);
 }
@@ -310,7 +346,6 @@ async function loadRemoteTab(url) {
       ["browser.urlbar.maxHistoricalSearchSuggestions", 0],
       ["browser.urlbar.autoFill", false],
       ["services.sync.username", "fake"],
-      ["services.sync.syncedTabs.showRemoteTabs", true],
     ],
   });
 
@@ -410,6 +445,7 @@ async function setup() {
       ["browser.urlbar.searchEngagementTelemetry.enabled", true],
       ["browser.urlbar.quickactions.enabled", true],
       ["browser.urlbar.secondaryActions.featureGate", true],
+      ["browser.urlbar.scotchBonnet.enableOverride", false],
     ],
   });
 
@@ -424,6 +460,18 @@ async function setup() {
   await Services.search.moveEngine(engine, 0);
 
   registerCleanupFunction(async function () {
+    // Tests verify that no prefs have been changed so clear any
+    // so clear any prefs we may have touched while running tests.
+    let prefs = [
+      "services.sync.lastTabFetch",
+      "services.settings.clock_skew_seconds",
+      "services.settings.last_update_seconds",
+      "services.settings.last_etag",
+      "browser.urlbar.recentsearches.lastDefaultChanged",
+      "browser.search.totalSearches",
+      "browser.urlbar.events.bounce.maxSecondsFromLastSearch",
+    ];
+    prefs.forEach(pref => Services.prefs.clearUserPref(pref));
     await SpecialPowers.popPrefEnv();
     await Services.search.setDefault(
       originalDefaultEngine,
@@ -463,4 +511,51 @@ async function expectNoConsoleErrors(task) {
   }
 
   return taskResult;
+}
+
+/**
+ * Helper to run a semantic history test.
+ *
+ * @param {Array<UrlbarResult>} results array of results to return
+ * @param {Function} task async function to wrap
+ * @param {number} [embeddingSize] size of embeddings
+ */
+async function doTestWithSemantic(results, task, embeddingSize = 16) {
+  /**
+   * A mock object that pretends to be an MLEngine.
+   */
+  class MockMLEngine {
+    async run(request) {
+      const texts = request.args[0];
+      return texts.map(text => {
+        if (typeof text !== "string" || text.trim() === "") {
+          throw new Error("Invalid input: text must be a non-empty string");
+        }
+        // Return a mock embedding vector (e.g., an array of zeros)
+        return Array(embeddingSize).fill(0);
+      });
+    }
+  }
+  const { getPlacesSemanticHistoryManager } = ChromeUtils.importESModule(
+    "resource://gre/modules/PlacesSemanticHistoryManager.sys.mjs"
+  );
+  let semanticManager = getPlacesSemanticHistoryManager();
+  let canUseSemanticStub = sinon.stub(semanticManager, "canUseSemanticSearch");
+  canUseSemanticStub.get(() => true);
+  let hasSufficientEntriesStub = sinon
+    .stub(semanticManager, "hasSufficientEntriesForSearching")
+    .resolves(true);
+  semanticManager.embedder.setEngine(new MockMLEngine());
+  let inferStub = sinon.stub(semanticManager, "infer").resolves({ results });
+  await SpecialPowers.pushPrefEnv({
+    set: [["places.semanticHistory.featureGate", true]],
+  });
+  try {
+    await doTest(task);
+  } finally {
+    await SpecialPowers.popPrefEnv();
+    hasSufficientEntriesStub.restore();
+    canUseSemanticStub.restore();
+    inferStub.restore();
+  }
 }

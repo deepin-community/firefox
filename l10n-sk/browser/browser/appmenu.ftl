@@ -27,6 +27,10 @@ appmenuitem-downloads =
     .label = Stiahnuté súbory
 appmenuitem-passwords =
     .label = Heslá
+appmenuitem-extensions-and-themes =
+    .label = Rozšírenia a témy vzhľadu
+appmenuitem-extensions =
+    .label = Rozšírenia
 appmenuitem-addons-and-themes =
     .label = Doplnky a témy
 appmenuitem-print =
@@ -108,8 +112,11 @@ appmenu-fxa-sync-and-save-data2 = Synchronizovať a uložiť údaje
 appmenu-fxa-signed-in-label = Prihlásiť sa
 appmenu-fxa-setup-sync =
     .label = Zapnúť synchronizáciu…
+appmenu-fxa-setup-sync-new = Zapnúť
 appmenuitem-save-page =
     .label = Uložiť stránku ako…
+appmenuitem-fxa-sync-off-title = Synchronizácia je vypnutá
+appmenuitem-fxa-sync-off-description = Chráňte svoje záložky, heslá a ďalšie položky a pristupujte k nim odkiaľkoľvek.
 
 ## What's New panel in App menu.
 
@@ -163,6 +170,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Otvoriť panel nástroja na profilovanie
+    .tooltiptext = Otvoriť panel nástroja na profilovanie
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +199,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Predvoľba na diagnostiku problémov so zvukom a videom v prehliadači { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Médiá
+profiler-popup-presets-ml-description = Predvoľba na skúmanie chýb strojového učenia vo { -brand-shorter-name(case: "loc") }.
+profiler-popup-presets-ml-label =
+    .label = Strojové učenie
 profiler-popup-presets-networking-description = Predvoľba pre diagnostiku sieťovej aktivity v prehliadači { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = Sieťová aktivita
@@ -199,6 +212,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = Nastavenia pre ladenie vo { -brand-shorter-name(case: "loc") }. Vysoká réžia, nepoužívajte na výkonnú prácu, ale na pochopenie správania sa prehliadača.
 profiler-popup-presets-debug-label =
     .label = Ladenie
+profiler-popup-presets-web-compat-description = Odporúčaná predvoľba na ladenie problémov s webovou kompatibilitou na webových stránkach, a nie na sledovanie výkonu.
+profiler-popup-presets-web-compat-label =
+    .label = Webová kompatibilita
 profiler-popup-presets-custom-label =
     .label = Vlastné
 
@@ -277,5 +293,27 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Získajte upozornenia na úniky údajov
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Zamaskujte svoju skutočnú e‑mailovú adresu a telefónne číslo
+appmenuitem-services-relay-description = Spustiť informačný panel e‑mailových masiek
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Získajte ochranu celého zariadenia
 appmenuitem-vpn-description = Chráňte svoju online aktivitu
+appmenu-services-header = Moje služby
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Vyskúšajte ďalšie nástroje na vašu ochranu od Mozilly:
+appmenu-other-protection-header = Vyskúšajte ďalšie nástroje na vašu ochranu od { -vendor-short-name(case: "gen") }:
+
+## Profiles panel
+
+appmenu-other-profiles = Ďalšie profily
+appmenu-manage-profiles =
+    .label = Spravovať profily
+appmenu-copy-profile =
+    .label = Kopírovať tento profil
+appmenu-create-profile =
+    .label = Nový profil
+appmenu-edit-profile =
+    .aria-label = Upraviť profil
+appmenu-profiles-2 =
+    .label = Profily

@@ -1,5 +1,5 @@
 // META: title=ensure MLMLGraphBuilder may build at most one MLGraph
-// META: global=window,dedicatedworker
+// META: global=window,worker
 // META: variant=?cpu
 // META: variant=?gpu
 // META: variant=?npu
@@ -7,7 +7,7 @@
 
 const kExampleInputDescriptor = {
   dataType: 'float32',
-  dimensions: [2]
+  shape: [2]
 };
 
 promise_test(async t => {

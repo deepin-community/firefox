@@ -12,8 +12,8 @@ about-networking-dns-trr-url = כתובת DoH
 about-networking-dns-trr-mode = מצב DoH
 about-networking-dns-suffix = סיומת DNS
 about-networking-websockets = WebSockets
-about-networking-refresh = רענון
-about-networking-auto-refresh = רענון אוטומטי בכל 3 שניות
+about-networking-refresh = ריענון
+about-networking-auto-refresh = ריענון אוטומטי בכל 3 שניות
 about-networking-hostname = שם מארח
 about-networking-port = פתחה
 about-networking-http-version = גרסת HTTP
@@ -38,6 +38,7 @@ about-networking-dns-lookup = חיפוש ב־DNS
 about-networking-dns-lookup-button = זיהוי
 about-networking-dns-domain = שם מתחם:
 about-networking-dns-lookup-table-column = כתובות
+about-networking-dns-https-rrs-lookup-table-column = HTTPS RRs
 about-networking-dns-https-rr-lookup-table-column = HTTP RRs
 about-networking-rcwn = סטטיסטיקת RCWN
 about-networking-rcwn-status = מצב RCWN
@@ -57,9 +58,3 @@ about-networking-networkid = מזהה רשת
 about-networking-networkid-id = מזהה רשת
 # Note: do not translate about:logging, as it is a URL.
 about-networking-moved-about-logging = דף זה עבר אל <a data-l10n-name="about-logging-url">about:logging</a>.
-
-## Link is intended as "network link"
-
-
-##
-

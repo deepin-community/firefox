@@ -24,13 +24,12 @@
 
 #include "EHABIStackWalk.h"
 
-#include "shared-libraries.h"
 #include "platform.h"
 
 #include "mozilla/Atomics.h"
-#include "mozilla/Attributes.h"
 #include "mozilla/DebugOnly.h"
 #include "mozilla/EndianUtils.h"
+#include "mozilla/SharedLibraries.h"
 
 #include <algorithm>
 #include <elf.h>
@@ -560,7 +559,7 @@ void EHAddrSpace::Update() {
     // the start address will not point at the file header. But this is worked
     // around by magic number checks in the EHTable constructor.
     EHTable tab(reinterpret_cast<const void*>(lib.GetStart()),
-                lib.GetEnd() - lib.GetStart(), lib.GetNativeDebugPath());
+                lib.GetEnd() - lib.GetStart(), lib.GetDebugPath());
     if (tab.isValid()) tables.push_back(tab);
   }
   space = new EHAddrSpace(tables);

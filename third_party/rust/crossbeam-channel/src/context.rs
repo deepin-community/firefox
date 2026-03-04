@@ -41,7 +41,7 @@ impl Context {
     where
         F: FnOnce(&Context) -> R,
     {
-        thread_local! {
+        std::thread_local! {
             /// Cached thread-local context.
             static CONTEXT: Cell<Option<Context>> = Cell::new(Some(Context::new()));
         }
@@ -138,21 +138,6 @@ impl Context {
     /// If the deadline is reached, `Selected::Aborted` will be selected.
     #[inline]
     pub fn wait_until(&self, deadline: Option<Instant>) -> Selected {
-        // Spin for a short time, waiting until an operation is selected.
-        let backoff = Backoff::new();
-        loop {
-            let sel = Selected::from(self.inner.select.load(Ordering::Acquire));
-            if sel != Selected::Waiting {
-                return sel;
-            }
-
-            if backoff.is_completed() {
-                break;
-            } else {
-                backoff.snooze();
-            }
-        }
-
         loop {
             // Check whether an operation has been selected.
             let sel = Selected::from(self.inner.select.load(Ordering::Acquire));

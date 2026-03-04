@@ -88,7 +88,9 @@ async function heuristicIsNotRestyled(expectedType, resultDetails) {
   ) {
     Assert.equal(
       resultDetails.displayed.url,
-      resultDetails.result.payload.displayUrl
+      resultDetails.result.getDisplayableValueAndHighlights("url", {
+        isURL: true,
+      }).value
     );
   } else {
     Assert.equal(
@@ -277,6 +279,12 @@ add_setup(async function () {
     { type: "mousemove" },
     window
   );
+});
+
+add_setup(async () => {
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.urlbar.scotchBonnet.enableOverride", false]],
+  });
 });
 
 add_task(async function arrow_engine_url() {

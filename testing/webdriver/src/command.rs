@@ -81,6 +81,8 @@ pub enum WebDriverCommand<T: WebDriverExtensionCommand> {
     SetPermission(SetPermissionParameters),
     Status,
     Extension(T),
+    GPCSetGlobalPrivacyControl(GlobalPrivacyControlParameters),
+    GPCGetGlobalPrivacyControl,
     WebAuthnAddVirtualAuthenticator(AuthenticatorParameters),
     WebAuthnRemoveVirtualAuthenticator,
     WebAuthnAddCredential(CredentialParameters),
@@ -413,6 +415,10 @@ impl<U: WebDriverExtensionRoute> WebDriverMessage<U> {
             }
             Route::Status => WebDriverCommand::Status,
             Route::Extension(ref extension) => extension.command(params, &body_data)?,
+            Route::GPCGetGlobalPrivacyControl => WebDriverCommand::GPCGetGlobalPrivacyControl,
+            Route::GPCSetGlobalPrivacyControl => {
+                WebDriverCommand::GPCSetGlobalPrivacyControl(serde_json::from_str(raw_body)?)
+            }
             Route::WebAuthnAddVirtualAuthenticator => {
                 WebDriverCommand::WebAuthnAddVirtualAuthenticator(serde_json::from_str(raw_body)?)
             }
@@ -453,10 +459,11 @@ impl<U: WebDriverExtensionRoute> WebDriverMessage<U> {
                     } else {
                         let msg = format!("Failed to decode request as JSON: {}", body);
                         let stack = format!("Syntax error at :{}:{}", e.line(), e.column());
-                        Err(WebDriverError::new_with_stack(
+                        Err(WebDriverError::new_with_data(
                             ErrorStatus::InvalidArgument,
                             msg,
-                            stack,
+                            None,
+                            Some(stack),
                         ))
                     }
                 }
@@ -527,7 +534,7 @@ pub struct LocatorParameters {
 
 #[derive(Debug, PartialEq, Serialize)]
 pub struct NewSessionParameters {
-    capabilities: SpecNewSessionParameters,
+    pub capabilities: SpecNewSessionParameters,
 }
 
 // Manual deserialize implementation to error if capabilities is not an object
@@ -714,6 +721,11 @@ pub struct UserVerificationParameters {
     pub is_user_verified: bool,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct GlobalPrivacyControlParameters {
+    pub gpc: bool,
+}
+
 fn deserialize_to_positive_f64<'de, D>(deserializer: D) -> Result<f64, D::Error>
 where
     D: Deserializer<'de>,
@@ -880,7 +892,7 @@ where
     let opt = Option::deserialize(deserializer)?.map(|value: f64| value as i64);
     let value = match opt {
         Some(n) => {
-            if n < i64::from(i32::min_value()) || n > i64::from(i32::max_value()) {
+            if n < i64::from(i32::MIN) || n > i64::from(i32::MAX) {
                 return Err(de::Error::custom(format!("'{}' is larger than i32", n)));
             }
             Some(n as i32)
@@ -898,7 +910,7 @@ where
     let opt = Option::deserialize(deserializer)?.map(|value: f64| value as i64);
     let value = match opt {
         Some(n) => {
-            if n < 0 || n > i64::from(i32::max_value()) {
+            if n < 0 || n > i64::from(i32::MAX) {
                 return Err(de::Error::custom(format!("'{}' is outside of i32", n)));
             }
             Some(n as i32)

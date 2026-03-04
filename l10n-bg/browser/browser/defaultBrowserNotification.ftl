@@ -14,6 +14,7 @@ default-browser-notification-button =
 
 default-browser-prompt-title-pin = Да бъде ли избран { -brand-short-name } за основен четец?
 default-browser-prompt-message-pin = Дръжте { -brand-short-name } наблизо като го направите четец по подразбиране и го закачите към лентата със задачи.
+default-browser-prompt-message-pin-msix = Дръжте { -brand-short-name } наблизо – направете го четец по подразбиране и го закачите към лентата със задачи и менюто Start.
 default-browser-prompt-message-pin-mac = Дръжте { -brand-short-name } наблизо като го направите четец по подразбиране и го държите в Dock.
 default-browser-prompt-button-primary-set = Задаване като основен браузър
 default-browser-prompt-button-primary-pin = Направете основен четец
@@ -27,14 +28,15 @@ default-browser-prompt-button-secondary = Не сега
 ## use Windows Settings to set the default browser. Instructions differ for
 ## Windows 10 and 11.
 
+default-browser-guidance-notification-title = Завършете задаването на { -brand-short-name } като стандартен четец
 # Quoted text are keywords to look for in the Windows Settings app.
 default-browser-guidance-notification-body-instruction-win10 =
-    Стъпка 1: Отидете на Настройки > Приложения по подразбиране
-    Стъпка 2: Превъртете надолу до „Уеб браузър“
+    Стъпка 1: Отворете на Настройки → Приложения по подразбиране
+    Стъпка 2: Прелистете надолу до „Уеб браузър“
     Стъпка 3: Изберете { -brand-short-name }
 # Quoted text are keywords to look for in the Windows Settings app.
 default-browser-guidance-notification-body-instruction-win11 =
-    Стъпка 1: Отидете на Настройки > Приложения по подразбиране
+    Стъпка 1: Отворете на Настройки → Приложения по подразбиране
     Стъпка 2: Изберете „Задаване по подразбиране“ за { -brand-short-name }
 default-browser-guidance-notification-info-page = Покажи ми
 default-browser-guidance-notification-dismiss = Готово

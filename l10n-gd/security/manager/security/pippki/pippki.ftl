@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = Seall
 download-cert-view-text = Sgrùdaich teisteanas an ùghdarrais theisteanachaidh
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -80,8 +77,6 @@ client-auth-cert-details-issued-by = Foillsichte le: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = ’Ga chumail air: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Cuimhnich an co-dhùnadh seo
 
 ## Set password (p12) dialog
 

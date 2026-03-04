@@ -80,8 +80,8 @@ NS_IMETHODIMP HTMLEditorEventListener::HandleEvent(Event* aEvent) {
 
       RefPtr<HTMLEditor> htmlEditor = mEditorBase->AsHTMLEditor();
       DebugOnly<nsresult> rvIgnored =
-          htmlEditor->UpdateResizerOrGrabberPositionTo(CSSIntPoint(
-              mouseMoveEvent->ClientX(), mouseMoveEvent->ClientY()));
+          htmlEditor->UpdateResizerOrGrabberPositionTo(
+              RoundedToInt(mouseMoveEvent->ClientPoint()));
       NS_WARNING_ASSERTION(
           NS_SUCCEEDED(rvIgnored),
           "HTMLEditor::UpdateResizerOrGrabberPositionTo() failed, but ignored");
@@ -245,7 +245,7 @@ nsresult HTMLEditorEventListener::MouseUp(MouseEvent* aMouseEvent) {
   //      on native anonymous node like a resizer.
 
   DebugOnly<nsresult> rvIgnored = htmlEditor->StopDraggingResizerOrGrabberAt(
-      CSSIntPoint(aMouseEvent->ClientX(), aMouseEvent->ClientY()));
+      RoundedToInt(aMouseEvent->ClientPoint()));
   NS_WARNING_ASSERTION(
       NS_SUCCEEDED(rvIgnored),
       "HTMLEditor::StopDraggingResizerOrGrabberAt() failed, but ignored");
@@ -344,7 +344,8 @@ nsresult HTMLEditorEventListener::HandleSecondaryMouseButtonDown(
 
   // Select entire element clicked on if NOT within an existing selection
   //   and not the entire body, or table-related elements
-  if (HTMLEditUtils::IsImage(eventTargetElement)) {
+  if (eventTargetElement &&
+      HTMLEditUtils::IsImageElement(*eventTargetElement)) {
     // MOZ_KnownLive(eventTargetElement): Guaranteed by eventTarget.
     DebugOnly<nsresult> rvIgnored =
         aHTMLEditor.SelectElement(MOZ_KnownLive(eventTargetElement));

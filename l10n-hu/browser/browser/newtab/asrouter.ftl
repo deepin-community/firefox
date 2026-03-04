@@ -59,7 +59,7 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } felhasználó
     }
 
-## Firefox Accounts Message
+## Mozilla Account messages
 
 cfr-doorhanger-bookmark-fxa-header = Szinkronizálja a könyvjelzőit mindenhol.
 cfr-doorhanger-bookmark-fxa-body = Nagyszerű találat! Ne maradjon könyvjelzők nélkül a mobileszközein sem. Kezdjen egy { -fxaccount-brand-name }kal.
@@ -68,6 +68,13 @@ cfr-doorhanger-bookmark-fxa-link-text = Könyvjelzők szinkronizálása most…
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = Bezárás gomb
     .title = Bezárás
+fxa-adoption-addresses-backup-title = Készítsen biztonsági mentést a mentett címekről
+fxa-adoption-addresses-backup-subtitle = Védje meg a mentett címeit azáltal, hogy titkosítva szinkronizálja azokat az eszközeire.
+fxa-adoption-credit-cards-backup-title = Készítsen biztonsági mentést a fizetési módokról
+fxa-adoption-credit-cards-backup-subtitle = Védje meg a fizetési módjait azáltal, hogy titkosítva szinkronizálja azokat az eszközeire.
+fxa-adoption-bookmarks-treatment-backup-title = Készítsen biztonsági mentést a könyvjelzőiről
+fxa-adoption-bookmarks-treatment-backup-subtitle = Védje meg a könyvjelzőit azáltal, hogy titkosítva szinkronizálja azokat az eszközeire.
+fxa-adoption-primary-button-label = Regisztráció
 
 ## Protections panel
 
@@ -111,8 +118,8 @@ cfr-doorhanger-doh-secondary-button = Letiltás
 
 ## Full Video Support CFR message
 
-cfr-doorhanger-video-support-body = Előfordulhat, hogy az oldalon található videók nem játszhatók le a { -brand-short-name } ezen verziójában. A teljes videótámogatásért frissítse most a { -brand-short-name(case: "accusative") }.
-cfr-doorhanger-video-support-header = A videó lejátszásához frissítse a { -brand-short-name(case: "accusative") }
+cfr-doorhanger-video-support-body = Előfordulhat, hogy az oldalon található videók nem játszhatók le a { -brand-short-name } ezen verziójában. A teljes videótámogatásért frissítse most a { -brand-short-name }ot.
+cfr-doorhanger-video-support-header = A videó lejátszásához frissítse a { -brand-short-name }ot
 cfr-doorhanger-video-support-primary-button = Frissítés most
     .accesskey = F
 
@@ -133,7 +140,7 @@ spotlight-public-wifi-vpn-link = Most nem
 ## Emotive Continuous Onboarding
 
 spotlight-better-internet-header = A jobb internet Önnel kezdődik
-spotlight-better-internet-body = Amikor a { -brand-short-name(case: "accusative") } használja, akkor egy nyílt és hozzáférhető internetre szavaz, amely jobb mindenki számára.
+spotlight-better-internet-body = Amikor a { -brand-short-name }ot használja, akkor egy nyílt és hozzáférhető internetre szavaz, amely jobb mindenki számára.
 spotlight-peace-mind-header = Fedezzük Önt
 spotlight-peace-mind-body = Minden hónapban, a { -brand-short-name } átlagosan 3.000 nyomkövetőt blokkol felhasználónként. Mert semmi nem állhat Ön és a jó internet közé, az adatvédelmi szempontból aggályos követők különösen nem.
 spotlight-pin-primary-button =
@@ -213,18 +220,36 @@ cookie-banner-blocker-onboarding-learn-more = További tudnivalók
 
 july-jam-headline = Fedezzük Önt
 july-jam-body = A { -brand-short-name } havonta átlagosan több mint 3000 nyomkövetőt blokkol felhasználónként, így biztonságos és gyors hozzáférést biztosít a jó internethez.
-july-jam-set-default-primary = Saját hivatkozások megnyitása a { -brand-short-name(case: "instrumental") }
+july-jam-set-default-primary = Saját hivatkozások megnyitása a { -brand-short-name }szal
 fox-doodle-pin-headline = Üdvözöljük újra
 # “indie” is short for the term “independent”.
 # In this instance, free from outside influence or control.
 fox-doodle-pin-body = Itt egy gyors emlékeztető, hogy egyetlen kattintásnyira tudhatja kedvenc független böngészőjét.
-fox-doodle-pin-primary = Saját hivatkozások megnyitása a { -brand-short-name(case: "instrumental") }
+fox-doodle-pin-primary = Saját hivatkozások megnyitása a { -brand-short-name }szal
 fox-doodle-pin-secondary = Most nem
 
 ## These strings are used in the Set Firefox as Default PDF Handler for Existing Users experiment
 
 set-default-pdf-handler-headline = <strong>A PDF-jei mostantól a { -brand-short-name }szal nyílnak meg.</strong> Szerkessze vagy írja alá az űrlapokat közvetlenül a böngészőjében. A módosításhoz keressen a „PDF” kifejezésre a beállításokban.
 set-default-pdf-handler-primary = Megértettem
+
+## PDF Annotations strings
+
+# “Sign on the dotted line” is an idiomatic English expression about
+# where to place your signature.
+# If this expression doesn’t have a direct translation, please
+# translate this alternative string: "Add your signature anywhere!"
+annotations-default-pdf-handler-headline = Írja alá a szaggatott vonalon – vagy bárhol!
+# “Go-to” is an idiomatic English expression referring to something that is used often.
+annotations-default-pdf-handler-body = Rajzolja le, gépelje le vagy töltse fel az aláírását, majd helyezze pontosan oda, ahová szeretné. Mentse el a gyakran használt aláírásait a következő alkalomra.
+annotations-make-default-pdf-handler-title = A { -brand-short-name } legyen az alapértelmezett PDF-megjelenítője?
+annotations-make-default-pdf-handler-subtitle = Minden alkalommal hozzáférhet eszközeinkhez, amikor megnyit egy PDF-et.
+annotations-make-default-pdf-primary-cta-label = Beállítás alapértelmezettként
+annotations-make-default-pdf-next-label = Tovább
+annotations-make-default-pdf-primary-cta =
+    .label = Beállítás alapértelmezettként
+annotations-make-default-pdf-next =
+    .label = Tovább
 
 ## FxA sync CFR
 
@@ -246,11 +271,14 @@ device-migration-fxa-spotlight-older-device-primary-button = Fiók létrehozása
 device-migration-fxa-spotlight-getting-new-device-header-2 = Új eszköz a jövőben?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Kövessen néhány egyszerű lépést, hogy magával vigye a könyvjelzőit, előzményeit és jelszavait, amikor új eszközt kezd használni.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Hogyan kell biztonsági mentést készíteni az adatokról
+device-migration-fxa-spotlight-sync-header = Böngésszen zökkenőmentesen
+device-migration-fxa-spotlight-sync-body = Szinkronizálja az összes fontos adatát titkosítással – például a könyvjelzőket és a jelszavakat. Bárhol elér mindent, ahol a { -brand-product-name }ot használja.
+device-migration-fxa-spotlight-sync-primary-button = Kezdő lépések
 
 ## Set as Default PDF Reader Infobar
 
 # The question portion of the following message should have the <strong> and </strong> tags surrounding it.
-pdf-default-notification-message = <strong>Legyen a { -brand-short-name } az alapértelmezett PDF-olvasó?</strong> Használja a { -brand-short-name(case: "accusative") } a számítógépére mentett PDF-ek olvasásához és szerkesztéséhez.
+pdf-default-notification-message = <strong>Legyen a { -brand-short-name } az alapértelmezett PDF-olvasó?</strong> Használja a { -brand-short-name }ot a számítógépére mentett PDF-ek olvasásához és szerkesztéséhez.
 pdf-default-notification-set-default-button =
     .label = Beállítás alapértelmezettként
 pdf-default-notification-decline-button =
@@ -258,9 +286,9 @@ pdf-default-notification-decline-button =
 
 ## Launch on login infobar notification
 
-launch-on-login-infobar-message = <strong>Mindig megnyissa a { -brand-short-name(case: "accusative") } a számítógép újraindításakor?</strong> Most már beállíthatja, hogy a { -brand-short-name } automatikusan elinduljon, ha újraindítja az eszközét.
+launch-on-login-infobar-message = <strong>Mindig megnyissa a { -brand-short-name }ot a számítógép újraindításakor?</strong> Most már beállíthatja, hogy a { -brand-short-name } automatikusan elinduljon, ha újraindítja az eszközét.
 launch-on-login-learnmore = További tudnivalók
-launch-on-login-infobar-confirm-button = Igen, nyissa meg a { -brand-short-name(case: "accusative") }
+launch-on-login-infobar-confirm-button = Igen, nyissa meg a { -brand-short-name }ot
     .accesskey = I
 launch-on-login-infobar-reject-button = Most nem
     .accesskey = n
@@ -268,7 +296,7 @@ launch-on-login-infobar-reject-button = Most nem
 ## These string variants are used when the “launch on login” infobar
 ## notification is displayed for a second time.
 
-launch-on-login-infobar-final-message = <strong>Mindig megnyissa a { -brand-short-name(case: "accusative") } a számítógép újraindításakor?</strong> Az indítási beállítások kezeléséhez keressen rá az „indítás” szóra a beállításokban.
+launch-on-login-infobar-final-message = <strong>Mindig megnyissa a { -brand-short-name }ot a számítógép újraindításakor?</strong> Az indítási beállítások kezeléséhez keressen rá az „indítás” szóra a beállításokban.
 launch-on-login-infobar-final-reject-button = Köszönöm, nem
     .accesskey = n
 
@@ -280,5 +308,136 @@ launch-on-login-infobar-final-reject-button = Köszönöm, nem
 # alternative as a reference for translation: 'Keep unwanted trackers away'.
 tail-fox-spotlight-title = Rázza le a bosszantó nyomkövetőket
 tail-fox-spotlight-subtitle = Mondjon búcsút a bosszantó hirdetéskövetőknek, és élvezze a biztonságosabb, gyorsabb internetezést.
-tail-fox-spotlight-primary-button = Saját hivatkozások megnyitása a { -brand-short-name(case: "instrumental") }
+tail-fox-spotlight-primary-button = Saját hivatkozások megnyitása a { -brand-short-name }szal
 tail-fox-spotlight-secondary-button = Most nem
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>A { -brand-short-name } régebbi verzióiban 2025. január 14-én problémák léphetnek fel.</strong>
+root-certificate-succession-infobar-march-message = <strong>Frissítsen, hogy 2025. március 14. után is használja a { -brand-short-name }ot.</strong>
+root-certificate-succession-infobar-link = Miért van szükségem a frissítésre?
+root-certificate-succession-infobar-primary-button =
+    .label = Frissítés most
+    .accesskey = F
+root-certificate-succession-infobar-secondary-button =
+    .label = Később
+    .accesskey = K
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Lemaradt egy fontos { -brand-short-name } frissítésről
+root-certificate-windows-background-notification-subtitle = A böngésző egyes részei hamarosan nem fognak működni, ha nem frissít. Itt az alkalom, hogy megszerezze a legújabb védelmeket és funkciókat.
+root-certificate-windows-background-notification-learn-more-button = További tudnivalók
+root-certificate-windows-background-notification-update-button = A { -brand-short-name } frissítése
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Bezárás
+    .aria-label = Bezárás
+fxa-menu-message-sign-up-button = Regisztráció
+fxa-menu-message-sign-in-button = Bejelentkezés
+fxa-menu-message-sync-button = Szinkronizálás indítása
+fxa-menu-message-sync-devices-primary-text = Szinkronizálja az összes eszközét
+fxa-menu-message-sync-devices-secondary-text = Azonnal kapja meg az adatait – mint a könyvjelzők és a jelszavak – mindenhol, ahol a { -brand-short-name }ot használja.
+fxa-menu-message-sync-devices-secondary-text2 = Azonnal kapja meg a könyvjelzőit, jelszavait és a többit – bárhol, ahol bejelentkezik a { -brand-short-name }ba.
+fxa-menu-message-sync-devices-collapsed-text = Szinkronizálja az összes eszközét
+fxa-menu-message-backup-data-primary-text = Készítsen biztonsági mentést a böngészési adatairól
+fxa-menu-message-backup-data-secondary-text = Automatikusan védje meg a könyvjelzőket, jelszavakat és egyéb információkat az összes eszközén.
+fxa-menu-message-backup-data-collapsed-text = Biztonsági mentés készítése a böngészési adatokról
+fxa-menu-message-backup-sync-primary-text = Tartsa adatait biztonságban és szinkronizálva
+fxa-menu-message-backup-sync-secondary-text = A Sync biztonsági mentést készít az adatai nagy részéről, így bárhol elérheti őket, ahol { -brand-short-name }ot használ.
+fxa-menu-message-backup-sync-collapsed-text = Adatok szinkronizálása és biztonsági mentése
+fxa-menu-message-mobile-primary-text = Lapokat küld a telefonjára
+fxa-menu-message-mobile-secondary-text = Folytassa ott, ahol abbahagyta, ha szinkronizálja a lapjait egy mobileszközzel.
+fxa-menu-message-mobile-collapsed-text = Szinkronizáljon a telefonjával
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Üdvözöljük újra
+multi-cta-fox-doodle-set-default-checkbox = A { -brand-short-name } beállítása alapértelmezettként
+multi-cta-fox-doodle-pin-startmenu-checkbox = A { -brand-short-name } rögzítése a Start menüben
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] A { -brand-short-name } dokkban tartása
+       *[other] A { -brand-short-name } rögzítése a tálcára
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Böngészés megkezdése
+multi-cta-fox-doodle-main-browser-primary-button-label = A { -brand-short-name } elsődleges böngészővé tétele
+multi-cta-fox-doodle-quick-reminder-subtitle = Itt egy gyors emlékeztető, hogy egyetlen kattintásnyira tudhatja kedvenc adatvédelem-központú böngészőjét.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Tartsa egyetlen kattintásra a kedvenc adatvédelmi fókuszú böngészőjét. Állítsa be a { -brand-short-name }ot alapértelmezett böngészőnek a hivatkozások megnyitásához, és tartsa a dokkban.
+       *[other] Tartsa egyetlen kattintásra a kedvenc adatvédelmi fókuszú böngészőjét. Állítsa be a { -brand-short-name }ot alapértelmezett böngészőnek a hivatkozások megnyitásához, és rögzítse a tálcára.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Tartsa egyetlen kattintásra a kedvenc adatvédelmi fókuszú böngészőjét. Állítsa be a { -brand-short-name }ot alapértelmezett böngészőnek a hivatkozások megnyitásához, és rögzítse a tálcára és a Start menübe.
+
+## Windows 10 EoS Sync messages group 1 spotlight
+
+windows-10-eos-sync-spotlight-title = Hamarosan frissít a Windows 10-ről?
+windows-10-eos-sync-spotlight-subtitle = Készítsen biztonsági mentést a jelszavairól és könyvjelzőiről, hogy készen álljon az ugrásra, bármilyen eszközre.
+windows-10-eos-sync-spotlight-primary-label = Biztonsági mentés a { -brand-short-name }ról
+
+## Windows 10 EoS Sync messages group 1 toast notification
+
+windows-10-eos-sync-toast-title = Windows 11-re frissít? Ne veszítse el könyvjelzőit és jelszavait.
+windows-10-eos-sync-toast-subtitle = Készítsen biztonsági mentést az adatairól, hogy a { -brand-short-name } bármikor használatra készen álljon, ezen a számítógépen vagy a következőn.
+windows-10-eos-sync-toast-primary-label = Kezdő lépések
+windows-10-eos-sync-toast-secondary-label = Figyelmeztetés később
+
+## Windows 10 EoS sync messages group 2 feature callouts
+
+windows-10-eos-challenger-callout-title = A { -brand-product-name } nincs előre telepítve, mint a többi nagy technológiai vállalat böngészője. Pont ez a lényeg.
+windows-10-eos-challenger-sync-callout-subtitle = Ha biztonsági mentést készít a { -brand-product-name } könyvjelzőiről és jelszavairól, könnyebben áthozhatja a választott böngészőjét a következő eszközére.
+windows-10-eos-challenger-pin-callout-subtitle = Rögzítse a { -brand-shorter-name } böngészőt a tálcán, hogy mindig ott legyen, ha szüksége van rá.
+windows-10-eos-challenger-sync-primary-button = Mentse le a { -brand-shorter-name } adatait
+windows-10-eos-challenger-pin-primary-button = A { -brand-shorter-name } kitűzése
+windows-10-eos-sync-callout-privacy-screen-1-title = A { -brand-product-name } blokkolja a kriptobányászokat, a közösségi média nyomkövetőit és az ujjlenyomat-készítőket.
+windows-10-eos-sync-callout-privacy-screen-1-subtitle = A nyomkövetők nem tudják azonosítani az eszközét, és nem követhetik az interneten — mert nem hagyjuk nekik.
+windows-10-eos-sync-callout-privacy-screen-2-title = Helyezze biztonságba a jelszavait és a könyvjelzőit a következő eszközéhez.
+windows-10-eos-sync-callout-privacy-screen-2-subtitle = A { -brand-shorter-name } biztonsági mentésével könnyen magával viheti az adatait és az adatvédelmi beállításait.
+windows-10-eos-sync-callout-privacy-info-button = Nézze meg, mi lett blokkolva
+windows-10-eos-callout-addons-title = Próbálja ki a kiegészítőket: egyszerű frissítések, nagy hatások
+windows-10-eos-callout-addons-subtitle = Ezeket a kiegészítőket azért választottuk, hogy segítsenek Önnek abban, hogy produktív, védett és zavartalan maradjon.
+windows-10-eos-callout-addons-primary-button = Lássa a választásainkat
+windows-10-eos-sync-callout-addons-title = Ne veszítse el kiegészítőit, amikor Windows 10-ről frissít.
+windows-10-eos-sync-callout-addons-subtitle = Szinkronizáljon most, hogy a { -brand-product-name } kiegészítői mindig elérhetőek legyenek, még eszközváltás után is.
+windows-10-eos-sync-callout-next-button = Tovább
+windows-10-eos-sync-callout-get-started-button = Kezdő lépések
+
+## Windows 10 EoS Sync messages group 2 toast notification
+
+windows-10-eos-feature-toast-title = Megérkeztek a függőleges lapok és lapcsoportok!
+# In English, "dropped" is a colloquial form for released.
+windows-10-eos-feature-toast-subtitle = Népszerű kérésre, a { -brand-product-name } új funkciókat szállít, hogy a böngészése gördülékenyebb és fókuszáltabb legyen.
+windows-10-eos-feature-toast-whats-new-button = Újdonságok
+windows-10-eos-feature-toast-dismiss-button = Eltüntetés
+
+## ETP (Enhanced Tracking Protection) Strict exceptions infobar
+##
+## These strings are displayed in an infobar notification that appears when
+## Enhanced Tracking Protection's Strict mode is causing website functionality
+## issues. The infobar offers users the option to apply automatic exceptions
+## to fix common site breakage by unblocking essential elements.
+
+etp-strict-exceptions-infobar-message = <strong>A szigorú követésvédelem a webhelyek hibás működését okozhatja.</strong> Javítsa a gyakori problémákat azzal, hogy feloldja azokat a létfontosságú elemeket, melyek nyomkövetőket tartalmazhatnak.
+etp-strict-exceptions-infobar-learn-more = További tudnivalók
+etp-strict-exceptions-infobar-button = Javítások alkalmazása
+    .accesskey = J
+etp-strict-exceptions-infobar-not-now = Most nem
+    .accesskey = n
+
+## 'Set to default' messaging displayed within the App menu
+
+set-default-menu-message-simple-layout-title = A { -brand-short-name } nem az alapértelmezett böngésző
+set-default-menu-message-simple-layout-title-variant = A { -brand-short-name } nem az elsődleges böngésző
+set-default-menu-message-row-layout-title = A { -brand-short-name } elsődleges böngészővé tétele
+set-default-menu-message-row-layout-title-variant = A { -brand-short-name } alapértelmezett böngészővé tétele
+set-default-menu-message-row-layout-subtitle = Szerezzen gyorsaságot, biztonságot és adatvédelmet minden böngészés során.
+set-default-menu-message-row-layout-subtitle-variant =
+    { PLATFORM() ->
+        [macos] Tartsa kéznél a { -brand-short-name }ot – tegye alapértelmezetté, és tartsa a Dokkon.
+       *[other] Tartsa kéznél a { -brand-short-name }ot – tegye alapértelmezetté, és tartsa a tálcán.
+    }
+set-default-menu-message-primary-button = Beállítás alapértelmezettként
+set-default-menu-message-primary-button-variant = Beállítás elsődleges böngészőként

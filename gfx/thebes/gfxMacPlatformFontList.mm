@@ -3,6 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "mozilla/Components.h"
 #include "mozilla/Logging.h"
 
 #include <algorithm>
@@ -33,7 +34,6 @@
 #include "mozilla/dom/ContentChild.h"
 #include "mozilla/dom/ContentParent.h"
 #include "mozilla/FontPropertyTypes.h"
-#include "mozilla/MemoryReporting.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/ProfilerLabels.h"
 #include "mozilla/Sprintf.h"
@@ -45,7 +45,9 @@
 #include <time.h>
 #include <dlfcn.h>
 
+#define StandardFonts
 #include "StandardFonts-macos.inc"
+#undef StandardFonts
 
 using namespace mozilla;
 using namespace mozilla::gfx;
@@ -152,6 +154,7 @@ void gfxSingleFaceMacFontFamily::ReadOtherFamilyNames(
 
 gfxMacPlatformFontList::gfxMacPlatformFontList() : CoreTextFontList() {
   CheckFamilyList(kBaseFonts);
+  CheckFamilyList(kBaseFonts_13_Higher);
 
   // cache this in a static variable so that gfxMacFontFamily objects
   // don't have to repeatedly look it up
@@ -162,12 +165,32 @@ gfxMacPlatformFontList::gfxMacPlatformFontList() : CoreTextFontList() {
   gfxFontUtils::GetPrefsFontList("font.single-face-list", mSingleFaceFonts);
 }
 
+using Device = nsIGfxInfo::FontVisibilityDeviceDetermination;
+Device GetFontVisibilityDevice() {
+  if (!NS_IsMainThread()) {
+    return Device::MacOS_Unknown;
+  }
+  static Device fontVisibilityDevice = Device::Unassigned;
+  if (fontVisibilityDevice == Device::Unassigned) {
+    nsCOMPtr<nsIGfxInfo> gfxInfo = components::GfxInfo::Service();
+    NS_ENSURE_SUCCESS(
+        gfxInfo->GetFontVisibilityDetermination(&fontVisibilityDevice),
+        Device::MacOS_Unknown);
+  }
+
+  return fontVisibilityDevice;
+}
+
 FontVisibility gfxMacPlatformFontList::GetVisibilityForFamily(
     const nsACString& aName) const {
   if (aName[0] == '.' || aName.LowerCaseEqualsLiteral("lastresort")) {
     return FontVisibility::Hidden;
   }
   if (FamilyInList(aName, kBaseFonts)) {
+    return FontVisibility::Base;
+  }
+  if (GetFontVisibilityDevice() == Device::MacOS_13_plus &&
+      FamilyInList(aName, kBaseFonts_13_Higher)) {
     return FontVisibility::Base;
   }
 #ifdef MOZ_BUNDLED_FONTS
@@ -182,7 +205,12 @@ nsTArray<std::pair<const char**, uint32_t>>
 gfxMacPlatformFontList::GetFilteredPlatformFontLists() {
   nsTArray<std::pair<const char**, uint32_t>> fontLists;
 
-  fontLists.AppendElement(std::make_pair(kBaseFonts, ArrayLength(kBaseFonts)));
+  fontLists.AppendElement(std::make_pair(kBaseFonts, std::size(kBaseFonts)));
+
+  if (GetFontVisibilityDevice() == Device::MacOS_13_plus) {
+    fontLists.AppendElement(
+        std::make_pair(kBaseFonts_13_Higher, std::size(kBaseFonts_13_Higher)));
+  }
 
   return fontLists;
 }

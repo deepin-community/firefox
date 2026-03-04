@@ -7,13 +7,12 @@
 #ifndef nsXULTooltipListener_h__
 #define nsXULTooltipListener_h__
 
+#include "Units.h"
+#include "nsCOMPtr.h"
 #include "nsIDOMEventListener.h"
 #include "nsITimer.h"
-#include "nsCOMPtr.h"
-#include "nsString.h"
-#include "Units.h"
 #include "nsIWeakReferenceUtils.h"
-#include "mozilla/Attributes.h"
+#include "nsString.h"
 
 class nsIContent;
 class nsTreeColumn;
@@ -38,7 +37,9 @@ class nsXULTooltipListener final : public nsIDOMEventListener {
   void AddTooltipSupport(nsIContent* aNode);
   void RemoveTooltipSupport(nsIContent* aNode);
   static nsXULTooltipListener* GetInstance() {
-    if (!sInstance) sInstance = new nsXULTooltipListener();
+    if (!sInstance) {
+      sInstance = new nsXULTooltipListener();
+    }
     return sInstance;
   }
 

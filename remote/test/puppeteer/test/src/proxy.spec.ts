@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import type {Server} from 'http';
-import http from 'http';
-import type {AddressInfo} from 'net';
-import os from 'os';
+import type {Server} from 'node:http';
+import http from 'node:http';
+import type {AddressInfo} from 'node:net';
+import os from 'node:os';
 
 import type {TestServer} from '@pptr/testserver';
 import expect from 'expect';
@@ -66,10 +66,10 @@ describe('request proxy', () => {
           proxyResponse => {
             originalResponse.writeHead(
               proxyResponse.statusCode as number,
-              proxyResponse.headers
+              proxyResponse.headers,
             );
             proxyResponse.pipe(originalResponse, {end: true});
-          }
+          },
         );
 
         originalRequest.pipe(proxyRequest, {end: true});

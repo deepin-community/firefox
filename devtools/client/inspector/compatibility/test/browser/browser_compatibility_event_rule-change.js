@@ -9,10 +9,10 @@
 const TEST_URI = `
   <style>
   .test-class {
-    ruby-align: center;
+    overflow-anchor: auto;
   }
   div {
-    scrollbar-width: thin;
+    user-select: auto;
   }
   </style>
   <div class="test-class">test class</div>
@@ -23,21 +23,21 @@ const TEST_DATA_SELECTED = {
   fullRule: {
     expectedProperties: [
       {
-        property: "ruby-align",
-        url: "https://developer.mozilla.org/docs/Web/CSS/ruby-align",
+        property: "overflow-anchor",
+        url: "https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/overflow-anchor",
       },
       {
-        property: "scrollbar-width",
-        url: "https://developer.mozilla.org/docs/Web/CSS/scrollbar-width",
+        property: "user-select",
+        url: "https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/user-select",
       },
     ],
     expectedNodes: [
       {
-        property: "ruby-align",
+        property: "overflow-anchor",
         nodes: [],
       },
       {
-        property: "scrollbar-width",
+        property: "user-select",
         nodes: [],
       },
     ],
@@ -45,13 +45,13 @@ const TEST_DATA_SELECTED = {
   classRule: {
     expectedProperties: [
       {
-        property: "ruby-align",
-        url: "https://developer.mozilla.org/docs/Web/CSS/ruby-align",
+        property: "overflow-anchor",
+        url: "https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/overflow-anchor",
       },
     ],
     expectedNodes: [
       {
-        property: "ruby-align",
+        property: "overflow-anchor",
         nodes: [],
       },
     ],
@@ -59,13 +59,13 @@ const TEST_DATA_SELECTED = {
   elementRule: {
     expectedProperties: [
       {
-        property: "scrollbar-width",
-        url: "https://developer.mozilla.org/docs/Web/CSS/scrollbar-width",
+        property: "user-select",
+        url: "https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/user-select",
       },
     ],
     expectedNodes: [
       {
-        property: "scrollbar-width",
+        property: "user-select",
         nodes: [],
       },
     ],
@@ -76,21 +76,21 @@ const TEST_DATA_ALL = {
   fullRule: {
     expectedProperties: [
       {
-        property: "ruby-align",
-        url: "https://developer.mozilla.org/docs/Web/CSS/ruby-align",
+        property: "overflow-anchor",
+        url: "https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/overflow-anchor",
       },
       {
-        property: "scrollbar-width",
-        url: "https://developer.mozilla.org/docs/Web/CSS/scrollbar-width",
+        property: "user-select",
+        url: "https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/user-select",
       },
     ],
     expectedNodes: [
       {
-        property: "ruby-align",
+        property: "overflow-anchor",
         nodes: ["div.test-class"],
       },
       {
-        property: "scrollbar-width",
+        property: "user-select",
         nodes: ["div.test-class", "div"],
       },
     ],
@@ -98,13 +98,13 @@ const TEST_DATA_ALL = {
   classRule: {
     expectedProperties: [
       {
-        property: "ruby-align",
-        url: "https://developer.mozilla.org/docs/Web/CSS/ruby-align",
+        property: "overflow-anchor",
+        url: "https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/overflow-anchor",
       },
     ],
     expectedNodes: [
       {
-        property: "ruby-align",
+        property: "overflow-anchor",
         nodes: ["div.test-class"],
       },
     ],
@@ -112,13 +112,13 @@ const TEST_DATA_ALL = {
   elementRule: {
     expectedProperties: [
       {
-        property: "scrollbar-width",
-        url: "https://developer.mozilla.org/docs/Web/CSS/scrollbar-width",
+        property: "user-select",
+        url: "https://developer.mozilla.org/docs/Web/CSS/Reference/Properties/user-select",
       },
     ],
     expectedNodes: [
       {
-        property: "scrollbar-width",
+        property: "user-select",
         nodes: ["div.test-class", "div"],
       },
     ],

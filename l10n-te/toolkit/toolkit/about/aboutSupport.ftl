@@ -4,7 +4,6 @@
 
 page-title = ట్రబుల్‌షూటింగ్ సమాచారం
 page-subtitle = మీరు ఒక సమస్యను పరిష్కరించుటకు ప్రయత్నించునప్పుడు మీకు ఉపయోగవంతంగా వుండగల సాంకేతిక సమాచారమును ఈ పేజీ కలిగివుంటుంది. మీరు { -brand-short-name } గురించిన వుమ్మడి ప్రశ్నలకు సమాధానముల కొరకు చూస్తుంటే, మా <a data-l10n-name="support-link">తోడ్పాటు వెబ్ సైట్</a> చూడండి.
-
 crashes-title = క్రాష్ నివేదికలు
 crashes-id = నివేదిక ID
 crashes-send-date = సమర్పించినది
@@ -49,7 +48,6 @@ app-basics-multi-process-support = మల్టీప్రోసెస్ వ�
 app-basics-enterprise-policies = ఎంటర్‌ప్రైజ్ విధానాలు
 app-basics-key-mozilla = మొజిల్లా స్థాన సేవ కీ
 app-basics-safe-mode = సురక్షిత రీతి
-
 show-dir-label =
     { PLATFORM() ->
         [macos] ఫైండర్ నందు తెరువు
@@ -114,8 +112,6 @@ media-device-channels = వాహికలు
 media-device-rate = రేటు
 media-device-latency = Latency
 
-## Codec support table
-
 ##
 
 intl-title = అంతర్జాతీయీకరణ & స్థానికీకరణ
@@ -126,16 +122,6 @@ intl-locales-default = అప్రమేయ లొకేల్
 intl-os-title = నిర్వాహక వ్యవస్థ
 intl-regional-prefs = ప్రాంతీయ అభిరుచులు
 
-## Remote Debugging
-##
-## The Firefox remote protocol provides low-level debugging interfaces
-## used to inspect state and control execution of documents,
-## browser instrumentation, user interaction simulation,
-## and for subscribing to browser-internal events.
-##
-## See also https://firefox-source-docs.mozilla.org/remote/
-
-
 ##
 
 # Variables
@@ -145,7 +131,6 @@ report-crash-for-days =
         [one] గత { $days } రోజులో క్రాష్ నివేదికలు
        *[other] గత { $days } రోజులలో క్రాష్ నివేదికలు
     }
-
 # Variables
 # $minutes (integer) - Number of minutes since crash
 crashes-time-minutes =
@@ -153,7 +138,6 @@ crashes-time-minutes =
         [one] { $minutes } నిమిషం క్రితం
        *[other] { $minutes } నిమిషాల క్రితం
     }
-
 # Variables
 # $hours (integer) - Number of hours since crash
 crashes-time-hours =
@@ -161,7 +145,6 @@ crashes-time-hours =
         [one] { $hours } గంట క్రితం
        *[other] { $hours } గంటల క్రితం
     }
-
 # Variables
 # $days (integer) - Number of days since crash
 crashes-time-days =
@@ -169,7 +152,6 @@ crashes-time-days =
         [one] { $days } రోజు క్రితం
        *[other] { $days } రోజుల క్రితం
     }
-
 # Variables
 # $reports (integer) - Number of pending reports
 pending-reports =
@@ -177,7 +159,6 @@ pending-reports =
         [one] అన్ని క్రాష్ నివేదికలు (ఇచ్చిక సమయ విస్తృతి నందలి { $reports } వాయిదా క్రాష్)
        *[other] అన్ని క్రాష్ నివేదికలు (ఇచ్చిక సమయ విస్తృతి నందలి { $reports } వాయిదా క్రాష్లు)
     }
-
 raw-data-copied = క్లిప్‌బోర్డు లోనికి ముడి దత్తాంశం కాపీ అయ్యింది
 text-copied = పాఠం క్లిప్‌బోర్డునకు కాపీతీయబడెను
 
@@ -190,11 +171,9 @@ blocked-mismatched-version = రిజిస్ట్రీ మరియు DLL 
 # Variables
 # $driverVersion - The graphics driver version string
 try-newer-driver = మీ గ్రాఫిక్స్ డ్రైవర్ వర్షన్ కొరకు నిరోధించబడెను. మీ గ్రాఫిక్స్ డ్రైవర్‌ను వర్షన్ { $driverVersion } కు లేదా కొత్తదానికి నవీకరించుటకు ప్రయత్నించు.
-
 # "ClearType" is a proper noun and should not be translated. Feel free to leave English strings if
 # there are no good translations, these are only used in about:support
 clear-type-parameters = ClearType పారామితులు
-
 compositing = కంపోజిషన్
 hardware-h264 = హార్డ్వేర్ H264 డీకోడింగ్
 main-thread-no-omtc = ముఖ్యమైన త్రెడ్ , ఏ OMTC
@@ -208,7 +187,6 @@ unknown = గుర్తుతెలియనివి
 
 found = కనబడ్డవి
 missing = కనబడనివి
-
 gpu-description = వివరణ
 gpu-vendor-id = అమ్మకందారు ఐడి
 gpu-device-id = పరికరం ఐడి
@@ -228,21 +206,16 @@ webgl2-renderer = WebGL2 రెండరర్
 webgl2-version = WebGL 2 డ్రైవ్వర్ వెర్షన్
 webgl2-driver-extensions = WebGL 2 డ్రైవ్వర్ పొడిగింతలు
 webgl2-extensions = WebGL 2 పొడిగింతలు
-
 # Variables
 # $failureCode (string) - String that can be searched in the source tree.
 unknown-failure = బ్లాక్ జాబితా ; వైఫల్యం కోడ్ { $failureCode }
-
 d3d11layers-crash-guard = D3D11 కూర్చే
 glcontext-crash-guard = OpenGL
-
 reset-on-next-restart = తదుపరి పునఃప్రారంభించు రీసెట్
 gpu-process-kill-button = GPU క్రియలను ఆపివేయి
 gpu-device-reset-button = పరికర రీసెట్ను ట్రిగ్గర్ చేయండి
-
 min-lib-versions = కావలసిన కనీస వర్షన్
 loaded-lib-versions = వినియోగంలో వున్న వర్షన్
-
 has-seccomp-bpf = సెకండరీ కాంప్ - బిపిఎఫ్ (సిస్టమ్ కాల్ ఫిల్టరింగ్)
 has-seccomp-tsync = సెకండరీ కాంప్ త్రెడ్ సమకాలీకరణ
 has-user-namespaces = వాడుకరి నేంస్పేసులు
@@ -254,14 +227,11 @@ effective-content-sandbox-level = సమర్థవంతమైన విష
 sandbox-proc-type-content = విషయం
 sandbox-proc-type-file = ఫైలు విషయం
 sandbox-proc-type-media-plugin = మీడియా ప్లగ్ఇన్
-
 launcher-process-status-0 = చేతనం
-
 # Variables
 # $remoteWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
 multi-process-windows = { $remoteWindows }/{ $totalWindows }
-
 async-pan-zoom = అసమకాలిక పాన్ / జూమ్
 apz-none = ఏమీలేవు
 wheel-enabled = చక్రం ఇన్పుట్ ప్రారంభించబడిందని
@@ -279,8 +249,3 @@ touch-warning = అసమకాలీక చక్రం ఇన్పుట్ �
 policies-inactive = అచేతనం
 policies-active = చేతనం
 policies-error = దోషం
-
-## Printing section
-
-## Normandy sections
-

@@ -5,9 +5,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include <queue>
+
 #include "WakeLockListener.h"
 #include "WidgetUtilsGtk.h"
 #include "mozilla/ScopeExit.h"
+#include "mozilla/Services.h"
+#include "nsIStringBundle.h"
+#include "nsReadableUtils.h"
+#include "nsContentUtils.h"
 
 #ifdef MOZ_ENABLE_DBUS
 #  include <gio/gio.h>
@@ -30,6 +36,7 @@
 #  define FREEDESKTOP_PORTAL_DESKTOP_TARGET "org.freedesktop.portal.Desktop"
 #  define FREEDESKTOP_PORTAL_DESKTOP_OBJECT "/org/freedesktop/portal/desktop"
 #  define FREEDESKTOP_PORTAL_DESKTOP_INTERFACE "org.freedesktop.portal.Inhibit"
+#  define FREEDESKTOP_PORTAL_DESKTOP_INHIBIT_SUSPEND_FLAG 4
 #  define FREEDESKTOP_PORTAL_DESKTOP_INHIBIT_IDLE_FLAG 8
 
 #  define FREEDESKTOP_SCREENSAVER_TARGET "org.freedesktop.ScreenSaver"
@@ -43,6 +50,8 @@
 #  define SESSION_MANAGER_TARGET "org.gnome.SessionManager"
 #  define SESSION_MANAGER_OBJECT "/org/gnome/SessionManager"
 #  define SESSION_MANAGER_INTERFACE "org.gnome.SessionManager"
+#  define SESSION_MANAGER_INHIBIT_SUSPEND_FLAG 4
+#  define SESSION_MANAGER_INHIBIT_IDLE_FLAG 8
 
 #  define DBUS_TIMEOUT (-1)
 #endif
@@ -51,6 +60,16 @@ using namespace mozilla;
 using namespace mozilla::widget;
 
 NS_IMPL_ISUPPORTS(WakeLockListener, nsIDOMMozWakeLockListener)
+
+static nsCString GetLocalizedWakeLockString(const char* aStringName) {
+  nsAutoString localizedString;
+  nsresult rv = nsContentUtils::GetLocalizedString(
+      nsContentUtils::eDOM_PROPERTIES, aStringName, localizedString);
+  if (NS_FAILED(rv)) {
+    return nsCString();
+  }
+  return NS_ConvertUTF16toUTF8(localizedString);
+}
 
 #define WAKE_LOCK_LOG(str, ...)                        \
   MOZ_LOG(gLinuxWakeLockLog, mozilla::LogLevel::Debug, \
@@ -101,15 +120,71 @@ const char* WakeLockTypeNames[] = {
 };
 #endif
 
+static int GetWakeLockTypeFromEnv() {
+  const char* lockType = PR_GetEnv("MOZ_WAKE_LOCK_TYPE");
+  if (!lockType) {
+    return Initial;
+  }
+#if defined(MOZ_ENABLE_DBUS)
+  // Support string values
+  if (!strcmp(lockType, "FreeDesktopScreensaver")) {
+    return FreeDesktopScreensaver;
+  }
+  if (!strcmp(lockType, "FreeDesktopPower")) {
+    return FreeDesktopPower;
+  }
+  if (!strcmp(lockType, "FreeDesktopPortal")) {
+    return FreeDesktopPortal;
+  }
+  if (!strcmp(lockType, "GNOME")) {
+    return GNOME;
+  }
+#endif
+#if defined(MOZ_X11)
+  if (!strcmp(lockType, "XScreenSaver")) {
+    return XScreenSaver;
+  }
+#endif
+#if defined(MOZ_WAYLAND)
+  if (!strcmp(lockType, "WaylandIdleInhibit")) {
+    return WaylandIdleInhibit;
+  }
+#endif
+  MOZ_LOG(gLinuxWakeLockLog, mozilla::LogLevel::Debug,
+          ("Invalid MOZ_WAKE_LOCK_TYPE value: %s", lockType));
+  return Initial;
+}
+
 class WakeLockTopic {
  public:
   NS_INLINE_DECL_REFCOUNTING(WakeLockTopic)
 
-  explicit WakeLockTopic(const nsAString& aTopic) {
+  WakeLockTopic(const nsAString& aTopic, bool aLockOnBackground)
+      : mLockOnBackground(aLockOnBackground) {
     CopyUTF16toUTF8(aTopic, mTopic);
-    WAKE_LOCK_LOG("WakeLockTopic::WakeLockTopic() created %s", mTopic.get());
-    if (sWakeLockType == Initial) {
-      SwitchToNextWakeLockType();
+    WAKE_LOCK_LOG("WakeLockTopic::WakeLockTopic() created %s on background %d",
+                  mTopic.get(), mLockOnBackground);
+    if (mTopic.Equals("video-playing")) {
+      nsCString videoPlayingString = []() -> nsCString {
+        auto string = GetLocalizedWakeLockString("WakeLockVideoPlaying");
+        if (string.IsEmpty()) {
+          string = "Playing video";
+        }
+        return string;
+      }();
+      mNiceTopic = videoPlayingString;
+    } else if (mTopic.Equals("audio-playing")) {
+      nsCString audioPlayingString = []() -> nsCString {
+        auto string = GetLocalizedWakeLockString("WakeLockAudioPlaying");
+        if (string.IsEmpty()) {
+          string = "Playing audio";
+        }
+        return string;
+      }();
+      mNiceTopic = audioPlayingString;
+    }
+    if (GetWakeLockType() == Initial) {
+      InitializeWakeLockType();
     }
   }
 
@@ -121,6 +196,8 @@ class WakeLockTopic {
  private:
   bool SendInhibit();
   bool SendUninhibit();
+
+  nsresult ProcessNextRequest();
 
 #if defined(MOZ_X11)
   bool CheckXScreenSaverSupport();
@@ -137,6 +214,7 @@ class WakeLockTopic {
   bool IsNativeWakeLock(int aWakeLockType);
   bool IsWakeLockTypeAvailable(int aWakeLockType);
   bool SwitchToNextWakeLockType();
+  void InitializeWakeLockType();
 
 #ifdef MOZ_ENABLE_DBUS
   void DBusInhibitScreensaver(const char* aName, const char* aPath,
@@ -157,14 +235,17 @@ class WakeLockTopic {
 
   void DBusInhibitSucceeded(uint32_t aInhibitRequestID);
   void DBusInhibitFailed(bool aFatal);
-  void DBusUninhibitSucceeded();
+  void DBusUninhibitReset(bool aSuccess);
   void DBusUninhibitFailed();
   void ClearDBusInhibitToken();
 #endif
   ~WakeLockTopic() = default;
 
-  // Why is screensaver inhibited
+  // Firefox internal inhibition state
   nsCString mTopic;
+
+  // Human readable topics we put to DBus interface
+  nsCString mNiceTopic;
 
   enum WakeLockState {
     Inhibited,
@@ -174,8 +255,8 @@ class WakeLockTopic {
   } mState = Uninhibited;
 
 #if MOZ_LOGGING
-  const char* GetInhibitStateName() {
-    switch (mState) {
+  const char* GetInhibitStateName(WakeLockState aState) {
+    switch (aState) {
       case Inhibited:
         return "inhibited";
       case WaitingToInhibit:
@@ -190,76 +271,87 @@ class WakeLockTopic {
 #endif
 
 #ifdef MOZ_ENABLE_DBUS
-  // We're waiting for DBus reply (inhibit/uninhibit calls).
-  bool mWaitingForDBusInhibit = false;
-  bool mWaitingForDBusUninhibit = false;
-
   // mInhibitRequestID is received from success screen saver inhibit call
   // and it's needed for screen saver enablement.
   Maybe<uint32_t> mInhibitRequestID;
-
-  RefPtr<GCancellable> mInhibitCancellable;
-  RefPtr<GCancellable> mUnInhibitCancellable;
   // Used to uninhibit org.freedesktop.portal.Inhibit request
   nsCString mRequestObjectPath;
+  // It's used to quit DBus operation on shutdown.
+  RefPtr<GCancellable> mCancellable;
+  // If we fail to uninhibit DBus screensaver just disable
+  // it completelly.
+  int mUninhibitAttempts = 5;
 #endif
 
-  static int sWakeLockType;
+  std::queue<WakeLockState> mStateQueue;
+
+  int GetWakeLockType() {
+    return mLockOnBackground ? sBackgroundWakeLockType
+                             : sForegroundWakeLockType;
+  }
+  void SetWakeLockType(int aWakeLockType) {
+    if (mLockOnBackground) {
+      sBackgroundWakeLockType = aWakeLockType;
+    } else {
+      sForegroundWakeLockType = aWakeLockType;
+    }
+  }
+
+  const bool mLockOnBackground = false;
+  static int sForegroundWakeLockType;
+  static int sBackgroundWakeLockType;
 };
 
-int WakeLockTopic::sWakeLockType = Initial;
+int WakeLockTopic::sForegroundWakeLockType = Initial;
+int WakeLockTopic::sBackgroundWakeLockType = Initial;
 
 #ifdef MOZ_ENABLE_DBUS
 void WakeLockTopic::DBusInhibitSucceeded(uint32_t aInhibitRequestID) {
-  mWaitingForDBusInhibit = false;
+  mState = Inhibited;
+  mCancellable = nullptr;
   mInhibitRequestID = Some(aInhibitRequestID);
 
-  WAKE_LOCK_LOG(
-      "WakeLockTopic::DBusInhibitSucceeded(), mInhibitRequestID %u "
-      "state %s",
-      *mInhibitRequestID, GetInhibitStateName());
+  WAKE_LOCK_LOG("WakeLockTopic::DBusInhibitSucceeded(), mInhibitRequestID %u",
+                *mInhibitRequestID);
 
-  // Uninhibit was requested before inhibit request was finished.
-  // So ask for it now.
-  if (mState == WaitingToUninhibit) {
-    UninhibitScreensaver();
-  } else {
-    mState = Inhibited;
-  }
+  ProcessNextRequest();
 }
 
 void WakeLockTopic::DBusInhibitFailed(bool aFatal) {
   WAKE_LOCK_LOG("WakeLockTopic::DBusInhibitFailed(%d)", aFatal);
 
-  mWaitingForDBusInhibit = false;
+  mCancellable = nullptr;
   ClearDBusInhibitToken();
 
   // Non-recoverable DBus error. Switch to another wake lock type.
   if (aFatal && SwitchToNextWakeLockType()) {
+    mState = WaitingToInhibit;
     SendInhibit();
+    return;
   }
+
+  // Flip back to uninhibited state as we failed.
+  mState = Uninhibited;
 }
 
-void WakeLockTopic::DBusUninhibitSucceeded() {
-  WAKE_LOCK_LOG("WakeLockTopic::DBusUninhibitSucceeded() state %s",
-                GetInhibitStateName());
-
-  mWaitingForDBusUninhibit = false;
+void WakeLockTopic::DBusUninhibitReset(bool aSuccess) {
+  WAKE_LOCK_LOG("WakeLockTopic::DBusUninhibitReset(%d)", aSuccess);
+  mState = Uninhibited;
+  mCancellable = nullptr;
   ClearDBusInhibitToken();
-
-  // Inhibit was requested before uninhibit request was finished.
-  // So ask for it now.
-  if (mState == WaitingToInhibit) {
-    InhibitScreensaver();
-  } else {
-    mState = Uninhibited;
-  }
+  ProcessNextRequest();
 }
 
 void WakeLockTopic::DBusUninhibitFailed() {
   WAKE_LOCK_LOG("WakeLockTopic::DBusUninhibitFailed()");
-  mWaitingForDBusUninhibit = false;
-  mInhibitRequestID = Nothing();
+  mState = Inhibited;
+  mCancellable = nullptr;
+
+  // We're in inhibited state and we can't switch back.
+  // Let's try again but there isn't much to do.
+  if (--mUninhibitAttempts == 0) {
+    SetWakeLockType(Unsupported);
+  }
 }
 
 void WakeLockTopic::ClearDBusInhibitToken() {
@@ -271,31 +363,18 @@ void WakeLockTopic::DBusInhibitScreensaver(const char* aName, const char* aPath,
                                            const char* aCall,
                                            const char* aMethod,
                                            RefPtr<GVariant> aArgs) {
-  WAKE_LOCK_LOG(
-      "WakeLockTopic::DBusInhibitScreensaver() mWaitingForDBusInhibit %d "
-      "mWaitingForDBusUninhibit %d",
-      mWaitingForDBusInhibit, mWaitingForDBusUninhibit);
-  if (mWaitingForDBusInhibit) {
-    WAKE_LOCK_LOG("  already waiting to inihibit, return");
-    return;
-  }
-  if (mWaitingForDBusUninhibit) {
-    WAKE_LOCK_LOG("  cancel un-inihibit request");
-    g_cancellable_cancel(mUnInhibitCancellable);
-    mUnInhibitCancellable = nullptr;
-    mWaitingForDBusUninhibit = false;
-  }
-  mWaitingForDBusInhibit = true;
+  WAKE_LOCK_LOG("WakeLockTopic::DBusInhibitScreensaver()");
 
-  if (!mInhibitCancellable) {
-    mInhibitCancellable = dont_AddRef(g_cancellable_new());
-  }
+  MOZ_DIAGNOSTIC_ASSERT(!mCancellable);
+  MOZ_DIAGNOSTIC_ASSERT(mState == WaitingToInhibit);
+
+  mCancellable = dont_AddRef(g_cancellable_new());
 
   widget::CreateDBusProxyForBus(
       G_BUS_TYPE_SESSION,
       GDBusProxyFlags(G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS |
                       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES),
-      /* aInterfaceInfo = */ nullptr, aName, aPath, aCall, mInhibitCancellable)
+      /* aInterfaceInfo = */ nullptr, aName, aPath, aCall, mCancellable)
       ->Then(
           GetCurrentSerialEventTarget(), __func__,
           [self = RefPtr{this}, this, args = RefPtr{aArgs},
@@ -303,8 +382,7 @@ void WakeLockTopic::DBusInhibitScreensaver(const char* aName, const char* aPath,
             WAKE_LOCK_LOG(
                 "WakeLockTopic::DBusInhibitScreensaver() proxy created");
             DBusProxyCall(aProxy.get(), aMethod, args.get(),
-                          G_DBUS_CALL_FLAGS_NONE, DBUS_TIMEOUT,
-                          mInhibitCancellable)
+                          G_DBUS_CALL_FLAGS_NONE, DBUS_TIMEOUT, mCancellable)
                 ->Then(
                     GetCurrentSerialEventTarget(), __func__,
                     [s = RefPtr{this}, this](RefPtr<GVariant>&& aResult) {
@@ -358,34 +436,19 @@ void WakeLockTopic::DBusUninhibitScreensaver(const char* aName,
                                              const char* aPath,
                                              const char* aCall,
                                              const char* aMethod) {
-  WAKE_LOCK_LOG(
-      "WakeLockTopic::DBusUninhibitScreensaver() mWaitingForDBusInhibit %d "
-      "mWaitingForDBusUninhibit %d request id %d",
-      mWaitingForDBusInhibit, mWaitingForDBusUninhibit,
-      mInhibitRequestID ? *mInhibitRequestID : -1);
-
-  if (mWaitingForDBusUninhibit) {
-    WAKE_LOCK_LOG("  already waiting to uninihibit, return");
-    return;
-  }
-
-  if (mWaitingForDBusInhibit) {
-    WAKE_LOCK_LOG("  cancel inihibit request");
-    g_cancellable_cancel(mInhibitCancellable);
-    mInhibitCancellable = nullptr;
-    mWaitingForDBusInhibit = false;
-  }
+  WAKE_LOCK_LOG("WakeLockTopic::DBusUninhibitScreensaver() request id %d",
+                mInhibitRequestID ? *mInhibitRequestID : -1);
 
   if (!mInhibitRequestID.isSome()) {
     WAKE_LOCK_LOG("  missing inihibit token, quit.");
-    // missing uninhibit token, just quit.
+    DBusUninhibitFailed();
     return;
   }
-  mWaitingForDBusUninhibit = true;
 
-  if (!mUnInhibitCancellable) {
-    mUnInhibitCancellable = dont_AddRef(g_cancellable_new());
-  }
+  MOZ_DIAGNOSTIC_ASSERT(!mCancellable);
+  MOZ_DIAGNOSTIC_ASSERT(mState == WaitingToUninhibit);
+
+  mCancellable = dont_AddRef(g_cancellable_new());
 
   RefPtr<GVariant> variant =
       dont_AddRef(g_variant_ref_sink(g_variant_new("(u)", *mInhibitRequestID)));
@@ -394,8 +457,7 @@ void WakeLockTopic::DBusUninhibitScreensaver(const char* aName,
       G_BUS_TYPE_SESSION,
       GDBusProxyFlags(G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS |
                       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES),
-      /* aInterfaceInfo = */ nullptr, aName, aPath, aCall,
-      mUnInhibitCancellable)
+      /* aInterfaceInfo = */ nullptr, aName, aPath, aCall, mCancellable)
       ->Then(
           target, __func__,
           [self = RefPtr{this}, this, args = std::move(variant), target,
@@ -403,20 +465,22 @@ void WakeLockTopic::DBusUninhibitScreensaver(const char* aName,
             WAKE_LOCK_LOG(
                 "WakeLockTopic::DBusUninhibitScreensaver() proxy created");
             DBusProxyCall(aProxy.get(), aMethod, args.get(),
-                          G_DBUS_CALL_FLAGS_NONE, DBUS_TIMEOUT,
-                          mUnInhibitCancellable)
+                          G_DBUS_CALL_FLAGS_NONE, DBUS_TIMEOUT, mCancellable)
                 ->Then(
                     target, __func__,
                     [s = RefPtr{this}, this](RefPtr<GVariant>&& aResult) {
-                      DBusUninhibitSucceeded();
+                      DBusUninhibitReset(true);
                     },
                     [s = RefPtr{this}, this,
                      aMethod](GUniquePtr<GError>&& aError) {
+                      // We may get a broken reply if the peer DBus service was
+                      // restarted. In such case the service is not inhibited
+                      // anymore so we do a DBusUninhibitReset(false).
                       WAKE_LOCK_LOG(
                           "WakeLockTopic::DBusUninhibitFailed() %s call failed "
                           ": %s\n",
                           aMethod, aError->message);
-                      DBusUninhibitFailed();
+                      DBusUninhibitReset(false);
                     });
           },
           [self = RefPtr{this}, this](GUniquePtr<GError>&& aError) {
@@ -429,25 +493,13 @@ void WakeLockTopic::DBusUninhibitScreensaver(const char* aName,
 }
 
 void WakeLockTopic::InhibitFreeDesktopPortal() {
-  WAKE_LOCK_LOG(
-      "WakeLockTopic::InhibitFreeDesktopPortal() mWaitingForDBusInhibit %d "
-      "mWaitingForDBusUninhibit %d",
-      mWaitingForDBusInhibit, mWaitingForDBusUninhibit);
-  if (mWaitingForDBusInhibit) {
-    WAKE_LOCK_LOG("  already waiting to inihibit, return");
-    return;
-  }
-  if (mWaitingForDBusUninhibit) {
-    WAKE_LOCK_LOG("  cancel un-inihibit request");
-    g_cancellable_cancel(mUnInhibitCancellable);
-    mUnInhibitCancellable = nullptr;
-    mWaitingForDBusUninhibit = false;
-  }
-  mWaitingForDBusInhibit = true;
+  WAKE_LOCK_LOG("WakeLockTopic::InhibitFreeDesktopPortal() background %d",
+                mLockOnBackground);
 
-  if (!mInhibitCancellable) {
-    mInhibitCancellable = dont_AddRef(g_cancellable_new());
-  }
+  MOZ_DIAGNOSTIC_ASSERT(!mCancellable);
+  MOZ_DIAGNOSTIC_ASSERT(mState == WaitingToInhibit);
+
+  mCancellable = dont_AddRef(g_cancellable_new());
 
   CreateDBusProxyForBus(
       G_BUS_TYPE_SESSION,
@@ -455,22 +507,25 @@ void WakeLockTopic::InhibitFreeDesktopPortal() {
                       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES),
       nullptr, FREEDESKTOP_PORTAL_DESKTOP_TARGET,
       FREEDESKTOP_PORTAL_DESKTOP_OBJECT, FREEDESKTOP_PORTAL_DESKTOP_INTERFACE,
-      mInhibitCancellable)
+      mCancellable)
       ->Then(
           GetCurrentSerialEventTarget(), __func__,
           [self = RefPtr{this}, this](RefPtr<GDBusProxy>&& aProxy) {
             GVariantBuilder b;
             g_variant_builder_init(&b, G_VARIANT_TYPE_VARDICT);
             g_variant_builder_add(&b, "{sv}", "reason",
-                                  g_variant_new_string(self->mTopic.get()));
-
+                                  g_variant_new_string(self->mNiceTopic.get()));
             // From
             // https://flatpak.github.io/xdg-desktop-portal/docs/#gdbus-org.freedesktop.portal.Inhibit
             DBusProxyCall(
                 aProxy.get(), "Inhibit",
-                g_variant_new("(sua{sv})", g_get_prgname(),
-                              FREEDESKTOP_PORTAL_DESKTOP_INHIBIT_IDLE_FLAG, &b),
-                G_DBUS_CALL_FLAGS_NONE, DBUS_TIMEOUT, mInhibitCancellable)
+                g_variant_new(
+                    "(sua{sv})", g_get_prgname(),
+                    mLockOnBackground
+                        ? FREEDESKTOP_PORTAL_DESKTOP_INHIBIT_SUSPEND_FLAG
+                        : FREEDESKTOP_PORTAL_DESKTOP_INHIBIT_IDLE_FLAG,
+                    &b),
+                G_DBUS_CALL_FLAGS_NONE, DBUS_TIMEOUT, mCancellable)
                 ->Then(
                     GetCurrentSerialEventTarget(), __func__,
                     [s = RefPtr{this}, this](RefPtr<GVariant>&& aResult) {
@@ -510,59 +565,52 @@ void WakeLockTopic::InhibitFreeDesktopPortal() {
 
 void WakeLockTopic::InhibitFreeDesktopScreensaver() {
   WAKE_LOCK_LOG("InhibitFreeDesktopScreensaver()");
+  MOZ_DIAGNOSTIC_ASSERT(!mLockOnBackground,
+                        "Background lock is not supported.");
   DBusInhibitScreensaver(FREEDESKTOP_SCREENSAVER_TARGET,
                          FREEDESKTOP_SCREENSAVER_OBJECT,
                          FREEDESKTOP_SCREENSAVER_INTERFACE, "Inhibit",
                          dont_AddRef(g_variant_ref_sink(g_variant_new(
-                             "(ss)", g_get_prgname(), mTopic.get()))));
+                             "(ss)", g_get_prgname(), mNiceTopic.get()))));
 }
 
 void WakeLockTopic::InhibitFreeDesktopPower() {
   WAKE_LOCK_LOG("InhibitFreeDesktopPower()");
+  MOZ_DIAGNOSTIC_ASSERT(!mLockOnBackground,
+                        "Background lock is not supported.");
   DBusInhibitScreensaver(FREEDESKTOP_POWER_TARGET, FREEDESKTOP_POWER_OBJECT,
                          FREEDESKTOP_POWER_INTERFACE, "Inhibit",
                          dont_AddRef(g_variant_ref_sink(g_variant_new(
-                             "(ss)", g_get_prgname(), mTopic.get()))));
+                             "(ss)", g_get_prgname(), mNiceTopic.get()))));
 }
 
 void WakeLockTopic::InhibitGNOME() {
-  WAKE_LOCK_LOG("InhibitGNOME()");
+  WAKE_LOCK_LOG("InhibitGNOME() background %d", mLockOnBackground);
   static const uint32_t xid = 0;
-  static const uint32_t flags = (1 << 3);  // Inhibit idle
+  static const uint32_t flags = mLockOnBackground
+                                    ? SESSION_MANAGER_INHIBIT_SUSPEND_FLAG
+                                    : SESSION_MANAGER_INHIBIT_IDLE_FLAG;
   DBusInhibitScreensaver(
       SESSION_MANAGER_TARGET, SESSION_MANAGER_OBJECT, SESSION_MANAGER_INTERFACE,
       "Inhibit",
-      dont_AddRef(g_variant_ref_sink(
-          g_variant_new("(susu)", g_get_prgname(), xid, mTopic.get(), flags))));
+      dont_AddRef(g_variant_ref_sink(g_variant_new(
+          "(susu)", g_get_prgname(), xid, mNiceTopic.get(), flags))));
 }
 
 void WakeLockTopic::UninhibitFreeDesktopPortal() {
-  WAKE_LOCK_LOG(
-      "WakeLockTopic::UninhibitFreeDesktopPortal() mWaitingForDBusInhibit %d "
-      "mWaitingForDBusUninhibit %d object path: %s",
-      mWaitingForDBusInhibit, mWaitingForDBusUninhibit,
-      mRequestObjectPath.get());
+  WAKE_LOCK_LOG("WakeLockTopic::UninhibitFreeDesktopPortal() object path: %s",
+                mRequestObjectPath.get());
 
-  if (mWaitingForDBusUninhibit) {
-    WAKE_LOCK_LOG("  already waiting to uninihibit, return");
-    return;
-  }
-
-  if (mWaitingForDBusInhibit) {
-    WAKE_LOCK_LOG("  cancel inihibit request");
-    g_cancellable_cancel(mInhibitCancellable);
-    mInhibitCancellable = nullptr;
-    mWaitingForDBusInhibit = false;
-  }
   if (mRequestObjectPath.IsEmpty()) {
     WAKE_LOCK_LOG("UninhibitFreeDesktopPortal() failed: unknown object path\n");
+    DBusUninhibitFailed();
     return;
   }
-  mWaitingForDBusUninhibit = true;
 
-  if (!mUnInhibitCancellable) {
-    mUnInhibitCancellable = dont_AddRef(g_cancellable_new());
-  }
+  MOZ_DIAGNOSTIC_ASSERT(!mCancellable);
+  MOZ_DIAGNOSTIC_ASSERT(mState == WaitingToUninhibit);
+
+  mCancellable = dont_AddRef(g_cancellable_new());
 
   nsCOMPtr<nsISerialEventTarget> target = GetCurrentSerialEventTarget();
   CreateDBusProxyForBus(
@@ -570,27 +618,29 @@ void WakeLockTopic::UninhibitFreeDesktopPortal() {
       GDBusProxyFlags(G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS |
                       G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES),
       nullptr, FREEDESKTOP_PORTAL_DESKTOP_TARGET, mRequestObjectPath.get(),
-      "org.freedesktop.portal.Request", mUnInhibitCancellable)
+      "org.freedesktop.portal.Request", mCancellable)
       ->Then(
           target, __func__,
           [self = RefPtr{this}, target, this](RefPtr<GDBusProxy>&& aProxy) {
             DBusProxyCall(aProxy.get(), "Close", nullptr,
-                          G_DBUS_CALL_FLAGS_NONE, DBUS_TIMEOUT,
-                          mUnInhibitCancellable)
+                          G_DBUS_CALL_FLAGS_NONE, DBUS_TIMEOUT, mCancellable)
                 ->Then(
                     target, __func__,
                     [s = RefPtr{this}, this](RefPtr<GVariant>&& aResult) {
-                      DBusUninhibitSucceeded();
+                      DBusUninhibitReset(true);
                       WAKE_LOCK_LOG(
                           "WakeLockTopic::UninhibitFreeDesktopPortal() Inhibit "
                           "removed\n");
                     },
                     [s = RefPtr{this}, this](GUniquePtr<GError>&& aError) {
-                      DBusUninhibitFailed();
+                      // We may get a broken reply if the peer DBus service was
+                      // restarted. In such case the service is not inhibited
+                      // anymore so we do a DBusUninhibitReset(false).
                       WAKE_LOCK_LOG(
                           "WakeLockTopic::UninhibitFreeDesktopPortal() "
                           "Removing inhibit failed: %s\n",
                           aError->message);
+                      DBusUninhibitReset(false);
                     });
           },
           [self = RefPtr{this}, this](GUniquePtr<GError>&& aError) {
@@ -677,6 +727,9 @@ bool WakeLockTopic::CheckXScreenSaverSupport() {
 bool WakeLockTopic::InhibitXScreenSaver(bool inhibit) {
   WAKE_LOCK_LOG("InhibitXScreenSaver %d", inhibit);
 
+  // Set failed state now to remove WaitingTo* one
+  mState = inhibit ? Uninhibited : Inhibited;
+
   // Should only be called if CheckXScreenSaverSupport returns true.
   // There's a couple of safety checks here nonetheless.
   if (!_XSSSuspend) {
@@ -705,6 +758,9 @@ bool WakeLockTopic::CheckWaylandIdleInhibitSupport() {
 bool WakeLockTopic::InhibitWaylandIdle() {
   WAKE_LOCK_LOG("InhibitWaylandIdle()");
 
+  // Set failed state now to remove WaitingTo* one
+  mState = Uninhibited;
+
   nsWaylandDisplay* waylandDisplay = WaylandDisplayGet();
   if (!waylandDisplay) {
     return false;
@@ -717,12 +773,13 @@ bool WakeLockTopic::InhibitWaylandIdle() {
 
   UninhibitWaylandIdle();
 
-  MozContainerSurfaceLock lock(focusedWindow->GetMozContainer());
-  struct wl_surface* waylandSurface = lock.GetSurface();
-  if (waylandSurface) {
-    mWaylandInhibitor = zwp_idle_inhibit_manager_v1_create_inhibitor(
-        waylandDisplay->GetIdleInhibitManager(), waylandSurface);
-    mState = Inhibited;
+  if (GdkWindow* window = focusedWindow->GetGdkWindow()) {
+    wl_surface* waylandSurface = gdk_wayland_window_get_wl_surface(window);
+    if (waylandSurface) {
+      mWaylandInhibitor = zwp_idle_inhibit_manager_v1_create_inhibitor(
+          waylandDisplay->GetIdleInhibitManager(), waylandSurface);
+      mState = Inhibited;
+    }
   }
 
   WAKE_LOCK_LOG("InhibitWaylandIdle() %s",
@@ -746,10 +803,9 @@ bool WakeLockTopic::UninhibitWaylandIdle() {
 
 bool WakeLockTopic::SendInhibit() {
   WAKE_LOCK_LOG("WakeLockTopic::SendInhibit() WakeLockType %s",
-                WakeLockTypeNames[sWakeLockType]);
-  MOZ_ASSERT(sWakeLockType != Initial);
-
-  switch (sWakeLockType) {
+                WakeLockTypeNames[GetWakeLockType()]);
+  MOZ_ASSERT(GetWakeLockType() != Initial);
+  switch (GetWakeLockType()) {
 #if defined(MOZ_ENABLE_DBUS)
     case FreeDesktopPortal:
       InhibitFreeDesktopPortal();
@@ -780,9 +836,9 @@ bool WakeLockTopic::SendInhibit() {
 
 bool WakeLockTopic::SendUninhibit() {
   WAKE_LOCK_LOG("WakeLockTopic::SendUninhibit() WakeLockType %s",
-                WakeLockTypeNames[sWakeLockType]);
-  MOZ_ASSERT(sWakeLockType != Initial);
-  switch (sWakeLockType) {
+                WakeLockTypeNames[GetWakeLockType()]);
+  MOZ_ASSERT(GetWakeLockType() != Initial);
+  switch (GetWakeLockType()) {
 #if defined(MOZ_ENABLE_DBUS)
     case FreeDesktopPortal:
       UninhibitFreeDesktopPortal();
@@ -813,57 +869,93 @@ bool WakeLockTopic::SendUninhibit() {
 
 nsresult WakeLockTopic::InhibitScreensaver() {
   WAKE_LOCK_LOG("WakeLockTopic::InhibitScreensaver() state %s",
-                GetInhibitStateName());
-
-  if (mState == Inhibited || mState == WaitingToInhibit) {
+                GetInhibitStateName(mState));
+  // We're broken, don't even try
+  if (GetWakeLockType() == Unsupported) {
+    return NS_ERROR_FAILURE;
+  }
+  mStateQueue.push(Inhibited);
+  if (mState == WaitingToInhibit || mState == WaitingToUninhibit) {
     return NS_OK;
   }
-  mState = WaitingToInhibit;
-
-  // Iterate through wake lock types in case of failure.
-  while (!SendInhibit()) {
-    // We don't switch away from native locks. Just try again.
-    if (IsNativeWakeLock(sWakeLockType)) {
-      return NS_ERROR_FAILURE;
-    }
-    if (!SwitchToNextWakeLockType()) {
-      return NS_ERROR_FAILURE;
-    }
-  }
-
-  return (sWakeLockType != Unsupported) ? NS_OK : NS_ERROR_FAILURE;
+  return ProcessNextRequest();
 }
 
 nsresult WakeLockTopic::UninhibitScreensaver() {
   WAKE_LOCK_LOG("WakeLockTopic::UnInhibitScreensaver() state %s",
-                GetInhibitStateName());
-
-  if (mState == Uninhibited || mState == WaitingToUninhibit) {
+                GetInhibitStateName(mState));
+  // We're broken, don't even try
+  if (GetWakeLockType() == Unsupported) {
+    return NS_ERROR_FAILURE;
+  }
+  mStateQueue.push(Uninhibited);
+  if (mState == WaitingToInhibit || mState == WaitingToUninhibit) {
     return NS_OK;
   }
-  mState = WaitingToUninhibit;
+  return ProcessNextRequest();
+}
 
-  // Don't switch wake lock type in case of failure.
-  // We need to use the same lock/unlock type.
-  return SendUninhibit() ? NS_OK : NS_ERROR_FAILURE;
+nsresult WakeLockTopic::ProcessNextRequest() {
+  WAKE_LOCK_LOG("WakeLockTopic::ProcessNextRequest(): recent state %s",
+                GetInhibitStateName(mState));
+  MOZ_DIAGNOSTIC_ASSERT(mState == Inhibited || mState == Uninhibited);
+
+  while (!mStateQueue.empty()) {
+    WakeLockState nextState = mStateQueue.front();
+    mStateQueue.pop();
+
+    WAKE_LOCK_LOG("WakeLockTopic::ProcessNextRequest(): next state %s",
+                  GetInhibitStateName(nextState));
+
+    if (nextState == mState) {
+      continue;
+    }
+
+    switch (nextState) {
+      case Inhibited:
+        mState = WaitingToInhibit;
+        return SendInhibit() ? NS_OK : NS_ERROR_FAILURE;
+        break;
+      case Uninhibited:
+        mState = WaitingToUninhibit;
+        return SendUninhibit() ? NS_OK : NS_ERROR_FAILURE;
+      default:
+        MOZ_DIAGNOSTIC_CRASH("Wrong state!");
+        return NS_ERROR_FAILURE;
+    }
+  }
+
+  WAKE_LOCK_LOG("WakeLockTopic::ProcessNextRequest(): empty queue");
+  return NS_OK;
 }
 
 void WakeLockTopic::Shutdown() {
-  WAKE_LOCK_LOG("WakeLockTopic::Shutdown() state %s", GetInhibitStateName());
-  UninhibitScreensaver();
+  WAKE_LOCK_LOG("WakeLockTopic::Shutdown() state %s",
+                GetInhibitStateName(mState));
+#if defined(MOZ_ENABLE_DBUS)
+  if (mCancellable) {
+    g_cancellable_cancel(mCancellable);
+    mCancellable = nullptr;
+  }
+#endif
 }
 
 bool WakeLockTopic::IsWakeLockTypeAvailable(int aWakeLockType) {
   switch (aWakeLockType) {
 #if defined(MOZ_ENABLE_DBUS)
-    case FreeDesktopPortal:
     case FreeDesktopScreensaver:
     case FreeDesktopPower:
+      // Doesn't support background inihibit
+      return !mLockOnBackground;
+    case FreeDesktopPortal:
     case GNOME:
       return true;
 #endif
 #if defined(MOZ_X11)
     case XScreenSaver:
+      if (mLockOnBackground) {
+        return false;
+      }
       if (!GdkIsX11Display()) {
         return false;
       }
@@ -875,6 +967,9 @@ bool WakeLockTopic::IsWakeLockTypeAvailable(int aWakeLockType) {
 #endif
 #if defined(MOZ_WAYLAND)
     case WaylandIdleInhibit:
+      if (mLockOnBackground) {
+        return false;
+      }
       if (!GdkIsWaylandDisplay()) {
         return false;
       }
@@ -904,36 +999,55 @@ bool WakeLockTopic::IsNativeWakeLock(int aWakeLockType) {
   }
 }
 
+void WakeLockTopic::InitializeWakeLockType() {
+  if (!mLockOnBackground) {
+    int lock = GetWakeLockTypeFromEnv();
+    if (lock != Initial) {
+      WAKE_LOCK_LOG("MOZ_WAKE_LOCK_TYPE set: %s", WakeLockTypeNames[lock]);
+      if (IsWakeLockTypeAvailable(lock)) {
+        SetWakeLockType(lock);
+        return;
+      }
+      WAKE_LOCK_LOG(
+          "Requested WakeLockType %s not available, falling back to "
+          "auto-detection",
+          WakeLockTypeNames[lock]);
+    }
+  }
+  // Fall back to automatic detection
+  SwitchToNextWakeLockType();
+}
+
 bool WakeLockTopic::SwitchToNextWakeLockType() {
   WAKE_LOCK_LOG("WakeLockTopic::SwitchToNextWakeLockType() WakeLockType %s",
-                WakeLockTypeNames[sWakeLockType]);
+                WakeLockTypeNames[GetWakeLockType()]);
 
-  if (sWakeLockType == Unsupported) {
+  if (GetWakeLockType() == Unsupported) {
     return false;
   }
 
 #ifdef MOZ_LOGGING
   auto printWakeLocktype = MakeScopeExit([&] {
     WAKE_LOCK_LOG("  switched to WakeLockType %s",
-                  WakeLockTypeNames[sWakeLockType]);
+                  WakeLockTypeNames[GetWakeLockType()]);
   });
 #endif
 
 #if defined(MOZ_ENABLE_DBUS)
-  if (IsDBusWakeLock(sWakeLockType)) {
-    // We're switching out of DBus wakelock - clear our recent DBus states.
-    mWaitingForDBusInhibit = false;
-    mWaitingForDBusUninhibit = false;
+  if (IsDBusWakeLock(GetWakeLockType())) {
     mState = Uninhibited;
+    mCancellable = nullptr;
     ClearDBusInhibitToken();
   }
 #endif
 
-  while (sWakeLockType != Unsupported) {
-    sWakeLockType++;
-    if (IsWakeLockTypeAvailable(sWakeLockType)) {
+  while (GetWakeLockType() != Unsupported) {
+    SetWakeLockType(GetWakeLockType() + 1);
+    if (IsWakeLockTypeAvailable(GetWakeLockType())) {
       return true;
     }
+    WAKE_LOCK_LOG("  WakeLockType %s is not available",
+                  WakeLockTypeNames[GetWakeLockType()]);
   }
   return false;
 }
@@ -941,27 +1055,53 @@ bool WakeLockTopic::SwitchToNextWakeLockType() {
 WakeLockListener::WakeLockListener() = default;
 
 WakeLockListener::~WakeLockListener() {
-  for (const auto& topic : mTopics.Values()) {
+  for (const auto& topic : mForegroundTopics.Values()) {
     topic->Shutdown();
+  }
+  for (const auto& topic : mBackgroundTopics.Values()) {
+    topic->Shutdown();
+  }
+}
+
+void WakeLockListener::SetState(const nsAString& topic, bool aBackground,
+                                bool aInhibit) {
+  WAKE_LOCK_LOG(
+      "WakeLockListener::SetState() topic %s background %d inhibit %d",
+      NS_ConvertUTF16toUTF8(topic).get(), aBackground, aInhibit);
+
+  nsRefPtrHashtable<nsStringHashKey, WakeLockTopic>* topicTable =
+      aBackground ? &mBackgroundTopics : &mForegroundTopics;
+  RefPtr<WakeLockTopic> topicLock = topicTable->LookupOrInsertWith(
+      topic, [&] { return MakeRefPtr<WakeLockTopic>(topic, aBackground); });
+
+  if (aInhibit) {
+    topicLock->InhibitScreensaver();
+  } else {
+    topicLock->UninhibitScreensaver();
   }
 }
 
 nsresult WakeLockListener::Callback(const nsAString& topic,
                                     const nsAString& state) {
+  WAKE_LOCK_LOG("WakeLockListener::Callback() topic %s state %s",
+                NS_ConvertUTF16toUTF8(topic).get(),
+                NS_ConvertUTF16toUTF8(state).get());
   if (!topic.Equals(u"screen"_ns) && !topic.Equals(u"video-playing"_ns) &&
-      !topic.Equals(u"autoscroll"_ns)) {
+      !topic.Equals(u"autoscroll"_ns) && !topic.Equals(u"audio-playing"_ns)) {
     return NS_OK;
   }
 
-  RefPtr<WakeLockTopic> topicLock = mTopics.LookupOrInsertWith(
-      topic, [&] { return MakeRefPtr<WakeLockTopic>(topic); });
+  bool backgroundLock = state.EqualsLiteral("locked-background");
+  bool shouldLock = state.EqualsLiteral("locked-background") ||
+                    state.EqualsLiteral("locked-foreground");
 
-  // Treat "locked-background" the same as "unlocked" on desktop linux.
-  bool shouldLock = state.EqualsLiteral("locked-foreground");
-  WAKE_LOCK_LOG("WakeLockListener topic %s state %s request lock %d",
-                NS_ConvertUTF16toUTF8(topic).get(),
-                NS_ConvertUTF16toUTF8(state).get(), shouldLock);
+  // If there's a switch between lock types (background / foreground) we need to
+  // un-inhibit a complementary one.
+  SetState(topic, !backgroundLock, /* aInhibited */ false);
 
-  return shouldLock ? topicLock->InhibitScreensaver()
-                    : topicLock->UninhibitScreensaver();
+  // And set requested one accordingly. Uninhibit state doesn't hold
+  // foreground/background state so release both.
+  SetState(topic, backgroundLock, /* aInhibited */ shouldLock);
+
+  return NS_OK;
 }

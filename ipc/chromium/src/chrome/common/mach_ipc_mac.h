@@ -12,8 +12,9 @@
 #include <sys/types.h>
 
 #include "mozilla/Maybe.h"
-#include "mozilla/Result.h"
+#include "mozilla/MozPromise.h"
 #include "mozilla/UniquePtrExtensions.h"
+#include "mozilla/ipc/LaunchError.h"
 
 //==============================================================================
 // Helper function for sending a minimal mach IPC messages with a single send
@@ -35,5 +36,25 @@ kern_return_t MachReceivePortSendRight(
     mozilla::Maybe<mach_msg_timeout_t> opt_timeout,
     mozilla::UniqueMachSendRight* attachment,
     audit_token_t* audit_token = nullptr);
+
+#ifdef XP_MACOSX
+//==============================================================================
+// Called by XRE_InitChildProcess to check-in with the parent process, sending
+// the child process task port to the parent, and receiving any ports sent by
+// the parent process.
+bool MachChildProcessCheckIn(
+    const char* bootstrap_service_name, mach_msg_timeout_t timeout,
+    std::vector<mozilla::UniqueMachSendRight>& send_rights);
+
+//==============================================================================
+// Called by MacProcessLauncher to transfer ports to the child process, and
+// acquire the child process task port.
+using MachHandleProcessCheckInPromise =
+    mozilla::MozPromise<task_t, mozilla::ipc::LaunchError, true>;
+RefPtr<MachHandleProcessCheckInPromise> MachHandleProcessCheckIn(
+    mozilla::UniqueMachReceiveRight endpoint, pid_t child_pid,
+    mozilla::TimeDuration timeout,
+    std::vector<mozilla::UniqueMachSendRight> send_rights);
+#endif
 
 #endif  // BASE_MACH_IPC_MAC_H_

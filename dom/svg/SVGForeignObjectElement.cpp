@@ -6,12 +6,11 @@
 
 #include "mozilla/dom/SVGForeignObjectElement.h"
 
+#include "SVGGeometryProperty.h"
 #include "mozilla/AlreadyAddRefed.h"
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/dom/SVGDocument.h"
 #include "mozilla/dom/SVGForeignObjectElementBinding.h"
 #include "mozilla/dom/SVGLengthBinding.h"
-#include "SVGGeometryProperty.h"
 
 NS_IMPL_NS_NEW_SVG_ELEMENT(ForeignObject)
 
@@ -68,27 +67,16 @@ already_AddRefed<DOMSVGAnimatedLength> SVGForeignObjectElement::Height() {
 //----------------------------------------------------------------------
 // SVGElement methods
 
-/* virtual */
-gfxMatrix SVGForeignObjectElement::PrependLocalTransformsTo(
-    const gfxMatrix& aMatrix, SVGTransformTypes aWhich) const {
-  // 'transform' attribute:
-  if (aWhich == eUserSpaceToParent) {
-    return aMatrix;
-  }
+gfxMatrix SVGForeignObjectElement::ChildToUserSpaceTransform() const {
   // our 'x' and 'y' attributes:
   float x, y;
-
   if (!SVGGeometryProperty::ResolveAll<SVGT::X, SVGT::Y>(this, &x, &y)) {
     // This function might be called for element in display:none subtree
     // (e.g. getScreenCTM), we fall back to use SVG attributes.
     const_cast<SVGForeignObjectElement*>(this)->GetAnimatedLengthValues(
         &x, &y, nullptr);
   }
-
-  gfxMatrix toUserSpace = gfxMatrix::Translation(x, y);
-  MOZ_ASSERT(aWhich == eAllTransforms || aWhich == eChildToUserSpace,
-             "Unknown TransformTypes");
-  return toUserSpace * aMatrix;
+  return gfxMatrix::Translation(x, y);
 }
 
 /* virtual */
@@ -116,10 +104,10 @@ SVGForeignObjectElement::IsAttributeMapped(const nsAtom* name) const {
 
 SVGElement::LengthAttributesInfo SVGForeignObjectElement::GetLengthInfo() {
   return LengthAttributesInfo(mLengthAttributes, sLengthInfo,
-                              ArrayLength(sLengthInfo));
+                              std::size(sLengthInfo));
 }
 
-nsCSSPropertyID SVGForeignObjectElement::GetCSSPropertyIdForAttrEnum(
+NonCustomCSSPropertyId SVGForeignObjectElement::GetCSSPropertyIdForAttrEnum(
     uint8_t aAttrEnum) {
   switch (aAttrEnum) {
     case ATTR_X:

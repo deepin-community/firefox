@@ -6,21 +6,14 @@
 ### These strings are used inside the Accessibility panel.
 
 accessibility-learn-more = Ɓeydu humpito
-
 accessibility-keyboard-header = Tappirde
-
-## Text entries that are used as text alternative for icons that depict accessibility isses.
-
-## These strings are used in the overlay displayed when running an audit in the accessibility panel
 
 ## Text entries that are used as text alternative for icons that depict accessibility issues.
 
 accessibility-warning =
     .alt = Deentingol
-
 accessibility-fail =
     .alt = Juumre
-
 accessibility-best-practices =
     .alt = Golle Ɓurɗe
 
@@ -29,8 +22,3 @@ accessibility-best-practices =
 ## with its text label or accessible name.
 
 accessibility-text-label-issue-document-title = Piilanɗe ina poti jogaade <code>tiitoonde</code>.<a>Ɓeydu humpito</a>
-
-## Text entries for a paragraph used in the accessibility panel sidebar's checks section
-## that describe that currently selected accessible object has a keyboard accessibility
-## issue.
-

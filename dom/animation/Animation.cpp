@@ -6,30 +6,30 @@
 
 #include "Animation.h"
 
-#include "mozilla/Likely.h"
-#include "nsIFrame.h"
 #include "AnimationUtils.h"
+#include "ScrollTimelineAnimationTracker.h"
 #include "mozAutoDocUpdate.h"
+#include "mozilla/AnimationEventDispatcher.h"
+#include "mozilla/AnimationTarget.h"
+#include "mozilla/AutoRestore.h"
+#include "mozilla/CycleCollectedJSContext.h"
+#include "mozilla/DeclarationBlock.h"
+#include "mozilla/Likely.h"
+#include "mozilla/Maybe.h"  // For Maybe
+#include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/dom/AnimationBinding.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/DocumentInlines.h"
 #include "mozilla/dom/DocumentTimeline.h"
 #include "mozilla/dom/MutationObservers.h"
 #include "mozilla/dom/Promise.h"
-#include "mozilla/AnimationEventDispatcher.h"
-#include "mozilla/AnimationTarget.h"
-#include "mozilla/AutoRestore.h"
-#include "mozilla/CycleCollectedJSContext.h"
-#include "mozilla/DeclarationBlock.h"
-#include "mozilla/Maybe.h"  // For Maybe
-#include "mozilla/StaticPrefs_dom.h"
 #include "nsAnimationManager.h"  // For CSSAnimation
 #include "nsComputedDOMStyle.h"
-#include "nsDOMMutationObserver.h"    // For nsAutoAnimationMutationBatch
 #include "nsDOMCSSAttrDeclaration.h"  // For nsDOMCSSAttributeDeclaration
+#include "nsDOMMutationObserver.h"    // For nsAutoAnimationMutationBatch
+#include "nsIFrame.h"
 #include "nsThreadUtils.h"  // For nsRunnableMethod and nsRevocableEventPtr
 #include "nsTransitionManager.h"  // For CSSTransition
-#include "ScrollTimelineAnimationTracker.h"
 
 namespace mozilla::dom {
 
@@ -458,6 +458,38 @@ void Animation::SetCurrentTimeNoUpdate(const TimeDuration& aSeekTime) {
   UpdateTiming(SeekFlag::DidSeek, SyncNotifyFlag::Async);
 }
 
+// https://drafts.csswg.org/web-animations-2/#the-overall-progress-of-an-animation
+Nullable<double> Animation::GetOverallProgress() const {
+  Nullable<double> result;
+  if (!mEffect) {
+    return result;
+  }
+  const Nullable<TimeDuration> currentTime = GetCurrentTimeAsDuration();
+  if (currentTime.IsNull()) {
+    return result;
+  }
+
+  const StickyTimeDuration endTime = EffectEnd();
+  if (endTime.IsZero()) {
+    if (currentTime.Value() < TimeDuration(0)) {
+      result.SetValue(0.0);
+    } else {
+      result.SetValue(1.0);
+    }
+    return result;
+  }
+
+  if (endTime == StickyTimeDuration::Forever()) {
+    result.SetValue(0.0);
+    return result;
+  }
+
+  auto overallProgress =
+      std::min(std::max(currentTime.Value() / endTime, 0.0), 1.0);
+  result.SetValue(overallProgress);
+  return result;
+}
+
 // https://drafts.csswg.org/web-animations/#set-the-playback-rate
 void Animation::SetPlaybackRate(double aPlaybackRate) {
   mPendingPlaybackRate.reset();
@@ -803,7 +835,7 @@ void Animation::CommitStyles(ErrorResult& aRv) {
     return;
   }
 
-  if (target.mPseudoType != PseudoStyleType::NotPseudo) {
+  if (!target.mPseudoRequest.IsNotPseudo()) {
     return aRv.ThrowNoModificationAllowedError(
         "Can't commit styles of a pseudo-element");
   }
@@ -838,7 +870,10 @@ void Animation::CommitStyles(ErrorResult& aRv) {
   UniquePtr<StyleAnimationValueMap> animationValues(
       Servo_AnimationValueMap_Create());
   if (!presContext->EffectCompositor()->ComposeServoAnimationRuleForEffect(
-          *keyframeEffect, CascadeLevel(), animationValues.get())) {
+          *keyframeEffect, CascadeLevel(), animationValues.get(),
+          StaticPrefs::dom_animations_commit_styles_endpoint_inclusive()
+              ? EndpointBehavior::Inclusive
+              : EndpointBehavior::Exclusive)) {
     NS_WARNING("Failed to compose animation style to commit");
     return;
   }
@@ -870,7 +905,7 @@ void Animation::CommitStyles(ErrorResult& aRv) {
   // Set the animated styles
   bool changed = false;
   const AnimatedPropertyIDSet& properties = keyframeEffect->GetPropertySet();
-  for (const AnimatedPropertyID& property : properties) {
+  for (const CSSPropertyId& property : properties) {
     RefPtr<StyleAnimationValue> computedValue =
         Servo_AnimationValueMap_GetValue(animationValues.get(), &property)
             .Consume();
@@ -1192,23 +1227,32 @@ void Animation::Remove() {
   QueuePlaybackEvent(nsGkAtoms::onremove, GetTimelineCurrentTimeAsTimeStamp());
 }
 
-bool Animation::HasLowerCompositeOrderThan(const Animation& aOther) const {
+int32_t Animation::CompareCompositeOrder(
+    const Maybe<EventContext>& aContext, const Animation& aOther,
+    const Maybe<EventContext>& aOtherContext,
+    nsContentUtils::NodeIndexCache& aCache) const {
   // 0. Object-equality case
   if (&aOther == this) {
-    return false;
+    return 0;
   }
 
   // 1. CSS Transitions sort lowest
   {
     auto asCSSTransitionForSorting =
-        [](const Animation& anim) -> const CSSTransition* {
+        [](const Animation& anim,
+           const Maybe<EventContext>& aContext) -> const CSSTransition* {
       const CSSTransition* transition = anim.AsCSSTransition();
-      return transition && transition->IsTiedToMarkup() ? transition : nullptr;
+      return transition && (aContext || transition->IsTiedToMarkup())
+                 ? transition
+                 : nullptr;
     };
-    auto thisTransition = asCSSTransitionForSorting(*this);
-    auto otherTransition = asCSSTransitionForSorting(aOther);
+    const auto* const thisTransition =
+        asCSSTransitionForSorting(*this, aContext);
+    const auto* const otherTransition =
+        asCSSTransitionForSorting(aOther, aOtherContext);
     if (thisTransition && otherTransition) {
-      return thisTransition->HasLowerCompositeOrderThan(*otherTransition);
+      return thisTransition->CompareCompositeOrder(aContext, *otherTransition,
+                                                   aOtherContext, aCache);
     }
     if (thisTransition || otherTransition) {
       // Cancelled transitions no longer have an owning element. To be strictly
@@ -1222,7 +1266,7 @@ bool Animation::HasLowerCompositeOrderThan(const Animation& aOther) const {
       // (which is our only hard requirement until specs say otherwise).
       // Furthermore, we only reach here when we have events with equal
       // timestamps so this is an edge case we can probably ignore for now.
-      return thisTransition;
+      return thisTransition ? -1 : 1;
     }
   }
 
@@ -1236,10 +1280,10 @@ bool Animation::HasLowerCompositeOrderThan(const Animation& aOther) const {
     auto thisAnimation = asCSSAnimationForSorting(*this);
     auto otherAnimation = asCSSAnimationForSorting(aOther);
     if (thisAnimation && otherAnimation) {
-      return thisAnimation->HasLowerCompositeOrderThan(*otherAnimation);
+      return thisAnimation->CompareCompositeOrder(*otherAnimation, aCache);
     }
     if (thisAnimation || otherAnimation) {
-      return thisAnimation;
+      return thisAnimation ? -1 : 1;
     }
   }
 
@@ -1252,7 +1296,7 @@ bool Animation::HasLowerCompositeOrderThan(const Animation& aOther) const {
 
   // 3. Finally, generic animations sort by their position in the global
   // animation array.
-  return mAnimationIndex < aOther.mAnimationIndex;
+  return mAnimationIndex > aOther.mAnimationIndex ? 1 : -1;
 }
 
 void Animation::WillComposeStyle() {
@@ -1268,7 +1312,8 @@ void Animation::WillComposeStyle() {
 
 void Animation::ComposeStyle(
     StyleAnimationValueMap& aComposeResult,
-    const InvertibleAnimatedPropertyIDSet& aPropertiesToSkip) {
+    const InvertibleAnimatedPropertyIDSet& aPropertiesToSkip,
+    EndpointBehavior aEndpointBehavior) {
   if (!mEffect) {
     return;
   }
@@ -1322,7 +1367,8 @@ void Animation::ComposeStyle(
 
     KeyframeEffect* keyframeEffect = mEffect->AsKeyframeEffect();
     if (keyframeEffect) {
-      keyframeEffect->ComposeStyle(aComposeResult, aPropertiesToSkip);
+      keyframeEffect->ComposeStyle(aComposeResult, aPropertiesToSkip,
+                                   aEndpointBehavior);
     }
   }
 
@@ -1368,7 +1414,7 @@ static TimeStamp EnsurePaintIsScheduled(Document& aDoc) {
   if (!rd->IsInRefresh()) {
     return {};
   }
-  return rd->MostRecentRefresh(/* aEnsureTimerStarted = */ false);
+  return rd->MostRecentRefresh();
 }
 
 // https://drafts.csswg.org/web-animations/#play-an-animation
@@ -1683,7 +1729,8 @@ void Animation::UpdateEffect(PostRestyleMode aPostRestyle) {
 void Animation::FlushUnanimatedStyle() const {
   if (Document* doc = GetRenderedDocument()) {
     doc->FlushPendingNotifications(
-        ChangesToFlush(FlushType::Style, false /* flush animations */));
+        ChangesToFlush(FlushType::Style, /* aFlushAnimations = */ false,
+                       /* aUpdateRelevancy = */ false));
   }
 }
 

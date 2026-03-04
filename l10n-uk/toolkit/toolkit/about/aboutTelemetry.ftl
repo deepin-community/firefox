@@ -69,7 +69,7 @@ about-telemetry-histogram-stats =
     }
 # Variables:
 #   $telemetryServerOwner (string) - the value of the toolkit.telemetry.server_owner preference. Typically "Mozilla"
-about-telemetry-page-subtitle = Ця сторінка показує інформацію про швидкодію, апаратне забезпечення, використання та налаштування, зібрану за допомогою телеметрії. Ця інформація відправляється до { $telemetryServerOwner }, щоб поліпшити { -brand-full-name }.
+about-telemetry-page-subtitle = Ця сторінка показує інформацію про продуктивність, обладнання, використання та налаштування, зібрану за допомогою телеметрії. Ця інформація відправляється до { $telemetryServerOwner }, щоб поліпшити { -brand-full-name }.
 about-telemetry-settings-explanation = Телеметрія збирає { about-telemetry-data-type } і вивантаження <a data-l10n-name="upload-link">{ about-telemetry-upload-type }</a>
 # Variables:
 #   $name (string) - Ping name, e.g. “saved-session”
@@ -113,7 +113,7 @@ about-telemetry-slow-sql-hits = Попадання
 about-telemetry-slow-sql-average = Середній час (мс)
 about-telemetry-slow-sql-statement = Інструкція
 # these strings are used in the “Add-on Details” section
-about-telemetry-addon-table-id = Ідентифікатор додатку
+about-telemetry-addon-table-id = Ідентифікатор додатка
 about-telemetry-addon-table-details = Подробиці
 # Variables:
 #   $addonProvider (string) - The name of an Add-on Provider (e.g. “XPI”, “Plugin”)

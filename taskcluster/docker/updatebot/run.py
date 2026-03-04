@@ -19,7 +19,7 @@ import requests
 
 import taskcluster
 
-# Bump this number when you need to cause a commit for the job to re-run: 21
+# Bump this number when you need to cause a commit for the job to re-run: 22
 
 if len(sys.argv) < 3:
     print("Usage:", sys.argv[0], "gecko-dev-path updatebot-path [moz-fetches-dir]")
@@ -57,7 +57,8 @@ def get_secret(name):
     secret = None
     if "TASK_ID" in os.environ:
         secrets_url = (
-            "http://taskcluster/secrets/v1/secret/project/updatebot/"
+            os.environ.get("TASKCLUSTER_PROXY_URL", "http://taskcluster")
+            + "/secrets/v1/secret/project/updatebot/"
             + ("3" if OPERATING_MODE == "prod" else "2")
             + "/"
             + name
@@ -104,7 +105,7 @@ if OPERATING_MODE == "dev":
     log("Performing git repo update...")
     command = ["git", "symbolic-ref", "-q", "HEAD"]
 
-    r = subprocess.run(command)
+    r = subprocess.run(command, check=False)
     if r.returncode == 0:
         # This indicates we are on a branch, and not a specific revision
         subprocess.check_call(["git", "pull", "origin"])
@@ -134,9 +135,7 @@ towrite = """
     }
   }
 }
-""".replace(
-    "TOKENHERE", phabricator_token
-).replace(
+""".replace("TOKENHERE", phabricator_token).replace(
     "PHAB_URL_HERE", phabricator_url + "api/"
 )
 arcrc.write(towrite)

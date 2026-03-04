@@ -14,12 +14,23 @@ ChromeUtils.defineESModuleGetters(lazy, {
 });
 
 XPCOMUtils.defineLazyServiceGetters(lazy, {
-  BrowserHandler: ["@mozilla.org/browser/clh;1", "nsIBrowserHandler"],
+  BrowserHandler: ["@mozilla.org/browser/clh;1", Ci.nsIBrowserHandler],
 });
+
+XPCOMUtils.defineLazyPreferenceGetter(
+  lazy,
+  "TEXT_FRAGMENTS_ENABLED",
+  "dom.text_fragments.enabled",
+  false
+);
 
 export class ContextMenuParent extends JSWindowActorParent {
   receiveMessage(message) {
     let browser = this.manager.rootFrameLoader.ownerElement;
+    if (browser.hasAttribute("disablecontextmenu")) {
+      return;
+    }
+
     let win = browser.ownerGlobal;
     // It's possible that the <xul:browser> associated with this
     // ContextMenu message doesn't belong to a window that actually
@@ -117,10 +128,20 @@ export class ContextMenuParent extends JSWindowActorParent {
     });
   }
 
-  getSearchFieldBookmarkData(targetIdentifier) {
-    return this.sendQuery("ContextMenu:SearchFieldBookmarkData", {
+  getSearchFieldEngineData(targetIdentifier) {
+    return this.sendQuery("ContextMenu:SearchFieldEngineData", {
       targetIdentifier,
     });
+  }
+
+  getTextDirective() {
+    return lazy.TEXT_FRAGMENTS_ENABLED
+      ? this.sendQuery("ContextMenu:GetTextDirective")
+      : null;
+  }
+
+  removeAllTextFragments() {
+    return this.sendQuery("ContextMenu:RemoveAllTextFragments");
   }
 
   /**

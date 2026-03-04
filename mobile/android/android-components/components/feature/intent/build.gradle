@@ -6,41 +6,28 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    defaultConfig {
-        minSdkVersion config.minSdkVersion
-        compileSdk config.compileSdkVersion
-        targetSdkVersion config.targetSdkVersion
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-
-    namespace 'mozilla.components.feature.intent'
+    namespace = 'mozilla.components.feature.intent'
 }
-
 
 dependencies {
-    implementation project(':concept-engine')
-    implementation project(':browser-state')
-    implementation project(':feature-search')
-    implementation project(':feature-session')
-    implementation project(':feature-tabs')
-    implementation project(':support-utils')
-    implementation project(':support-ktx')
+    implementation project(':components:browser-state')
+    implementation project(':components:concept-engine')
+    implementation project(':components:feature-search')
+    implementation project(':components:feature-session')
+    implementation project(':components:feature-tabs')
+    implementation project(':components:support-ktx')
+    implementation project(':components:support-utils')
 
-    testImplementation project(':support-test')
-    testImplementation project(':support-test-libstate')
-    testImplementation ComponentsDependencies.androidx_browser
-    testImplementation ComponentsDependencies.androidx_test_junit
-    testImplementation ComponentsDependencies.testing_robolectric
-    testImplementation ComponentsDependencies.kotlin_coroutines
-    testImplementation ComponentsDependencies.testing_coroutines
+    testImplementation project(':components:support-test')
+    testImplementation project(':components:support-test-libstate')
+
+    testImplementation libs.androidx.browser
+    testImplementation libs.androidx.test.junit
+    testImplementation libs.kotlinx.coroutines
+    testImplementation libs.kotlinx.coroutines.test
+    testImplementation libs.robolectric
 }
 
-apply from: '../../../android-lint.gradle'
+apply from: '../../../common-config.gradle'
 apply from: '../../../publish.gradle'
-ext.configurePublish(config.componentsGroupId, archivesBaseName, project.ext.description)
+ext.configurePublish(config.componentsGroupId, project.name, project.ext.description)

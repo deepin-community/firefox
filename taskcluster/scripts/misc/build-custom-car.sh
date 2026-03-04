@@ -11,6 +11,7 @@ shift
 CONFIG=$(echo $* | tr -d "'")
 
 # Android build flag
+IS_ANDROID=false
 if [[ "$ARTIFACT_NAME" == *"android"* ]]; then
   IS_ANDROID=true
 fi
@@ -59,7 +60,14 @@ fi
 # Logic for macosx64
 if [[ $(uname -s) == "Darwin" ]]; then
   # Modify the config with fetched sdk path
-  export MACOS_SYSROOT="$MOZ_FETCHES_DIR/MacOSX14.4.sdk"
+  export MACOS_SYSROOT="$MOZ_FETCHES_DIR/MacOSX26.2.sdk"
+  # Bug 1990712 & 1989676
+  # HACK: Create a stub DarwinBasic.modulemap to satisfy Ninja’s dependency graph.
+  # This file does not exist in Command Line Tools SDKs. It seems only the full
+  # Xcode SDK includes DarwinBasic/DarwinFoundation modulemaps.
+  mkdir -p "$MACOS_SYSROOT/usr/include"
+  touch "$MACOS_SYSROOT/usr/include/DarwinFoundation.modulemap"
+
 
   # Avoid mixing up the system python and toolchain python in the
   # python path configuration
@@ -110,7 +118,7 @@ if [[ $(uname -o) == "Msys" ]]; then
   pushd "$WINDOWSSDKDIR"
   mkdir -p Debuggers/x64/
   popd
-  mv $MOZ_FETCHES_DIR/VS/VC/Redist/MSVC/14.38.33135/x64/Microsoft.VC143.CRT/* chrome_dll/system32/
+  mv $MOZ_FETCHES_DIR/VS/VC/Redist/MSVC/14.44.35112/x64/Microsoft.VC143.CRT/* chrome_dll/system32/
   mv "$WINDOWSSDKDIR/App Certification Kit/"* "$WINDOWSSDKDIR"/Debuggers/x64/
   export WINDIR="$PWD/chrome_dll"
 
@@ -168,7 +176,7 @@ fi
 # Now we can run hooks and fetch PGO + everything else
 gclient runhooks
 
-# PGO data should be in src/chrome/build/pgo_profiles/ 
+# PGO data should be in src/chrome/build/pgo_profiles/
 # with a name like "chrome-{OS}-<some unique identifier>"
 export PGO_DATA_DIR="$CUSTOM_CAR_DIR/chromium/src/chrome/build/pgo_profiles"
 for entry in "$PGO_DATA_DIR"/*
@@ -196,6 +204,19 @@ CONFIG=$(echo $CONFIG pgo_data_path='"'$PGO_FILE'"')
 gn gen out/Default --args="$CONFIG"
 autoninja -C out/Default $FINAL_BIN
 
+# Make artifact smaller for win/linux
+if [[ $(uname -s) == "Linux" ]] || [[ $(uname -o) == "Msys" ]]; then
+  if [ "$IS_ANDROID" = false ]; then
+    rm -rf out/Default/.ninjadeps
+    rm -rf out/Default/*_deps
+    rm -rf out/Default/gen/*
+    rm -rf out/Default/obj/*
+    rm -rf out/Default/thinlto-cache
+    rm -rf out/Default/*/gen/*
+    rm -rf out/Default/*/obj/*
+  fi
+fi
+
 # Gather binary and related files into a zip, and upload it
 cd ..
 mkdir chromium
@@ -207,3 +228,12 @@ tar -c chromium | python3 $GECKO_PATH/taskcluster/scripts/misc/zstdpy > $ARTIFAC
 
 mkdir -p $UPLOAD_DIR
 mv "$ARTIFACT_NAME" "$UPLOAD_DIR"
+
+if [ "$IS_ANDROID" = true ]; then
+  # Package up symbols (lib.unstripped) from android build separately.
+  SYM_ARTIFACT="car_android_symbols.tar.zst"
+  SYM_DIR="src/out/Default/lib.unstripped"
+  tar -C "$(dirname "$SYM_DIR")" -c "$(basename "$SYM_DIR")" \
+    | python3 "$GECKO_PATH/taskcluster/scripts/misc/zstdpy" > "$SYM_ARTIFACT"
+  mv "$SYM_ARTIFACT" "$UPLOAD_DIR"
+fi

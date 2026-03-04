@@ -23,12 +23,10 @@ const BINDINGS_FILE: &str = "bindings.rs";
 
 lazy_static! {
     static ref BINDGEN_FLAGS: Vec<String> = {
-        // Load build-specific config overrides.
-        let path = mozbuild::TOPOBJDIR.join("tools/profiler/rust-api/extra-bindgen-flags");
-        println!("cargo:rerun-if-changed={}", path.to_str().unwrap());
-        fs::read_to_string(path).expect("Failed to read extra-bindgen-flags file")
-            .split_whitespace()
-            .map(std::borrow::ToOwned::to_owned)
+        mozbuild::config::BINDGEN_SYSTEM_FLAGS
+            .iter()
+            .chain(&mozbuild::config::NSPR_CFLAGS)
+            .map(|s| s.to_string())
             .collect()
     };
     static ref SEARCH_PATHS: Vec<PathBuf> = vec![
@@ -85,11 +83,16 @@ fn generate_bindings() {
         .rustified_enum("mozilla::StackCaptureOptions")
         .rustified_enum("mozilla::MarkerSchema_Location")
         .rustified_enum("mozilla::MarkerSchema_Format")
-        .rustified_enum("mozilla::MarkerSchema_Searchable")
+        .rustified_enum("mozilla::MarkerSchema_PayloadFlags")
         // Converting std::string to an opaque type makes some platforms build
         // successfully. Otherwise, it fails to build because MarkerSchema has
         // some std::strings as its fields.
         .opaque_type("std::string")
+        .opaque_type("std::unique_ptr")
+        .opaque_type("mozilla::Maybe")
+        .opaque_type("mozilla::MallocAllocPolicy")
+        .opaque_type("mozilla::Variant")
+        .opaque_type("mozilla::baseprofiler::UniqueJSONStrings")
         // std::vector needs to be converted to an opaque type because, if it's
         // not an opaque type, bindgen can't find its size properly and
         // MarkerSchema's total size reduces. That causes a heap buffer overflow.

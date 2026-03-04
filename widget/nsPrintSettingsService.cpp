@@ -7,7 +7,6 @@
 
 #include "mozilla/embedding/PPrintingTypes.h"
 #include "mozilla/layout/RemotePrintJobChild.h"
-#include "mozilla/RefPtr.h"
 #include "nsCoord.h"
 #include "nsIPrinterList.h"
 #include "nsReadableUtils.h"
@@ -958,7 +957,7 @@ nsresult nsPrintSettingsService::MaybeSavePrintSettingsToPrefs(
   // defaults and can result in values being inappropriately propagated to
   // prefixed prefs).
   if (prtName.IsEmpty()) {
-    MOZ_DIAGNOSTIC_ASSERT(false, "Print settings must be saved with a prefix");
+    MOZ_DIAGNOSTIC_CRASH("Print settings must be saved with a prefix");
     return NS_ERROR_FAILURE;
   }
 #endif

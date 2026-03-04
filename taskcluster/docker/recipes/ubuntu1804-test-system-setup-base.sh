@@ -11,7 +11,6 @@ sed -i /APT::Install-Recommends/d /etc/apt/apt.conf.d/99taskcluster
 # build a list of packages to be installed nad call it in one go.
 apt_packages=()
 
-apt_packages+=('autoconf2.13')
 apt_packages+=('bluez-cups')
 apt_packages+=('build-essential')
 apt_packages+=('ca-certificates')
@@ -89,9 +88,6 @@ apt_packages+=('xvfb')
 apt_packages+=('xwit')
 apt_packages+=('yasm')
 apt_packages+=('zip')
-
-# xvinfo for test-linux.sh to monitor Xvfb startup
-apt_packages+=('x11-utils')
 
 # Bug 1232407 - this allows the user to start vnc
 apt_packages+=('x11vnc')

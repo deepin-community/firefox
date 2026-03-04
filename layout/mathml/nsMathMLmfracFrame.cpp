@@ -6,20 +6,21 @@
 
 #include "nsMathMLmfracFrame.h"
 
+#include <algorithm>
+
+#include "gfxContext.h"
+#include "gfxMathTable.h"
+#include "gfxTextRun.h"
 #include "gfxUtils.h"
-#include "mozilla/gfx/2D.h"
 #include "mozilla/PresShell.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/StaticPrefs_mathml.h"
-#include "nsLayoutUtils.h"
-#include "nsPresContext.h"
-#include "nsDisplayList.h"
-#include "gfxContext.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/MathMLElement.h"
-#include <algorithm>
-#include "gfxMathTable.h"
-#include "gfxTextRun.h"
+#include "mozilla/gfx/2D.h"
+#include "nsDisplayList.h"
+#include "nsLayoutUtils.h"
+#include "nsPresContext.h"
 
 using namespace mozilla;
 using namespace mozilla::gfx;
@@ -37,9 +38,9 @@ NS_IMPL_FRAMEARENA_HELPERS(nsMathMLmfracFrame)
 
 nsMathMLmfracFrame::~nsMathMLmfracFrame() = default;
 
-eMathMLFrameType nsMathMLmfracFrame::GetMathMLFrameType() {
+MathMLFrameType nsMathMLmfracFrame::GetMathMLFrameType() {
   // frac is "inner" in TeXBook, Appendix G, rule 15e. See also page 170.
-  return eMathMLFrameType_Inner;
+  return MathMLFrameType::Inner;
 }
 
 uint8_t nsMathMLmfracFrame::ScriptIncrement(nsIFrame* aFrame) {
@@ -54,8 +55,10 @@ NS_IMETHODIMP
 nsMathMLmfracFrame::TransmitAutomaticData() {
   // The TeXbook (Ch 17. p.141) says the numerator inherits the compression
   //  while the denominator is compressed
-  UpdatePresentationDataFromChildAt(1, 1, NS_MATHML_COMPRESSED,
-                                    NS_MATHML_COMPRESSED);
+  if (!StaticPrefs::mathml_math_shift_enabled()) {
+    UpdatePresentationDataFromChildAt(1, 1, MathMLPresentationFlag::Compressed,
+                                      MathMLPresentationFlag::Compressed);
+  }
 
   // If displaystyle is false, then scriptlevel is incremented, so notify the
   // children of this.
@@ -68,7 +71,7 @@ nsMathMLmfracFrame::TransmitAutomaticData() {
 
   // if our numerator is an embellished operator, let its state bubble to us
   GetEmbellishDataFrom(mFrames.FirstChild(), mEmbellishData);
-  if (NS_MATHML_IS_EMBELLISH_OPERATOR(mEmbellishData.flags)) {
+  if (mEmbellishData.flags.contains(MathMLEmbellishFlag::EmbellishedOperator)) {
     // even when embellished, we need to record that <mfrac> won't fire
     // Stretch() on its embellished child
     mEmbellishData.direction = NS_STRETCH_DIRECTION_UNSUPPORTED;
@@ -77,9 +80,7 @@ nsMathMLmfracFrame::TransmitAutomaticData() {
   return NS_OK;
 }
 
-nscoord nsMathMLmfracFrame::CalcLineThickness(nsPresContext* aPresContext,
-                                              ComputedStyle* aComputedStyle,
-                                              nsString& aThicknessAttribute,
+nscoord nsMathMLmfracFrame::CalcLineThickness(nsString& aThicknessAttribute,
                                               nscoord onePixel,
                                               nscoord aDefaultRuleThickness,
                                               float aFontSizeInflation) {
@@ -91,17 +92,18 @@ nscoord nsMathMLmfracFrame::CalcLineThickness(nsPresContext* aPresContext,
   // https://w3c.github.io/mathml-core/#dfn-linethickness
   if (!aThicknessAttribute.IsEmpty()) {
     lineThickness = defaultThickness;
-    ParseNumericValue(aThicknessAttribute, &lineThickness,
-                      dom::MathMLElement::PARSE_ALLOW_NEGATIVE, aPresContext,
-                      aComputedStyle, aFontSizeInflation);
+    ParseAndCalcNumericValue(aThicknessAttribute, &lineThickness,
+                             dom::MathMLElement::PARSE_ALLOW_NEGATIVE,
+                             aFontSizeInflation, this);
     // MathML Core says a negative value is interpreted as 0.
     if (lineThickness < 0) {
       lineThickness = 0;
     }
   }
   // use minimum if the lineThickness is a non-zero value less than minimun
-  if (lineThickness && lineThickness < minimumThickness)
+  if (lineThickness && lineThickness < minimumThickness) {
     lineThickness = minimumThickness;
+  }
 
   return lineThickness;
 }
@@ -119,39 +121,34 @@ void nsMathMLmfracFrame::BuildDisplayList(nsDisplayListBuilder* aBuilder,
 
 nsresult nsMathMLmfracFrame::AttributeChanged(int32_t aNameSpaceID,
                                               nsAtom* aAttribute,
-                                              int32_t aModType) {
-  if (nsGkAtoms::linethickness_ == aAttribute) {
+                                              AttrModType aModType) {
+  if (aNameSpaceID == kNameSpaceID_None &&
+      nsGkAtoms::linethickness == aAttribute) {
+    // The thickness changes, so a repaint of the bar is needed.
     InvalidateFrame();
+    // The thickness affects vertical offsets.
+    PresShell()->FrameNeedsReflow(this, IntrinsicDirty::None,
+                                  NS_FRAME_IS_DIRTY);
+    return NS_OK;
   }
   return nsMathMLContainerFrame::AttributeChanged(aNameSpaceID, aAttribute,
                                                   aModType);
 }
 
-/* virtual */
-nsresult nsMathMLmfracFrame::MeasureForWidth(DrawTarget* aDrawTarget,
-                                             ReflowOutput& aDesiredSize) {
-  PlaceFlags flags(PlaceFlag::IntrinsicSize, PlaceFlag::MeasureOnly);
-  return PlaceInternal(aDrawTarget, flags, aDesiredSize);
-}
-
 nscoord nsMathMLmfracFrame::FixInterFrameSpacing(ReflowOutput& aDesiredSize) {
   nscoord gap = nsMathMLContainerFrame::FixInterFrameSpacing(aDesiredSize);
-  if (!gap) return 0;
+  if (!gap) {
+    return 0;
+  }
 
   mLineRect.MoveBy(gap, 0);
   return gap;
 }
 
 /* virtual */
-nsresult nsMathMLmfracFrame::Place(DrawTarget* aDrawTarget,
-                                   const PlaceFlags& aFlags,
-                                   ReflowOutput& aDesiredSize) {
-  return PlaceInternal(aDrawTarget, aFlags, aDesiredSize);
-}
-
-nsresult nsMathMLmfracFrame::PlaceInternal(DrawTarget* aDrawTarget,
-                                           const PlaceFlags& aFlags,
-                                           ReflowOutput& aDesiredSize) {
+void nsMathMLmfracFrame::Place(DrawTarget* aDrawTarget,
+                               const PlaceFlags& aFlags,
+                               ReflowOutput& aDesiredSize) {
   ////////////////////////////////////
   // Get the children's desired sizes
   nsBoundingMetrics bmNum, bmDen;
@@ -159,7 +156,9 @@ nsresult nsMathMLmfracFrame::PlaceInternal(DrawTarget* aDrawTarget,
   ReflowOutput sizeDen(aDesiredSize.GetWritingMode());
   nsIFrame* frameDen = nullptr;
   nsIFrame* frameNum = mFrames.FirstChild();
-  if (frameNum) frameDen = frameNum->GetNextSibling();
+  if (frameNum) {
+    frameDen = frameNum->GetNextSibling();
+  }
   if (!frameNum || !frameDen || frameDen->GetNextSibling()) {
     // report an error, encourage people to get their markups in order
     if (!aFlags.contains(PlaceFlag::MeasureOnly)) {
@@ -200,10 +199,9 @@ nsresult nsMathMLmfracFrame::PlaceInternal(DrawTarget* aDrawTarget,
 
   // see if the linethickness attribute is there
   nsAutoString value;
-  mContent->AsElement()->GetAttr(nsGkAtoms::linethickness_, value);
-  mLineThickness =
-      CalcLineThickness(presContext, mComputedStyle, value, onePixel,
-                        defaultRuleThickness, fontSizeInflation);
+  mContent->AsElement()->GetAttr(nsGkAtoms::linethickness, value);
+  mLineThickness = CalcLineThickness(value, onePixel, defaultRuleThickness,
+                                     fontSizeInflation);
 
   bool displayStyle = StyleFont()->mMathStyle == StyleMathStyle::Normal;
 
@@ -344,12 +342,14 @@ nsresult nsMathMLmfracFrame::PlaceInternal(DrawTarget* aDrawTarget,
   mBoundingMetrics.rightBearing =
       std::max(dxNum + bmNum.rightBearing + numMargin.LeftRight(),
                dxDen + bmDen.rightBearing + denMargin.LeftRight());
-  if (mBoundingMetrics.rightBearing < width - rightSpace)
+  if (mBoundingMetrics.rightBearing < width - rightSpace) {
     mBoundingMetrics.rightBearing = width - rightSpace;
+  }
   mBoundingMetrics.leftBearing =
       std::min(dxNum + bmNum.leftBearing, dxDen + bmDen.leftBearing);
-  if (mBoundingMetrics.leftBearing > leftSpace)
+  if (mBoundingMetrics.leftBearing > leftSpace) {
     mBoundingMetrics.leftBearing = leftSpace;
+  }
   mBoundingMetrics.ascent = bmNum.ascent + numShift + numMargin.top;
   mBoundingMetrics.descent = bmDen.descent + denShift + denMargin.bottom;
   mBoundingMetrics.width = width;
@@ -361,6 +361,18 @@ nsresult nsMathMLmfracFrame::PlaceInternal(DrawTarget* aDrawTarget,
                           denShift;
   aDesiredSize.Width() = mBoundingMetrics.width;
   aDesiredSize.mBoundingMetrics = mBoundingMetrics;
+
+  // Apply width/height to math content box.
+  auto sizes = GetWidthAndHeightForPlaceAdjustment(aFlags);
+  auto shiftX = ApplyAdjustmentForWidthAndHeight(aFlags, sizes, aDesiredSize,
+                                                 mBoundingMetrics);
+  if (sizes.width) {
+    // MathML Core says the math content box is horizontally centered
+    // but the fraction bar still takes the full width of the content box.
+    dxNum += shiftX;
+    dxDen += shiftX;
+    width = *sizes.width;
+  }
 
   // Add padding+border.
   auto borderPadding = GetBorderPaddingForPlace(aFlags);
@@ -384,8 +396,8 @@ nsresult nsMathMLmfracFrame::PlaceInternal(DrawTarget* aDrawTarget,
                       ReflowChildFlags::Default);
     // place denominator
     dxDen += denMargin.left;
-    dy = aDesiredSize.Height() - sizeDen.Height() - denMargin.bottom -
-         borderPadding.bottom;
+    dy =
+        aDesiredSize.BlockStartAscent() + denShift - sizeDen.BlockStartAscent();
     FinishReflowChild(frameDen, presContext, sizeDen, nullptr, dxDen, dy,
                       ReflowChildFlags::Default);
     // place the fraction bar - dy is top of bar
@@ -394,6 +406,4 @@ nsresult nsMathMLmfracFrame::PlaceInternal(DrawTarget* aDrawTarget,
     mLineRect.SetRect(leftSpace, dy, width - (leftSpace + rightSpace),
                       actualRuleThickness);
   }
-
-  return NS_OK;
 }

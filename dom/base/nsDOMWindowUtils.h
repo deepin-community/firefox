@@ -7,18 +7,16 @@
 #ifndef nsDOMWindowUtils_h_
 #define nsDOMWindowUtils_h_
 
-#include "nsWeakReference.h"
-
-#include "nsIDOMWindowUtils.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/BasicEvents.h"
 #include "mozilla/Result.h"
+#include "nsIDOMWindowUtils.h"
+#include "nsWeakReference.h"
 
 class nsGlobalWindowOuter;
 class nsIDocShell;
 class nsIWidget;
 class nsPresContext;
-class nsView;
 struct nsPoint;
 
 namespace mozilla {
@@ -77,7 +75,8 @@ class nsDOMWindowUtils final : public nsIDOMWindowUtils,
   // Add this offset to any event offset we're given to make it relative to the
   // widget returned by GetWidget.
   nsIWidget* GetWidget(nsPoint* aOffset = nullptr);
-  nsIWidget* GetWidgetForElement(mozilla::dom::Element* aElement);
+  nsIWidget* GetWidgetForElement(mozilla::dom::Element* aElement,
+                                 nsPoint* aOffset = nullptr);
 
   nsIDocShell* GetDocShell();
   mozilla::PresShell* GetPresShell();
@@ -86,15 +85,6 @@ class nsDOMWindowUtils final : public nsIDOMWindowUtils,
   mozilla::layers::WebRenderBridgeChild* GetWebRenderBridge();
   mozilla::layers::CompositorBridgeChild* GetCompositorBridge();
 
-  // Until callers are annotated.
-  MOZ_CAN_RUN_SCRIPT
-  NS_IMETHOD SendMouseEventCommon(
-      const nsAString& aType, float aX, float aY, int32_t aButton,
-      int32_t aClickCount, int32_t aModifiers, bool aIgnoreRootScrollFrame,
-      float aPressure, unsigned short aInputSourceArg, uint32_t aIdentifier,
-      bool aToWindow, bool* aPreventDefault, bool aIsDOMEventSynthesized,
-      bool aIsWidgetEventSynthesized, int32_t aButtons);
-
   MOZ_CAN_RUN_SCRIPT
   nsresult SendTouchEventCommon(
       const nsAString& aType, const nsTArray<uint32_t>& aIdentifiers,
@@ -102,9 +92,8 @@ class nsDOMWindowUtils final : public nsIDOMWindowUtils,
       const nsTArray<uint32_t>& aRxs, const nsTArray<uint32_t>& aRys,
       const nsTArray<float>& aRotationAngles, const nsTArray<float>& aForces,
       const nsTArray<int32_t>& aTiltXs, const nsTArray<int32_t>& aTiltYs,
-      const nsTArray<int32_t>& aTwists, int32_t aModifiers,
-      bool aIgnoreRootScrollFrame, bool aIsPen, bool aToWindow,
-      bool* aPreventDefault);
+      const nsTArray<int32_t>& aTwists, int32_t aModifiers, bool aIsPen,
+      bool aToWindow, AsyncEnabledOption aAsyncEnabled, bool* aPreventDefault);
 
   void ReportErrorMessageForWindow(const nsAString& aErrorMessage,
                                    const char* aClassification,

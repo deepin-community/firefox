@@ -3,9 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-## Messages used as headers in the main pane
-
-
 ## Message used as labels for the type of issue
 
 compatibility-issue-experimental = (ప్రయోగాత్మకం)
@@ -25,4 +22,3 @@ compatibility-target-browsers-header = లక్ష్యిత విహార�
 
 compatibility-close-settings-button =
     .title = అమరికలను మూసివేయి
-

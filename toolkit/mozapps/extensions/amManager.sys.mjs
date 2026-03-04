@@ -319,11 +319,7 @@ amManager.prototype = {
   },
 
   classID: Components.ID("{4399533d-08d1-458c-a87a-235f74451cfa}"),
-  QueryInterface: ChromeUtils.generateQI([
-    "amIAddonManager",
-    "nsITimerCallback",
-    "nsIObserver",
-  ]),
+  QueryInterface: ChromeUtils.generateQI(["nsITimerCallback", "nsIObserver"]),
 };
 
 const BLOCKLIST_SYS_MJS = "resource://gre/modules/Blocklist.sys.mjs";
@@ -357,3 +353,17 @@ BlocklistService.prototype = {
     "nsITimerCallback",
   ]),
 };
+
+// This service is configured as a daily timer from extensions.manifest and
+// it is responsible for sending the `addons` Glean Ping on a daily schedule.
+export class amGleanDaily {
+  static classID = Components.ID("{867d65a0-9784-4496-9a2e-f168f960f7c7}");
+  static contractID = "@mozilla.org/addons/glean-daily-ping;1";
+  QueryInterface = ChromeUtils.generateQI([Ci.nsITimerCallback]);
+
+  notify() {
+    // Submit the addons Glean ping with reason "daily" when
+    // the timer is notify the amGleanDaily nsITimerCallback.
+    GleanPings.addons.submit("daily");
+  }
+}

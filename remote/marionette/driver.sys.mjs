@@ -5,29 +5,29 @@
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
-  Addon: "chrome://remote/content/marionette/addon.sys.mjs",
+  actions: "chrome://remote/content/shared/webdriver/Actions.sys.mjs",
+  Addon: "chrome://remote/content/shared/Addon.sys.mjs",
+  AnimationFramePromise: "chrome://remote/content/shared/Sync.sys.mjs",
   AppInfo: "chrome://remote/content/shared/AppInfo.sys.mjs",
   assert: "chrome://remote/content/shared/webdriver/Assert.sys.mjs",
   browser: "chrome://remote/content/marionette/browser.sys.mjs",
   capture: "chrome://remote/content/shared/Capture.sys.mjs",
   Context: "chrome://remote/content/marionette/browser.sys.mjs",
   cookie: "chrome://remote/content/marionette/cookie.sys.mjs",
-  DebounceCallback: "chrome://remote/content/marionette/sync.sys.mjs",
   disableEventsActor:
     "chrome://remote/content/marionette/actors/MarionetteEventsParent.sys.mjs",
   dom: "chrome://remote/content/shared/DOM.sys.mjs",
   enableEventsActor:
     "chrome://remote/content/marionette/actors/MarionetteEventsParent.sys.mjs",
   error: "chrome://remote/content/shared/webdriver/Errors.sys.mjs",
-  EventPromise: "chrome://remote/content/shared/Sync.sys.mjs",
   getMarionetteCommandsActorProxy:
     "chrome://remote/content/marionette/actors/MarionetteCommandsParent.sys.mjs",
-  IdlePromise: "chrome://remote/content/marionette/sync.sys.mjs",
   l10n: "chrome://remote/content/marionette/l10n.sys.mjs",
   Log: "chrome://remote/content/shared/Log.sys.mjs",
   Marionette: "chrome://remote/content/components/Marionette.sys.mjs",
   MarionettePrefs: "chrome://remote/content/marionette/prefs.sys.mjs",
   modal: "chrome://remote/content/shared/Prompt.sys.mjs",
+  NavigableManager: "chrome://remote/content/shared/NavigableManager.sys.mjs",
   navigate: "chrome://remote/content/marionette/navigate.sys.mjs",
   permissions: "chrome://remote/content/shared/Permissions.sys.mjs",
   pprint: "chrome://remote/content/shared/Format.sys.mjs",
@@ -46,8 +46,8 @@ ChromeUtils.defineESModuleGetters(lazy, {
   RemoteAgent: "chrome://remote/content/components/RemoteAgent.sys.mjs",
   ShadowRoot: "chrome://remote/content/marionette/web-reference.sys.mjs",
   TabManager: "chrome://remote/content/shared/TabManager.sys.mjs",
-  TimedPromise: "chrome://remote/content/marionette/sync.sys.mjs",
   Timeouts: "chrome://remote/content/shared/webdriver/Capabilities.sys.mjs",
+  truncate: "chrome://remote/content/shared/Format.sys.mjs",
   unregisterCommandsActor:
     "chrome://remote/content/marionette/actors/MarionetteCommandsParent.sys.mjs",
   waitForInitialNavigationCompleted:
@@ -56,7 +56,7 @@ ChromeUtils.defineESModuleGetters(lazy, {
   WebDriverSession: "chrome://remote/content/shared/webdriver/Session.sys.mjs",
   WebElement: "chrome://remote/content/marionette/web-reference.sys.mjs",
   windowManager: "chrome://remote/content/shared/WindowManager.sys.mjs",
-  WindowState: "chrome://remote/content/marionette/browser.sys.mjs",
+  WindowState: "chrome://remote/content/shared/WindowManager.sys.mjs",
 });
 
 ChromeUtils.defineLazyGetter(lazy, "logger", () =>
@@ -81,10 +81,6 @@ ChromeUtils.defineLazyGetter(
     ])
 );
 
-// Timeout used to abort fullscreen, maximize, and minimize
-// commands if no window manager is present.
-const TIMEOUT_NO_WINDOW_MANAGER = 5000;
-
 // Observer topic to wait for until the browser window is ready.
 const TOPIC_BROWSER_READY = "browser-delayed-startup-finished";
 // Observer topic to perform clean up when application quit is requested.
@@ -97,6 +93,206 @@ const TOPIC_QUIT_APPLICATION_REQUESTED = "quit-application-requested";
  * @see {@link https://w3c.github.io/webdriver/webdriver-spec.html}
  * @namespace driver
  */
+
+class ActionsHelper {
+  #actionsOptions;
+  #driver;
+
+  constructor(driver) {
+    this.#driver = driver;
+
+    // Options for actions to pass through performActions and releaseActions.
+    this.#actionsOptions = {
+      // Callbacks as defined in the WebDriver specification.
+      getElementOrigin: this.getElementOrigin.bind(this),
+      isElementOrigin: this.isElementOrigin.bind(this),
+
+      // Custom callbacks.
+      assertInViewPort: this.assertInViewPort.bind(this),
+      dispatchEvent: this.dispatchEvent.bind(this),
+      getClientRects: this.getClientRects.bind(this),
+      getInViewCentrePoint: this.getInViewCentrePoint.bind(this),
+      toBrowserWindowCoordinates: this.toBrowserWindowCoordinates.bind(this),
+    };
+  }
+
+  get actionsOptions() {
+    return this.#actionsOptions;
+  }
+
+  #getActor(browsingContext) {
+    return lazy.getMarionetteCommandsActorProxy(() => browsingContext);
+  }
+
+  /**
+   * Assert that the target coordinates are within the visible viewport.
+   *
+   * @param {Array.<number>} target
+   *     Coordinates [x, y] of the target relative to the viewport.
+   * @param {BrowsingContext} browsingContext
+   *     The browsing context to dispatch the event to.
+   *
+   * @returns {Promise<undefined>}
+   *     Promise that rejects, if the coordinates are not within
+   *     the visible viewport.
+   *
+   * @throws {MoveTargetOutOfBoundsError}
+   *     If target is outside the viewport.
+   */
+  assertInViewPort(target, browsingContext) {
+    return this.#getActor(browsingContext).assertInViewPort(target);
+  }
+
+  /**
+   * Dispatch an event.
+   *
+   * @param {string} eventName
+   *     Name of the event to be dispatched.
+   * @param {BrowsingContext} browsingContext
+   *     The browsing context to dispatch the event to.
+   * @param {object} details
+   *     Details of the event to be dispatched.
+   *
+   * @returns {Promise}
+   *     Promise that resolves once the event is dispatched.
+   */
+  dispatchEvent(eventName, browsingContext, details) {
+    if (
+      (eventName === "synthesizeWheelAtPoint" &&
+        lazy.actions.useAsyncWheelEvents) ||
+      (eventName == "synthesizeMouseAtPoint" &&
+        lazy.actions.useAsyncMouseEvents)
+    ) {
+      browsingContext = browsingContext.topChromeWindow?.browsingContext;
+      details.eventData.asyncEnabled = true;
+    }
+
+    return this.#getActor(browsingContext).dispatchEvent(eventName, details);
+  }
+
+  /**
+   * Finalize an action command.
+   *
+   * @param {BrowsingContext} browsingContext
+   *     The browsing context to dispatch the event to.
+   */
+  async finalizeAction(browsingContext) {
+    try {
+      await this.#getActor(browsingContext).finalizeAction();
+    } catch (e) {
+      // Ignore the error if the underlying browsing context is already gone.
+      if (e.name !== lazy.error.NoSuchWindowError.name) {
+        throw e;
+      }
+    }
+  }
+
+  /**
+   * Retrieves the WebElement reference of the origin.
+   *
+   * @param {ElementOrigin} origin
+   *     Reference to the element origin of the action.
+   * @param {BrowsingContext} _browsingContext
+   *     Not used by Marionette.
+   *
+   * @returns {WebElement}
+   *     The WebElement reference.
+   */
+  getElementOrigin(origin, _browsingContext) {
+    return origin;
+  }
+
+  /**
+   * Retrieve the list of client rects for the element.
+   *
+   * @param {WebElement} element
+   *     The web element reference to retrieve the rects from.
+   * @param {BrowsingContext} browsingContext
+   *     The browsing context to dispatch the event to.
+   *
+   * @returns {Promise<Array<Map.<string, number>>>}
+   *     Promise that resolves to a list of DOMRect-like objects.
+   */
+  getClientRects(element, browsingContext) {
+    return this.#getActor(browsingContext).getClientRects(element);
+  }
+
+  /**
+   * Retrieve the in-view center point for the rect and visible viewport.
+   *
+   * @param {DOMRect} rect
+   *     Size and position of the rectangle to check.
+   * @param {BrowsingContext} browsingContext
+   *     The browsing context to dispatch the event to.
+   *
+   * @returns {Promise<Map.<string, number>>}
+   *     X and Y coordinates that denotes the in-view centre point of
+   *     `rect`.
+   */
+  getInViewCentrePoint(rect, browsingContext) {
+    return this.#getActor(browsingContext).getInViewCentrePoint(rect);
+  }
+
+  /**
+   * Retrieves the action's input state.
+   *
+   * @param {BrowsingContext} browsingContext
+   *     The Browsing Context to retrieve the input state for.
+   *
+   * @returns {Actions.InputState}
+   *     The action's input state.
+   */
+  getInputState(browsingContext) {
+    // Bug 1821460: Fetch top-level browsing context.
+    let inputState = this.#driver._inputStates.get(browsingContext);
+
+    if (inputState === undefined) {
+      inputState = new lazy.actions.State();
+      this.#driver._inputStates.set(browsingContext, inputState);
+    }
+
+    return inputState;
+  }
+
+  /**
+   * Checks if the given object is a valid element origin.
+   *
+   * @param {object} origin
+   *     The object to check.
+   *
+   * @returns {boolean}
+   *     True, if it's a WebElement.
+   */
+  isElementOrigin(origin) {
+    return lazy.WebElement.Identifier in origin;
+  }
+
+  /**
+   * Resets the action's input state.
+   *
+   * @param {BrowsingContext} browsingContext
+   *     The Browsing Context to reset the input state for.
+   */
+  resetInputState(browsingContext) {
+    // Bug 1821460: Fetch top-level browsing context.
+    if (this.#driver._inputStates.has(browsingContext)) {
+      this.#driver._inputStates.delete(browsingContext);
+    }
+  }
+
+  /**
+   * Convert a position or rect in browser coordinates of CSS units.
+   *
+   * @param {object} position - Object with the coordinates to convert.
+   * @param {number} position.x - X coordinate.
+   * @param {number} position.y - Y coordinate.
+   * @param {BrowsingContext} browsingContext - The Browsing Context to convert the
+   *     coordinates for.
+   */
+  toBrowserWindowCoordinates(position, browsingContext) {
+    return this.#getActor(browsingContext).toBrowserWindowCoordinates(position);
+  }
+}
 
 /**
  * Implements (parts of) the W3C WebDriver protocol.  GeckoDriver lives
@@ -136,7 +332,21 @@ export function GeckoDriver(server) {
   // used for modal dialogs
   this.dialog = null;
   this.promptListener = null;
+
+  // Browsing context => input state.
+  // Bug 1821460: Move to WebDriver Session and share with Remote Agent.
+  this._inputStates = new WeakMap();
+
+  this._actionsHelper = new ActionsHelper(this);
 }
+
+GeckoDriver.prototype._trace = function (message, browsingContext = null) {
+  if (browsingContext !== null) {
+    lazy.logger.trace(`[${browsingContext.id}] ${message}`);
+  } else {
+    lazy.logger.trace(message);
+  }
+};
 
 /**
  * The current context decides if commands are executed in chrome- or
@@ -148,6 +358,10 @@ Object.defineProperty(GeckoDriver.prototype, "context", {
   },
 
   set(context) {
+    if (context === lazy.Context.Chrome) {
+      lazy.assert.hasSystemAccess();
+    }
+
     this._context = lazy.Context.fromString(context);
   },
 });
@@ -210,7 +424,14 @@ GeckoDriver.prototype.QueryInterface = ChromeUtils.generateQI([
  * Callback used to observe the closing of modal dialogs
  * during the session's lifetime.
  */
-GeckoDriver.prototype.handleClosedModalDialog = function () {
+GeckoDriver.prototype.handleClosedModalDialog = function (_eventName, data) {
+  const { contentBrowser, detail } = data;
+
+  this._trace(
+    `Prompt closed (type: "${detail.promptType}", accepted: "${detail.accepted}")`,
+    contentBrowser.browsingContext
+  );
+
   this.dialog = null;
 };
 
@@ -218,12 +439,24 @@ GeckoDriver.prototype.handleClosedModalDialog = function () {
  * Callback used to observe the creation of new modal dialogs
  * during the session's lifetime.
  */
-GeckoDriver.prototype.handleOpenModalDialog = function (eventName, data) {
-  this.dialog = data.prompt;
+GeckoDriver.prototype.handleOpenModalDialog = function (_eventName, data) {
+  const { contentBrowser, prompt } = data;
+
+  prompt.getText().then(text => {
+    // We need the text to identify a user prompt when it gets
+    // randomly opened. Because on Android the text is asynchronously
+    // retrieved lets delay the logging without making the handler async.
+    this._trace(
+      `Prompt opened (type: "${prompt.promptType}", text: "${text}")`,
+      contentBrowser.browsingContext
+    );
+  });
+
+  this.dialog = prompt;
 
   if (this.dialog.promptType === "beforeunload" && !this.currentSession?.bidi) {
     // Only implicitly accept the prompt when its not a BiDi session.
-    lazy.logger.trace(`Implicitly accepted "beforeunload" prompt`);
+    this._trace(`Implicitly accepted "beforeunload" prompt`);
     this.dialog.accept();
     return;
   }
@@ -364,7 +597,9 @@ GeckoDriver.prototype.isReftestBrowser = function (element) {
  */
 GeckoDriver.prototype.addBrowser = function (win) {
   let context = new lazy.browser.Context(win, this);
-  let winId = lazy.windowManager.getIdForWindow(win);
+  let winId = lazy.NavigableManager.getIdForBrowsingContext(
+    win.browsingContext
+  );
 
   this.browsers[winId] = context;
   this.curBrowser = this.browsers[winId];
@@ -443,8 +678,9 @@ GeckoDriver.prototype.newSession = async function (cmd) {
       lazy.logger.debug(`Waiting for initial application window`);
       await lazy.Marionette.browserStartupFinished;
 
-      const appWin =
-        await lazy.windowManager.waitForInitialApplicationWindowLoaded();
+      // This call includes a fallback to "mail:3pane" as well.
+      const appWin = Services.wm.getMostRecentBrowserWindow();
+      await lazy.windowManager.waitForChromeWindowLoaded(appWin);
 
       if (lazy.MarionettePrefs.clickToStart) {
         Services.prompt.alert(
@@ -593,6 +829,94 @@ GeckoDriver.prototype.getSessionCapabilities = function () {
 };
 
 /**
+ * Register a chrome protocol handler for a directory containing XHTML or XUL
+ * files, allowing them to be loaded via the chrome:// protocol.
+ *
+ * @param {obj} cmd
+ * @param {string} cmd.parameters.manifestPath
+ *     The base manifest path for the entries. URL values are resolved
+ *     relative to this path.
+ * @param {Array<Array<string, string, string>>} cmd.parameters.entries
+ *     An array of arrays, each containing a registry entry (type, namespace,
+ *     path, options) as it would appear in a chrome.manifest file. Only the
+ *     following entry types are currently accepted:
+ *
+ *         - "content" A URL entry. Must be a 3-element array.
+ *         - "override" A URL override entry. Must be a 3-element array.
+ *         - "locale" A locale package entry. Must be a 4-element array.
+ *
+ * @returns {string} id
+ *     The identifier for the registered chrome protocol handler.
+ *
+ * @throws {InvalidArgumentError}
+ *     If <var>id</var> is not a string.
+ * @throws {UnknownError}
+ *     If there is no such registered chrome protocol handler.
+ */
+GeckoDriver.prototype.registerChromeHandler = function (cmd) {
+  const manifestPath = lazy.assert.string(
+    cmd.parameters.manifestPath,
+    lazy.pprint`Expected "path" to be a string, got ${cmd.parameters.manifestPath}`
+  );
+
+  const entries = lazy.assert.array(
+    cmd.parameters.entries,
+    lazy.pprint`Expected "entries" to be an array, got ${cmd.parameters.entries}`
+  );
+  entries.forEach(entry => {
+    const [type, namespace, directory, options] = lazy.assert.array(
+      entry,
+      lazy.pprint`Expected values of "entries" to be an array, got ${entries}`
+    );
+    lazy.assert.string(
+      type,
+      lazy.pprint`Expected "type" of entry to be a string, got ${type}`
+    );
+    lazy.assert.string(
+      namespace,
+      lazy.pprint`Expected "namespace" of entry to be a string, got ${namespace}`
+    );
+    lazy.assert.string(
+      directory,
+      lazy.pprint`Expected "directory" of entry to be a string, got ${directory}`
+    );
+    if (options !== undefined) {
+      lazy.assert.string(
+        options,
+        lazy.pprint`Expected "options" of entry to be a string, got ${options}`
+      );
+    }
+  });
+
+  lazy.assert.hasSystemAccess();
+
+  return this.currentSession.registerChromeHandler(manifestPath, entries);
+};
+
+/**
+ * Unregister a previously registered chrome protocol handler.
+ *
+ * @param {obj} cmd
+ * @param {string} cmd.parameters.id
+ *     The identifier returned when the chrome handler was registered.
+ *
+ * @throws {InvalidArgumentError}
+ *     If <var>id</var> is not a string.
+ * @throws {UnknownError}
+ *     If there is no such registered chrome protocol handler.
+ */
+GeckoDriver.prototype.unregisterChromeHandler = function (cmd) {
+  const id = lazy.assert.string(
+    cmd.parameters.id,
+    lazy.pprint`Expected "id" to be a string, got ${cmd.parameters.id}`
+  );
+
+  lazy.assert.hasSystemAccess();
+
+  this.currentSession.unregisterChromeHandler(id);
+};
+
+/**
  * Sets the context of the subsequent commands.
  *
  * All subsequent requests to commands that in some way involve
@@ -651,14 +975,14 @@ GeckoDriver.prototype.getContext = function () {
  *     The array items must be serialisable to the WebDriver protocol.
  * @param {string=} cmd.parameters.sandbox
  *     Name of the sandbox to evaluate the script in.  The sandbox is
- *     cached for later re-use on the same Window object if
- *     <var>newSandbox</var> is false.  If he parameter is undefined,
+ *     cached for later reuse on the same Window object if
+ *     <var>newSandbox</var> is false.  If the parameter is undefined,
  *     the script is evaluated in a mutable sandbox.  If the parameter
- *     is "system", it will be evaluted in a sandbox with elevated system
+ *     is "system", it will be evaluated in a sandbox with elevated system
  *     privileges, equivalent to chrome space.
  * @param {boolean=} cmd.parameters.newSandbox
  *     Forces the script to be evaluated in a fresh sandbox.  Note that if
- *     it is undefined, the script will normally be evaluted in a fresh
+ *     it is undefined, the script will normally be evaluated in a fresh
  *     sandbox.
  * @param {string=} cmd.parameters.filename
  *     Filename of the client's program where this script is evaluated.
@@ -673,8 +997,10 @@ GeckoDriver.prototype.getContext = function () {
  *     If an {@link Error} was thrown whilst evaluating the script.
  * @throws {NoSuchElementError}
  *     If an element that was passed as part of <var>args</var> is unknown.
+ * @throws {NoSuchFrameError}
+ *     Child browsing context has been discarded.
  * @throws {NoSuchWindowError}
- *     Browsing context has been discarded.
+ *     Top-level browsing context has been discarded.
  * @throws {ScriptTimeoutError}
  *     If the script was interrupted due to reaching the session's
  *     script timeout.
@@ -724,14 +1050,14 @@ GeckoDriver.prototype.executeScript = function (cmd) {
  *     The array items must be serialisable to the WebDriver protocol.
  * @param {string=} cmd.parameters.sandbox
  *     Name of the sandbox to evaluate the script in.  The sandbox is
- *     cached for later re-use on the same Window object if
+ *     cached for later reuse on the same Window object if
  *     <var>newSandbox</var> is false.  If the parameter is undefined,
  *     the script is evaluated in a mutable sandbox.  If the parameter
- *     is "system", it will be evaluted in a sandbox with elevated system
+ *     is "system", it will be evaluated in a sandbox with elevated system
  *     privileges, equivalent to chrome space.
  * @param {boolean=} cmd.parameters.newSandbox
  *     Forces the script to be evaluated in a fresh sandbox.  Note that if
- *     it is undefined, the script will normally be evaluted in a fresh
+ *     it is undefined, the script will normally be evaluated in a fresh
  *     sandbox.
  * @param {string=} cmd.parameters.filename
  *     Filename of the client's program where this script is evaluated.
@@ -746,8 +1072,10 @@ GeckoDriver.prototype.executeScript = function (cmd) {
  *     If an Error was thrown whilst evaluating the script.
  * @throws {NoSuchElementError}
  *     If an element that was passed as part of <var>args</var> is unknown.
+ * @throws {NoSuchFrameError}
+ *     Child browsing context has been discarded.
  * @throws {NoSuchWindowError}
- *     Browsing context has been discarded.
+ *     Top-level browsing context has been discarded.
  * @throws {ScriptTimeoutError}
  *     If the script was interrupted due to reaching the session's
  *     script timeout.
@@ -861,11 +1189,13 @@ GeckoDriver.prototype.navigateTo = async function (cmd) {
   );
   await this._handleUserPrompts();
 
-  let validURL;
-  try {
-    validURL = new URL(cmd.parameters.url);
-  } catch (e) {
-    throw new lazy.error.InvalidArgumentError(`Malformed URL: ${e.message}`);
+  let { url } = cmd.parameters;
+
+  let validURL = URL.parse(url);
+  if (!validURL) {
+    throw new lazy.error.InvalidArgumentError(
+      lazy.truncate`Expected "url" to be a valid URL, got ${url}`
+    );
   }
 
   // Switch to the top-level browsing context before navigating
@@ -982,7 +1312,7 @@ GeckoDriver.prototype.goBack = async function () {
   await this._handleUserPrompts();
 
   // If there is no history, just return
-  if (!browsingContext.embedderElement?.canGoBack) {
+  if (!browsingContext.embedderElement?.canGoBackIgnoringUserInteraction) {
     return;
   }
 
@@ -1066,9 +1396,12 @@ GeckoDriver.prototype.getWindowHandle = function () {
   lazy.assert.open(this.getBrowsingContext({ top: true }));
 
   if (this.context == lazy.Context.Chrome) {
-    return lazy.windowManager.getIdForWindow(this.curBrowser.window);
+    return lazy.NavigableManager.getIdForBrowsingContext(
+      this.currentSession.chromeBrowsingContext
+    );
   }
-  return lazy.TabManager.getIdForBrowser(this.curBrowser.contentBrowser);
+
+  return this.curBrowser.contentBrowserId;
 };
 
 /**
@@ -1087,9 +1420,14 @@ GeckoDriver.prototype.getWindowHandle = function () {
  */
 GeckoDriver.prototype.getWindowHandles = function () {
   if (this.context == lazy.Context.Chrome) {
-    return lazy.windowManager.chromeWindowHandles.map(String);
+    return lazy.windowManager.windows.map(window =>
+      lazy.NavigableManager.getIdForBrowsingContext(window.browsingContext)
+    );
   }
-  return lazy.TabManager.allBrowserUniqueIds.map(String);
+
+  return lazy.TabManager.getBrowsers({ unloaded: true }).map(browser =>
+    lazy.NavigableManager.getIdForBrowser(browser)
+  );
 };
 
 /**
@@ -1180,61 +1518,59 @@ GeckoDriver.prototype.setWindowRect = async function (cmd) {
   const win = this.getCurrentWindow();
   switch (lazy.WindowState.from(win.windowState)) {
     case lazy.WindowState.Fullscreen:
-      await exitFullscreen(win);
+      await lazy.windowManager.setFullscreen(win, false);
       break;
 
     case lazy.WindowState.Maximized:
     case lazy.WindowState.Minimized:
-      await restoreWindow(win);
+      await lazy.windowManager.restoreWindow(win);
       break;
   }
 
-  function geometryMatches() {
-    if (
-      width !== null &&
-      height !== null &&
-      (win.outerWidth !== width || win.outerHeight !== height)
-    ) {
-      return false;
-    }
-    if (x !== null && y !== null && (win.screenX !== x || win.screenY !== y)) {
-      return false;
-    }
-    lazy.logger.trace(`Requested window geometry matches`);
-    return true;
-  }
+  await lazy.windowManager.adjustWindowGeometry(win, x, y, width, height);
 
-  if (!geometryMatches()) {
-    // There might be more than one resize or MozUpdateWindowPos event due
-    // to previous geometry changes, such as from restoreWindow(), so
-    // wait longer if window geometry does not match.
-    const options = { checkFn: geometryMatches, timeout: 500 };
-    const promises = [];
-    if (width !== null && height !== null) {
-      promises.push(new lazy.EventPromise(win, "resize", options));
-      win.resizeTo(width, height);
+  return this.curBrowser.rect;
+};
+
+/**
+ * Find a specific window matching the provided window handle.
+ *
+ * @param {string} handle
+ *     The unique handle of either a chrome window or a content browser, as
+ *     returned by :js:func:`#getIdForBrowser` or :js:func:`#getIdForWindow`.
+ *
+ * @returns {object|null}
+ *     A window properties object, or `null` if a window cannot be found.
+ *.    @see :js:func:`WindowManager#getWindowProperties`
+ */
+GeckoDriver.prototype._findWindowByHandle = function (handle) {
+  for (const win of lazy.windowManager.windows) {
+    const chromeWindowId = lazy.NavigableManager.getIdForBrowsingContext(
+      win.browsingContext
+    );
+    if (chromeWindowId == handle) {
+      return this.getWindowProperties(win);
     }
-    if (x !== null && y !== null) {
-      promises.push(
-        new lazy.EventPromise(win.windowRoot, "MozUpdateWindowPos", options)
-      );
-      win.moveTo(x, y);
-    }
-    try {
-      await Promise.race(promises);
-    } catch (e) {
-      if (e instanceof lazy.error.TimeoutError) {
-        // The operating system might not honor the move or resize, in which
-        // case assume that geometry will have been adjusted "as close as
-        // possible" to that requested.  There may be no event received if the
-        // geometry is already as close as possible.
-      } else {
-        throw e;
+
+    // Otherwise check if the chrome window has a tab browser, and that it
+    // contains a tab with the wanted window handle.
+    const tabBrowser = lazy.TabManager.getTabBrowser(win);
+    if (tabBrowser && tabBrowser.tabs) {
+      for (let i = 0; i < tabBrowser.tabs.length; ++i) {
+        let contentBrowser = lazy.TabManager.getBrowserForTab(
+          tabBrowser.tabs[i]
+        );
+        let contentWindowId =
+          lazy.NavigableManager.getIdForBrowser(contentBrowser);
+
+        if (contentWindowId == handle) {
+          return this.getWindowProperties(win, { tabIndex: i });
+        }
       }
     }
   }
 
-  return this.curBrowser.rect;
+  return null;
 };
 
 /**
@@ -1266,7 +1602,7 @@ GeckoDriver.prototype.switchToWindow = async function (cmd) {
     lazy.pprint`Expected "focus" to be a boolean, got ${focus}`
   );
 
-  const found = lazy.windowManager.findWindowByHandle(handle);
+  const found = this._findWindowByHandle(handle);
 
   let selected = false;
   if (found) {
@@ -1283,6 +1619,50 @@ GeckoDriver.prototype.switchToWindow = async function (cmd) {
       `Unable to locate window: ${handle}`
     );
   }
+};
+
+/**
+ * A set of properties that describe a window and allow it to be uniquely
+ * identified. The described window can either be a Chrome Window or a
+ * Content Window.
+ *
+ * @typedef {object} WindowProperties
+ * @property {Window} win
+ *     The Chrome Window containing the window. When describing
+ *     a Chrome Window, this is the window itself.
+ * @property {string} id
+ *     The unique id of the containing Chrome Window.
+ * @property {boolean} hasTabBrowser
+ *     `true` if the Chrome Window has a tabBrowser.
+ * @property {number=} tabIndex
+ *     Optional, the index of the specific tab within the window.
+ */
+
+/**
+ * Returns a WindowProperties object, that can be used with :js:func:`GeckoDriver#setWindowHandle`.
+ *
+ * @param {Window} win
+ *     The Chrome Window for which we want to create a properties object.
+ * @param {object=} options
+ * @param {number} options.tabIndex
+ *     Tab index of a specific Content Window in the specified Chrome Window.
+ *
+ * @returns {WindowProperties}
+ *     A window properties object.
+ */
+GeckoDriver.prototype.getWindowProperties = function (win, options = {}) {
+  const { tabIndex } = options;
+
+  if (!Window.isInstance(win)) {
+    throw new TypeError("Invalid argument, expected a Window object");
+  }
+
+  return {
+    win,
+    id: lazy.NavigableManager.getIdForBrowsingContext(win.browsingContext),
+    hasTabBrowser: !!lazy.TabManager.getTabBrowser(win),
+    tabIndex,
+  };
 };
 
 /**
@@ -1479,11 +1859,31 @@ GeckoDriver.prototype.setTimeouts = function (cmd) {
  *     Not yet available in current context.
  */
 GeckoDriver.prototype.performActions = async function (cmd) {
-  lazy.assert.open(this.getBrowsingContext());
+  const { actions } = cmd.parameters;
+
+  const browsingContext = lazy.assert.open(this.getBrowsingContext());
   await this._handleUserPrompts();
 
-  const actions = cmd.parameters.actions;
-  await this.getActor().performActions(actions);
+  // Bug 1821460: Fetch top-level browsing context.
+  const inputState = this._actionsHelper.getInputState(browsingContext);
+  const actionsOptions = {
+    ...this._actionsHelper.actionsOptions,
+    context: browsingContext,
+  };
+
+  const actionChain = await lazy.actions.Chain.fromJSON(
+    inputState,
+    actions,
+    actionsOptions
+  );
+
+  // Enqueue to serialize access to input state.
+  await inputState.enqueueAction(() =>
+    actionChain.dispatch(inputState, actionsOptions)
+  );
+
+  // Process async follow-up tasks in content before the reply is sent.
+  await this._actionsHelper.finalizeAction(browsingContext);
 };
 
 /**
@@ -1497,10 +1897,26 @@ GeckoDriver.prototype.performActions = async function (cmd) {
  *     Not available in current context.
  */
 GeckoDriver.prototype.releaseActions = async function () {
-  lazy.assert.open(this.getBrowsingContext());
+  const browsingContext = lazy.assert.open(this.getBrowsingContext());
   await this._handleUserPrompts();
 
-  await this.getActor().releaseActions();
+  // Bug 1821460: Fetch top-level browsing context.
+  const inputState = this._actionsHelper.getInputState(browsingContext);
+  const actionsOptions = {
+    ...this._actionsHelper.actionsOptions,
+    context: browsingContext,
+  };
+
+  // Enqueue to serialize access to input state.
+  await inputState.enqueueAction(() => {
+    const undoActions = inputState.inputCancelList.reverse();
+    return undoActions.dispatch(inputState, actionsOptions);
+  });
+
+  this._actionsHelper.resetInputState(browsingContext);
+
+  // Process async follow-up tasks in content before the reply is sent.
+  await this._actionsHelper.finalizeAction(browsingContext);
 };
 
 /**
@@ -2258,7 +2674,7 @@ GeckoDriver.prototype.getCookies = async function () {
   await this._handleUserPrompts();
 
   let { hostname, pathname } = this._getCurrentURL({ top: false });
-  return [...lazy.cookie.iter(hostname, pathname)];
+  return [...lazy.cookie.iter(hostname, this.getBrowsingContext(), pathname)];
 };
 
 /**
@@ -2277,7 +2693,11 @@ GeckoDriver.prototype.deleteAllCookies = async function () {
   await this._handleUserPrompts();
 
   let { hostname, pathname } = this._getCurrentURL({ top: false });
-  for (let toDelete of lazy.cookie.iter(hostname, pathname)) {
+  for (let toDelete of lazy.cookie.iter(
+    hostname,
+    this.getBrowsingContext(),
+    pathname
+  )) {
     lazy.cookie.remove(toDelete);
   }
 };
@@ -2302,7 +2722,11 @@ GeckoDriver.prototype.deleteCookie = async function (cmd) {
     cmd.parameters.name,
     lazy.pprint`Expected "name" to be a string, got ${cmd.parameters.name}`
   );
-  for (let c of lazy.cookie.iter(hostname, pathname)) {
+  for (let c of lazy.cookie.iter(
+    hostname,
+    this.getBrowsingContext(),
+    pathname
+  )) {
     if (c.name === name) {
       lazy.cookie.remove(c);
     }
@@ -2368,22 +2792,42 @@ GeckoDriver.prototype.newWindow = async function (cmd) {
     !["tab", "window"].includes(type) ||
     lazy.AppInfo.isAndroid
   ) {
-    type = "tab";
+    if (lazy.TabManager.supportsTabs()) {
+      type = "tab";
+    } else if (lazy.windowManager.supportsWindows()) {
+      type = "window";
+    } else {
+      throw new lazy.error.UnsupportedOperationError(
+        `Not supported in ${lazy.AppInfo.name}`
+      );
+    }
   }
 
   let contentBrowser;
 
   switch (type) {
     case "window": {
-      let win = await this.curBrowser.openBrowserWindow(focus, isPrivate);
-      contentBrowser = lazy.TabManager.getTabBrowser(win).selectedBrowser;
+      if (lazy.windowManager.supportsWindows()) {
+        let win = await this.curBrowser.openBrowserWindow(focus, isPrivate);
+        contentBrowser = lazy.TabManager.getTabBrowser(win).selectedBrowser;
+      } else {
+        throw new lazy.error.UnsupportedOperationError(
+          `Not supported in ${lazy.AppInfo.name}`
+        );
+      }
       break;
     }
     default: {
       // To not fail if a new type gets added in the future, make opening
       // a new tab the default action.
-      let tab = await this.curBrowser.openTab(focus);
-      contentBrowser = lazy.TabManager.getBrowserForTab(tab);
+      if (lazy.TabManager.supportsTabs()) {
+        let tab = await this.curBrowser.openTab(focus);
+        contentBrowser = lazy.TabManager.getBrowserForTab(tab);
+      } else {
+        throw new lazy.error.UnsupportedOperationError(
+          `Not supported in ${lazy.AppInfo.name}`
+        );
+      }
     }
   }
 
@@ -2396,7 +2840,7 @@ GeckoDriver.prototype.newWindow = async function (cmd) {
     }
   );
 
-  const id = lazy.TabManager.getIdForBrowser(contentBrowser);
+  const id = lazy.NavigableManager.getIdForBrowser(contentBrowser);
 
   return { handle: id.toString(), type };
 };
@@ -2437,7 +2881,9 @@ GeckoDriver.prototype.close = async function () {
   await this.curBrowser.closeTab();
   this.currentSession.contentBrowsingContext = null;
 
-  return lazy.TabManager.allBrowserUniqueIds.map(String);
+  return lazy.TabManager.getBrowsers({ unloaded: true }).map(browser =>
+    lazy.NavigableManager.getIdForBrowser(browser)
+  );
 };
 
 /**
@@ -2477,7 +2923,9 @@ GeckoDriver.prototype.closeChromeWindow = async function () {
   this.currentSession.chromeBrowsingContext = null;
   this.currentSession.contentBrowsingContext = null;
 
-  return lazy.windowManager.chromeWindowHandles.map(String);
+  return lazy.windowManager.windows.map(window =>
+    lazy.NavigableManager.getIdForBrowsingContext(window.browsingContext)
+  );
 };
 
 /** Delete Marionette session. */
@@ -2670,28 +3118,15 @@ GeckoDriver.prototype.minimizeWindow = async function () {
   const win = this.getCurrentWindow();
   switch (lazy.WindowState.from(win.windowState)) {
     case lazy.WindowState.Fullscreen:
-      await exitFullscreen(win);
+      await lazy.windowManager.setFullscreen(win, false);
       break;
 
     case lazy.WindowState.Maximized:
-      await restoreWindow(win);
+      await lazy.windowManager.restoreWindow(win);
       break;
   }
 
-  if (lazy.WindowState.from(win.windowState) != lazy.WindowState.Minimized) {
-    let cb;
-    // Use a timed promise to abort if no window manager is present
-    await new lazy.TimedPromise(
-      resolve => {
-        cb = new lazy.DebounceCallback(resolve);
-        win.addEventListener("sizemodechange", cb);
-        win.minimize();
-      },
-      { throws: null, timeout: TIMEOUT_NO_WINDOW_MANAGER }
-    );
-    win.removeEventListener("sizemodechange", cb);
-    await new lazy.IdlePromise(win);
-  }
+  await lazy.windowManager.minimizeWindow(win);
 
   return this.curBrowser.rect;
 };
@@ -2722,28 +3157,15 @@ GeckoDriver.prototype.maximizeWindow = async function () {
   const win = this.getCurrentWindow();
   switch (lazy.WindowState.from(win.windowState)) {
     case lazy.WindowState.Fullscreen:
-      await exitFullscreen(win);
+      await lazy.windowManager.setFullscreen(win, false);
       break;
 
     case lazy.WindowState.Minimized:
-      await restoreWindow(win);
+      await lazy.windowManager.restoreWindow(win);
       break;
   }
 
-  if (lazy.WindowState.from(win.windowState) != lazy.WindowState.Maximized) {
-    let cb;
-    // Use a timed promise to abort if no window manager is present
-    await new lazy.TimedPromise(
-      resolve => {
-        cb = new lazy.DebounceCallback(resolve);
-        win.addEventListener("sizemodechange", cb);
-        win.maximize();
-      },
-      { throws: null, timeout: TIMEOUT_NO_WINDOW_MANAGER }
-    );
-    win.removeEventListener("sizemodechange", cb);
-    await new lazy.IdlePromise(win);
-  }
+  await lazy.windowManager.maximizeWindow(win);
 
   return this.curBrowser.rect;
 };
@@ -2775,24 +3197,11 @@ GeckoDriver.prototype.fullscreenWindow = async function () {
   switch (lazy.WindowState.from(win.windowState)) {
     case lazy.WindowState.Maximized:
     case lazy.WindowState.Minimized:
-      await restoreWindow(win);
+      await lazy.windowManager.restoreWindow(win);
       break;
   }
 
-  if (lazy.WindowState.from(win.windowState) != lazy.WindowState.Fullscreen) {
-    let cb;
-    // Use a timed promise to abort if no window manager is present
-    await new lazy.TimedPromise(
-      resolve => {
-        cb = new lazy.DebounceCallback(resolve);
-        win.addEventListener("sizemodechange", cb);
-        win.fullScreen = true;
-      },
-      { throws: null, timeout: TIMEOUT_NO_WINDOW_MANAGER }
-    );
-    win.removeEventListener("sizemodechange", cb);
-  }
-  await new lazy.IdlePromise(win);
+  await lazy.windowManager.setFullscreen(win, true);
 
   return this.curBrowser.rect;
 };
@@ -2815,7 +3224,7 @@ GeckoDriver.prototype.dismissDialog = async function () {
   await dialogClosed;
 
   const win = this.getCurrentWindow();
-  await new lazy.IdlePromise(win);
+  await new lazy.AnimationFramePromise(win);
 };
 
 /**
@@ -2836,7 +3245,7 @@ GeckoDriver.prototype.acceptDialog = async function () {
   await dialogClosed;
 
   const win = this.getCurrentWindow();
-  await new lazy.IdlePromise(win);
+  await new lazy.AnimationFramePromise(win);
 };
 
 /**
@@ -3070,62 +3479,59 @@ GeckoDriver.prototype.quit = async function (cmd) {
 };
 
 GeckoDriver.prototype.installAddon = function (cmd) {
-  lazy.assert.desktop();
+  const {
+    addon = null,
+    allowPrivateBrowsing = false,
+    path = null,
+    temporary = false,
+  } = cmd.parameters;
 
-  let path = cmd.parameters.path;
-  let temp = cmd.parameters.temporary || false;
-  if (
-    typeof path == "undefined" ||
-    typeof path != "string" ||
-    typeof temp != "boolean"
-  ) {
-    throw new lazy.error.InvalidArgumentError();
+  lazy.assert.boolean(
+    allowPrivateBrowsing,
+    lazy.pprint`Expected "allowPrivateBrowsing" to be a boolean, got ${allowPrivateBrowsing}`
+  );
+
+  lazy.assert.boolean(
+    temporary,
+    lazy.pprint`Expected "temporary" to be a boolean, got ${temporary}`
+  );
+
+  if (addon !== null) {
+    if (path !== null) {
+      throw new lazy.error.InvalidArgumentError(
+        `Expected only one of "addon" or "path" to be specified`
+      );
+    }
+
+    lazy.assert.string(
+      addon,
+      lazy.pprint`Expected "addon" to be a string, got ${addon}`
+    );
+
+    return lazy.Addon.installWithBase64(addon, temporary, allowPrivateBrowsing);
   }
 
-  return lazy.Addon.install(path, temp);
+  if (path !== null) {
+    lazy.assert.string(
+      path,
+      lazy.pprint`Expected "path" to be a string, got ${path}`
+    );
+
+    return lazy.Addon.installWithPath(path, temporary, allowPrivateBrowsing);
+  }
+
+  throw new lazy.error.InvalidArgumentError(
+    `Expected "addon" or "path" argument to be specified`
+  );
 };
 
 GeckoDriver.prototype.uninstallAddon = function (cmd) {
-  lazy.assert.desktop();
-
   let id = cmd.parameters.id;
   if (typeof id == "undefined" || typeof id != "string") {
     throw new lazy.error.InvalidArgumentError();
   }
 
   return lazy.Addon.uninstall(id);
-};
-
-/**
- * Retrieve the localized string for the specified entity id.
- *
- * Example:
- *     localizeEntity(["chrome://branding/locale/brand.dtd"], "brandShortName")
- *
- * @param {object} cmd
- * @param {Array.<string>} cmd.parameters.urls
- *     Array of .dtd URLs.
- * @param {string} cmd.parameters.id
- *     The ID of the entity to retrieve the localized string for.
- *
- * @returns {string}
- *     The localized string for the requested entity.
- */
-GeckoDriver.prototype.localizeEntity = function (cmd) {
-  let { urls, id } = cmd.parameters;
-
-  if (!Array.isArray(urls)) {
-    throw new lazy.error.InvalidArgumentError(
-      "Value of `urls` should be of type 'Array'"
-    );
-  }
-  if (typeof id != "string") {
-    throw new lazy.error.InvalidArgumentError(
-      "Value of `id` should be of type 'string'"
-    );
-  }
-
-  return lazy.l10n.localizeEntity(urls, id);
 };
 
 /**
@@ -3176,6 +3582,7 @@ GeckoDriver.prototype.setupReftest = async function (cmd) {
     urlCount = {},
     screenshot = "unexpected",
     isPrint = false,
+    cacheScreenshots = true,
   } = cmd.parameters;
   if (!["always", "fail", "unexpected"].includes(screenshot)) {
     throw new lazy.error.InvalidArgumentError(
@@ -3184,7 +3591,7 @@ GeckoDriver.prototype.setupReftest = async function (cmd) {
   }
 
   this._reftest = new lazy.reftest.Runner(this);
-  this._reftest.setup(urlCount, screenshot, isPrint);
+  this._reftest.setup(urlCount, screenshot, isPrint, cacheScreenshots);
 };
 
 /** Run a reftest. */
@@ -3237,6 +3644,41 @@ GeckoDriver.prototype.teardownReftest = function () {
 
   this._reftest.teardown();
   this._reftest = null;
+};
+
+/**
+ * Implements the GenerateTestReport functionality of the Reporting API.
+ *
+ * @see https://w3c.github.io/reporting/#generate-test-report-command *
+ *
+ * @param {object} cmd
+ * @param {string} cmd.parameters.message
+ *     The message contents of the report being generated.
+ * @param {string=} cmd.parameters.group
+ *     The name of the reporting endpoint that the report should be sent to.
+ *     @see https://www.w3.org/TR/reporting-1/#endpoint
+ *
+ * @throws {InvalidArgumentError}
+ *     If a message argument wasn't passed in the parameters.
+ */
+
+GeckoDriver.prototype.generateTestReport = async function (cmd) {
+  const { message, group = "default" } = cmd.parameters;
+
+  lazy.assert.open(this.getBrowsingContext());
+  await this._handleUserPrompts();
+
+  lazy.assert.string(
+    message,
+    lazy.pprint(`Expected "message" to be a string, got ${message}`)
+  );
+
+  lazy.assert.string(
+    group,
+    lazy.pprint(`Expected "group" to be a string, got ${group}`)
+  );
+
+  await this.getActor().generateTestReport(message, group);
 };
 
 /**
@@ -3339,6 +3781,25 @@ GeckoDriver.prototype.print = async function (cmd) {
   return btoa(binaryString);
 };
 
+GeckoDriver.prototype.getGlobalPrivacyControl = function () {
+  const gpc = Services.prefs.getBoolPref(
+    "privacy.globalprivacycontrol.enabled",
+    true
+  );
+  return { gpc };
+};
+
+GeckoDriver.prototype.setGlobalPrivacyControl = function (cmd) {
+  const { gpc } = cmd.parameters;
+  if (typeof gpc != "boolean") {
+    throw new lazy.error.InvalidArgumentError(
+      "Value of `gpc` should be of type 'boolean'"
+    );
+  }
+  Services.prefs.setBoolPref("privacy.globalprivacycontrol.enabled", gpc);
+  return { gpc };
+};
+
 GeckoDriver.prototype.addVirtualAuthenticator = function (cmd) {
   const {
     protocol,
@@ -3387,9 +3848,9 @@ GeckoDriver.prototype.addVirtualAuthenticator = function (cmd) {
 GeckoDriver.prototype.removeVirtualAuthenticator = function (cmd) {
   const { authenticatorId } = cmd.parameters;
 
-  lazy.assert.positiveInteger(
+  lazy.assert.string(
     authenticatorId,
-    lazy.pprint`Expected "authenticatorId" to be a positiveInteger, got ${authenticatorId}`
+    lazy.pprint`Expected "authenticatorId" to be a string, got ${authenticatorId}`
   );
 
   lazy.webauthn.removeVirtualAuthenticator(authenticatorId);
@@ -3406,9 +3867,9 @@ GeckoDriver.prototype.addCredential = function (cmd) {
     signCount,
   } = cmd.parameters;
 
-  lazy.assert.positiveInteger(
+  lazy.assert.string(
     authenticatorId,
-    lazy.pprint`Expected "authenticatorId" to be a positiveInteger, got ${authenticatorId}`
+    lazy.pprint`Expected "authenticatorId" to be a string, got ${authenticatorId}`
   );
   lazy.assert.string(
     credentialId,
@@ -3451,9 +3912,9 @@ GeckoDriver.prototype.addCredential = function (cmd) {
 GeckoDriver.prototype.getCredentials = function (cmd) {
   const { authenticatorId } = cmd.parameters;
 
-  lazy.assert.positiveInteger(
+  lazy.assert.string(
     authenticatorId,
-    lazy.pprint`Expected "authenticatorId" to be a positiveInteger, got ${authenticatorId}`
+    lazy.pprint`Expected "authenticatorId" to be a string, got ${authenticatorId}`
   );
 
   return lazy.webauthn.getCredentials(authenticatorId);
@@ -3462,9 +3923,9 @@ GeckoDriver.prototype.getCredentials = function (cmd) {
 GeckoDriver.prototype.removeCredential = function (cmd) {
   const { authenticatorId, credentialId } = cmd.parameters;
 
-  lazy.assert.positiveInteger(
+  lazy.assert.string(
     authenticatorId,
-    lazy.pprint`Expected "authenticatorId" to be a positiveInteger, got ${authenticatorId}`
+    lazy.pprint`Expected "authenticatorId" to be a string, got ${authenticatorId}`
   );
   lazy.assert.string(
     credentialId,
@@ -3477,9 +3938,9 @@ GeckoDriver.prototype.removeCredential = function (cmd) {
 GeckoDriver.prototype.removeAllCredentials = function (cmd) {
   const { authenticatorId } = cmd.parameters;
 
-  lazy.assert.positiveInteger(
+  lazy.assert.string(
     authenticatorId,
-    lazy.pprint`Expected "authenticatorId" to be a positiveInteger, got ${authenticatorId}`
+    lazy.pprint`Expected "authenticatorId" to be a string, got ${authenticatorId}`
   );
 
   lazy.webauthn.removeAllCredentials(authenticatorId);
@@ -3488,9 +3949,9 @@ GeckoDriver.prototype.removeAllCredentials = function (cmd) {
 GeckoDriver.prototype.setUserVerified = function (cmd) {
   const { authenticatorId, isUserVerified } = cmd.parameters;
 
-  lazy.assert.positiveInteger(
+  lazy.assert.string(
     authenticatorId,
-    lazy.pprint`Expected "authenticatorId" to be a positiveInteger, got ${authenticatorId}`
+    lazy.pprint`Expected "authenticatorId" to be a string, got ${authenticatorId}`
   );
   lazy.assert.boolean(
     isUserVerified,
@@ -3593,6 +4054,10 @@ GeckoDriver.prototype.commands = {
   "Marionette:GetScreenOrientation": GeckoDriver.prototype.getScreenOrientation,
   "Marionette:GetWindowType": GeckoDriver.prototype.getWindowType,
   "Marionette:Quit": GeckoDriver.prototype.quit,
+  "Marionette:RegisterChromeHandler":
+    GeckoDriver.prototype.registerChromeHandler,
+  "Marionette:UnregisterChromeHandler":
+    GeckoDriver.prototype.unregisterChromeHandler,
   "Marionette:SetContext": GeckoDriver.prototype.setContext,
   "Marionette:SetScreenOrientation": GeckoDriver.prototype.setScreenOrientation,
 
@@ -3601,7 +4066,6 @@ GeckoDriver.prototype.commands = {
   "Addon:Uninstall": GeckoDriver.prototype.uninstallAddon,
 
   // L10n service
-  "L10n:LocalizeEntity": GeckoDriver.prototype.localizeEntity,
   "L10n:LocalizeProperty": GeckoDriver.prototype.localizeProperty,
 
   // Reftest service
@@ -3676,6 +4140,13 @@ GeckoDriver.prototype.commands = {
   "WebDriver:SwitchToWindow": GeckoDriver.prototype.switchToWindow,
   "WebDriver:TakeScreenshot": GeckoDriver.prototype.takeScreenshot,
 
+  // Global Privacy Control
+  "GPC:GetGlobalPrivacyControl": GeckoDriver.prototype.getGlobalPrivacyControl,
+  "GPC:SetGlobalPrivacyControl": GeckoDriver.prototype.setGlobalPrivacyControl,
+
+  // Reporting API test generation of reports
+  "Reporting:GenerateTestReport": GeckoDriver.prototype.generateTestReport,
+
   // WebAuthn
   "WebAuthn:AddVirtualAuthenticator":
     GeckoDriver.prototype.addVirtualAuthenticator,
@@ -3687,36 +4158,3 @@ GeckoDriver.prototype.commands = {
   "WebAuthn:RemoveAllCredentials": GeckoDriver.prototype.removeAllCredentials,
   "WebAuthn:SetUserVerified": GeckoDriver.prototype.setUserVerified,
 };
-
-async function exitFullscreen(win) {
-  let cb;
-  // Use a timed promise to abort if no window manager is present
-  await new lazy.TimedPromise(
-    resolve => {
-      cb = new lazy.DebounceCallback(resolve);
-      win.addEventListener("sizemodechange", cb);
-      win.fullScreen = false;
-    },
-    { throws: null, timeout: TIMEOUT_NO_WINDOW_MANAGER }
-  );
-  win.removeEventListener("sizemodechange", cb);
-  await new lazy.IdlePromise(win);
-}
-
-async function restoreWindow(win) {
-  let cb;
-  if (lazy.WindowState.from(win.windowState) == lazy.WindowState.Normal) {
-    return;
-  }
-  // Use a timed promise to abort if no window manager is present
-  await new lazy.TimedPromise(
-    resolve => {
-      cb = new lazy.DebounceCallback(resolve);
-      win.addEventListener("sizemodechange", cb);
-      win.restore();
-    },
-    { throws: null, timeout: TIMEOUT_NO_WINDOW_MANAGER }
-  );
-  win.removeEventListener("sizemodechange", cb);
-  await new lazy.IdlePromise(win);
-}

@@ -21,15 +21,15 @@
 # - visibility = [ ":*" ] - directory private.
 # As a general guideline, only targets in api/ should have public visibility.
 
-import("//build/config/linux/pkg_config.gni")
-import("//build/config/sanitizers/sanitizers.gni")
+import("//chromium/build/config/linux/pkg_config.gni")
+import("//chromium/build/config/sanitizers/sanitizers.gni")
 import("webrtc.gni")
 if (rtc_enable_protobuf) {
   import("//third_party/protobuf/proto_library.gni")
 }
 if (is_android) {
-  import("//build/config/android/config.gni")
-  import("//build/config/android/rules.gni")
+  import("//chromium/build/config/android/config.gni")
+  import("//chromium/build/config/android/rules.gni")
   import("//third_party/jni_zero/jni_zero.gni")
 }
 
@@ -47,6 +47,7 @@ if (!build_with_chromium && !build_with_mozilla) {
     }
     if (rtc_include_tests) {
       deps += [
+        ":rtc_p2p_unittests",
         ":rtc_unittests",
         ":video_engine_tests",
         ":voip_unittests",
@@ -69,7 +70,6 @@ if (!build_with_chromium && !build_with_mozilla) {
         "pc:rtc_pc_unittests",
         "pc:slow_peer_connection_unittests",
         "pc:svc_tests",
-        "rtc_tools:rtp_generator",
         "rtc_tools:video_encoder",
         "rtc_tools:video_replay",
         "stats:rtc_stats_unittests",
@@ -79,7 +79,12 @@ if (!build_with_chromium && !build_with_mozilla) {
         "video:sv_loopback",
         "video:video_loopback",
       ]
-      if (!is_asan) {
+      if (use_libfuzzer) {
+        deps += [ "test/fuzzers" ]
+      }
+
+      # TODO(bugs.webrtc.org/430260876): Remove once rust links with libwebrtc.
+      if (!is_asan && !rtc_rusty_base64) {
         # Do not build :webrtc_lib_link_test because lld complains on some OS
         # (e.g. when target_os = "mac") when is_asan=true. For more details,
         # see bugs.webrtc.org/11027#c5.
@@ -135,13 +140,9 @@ config("library_impl_config") {
 # Contains the defines and includes in common.gypi that are duplicated both as
 # target_defaults and direct_dependent_settings.
 config("common_inherited_config") {
-  defines = []
+  defines = [ "PROTOBUF_ENABLE_DEBUG_LOGGING_MAY_LEAK_PII=0" ]
   cflags = []
   ldflags = []
-
-  if (rtc_jni_generator_legacy_symbols) {
-    defines += [ "RTC_JNI_GENERATOR_LEGACY_SYMBOLS" ]
-  }
 
   if (rtc_objc_prefix != "") {
     defines += [ "RTC_OBJC_TYPE_PREFIX=${rtc_objc_prefix}" ]
@@ -364,10 +365,6 @@ config("common_config") {
     defines += [ "WEBRTC_ABSL_MUTEX" ]
   }
 
-  if (rtc_enable_libevent) {
-    defines += [ "WEBRTC_ENABLE_LIBEVENT" ]
-  }
-
   if (rtc_disable_logging) {
     defines += [ "RTC_DISABLE_LOGGING" ]
   }
@@ -380,18 +377,17 @@ config("common_config") {
     defines += [ "RTC_DISABLE_METRICS" ]
   }
 
-  if (rtc_exclude_transient_suppressor) {
-    defines += [ "WEBRTC_EXCLUDE_TRANSIENT_SUPPRESSOR" ]
-  }
-
   if (rtc_exclude_audio_processing_module) {
     defines += [ "WEBRTC_EXCLUDE_AUDIO_PROCESSING_MODULE" ]
   }
 
+  if (rtc_video_psnr) {
+    defines += [ "WEBRTC_ENCODER_PSNR_STATS" ]
+  }
+
   if (is_clang) {
     cflags += [
-      # TODO(webrtc:13219): Fix -Wshadow instances and enable.
-      "-Wno-shadow",
+      "-Wshadow",
 
       # See https://reviews.llvm.org/D56731 for details about this
       # warning.
@@ -433,19 +429,11 @@ config("common_config") {
     }
 
     if (is_clang) {
-      cflags += [ "-Wc++11-narrowing" ]
-
-      if (!is_fuchsia) {
-        # Compiling with the Fuchsia SDK results in Wundef errors
-        # TODO(bugs.fuchsia.dev/100722): Remove from (!is_fuchsia) branch when
-        # Fuchsia build errors are fixed.
-        cflags += [ "-Wundef" ]
-      }
-
-      if (!is_nacl) {
-        # Flags NaCl (Clang 3.7) do not recognize.
-        cflags += [ "-Wunused-lambda-capture" ]
-      }
+      cflags += [
+        "-Wc++11-narrowing",
+        "-Wundef",
+        "-Wunused-lambda-capture",
+      ]
     }
 
     if (is_win && !is_clang) {
@@ -528,6 +516,21 @@ config("common_objc") {
 }
 }
 
+if (!rtc_build_ssl) {
+  config("external_ssl_library") {
+    if (rtc_ssl_root != "") {
+      include_dirs = [ rtc_ssl_root ]
+    }
+    libs = [
+      "crypto",
+      "ssl",
+    ]
+    if (build_with_mozilla) {
+      libs = []
+    }
+  }
+}
+
 if (!build_with_chromium) {
   # Target to build all the WebRTC production code.
   rtc_static_library("webrtc") {
@@ -538,21 +541,23 @@ if (!build_with_chromium) {
     ]
 
     sources = []
+
     complete_static_lib = true
-    suppressed_configs += [ "//build/config/compiler:thin_archive" ]
+    suppressed_configs += [ "//chromium/build/config/compiler:thin_archive" ]
     defines = []
 
     deps = [
+      "api:create_modular_peer_connection_factory",
       "api:create_peerconnection_factory",
       "api:enable_media",
       "api:libjingle_peerconnection_api",
       "api:rtc_error",
       "api:transport_api",
+      "api/audio_codecs:opus_audio_decoder_factory",
       "api/crypto",
       "api/rtc_event_log:rtc_event_log_factory",
       "api/task_queue",
       "api/task_queue:default_task_queue_factory",
-      "api/test/metrics",
       "api/video_codecs:video_decoder_factory_template",
       "api/video_codecs:video_decoder_factory_template_dav1d_adapter",
       "api/video_codecs:video_decoder_factory_template_libvpx_vp8_adapter",
@@ -567,11 +572,11 @@ if (!build_with_chromium) {
       "call",
       "common_audio",
       "common_video",
+      ":dcsctp",
       "logging:rtc_event_log_api",
       "media",
       "modules",
       "modules/video_capture:video_capture_internal_impl",
-      "p2p:rtc_p2p",
       "pc:libjingle_peerconnection",
       "pc:rtc_pc",
       "sdk",
@@ -579,6 +584,7 @@ if (!build_with_chromium) {
     ]
     if (build_with_mozilla) {
       deps -= [
+        "api:create_modular_peer_connection_factory",
         "api:create_peerconnection_factory",
         "api:enable_media",
         "api:rtc_error",
@@ -587,7 +593,6 @@ if (!build_with_chromium) {
         "api/rtc_event_log:rtc_event_log_factory",
         "api/task_queue",
         "api/task_queue:default_task_queue_factory",
-        "api/test/metrics",
         "api/video_codecs:video_decoder_factory_template",
         "api/video_codecs:video_decoder_factory_template_dav1d_adapter",
         "api/video_codecs:video_decoder_factory_template_libvpx_vp8_adapter",
@@ -599,7 +604,6 @@ if (!build_with_chromium) {
         "api/video_codecs:video_encoder_factory_template_libvpx_vp9_adapter",
         "api/video_codecs:video_encoder_factory_template_open_h264_adapter",
         "logging:rtc_event_log_api",
-        "p2p:rtc_p2p",
         "pc:libjingle_peerconnection",
         "pc:rtc_pc",
         "sdk",
@@ -615,9 +619,12 @@ if (!build_with_chromium) {
 
     if (build_with_mozilla) {
       deps += [
+        "api:frame_transformer_factory",
+        "api/audio:builtin_audio_processing_builder",
         "api/environment:environment_factory",
         "api/video:video_frame",
         "api/video:video_rtp_headers",
+        "api/video_codecs:builtin_video_decoder_factory",
         "test:rtp_test_utils",
       ]
       # Added when we removed deps in other places to avoid building
@@ -629,14 +636,6 @@ if (!build_with_chromium) {
         "modules/video_coding:webrtc_vp8",
         "modules/video_coding:webrtc_vp9",
       ]
-    } else {
-      deps += [
-        "api",
-        "logging",
-        "p2p",
-        "pc",
-        "stats",
-      ]
     }
 
     if (build_with_mozilla && is_mac) {
@@ -646,9 +645,15 @@ if (!build_with_chromium) {
     if (rtc_enable_protobuf) {
       deps += [ "logging:rtc_event_log_proto" ]
     }
+
+    if (rtc_include_internal_audio_device) {
+      deps += [ "api/audio:create_audio_device_module" ]
+    }
   }
 
-  if (rtc_include_tests && !is_asan) {
+  # TODO(bugs.webrtc.org/430260876): Compile webrtc lib with rust once toolchain
+  # is working.
+  if (rtc_include_tests && !is_asan && !rtc_rusty_base64) {
     rtc_executable("webrtc_lib_link_test") {
       testonly = true
 
@@ -692,22 +697,26 @@ if (rtc_include_tests && !build_with_chromium) {
     deps = [
       "api:compile_all_headers",
       "api:rtc_api_unittests",
-      "api/audio/test:audio_api_unittests",
+      "api/audio:audio_api_unittests",
       "api/audio_codecs/test:audio_codecs_api_unittests",
+      "api/crypto:crypto_options_unittest",
+      "api/crypto:options",
       "api/numerics:numerics_unittests",
       "api/task_queue:pending_task_safety_flag_unittests",
       "api/test/metrics:metrics_unittests",
+      "api/test/network_emulation:network_queue_unittests",
       "api/transport:stun_unittest",
+      "api/transport/rtp:corruption_detection_message_unittest",
       "api/video/test:rtc_api_video_unittests",
       "api/video_codecs:libaom_av1_encoder_factory_test",
       "api/video_codecs:simple_encoder_wrapper_unittests",
       "api/video_codecs/test:video_codecs_api_unittests",
       "api/voip:compile_all_headers",
       "call:fake_network_pipe_unittests",
-      "p2p:libstunprober_unittests",
-      "p2p:rtc_p2p_unittests",
       "rtc_base:async_dns_resolver_unittests",
       "rtc_base:async_packet_socket_unittest",
+      "rtc_base:async_tcp_socket_unittest",
+      "rtc_base:async_udp_socket_unittest",
       "rtc_base:callback_list_unittests",
       "rtc_base:rtc_base_approved_unittests",
       "rtc_base:rtc_base_unittests",
@@ -715,6 +724,7 @@ if (rtc_include_tests && !build_with_chromium) {
       "rtc_base:rtc_numerics_unittests",
       "rtc_base:rtc_operations_chain_unittests",
       "rtc_base:rtc_task_queue_unittests",
+      "rtc_base:sigslot_trampoline_unittest",
       "rtc_base:sigslot_unittest",
       "rtc_base:task_queue_stdlib_unittest",
       "rtc_base:untyped_function_unittest",
@@ -749,10 +759,18 @@ if (rtc_include_tests && !build_with_chromium) {
       deps += [
         "sdk/android:native_unittests",
         "sdk/android:native_unittests_java",
-        "//testing/android/native_test:native_test_support",
       ]
       shard_timeout = 900
     }
+  }
+
+  rtc_test("rtc_p2p_unittests") {
+    testonly = true
+
+    deps = [
+      "p2p:rtc_p2p_unittests",
+      "test:test_main",
+    ]
   }
 
   if (rtc_enable_google_benchmarks) {
@@ -766,19 +784,6 @@ if (rtc_include_tests && !build_with_chromium) {
   }
 
   # TODO(pbos): Rename test suite, this is no longer "just" for video targets.
-  video_engine_tests_resources = [
-    "resources/foreman_cif_short.yuv",
-    "resources/voice_engine/audio_long16.pcm",
-  ]
-
-  if (is_ios) {
-    bundle_data("video_engine_tests_bundle_data") {
-      testonly = true
-      sources = video_engine_tests_resources
-      outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
-    }
-  }
-
   rtc_test("video_engine_tests") {
     testonly = true
     deps = [
@@ -794,40 +799,16 @@ if (rtc_include_tests && !build_with_chromium) {
       "video:video_tests",
       "video/adaptation:video_adaptation_tests",
     ]
-    data = video_engine_tests_resources
+
+    data_deps = [ "resources:video_engine_tests_data" ]
+
     if (is_android) {
       use_default_launcher = false
-      deps += [
-        "//build/android/gtest_apk:native_test_instrumentation_test_runner_java",
-        "//testing/android/native_test:native_test_java",
-        "//testing/android/native_test:native_test_support",
-      ]
+      deps += [ "//build/android/gtest_apk:native_test_instrumentation_test_runner_java" ]
       shard_timeout = 900
     }
     if (is_ios) {
-      deps += [ ":video_engine_tests_bundle_data" ]
-    }
-  }
-
-  webrtc_perf_tests_resources = [
-    "resources/ConferenceMotion_1280_720_50.yuv",
-    "resources/audio_coding/speech_mono_16kHz.pcm",
-    "resources/audio_coding/speech_mono_32_48kHz.pcm",
-    "resources/audio_coding/testfile32kHz.pcm",
-    "resources/difficult_photo_1850_1110.yuv",
-    "resources/foreman_cif.yuv",
-    "resources/paris_qcif.yuv",
-    "resources/photo_1850_1110.yuv",
-    "resources/presentation_1850_1110.yuv",
-    "resources/voice_engine/audio_long16.pcm",
-    "resources/web_screenshot_1850_1110.yuv",
-  ]
-
-  if (is_ios) {
-    bundle_data("webrtc_perf_tests_bundle_data") {
-      testonly = true
-      sources = webrtc_perf_tests_resources
-      outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
+      deps += [ "resources:video_engine_tests_bundle_data" ]
     }
   }
 
@@ -843,18 +824,15 @@ if (rtc_include_tests && !build_with_chromium) {
       "video:video_pc_full_stack_tests",
     ]
 
-    data = webrtc_perf_tests_resources
+    data_deps = [ "resources:webrtc_perf_tests_data" ]
+
     if (is_android) {
       use_default_launcher = false
-      deps += [
-        "//build/android/gtest_apk:native_test_instrumentation_test_runner_java",
-        "//testing/android/native_test:native_test_java",
-        "//testing/android/native_test:native_test_support",
-      ]
+      deps += [ "//build/android/gtest_apk:native_test_instrumentation_test_runner_java" ]
       shard_timeout = 4500
     }
     if (is_ios) {
-      deps += [ ":webrtc_perf_tests_bundle_data" ]
+      deps += [ "resources:webrtc_perf_tests_bundle_data" ]
     }
   }
 
@@ -862,7 +840,6 @@ if (rtc_include_tests && !build_with_chromium) {
     testonly = true
     deps = [ "rtc_base:rtc_base_nonparallel_tests" ]
     if (is_android) {
-      deps += [ "//testing/android/native_test:native_test_support" ]
       shard_timeout = 900
     }
   }
@@ -884,10 +861,10 @@ if (rtc_include_tests && !build_with_chromium) {
 # Build target for standalone dcsctp
 rtc_static_library("dcsctp") {
   # Only the root target should depend on this.
-  visibility = [ "//:default" ]
+  visibility = [ "//:default", "//libwebrtc:webrtc" ]
   sources = []
   complete_static_lib = true
-  suppressed_configs += [ "//build/config/compiler:thin_archive" ]
+  suppressed_configs += [ "//chromium/build/config/compiler:thin_archive" ]
   defines = []
   deps = [
     "net/dcsctp/public:factory",
@@ -917,4 +894,18 @@ group("poison_environment_construction") {
 }
 
 group("poison_software_video_codecs") {
+}
+
+group("poison_default_neural_residual_echo_estimator") {
+}
+
+if (!build_with_chromium) {
+  # Write debug logs to gn_logs.txt.
+  # This is also required for Siso builds.
+  import("//chromium/build/gn_logs.gni")
+  lines = [
+            "Generated during 'gn gen' by //BUILD.gn.",
+            "",
+          ] + build_gn_logs
+  write_file("$root_build_dir/gn_logs.txt", lines)
 }

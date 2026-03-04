@@ -3,21 +3,21 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 "use strict";
 
-/* global EVENTS, gTelemetry */
+/* global EVENTS */
 
 // React & Redux
 const {
   createFactory,
   Component,
-} = require("resource://devtools/client/shared/vendor/react.js");
+} = require("resource://devtools/client/shared/vendor/react.mjs");
 const {
   div,
   span,
 } = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
-const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.mjs");
 const {
   findDOMNode,
-} = require("resource://devtools/client/shared/vendor/react-dom.js");
+} = require("resource://devtools/client/shared/vendor/react-dom.mjs");
 const {
   connect,
 } = require("resource://devtools/client/shared/vendor/react-redux.js");
@@ -47,10 +47,9 @@ const VirtualizedTree = createFactory(
   require("resource://devtools/client/shared/components/VirtualizedTree.js")
 );
 // Reps
-const {
-  REPS,
-  MODE,
-} = require("resource://devtools/client/shared/components/reps/index.js");
+const { REPS, MODE } = ChromeUtils.importESModule(
+  "resource://devtools/client/shared/components/reps/index.mjs"
+);
 const { Rep, ElementNode, Accessible: AccessibleRep, Obj } = REPS;
 
 const {
@@ -63,9 +62,6 @@ loader.lazyRequireGetter(
   "resource://devtools/client/shared/link.js",
   true
 );
-
-const TELEMETRY_NODE_INSPECTED_COUNT =
-  "devtools.accessibility.node_inspected_count";
 
 const TREE_DEPTH_PADDING_INCREMENT = 20;
 
@@ -147,17 +143,24 @@ class Accessible extends Component {
     this.update = this.update.bind(this);
   }
 
-  // FIXME: https://bugzilla.mozilla.org/show_bug.cgi?id=1774507
-  UNSAFE_componentWillMount() {
+  componentDidMount() {
     window.on(
       EVENTS.NEW_ACCESSIBLE_FRONT_INSPECTED,
       this.onAccessibleInspected
     );
   }
 
-  // FIXME: https://bugzilla.mozilla.org/show_bug.cgi?id=1774507
-  UNSAFE_componentWillReceiveProps({ accessibleFront }) {
-    const oldAccessibleFront = this.props.accessibleFront;
+  componentDidUpdate(prevProps) {
+    const oldAccessibleFront = prevProps.accessibleFront;
+    const { accessibleFront } = this.props;
+
+    if (
+      accessibleFront &&
+      !accessibleFront.isDestroyed() &&
+      accessibleFront !== oldAccessibleFront
+    ) {
+      window.emit(EVENTS.PROPERTIES_UPDATED);
+    }
 
     if (oldAccessibleFront) {
       if (
@@ -175,16 +178,6 @@ class Accessible extends Component {
       ACCESSIBLE_EVENTS.forEach(event =>
         accessibleFront.on(event, this.update)
       );
-    }
-  }
-
-  componentDidUpdate(prevProps) {
-    if (
-      this.props.accessibleFront &&
-      !this.props.accessibleFront.isDestroyed() &&
-      this.props.accessibleFront !== prevProps.accessibleFront
-    ) {
-      window.emit(EVENTS.PROPERTIES_UPDATED);
     }
   }
 
@@ -257,9 +250,7 @@ class Accessible extends Component {
   }
 
   async selectNode(nodeFront, reason = "accessibility") {
-    if (gTelemetry) {
-      gTelemetry.scalarAdd(TELEMETRY_NODE_INSPECTED_COUNT, 1);
-    }
+    Glean.devtoolsAccessibility.nodeInspectedCount.add(1);
 
     if (!this.props.toolbox) {
       return;
@@ -409,9 +400,10 @@ class Accessible extends Component {
 
 /**
  * Match accessibility object from relations targets to the grip that's being activated.
- * @param  {Object} relations  Object containing relations grouped by type and targets.
- * @param  {String} actorID    Actor ID to match to the relation target.
- * @return {Object}            Accessible front that matches the relation target.
+ *
+ * @param  {object} relations  Object containing relations grouped by type and targets.
+ * @param  {string} actorID    Actor ID to match to the relation target.
+ * @return {object}            Accessible front that matches the relation target.
  */
 const findAccessibleTarget = (relations, actorID) => {
   for (const relationType in relations) {
@@ -429,11 +421,12 @@ const findAccessibleTarget = (relations, actorID) => {
 
 /**
  * Find an item based on a given path.
- * @param  {String} path
+ *
+ * @param  {string} path
  *         Key of the item to be looked up.
  * @param  {Array}  items
  *         Accessibility properties array.
- * @return {Object?}
+ * @return {object?}
  *         Possibly found item.
  */
 const findByPath = (path, items) => {
@@ -452,15 +445,17 @@ const findByPath = (path, items) => {
 
 /**
  * Check if a given property is a DOMNode front.
- * @param  {Object?} value A property to check for being a DOMNode.
- * @return {Boolean}       A flag that indicates whether a property is a DOMNode.
+ *
+ * @param  {object?} value A property to check for being a DOMNode.
+ * @return {boolean}       A flag that indicates whether a property is a DOMNode.
  */
 const isNodeFront = value => value && value.typeName === "domnode";
 
 /**
  * Check if a given property is an Accessible front.
- * @param  {Object?} value A property to check for being an Accessible.
- * @return {Boolean}       A flag that indicates whether a property is an Accessible.
+ *
+ * @param  {object?} value A property to check for being an Accessible.
+ * @return {boolean}       A flag that indicates whether a property is an Accessible.
  */
 const isAccessibleFront = value => value && value.typeName === "accessible";
 
@@ -469,9 +464,9 @@ const isAccessibleFront = value => value && value.typeName === "accessible";
  * translate accessibleFront to a grip-like object that can be used with an Accessible
  * rep.
  *
- * @params  {accessibleFront} accessibleFront
+ * @param {AccessibleFront} accessibleFront
  *          The AccessibleFront for which we want to create a grip-like object.
- * @returns {Object} a grip-like object that can be used with Reps.
+ * @returns {object} a grip-like object that can be used with Reps.
  */
 const translateAccessibleFrontToGrip = accessibleFront => ({
   actor: accessibleFront.actorID,
@@ -491,9 +486,10 @@ const translateNodeFrontToGripWrapper = nodeFront => ({
 
 /**
  * Build props ingestible by VirtualizedTree component.
- * @param  {Object} props      Component properties to be processed.
- * @param  {String} parentPath Unique path that is used to identify a Tree Node.
- * @return {Object}            Processed properties.
+ *
+ * @param  {object} props      Component properties to be processed.
+ * @param  {string} parentPath Unique path that is used to identify a Tree Node.
+ * @return {object}            Processed properties.
  */
 const makeItemsForDetails = (props, parentPath) =>
   Object.getOwnPropertyNames(props).map(name => {

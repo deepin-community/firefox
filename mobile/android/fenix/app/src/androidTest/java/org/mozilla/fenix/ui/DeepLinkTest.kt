@@ -4,13 +4,13 @@
 
 package org.mozilla.fenix.ui
 
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.test.platform.app.InstrumentationRegistry
-import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.mozilla.fenix.helpers.HomeActivityIntentTestRule
-import org.mozilla.fenix.helpers.TestAssetHelper
 import org.mozilla.fenix.helpers.TestSetup
+import org.mozilla.fenix.helpers.perf.DetectMemoryLeaksRule
 import org.mozilla.fenix.ui.robots.DeepLinkRobot
 
 /**
@@ -26,12 +26,19 @@ import org.mozilla.fenix.ui.robots.DeepLinkRobot
  *  - fenix://settings_logins — take the user to the settings page to do with logins (not the saved logins).
  **/
 
-@Ignore("All tests perma-failing, see: https://github.com/mozilla-mobile/fenix/issues/13491")
 class DeepLinkTest : TestSetup() {
-    private val robot = DeepLinkRobot()
+    @get:Rule
+    val composeTestRule =
+        AndroidComposeTestRule(
+            HomeActivityIntentTestRule(
+                isMenuRedesignCFREnabled = false,
+            ),
+        ) { it.activity }
 
     @get:Rule
-    val activityIntentTestRule = HomeActivityIntentTestRule()
+    val memoryLeaksRule = DetectMemoryLeaksRule()
+
+    private val robot = DeepLinkRobot(composeTestRule)
 
     @Test
     fun openHomeScreen() {
@@ -47,17 +54,17 @@ class DeepLinkTest : TestSetup() {
     @Test
     fun openURL() {
         val genericURL =
-            TestAssetHelper.getGenericAsset(mockWebServer, 1)
-        robot.openURL(genericURL.url.toString()) {
-            verifyUrl(genericURL.url.toString())
+            "https://support.mozilla.org/en-US/products/mobile"
+        robot.openURL(genericURL) {
+            verifyUrl("support.mozilla.org/en-US/products/mobile")
         }
     }
 
     @Test
     fun openBookmarks() {
-        robot.openBookmarks {
+        robot.openBookmarks(composeTestRule) {
             // verify we can see headings.
-            verifyFolderTitle("Desktop Bookmarks")
+            verifyEmptyBookmarksMenuView()
         }
     }
 
@@ -105,7 +112,6 @@ class DeepLinkTest : TestSetup() {
         }
     }
 
-    @Ignore("Crashing, see: https://github.com/mozilla-mobile/fenix/issues/11239")
     @Test
     fun openSettingsSearchEngine() {
         robot.openSettingsSearchEngine {

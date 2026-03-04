@@ -7,9 +7,14 @@
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Settings {
     /// Whether a crash report should be sent.
+    #[serde(default = "default_true")]
     pub submit_report: bool,
     /// Whether the URL that was open should be included in a sent report.
+    #[serde(default = "default_true")]
     pub include_url: bool,
+    /// Whether hardware tests (such as memory tests) are enabled
+    #[serde(default = "default_true")]
+    pub test_hardware: bool,
 }
 
 impl Default for Settings {
@@ -17,6 +22,7 @@ impl Default for Settings {
         Settings {
             submit_report: true,
             include_url: true,
+            test_hardware: true,
         }
     }
 }
@@ -36,4 +42,8 @@ impl Settings {
     pub fn to_string(&self) -> String {
         serde_json::to_string_pretty(self).unwrap()
     }
+}
+
+fn default_true() -> bool {
+    true
 }

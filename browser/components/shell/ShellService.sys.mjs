@@ -16,14 +16,14 @@ XPCOMUtils.defineLazyServiceGetter(
   lazy,
   "XreDirProvider",
   "@mozilla.org/xre/directory-provider;1",
-  "nsIXREDirProvider"
+  Ci.nsIXREDirProvider
 );
 
 XPCOMUtils.defineLazyServiceGetter(
   lazy,
   "BackgroundTasks",
   "@mozilla.org/backgroundtasks;1",
-  "nsIBackgroundTasks"
+  Ci.nsIBackgroundTasks
 );
 
 ChromeUtils.defineLazyGetter(lazy, "log", () => {
@@ -72,6 +72,28 @@ let ShellServiceInternal = {
   },
 
   /**
+   * Used to determine based on the creation date of the home folder how old a
+   * user profile is (and NOT the browser profile).
+   */
+  async getOSUserProfileAgeInDays() {
+    let currentDate = new Date();
+    let homeFolderCreationDate = new Date(
+      (
+        await IOUtils.stat(Services.dirsvc.get("Home", Ci.nsIFile).path)
+      ).creationTime
+    );
+    // Round and return the age (=difference between today and creation) to a
+    // resolution of days.
+    return Math.round(
+      (currentDate - homeFolderCreationDate) /
+        1000 / // ms
+        60 / // sec
+        60 / // min
+        24 // hours
+    );
+  },
+
+  /**
    * Used to determine whether or not to show a "Set Default Browser"
    * query dialog. This attribute is true if the application is starting
    * up and "browser.shell.checkDefaultBrowser" is true, otherwise it
@@ -112,13 +134,13 @@ let ShellServiceInternal = {
     return false;
   },
 
-  /*
+  /**
    * Check if UserChoice is impossible.
    *
    * Separated for easy stubbing in tests.
    *
-   * @return string telemetry result like "Err*", or null if UserChoice
-   * is possible.
+   * @returns {string}
+   *   Telemetry result like "Err*", or null if UserChoice is possible.
    */
   _userChoiceImpossibleTelemetryResult() {
     let winShellService = this.shellService.QueryInterface(
@@ -133,10 +155,11 @@ let ShellServiceInternal = {
     return null;
   },
 
-  /*
+  /**
    * Accommodate `setDefaultPDFHandlerOnlyReplaceBrowsers` feature.
-   * @return true if Firefox should set itself as default PDF handler, false
-   * otherwise.
+   *
+   * @returns {boolean}
+   *   True if Firefox should set itself as default PDF handler, false otherwise.
    */
   _shouldSetDefaultPDFHandler() {
     if (
@@ -225,14 +248,15 @@ let ShellServiceInternal = {
     };
   },
 
-  /*
+  /**
    * Set the default browser through the UserChoice registry keys on Windows.
    *
    * NOTE: This does NOT open the System Settings app for manual selection
    * in case of failure. If that is desired, catch the exception and call
    * setDefaultBrowser().
    *
-   * @return Promise, resolves when successful, rejects with Error on failure.
+   * @returns {Promise<void>}
+   *   Resolves when successful, rejects with Error on failure.
    */
   async setAsDefaultUserChoice() {
     if (AppConstants.platform != "win") {
@@ -284,12 +308,7 @@ let ShellServiceInternal = {
 
       throw ex;
     } finally {
-      try {
-        const histogram = Services.telemetry.getHistogramById(
-          "BROWSER_SET_DEFAULT_USER_CHOICE_RESULT"
-        );
-        histogram.add(telemetryResult);
-      } catch (ex) {}
+      Glean.browser.setDefaultUserChoiceResult[telemetryResult].add(1);
     }
   },
 
@@ -319,12 +338,9 @@ let ShellServiceInternal = {
 
       throw ex;
     } finally {
-      try {
-        const histogram = Services.telemetry.getHistogramById(
-          "BROWSER_SET_DEFAULT_PDF_HANDLER_USER_CHOICE_RESULT"
-        );
-        histogram.add(telemetryResult);
-      } catch (ex) {}
+      Glean.browser.setDefaultPdfHandlerUserChoiceResult[telemetryResult].add(
+        1
+      );
     }
   },
 
@@ -377,16 +393,12 @@ let ShellServiceInternal = {
       setAsDefaultError = true;
       console.error(ex);
     }
-    // Here BROWSER_IS_USER_DEFAULT and BROWSER_SET_USER_DEFAULT_ERROR appear
+    // Here isUserDefault and setUserDefaultError appear
     // to be inverse of each other, but that is only because this function is
     // called when the browser is set as the default. During startup we record
-    // the BROWSER_IS_USER_DEFAULT value without recording BROWSER_SET_USER_DEFAULT_ERROR.
-    Services.telemetry
-      .getHistogramById("BROWSER_IS_USER_DEFAULT")
-      .add(!setAsDefaultError);
-    Services.telemetry
-      .getHistogramById("BROWSER_SET_DEFAULT_ERROR")
-      .add(setAsDefaultError);
+    // the isUserDefault value without recording setUserDefaultError.
+    Glean.browser.isUserDefault[!setAsDefaultError ? "true" : "false"].add();
+    Glean.browser.setDefaultError[setAsDefaultError ? "true" : "false"].add();
   },
 
   setAsDefaultPDFHandler(onlyIfKnownBrowser = false) {
@@ -500,9 +512,8 @@ let ShellServiceInternal = {
   async pinToStartMenu() {
     if (await this.doesAppNeedStartMenuPin()) {
       try {
-        let pinSuccess = await this.shellService.pinCurrentAppToStartMenuAsync(
-          false
-        );
+        let pinSuccess =
+          await this.shellService.pinCurrentAppToStartMenuAsync(false);
         Services.prefs.setBoolPref(MSIX_PREVIOUSLY_PINNED_PREF, pinSuccess);
         return pinSuccess;
       } catch (err) {
@@ -584,10 +595,37 @@ let ShellServiceInternal = {
   },
 };
 
+// Functions may be present or absent dependent on whether the `nsIShellService`
+// has been queried for the interface implementing it, as querying the interface
+// adds it's functions to the queried JS object. Coincidental querying is more
+// likely to occur for Firefox Desktop than a Firefox Background Task. To force
+// consistent behavior, we query the native shell interface inheriting from
+// `nsIShellService` on setup.
+let shellInterface;
+switch (AppConstants.platform) {
+  case "win":
+    shellInterface = Ci.nsIWindowsShellService;
+    break;
+  case "macosx":
+    shellInterface = Ci.nsIMacShellService;
+    break;
+  case "linux":
+    shellInterface = Ci.nsIGNOMEShellService;
+    break;
+  default:
+    lazy.log.warn(
+      `No platform native shell service interface for ${AppConstants.platform} queried, add for new platforms.`
+    );
+    shellInterface = Ci.nsIShellService;
+}
+
 XPCOMUtils.defineLazyServiceGetters(ShellServiceInternal, {
-  defaultAgent: ["@mozilla.org/default-agent;1", "nsIDefaultAgent"],
-  shellService: ["@mozilla.org/browser/shell-service;1", "nsIShellService"],
-  macDockSupport: ["@mozilla.org/widget/macdocksupport;1", "nsIMacDockSupport"],
+  defaultAgent: ["@mozilla.org/default-agent;1", Ci.nsIDefaultAgent],
+  shellService: ["@mozilla.org/browser/shell-service;1", shellInterface],
+  macDockSupport: [
+    "@mozilla.org/widget/macdocksupport;1",
+    Ci.nsIMacDockSupport,
+  ],
 });
 
 /**
@@ -598,11 +636,13 @@ export var ShellService = new Proxy(ShellServiceInternal, {
     if (name in target) {
       return target[name];
     }
-    if (target.shellService) {
+    // n.b. If a native shell interface member is not present on `shellService`,
+    // it may be necessary to query the native interface.
+    if (target.shellService && name in target.shellService) {
       return target.shellService[name];
     }
-    Services.console.logStringMessage(
-      `${name} not found in ShellService: ${target.shellService}`
+    lazy.log.warn(
+      `${name.toString()} not found in ShellService: ${target.shellService}`
     );
     return undefined;
   },

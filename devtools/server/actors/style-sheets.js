@@ -19,6 +19,12 @@ loader.lazyRequireGetter(
   "resource://devtools/server/actors/utils/stylesheets-manager.js",
   true
 );
+loader.lazyRequireGetter(
+  this,
+  "getIndentationFromString",
+  "resource://devtools/shared/indentation.js",
+  true
+);
 
 /**
  * Creates a StyleSheetsActor. StyleSheetsActor provides remote access to the
@@ -28,14 +34,14 @@ class StyleSheetsActor extends Actor {
   constructor(conn, targetActor) {
     super(conn, styleSheetsSpec);
 
-    this.parentActor = targetActor;
+    this.targetActor = targetActor;
   }
 
   /**
    * The window we work with, taken from the parent actor.
    */
   get window() {
-    return this.parentActor.window;
+    return this.targetActor.window;
   }
 
   /**
@@ -52,7 +58,7 @@ class StyleSheetsActor extends Actor {
   }
 
   destroy() {
-    for (const win of this.parentActor.windows) {
+    for (const win of this.targetActor.windows) {
       // This flag only exists for devtools, so we are free to clear
       // it when we're done.
       win.document.styleSheetChangeEventsEnabled = false;
@@ -74,11 +80,16 @@ class StyleSheetsActor extends Actor {
    */
   async addStyleSheet(text, fileName = null) {
     const styleSheetsManager = this._getStyleSheetsManager();
-    await styleSheetsManager.addStyleSheet(this.document, text, fileName);
+    await styleSheetsManager.addStyleSheet(
+      this.document,
+      this.document.documentElement,
+      text,
+      fileName
+    );
   }
 
   _getStyleSheetsManager() {
-    return this.parentActor.getStyleSheetsManager();
+    return this.targetActor.getStyleSheetsManager();
   }
 
   toggleDisabled(resourceId) {
@@ -90,6 +101,14 @@ class StyleSheetsActor extends Actor {
     const styleSheetsManager = this._getStyleSheetsManager();
     const text = await styleSheetsManager.getText(resourceId);
     return new LongStringActor(this.conn, text || "");
+  }
+
+  async getStyleSheetIndentation(resourceId) {
+    const styleSheetsManager = this._getStyleSheetsManager();
+    const text = await styleSheetsManager.getText(resourceId);
+
+    const { indentUnit, indentWithTabs } = getIndentationFromString(text);
+    return indentWithTabs ? "\t" : " ".repeat(indentUnit);
   }
 
   update(resourceId, text, transition, cause = "") {

@@ -31,7 +31,6 @@
 #include "mozilla/Casting.h"
 #include "mozilla/DebugOnly.h"
 #include "mozilla/EndianUtils.h"
-#include "mozilla/FloatingPoint.h"
 #include "mozilla/Likely.h"
 #include "mozilla/MathAlgorithms.h"
 
@@ -291,6 +290,9 @@ class SimInstruction {
 
   // Test for a nop instruction, which falls under type 1.
   inline bool isNopType1() const { return bits(24, 0) == 0x0120F000; }
+
+  // Test for a yield instruction, which falls under type 1.
+  inline bool isYieldType1() const { return bits(24, 0) == 0x0120F001; }
 
   // Test for a nop instruction, which falls under type 1.
   inline bool isCsdbType1() const { return bits(24, 0) == 0x0120F014; }
@@ -2861,13 +2863,18 @@ void Simulator::decodeType01(SimInstruction* instr) {
     }
   } else if ((type == 1) && instr->isNopType1()) {
     // NOP.
+  } else if ((type == 1) && instr->isYieldType1()) {
+    AtomicOperations::pause();
   } else if ((type == 1) && instr->isCsdbType1()) {
     // Speculation barrier. (No-op for the simulator)
   } else {
     int rd = instr->rdValue();
     int rn = instr->rnValue();
-    int32_t rn_val = get_register(rn);
-    int32_t shifter_operand = 0;
+    // Use uint32_t here for integer overflow in operations below not to be
+    // undefined behavior, leading to our own calculations of overflow being
+    // messed up by the compiler.
+    uint32_t rn_val = get_register(rn);
+    uint32_t shifter_operand = 0;
     bool shifter_carry_out = 0;
     if (type == 0) {
       shifter_operand = getShiftRm(instr, &shifter_carry_out);

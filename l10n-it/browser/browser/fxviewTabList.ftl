@@ -14,10 +14,10 @@ fxviewtabrow-time = { DATETIME($time, timeStyle: "short") }
 #   $targetURI (string) - URL of tab that will be opened in the new tab
 fxviewtabrow-tabs-list-tab =
     .title = Apri { $targetURI } in una nuova scheda
+# Variables:
 #   $tabTitle (string) - Title of tab being closed
 fxviewtabrow-close-tab-button =
-  .title = Chiudi { $tabTitle }
-
+    .title = Chiudi { $tabTitle }
 # Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 fxviewtabrow-dismiss-tab-button =
@@ -53,6 +53,8 @@ fxviewtabrow-move-tab-end = Sposta alla fine
     .accesskey = a
 fxviewtabrow-move-tab-window = Sposta in una nuova finestra
     .accesskey = u
+fxviewtabrow-send-to-device = Invia a dispositivo
+    .accesskey = v
 fxviewtabrow-send-tab = Invia scheda a dispositivo
     .accesskey = v
 fxviewtabrow-pin-tab = Appunta scheda
@@ -68,7 +70,9 @@ fxviewtabrow-unmute-tab = Attiva audio nella scheda
 fxviewtabrow-options-menu-button =
     .title = Opzioni per { $tabTitle }
 
+## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
+
 fxviewtabrow-mute-tab-button-no-context =
-  .title = Disattiva audio nella scheda
+    .title = Disattiva audio nella scheda
 fxviewtabrow-unmute-tab-button-no-context =
-  .title = Attiva audio nella scheda
+    .title = Attiva audio nella scheda

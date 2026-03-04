@@ -16,9 +16,22 @@ def Binary():
 
 
 @template
+def MaybeAddProfiling(name):
+    if (
+        CONFIG["MOZ_ENABLE_FORKSERVER"]
+        and CONFIG["NIGHTLY_BUILD"]
+        and CONFIG["OS_TARGET"] == "Linux"
+        and CONFIG["MOZ_PROFILE_GENERATE"] == "1"
+    ):
+        USE_LIBS += ["profiling"]
+
+
+@template
 def Program(name):
     """Template for program executables."""
     PROGRAM = name
+
+    MaybeAddProfiling(name)
 
     Binary()
 
@@ -125,6 +138,8 @@ def SharedLibrary(name, output_category=None):
 
     if output_category:
         SHARED_LIBRARY_OUTPUT_CATEGORY = output_category
+
+    MaybeAddProfiling(name)
 
     Binary()
 
@@ -239,6 +254,19 @@ def GeneratedFile(name, *names, **kwargs):
     generated_file.inputs = inputs
     generated_file.flags = flags
     generated_file.force = force
+
+
+@template
+def LegacyTest(*args, **kwargs):
+    """Add one test to LEGACY_RUN_TESTS with the given attributes."""
+
+    LEGACY_RUN_TESTS += [{"args": args}]
+    test = LEGACY_RUN_TESTS[-1]
+    test["env"] = kwargs.pop("env", None)
+    test["description"] = kwargs.pop("description", None)
+    test["depends"] = kwargs.pop("depends", ())
+    if kwargs:
+        error("Unrecognized argument(s) to LegacyTest: %s" % ", ".join(kwargs))
 
 
 @template

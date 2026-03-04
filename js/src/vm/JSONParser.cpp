@@ -33,6 +33,7 @@
 #include "js/GCVector.h"                // JS::GCVector
 #include "js/Id.h"                      // jsid
 #include "js/JSON.h"                    // JS::IsValidJSON
+#include "js/PropertyAndElement.h"      // JS_SetPropertyById
 #include "js/RootingAPI.h"  // JS::Handle, JS::MutableHandle, MutableWrappedPtrOperations
 #include "js/TypeDecls.h"  // Latin1Char
 #include "js/Utility.h"    // js_delete
@@ -43,8 +44,8 @@
 #include "vm/ErrorReporting.h"   // ReportCompileErrorLatin1, ErrorMetadata
 #include "vm/JSAtomUtils.h"      // AtomizeChars
 #include "vm/JSContext.h"        // JSContext
-#include "vm/PlainObject.h"      // NewPlainObjectWithMaybeDuplicateKeys
-#include "vm/Realm.h"            // JS::Realm
+#include "vm/PlainObject.h"  // NewPlainObjectWithMaybeDuplicateKeys, NewPlainObjectWithProto
+#include "vm/Realm.h"  // JS::Realm
 #include "vm/StringType.h"  // JSString, JSAtom, JSLinearString, NewStringCopyN, NameToId
 
 #include "vm/JSAtomUtils-inl.h"  // AtomToId
@@ -595,6 +596,17 @@ void JSONTokenizer<CharT, ParserT>::error(const char* msg) {
   parser->error(msg);
 }
 
+static void ReportJSONSyntaxError(FrontendContext* fc, ErrorMetadata&& metadata,
+                                  unsigned errorNumber, ...) {
+  va_list args;
+  va_start(args, errorNumber);
+
+  js::ReportCompileErrorLatin1VA(fc, std::move(metadata), nullptr, errorNumber,
+                                 &args);
+
+  va_end(args);
+}
+
 // JSONFullParseHandlerAnyChar uses an AutoSelectGCHeap to switch to allocating
 // in the tenured heap if we trigger more than one nursery collection.
 //
@@ -839,8 +851,22 @@ void JSONFullParseHandler<CharT>::reportError(const char* msg, uint32_t line,
   char lineString[MaxWidth];
   SprintfLiteral(lineString, "%" PRIu32, line);
 
-  JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr, JSMSG_JSON_BAD_PARSE,
-                            msg, lineString, columnString);
+  if (reportLineNumbersFromParsedData) {
+    AutoReportFrontendContext fc(cx);
+
+    ErrorMetadata metadata;
+    metadata.isMuted = false;
+    metadata.filename = filename.valueOr(JS::ConstUTF8CharsZ(""));
+    metadata.lineNumber = line;
+    metadata.columnNumber = JS::ColumnNumberOneOrigin(column);
+
+    ReportJSONSyntaxError(&fc, std::move(metadata), JSMSG_JSON_BAD_PARSE, msg,
+                          lineString, columnString);
+  } else {
+    JS_ReportErrorNumberASCII(cx, GetErrorMessage, nullptr,
+                              JSMSG_JSON_BAD_PARSE, msg, lineString,
+                              columnString);
+  }
 }
 
 template <typename CharT, typename HandlerT>
@@ -1044,12 +1070,10 @@ template class js::JSONPerHandlerParser<Latin1Char,
 template class js::JSONPerHandlerParser<char16_t,
                                         js::JSONFullParseHandler<char16_t>>;
 
-#ifdef ENABLE_JSON_PARSE_WITH_SOURCE
 template class js::JSONPerHandlerParser<Latin1Char,
                                         js::JSONReviveHandler<Latin1Char>>;
 template class js::JSONPerHandlerParser<char16_t,
                                         js::JSONReviveHandler<char16_t>>;
-#endif
 
 template class js::JSONPerHandlerParser<Latin1Char,
                                         js::JSONSyntaxParseHandler<Latin1Char>>;
@@ -1082,11 +1106,15 @@ void JSONParser<CharT>::trace(JSTracer* trc) {
 template class js::JSONParser<Latin1Char>;
 template class js::JSONParser<char16_t>;
 
-#ifdef ENABLE_JSON_PARSE_WITH_SOURCE
 template <typename CharT>
 inline bool JSONReviveHandler<CharT>::objectOpen(Vector<StackEntry, 10>& stack,
                                                  PropertyVector** properties) {
-  if (!parseRecordStack.append(ParseRecordEntry{context()})) {
+  ParseRecordObject* newParseRecord =
+      ParseRecordObject::create(context(), JS::Value());
+  if (!newParseRecord) {
+    return false;
+  }
+  if (!parseRecordStack.append(newParseRecord)) {
     return false;
   }
 
@@ -1100,9 +1128,15 @@ inline bool JSONReviveHandler<CharT>::finishObjectMember(
   if (!Base::finishObjectMember(stack, value, properties)) {
     return false;
   }
-  parseRecord.value = value;
-  return finishMemberParseRecord((*properties)->back().id,
-                                 parseRecordStack.back());
+
+  Rooted<ParseRecordObject*> memberRecord(context(),
+                                          parseRecordStack.popCopy());
+  // Removes the member's key from the stack
+  parseRecordStack.popBack();
+
+  Rooted<JS::PropertyKey> key(context(), (*properties)->back().id);
+
+  return parseRecordStack.back()->addEntries(context(), key, memberRecord);
 }
 
 template <typename CharT>
@@ -1112,18 +1146,19 @@ inline bool JSONReviveHandler<CharT>::finishObject(
   if (!Base::finishObject(stack, vp, properties)) {
     return false;
   }
-  if (!finishCompoundParseRecord(vp, parseRecordStack.back())) {
-    return false;
-  }
-  parseRecordStack.popBack();
-
+  parseRecordStack.back()->setValue(vp);
   return true;
 }
 
 template <typename CharT>
 inline bool JSONReviveHandler<CharT>::arrayOpen(Vector<StackEntry, 10>& stack,
                                                 ElementVector** elements) {
-  if (!parseRecordStack.append(ParseRecordEntry{context()})) {
+  ParseRecordObject* newParseRecord =
+      ParseRecordObject::create(context(), JS::Value());
+  if (!newParseRecord) {
+    return false;
+  }
+  if (!parseRecordStack.append(newParseRecord)) {
     return false;
   }
 
@@ -1138,8 +1173,13 @@ inline bool JSONReviveHandler<CharT>::arrayElement(
     return false;
   }
   size_t index = (*elements)->length() - 1;
-  JS::PropertyKey key = js::PropertyKey::Int(index);
-  return finishMemberParseRecord(key, parseRecordStack.back());
+  // The JSON string is limited to JS::MaxStringLength, so there should be no
+  // way to get more than IntMax elements
+  MOZ_ASSERT(index <= js::PropertyKey::IntMax);
+  Rooted<JS::PropertyKey> key(context(), js::PropertyKey::Int(int32_t(index)));
+
+  Rooted<ParseRecordObject*> parseRecord(context(), parseRecordStack.popCopy());
+  return parseRecordStack.back()->addEntries(context(), key, parseRecord);
 }
 
 template <typename CharT>
@@ -1149,27 +1189,8 @@ inline bool JSONReviveHandler<CharT>::finishArray(
   if (!Base::finishArray(stack, vp, elements)) {
     return false;
   }
-  if (!finishCompoundParseRecord(vp, parseRecordStack.back())) {
-    return false;
-  }
-  parseRecordStack.popBack();
-
+  parseRecordStack.back()->setValue(vp);
   return true;
-}
-
-template <typename CharT>
-inline bool JSONReviveHandler<CharT>::finishMemberParseRecord(
-    JS::PropertyKey& key, ParseRecordEntry& objectEntry) {
-  parseRecord.key = key;
-  return objectEntry.put(key, std::move(parseRecord));
-}
-
-template <typename CharT>
-inline bool JSONReviveHandler<CharT>::finishCompoundParseRecord(
-    const Value& value, ParseRecordEntry& objectEntry) {
-  Rooted<JSONParseNode*> parseNode(context());
-  parseRecord = ParseRecordObject(parseNode, value);
-  return parseRecord.addEntries(context(), std::move(objectEntry));
 }
 
 template <typename CharT>
@@ -1181,30 +1202,36 @@ inline bool JSONReviveHandler<CharT>::finishPrimitiveParseRecord(
   if (!parseNode) {
     return false;
   }
-  parseRecord = ParseRecordObject(parseNode, value);
-  return true;
+
+  ParseRecordObject* parseRecord =
+      ParseRecordObject::create(context(), parseNode, value);
+  if (!parseRecord) {
+    return false;
+  }
+
+  return !!parseRecordStack.append(parseRecord);
 }
 
 template <typename CharT>
 void JSONReviveHandler<CharT>::trace(JSTracer* trc) {
   Base::trace(trc);
-  parseRecord.trace(trc);
-  for (auto& entry : this->parseRecordStack) {
-    entry.trace(trc);
-  }
+  this->parseRecordStack.trace(trc);
 }
 
 template <typename CharT>
 bool JSONReviveParser<CharT>::parse(JS::MutableHandle<JS::Value> vp,
-                                    JS::MutableHandle<ParseRecordObject> pro) {
+                                    JS::MutableHandle<ParseRecordObject*> pro) {
   JS::Rooted<JS::Value> tempValue(this->handler.cx);
 
   vp.setUndefined();
 
-  bool result = this->parseImpl(
-      tempValue, [&](JS::Handle<JS::Value> value) { vp.set(value); });
-  pro.set(std::move(this->handler.parseRecord));
-  return result;
+  if (!this->parseImpl(tempValue,
+                       [&](JS::Handle<JS::Value> value) { vp.set(value); })) {
+    return false;
+  }
+  MOZ_ASSERT(this->handler.getParseRecordObject());
+  pro.set(this->handler.getParseRecordObject());
+  return true;
 }
 
 template <typename CharT>
@@ -1222,7 +1249,6 @@ void JSONReviveParser<CharT>::trace(JSTracer* trc) {
 
 template class js::JSONReviveParser<Latin1Char>;
 template class js::JSONReviveParser<char16_t>;
-#endif  // ENABLE_JSON_PARSE_WITH_SOURCE
 
 template <typename CharT>
 inline bool JSONSyntaxParseHandler<CharT>::objectOpen(
@@ -1256,17 +1282,6 @@ inline bool JSONSyntaxParseHandler<CharT>::finishArray(
     Vector<StackEntry, 10>& stack, DummyValue* vp, ElementVector* elements) {
   stack.popBack();
   return true;
-}
-
-static void ReportJSONSyntaxError(FrontendContext* fc, ErrorMetadata&& metadata,
-                                  unsigned errorNumber, ...) {
-  va_list args;
-  va_start(args, errorNumber);
-
-  js::ReportCompileErrorLatin1VA(fc, std::move(metadata), nullptr, errorNumber,
-                                 &args);
-
-  va_end(args);
 }
 
 template <typename CharT>

@@ -18,6 +18,10 @@ support-addons-type = Тып
 support-addons-enabled = Уключаны
 support-addons-version = Версія
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Размяшчэнне
 legacy-user-stylesheets-title = Састарэлыя карыстальніцкія табліцы стыляў
 legacy-user-stylesheets-enabled = Дзейны
 legacy-user-stylesheets-stylesheet-types = Табліцы стыляў
@@ -132,6 +136,10 @@ place-database-stats-efficiency-perc = Эфектыўнасць (%)
 place-database-stats-sequentiality-perc = Паслядоўнасць (%)
 place-database-integrity = Цэльнасць
 place-database-verify-integrity = Праверыць цэльнасць
+place-database-last-idle-maintenance-data = Дата апошняга тэхнічнага абслугоўвання на прастоі
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = Дата апошняй чысткі
+place-database-last-integrity-corruption-date = Дата апошняга парушэння цэльнасці
 a11y-title = Даступнасць
 a11y-activated = Задзейнічаны
 a11y-force-disabled = Прадухіліць даступнасць
@@ -184,6 +192,8 @@ media-capabilities-enumerate = Пералічыць базу дадзеных
 
 media-codec-support-sw-decoding = Праграмнае дэкадаванне
 media-codec-support-hw-decoding = Апаратнае дэкадаванне
+media-codec-support-sw-encoding = Праграмнае кадаванне
+media-codec-support-hw-encoding = Апаратнае кадаванне
 media-codec-support-codec-name = Назва кодэка
 media-codec-support-supported = Падтрымліваецца
 media-codec-support-unsupported = Не падтрымліваецца

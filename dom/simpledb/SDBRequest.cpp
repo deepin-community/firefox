@@ -10,8 +10,8 @@
 #include "SDBConnection.h"
 
 // Global includes
-#include <utility>
-#include "mozilla/MacroForEach.h"
+
+#include "mozilla/ErrorNames.h"
 #include "nsError.h"
 #include "nsISDBCallbacks.h"
 #include "nsISupportsUtils.h"
@@ -102,6 +102,18 @@ SDBRequest::GetResultCode(nsresult* aResultCode) {
   }
 
   *aResultCode = mResultCode;
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+SDBRequest::GetResultName(nsACString& aResultName) {
+  AssertIsOnOwningThread();
+
+  if (!mHaveResultOrErrorCode) {
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+
+  mozilla::GetErrorName(mResultCode, aResultName);
   return NS_OK;
 }
 

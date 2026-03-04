@@ -5,10 +5,11 @@
 # Used as the FxA toolbar menu item value when user has not
 # finished setting up an account.
 account-finish-account-setup = Finalizează configurarea contului
-
+# Used as the FxA toolbar menu item title when the user
+# needs to reconnect their account.
+account-disconnected2 = Cont deconectat
 # Menu item that sends a tab to all synced devices.
 account-send-to-all-devices = Trimite tuturor dispozitivelor
-
 # Menu item that links to the Firefox Accounts settings for connected devices.
 account-manage-devices = Gestionează dispozitivele…
 
@@ -28,10 +29,8 @@ account-manage-devices-titlecase = Gestionează dispozitivele…
 
 # Redirects to a marketing page.
 account-send-tab-to-device-singledevice-status = Niciun dispozitiv conectat
-
 # Redirects to a marketing page.
 account-send-tab-to-device-singledevice-learnmore = Află despre trimiterea filelor…
-
 # Redirects to an FxAccounts page that tells to you to connect another device.
 account-send-tab-to-device-connectdevice = Conectează alt dispozitiv…
 
@@ -43,16 +42,19 @@ account-send-tab-to-device-verify = Verifică-ți contul…
 
 ## These strings are used in a notification shown when a new device joins the Firefox account.
 
+# The title shown in a notification when either this device or another device
+# has connected to, or disconnected from, a Firefox account.
+account-connection-title = { -fxaccount-brand-name(capitalization: "title") }
+# The title shown in a notification when either this device or another device
+# has connected to, or disconnected from, a Firefox account.
+account-connection-title-2 = Cont
 # Variables:
 #   $deviceName (String): the name of the new device
 account-connection-connected-with = Acest calculator este acum conectat cu { $deviceName }.
-
 # Used when the name of the new device is not known.
 account-connection-connected-with-noname = Acest calculator este acum conectat cu un dispozitiv nou.
-
 # Used in a notification shown after a Firefox account is connected to the current device.
 account-connection-connected = Te-ai autentificat cu succes
-
 # Used in a notification shown after the Firefox account was disconnected remotely.
 account-connection-disconnected = Acest calculator a fost deconectat.
 
@@ -64,7 +66,6 @@ account-single-tab-arriving-title = Filă primită
 # Variables:
 #   $deviceName (String): the device name.
 account-single-tab-arriving-from-device-title = Filă de pe { $deviceName }
-
 # Used when a tab from a remote device arrives but the URL must be truncated.
 # Should display the URL with an indication that it's been truncated.
 # Variables:
@@ -77,7 +78,6 @@ account-single-tab-arriving-truncated-url = { $url }…
 ##   $tabCount (Number): the number of tabs received
 
 account-multiple-tabs-arriving-title = File primită
-
 # Variables:
 #   $deviceName (String): the device name.
 account-multiple-tabs-arriving-from-single-device =
@@ -98,4 +98,17 @@ account-multiple-tabs-arriving-from-unknown-device =
         [one] { $tabCount } filă a ajuns
         [few] { $tabCount } file au ajuns
        *[other] { $tabCount } de file au ajuns
+    }
+
+## These strings are used in notifications in which the user remotely closed
+## tabs from other devices
+## Variables:
+##   $closedCount (Number): the number of tabs closed
+
+account-view-recently-closed-tabs = Vezi filele închise recent
+account-tabs-closed-remotely =
+    { $closedCount ->
+        [one] { $closedCount } filă { -brand-short-name } închisă
+        [few] { $closedCount } file { -brand-short-name } închise
+       *[other] { $closedCount } de file { -brand-short-name } închise
     }

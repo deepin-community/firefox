@@ -14,7 +14,6 @@ namespace js {
 namespace jit {
 
 class CodeGeneratorARM64;
-class OutOfLineBailout;
 class OutOfLineTableSwitch;
 
 using OutOfLineWasmTruncateCheck =
@@ -24,36 +23,67 @@ class CodeGeneratorARM64 : public CodeGeneratorShared {
   friend class MoveResolverARM64;
 
  protected:
-  CodeGeneratorARM64(MIRGenerator* gen, LIRGraph* graph, MacroAssembler* masm);
+  CodeGeneratorARM64(MIRGenerator* gen, LIRGraph* graph, MacroAssembler* masm,
+                     const wasm::CodeMetadata* wasmCodeMeta);
 
   NonAssertingLabel deoptLabel_;
 
   MoveOperand toMoveOperand(const LAllocation a) const;
 
   void bailoutIf(Assembler::Condition condition, LSnapshot* snapshot);
+  void bailoutIfZero(Assembler::Condition condition, ARMRegister rt,
+                     LSnapshot* snapshot);
   void bailoutFrom(Label* label, LSnapshot* snapshot);
   void bailout(LSnapshot* snapshot);
 
   template <typename T1, typename T2>
   void bailoutCmpPtr(Assembler::Condition c, T1 lhs, T2 rhs,
                      LSnapshot* snapshot) {
+    if constexpr (std::is_same_v<T1, Register> &&
+                  (std::is_same_v<T2, Imm32> || std::is_same_v<T2, Imm64> ||
+                   std::is_same_v<T2, ImmWord> || std::is_same_v<T2, ImmPtr>)) {
+      if (rhs.value == 0) {
+        if (c == Assembler::Equal) {
+          bailoutIfZero(Assembler::Zero, ARMRegister(lhs, 64), snapshot);
+          return;
+        }
+        if (c == Assembler::NotEqual) {
+          bailoutIfZero(Assembler::NonZero, ARMRegister(lhs, 64), snapshot);
+          return;
+        }
+      }
+    }
     masm.cmpPtr(lhs, rhs);
-    return bailoutIf(c, snapshot);
-  }
-  void bailoutTestPtr(Assembler::Condition c, Register lhs, Register rhs,
-                      LSnapshot* snapshot) {
-    masm.testPtr(lhs, rhs);
     return bailoutIf(c, snapshot);
   }
   template <typename T1, typename T2>
   void bailoutCmp32(Assembler::Condition c, T1 lhs, T2 rhs,
                     LSnapshot* snapshot) {
+    if constexpr (std::is_same_v<T1, Register> && std::is_same_v<T2, Imm32>) {
+      if (rhs.value == 0) {
+        if (c == Assembler::Equal) {
+          bailoutIfZero(Assembler::Zero, ARMRegister(lhs, 32), snapshot);
+          return;
+        }
+        if (c == Assembler::NotEqual) {
+          bailoutIfZero(Assembler::NonZero, ARMRegister(lhs, 32), snapshot);
+          return;
+        }
+      }
+    }
     masm.cmp32(lhs, rhs);
     return bailoutIf(c, snapshot);
   }
   template <typename T1, typename T2>
   void bailoutTest32(Assembler::Condition c, T1 lhs, T2 rhs,
                      LSnapshot* snapshot) {
+    if constexpr (std::is_same_v<T1, Register> &&
+                  std::is_same_v<T2, Register>) {
+      if (lhs == rhs && (c == Assembler::Zero || c == Assembler::NonZero)) {
+        bailoutIfZero(c, ARMRegister(lhs, 32), snapshot);
+        return;
+      }
+    }
     masm.test32(lhs, rhs);
     return bailoutIf(c, snapshot);
   }
@@ -72,38 +102,21 @@ class CodeGeneratorARM64 : public CodeGeneratorShared {
   void emitTableSwitchDispatch(MTableSwitch* mir, Register index,
                                Register base);
 
-  void emitBigIntDiv(LBigIntDiv* ins, Register dividend, Register divisor,
-                     Register output, Label* fail);
-  void emitBigIntMod(LBigIntMod* ins, Register dividend, Register divisor,
-                     Register output, Label* fail);
-  void emitSimpleBinaryI64(
-      LInstructionHelper<INT64_PIECES, 2 * INT64_PIECES, 0>* lir, JSOp op);
-
-  ValueOperand ToValue(LInstruction* ins, size_t pos);
-  ValueOperand ToTempValue(LInstruction* ins, size_t pos);
+  void emitBigIntPtrDiv(LBigIntPtrDiv* ins, Register dividend, Register divisor,
+                        Register output);
+  void emitBigIntPtrMod(LBigIntPtrMod* ins, Register dividend, Register divisor,
+                        Register output);
 
   void generateInvalidateEpilogue();
 
  public:
-  void visitOutOfLineBailout(OutOfLineBailout* ool);
+  void emitBailoutOOL(LSnapshot* snapshot);
+
   void visitOutOfLineTableSwitch(OutOfLineTableSwitch* ool);
   void visitOutOfLineWasmTruncateCheck(OutOfLineWasmTruncateCheck* ool);
 };
 
 using CodeGeneratorSpecific = CodeGeneratorARM64;
-
-// An out-of-line bailout thunk.
-class OutOfLineBailout : public OutOfLineCodeBase<CodeGeneratorARM64> {
- protected:  // Silence Clang warning.
-  LSnapshot* snapshot_;
-
- public:
-  explicit OutOfLineBailout(LSnapshot* snapshot) : snapshot_(snapshot) {}
-
-  void accept(CodeGeneratorARM64* codegen) override;
-
-  LSnapshot* snapshot() const { return snapshot_; }
-};
 
 }  // namespace jit
 }  // namespace js

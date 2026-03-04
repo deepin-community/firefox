@@ -223,7 +223,9 @@ add_task(async function test_update() {
   let expected = "n:" + SBRS_UPDATE_MINIMUM_DELAY + "\n";
   for (const table of TEST_TABLES) {
     if (["content-fingerprinting-track-digest256"].includes(table[0])) {
-      expected += `i:${table[0]}\n` + readFileToString(`data/${table[0]}`);
+      expected += `i:${table[0]}\n`;
+      expected += `ad:${1575583456 - 1}\n`;
+      expected += readFileToString(`data/${table[0]}`);
     }
   }
 
@@ -291,7 +293,9 @@ add_test(function test_update() {
   streamUpdater.downloadUpdates(
     "content-fingerprinting-track-digest256",
     "content-fingerprinting-track-digest256;\n",
+    "",
     true,
+    "test",
     "moz-sbrs://remote-setting",
     updateSuccess,
     handleError,
@@ -349,7 +353,9 @@ add_test(function test_update_download_error() {
   streamUpdater.downloadUpdates(
     "social-track-digest256",
     "social-track-digest256;\n",
+    "",
     true,
+    "test",
     "moz-sbrs://remote-setting",
     updateSuccessOrError,
     updateSuccessOrError,
@@ -374,7 +380,9 @@ add_test(function test_update_update_error() {
   streamUpdater.downloadUpdates(
     "analytic-track-digest256",
     "analytic-track-digest256;\n",
+    "",
     true,
+    "test",
     "moz-sbrs://remote-setting",
     updateSuccessOrDownloadError,
     updateError,
@@ -411,7 +419,9 @@ add_task(async function test_update_large_file() {
   let expected = "n:" + SBRS_UPDATE_MINIMUM_DELAY + "\n";
   for (const table of TEST_TABLES) {
     if (["google-trackwhite-digest256"].includes(table[0])) {
-      expected += `i:${table[0]}\n` + readFileToString(`data/${table[0]}`);
+      expected += `i:${table[0]}\n`;
+      expected += `ad:${1575583456 - 1}\n`;
+      expected += readFileToString(`data/${table[0]}`);
     }
   }
 

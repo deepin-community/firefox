@@ -4,23 +4,23 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import assert from 'assert';
-import {readFile, readFileSync} from 'fs';
+import assert from 'node:assert';
+import {readFile, readFileSync} from 'node:fs';
 import {
   createServer as createHttpServer,
   type IncomingMessage,
   type RequestListener,
   type Server as HttpServer,
   type ServerResponse,
-} from 'http';
+} from 'node:http';
 import {
   createServer as createHttpsServer,
   type Server as HttpsServer,
   type ServerOptions as HttpsServerOptions,
-} from 'https';
-import type {AddressInfo} from 'net';
-import {join} from 'path';
-import type {Duplex} from 'stream';
+} from 'node:https';
+import type {AddressInfo} from 'node:net';
+import {join} from 'node:path';
+import type {Duplex} from 'node:stream';
 import {gzip} from 'zlib';
 
 import {getType as getMimeType} from 'mime';
@@ -158,7 +158,7 @@ export class TestServer {
 
   setRoute(
     path: string,
-    handler: (req: IncomingMessage, res: ServerResponse) => void
+    handler: (req: IncomingMessage, res: ServerResponse) => void,
   ): void {
     this.#routes.set(path, handler);
   }
@@ -205,7 +205,7 @@ export class TestServer {
 
   #onRequest: RequestListener = (
     request: TestIncomingMessage,
-    response
+    response,
   ): void => {
     this.#requests.add(response);
 
@@ -227,12 +227,12 @@ export class TestServer {
     });
     assert(request.url);
     const url = new URL(request.url, `https://${request.headers.host}`);
-    const path = url.pathname + url.search;
+    const path = url.pathname;
     const auth = this.#auths.get(path);
     if (auth) {
       const credentials = Buffer.from(
         (request.headers.authorization || '').split(' ')[1] || '',
-        'base64'
+        'base64',
       ).toString();
       if (credentials !== `${auth.username}:${auth.password}`) {
         response.writeHead(401, {
@@ -258,8 +258,9 @@ export class TestServer {
   serveFile(
     request: IncomingMessage,
     response: ServerResponse,
-    pathName: string
+    pathName: string,
   ): void {
+    pathName = decodeURIComponent(pathName);
     if (pathName === '/') {
       pathName = '/index.html';
     }
@@ -296,7 +297,7 @@ export class TestServer {
       const mimeType = getMimeType(filePath);
       if (mimeType) {
         const isTextEncoding = /^text\/|^application\/(javascript|json)/.test(
-          mimeType
+          mimeType,
         );
         const contentType = isTextEncoding
           ? `${mimeType}; charset=utf-8`

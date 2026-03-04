@@ -37,7 +37,7 @@ about-reader-estimated-read-time =
        *[other] { $range } minut
     }
 
-## These are used as tooltips in Type Control
+## Reader View text and layout menu
 
 about-reader-toolbar-minus =
     .title = Zmanjšaj velikost pisave
@@ -76,19 +76,24 @@ about-reader-customtheme-tab = Po meri
 ## The .title element is used to make the editing functionality
 ## clear and give context for screen reader users.
 
-about-reader-custom-colors-foreground = Besedilo
-    .title = Nastavi barvo
-about-reader-custom-colors-background = Ozadje
-    .title = Nastavi barvo
-about-reader-custom-colors-unvisited-links = Neobiskane povezave
-    .title = Nastavi barvo
-about-reader-custom-colors-visited-links = Obiskane povezave
-    .title = Nastavi barvo
-about-reader-custom-colors-selection-highlight = Označevalnik za glasno branje
-    .title = Nastavi barvo
 about-reader-reset-button = Ponastavi privzeto
+about-reader-custom-colors-foreground2 =
+    .label = Besedilo
+    .title = Nastavi barvo
+about-reader-custom-colors-background2 =
+    .label = Ozadje
+    .title = Nastavi barvo
+about-reader-custom-colors-unvisited-links2 =
+    .label = Neobiskane povezave
+    .title = Nastavi barvo
+about-reader-custom-colors-visited-links2 =
+    .label = Obiskane povezave
+    .title = Nastavi barvo
+about-reader-custom-colors-selection-highlight2 =
+    .label = Označevalnik za glasno branje
+    .title = Nastavi barvo
 
-## Reader View improved text and layout menu
+## Reader View text and layout menu
 
 about-reader-text-header = Besedilo
 about-reader-text-size-label = Velikost besedila
@@ -116,3 +121,5 @@ about-reader-text-alignment-center =
     .title = Poravnaj besedilo na sredino
 about-reader-text-alignment-right =
     .title = Poravnaj besedilo desno
+about-reader-text-alignment-justify =
+    .title = Poravnaj besedilo obojestransko

@@ -7,6 +7,10 @@
 
 "use strict";
 
+ChromeUtils.defineESModuleGetters(this, {
+  SearchUIUtils: "moz-src:///browser/components/search/SearchUIUtils.sys.mjs",
+});
+
 var { ExtensionError } = ExtensionUtils;
 
 const dispositionMap = {
@@ -51,7 +55,7 @@ this.search = class extends ExtensionAPI {
               if (
                 favIconUrl &&
                 (favIconUrl.startsWith("blob:") ||
-                  (favIconUrl.startsWith("moz-extension:") &&
+                  (ExtensionUtils.isExtensionUrl(favIconUrl) &&
                     !favIconUrl.startsWith(context.extension.baseURL)))
               ) {
                 favIconUrl = await ExtensionUtils.makeDataURI(favIconUrl);
@@ -86,12 +90,14 @@ this.search = class extends ExtensionAPI {
             defaultDisposition: "NEW_TAB",
           });
 
-          await windowTracker.topWindow.BrowserSearch.loadSearchFromExtension({
-            query: searchProperties.query,
+          await SearchUIUtils.loadSearch({
+            window: windowTracker.topWindow,
+            searchText: searchProperties.query,
             where,
             engine,
             tab,
             triggeringPrincipal: context.principal,
+            sapSource: "webextension",
           });
         },
 
@@ -104,11 +110,13 @@ this.search = class extends ExtensionAPI {
             defaultDisposition: "CURRENT_TAB",
           });
 
-          await windowTracker.topWindow.BrowserSearch.loadSearchFromExtension({
-            query: queryProperties.text,
+          await SearchUIUtils.loadSearch({
+            window: windowTracker.topWindow,
+            searchText: queryProperties.text,
             where,
             tab,
             triggeringPrincipal: context.principal,
+            sapSource: "webextension",
           });
         },
       },

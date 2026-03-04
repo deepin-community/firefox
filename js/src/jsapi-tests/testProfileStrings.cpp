@@ -7,8 +7,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/Atomics.h"
-
 #include "js/CallAndConstruct.h"
 #include "js/ContextOptions.h"
 #include "js/GlobalObject.h"
@@ -16,7 +14,7 @@
 #include "jsapi-tests/tests.h"
 #include "vm/JSContext.h"
 
-static ProfilingStack profilingStack;
+MOZ_RUNINIT static ProfilingStack profilingStack;
 static uint32_t peakStackPointer = 0;
 
 static void reset(JSContext* cx) {

@@ -1,25 +1,24 @@
 # Any copyright is dedicated to the Public Domain.
 # http://creativecommons.org/publicdomain/zero/1.0/
 
+import io
 import json
 import time
 import types
 
 import mozunit
 import pytest
-import six
 from conftest import setup_args
 from mozlog.formatters import JSONFormatter
 from mozlog.handlers.base import StreamHandler
 from mozlog.structuredlog import StructuredLogger
-from six import string_types
 
 
 @pytest.fixture
 def logger():
     logger = StructuredLogger("mochitest_message_logger")
 
-    buf = six.StringIO()
+    buf = io.StringIO()
     handler = StreamHandler(buf, JSONFormatter())
     logger.add_handler(handler)
     return logger
@@ -83,7 +82,7 @@ def get_lines(logger):
 @pytest.fixture
 def assert_actions(get_lines):
     def inner(expected):
-        if isinstance(expected, string_types):
+        if isinstance(expected, str):
             expected = [expected]
 
         lines = get_lines()
@@ -120,17 +119,15 @@ def test_buffering_on(get_message_logger, assert_actions):
 
     # test end, it failed! All previsouly buffered messages are now logged.
     ml.fake_message("test_end", status="FAIL")
-    assert_actions(
-        [
-            "log",  # "Buffered messages logged"
-            "test_status",
-            "log",
-            "test_status",
-            "log",
-            "log",  # "Buffered messages finished"
-            "test_end",
-        ]
-    )
+    assert_actions([
+        "log",  # "Buffered messages logged"
+        "test_status",
+        "log",
+        "test_status",
+        "log",
+        "log",  # "Buffered messages finished"
+        "test_end",
+    ])
 
     # enabling buffering outside of a test has no affect
     ml.fake_message("buffering_on")

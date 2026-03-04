@@ -6,11 +6,22 @@ contentanalysis-alert-title = Analyza wopśimjeśa
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
 contentanalysis-slow-agent-notification = Rěd Analyza wopśimjeśa dłujko trjeba, aby za resursu „{ $content }“ wótegronił
-contentanalysis-slow-agent-dialog-header = Skannujo se
+contentanalysis-slow-agent-dialog-header = Scannujo se
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
 #   $filename - Name of the file being analyzed, such as "aFile.txt"
 contentanalysis-slow-agent-dialog-body-file = { $agent } „{ $filename }“ na zakłaźe datowych pšawidłow wašeje organizacije pśeglědujo. To wokognuśe trajo.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $filename - Name of a file being analyzed, such as "aFile.txt"
+#   $count (number) - The number of additional items in the request for analysis
+contentanalysis-slow-agent-dialog-body-file-and-more =
+    { $count ->
+        [one] { $agent } „{ $filename }“ a { $count } pśidatny zapisk na zakłaźe datowych pšawidłow wašeje organizacije pśeglědujo. To wokognuśe trajo.
+        [two] { $agent } „{ $filename }“ a { $count } pśidatnej zapiska na zakłaźe datowych pšawidłow wašeje organizacije pśeglědujo. To wokognuśe trajo.
+        [few] { $agent } „{ $filename }“ a { $count } pśidatne zapiski na zakłaźe datowych pšawidłow wašeje organizacije pśeglědujo. To wokognuśe trajo.
+       *[other] { $agent } „{ $filename }“ a { $count } pśidatnych zapiskow na zakłaźe datowych pšawidłow wašeje organizacije pśeglědujo. To wokognuśe trajo.
+    }
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
 contentanalysis-slow-agent-dialog-body-clipboard = { $agent } na zakłaźe datowych pšawidłow wašeje organizacije pśeglědujo, což sćo zasajźił. To wokognuśe trajo.
@@ -25,7 +36,9 @@ contentanalysis-operationtype-clipboard = mjazywótkład
 contentanalysis-operationtype-dropped-text = pušćony tekst
 contentanalysis-operationtype-print = śišćaś
 #   $filename - The filename associated with the request, such as "aFile.txt"
-contentanalysis-customdisplaystring-description = Nagraśe “{ $filename }”
+contentanalysis-upload-description = nagraśe “{ $filename }”
+#   $filename - The filename associated with the request, such as "aFile.txt"
+contentanalysis-download-description = ześěgnjenje “{ $filename }”
 contentanalysis-warndialogtitle = Toś to wopśimjeśe jo snaź njewěste
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
@@ -40,21 +53,6 @@ contentanalysis-genericresponse-message = Analyza wopśimjeśa jo wótegroniła 
 # Variables:
 #   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
 contentanalysis-block-message = Waša organizacija software pśeśiwo tšuśeju datow wužywa, kótaraž jo blokěrowała toś to wopśimjeśe: { $content }.
-# Variables:
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-error-message = Pśi komunikaciji ze software pśeśiwo tšuśeju datow jo zmólka nastała. Pśenjasenje jo se wótpokazało za resursu: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-unspecified-error-message = Pśi komunikaciji z { $agent } jo zmólka nastała. Pśenjasenje jo se wótpokazało za resursu: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-no-agent-connected-message = Njejo móžno z { $agent } zwězaś. Pśenjasenje jo se wótpokazało za resursu: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-invalid-agent-signature-message = Pśeglědanje signatury za { $agent } njejo se raźiło. Pśenjasenje jo se wótpokazało za resursu: { $content }.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
 #   $content - Localized text describing the content being blocked, such as "Paste denied."
@@ -73,16 +71,24 @@ contentanalysis-error-message-upload-file = Nagraśe “{ $filename }” jo wót
 contentanalysis-error-message-dropped-text = Śěgnjenje a pušćenje stej se wótpokazałej.
 contentanalysis-error-message-clipboard = Zasajźenje jo se wótpokazało.
 contentanalysis-error-message-print = Śišćanje jo se wótpokazało.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $contentName - Description of the content, such as "clipboard" or "aFile.txt"
+contentanalysis-timeout-block-error-message-content = Zwisk ze zwiskom { $agent } jo pśekšocył cas. { $contentName } jo se blokěrował.
 contentanalysis-block-dialog-title-upload-file = Njesmějośo toś tu dataju nagraś
 # Variables:
 #   $filename - Name of the file that was blocked, such as "aFile.txt"
-contentanalysis-block-dialog-body-upload-file = Pó pšawidłach šćita datow swójeje organizacije njesmějośo dataju „{ $filename }“ nagraś. Stajśo se ze swójim administratorom za dalšne informacije.
+contentanalysis-block-dialog-body-upload-file = Pó pšawidłach šćita datow swójeje organizacije njesmějośo dataju „{ $filename }“ nagraś. Stajśo se ze swójim administratorom za dalšne informacije do zwiska.
+contentanalysis-block-dialog-title-download-file = Njesmějośo toś tu dataju ześěgnuś
+# Variables:
+#   $filename - Name of the file that was blocked, such as "aFile.txt"
+contentanalysis-block-dialog-body-download-file = Pó pšawidłach šćita datow swójeje organizacije njesmějośo dataju „{ $filename }“ ześěgnuś. Stajśo se ze swójim administratorom za dalšne informacije do zwiska.
 contentanalysis-block-dialog-title-clipboard = Njesmějośo toś to wopśimjeśe zasajźiś
-contentanalysis-block-dialog-body-clipboard = Pó pšawidłach šćita datow swójeje organizacije njesmějośo toś to wopśimjeśe zasajźiś. Stajśo se ze swójim administratorom za dalšne informacije.
+contentanalysis-block-dialog-body-clipboard = Pó pšawidłach šćita datow swójeje organizacije njesmějośo toś to wopśimjeśe zasajźiś. Stajśo se ze swójim administratorom za dalšne informacije do zwiska.
 contentanalysis-block-dialog-title-dropped-text = Njesmějośo toś to wopśimjeśe pušćiś
-contentanalysis-block-dialog-body-dropped-text = Pó pšawidłach šćita datow swójeje organizacije njesmějośo toś to wopśimjeśe śěgnuś a pušćiś. Stajśo se ze swójim administratorom za dalšne informacije.
+contentanalysis-block-dialog-body-dropped-text = Pó pšawidłach šćita datow swójeje organizacije njesmějośo toś to wopśimjeśe śěgnuś a pušćiś. Stajśo se ze swójim administratorom za dalšne informacije do zwiska.
 contentanalysis-block-dialog-title-print = Njesmějośo toś ten dokument śišćaś
-contentanalysis-block-dialog-body-print = Pó pšawidłach šćita datow swójeje organizacije njesmějośo toś ten dokument śišćaś. Stajśo se ze swójim administratorom za dalšne informacije.
+contentanalysis-block-dialog-body-print = Pó pšawidłach šćita datow swójeje organizacije njesmějośo toś ten dokument śišćaś. Stajśo se ze swójim administratorom za dalšne informacije do zwiska.
 contentanalysis-inprogress-quit-title = { -brand-shorter-name } spušćiś?
 contentanalysis-inprogress-quit-message = Někotare akcije se wuwjeduju. Jolic { -brand-shorter-name } kóńcyśo, se toś te akcije njedokóńcyju.
 contentanalysis-inprogress-quit-yesbutton = Jo, spušćiś

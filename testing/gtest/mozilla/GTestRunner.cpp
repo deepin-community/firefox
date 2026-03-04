@@ -57,6 +57,7 @@ class MozillaPrinter : public EmptyTestEventListener {
     MOZ_PRINT("TEST-%s | GTest unit test: %s\n",
               aUnitTest.Passed() ? "PASS" : "UNEXPECTED-FAIL",
               aUnitTest.Passed() ? "passed" : "failed");
+    MOZ_PRINT("Skipped: %d\n", aUnitTest.skipped_test_count());
     MOZ_PRINT("Passed: %d\n", aUnitTest.successful_test_count());
     MOZ_PRINT("Failed: %d\n", aUnitTest.failed_test_count());
     if (mLogFile) {
@@ -78,10 +79,13 @@ class MozillaPrinter : public EmptyTestEventListener {
               aTestPartResult.file_name(), aTestPartResult.line_number());
   }
   virtual void OnTestEnd(const TestInfo& aTestInfo) override {
-    MOZ_PRINT("TEST-%s | %s.%s | test completed (time: %" PRIi64 "ms)\n",
-              aTestInfo.result()->Passed() ? "PASS" : "UNEXPECTED-FAIL",
-              aTestInfo.test_case_name(), aTestInfo.name(),
-              aTestInfo.result()->elapsed_time());
+    MOZ_PRINT(
+        "TEST-%s | %s.%s | test completed (time: %" PRIi64 "ms)\n",
+        aTestInfo.result()->Passed()
+            ? "PASS"
+            : (aTestInfo.result()->Skipped() ? "FAIL" : "UNEXPECTED-FAIL"),
+        aTestInfo.test_case_name(), aTestInfo.name(),
+        aTestInfo.result()->elapsed_time());
     MOZ_ASSERT(&aTestInfo == mTestInfo);
     mTestInfo = nullptr;
   }
@@ -138,8 +142,8 @@ int RunGTestFunc(int* argc, char** argv) {
       char* path = PR_GetEnv("MOZ_GTEST_MINIDUMPS_PATH");
       nsCOMPtr<nsIFile> file;
       if (path) {
-        nsresult rv = NS_NewLocalFile(NS_ConvertUTF8toUTF16(path), true,
-                                      getter_AddRefs(file));
+        nsresult rv =
+            NS_NewUTF8LocalFile(nsDependentCString(path), getter_AddRefs(file));
         if (NS_FAILED(rv)) {
           printf_stderr("Ignoring invalid MOZ_GTEST_MINIDUMPS_PATH\n");
         }
@@ -176,7 +180,7 @@ int RunGTestFunc(int* argc, char** argv) {
 // RunGTest is initialized to nullptr but if GTest (this file)
 // is linked in then RunGTest will be set here indicating
 // GTest is supported.
-class _InitRunGTest {
+MOZ_RUNINIT class _InitRunGTest {
  public:
   _InitRunGTest() { RunGTest = RunGTestFunc; }
 } InitRunGTest;

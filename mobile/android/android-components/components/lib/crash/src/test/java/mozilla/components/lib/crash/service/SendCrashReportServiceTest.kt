@@ -7,13 +7,11 @@ package mozilla.components.lib.crash.service
 import android.content.ComponentName
 import android.content.Intent
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import mozilla.components.concept.base.crash.Breadcrumb
 import mozilla.components.lib.crash.Crash
 import mozilla.components.lib.crash.CrashReporter
 import mozilla.components.support.test.any
 import mozilla.components.support.test.eq
-import mozilla.components.support.test.mock
 import mozilla.components.support.test.robolectric.testContext
 import mozilla.components.support.test.rule.MainCoroutineRule
 import org.junit.After
@@ -28,7 +26,6 @@ import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
 import org.robolectric.Robolectric
 
-@ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
 class SendCrashReportServiceTest {
     private var service: SendCrashReportService? = null
@@ -53,7 +50,6 @@ class SendCrashReportServiceTest {
             "extrasPath",
             "/data/data/org.mozilla.samples.browser/files/mozilla/Crash Reports/pending/3ba5f665-8422-dc8e-a88e-fc65c081d304.extra",
         )
-        intent.putExtra("minidumpSuccess", true)
         intent.putParcelableArrayListExtra("breadcrumbs", null)
         service = spy(Robolectric.setupService(SendCrashReportService::class.java))
         service?.startService(intent)
@@ -97,15 +93,14 @@ class SendCrashReportServiceTest {
                     },
                 ),
                 scope = scope,
-                notificationsDelegate = mock(),
             ),
         ).install(testContext)
         val originalCrash = Crash.NativeCodeCrash(
             123,
             "/data/data/org.mozilla.samples.browser/files/mozilla/Crash Reports/pending/3ba5f665-8422-dc8e-a88e-fc65c081d304.dmp",
-            true,
             "/data/data/org.mozilla.samples.browser/files/mozilla/Crash Reports/pending/3ba5f665-8422-dc8e-a88e-fc65c081d304.extra",
-            Crash.NativeCodeCrash.PROCESS_TYPE_FOREGROUND_CHILD,
+            Crash.NativeCodeCrash.PROCESS_VISIBILITY_FOREGROUND_CHILD,
+            processType = "content",
             breadcrumbs = arrayListOf(),
             remoteType = null,
         )
@@ -119,12 +114,11 @@ class SendCrashReportServiceTest {
             "minidumpPath",
             "/data/data/org.mozilla.samples.browser/files/mozilla/Crash Reports/pending/3ba5f665-8422-dc8e-a88e-fc65c081d304.dmp",
         )
-        intent.putExtra("processType", "FOREGROUND_CHILD")
+        intent.putExtra("processVisibility", "FOREGROUND_CHILD")
         intent.putExtra(
             "extrasPath",
             "/data/data/org.mozilla.samples.browser/files/mozilla/Crash Reports/pending/3ba5f665-8422-dc8e-a88e-fc65c081d304.extra",
         )
-        intent.putExtra("minidumpSuccess", true)
         intent.putParcelableArrayListExtra("breadcrumbs", null)
         originalCrash.fillIn(intent)
 
@@ -136,9 +130,8 @@ class SendCrashReportServiceTest {
             ?: throw AssertionError("Expected NativeCodeCrash instance")
 
         assertEquals(123, nativeCrash.timestamp)
-        assertEquals(true, nativeCrash.minidumpSuccess)
         assertEquals(false, nativeCrash.isFatal)
-        assertEquals(Crash.NativeCodeCrash.PROCESS_TYPE_FOREGROUND_CHILD, nativeCrash.processType)
+        assertEquals(Crash.NativeCodeCrash.PROCESS_VISIBILITY_FOREGROUND_CHILD, nativeCrash.processVisibility)
         assertEquals(
             "/data/data/org.mozilla.samples.browser/files/mozilla/Crash Reports/pending/3ba5f665-8422-dc8e-a88e-fc65c081d304.dmp",
             nativeCrash.minidumpPath,
@@ -154,9 +147,9 @@ class SendCrashReportServiceTest {
         val crash: Crash = Crash.NativeCodeCrash(
             123,
             "",
-            true,
             "",
-            Crash.NativeCodeCrash.PROCESS_TYPE_MAIN,
+            Crash.NativeCodeCrash.PROCESS_VISIBILITY_MAIN,
+            processType = "main",
             breadcrumbs = arrayListOf(),
             remoteType = null,
         )

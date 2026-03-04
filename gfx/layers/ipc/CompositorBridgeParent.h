@@ -9,7 +9,6 @@
 
 #include <stdint.h>  // for uint64_t
 #include <unordered_map>
-#include "mozilla/Assertions.h"  // for MOZ_ASSERT_HELPER2
 #include "mozilla/Maybe.h"
 #include "mozilla/Monitor.h"        // for Monitor
 #include "mozilla/RefPtr.h"         // for RefPtr
@@ -17,13 +16,13 @@
 #include "mozilla/TimeStamp.h"      // for TimeStamp
 #include "mozilla/gfx/Point.h"      // for IntSize
 #include "mozilla/ipc/ProtocolUtils.h"
-#include "mozilla/ipc/SharedMemory.h"
 #include "mozilla/layers/CompositorController.h"
 #include "mozilla/layers/CompositorVsyncSchedulerOwner.h"
 #include "mozilla/layers/FocusTarget.h"
 #include "mozilla/layers/ISurfaceAllocator.h"  // for IShmemAllocator
 #include "mozilla/layers/LayersTypes.h"
 #include "mozilla/layers/PCompositorBridgeParent.h"
+#include "mozilla/layers/PWebRenderBridgeParent.h"
 #include "mozilla/layers/APZInputBridgeParent.h"
 #include "mozilla/webrender/WebRenderTypes.h"
 
@@ -111,6 +110,9 @@ class CompositorBridgeParentBase : public PCompositorBridgeParent,
   virtual void SetConfirmedTargetAPZC(
       const LayersId& aLayersId, const uint64_t& aInputBlockId,
       nsTArray<ScrollableLayerGuid>&& aTargets) = 0;
+  virtual void EndWheelTransaction(
+      const LayersId& aLayersId,
+      PWebRenderBridgeParent::EndWheelTransactionResolver&& aResolve) = 0;
 
   IShmemAllocator* AsShmemAllocator() override { return this; }
 
@@ -172,10 +174,8 @@ class CompositorBridgeParentBase : public PCompositorBridgeParent,
   virtual bool DeallocPWebRenderBridgeParent(
       PWebRenderBridgeParent* aActor) = 0;
 
-  virtual PCompositorWidgetParent* AllocPCompositorWidgetParent(
-      const CompositorWidgetInitData& aInitData) = 0;
-  virtual bool DeallocPCompositorWidgetParent(
-      PCompositorWidgetParent* aActor) = 0;
+  virtual already_AddRefed<PCompositorWidgetParent>
+  AllocPCompositorWidgetParent(const CompositorWidgetInitData& aInitData) = 0;
 
   virtual mozilla::ipc::IPCResult RecvAdoptChild(const LayersId& id) = 0;
   virtual mozilla::ipc::IPCResult RecvFlushRenderingAsync(
@@ -210,6 +210,8 @@ class CompositorBridgeParentBase : public PCompositorBridgeParent,
       const uint32_t& startIndex, nsTArray<float>* intervals) = 0;
   virtual mozilla::ipc::IPCResult RecvCheckContentOnlyTDR(
       const uint32_t& sequenceNum, bool* isContentOnlyTDR) = 0;
+  virtual mozilla::ipc::IPCResult RecvDynamicToolbarOffsetChanged(
+      const int32_t& aOffset) = 0;
 
   bool mCanSend;
 
@@ -247,6 +249,14 @@ class CompositorBridgeParent final : public CompositorBridgeParentBase,
   void InitSameProcess(widget::CompositorWidget* aWidget,
                        const LayersId& aLayerTreeId);
 
+#ifdef XP_MACOSX
+  // macOS platform-specific initdata uses move semantics, which
+  // changes the method signature. Other platforms don't need to
+  // override the existing method.
+  mozilla::ipc::IPCResult RecvPCompositorWidgetConstructor(
+      PCompositorWidgetParent* actor,
+      CompositorWidgetInitData&& aInitData) override;
+#endif
   mozilla::ipc::IPCResult RecvInitialize(
       const LayersId& aRootLayerTreeId) override;
   mozilla::ipc::IPCResult RecvWillClose() override;
@@ -279,6 +289,9 @@ class CompositorBridgeParent final : public CompositorBridgeParentBase,
       const uint32_t& sequenceNum, bool* isContentOnlyTDR) override {
     return IPC_OK();
   }
+
+  mozilla::ipc::IPCResult RecvDynamicToolbarOffsetChanged(
+      const int32_t& aOffset) override;
 
   mozilla::ipc::IPCResult RecvNotifyMemoryPressure() override;
   mozilla::ipc::IPCResult RecvBeginRecording(
@@ -313,6 +326,9 @@ class CompositorBridgeParent final : public CompositorBridgeParentBase,
       const LayersId& aLayersId, const uint64_t& aInputBlockId,
       nsTArray<ScrollableLayerGuid>&& aTargets) override;
   void SetFixedLayerMargins(ScreenIntCoord aTop, ScreenIntCoord aBottom);
+  void EndWheelTransaction(
+      const LayersId& aLayersId,
+      PWebRenderBridgeParent::EndWheelTransactionResolver&& aResolve) override;
 
   PTextureParent* AllocPTextureParent(
       const SurfaceDescriptor& aSharedData, ReadLockDescriptor& aReadLock,
@@ -335,12 +351,12 @@ class CompositorBridgeParent final : public CompositorBridgeParentBase,
                               TimeStamp& aCompositeStart,
                               TimeStamp& aRenderStart, TimeStamp& aCompositeEnd,
                               wr::RendererStats* aStats = nullptr);
-  void NotifyDidSceneBuild(RefPtr<const wr::WebRenderPipelineInfo> aInfo);
+  void ScheduleFrameAfterSceneBuild(
+      RefPtr<const wr::WebRenderPipelineInfo> aInfo);
   RefPtr<AsyncImagePipelineManager> GetAsyncImagePipelineManager() const;
 
-  PCompositorWidgetParent* AllocPCompositorWidgetParent(
+  already_AddRefed<PCompositorWidgetParent> AllocPCompositorWidgetParent(
       const CompositorWidgetInitData& aInitData) override;
-  bool DeallocPCompositorWidgetParent(PCompositorWidgetParent* aActor) override;
 
   void ObserveLayersUpdate(LayersId aLayersId, bool aActive) override {}
 

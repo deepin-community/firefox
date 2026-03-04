@@ -81,6 +81,8 @@ addon-removal-title = Voleu eliminar { $name }?
 addon-removal-message = Voleu eliminar «{ $name }» del { -brand-shorter-name }?
 addon-removal-button = Elimina
 addon-removal-abuse-report-checkbox = Informeu d'aquesta extensió a { -vendor-short-name }
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Si feu servir les funcions o les extensions que fan servir aquest model, es tornarà a afegir.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -123,12 +125,19 @@ addon-install-error-corrupt-file = No s'ha pogut instal·lar el complement baixa
 addon-install-error-file-access = No s'ha pogut instal·lar el complement «{ $addonName }» perquè el { -brand-short-name } no ha pogut modificar un fitxer necessari.
 addon-install-error-not-signed = El { -brand-short-name } ha evitat que aquest lloc instal·li un complement no verificat.
 addon-install-error-invalid-domain = El complement { $addonName } no es pot instal·lar des d'aquesta ubicació.
+addon-install-error-no-addon-name-file-access = No s'ha pogut instal·lar el complement perquè el { -brand-short-name } no ha pogut modificar el fitxer necessari.
 addon-local-install-error-network-failure = No s'ha pogut instal·lar el complement per un error del sistema de fitxers.
 addon-local-install-error-incorrect-hash = No s'ha pogut instal·lar aquest complement perquè no coincideix amb el complement que esperava el { -brand-short-name }.
 addon-local-install-error-corrupt-file = No s'ha pogut instal·lar aquest complement perquè sembla que està malmès.
 addon-local-install-error-file-access = No s'ha pogut instal·lar el complement «{ $addonName }» perquè el { -brand-short-name } no ha pogut modificar un fitxer necessari.
 addon-local-install-error-not-signed = No es pot instal·lar aquest complement perquè no està verificat.
+addon-local-install-no-addon-name-error-file-access = No s'ha pogut instal·lar el complement perquè el { -brand-short-name } no ha pogut modificar el fitxer necessari.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = No s'ha pogut instal·lar el complement «{ $addonName }» perquè no és compatible amb el { -brand-short-name } { $appVersion }.
+addon-install-error-hard-blocked = { $addonName } infringeix les polítiques de Mozilla i no es pot instal·lar al { -brand-short-name }.
+addon-install-error-soft-blocked2 = { $addonName } està restringit i no es pot instal·lar al { -brand-short-name }.
 addon-install-error-blocklisted = No s'ha pogut instal·lar el complement { $addonName } perquè té un risc elevat de provocar problemes d'estabilitat o de seguretat.
+addon-install-error-soft-blocked = { $addonName } infringeix les polítiques de Mozilla i no es pot instal·lar al { -brand-short-name }.
+# Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
+addon-install-error-admin-install-only = No podeu instal·lar { $addonName } com a usuari final; només el pot instal·lar una organització mitjançant polítiques d'empresa.

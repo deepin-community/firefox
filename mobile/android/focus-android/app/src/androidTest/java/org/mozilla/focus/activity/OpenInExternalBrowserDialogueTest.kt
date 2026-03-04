@@ -15,21 +15,23 @@ import org.mozilla.focus.helpers.FeatureSettingsHelper
 import org.mozilla.focus.helpers.MainActivityIntentsTestRule
 import org.mozilla.focus.helpers.MockWebServerHelper
 import org.mozilla.focus.helpers.StringsHelper.GOOGLE_CHROME
-import org.mozilla.focus.helpers.TestAssetHelper.getGenericAsset
+import org.mozilla.focus.helpers.TestAssetHelper.genericAsset
 import org.mozilla.focus.helpers.TestHelper.assertNativeAppOpens
+import org.mozilla.focus.helpers.TestSetup
 import org.mozilla.focus.testAnnotations.SmokeTest
 
 // This test verifies the "Open in..." option from the main menu
 @RunWith(AndroidJUnit4ClassRunner::class)
-class OpenInExternalBrowserDialogueTest {
+class OpenInExternalBrowserDialogueTest : TestSetup() {
     private lateinit var webServer: MockWebServer
     private val featureSettingsHelper = FeatureSettingsHelper()
 
-    @get: Rule
-    var mActivityTestRule = MainActivityIntentsTestRule(showFirstRun = false)
+    @get:Rule
+    val mActivityTestRule = MainActivityIntentsTestRule(showFirstRun = false)
 
     @Before
-    fun setUp() {
+    override fun setUp() {
+        super.setUp()
         featureSettingsHelper.setCfrForTrackingProtectionEnabled(false)
         webServer = MockWebServer().apply {
             dispatcher = MockWebServerHelper.AndroidAssetDispatcher()
@@ -47,7 +49,7 @@ class OpenInExternalBrowserDialogueTest {
     @SmokeTest
     @Test
     fun openPageInExternalAppTest() {
-        val pageUrl = getGenericAsset(webServer).url
+        val pageUrl = webServer.genericAsset.url
 
         searchScreen {
         }.loadPage(pageUrl) {

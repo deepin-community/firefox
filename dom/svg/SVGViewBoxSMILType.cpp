@@ -6,24 +6,25 @@
 
 #include "SVGViewBoxSMILType.h"
 
+#include <math.h>
+
+#include "SVGAnimatedViewBox.h"
 #include "mozilla/SMILValue.h"
 #include "nsDebug.h"
-#include "SVGAnimatedViewBox.h"
-#include <math.h>
 
 namespace mozilla {
 
 /*static*/
 SVGViewBoxSMILType SVGViewBoxSMILType::sSingleton;
 
-void SVGViewBoxSMILType::Init(SMILValue& aValue) const {
+void SVGViewBoxSMILType::InitValue(SMILValue& aValue) const {
   MOZ_ASSERT(aValue.IsNull(), "Unexpected value type");
 
   aValue.mU.mPtr = new SVGViewBox(0.0f, 0.0f, 0.0f, 0.0f);
   aValue.mType = this;
 }
 
-void SVGViewBoxSMILType::Destroy(SMILValue& aValue) const {
+void SVGViewBoxSMILType::DestroyValue(SMILValue& aValue) const {
   MOZ_ASSERT(aValue.mType == this, "Unexpected SMIL value");
   delete static_cast<SVGViewBox*>(aValue.mU.mPtr);
   aValue.mU.mPtr = nullptr;
@@ -90,10 +91,10 @@ nsresult SVGViewBoxSMILType::ComputeDistance(const SMILValue& aFrom,
   // given change in the left side as it is for an equal change in the opposite
   // side. See https://bugzilla.mozilla.org/show_bug.cgi?id=541884#c12
 
-  float dLeft = to->x - from->x;
-  float dTop = to->y - from->y;
-  float dRight = (to->x + to->width) - (from->x + from->width);
-  float dBottom = (to->y + to->height) - (from->y + from->height);
+  double dLeft = to->x - from->x;
+  double dTop = to->y - from->y;
+  double dRight = (to->x + to->width) - (from->x + from->width);
+  double dBottom = (to->y + to->height) - (from->y + from->height);
 
   aDistance = std::sqrt(dLeft * dLeft + dTop * dTop + dRight * dRight +
                         dBottom * dBottom);

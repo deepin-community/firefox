@@ -12,6 +12,12 @@ glean-debug-ping-viewer-brand-name = Visor de ping de debugo do { -glean-brand-n
 about-glean-page-title2 = Sobre o { -glean-brand-name }
 about-glean-header = Sobre o { -glean-brand-name }
 about-glean-interface-description = O <a data-l10n-name="glean-sdk-doc-link">{ glean-sdk-brand-name }</a> é uma biblioteca de coleta de dados usada em projetos da { -vendor-short-name }. Esta interface foi projetada para ser usada por desenvolvedores e testadores para <a data-l10n-name="fog-link">testar instrumentação</a> manualmente.
+about-glean-category-about-glean = Informações sobre o { -glean-brand-name }
+about-glean-category-manual-testing = Testes manuais
+about-glean-category-adhoc-testing = Testes direcionados
+about-glean-category-profiler = Como usar o Profiler
+about-glean-category-about-data = Informações sobre dados
+about-glean-category-metrics-table = Tabela de métricas
 about-glean-upload-enabled = O envio de dados está ativado.
 about-glean-upload-disabled = O envio de dados está desativado.
 about-glean-upload-enabled-local = O envio de dados está ativado apenas para enviar a um servidor local.
@@ -36,6 +42,9 @@ about-glean-glean-android = <code>MOZ_GLEAN_ANDROID</code>: { $glean-android-def
 #   $moz-official-define-value (Boolean): the value of the MOZILLA_OFFICIAL define.
 # Do not translate strings between <code> </code> tags.
 about-glean-moz-official = <code>MOZILLA_OFFICIAL</code>: { $moz-official-define-value }
+about-glean-additional-links =
+    Para uma explicação das diferentes formas de gravar e encontrar dados, consulte a aba
+    <strong>Informações sobre dados</strong>.
 about-glean-about-testing-header = Informações sobre testes
 # This message is followed by a numbered list.
 about-glean-manual-testing = Instruções completas estão documentadas na <a data-l10n-name="fog-instrumentation-test-doc-link">documentação de testes de instrumentação do { -fog-brand-name }</a> e na <a data-l10n-name="glean-sdk-doc-link">documentação do { glean-sdk-brand-name }</a>, mas, resumindo, para testar manualmente se sua instrumentação funciona, você deve:
@@ -66,8 +75,93 @@ about-glean-adhoc-note =
     Observe que você está usando a API Glean JS usando o console do devtools.
     Significa que a categoria e o nome da métrica são formatados em
     <code>camelCase</code>, diferente das APIs de Rust e C++.
+about-glean-profiler-explanation =
+    Para ter uma visão completa de todas as métricas gravadas, você pode usar o { -profiler-brand-name }.
+    Primeiro você deve <a data-l10n-name="firefox-profiler-link">capturar um profile de desempenho</a>.
+    Após capturar o profile, selecione <q>Gráfico de marcadores</q> e olhe para os marcadores em <q>Telemetry</q>.
+about-glean-profiler-explanation-profiler = No profile de desempenho, você pode ver todas as métricas coletadas, quando foram coletadas e exatamente quais valores foram coletados. Ao passar o mouse sobre marcadores individuais, pode-se verificar se o valor correto foi coletado e se a coleta aconteceu na hora certa.
 controls-button-label-verbose = Aplicar configurações e enviar ping
+about-glean-feedback-settings-only =
+    .message = Configurações aplicadas!
+about-glean-feedback-settings-and-ping =
+    .message = Configurações aplicadas e ping enviado!
 about-glean-about-data-header = Informações sobre dados
+about-glean-about-data-description = Existem algumas ferramentas diferentes que você pode usar para ver seus dados, dependendo do que está procurando.
+about-glean-about-data-description-list-intro = Consulte na lista abaixo casos de uso específicos de cada ferramenta:
+about-glean-about-data-list-item-dictionary = Para consultar a lista de dados coletados pelo { -glean-brand-name } por aplicativo, consulte o <a data-l10n-name="glean-dictionary-link">{ -glean-brand-name }Dicionário</a>.
+about-glean-about-data-list-item-about-telemetry = Para consultar dados coletados pela telemetria legada, use <a data-l10n-name="about-telemetry-link">about:telemetry</a>.
+about-glean-about-data-list-item-debug-ping-viewer = Para consultar tags de debug, ver pings completos, acompanhar uma transmissão de evento ao vivo ou examinar visualizações de métricas, use o <a data-l10n-name="glean-debug-ping-viewer">{ glean-debug-ping-viewer-brand-name }</a>.
+about-glean-about-data-list-item-firefox-profiler = Para gravar um profile de desempenho e ver todas as métricas registradas, use o <a data-l10n-name="about-glean-firefox-profiler">{ -profiler-brand-name }</a>.
+about-glean-metrics-table-header = Todas as métricas
+# This message refers to the category in which a given metric is recorded.
+about-glean-metrics-table-header-category = Categoria
+# This message refers to the name of a given metric.
+about-glean-metrics-table-header-name = Nome
+# This message refers to a given metric's metric type.
+about-glean-metrics-table-header-type = Tipo
+# This message refers to the underlying value of a given metric.
+about-glean-metrics-table-header-value = Valor
+# This message refers to the UI action buttons for a given metric.
+about-glean-metrics-table-header-actions = Ações
+about-glean-metrics-table-settings-button = Configurações
+# Settings for the metrics table and its visualizations in about:glean
+about-glean-metrics-table-settings-title = Configurações da tabela de métricas
+about-glean-metrics-table-settings-category-general = Geral
+about-glean-metrics-table-settings-hide-empty-value-rows = Ocultar linhas sem valor
+about-glean-metrics-table-settings-category-visualizations = Visualizações
+# This is a heading that is immediately followed by an example data visualization
+about-glean-metrics-table-settings-visualization-example = Exemplo
+about-glean-metrics-table-settings-category-visualizations-histogram = Histograma
+about-glean-metrics-table-settings-histograms-chart-max = Altura máxima do gráfico
+# The maximum height after to which the y-values on the chart will be scaled
+about-glean-metrics-table-settings-histograms-scaled-max = Altura máxima redimensionada
+about-glean-metrics-table-settings-histograms-box-padding = Espaçamento de box
+about-glean-metrics-table-settings-histograms-chart-padding = Espaçamento do gráfico
+about-glean-metrics-table-settings-histograms-left-padding = Espaçamento adicional à esquerda
+about-glean-metrics-table-settings-category-visualizations-timeline = Linha do tempo
+about-glean-metrics-table-settings-timelines-height = Altura
+about-glean-metrics-table-settings-timelines-width = Largura
+about-glean-metrics-table-settings-timelines-chart-padding = Espaçamento do gráfico
+# The radius of each circle denoting individual events recorded for an event metric
+about-glean-metrics-table-settings-timelines-circle-radius = Raio do círculo
+# The offset on the x-axis from the end of the horizontal line for the y-axis line
+about-glean-metrics-table-settings-timelines-vertical-line-x-offset = Deslocamento horizontal do eixo Y
+# The offset on the y-axis from the x-axis for the y-axis line
+about-glean-metrics-table-settings-timelines-vertical-line-y-offset = Deslocamento vertical do eixo Y
+# Label displayed near an input field that can be used to filter metrics
+about-glean-label-for-filter-metrics = Filtrar
+# This message sits alongside an input field, further describing its purpose.
+# Category refers to the category in which a given metric is recorded.
+# Name refers to the name of a given metric.
+# Type refers to a given metric's metric type.
+# Value refers to the underlying value of a given metric.
+# "Simple type" refers to a value type that does not have deeply-nested data, such as a boolean, number, string, or list of strings.
+about-glean-description-for-filter-metrics = Isto filtra a tabela abaixo com base em categoria, nome, tipo e valor (se o valor for um tipo simples).
+about-glean-button-load-all = Carregar todos os valores
+# A button that, when pressed, exports the data currently shown in the metrics table
+about-glean-button-export-data = Exportar dados
+about-glean-button-load-value = Carregar
+# "Docs" is shorthand for "documentation"
+about-glean-button-dictionary-link = Documentação
+about-glean-button-watch = Acompanhar
+# Meaning "to stop watching"
+about-glean-button-unwatch = Deixar de acompanhar
+about-glean-no-data-to-display = Nenhum dado a ser exibido.
+# Do not translate strings between <code> </code> tags.
+about-glean-dual-labeled-metric-warning = Ainda não há suporte para métricas <code>DualLabeledCounter</code> na exibição <code>about:glean</code>.
+about-glean-unknown-metric-type-warning = Tipo de métrica desconhecido.
+about-glean-enable-new-features-promo =
+    .message = Estamos trabalhando para adicionar novos recursos! Eles ainda estão em desenvolvimento ativo, mas clique no botão de ação aqui se quiser habilitar.
+    .heading = Novos recursos estão a caminho!
+about-glean-enable-new-features-button = Ativar novos recursos
+about-glean-disable-new-features-button = Desativar novos recursos
 about-glean-about-data-explanation =
     Para ver a lista de dados coletados, consulte o
     <a data-l10n-name="glean-dictionary-link">dicionário do { -glean-brand-name }</a>.
+
+## These labels are displayed to organize the different ping types within the dropdown.
+
+about-glean-ping-list-optgroup-built-in =
+    .label = Pings internos
+about-glean-ping-list-optgroup-custom =
+    .label = Pings personalizados

@@ -4,6 +4,14 @@
 
 "use strict";
 
+const { NavigationManager } = ChromeUtils.importESModule(
+  "chrome://remote/content/shared/NavigationManager.sys.mjs"
+);
+
+const numberRegex = /[0-9]+/i;
+const uuidRegex =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 /**
  * Add a new tab in a given browser, pointing to a given URL and automatically
  * register the cleanup function to remove it at the end of the test.
@@ -18,8 +26,56 @@
  *     The created tab.
  */
 function addTab(browser, url, options) {
+  info("Add a new tab for url: " + url);
   const tab = BrowserTestUtils.addTab(browser, url, options);
   registerCleanupFunction(() => browser.removeTab(tab));
+  return tab;
+}
+
+/**
+ * Add a new tab and wait until the navigation manager emitted the corresponding
+ * navigation-stopped event. Same arguments as addTab.
+ *
+ * @param {Browser} browser
+ *     The browser element where the tab should be added.
+ * @param {string} url
+ *     The URL for the tab.
+ * @param {object=} options
+ *     Options object to forward to BrowserTestUtils.addTab.
+ * @returns {Tab}
+ *     The created tab.
+ */
+async function addTabAndWaitForNavigated(browser, url, options) {
+  // Setup navigation manager and promises.
+  const { promise: waitForNavigation, resolve } = Promise.withResolvers();
+  const onNavigationStopped = (name, data) => {
+    if (data?.url === url) {
+      resolve();
+    }
+  };
+  const navigationManager = new NavigationManager();
+  navigationManager.on("navigation-stopped", onNavigationStopped);
+  navigationManager.startMonitoring();
+
+  // Add the new tab.
+  const tab = addTab(browser, url, options);
+
+  // See Bug 1971329, browserLoaded on its own might still miss the STATE_STOP
+  // notification.
+  info("Wait for BrowserTestUtils.browserLoaded for url: " + url);
+  await BrowserTestUtils.browserLoaded(tab.linkedBrowser, false, url);
+
+  info("Wait for navigation-stopped for url: " + url);
+  await waitForNavigation;
+
+  // Wait for tick to allow other callbacks listening for STATE_STOP to be
+  // processed correctly.
+  await TestUtils.waitForTick();
+
+  navigationManager.stopMonitoring();
+  navigationManager.off("navigation-stopped", onNavigationStopped);
+  navigationManager.destroy();
+
   return tab;
 }
 
@@ -207,4 +263,67 @@ async function loadURL(browser, url, options = {}) {
   );
   BrowserTestUtils.startLoadingURIString(browser, url);
   return loaded;
+}
+
+/**
+ * For a support file resolve its relative path to the absolute path.
+ *
+ * @param {string} path
+ *     The path or a filename of a support file.
+ * @returns {string}
+ *     Absolute path of the support file.
+ */
+function getSupportFilePath(path) {
+  let absolutePath = getChromeDir(getResolvedURI(gTestPath));
+
+  for (const part of path.split("/")) {
+    if (part === "..") {
+      absolutePath = absolutePath.parent;
+    } else {
+      absolutePath.append(part);
+    }
+  }
+
+  if (!absolutePath.exists()) {
+    throw new Error(`${absolutePath.path} does not exist`);
+  }
+
+  return absolutePath.path;
+}
+
+/**
+ * Reads file from provided path and returns its contents encoded with base64
+ *
+ * @param {string} path
+ *     The Path to load.
+ * @returns {Promise}
+ *     Promise which will resolved when the file finished loading.
+ */
+async function readFileAsBase64(path) {
+  const file = new FileUtils.File(path);
+
+  const contents = await new Promise((resolve, reject) => {
+    NetUtil.asyncFetch(
+      {
+        uri: file,
+        loadUsingSystemPrincipal: true,
+      },
+      (inputStream, status) => {
+        if (!Components.isSuccessCode(status)) {
+          reject(new Error("Failed to read file; status = " + status));
+          return;
+        }
+
+        const fileContents = NetUtil.readInputStreamToString(
+          inputStream,
+          inputStream.available()
+        );
+        inputStream.close();
+
+        resolve(fileContents);
+      }
+    );
+  });
+
+  return btoa(contents);
 }

@@ -6,26 +6,45 @@
 #ifndef GPU_QuerySet_H_
 #define GPU_QuerySet_H_
 
-#include "nsWrapperCache.h"
 #include "ObjectModel.h"
+#include "mozilla/webgpu/WebGPUTypes.h"
 
-namespace mozilla::webgpu {
+namespace mozilla {
+
+namespace dom {
+struct GPUQuerySetDescriptor;
+enum class GPUQueryType : uint8_t;
+}  // namespace dom
+
+namespace webgpu {
 
 class Device;
 
-class QuerySet final : public ObjectBase, public ChildOf<Device> {
+class QuerySet final : public nsWrapperCache,
+                       public ObjectBase,
+                       public ChildOf<Device> {
  public:
   GPU_DECL_CYCLE_COLLECTION(QuerySet)
   GPU_DECL_JS_WRAP(QuerySet)
 
   QuerySet() = delete;
+  QuerySet(Device* const aParent, const dom::GPUQuerySetDescriptor& aDesc,
+           RawId aId);
+
   void Destroy();
+
+  dom::GPUQueryType Type() const;
+  uint32_t Count() const;
 
  private:
   virtual ~QuerySet();
-  void Cleanup() {}
+
+  dom::GPUQueryType mType;
+  uint32_t mCount;
 };
 
-}  // namespace mozilla::webgpu
+}  // namespace webgpu
+
+}  // namespace mozilla
 
 #endif  // GPU_QuerySet_H_

@@ -36,6 +36,9 @@ certificate-viewer-key-size = 키 크기
 certificate-viewer-inc-locality = 법인 구/군/시
 certificate-viewer-locality = 구/군/시
 certificate-viewer-location = 위치
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = 로그 이름
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = 로그 ID
 certificate-viewer-method = 메소드
 certificate-viewer-modulus = 계수
@@ -81,7 +84,6 @@ certificate-viewer-authority-info-aia = 기관 정보 (AIA)
 certificate-viewer-certificate-policies = 인증서 정책
 certificate-viewer-embedded-scts = 포함된 SCT
 certificate-viewer-crl-endpoints = CRL 엔드포인트
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = 다운로드
@@ -101,7 +103,6 @@ certificate-viewer-download-pem = PEM (인증서)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (체인)
     .download = { $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = 이 확장 기능은 클라이언트가 인증서를 이해하지 못할 경우 반드시 인증서를 거부해야 함을 의미하는 위험한 것으로 표시되었습니다.
@@ -112,6 +113,8 @@ certificate-viewer-export = 내보내기
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (알 수 없음)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = 인증서
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

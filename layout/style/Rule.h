@@ -9,10 +9,11 @@
 #ifndef mozilla_css_Rule_h___
 #define mozilla_css_Rule_h___
 
+#include "mozilla/MemoryReporting.h"
+#include "mozilla/StyleSheet.h"
+#include "mozilla/WeakPtr.h"
 #include "mozilla/dom/CSSRuleBinding.h"
 #include "mozilla/dom/DocumentOrShadowRoot.h"
-#include "mozilla/StyleSheet.h"
-#include "mozilla/MemoryReporting.h"
 #include "nsISupports.h"
 #include "nsWrapperCache.h"
 
@@ -26,7 +27,7 @@ enum class StyleCssRuleType : uint8_t;
 namespace css {
 class GroupRule;
 
-class Rule : public nsISupports, public nsWrapperCache {
+class Rule : public nsISupports, public nsWrapperCache, public SupportsWeakPtr {
  protected:
   Rule(StyleSheet* aSheet, Rule* aParentRule, uint32_t aLineNumber,
        uint32_t aColumnNumber)
@@ -112,6 +113,17 @@ class Rule : public nsISupports, public nsWrapperCache {
     return associated ? &associated->AsNode() : nullptr;
   }
   nsISupports* GetParentObject() const { return mSheet; }
+
+  struct ContainingRuleState {
+    uint32_t mContainingTypes = 0;
+    Maybe<StyleCssRuleType> mParseRelativeType;
+
+    static ContainingRuleState From(Rule* aRule) {
+      return aRule ? aRule->GetContainingRuleStateForParsing()
+                   : ContainingRuleState();
+    }
+  };
+  ContainingRuleState GetContainingRuleStateForParsing() const;
 
  protected:
   // True if we're known-live for cycle collection purposes.

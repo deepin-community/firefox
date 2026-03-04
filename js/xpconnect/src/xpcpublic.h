@@ -459,8 +459,8 @@ bool Base64Decode(JSContext* cx, JS::Handle<JS::Value> val,
 /**
  * Convert an nsString to jsval, returning true on success.
  */
-bool NonVoidStringToJsval(JSContext* cx, const nsAString& str,
-                          JS::MutableHandle<JS::Value> rval);
+[[nodiscard]] bool NonVoidStringToJsval(JSContext* cx, const nsAString& str,
+                                        JS::MutableHandle<JS::Value> rval);
 
 inline bool StringToJsval(JSContext* cx, const nsAString& str,
                           JS::MutableHandle<JS::Value> rval) {
@@ -510,8 +510,8 @@ bool StringToJsval(JSContext* cx, mozilla::dom::DOMString& str,
 /**
  * As above, but for nsACString with latin-1 (non-UTF8) content.
  */
-bool NonVoidLatin1StringToJsval(JSContext* cx, const nsACString& str,
-                                JS::MutableHandle<JS::Value> rval);
+[[nodiscard]] bool NonVoidLatin1StringToJsval(
+    JSContext* cx, const nsACString& str, JS::MutableHandle<JS::Value> rval);
 
 inline bool Latin1StringToJsval(JSContext* cx, const nsACString& str,
                                 JS::MutableHandle<JS::Value> rval) {
@@ -715,7 +715,9 @@ void SetPrefableCompileOptions(JS::PrefableCompileOptions& options);
 void InitGlobalObjectOptions(JS::RealmOptions& aOptions,
                              bool aIsSystemPrincipal, bool aSecureContext,
                              bool aForceUTC, bool aAlwaysUseFdlibm,
-                             bool aLocaleEnUS);
+                             bool aLocaleEnUS,
+                             const nsACString& aLanguageOverride,
+                             const nsAString& aTimezoneOverride);
 
 class ErrorBase {
  public:
@@ -855,6 +857,9 @@ struct alignas(kAutomationPageSize) ReadOnlyPage final {
 #ifdef MOZ_TSAN
   // TSan is confused by write access to read-only section.
   static ReadOnlyPage sInstance;
+#elif defined(XP_OPENBSD)
+  static const volatile ReadOnlyPage sInstance
+      __attribute__((section(".openbsd.mutable")));
 #else
   static const volatile ReadOnlyPage sInstance;
 #endif

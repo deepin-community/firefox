@@ -13,6 +13,7 @@
 #include "mozilla/intl/LocaleService.h"
 #include "mozilla/intl/OSPreferences.h"
 #include "mozilla/java/GeckoAppShellWrappers.h"
+#include "mozilla/java/HardwareCodecCapabilityUtilsWrappers.h"
 #include "mozilla/jni/Utils.h"
 #include "mozilla/layers/AndroidHardwareBuffer.h"
 #include "mozilla/Preferences.h"
@@ -20,6 +21,9 @@
 #include "mozilla/StaticPrefs_webgl.h"
 #include "mozilla/widget/AndroidVsync.h"
 
+#include "AndroidBuild.h"
+#include "AndroidSystemFontIterator.h"
+#include "GeckoProfiler.h"
 #include "gfx2DGlue.h"
 #include "gfxFT2FontList.h"
 #include "gfxImageSurface.h"
@@ -73,6 +77,85 @@ NS_IMPL_ISUPPORTS(FreetypeReporter, nsIMemoryReporter)
 
 static FT_MemoryRec_ sFreetypeMemoryRecord;
 
+PRThread* gfxAndroidPlatform::sFontAPIInitializeThread = nullptr;
+constinit nsCString gfxAndroidPlatform::sManufacturer;
+
+// static
+bool gfxAndroidPlatform::IsFontAPIDisabled(bool aDontCheckPref) {
+  if (!aDontCheckPref &&
+      StaticPrefs::gfx_font_list_use_font_match_api_force_enabled_AtStartup()) {
+    return false;
+  }
+
+  // Some manufacturer devices seem to crash when using font match API
+  // (Bug 1787551 / Bug 1990734).
+
+  if (sManufacturer.IsEmpty()) {
+    sManufacturer = java::sdk::Build::MANUFACTURER()->ToCString();
+  }
+  return (sManufacturer.EqualsLiteral("OPPO") ||
+          sManufacturer.EqualsLiteral("realme") ||
+          sManufacturer.EqualsLiteral("OnePlus") ||
+          sManufacturer.EqualsLiteral("HONOR"));
+}
+
+// static
+void gfxAndroidPlatform::InitializeFontAPI() {
+  if (XRE_GetProcessType() != GeckoProcessType_Default) {
+    return;
+  }
+
+  // Android 12+ doesn't read font configuration XML files directly.
+  // It means that it is slow to call font API at first.
+  if (jni::GetAPIVersion() < 31) {
+    return;
+  }
+
+  // This will be called before XPCOM service isn't started. So don't check
+  // preferences.
+  if (IsFontAPIDisabled(true)) {
+    return;
+  }
+
+  if (__builtin_available(android 29, *)) {
+    auto FontAPIInitializeCallback = [](void* aUnused) {
+      AUTO_PROFILER_REGISTER_THREAD("InitializingFontAPI");
+      PR_SetCurrentThreadName("InitializingFontAPI");
+      AndroidSystemFontIterator::Preload();
+    };
+    sFontAPIInitializeThread = PR_CreateThread(
+        PR_USER_THREAD, FontAPIInitializeCallback, nullptr, PR_PRIORITY_NORMAL,
+        PR_GLOBAL_THREAD, PR_JOINABLE_THREAD, 0);
+  }
+}
+
+// static
+void gfxAndroidPlatform::WaitForInitializeFontAPI() {
+  if (sFontAPIInitializeThread) {
+    PR_JoinThread(sFontAPIInitializeThread);
+    sFontAPIInitializeThread = nullptr;
+  }
+}
+
+// static
+bool gfxAndroidPlatform::IsHwCodecSupported(media::MediaCodec aCodec,
+                                            bool aEncoder) {
+  switch (aCodec) {
+    case media::MediaCodec::H264:
+      return java::HardwareCodecCapabilityUtils::HasHWH264(aEncoder);
+    case media::MediaCodec::VP8:
+      return java::HardwareCodecCapabilityUtils::HasHWVP8(aEncoder);
+    case media::MediaCodec::VP9:
+      return java::HardwareCodecCapabilityUtils::HasHWVP9(aEncoder);
+    case media::MediaCodec::AV1:
+      return java::HardwareCodecCapabilityUtils::HasHWAV1(aEncoder);
+    case media::MediaCodec::HEVC:
+      return java::HardwareCodecCapabilityUtils::HasHWHEVC(aEncoder);
+    default:
+      return false;
+  }
+}
+
 gfxAndroidPlatform::gfxAndroidPlatform() {
   // A custom allocator.  It counts allocations, enabling memory reporting.
   sFreetypeMemoryRecord.user = nullptr;
@@ -95,10 +178,6 @@ gfxAndroidPlatform::gfxAndroidPlatform() {
   int32_t screenDepth = 0;
   mOffscreenFormat = screenDepth == 16 ? SurfaceFormat::R5G6B5_UINT16
                                        : SurfaceFormat::X8R8G8B8_UINT32;
-
-  if (StaticPrefs::gfx_android_rgb16_force_AtStartup()) {
-    mOffscreenFormat = SurfaceFormat::R5G6B5_UINT16;
-  }
 }
 
 gfxAndroidPlatform::~gfxAndroidPlatform() {
@@ -149,7 +228,7 @@ static bool IsJapaneseLocale() {
 }
 
 void gfxAndroidPlatform::GetCommonFallbackFonts(
-    uint32_t aCh, Script aRunScript, eFontPresentation aPresentation,
+    uint32_t aCh, Script aRunScript, FontPresentation aPresentation,
     nsTArray<const char*>& aFontList) {
   static const char kDroidSansJapanese[] = "Droid Sans Japanese";
   static const char kMotoyaLMaru[] = "MotoyaLMaru";
@@ -289,13 +368,6 @@ bool gfxAndroidPlatform::RequiresLinearZoom() {
 
   MOZ_ASSERT_UNREACHABLE("oops, what platform is this?");
   return gfxPlatform::RequiresLinearZoom();
-}
-
-bool gfxAndroidPlatform::CheckVariationFontSupport() {
-  // Don't attempt to use variations on Android API versions up to Marshmallow,
-  // because the system freetype version is too old and the parent process may
-  // access it during printing (bug 1845174).
-  return jni::GetAPIVersion() > 23;
 }
 
 class AndroidVsyncSource final : public VsyncSource,

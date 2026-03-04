@@ -128,6 +128,15 @@ function fieldCallCannotGC(csu, fullfield)
         return true;
     if (fullfield in ignoreCallees)
         return true;
+
+    // Example: fmt::v11::detail::buffer<char16_t>.grow_
+    if (/^fmt\b.*::buffer/.test(fullfield))
+        return true;
+    // Example: fmt::v11::detail::custom_value<fmt::v11::context>.format
+    // Example: fmt::v11::detail::custom_value<fmt::v11::generic_context<fmt::v11::basic_appender<wchar_t>, wchar_t> >.format
+    if (/^fmt\b.*::custom_value<.*>/.test(fullfield))
+       return true;
+
     return false;
 }
 
@@ -209,6 +218,10 @@ var ignoreFunctions = {
     "calloc": true,
     "realloc": true,
     "free": true,
+
+    // mozjemalloc can run callbacks through this function.  They should be
+    // used with care and shouldn't GC.
+    "void arena_t::MayDoOrQueuePurge(int32, int8*)": true,
 
     // FIXME!
     "NS_LogInit": true,

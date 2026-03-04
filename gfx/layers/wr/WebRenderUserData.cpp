@@ -290,7 +290,15 @@ bool WebRenderImageProviderData::Invalidate(ImageProviderId aProviderId) const {
 
 WebRenderFallbackData::WebRenderFallbackData(RenderRootStateManager* aManager,
                                              nsDisplayItem* aItem)
-    : WebRenderUserData(aManager, aItem), mOpacity(1.0f), mInvalid(false) {}
+    : WebRenderFallbackData(aManager, aItem->GetPerFrameKey(), aItem->Frame()) {
+}
+
+WebRenderFallbackData::WebRenderFallbackData(RenderRootStateManager* aManager,
+                                             uint32_t aDisplayItemKey,
+                                             nsIFrame* aFrame)
+    : WebRenderUserData(aManager, aDisplayItemKey, aFrame),
+      mOpacity(1.0f),
+      mInvalid(false) {}
 
 WebRenderFallbackData::~WebRenderFallbackData() { ClearImageKey(); }
 
@@ -341,12 +349,23 @@ WebRenderImageData* WebRenderFallbackData::PaintIntoImage() {
 
 WebRenderAPZAnimationData::WebRenderAPZAnimationData(
     RenderRootStateManager* aManager, nsDisplayItem* aItem)
-    : WebRenderUserData(aManager, aItem),
+    : WebRenderAPZAnimationData(aManager, aItem->GetPerFrameKey(),
+                                aItem->Frame()) {}
+
+WebRenderAPZAnimationData::WebRenderAPZAnimationData(
+    RenderRootStateManager* aManager, uint32_t aDisplayItemKey,
+    nsIFrame* aFrame)
+    : WebRenderUserData(aManager, aDisplayItemKey, aFrame),
       mAnimationId(AnimationHelper::GetNextCompositorAnimationsId()) {}
 
 WebRenderAnimationData::WebRenderAnimationData(RenderRootStateManager* aManager,
                                                nsDisplayItem* aItem)
     : WebRenderUserData(aManager, aItem) {}
+
+WebRenderAnimationData::WebRenderAnimationData(RenderRootStateManager* aManager,
+                                               uint32_t aDisplayItemKey,
+                                               nsIFrame* aFrame)
+    : WebRenderUserData(aManager, aDisplayItemKey, aFrame) {}
 
 WebRenderAnimationData::~WebRenderAnimationData() {
   // It may be the case that nsDisplayItem that created this WebRenderUserData
@@ -362,6 +381,11 @@ WebRenderAnimationData::~WebRenderAnimationData() {
 WebRenderCanvasData::WebRenderCanvasData(RenderRootStateManager* aManager,
                                          nsDisplayItem* aItem)
     : WebRenderUserData(aManager, aItem) {}
+
+WebRenderCanvasData::WebRenderCanvasData(RenderRootStateManager* aManager,
+                                         uint32_t aDisplayItemKey,
+                                         nsIFrame* aFrame)
+    : WebRenderUserData(aManager, aDisplayItemKey, aFrame) {}
 
 WebRenderCanvasData::~WebRenderCanvasData() {
   if (mCanvasRenderer) {
@@ -408,21 +432,22 @@ ImageContainer* WebRenderCanvasData::GetImageContainer() {
 
 void WebRenderCanvasData::ClearImageContainer() { mContainer = nullptr; }
 
-WebRenderRemoteData::WebRenderRemoteData(RenderRootStateManager* aManager,
-                                         nsDisplayItem* aItem)
-    : WebRenderUserData(aManager, aItem) {}
-
-WebRenderRemoteData::~WebRenderRemoteData() {
-  if (mRemoteBrowser) {
-    mRemoteBrowser->UpdateEffects(mozilla::dom::EffectsInfo::FullyHidden());
-  }
-}
-
 void DestroyWebRenderUserDataTable(WebRenderUserDataTable* aTable) {
   for (const auto& value : aTable->Values()) {
     value->RemoveFromTable();
   }
   delete aTable;
+}
+
+WebRenderMaskData::WebRenderMaskData(RenderRootStateManager* aManager,
+                                     nsDisplayItem* aItem)
+    : WebRenderMaskData(aManager, aItem->GetPerFrameKey(), aItem->Frame()) {}
+WebRenderMaskData::WebRenderMaskData(RenderRootStateManager* aManager,
+                                     uint32_t aDisplayItemKey, nsIFrame* aFrame)
+    : WebRenderUserData(aManager, aDisplayItemKey, aFrame),
+      mMaskStyle(nsStyleImageLayers::LayerType::Mask),
+      mShouldHandleOpacity(false) {
+  MOZ_COUNT_CTOR(WebRenderMaskData);
 }
 
 }  // namespace layers

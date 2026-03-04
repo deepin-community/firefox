@@ -9,10 +9,25 @@
 
 #include <stdint.h>  // For uint16_t
 
+#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
+#  define INLINABLE_EXPLICIT_RESOURCE_MANAGEMENENT_LIST(_) \
+    _(IntrinsicGuardToAsyncDisposableStack)                \
+    _(IntrinsicGuardToDisposableStack)
+#else
+#  define INLINABLE_EXPLICIT_RESOURCE_MANAGEMENENT_LIST(_)
+#endif
+
 #ifdef FUZZING_JS_FUZZILLI
 #  define INLINABLE_NATIVE_FUZZILLI_LIST(_) _(FuzzilliHash)
 #else
 #  define INLINABLE_NATIVE_FUZZILLI_LIST(_)
+#endif
+
+#ifdef NIGHTLY_BUILD
+#  define INLINABLE_NATIVE_ITERATOR_RANGE_LIST(_) \
+    _(IntrinsicGuardToIteratorRange)
+#else
+#  define INLINABLE_NATIVE_ITERATOR_RANGE_LIST(_)
 #endif
 
 #define INLINABLE_NATIVE_LIST(_)                   \
@@ -24,6 +39,8 @@
   _(ArrayPush)                                     \
   _(ArraySlice)                                    \
                                                    \
+  _(ArrayBufferByteLength)                         \
+                                                   \
   _(AtomicsCompareExchange)                        \
   _(AtomicsExchange)                               \
   _(AtomicsLoad)                                   \
@@ -34,6 +51,7 @@
   _(AtomicsOr)                                     \
   _(AtomicsXor)                                    \
   _(AtomicsIsLockFree)                             \
+  _(AtomicsPause)                                  \
                                                    \
   _(BigInt)                                        \
   _(BigIntAsIntN)                                  \
@@ -63,12 +81,24 @@
   _(DataViewSetFloat64)                            \
   _(DataViewSetBigInt64)                           \
   _(DataViewSetBigUint64)                          \
+  _(DataViewByteLength)                            \
+  _(DataViewByteOffset)                            \
+                                                   \
+  _(DateGetTime)                                   \
+  _(DateGetFullYear)                               \
+  _(DateGetMonth)                                  \
+  _(DateGetDate)                                   \
+  _(DateGetDay)                                    \
+  _(DateGetHours)                                  \
+  _(DateGetMinutes)                                \
+  _(DateGetSeconds)                                \
                                                    \
   _(FunctionBind)                                  \
                                                    \
   _(IntlGuardToCollator)                           \
   _(IntlGuardToDateTimeFormat)                     \
   _(IntlGuardToDisplayNames)                       \
+  _(IntlGuardToDurationFormat)                     \
   _(IntlGuardToListFormat)                         \
   _(IntlGuardToNumberFormat)                       \
   _(IntlGuardToPluralRules)                        \
@@ -77,8 +107,12 @@
   _(IntlGuardToSegments)                           \
   _(IntlGuardToSegmentIterator)                    \
                                                    \
+  _(MapConstructor)                                \
+  _(MapDelete)                                     \
   _(MapGet)                                        \
   _(MapHas)                                        \
+  _(MapSet)                                        \
+  _(MapSize)                                       \
                                                    \
   _(MathAbs)                                       \
   _(MathFloor)                                     \
@@ -123,18 +157,31 @@
                                                    \
   _(ReflectGetPrototypeOf)                         \
                                                    \
+  _(RegExpDotAll)                                  \
+  _(RegExpGlobal)                                  \
+  _(RegExpHasIndices)                              \
+  _(RegExpIgnoreCase)                              \
+  _(RegExpMultiline)                               \
+  _(RegExpSticky)                                  \
+  _(RegExpUnicode)                                 \
+  _(RegExpUnicodeSets)                             \
   _(RegExpMatcher)                                 \
   _(RegExpSearcher)                                \
   _(RegExpSearcherLastLimit)                       \
   _(RegExpHasCaptureGroups)                        \
   _(IsRegExpObject)                                \
+  _(IsOptimizableRegExpObject)                     \
   _(IsPossiblyWrappedRegExpObject)                 \
-  _(RegExpPrototypeOptimizable)                    \
-  _(RegExpInstanceOptimizable)                     \
+  _(IsRegExpPrototypeOptimizable)                  \
   _(GetFirstDollarIndex)                           \
                                                    \
+  _(SetConstructor)                                \
+  _(SetDelete)                                     \
   _(SetHas)                                        \
+  _(SetAdd)                                        \
   _(SetSize)                                       \
+                                                   \
+  _(SharedArrayBufferByteLength)                   \
                                                    \
   _(String)                                        \
   _(StringToString)                                \
@@ -152,6 +199,8 @@
   _(StringEndsWith)                                \
   _(StringToLowerCase)                             \
   _(StringToUpperCase)                             \
+  _(StringToLocaleLowerCase)                       \
+  _(StringToLocaleUpperCase)                       \
   _(StringTrim)                                    \
   _(StringTrimStart)                               \
   _(StringTrimEnd)                                 \
@@ -166,9 +215,20 @@
   _(ObjectKeys)                                    \
   _(ObjectToString)                                \
                                                    \
+  _(TypedArrayFill)                                \
+  _(TypedArraySet)                                 \
+  _(TypedArraySubarray)                            \
+  _(TypedArrayLength)                              \
+  _(TypedArrayByteLength)                          \
+  _(TypedArrayByteOffset)                          \
+                                                   \
   _(TestBailout)                                   \
   _(TestAssertFloat32)                             \
   _(TestAssertRecoveredOnBailout)                  \
+                                                   \
+  _(WeakMapGet)                                    \
+  _(WeakMapHas)                                    \
+  _(WeakSetHas)                                    \
                                                    \
   _(IntrinsicUnsafeSetReservedSlot)                \
   _(IntrinsicUnsafeGetReservedSlot)                \
@@ -181,11 +241,11 @@
   _(IntrinsicToObject)                             \
   _(IntrinsicIsObject)                             \
   _(IntrinsicIsCrossRealmArrayConstructor)         \
+  _(IntrinsicCanOptimizeArraySpecies)              \
   _(IntrinsicToInteger)                            \
   _(IntrinsicToLength)                             \
   _(IntrinsicIsConstructing)                       \
   _(IntrinsicSubstringKernel)                      \
-  _(IntrinsicObjectHasPrototype)                   \
   _(IntrinsicIsPackedArray)                        \
                                                    \
   _(IntrinsicIsSuspendedGenerator)                 \
@@ -198,7 +258,6 @@
   _(IntrinsicGuardToWrapForValidIterator)          \
   _(IntrinsicGuardToIteratorHelper)                \
   _(IntrinsicGuardToAsyncIteratorHelper)           \
-                                                   \
   _(IntrinsicGuardToMapObject)                     \
   _(IntrinsicGetNextMapEntryForIterator)           \
                                                    \
@@ -211,8 +270,6 @@
   _(IntrinsicArrayIteratorPrototypeOptimizable)    \
                                                    \
   _(IntrinsicGuardToArrayBuffer)                   \
-  _(IntrinsicArrayBufferByteLength)                \
-  _(IntrinsicPossiblyWrappedArrayBufferByteLength) \
                                                    \
   _(IntrinsicGuardToSharedArrayBuffer)             \
                                                    \
@@ -221,16 +278,15 @@
   _(IntrinsicIsTypedArray)                         \
   _(IntrinsicIsPossiblyWrappedTypedArray)          \
   _(IntrinsicTypedArrayLength)                     \
-  _(IntrinsicTypedArrayLengthZeroOnOutOfBounds)    \
   _(IntrinsicPossiblyWrappedTypedArrayLength)      \
   _(IntrinsicRegExpBuiltinExec)                    \
   _(IntrinsicRegExpBuiltinExecForTest)             \
   _(IntrinsicRegExpExec)                           \
   _(IntrinsicRegExpExecForTest)                    \
-  _(IntrinsicTypedArrayByteOffset)                 \
-  _(IntrinsicTypedArrayElementSize)                \
                                                    \
-  INLINABLE_NATIVE_FUZZILLI_LIST(_)
+  INLINABLE_EXPLICIT_RESOURCE_MANAGEMENENT_LIST(_) \
+  INLINABLE_NATIVE_FUZZILLI_LIST(_)                \
+  INLINABLE_NATIVE_ITERATOR_RANGE_LIST(_)
 
 struct JSClass;
 class JSJitInfo;

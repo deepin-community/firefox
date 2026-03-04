@@ -24,12 +24,6 @@ downloads-cmd-cancel =
 downloads-cmd-cancel-panel =
     .aria-label = បោះបង់
 
-## Displayed in the downloads context menu for files that can be opened.
-## Variables:
-##   $handler (String) - The name of the mime type's default file handler.
-##   Example: "Notepad", "Acrobat Reader DC", "7-Zip File Manager"
-
-
 ##
 
 downloads-cmd-show-downloads =
@@ -53,55 +47,40 @@ downloads-cmd-clear-list =
 downloads-cmd-clear-downloads =
     .label = សម្អាត​ការ​ទាញ​យក
     .accesskey = ទ
-
+downloads-cmd-delete-file =
+    .label = លុប
+    .accesskey = D
 # This command is shown in the context menu when downloads are blocked.
 downloads-cmd-unblock =
     .label = អនុញ្ញាត​ឲ្យ​ទាញយក
     .accesskey = o
-
 # This is the tooltip of the action button shown when malware is blocked.
 downloads-cmd-remove-file =
     .tooltiptext = លុប​ឯកសារ​ចេញ
-
 downloads-cmd-remove-file-panel =
     .aria-label = លុប​ឯកសារ​ចេញ
-
 # This is the tooltip of the action button shown when potentially unwanted
 # downloads are blocked. This opens a dialog where the user can choose
 # whether to unblock or remove the download. Removing is the default option.
 downloads-cmd-choose-unblock =
     .tooltiptext = លុប​ឯកសារ ឬ អនុញ្ញាត​ឲ្យ​ទាញយក
-
 downloads-cmd-choose-unblock-panel =
     .aria-label = លុប​ឯកសារ ឬ អនុញ្ញាត​ឲ្យ​ទាញយក
-
 # This is the tooltip of the action button shown when uncommon downloads are
 # blocked.This opens a dialog where the user can choose whether to open the
 # file or remove the download. Opening is the default option.
 downloads-cmd-choose-open =
     .tooltiptext = បើក ឬ លុប​ឯកសារ
-
 downloads-cmd-choose-open-panel =
     .aria-label = បើក ឬ លុប​ឯកសារ
-
 # Displayed when hovering a blocked download, indicates that it's possible to
 # show more information for user to take the next action.
 downloads-show-more-information =
     .value = បង្ហាញ​ព័ត៌មាន​បន្ថែមទៀត
-
 # Displayed when hovering a complete download, indicates that it's possible to
 # open the file using an app available in the system.
 downloads-open-file =
     .value = បើក​ឯកសារ
-
-## Displayed when the user clicked on a download in process. Indicates that the
-## downloading file will be opened after certain amount of time using an app
-## available in the system.
-## Variables:
-##   $hours (number) - Amount of hours left till the file opens.
-##   $seconds (number) - Amount of seconds left till the file opens.
-##   $minutes (number) - Amount of minutes till the file opens.
-
 
 ##
 
@@ -109,41 +88,36 @@ downloads-open-file =
 # indicates that it's possible to download this file again.
 downloads-retry-download =
     .value = ព្យាយាម​ទាញយក​ម្ដងទៀត
-
 # Displayed when hovering a download which is able to be cancelled by users,
 # indicates that it's possible to cancel and stop the download.
 downloads-cancel-download =
     .value = បោះបង់​ការទាញយក
-
 # This string is shown at the bottom of the Downloads Panel when all the
 # downloads fit in the available space, or when there are no downloads in
 # the panel at all.
 downloads-history =
     .label = បង្ហាញ​ការ​ទាញ​យក​ទាំងអស់
     .accesskey = ញ
-
-# This string is shown at the top of the Download Details Panel, to indicate
+# This string is shown at the top of the download details sub-panel to indicate
 # that we are showing the details of a single download.
 downloads-details =
     .title = ព័ត៌មាន​លម្អិត​ការទាញយក
 
-## Displayed when a site attempts to automatically download many files.
-## Variables:
-##   $num (number) - Number of blocked downloads.
-##   $url (string) - The url of the suspicious site, stripped of http, https and www prefix.
+## These strings are displayed in the private browsing view of the downloads panel
 
+downloads-private-browsing-delete-button =
+    .label = លុបឯកសារដោយស្វ័យប្រវត្តិ
+    .accesskey = D
 
 ##
 
 downloads-clear-downloads-button =
     .label = សម្អាត​ការ​ទាញ​យក
     .tooltiptext = សម្អាត​ការ​ទាញ​យក​ដែល​បាន​បញ្ចប់​ទាំងស្រុង ដែល​បាន​បោះបង់ និង​ដែល​បាន​បរាជ័យ
-
 # This string is shown when there are no items in the Downloads view, when it
 # is displayed inside a browser tab.
 downloads-list-empty =
     .value = មិន​មាន​ការ​ទាញ​យក​ទេ ។
-
 # This string is shown when there are no items in the Downloads Panel.
 downloads-panel-empty =
     .value = គ្មាន​ការ​ទាញ​យក​សម្រាប់​សម័យ​នេះ​ទេ។

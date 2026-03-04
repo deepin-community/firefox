@@ -33,9 +33,6 @@ download-cert-view-cert =
     .label = Görünüş
 download-cert-view-text = CA təsdiqləmə sənədini yoxla
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -65,8 +62,6 @@ client-auth-cert-details-issued-by = Təmin edən: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Saxlanılıb: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Bu seçimi yadda saxla
 
 ## Set password (p12) dialog
 
@@ -78,6 +73,3 @@ set-password-backup-pw =
 set-password-repeat-backup-pw =
     .value = Təsdiq sənədi yedəyi parolu (təkrar):
 set-password-reminder = Vacib: Əgər təsdiq sənədi yedəyi parolunuzu unutsanız, bu yedəyi yenidən yarada bilməyəcəksiniz.  Lütfən bunu təhlükəsiz bir şəraitdə saxlayın.
-
-## Protected authentication alert
-

@@ -3,11 +3,11 @@
 
 ## Pipeline Layout
 
-In Metal, push constants, vertex buffers, and resources in the bind groups
+In Metal, immediates, vertex buffers, and resources in the bind groups
 are all placed together in the native resource bindings, which work similarly to D3D11:
 there are tables of textures, buffers, and samplers.
 
-We put push constants first (if any) in the table, followed by bind group 0
+We put immediates first (if any) in the table, followed by bind group 0
 resources, followed by other bind groups. The vertex buffers are bound at the very
 end of the VS buffer table.
 
@@ -22,19 +22,23 @@ mod adapter;
 mod command;
 mod conv;
 mod device;
+mod layer_observer;
 mod surface;
 mod time;
 
-use std::{
-    fmt, iter, ops,
-    ptr::NonNull,
-    sync::{atomic, Arc},
-    thread,
-};
+use alloc::{borrow::ToOwned as _, string::String, sync::Arc, vec::Vec};
+use core::{fmt, iter, ops, ptr::NonNull, sync::atomic};
 
 use arrayvec::ArrayVec;
 use bitflags::bitflags;
-use metal::foreign_types::ForeignTypeRef as _;
+use hashbrown::HashMap;
+use metal::{
+    foreign_types::ForeignTypeRef as _, MTLArgumentBuffersTier, MTLBuffer, MTLCommandBufferStatus,
+    MTLCullMode, MTLDepthClipMode, MTLIndexType, MTLLanguageVersion, MTLPrimitiveType,
+    MTLReadWriteTextureTier, MTLRenderStages, MTLResource, MTLResourceUsage, MTLSamplerState,
+    MTLSize, MTLTexture, MTLTextureType, MTLTriangleFillMode, MTLWinding,
+};
+use naga::FastHashMap;
 use parking_lot::{Mutex, RwLock};
 
 #[derive(Clone, Debug)]
@@ -43,6 +47,8 @@ pub struct Api;
 type ResourceIndex = u32;
 
 impl crate::Api for Api {
+    const VARIANT: wgt::Backend = wgt::Backend::Metal;
+
     type Instance = Instance;
     type Surface = Surface;
     type Adapter = Adapter;
@@ -96,9 +102,7 @@ crate::impl_dyn_resource!(
     TextureView
 );
 
-pub struct Instance {
-    managed_metal_layer_delegate: surface::HalManagedMetalLayerDelegate,
-}
+pub struct Instance {}
 
 impl Instance {
     pub fn create_surface_from_layer(&self, layer: &metal::MetalLayerRef) -> Surface {
@@ -109,13 +113,11 @@ impl Instance {
 impl crate::Instance for Instance {
     type A = Api;
 
-    unsafe fn init(_desc: &crate::InstanceDescriptor) -> Result<Self, crate::InstanceError> {
+    unsafe fn init(_desc: &crate::InstanceDescriptor<'_>) -> Result<Self, crate::InstanceError> {
         profiling::scope!("Init Metal Backend");
         // We do not enable metal validation based on the validation flags as it affects the entire
         // process. Instead, we enable the validation inside the test harness itself in tests/src/native.rs.
-        Ok(Instance {
-            managed_metal_layer_delegate: surface::HalManagedMetalLayerDelegate::new(),
-        })
+        Ok(Instance {})
     }
 
     unsafe fn create_surface(
@@ -124,18 +126,14 @@ impl crate::Instance for Instance {
         window_handle: raw_window_handle::RawWindowHandle,
     ) -> Result<Surface, crate::InstanceError> {
         match window_handle {
-            #[cfg(target_os = "ios")]
+            #[cfg(any(target_os = "ios", target_os = "visionos"))]
             raw_window_handle::RawWindowHandle::UiKit(handle) => {
-                let _ = &self.managed_metal_layer_delegate;
-                Ok(unsafe { Surface::from_view(handle.ui_view.as_ptr(), None) })
+                Ok(unsafe { Surface::from_view(handle.ui_view.cast()) })
             }
             #[cfg(target_os = "macos")]
-            raw_window_handle::RawWindowHandle::AppKit(handle) => Ok(unsafe {
-                Surface::from_view(
-                    handle.ns_view.as_ptr(),
-                    Some(&self.managed_metal_layer_delegate),
-                )
-            }),
+            raw_window_handle::RawWindowHandle::AppKit(handle) => {
+                Ok(unsafe { Surface::from_view(handle.ns_view.cast()) })
+            }
             _ => Err(crate::InstanceError::new(format!(
                 "window handle {window_handle:?} is not a Metal-compatible handle"
             ))),
@@ -158,9 +156,17 @@ impl crate::Instance for Instance {
                         vendor: 0,
                         device: 0,
                         device_type: shared.private_caps.device_type(),
+                        device_pci_bus_id: String::new(),
                         driver: String::new(),
                         driver_info: String::new(),
                         backend: wgt::Backend::Metal,
+                        // These are hardcoded based on typical values for Metal devices
+                        //
+                        // See <https://github.com/gpuweb/gpuweb/blob/main/proposals/subgroups.md#adapter-info>
+                        // for more information.
+                        subgroup_min_size: 4,
+                        subgroup_max_size: 64,
+                        transient_saves_memory: shared.private_caps.supports_memoryless_storage,
                     },
                     features: shared.private_caps.features(),
                     capabilities: shared.private_caps.capabilities(),
@@ -196,19 +202,19 @@ bitflags!(
     }
 );
 
+// TODO(https://github.com/gfx-rs/wgpu/issues/8715): Eliminate duplication with
+// `wgt::Limits`. Keeping multiple sets of limits creates a risk of confusion.
 #[allow(dead_code)]
 #[derive(Clone, Debug)]
 struct PrivateCapabilities {
-    family_check: bool,
-    msl_version: metal::MTLLanguageVersion,
+    msl_version: MTLLanguageVersion,
     fragment_rw_storage: bool,
-    read_write_texture_tier: metal::MTLReadWriteTextureTier,
+    read_write_texture_tier: MTLReadWriteTextureTier,
     msaa_desktop: bool,
     msaa_apple3: bool,
     msaa_apple7: bool,
     resource_heaps: bool,
-    argument_buffers: bool,
-    shared_textures: bool,
+    argument_buffers: Option<MTLArgumentBuffersTier>,
     mutable_comparison_samplers: bool,
     sampler_clamp_to_border: bool,
     indirect_draw_dispatch: bool,
@@ -230,6 +236,7 @@ struct PrivateCapabilities {
     format_eac_etc: bool,
     format_astc: bool,
     format_astc_hdr: bool,
+    format_astc_3d: bool,
     format_any8_unorm_srgb_all: bool,
     format_any8_unorm_srgb_no_write: bool,
     format_any8_snorm_all: bool,
@@ -260,6 +267,7 @@ struct PrivateCapabilities {
     format_rgba32float_color_write: bool,
     format_rgba32float_all: bool,
     format_depth16unorm: bool,
+    format_depth16unorm_filter: bool,
     format_depth32float_filter: bool,
     format_depth32float_none: bool,
     format_bgr10a2_all: bool,
@@ -268,7 +276,14 @@ struct PrivateCapabilities {
     max_vertex_buffers: ResourceIndex,
     max_textures_per_stage: ResourceIndex,
     max_samplers_per_stage: ResourceIndex,
+    max_binding_array_elements: ResourceIndex,
+    max_sampler_binding_array_elements: ResourceIndex,
     buffer_alignment: u64,
+
+    /// Platform-reported maximum buffer size
+    ///
+    /// This value is clamped to `u32::MAX` for `wgt::Limits`, so you probably
+    /// shouldn't be looking at this copy.
     max_buffer_size: u64,
     max_texture_size: u64,
     max_texture_3d_size: u64,
@@ -295,8 +310,18 @@ struct PrivateCapabilities {
     has_unified_memory: Option<bool>,
     timestamp_query_support: TimestampQuerySupport,
     supports_simd_scoped_operations: bool,
+    supports_cooperative_matrix: bool,
     int64: bool,
+    int64_atomics_min_max: bool,
     int64_atomics: bool,
+    float_atomics: bool,
+    supports_shared_event: bool,
+    mesh_shaders: bool,
+    max_mesh_task_workgroup_count: u32,
+    max_task_payload_size: u32,
+    supported_vertex_amplification_factor: u32,
+    shader_barycentrics: bool,
+    supports_memoryless_storage: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -308,13 +333,21 @@ struct PrivateDisabilities {
     broken_layered_clear_image: bool,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 struct Settings {
     retain_command_buffer_references: bool,
 }
 
+impl Default for Settings {
+    fn default() -> Self {
+        Self {
+            retain_command_buffer_references: true,
+        }
+    }
+}
+
 struct AdapterShared {
-    device: Mutex<metal::Device>,
+    device: metal::Device,
     disabilities: PrivateDisabilities,
     private_caps: PrivateCapabilities,
     settings: Settings,
@@ -327,12 +360,12 @@ unsafe impl Sync for AdapterShared {}
 impl AdapterShared {
     fn new(device: metal::Device) -> Self {
         let private_caps = PrivateCapabilities::new(&device);
-        log::debug!("{:#?}", private_caps);
+        log::debug!("{private_caps:#?}");
 
         Self {
             disabilities: PrivateDisabilities::new(&device),
             private_caps,
-            device: Mutex::new(device),
+            device,
             settings: Settings::default(),
             presentation_timer: time::PresentationTimer::new(),
         }
@@ -358,23 +391,22 @@ impl Queue {
             timestamp_period,
         }
     }
+
+    pub fn as_raw(&self) -> &Arc<Mutex<metal::CommandQueue>> {
+        &self.raw
+    }
 }
 
 pub struct Device {
     shared: Arc<AdapterShared>,
     features: wgt::Features,
-    counters: wgt::HalCounters,
+    counters: Arc<wgt::HalCounters>,
 }
 
 pub struct Surface {
-    view: Option<NonNull<objc::runtime::Object>>,
     render_layer: Mutex<metal::MetalLayer>,
     swapchain_format: RwLock<Option<wgt::TextureFormat>>,
     extent: RwLock<wgt::Extent3d>,
-    main_thread_id: thread::ThreadId,
-    // Useful for UI-intensive applications that are sensitive to
-    // window resizing.
-    pub present_with_transaction: bool,
 }
 
 unsafe impl Send for Surface {}
@@ -384,18 +416,20 @@ unsafe impl Sync for Surface {}
 pub struct SurfaceTexture {
     texture: Texture,
     drawable: metal::MetalDrawable,
+    // Useful for UI-intensive applications that are sensitive to
+    // window resizing.
     present_with_transaction: bool,
 }
 
 impl crate::DynSurfaceTexture for SurfaceTexture {}
 
-impl std::borrow::Borrow<Texture> for SurfaceTexture {
+impl core::borrow::Borrow<Texture> for SurfaceTexture {
     fn borrow(&self) -> &Texture {
         &self.texture
     }
 }
 
-impl std::borrow::Borrow<dyn crate::DynTexture> for SurfaceTexture {
+impl core::borrow::Borrow<dyn crate::DynTexture> for SurfaceTexture {
     fn borrow(&self) -> &dyn crate::DynTexture {
         &self.texture
     }
@@ -437,6 +471,10 @@ impl crate::Queue for Queue {
                 signal_fence
                     .pending_command_buffers
                     .push((signal_value, raw.to_owned()));
+
+                if let Some(shared_event) = signal_fence.shared_event.as_ref() {
+                    raw.encode_signal_event(shared_event, signal_value);
+                }
                 // only return an extra one if it's extra
                 match command_buffers.last() {
                     Some(_) => None,
@@ -514,10 +552,19 @@ impl crate::BufferBinding<'_, Buffer> {
 pub struct Texture {
     raw: metal::Texture,
     format: wgt::TextureFormat,
-    raw_type: metal::MTLTextureType,
+    raw_type: MTLTextureType,
     array_layers: u32,
     mip_levels: u32,
     copy_size: crate::CopyExtent,
+}
+
+impl Texture {
+    /// # Safety
+    ///
+    /// - The texture handle must not be manually destroyed
+    pub unsafe fn raw_handle(&self) -> &metal::Texture {
+        &self.raw
+    }
 }
 
 impl crate::DynTexture for Texture {}
@@ -578,12 +625,16 @@ struct MultiStageData<T> {
     vs: T,
     fs: T,
     cs: T,
+    ts: T,
+    ms: T,
 }
 
 const NAGA_STAGES: MultiStageData<naga::ShaderStage> = MultiStageData {
     vs: naga::ShaderStage::Vertex,
     fs: naga::ShaderStage::Fragment,
     cs: naga::ShaderStage::Compute,
+    ts: naga::ShaderStage::Task,
+    ms: naga::ShaderStage::Mesh,
 };
 
 impl<T> ops::Index<naga::ShaderStage> for MultiStageData<T> {
@@ -593,6 +644,8 @@ impl<T> ops::Index<naga::ShaderStage> for MultiStageData<T> {
             naga::ShaderStage::Vertex => &self.vs,
             naga::ShaderStage::Fragment => &self.fs,
             naga::ShaderStage::Compute => &self.cs,
+            naga::ShaderStage::Task => &self.ts,
+            naga::ShaderStage::Mesh => &self.ms,
         }
     }
 }
@@ -603,6 +656,8 @@ impl<T> MultiStageData<T> {
             vs: fun(&self.vs),
             fs: fun(&self.fs),
             cs: fun(&self.cs),
+            ts: fun(&self.ts),
+            ms: fun(&self.ms),
         }
     }
     fn map<Y>(self, fun: impl Fn(T) -> Y) -> MultiStageData<Y> {
@@ -610,17 +665,23 @@ impl<T> MultiStageData<T> {
             vs: fun(self.vs),
             fs: fun(self.fs),
             cs: fun(self.cs),
+            ts: fun(self.ts),
+            ms: fun(self.ms),
         }
     }
     fn iter<'a>(&'a self) -> impl Iterator<Item = &'a T> {
         iter::once(&self.vs)
             .chain(iter::once(&self.fs))
             .chain(iter::once(&self.cs))
+            .chain(iter::once(&self.ts))
+            .chain(iter::once(&self.ms))
     }
     fn iter_mut<'a>(&'a mut self) -> impl Iterator<Item = &'a mut T> {
         iter::once(&mut self.vs)
             .chain(iter::once(&mut self.fs))
             .chain(iter::once(&mut self.cs))
+            .chain(iter::once(&mut self.ts))
+            .chain(iter::once(&mut self.ms))
     }
 }
 
@@ -633,7 +694,7 @@ struct BindGroupLayoutInfo {
 }
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-struct PushConstantsInfo {
+struct ImmediateDataInfo {
     count: u32,
     buffer_index: ResourceIndex,
 }
@@ -641,9 +702,9 @@ struct PushConstantsInfo {
 #[derive(Debug)]
 pub struct PipelineLayout {
     bind_group_infos: ArrayVec<BindGroupLayoutInfo, { crate::MAX_BIND_GROUPS }>,
-    push_constants_infos: MultiStageData<Option<PushConstantsInfo>>,
+    immediates_infos: MultiStageData<Option<ImmediateDataInfo>>,
     total_counters: MultiStageResourceCounters,
-    total_push_constants: u32,
+    total_immediates: u32,
     per_stage_map: MultiStageResources,
 }
 
@@ -655,9 +716,22 @@ trait AsNative {
     fn as_native(&self) -> &Self::Native;
 }
 
-type BufferPtr = NonNull<metal::MTLBuffer>;
-type TexturePtr = NonNull<metal::MTLTexture>;
-type SamplerPtr = NonNull<metal::MTLSamplerState>;
+type ResourcePtr = NonNull<MTLResource>;
+type BufferPtr = NonNull<MTLBuffer>;
+type TexturePtr = NonNull<MTLTexture>;
+type SamplerPtr = NonNull<MTLSamplerState>;
+
+impl AsNative for ResourcePtr {
+    type Native = metal::ResourceRef;
+    #[inline]
+    fn from(native: &Self::Native) -> Self {
+        unsafe { NonNull::new_unchecked(native.as_ptr()) }
+    }
+    #[inline]
+    fn as_native(&self) -> &Self::Native {
+        unsafe { Self::Native::from_ptr(self.as_ptr()) }
+    }
+}
 
 impl AsNative for BufferPtr {
     type Native = metal::BufferRef;
@@ -714,12 +788,32 @@ struct BufferResource {
     binding_location: u32,
 }
 
+#[derive(Debug)]
+struct UseResourceInfo {
+    uses: MTLResourceUsage,
+    stages: MTLRenderStages,
+    visible_in_compute: bool,
+}
+
+impl Default for UseResourceInfo {
+    fn default() -> Self {
+        Self {
+            uses: MTLResourceUsage::empty(),
+            stages: MTLRenderStages::empty(),
+            visible_in_compute: false,
+        }
+    }
+}
+
 #[derive(Debug, Default)]
 pub struct BindGroup {
     counters: MultiStageResourceCounters,
     buffers: Vec<BufferResource>,
     samplers: Vec<SamplerPtr>,
     textures: Vec<TexturePtr>,
+
+    argument_buffers: Vec<metal::Buffer>,
+    resources_to_use: HashMap<ResourcePtr, UseResourceInfo>,
 }
 
 impl crate::DynBindGroup for BindGroup {}
@@ -728,16 +822,32 @@ unsafe impl Send for BindGroup {}
 unsafe impl Sync for BindGroup {}
 
 #[derive(Debug)]
+pub enum ShaderModuleSource {
+    Naga(crate::NagaShader),
+    Passthrough(PassthroughShader),
+}
+
+#[derive(Debug)]
+pub struct PassthroughShader {
+    pub library: metal::Library,
+    pub function: metal::Function,
+    pub entry_point: String,
+    pub num_workgroups: (u32, u32, u32),
+}
+
+#[derive(Debug)]
 pub struct ShaderModule {
-    naga: crate::NagaShader,
-    runtime_checks: bool,
+    source: ShaderModuleSource,
+    bounds_checks: wgt::ShaderRuntimeChecks,
 }
 
 impl crate::DynShaderModule for ShaderModule {}
 
 #[derive(Debug, Default)]
 struct PipelineStageInfo {
-    push_constants: Option<PushConstantsInfo>,
+    #[allow(dead_code)]
+    library: Option<metal::Library>,
+    immediates: Option<ImmediateDataInfo>,
 
     /// The buffer argument table index at which we pass runtime-sized arrays' buffer sizes.
     ///
@@ -751,41 +861,53 @@ struct PipelineStageInfo {
 
     /// Info on all bound vertex buffers.
     vertex_buffer_mappings: Vec<naga::back::msl::VertexBufferMapping>,
+
+    /// The workgroup size for compute, task or mesh stages
+    raw_wg_size: MTLSize,
+
+    /// The workgroup memory sizes for compute task or mesh stages
+    work_group_memory_sizes: Vec<u32>,
 }
 
 impl PipelineStageInfo {
     fn clear(&mut self) {
-        self.push_constants = None;
+        self.immediates = None;
         self.sizes_slot = None;
         self.sized_bindings.clear();
         self.vertex_buffer_mappings.clear();
+        self.library = None;
+        self.work_group_memory_sizes.clear();
+        self.raw_wg_size = Default::default();
     }
 
     fn assign_from(&mut self, other: &Self) {
-        self.push_constants = other.push_constants;
+        self.immediates = other.immediates;
         self.sizes_slot = other.sizes_slot;
         self.sized_bindings.clear();
         self.sized_bindings.extend_from_slice(&other.sized_bindings);
         self.vertex_buffer_mappings.clear();
         self.vertex_buffer_mappings
             .extend_from_slice(&other.vertex_buffer_mappings);
+        self.library = Some(other.library.as_ref().unwrap().clone());
+        self.raw_wg_size = other.raw_wg_size;
+        self.work_group_memory_sizes.clear();
+        self.work_group_memory_sizes
+            .extend_from_slice(&other.work_group_memory_sizes);
     }
 }
 
 #[derive(Debug)]
 pub struct RenderPipeline {
     raw: metal::RenderPipelineState,
-    #[allow(dead_code)]
-    vs_lib: metal::Library,
-    #[allow(dead_code)]
-    fs_lib: Option<metal::Library>,
-    vs_info: PipelineStageInfo,
+    vs_info: Option<PipelineStageInfo>,
     fs_info: Option<PipelineStageInfo>,
-    raw_primitive_type: metal::MTLPrimitiveType,
-    raw_triangle_fill_mode: metal::MTLTriangleFillMode,
-    raw_front_winding: metal::MTLWinding,
-    raw_cull_mode: metal::MTLCullMode,
-    raw_depth_clip_mode: Option<metal::MTLDepthClipMode>,
+    ts_info: Option<PipelineStageInfo>,
+    ms_info: Option<PipelineStageInfo>,
+    raw_primitive_type: MTLPrimitiveType,
+    raw_triangle_fill_mode: MTLTriangleFillMode,
+    raw_front_winding: MTLWinding,
+    raw_cull_mode: MTLCullMode,
+    raw_depth_clip_mode: Option<MTLDepthClipMode>,
     depth_stencil: Option<(metal::DepthStencilState, wgt::DepthBiasState)>,
 }
 
@@ -797,11 +919,7 @@ impl crate::DynRenderPipeline for RenderPipeline {}
 #[derive(Debug)]
 pub struct ComputePipeline {
     raw: metal::ComputePipelineState,
-    #[allow(dead_code)]
-    cs_lib: metal::Library,
     cs_info: PipelineStageInfo,
-    work_group_size: metal::MTLSize,
-    work_group_memory_sizes: Vec<u32>,
 }
 
 unsafe impl Send for ComputePipeline {}
@@ -827,6 +945,7 @@ pub struct Fence {
     completed_value: Arc<atomic::AtomicU64>,
     /// The pending fence values have to be ascending.
     pending_command_buffers: Vec<(crate::FenceValue, metal::CommandBuffer)>,
+    shared_event: Option<metal::SharedEvent>,
 }
 
 impl crate::DynFence for Fence {}
@@ -838,7 +957,7 @@ impl Fence {
     fn get_latest(&self) -> crate::FenceValue {
         let mut max_value = self.completed_value.load(atomic::Ordering::Acquire);
         for &(value, ref cmd_buf) in self.pending_command_buffers.iter() {
-            if cmd_buf.status() == metal::MTLCommandBufferStatus::Completed {
+            if cmd_buf.status() == MTLCommandBufferStatus::Completed {
                 max_value = value;
             }
         }
@@ -850,13 +969,17 @@ impl Fence {
         self.pending_command_buffers
             .retain(|&(value, _)| value > latest);
     }
+
+    pub fn raw_shared_event(&self) -> Option<&metal::SharedEvent> {
+        self.shared_event.as_ref()
+    }
 }
 
 struct IndexState {
     buffer_ptr: BufferPtr,
     offset: wgt::BufferAddress,
     stride: wgt::BufferAddress,
-    raw_type: metal::MTLIndexType,
+    raw_type: MTLIndexType,
 }
 
 #[derive(Default)]
@@ -868,9 +991,8 @@ struct CommandState {
     blit: Option<metal::BlitCommandEncoder>,
     render: Option<metal::RenderCommandEncoder>,
     compute: Option<metal::ComputeCommandEncoder>,
-    raw_primitive_type: metal::MTLPrimitiveType,
+    raw_primitive_type: MTLPrimitiveType,
     index: Option<IndexState>,
-    raw_wg_size: metal::MTLSize,
     stage_infos: MultiStageData<PipelineStageInfo>,
 
     /// Sizes of currently bound [`wgt::BufferBindingType::Storage`] buffers.
@@ -886,18 +1008,17 @@ struct CommandState {
     ///   checks and the WGSL `arrayLength` function.
     ///
     /// For each stage `S` in `stage_infos`, we consult this to find the sizes
-    /// of the buffers listed in [`stage_infos.S.sized_bindings`], which we must
+    /// of the buffers listed in `stage_infos.S.sized_bindings`, which we must
     /// pass to the entry point.
     ///
     /// See `device::CompiledShader::sized_bindings` for more details.
     ///
     /// [`ResourceBinding`]: naga::ResourceBinding
-    storage_buffer_length_map: rustc_hash::FxHashMap<naga::ResourceBinding, wgt::BufferSize>,
+    storage_buffer_length_map: FastHashMap<naga::ResourceBinding, wgt::BufferSize>,
 
-    vertex_buffer_size_map: rustc_hash::FxHashMap<u64, wgt::BufferSize>,
+    vertex_buffer_size_map: FastHashMap<u64, wgt::BufferSize>,
 
-    work_group_memory_sizes: Vec<u32>,
-    push_constants: Vec<u32>,
+    immediates: Vec<u32>,
 
     /// Timer query that should be executed when the next pass starts.
     pending_timer_queries: Vec<(QuerySet, u32)>,
@@ -909,6 +1030,7 @@ pub struct CommandEncoder {
     raw_cmd_buf: Option<metal::CommandBuffer>,
     state: CommandState,
     temp: Temp,
+    counters: Arc<wgt::HalCounters>,
 }
 
 impl fmt::Debug for CommandEncoder {
@@ -942,3 +1064,11 @@ impl crate::DynPipelineCache for PipelineCache {}
 pub struct AccelerationStructure;
 
 impl crate::DynAccelerationStructure for AccelerationStructure {}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum OsType {
+    Macos,
+    Ios,
+    Tvos,
+    VisionOs,
+}

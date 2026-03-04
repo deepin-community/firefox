@@ -14,7 +14,9 @@ default-browser-notification-button =
 
 default-browser-prompt-title-pin = Converter o { -brand-short-name } no seu navegador principal?
 default-browser-prompt-message-pin = Manteña o { -brand-short-name } ao alcance dos seus dedos: convértao no seu navegador predeterminado e fíxeo á barra de tarefas.
+default-browser-prompt-message-pin-msix = Ten { -brand-short-name } a man: convérteo no teu navegador predeterminado e fíxao na barra de tarefas e no menú de inicio.
 default-browser-prompt-message-pin-mac = Manteña o { -brand-short-name } ao alcance dos seus dedos: convértao no seu navegador predeterminado e fíxeo á súa doca.
+default-browser-prompt-button-primary-set = Establecer como navegador principal
 default-browser-prompt-button-primary-pin = Converter no navegador principal
 default-browser-prompt-title-alt = Converter o { -brand-short-name } no navegador predeterminado?
 default-browser-prompt-message-alt = Obteña velocidade, seguranza e privacidade cada vez que navegue.
@@ -26,5 +28,15 @@ default-browser-prompt-button-secondary = Agora non
 ## use Windows Settings to set the default browser. Instructions differ for
 ## Windows 10 and 11.
 
+default-browser-guidance-notification-title = Remata de facer que { -brand-short-name } sexa o teu predeterminado
+# Quoted text are keywords to look for in the Windows Settings app.
+default-browser-guidance-notification-body-instruction-win10 =
+    Paso 1: vai a Configuración > Aplicacións predeterminadas
+    Paso 2: desprázate ata «Navegador web»
+    Paso 3: selecciona e escolle { -brand-short-name }
+# Quoted text are keywords to look for in the Windows Settings app.
+default-browser-guidance-notification-body-instruction-win11 =
+    Paso 1: vai a Configuración > Aplicacións predeterminadas
+    Paso 2: selecciona «Establecer como predeterminado» para { -brand-short-name }
 default-browser-guidance-notification-info-page = Móstrame
 default-browser-guidance-notification-dismiss = Feito

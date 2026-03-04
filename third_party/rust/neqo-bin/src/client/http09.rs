@@ -4,14 +4,18 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+#![expect(clippy::unwrap_used, reason = "This is example code.")]
+
 //! An [HTTP 0.9](https://www.w3.org/Protocols/HTTP/AsImplemented.html) client implementation.
 
 use std::{
     cell::RefCell,
-    collections::{HashMap, VecDeque},
+    collections::VecDeque,
+    fmt::Display,
     fs::File,
-    io::{BufWriter, Write},
+    io::{BufWriter, Write as _},
     net::SocketAddr,
+    num::NonZeroUsize,
     path::PathBuf,
     rc::Rc,
     time::Instant,
@@ -20,23 +24,37 @@ use std::{
 use neqo_common::{event::Provider, qdebug, qinfo, qwarn, Datagram};
 use neqo_crypto::{AuthenticationStatus, ResumptionToken};
 use neqo_transport::{
-    CloseReason, Connection, ConnectionEvent, EmptyConnectionIdGenerator, Error, Output, State,
-    StreamId, StreamType,
+    CloseReason, Connection, ConnectionEvent, ConnectionIdGenerator, EmptyConnectionIdGenerator,
+    Error, OutputBatch, RandomConnectionIdGenerator, State, StreamId, StreamType,
 };
+use rustc_hash::FxHashMap as HashMap;
 use url::Url;
 
 use super::{get_output_file, qlog_new, Args, CloseState, Res};
+use crate::STREAM_IO_BUFFER_SIZE;
 
 pub struct Handler<'a> {
     streams: HashMap<StreamId, Option<BufWriter<File>>>,
     url_queue: VecDeque<Url>,
+    handled_urls: Vec<Url>,
     all_paths: Vec<PathBuf>,
     args: &'a Args,
     token: Option<ResumptionToken>,
     needs_key_update: bool,
+    read_buffer: Vec<u8>,
 }
 
-impl<'a> super::Handler for Handler<'a> {
+impl Handler<'_> {
+    fn reinit(&mut self) {
+        for url in self.handled_urls.drain(..) {
+            self.url_queue.push_front(url);
+        }
+        self.streams.clear();
+        self.all_paths.clear();
+    }
+}
+
+impl super::Handler for Handler<'_> {
     type Client = Connection;
 
     fn handle(&mut self, client: &mut Self::Client) -> Res<bool> {
@@ -48,7 +66,7 @@ impl<'a> super::Handler for Handler<'a> {
                         self.needs_key_update = false;
                         self.download_urls(client);
                     }
-                    Err(neqo_transport::Error::KeyUpdateBlocked) => (),
+                    Err(Error::KeyUpdateBlocked) => (),
                     Err(e) => return Err(e.into()),
                 }
             }
@@ -78,6 +96,12 @@ impl<'a> super::Handler for Handler<'a> {
                     qdebug!("{event:?}");
                     self.download_urls(client);
                 }
+                ConnectionEvent::ZeroRttRejected => {
+                    qdebug!("{event:?}");
+                    // All 0-RTT data was rejected. We need to retransmit it.
+                    self.reinit();
+                    self.download_urls(client);
+                }
                 ConnectionEvent::ResumptionToken(token) => {
                     self.token = Some(token);
                 }
@@ -92,10 +116,7 @@ impl<'a> super::Handler for Handler<'a> {
         }
 
         if self.args.resume && self.token.is_none() {
-            let Some(token) = client.take_resumption_token(Instant::now()) else {
-                return Ok(false);
-            };
-            self.token = Some(token);
+            self.token = client.take_resumption_token(Instant::now());
         }
 
         Ok(true)
@@ -117,11 +138,17 @@ pub fn create_client(
         "hq-29" | "hq-30" | "hq-31" | "hq-32" => args.shared.alpn.as_str(),
         _ => "hq-interop",
     };
-
+    let cid_generator: Rc<RefCell<dyn ConnectionIdGenerator>> = if args.cid_len == 0 {
+        Rc::new(RefCell::new(EmptyConnectionIdGenerator::default()))
+    } else {
+        Rc::new(RefCell::new(RandomConnectionIdGenerator::new(
+            args.cid_len.into(),
+        )))
+    };
     let mut client = Connection::new_client(
         hostname,
         &[alpn],
-        Rc::new(RefCell::new(EmptyConnectionIdGenerator::default())),
+        cid_generator,
         local_addr,
         remote_addr,
         args.shared.quic_parameters.get(alpn),
@@ -137,7 +164,11 @@ pub fn create_client(
         client.set_ciphers(&ciphers)?;
     }
 
-    client.set_qlog(qlog_new(args, hostname, client.odcid().unwrap())?);
+    client.set_qlog(qlog_new(
+        args,
+        hostname,
+        client.odcid().ok_or(Error::Internal)?,
+    )?);
 
     Ok(client)
 }
@@ -161,20 +192,25 @@ impl TryFrom<&State> for CloseState {
 }
 
 impl super::Client for Connection {
-    fn process_output(&mut self, now: Instant) -> Output {
-        self.process_output(now)
+    fn process_multiple_output(
+        &mut self,
+        now: Instant,
+        max_datagrams: NonZeroUsize,
+    ) -> OutputBatch {
+        self.process_multiple_output(now, max_datagrams)
     }
 
-    fn process_multiple_input<'a, I>(&mut self, dgrams: I, now: Instant)
-    where
-        I: IntoIterator<Item = &'a Datagram>,
-    {
+    fn process_multiple_input<'a>(
+        &mut self,
+        dgrams: impl IntoIterator<Item = Datagram<&'a mut [u8]>>,
+        now: Instant,
+    ) {
         self.process_multiple_input(dgrams, now);
     }
 
     fn close<S>(&mut self, now: Instant, app_error: neqo_transport::AppError, msg: S)
     where
-        S: AsRef<str> + std::fmt::Display,
+        S: AsRef<str> + Display,
     {
         if !self.state().closed() {
             self.close(now, app_error, msg);
@@ -190,19 +226,21 @@ impl super::Client for Connection {
     }
 
     fn has_events(&self) -> bool {
-        neqo_common::event::Provider::has_events(self)
+        Provider::has_events(self)
     }
 }
 
 impl<'b> Handler<'b> {
     pub fn new(url_queue: VecDeque<Url>, args: &'b Args) -> Self {
         Self {
-            streams: HashMap::new(),
+            streams: HashMap::default(),
             url_queue,
+            handled_urls: Vec::new(),
             all_paths: Vec::new(),
             args,
             token: None,
             needs_key_update: args.key_update,
+            read_buffer: vec![0; STREAM_IO_BUFFER_SIZE],
         }
     }
 
@@ -237,11 +275,13 @@ impl<'b> Handler<'b> {
                     .stream_send(client_stream_id, req.as_bytes())
                     .unwrap();
                 client.stream_close_send(client_stream_id).unwrap();
-                let out_file = get_output_file(&url, &self.args.output_dir, &mut self.all_paths);
+                let out_file =
+                    get_output_file(&url, self.args.output_dir.as_ref(), &mut self.all_paths);
                 self.streams.insert(client_stream_id, out_file);
+                self.handled_urls.push(url);
                 true
             }
-            Err(e @ (Error::StreamLimitError | Error::ConnectionState)) => {
+            Err(e @ (Error::StreamLimit | Error::ConnectionState)) => {
                 qwarn!("Cannot create stream {e:?}");
                 self.url_queue.push_front(url);
                 false
@@ -257,25 +297,25 @@ impl<'b> Handler<'b> {
     fn read_from_stream(
         client: &mut Connection,
         stream_id: StreamId,
+        read_buffer: &mut [u8],
         output_read_data: bool,
         maybe_out_file: &mut Option<BufWriter<File>>,
     ) -> Res<bool> {
-        let mut data = vec![0; 4096];
         loop {
-            let (sz, fin) = client.stream_recv(stream_id, &mut data)?;
+            let (sz, fin) = client.stream_recv(stream_id, read_buffer)?;
             if sz == 0 {
                 return Ok(fin);
             }
+            let read_buffer = &read_buffer[0..sz];
 
             if let Some(out_file) = maybe_out_file {
-                out_file.write_all(&data[..sz])?;
+                out_file.write_all(read_buffer)?;
             } else if !output_read_data {
-                qdebug!("READ[{stream_id}]: {sz} bytes");
+                qdebug!("READ[{stream_id}]: {} bytes", read_buffer.len());
             } else {
                 qdebug!(
-                    "READ[{}]: {}",
-                    stream_id,
-                    String::from_utf8(data.clone()).unwrap()
+                    "READ[{stream_id}]: {}",
+                    std::str::from_utf8(read_buffer).map_err(|_| Error::InvalidInput)?
                 );
             }
             if fin {
@@ -294,6 +334,7 @@ impl<'b> Handler<'b> {
                 let fin_recvd = Self::read_from_stream(
                     client,
                     stream_id,
+                    &mut self.read_buffer,
                     self.args.output_read_data,
                     maybe_out_file,
                 )?;

@@ -3,12 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-services =
@@ -36,11 +30,9 @@ menu-quit =
             [windows] x
            *[other] Q
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = Gahui' { -brand-shorter-name }
-
 menu-about =
     .label = rayi'î { -brand-shorter-name }
     .accesskey = r
@@ -258,8 +250,7 @@ menu-help =
 menu-help-report-site-issue =
     .label = Natà' si huā sa huā a'na' riña sitiô…
 # Label of the Help menu item. Either this or
-# safeb.palm.notdeceptive.label from
-# phishing-afterload-warning-message.dtd is shown.
+# menu-help-notdeceptive is shown.
 menu-help-report-deceptive-site =
     .label = Nato' ahui sitio nitaj si 'iaj sun hue'e...
     .accesskey = D

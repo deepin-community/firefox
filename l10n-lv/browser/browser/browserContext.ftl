@@ -14,7 +14,7 @@ navbar-tooltip-instruction =
 # Variables
 #   $shortcut (String) - A keyboard shortcut for the Go Back command.
 main-context-menu-back-2 =
-    .tooltiptext = Iet vienu lapu atpakaļ ({ $shortcut })
+    .tooltiptext = Doties vienu lapu atpakaļ ({ $shortcut })
     .aria-label = Atpakaļ
     .accesskey = A
 # This menuitem is only visible on macOS
@@ -149,9 +149,7 @@ main-context-menu-save-link-to-pocket =
     .label = Saglabāt saiti uz { -pocket-brand-name }
     .accesskey = u
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Kopēt e-pasta adresi
@@ -162,11 +160,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Kopēt saiti
     .accesskey = s
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Kopēt saiti bez vietnes izsekošanas
-    .accesskey = v
+main-context-menu-preview-link =
+    .label = Priekšskatīt saiti
+    .accesskey = P
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Kopēt tīru saiti
+    .accesskey = s
 
 ## Media (video/audio) controls
 ##
@@ -290,9 +292,7 @@ main-context-menu-send-to-device =
     .label = Sūtīt lapu uz ierīci
     .accesskey = I
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Izmantot saglabāto lietotājvārdu
@@ -319,6 +319,9 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Pievienot šim meklējumam atslēgvārdu…
     .accesskey = a
+main-context-menu-add-engine =
+    .label = Pievienot meklēšanas dzini
+    .accesskey = m
 main-context-menu-link-send-to-device =
     .label = Sūtīt saiti uz ierīci
     .accesskey = I
@@ -389,3 +392,5 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Atklāt paroli
     .accesskey = A
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Jaunums

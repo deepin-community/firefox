@@ -38,17 +38,15 @@ add_task(async function extension() {
         name: "ExtensionTest",
         type: UrlbarUtils.PROVIDER_TYPE.EXTENSION,
         results: [
-          Object.assign(
-            new UrlbarResult(
-              UrlbarUtils.RESULT_TYPE.URL,
-              UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
-              {
-                url,
-                title: "Test",
-              }
-            ),
-            { heuristic: true }
-          ),
+          new UrlbarResult({
+            type: UrlbarUtils.RESULT_TYPE.URL,
+            source: UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
+            heuristic: true,
+            payload: {
+              url,
+              title: "Test",
+            },
+          }),
         ],
       });
       UrlbarProvidersManager.registerProvider(provider);
@@ -289,6 +287,7 @@ add_task(async function fallback_searchRestrictionToken() {
         await UrlbarTestUtils.assertSearchMode(window, {
           engineName: "Example",
           entry: "typed",
+          restrictType: "symbol",
         });
 
         // Check the other visit results.
@@ -381,7 +380,14 @@ async function withVisits(callback) {
   for (let i = 0; i < UrlbarPrefs.get("maxRichResults"); i++) {
     urls.push("http://example.com/foo/" + i);
   }
-  await PlacesTestUtils.addVisits(urls);
+
+  let typedVisits = urls.map(url => {
+    return {
+      url,
+      transition: PlacesUtils.history.TRANSITION_TYPED,
+    };
+  });
+  await PlacesTestUtils.addVisits(typedVisits);
 
   // The URLs will appear in the view in reverse order so that newer visits are
   // first. Reverse the array now so callers to `checkVisitResults` or

@@ -8,6 +8,10 @@ var { setTimeout } = ChromeUtils.importESModule(
   "resource://gre/modules/Timer.sys.mjs"
 );
 
+const { NodeHTTPSServer } = ChromeUtils.importESModule(
+  "resource://testing-common/NodeServer.sys.mjs"
+);
+
 let h2Port;
 let h3Port;
 
@@ -73,7 +77,7 @@ add_task(async function testNotCoaleasingH2Connection() {
   await server.registerPathHandler("/altsvc", (req, resp) => {
     const body = "done";
     resp.setHeader("Content-Length", body.length);
-    resp.setHeader("Alt-Svc", `h3-29=:${global.h3Port}`);
+    resp.setHeader("Alt-Svc", `h3=:${global.h3Port}`);
     resp.writeHead(200);
     resp.write(body);
     resp.end("");

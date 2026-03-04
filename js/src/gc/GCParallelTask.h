@@ -11,8 +11,6 @@
 #include "mozilla/Maybe.h"
 #include "mozilla/TimeStamp.h"
 
-#include <utility>
-
 #include "gc/GCContext.h"
 #include "js/Utility.h"
 #include "threading/ProtectedData.h"
@@ -34,6 +32,8 @@ enum class PhaseKind : uint8_t;
 namespace gc {
 
 class GCRuntime;
+
+static constexpr size_t MaxParallelWorkers = 8;
 
 static inline mozilla::TimeDuration TimeSince(mozilla::TimeStamp prev) {
   mozilla::TimeStamp now = mozilla::TimeStamp::Now();
@@ -127,7 +127,7 @@ class GCParallelTask : private mozilla::LinkedListElement<GCParallelTask>,
 
  protected:
   // A flag to signal a request for early completion of the off-thread task.
-  mozilla::Atomic<bool, mozilla::MemoryOrdering::ReleaseAcquire> cancel_;
+  mozilla::Atomic<bool, mozilla::Relaxed> cancel_;
 
  public:
   explicit GCParallelTask(gc::GCRuntime* gc, gcstats::PhaseKind phaseKind,

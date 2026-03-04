@@ -178,7 +178,13 @@ migration-list-payment-methods-label = metodi di pagamento
 ##
 
 migration-wizard-progress-header = Importazione dati
+# This header appears in the final page of the migration wizard only if
+# all resources were imported successfully.
 migration-wizard-progress-done-header = Importazione dei dati completata correttamente
+# This header appears in the final page of the migration wizard if only
+# some of the resources were imported successfully. This is meant to be
+# distinct from migration-wizard-progress-done-header, which is only shown
+# if all resources were imported successfully.
 migration-wizard-progress-done-with-warnings-header = Importazione dei dati completata
 migration-wizard-progress-icon-in-progress =
     .aria-label = Importazione in corso…
@@ -190,6 +196,14 @@ migration-safari-password-import-step1 = In Safari, apri il menu “Safari”, p
 migration-safari-password-import-step2 = Fai clic sul pulsante <img data-l10n-name="safari-icon-3dots"/> e seleziona “Esporta tutte le password…”
 migration-safari-password-import-step3 = Salva il file delle password
 migration-safari-password-import-step4 = Utilizza “Seleziona file” di seguito per scegliere il file delle password che hai salvato
+migration-chrome-windows-password-import-header = Come importare le password da Chrome
+migration-chrome-windows-password-import-steps-header = In Chrome:
+migration-chrome-windows-password-import-step1 = Apri il menu principale <img data-l10n-name="chrome-icon-3dots"/> e seleziona Password e compilazione automatica > Gestione delle password di Google.
+migration-chrome-windows-password-import-step2 = Seleziona “Impostazioni” dal menu.
+migration-chrome-windows-password-import-step3 = Scegli “Scarica file” e salvalo sul tuo dispositivo.
+migration-chrome-windows-password-import-step4 = Ritorna qui e utilizza “Seleziona file” per completare l’importazione.
+migration-manual-password-import-skip-button = Salta
+migration-manual-password-import-select-button = Seleziona file
 migration-safari-password-import-skip-button = Salta
 migration-safari-password-import-select-button = Seleziona file
 # Shown in the migration wizard after importing bookmarks from another
@@ -274,5 +288,3 @@ migration-wizard-progress-success-payment-methods =
 migration-wizard-safari-permissions-sub-header = Per importare i segnalibri di Safari e la cronologia di navigazione:
 migration-wizard-safari-instructions-continue = Seleziona “Continua”
 migration-wizard-safari-instructions-folder = Seleziona la cartella Safari nell’elenco e fai clic su “Apri”
-
-

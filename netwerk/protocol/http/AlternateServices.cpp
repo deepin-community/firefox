@@ -15,6 +15,7 @@
 #include "mozilla/dom/PContent.h"
 #include "mozilla/net/AltSvcTransactionChild.h"
 #include "mozilla/net/AltSvcTransactionParent.h"
+#include "mozilla/SyncRunnable.h"
 #include "nsComponentManagerUtils.h"
 #include "nsEscape.h"
 #include "nsHttpChannel.h"
@@ -25,6 +26,7 @@
 #include "nsITLSSocketControl.h"
 #include "nsIWellKnownOpportunisticUtils.h"
 #include "nsThreadUtils.h"
+#include "xpcpublic.h"
 
 /* RFC 7838 Alternative Services
    http://httpwg.org/http-extensions/opsec.html
@@ -55,7 +57,10 @@ static nsresult SchemeIsHTTPS(const nsACString& originScheme,
 }
 
 bool AltSvcMapping::AcceptableProxy(nsProxyInfo* proxyInfo) {
-  return !proxyInfo || proxyInfo->IsDirect() || proxyInfo->IsSOCKS();
+  // TODO: We also need to make sure the inner connection will connect to the
+  // routed host.
+  return !proxyInfo || proxyInfo->IsDirect() || proxyInfo->IsSOCKS() ||
+         proxyInfo->IsHttp3Proxy();
 }
 
 void AltSvcMapping::ProcessHeader(
@@ -64,10 +69,42 @@ void AltSvcMapping::ProcessHeader(
     bool privateBrowsing, nsIInterfaceRequestor* callbacks,
     nsProxyInfo* proxyInfo, uint32_t caps,
     const OriginAttributes& originAttributes,
-    bool aDontValidate /* = false */) {  // aDontValidate is only used for
-                                         // testing
-  MOZ_ASSERT(NS_IsMainThread());
+    nsHttpConnectionInfo* aTransConnInfo, bool aDontValidate /* = false */) {
   LOG(("AltSvcMapping::ProcessHeader: %s\n", buf.get()));
+  // In tests, this might be called off the main thread. If so, dispatch it
+  // synchronously to the main thread.
+  if (!NS_IsMainThread() && xpc::AreNonLocalConnectionsDisabled()) {
+    nsCOMPtr<nsIThread> mainThread;
+    nsresult rv = NS_GetMainThread(getter_AddRefs(mainThread));
+    if (NS_FAILED(rv)) {
+      return;
+    }
+
+    nsCString userName(username);
+    nsCOMPtr<nsIInterfaceRequestor> cb = callbacks;
+    RefPtr<nsProxyInfo> info = proxyInfo;
+    RefPtr<nsHttpConnectionInfo> connInfo = aTransConnInfo;
+    // Forward to the main thread synchronously.
+    mozilla::SyncRunnable::DispatchToThread(
+        mainThread,
+        NS_NewRunnableFunction(
+            "AltSvcMapping::ProcessHeader",
+            [buf(buf), originScheme(originScheme), originHost(originHost),
+             originPort, userName, privateBrowsing, cb, info, caps,
+             originAttributes, connInfo, aDontValidate]() {
+              AltSvcMapping::ProcessHeader(
+                  buf, originScheme, originHost, originPort, userName,
+                  privateBrowsing, cb, info, caps, originAttributes, connInfo,
+                  aDontValidate);
+            }));
+
+    return;
+  }
+
+  // AltSvcMapping::ProcessHeader is not thread-safe.
+  if (!NS_IsMainThread()) {
+    return;
+  }
 
   if (StaticPrefs::network_http_altsvc_proxy_checks() &&
       !AcceptableProxy(proxyInfo)) {
@@ -86,7 +123,6 @@ void AltSvcMapping::ProcessHeader(
 
   LOG(("Alt-Svc Response Header %s\n", buf.get()));
   ParsedHeaderValueListList parsedAltSvc(buf);
-  int32_t numEntriesInHeader = parsedAltSvc.mValues.Length();
 
   nsTArray<RefPtr<AltSvcMapping>> h3Mappings;
   nsTArray<RefPtr<AltSvcMapping>> otherMappings;
@@ -109,8 +145,6 @@ void AltSvcMapping::ProcessHeader(
       if (!pairIndex) {
         if (currentName.EqualsLiteral("clear")) {
           clearEntry = true;
-          --numEntriesInHeader;  // Only want to keep track of actual alt-svc
-                                 // maps, not clearing
           break;
         }
 
@@ -188,6 +222,21 @@ void AltSvcMapping::ProcessHeader(
   }
 
   auto doUpdateAltSvcMapping = [&](AltSvcMapping* aMapping) {
+    if (aTransConnInfo) {
+      if (!aTransConnInfo->GetEchConfig().IsEmpty()) {
+        LOG(("Server has ECH, use HTTPS RR to connect instead"));
+        return;
+      }
+      if (StaticPrefs::network_http_skip_alt_svc_validation_on_https_rr()) {
+        RefPtr<nsHttpConnectionInfo> ci;
+        aMapping->GetConnectionInfo(getter_AddRefs(ci), proxyInfo,
+                                    originAttributes);
+        if (ci->HashKey().Equals(aTransConnInfo->HashKey())) {
+          LOG(("The transaction's conninfo is the same, no need to validate"));
+          aDontValidate = true;
+        }
+      }
+    }
     if (!aDontValidate) {
       gHttpHandler->UpdateAltServiceMapping(aMapping, proxyInfo, callbacks,
                                             caps, originAttributes);
@@ -210,11 +259,6 @@ void AltSvcMapping::ProcessHeader(
 
   std::for_each(otherMappings.begin(), otherMappings.end(),
                 doUpdateAltSvcMapping);
-
-  if (numEntriesInHeader) {  // Ignore headers that were just "alt-svc: clear"
-    Telemetry::Accumulate(Telemetry::HTTP_ALTSVC_ENTRIES_PER_HEADER,
-                          numEntriesInHeader);
-  }
 }
 
 AltSvcMapping::AltSvcMapping(nsIDataStorage* storage, int32_t epoch,
@@ -472,7 +516,7 @@ AltSvcMapping::AltSvcMapping(nsIDataStorage* storage, int32_t epoch,
     _NS_NEXT_TOKEN;
     mMixedScheme = Substring(str, start, idx - start).EqualsLiteral("y");
     _NS_NEXT_TOKEN;
-    Unused << mOriginAttributes.PopulateFromSuffix(
+    (void)mOriginAttributes.PopulateFromSuffix(
         Substring(str, start, idx - start));
     // The separator after the top window origin is a pipe character since the
     // origin string can contain colons.
@@ -647,10 +691,10 @@ class WellKnownChecker {
 
   nsresult Start() {
     LOG(("WellKnownChecker::Start %p\n", this));
-    nsCOMPtr<nsILoadInfo> loadInfo =
-        new LoadInfo(nsContentUtils::GetSystemPrincipal(), nullptr, nullptr,
-                     nsILoadInfo::SEC_ALLOW_CROSS_ORIGIN_SEC_CONTEXT_IS_NULL,
-                     nsIContentPolicy::TYPE_OTHER);
+    nsCOMPtr<nsILoadInfo> loadInfo = MOZ_TRY(LoadInfo::Create(
+        nsContentUtils::GetSystemPrincipal(), nullptr, nullptr,
+        nsILoadInfo::SEC_ALLOW_CROSS_ORIGIN_SEC_CONTEXT_IS_NULL,
+        nsIContentPolicy::TYPE_OTHER));
     loadInfo->SetOriginAttributes(mCI->GetOriginAttributes());
     // allow deprecated HTTP request from SystemPrincipal
     loadInfo->SetAllowDeprecatedSystemRequests(true);
@@ -723,7 +767,7 @@ class WellKnownChecker {
         nsresult rv = uu->Verify(mTransactionAlternate->mWKResponse, mOrigin);
         if (NS_SUCCEEDED(rv)) {
           bool validWK = false;
-          Unused << uu->GetValid(&validWK);
+          (void)uu->GetValid(&validWK);
           if (!validWK) {
             LOG(("WellKnownChecker::Done %p json parser declares invalid\n%s\n",
                  this, mTransactionAlternate->mWKResponse.get()));
@@ -758,15 +802,11 @@ class WellKnownChecker {
   nsresult MakeChannel(nsHttpChannel* chan, TransactionObserver* obs,
                        nsHttpConnectionInfo* ci, nsIURI* uri, uint32_t caps,
                        nsILoadInfo* loadInfo) {
-    uint64_t channelId;
     nsLoadFlags flags;
 
-    ExtContentPolicyType contentPolicyType =
-        loadInfo->GetExternalContentPolicyType();
-
-    if (NS_FAILED(gHttpHandler->NewChannelId(channelId)) ||
-        NS_FAILED(chan->Init(uri, caps, nullptr, 0, nullptr, channelId,
-                             contentPolicyType, loadInfo)) ||
+    uint64_t channelId = gHttpHandler->NewChannelId();
+    if (NS_FAILED(
+            chan->Init(uri, caps, nullptr, 0, nullptr, channelId, loadInfo)) ||
         NS_FAILED(chan->SetAllowAltSvc(false)) ||
         NS_FAILED(chan->SetRedirectMode(
             nsIHttpChannelInternal::REDIRECT_MODE_ERROR)) ||
@@ -997,7 +1037,9 @@ already_AddRefed<AltSvcMapping> AltSvcCache::LookupMapping(
   return mapping.forget();
 }
 
-// This is only used for testing!
+// For cases where the connection's hash key matches the hash key generated
+// from the alt-svc header, validation is skipped since an equivalent connection
+// already exists.
 void AltSvcCache::UpdateAltServiceMappingWithoutValidation(
     AltSvcMapping* map, nsProxyInfo* pi, nsIInterfaceRequestor* aCallbacks,
     uint32_t caps, const OriginAttributes& originAttributes) {
@@ -1057,8 +1099,9 @@ void AltSvcCache::UpdateAltServiceMapping(
                this, map, existing.get()));
         }
       }
-      Telemetry::Accumulate(Telemetry::HTTP_ALTSVC_MAPPING_CHANGED_TARGET,
-                            false);
+      glean::http::altsvc_mapping_changed_target
+          .EnumGet(glean::http::AltsvcMappingChangedTargetLabel::eFalse)
+          .Add();
       return;
     }
 
@@ -1073,7 +1116,9 @@ void AltSvcCache::UpdateAltServiceMapping(
     // new alternate. start new validation
     LOG(("AltSvcCache::UpdateAltServiceMapping %p map %p may overwrite %p\n",
          this, map, existing.get()));
-    Telemetry::Accumulate(Telemetry::HTTP_ALTSVC_MAPPING_CHANGED_TARGET, true);
+    glean::http::altsvc_mapping_changed_target
+        .EnumGet(glean::http::AltsvcMappingChangedTargetLabel::eTrue)
+        .Add();
   }
 
   if (existing && !existing->Validated()) {
@@ -1085,8 +1130,8 @@ void AltSvcCache::UpdateAltServiceMapping(
   }
 
   if (map->IsHttp3()) {
-    bool isDirectOrNoProxy = pi ? pi->IsDirect() : true;
-    if (!isDirectOrNoProxy) {
+    bool isProxyAllowed = pi ? (pi->IsDirect() || pi->IsHttp3Proxy()) : true;
+    if (!isProxyAllowed) {
       LOG(
           ("AltSvcCache::UpdateAltServiceMapping %p map %p ignored h3 because "
            "proxy is in use %p\n",
@@ -1344,12 +1389,6 @@ NS_IMETHODIMP
 AltSvcOverride::GetParallelSpeculativeConnectLimit(
     uint32_t* parallelSpeculativeConnectLimit) {
   *parallelSpeculativeConnectLimit = 32;
-  return NS_OK;
-}
-
-NS_IMETHODIMP
-AltSvcOverride::GetIsFromPredictor(bool* isFromPredictor) {
-  *isFromPredictor = false;
   return NS_OK;
 }
 

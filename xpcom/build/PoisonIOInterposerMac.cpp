@@ -10,21 +10,16 @@
 #  include "mach_override.h"
 #endif
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/DebugOnly.h"
 #include "mozilla/IOInterposer.h"
 #include "mozilla/Mutex.h"
 #include "mozilla/ProcessedStack.h"
-#include "mozilla/Telemetry.h"
 #include "mozilla/UniquePtrExtensions.h"
 #include "nsPrintfCString.h"
 #include "mozilla/StackWalk.h"
 #include "nsTraceRefcnt.h"
 #include "prio.h"
-
-#include <algorithm>
-#include <vector>
 
 #include <sys/param.h>
 #include <sys/stat.h>
@@ -289,7 +284,7 @@ FuncData* Functions[] = {&aio_write_data,
                          &writev_data,          &writev_NOCANCEL_UNIX2003_data,
                          &writev_UNIX2003_data, &writev_NOCANCEL_data};
 
-const int NumFunctions = mozilla::ArrayLength(Functions);
+const int NumFunctions = std::size(Functions);
 
 }  // namespace
 

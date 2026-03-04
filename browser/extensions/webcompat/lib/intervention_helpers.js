@@ -4,7 +4,7 @@
 
 "use strict";
 
-/* globals module */
+/* globals browser, UAHelpers */
 
 const GOOGLE_TLDS = [
   "com",
@@ -209,6 +209,275 @@ const GOOGLE_TLDS = [
 ];
 
 var InterventionHelpers = {
+  skip_if_functions: {
+    getWeekInfo_defined: () => {
+      return !!Intl?.Locale?.prototype?.getWeekInfo;
+    },
+    InstallTrigger_defined: () => {
+      return "InstallTrigger" in window;
+    },
+    InstallTrigger_undefined: () => {
+      return !("InstallTrigger" in window);
+    },
+    text_event_supported: () => {
+      return !!window.TextEvent;
+    },
+  },
+
+  ua_change_functions: {
+    add_Chrome: (ua, config) => {
+      return UAHelpers.addChrome(ua, config.version);
+    },
+    add_Firefox_as_Gecko: (ua, config) => {
+      return UAHelpers.addGecko(ua, config.version);
+    },
+    add_Samsung_for_Samsung_devices: ua => {
+      return UAHelpers.addSamsungForSamsungDevices(ua);
+    },
+    add_Version_segment: ua => {
+      return `${ua} Version/0`;
+    },
+    cap_Version_to_99: ua => {
+      return UAHelpers.capVersionTo99(ua);
+    },
+    change_Firefox_to_FireFox: ua => {
+      return UAHelpers.changeFirefoxToFireFox(ua);
+    },
+    change_Gecko_to_like_Gecko: ua => {
+      return ua.replace("Gecko", "like Gecko");
+    },
+    change_OS_to_MacOSX: (ua, config) => {
+      return UAHelpers.getMacOSXUA(ua, config.arch, config.version);
+    },
+    change_OS_to_Windows: ua => {
+      return UAHelpers.windows(ua);
+    },
+    Chrome: (ua, config) => {
+      config.ua = ua;
+      config.noFxQuantum = true;
+      return UAHelpers.getDeviceAppropriateChromeUA(config);
+    },
+    Chrome_with_FxQuantum: (ua, config) => {
+      config.ua = ua;
+      return UAHelpers.getDeviceAppropriateChromeUA(config);
+    },
+    desktop_not_mobile: () => {
+      return UAHelpers.desktopUA();
+    },
+    mimic_Android_Hotspot2_device: ua => {
+      return UAHelpers.androidHotspot2Device(ua);
+    },
+    replace_colon_in_rv_with_space: ua => {
+      return ua.replace("rv:", "rv ");
+    },
+    reduce_firefox_version_by_one: ua => {
+      const [head, fx, tail] = ua.split(/(firefox\/)/i);
+      if (!fx || !tail) {
+        return ua;
+      }
+      const major = parseInt(tail);
+      if (!major) {
+        return ua;
+      }
+      return `${head}${fx}${major - 1}${tail.slice(major.toString().length)}`;
+    },
+    add_Safari: (ua, config) => {
+      config.withFirefox = true;
+      return UAHelpers.safari(config);
+    },
+    Safari: (ua, config) => {
+      return UAHelpers.safari(config);
+    },
+    Safari_with_FxQuantum: (ua, config) => {
+      config.withFxQuantum = true;
+      return UAHelpers.safari(config);
+    },
+  },
+
+  valid_platforms: [
+    "all",
+    "android",
+    "desktop",
+    "fenix",
+    "linux",
+    "mac",
+    "windows",
+  ],
+  valid_channels: ["beta", "esr", "nightly", "stable"],
+
+  shouldSkip(intervention, firefoxVersion, firefoxChannel) {
+    const {
+      bug,
+      max_version,
+      min_version,
+      not_channels,
+      only_channels,
+      skip_if,
+      ua_string,
+    } = intervention;
+    if (firefoxChannel) {
+      if (only_channels && !only_channels.includes(firefoxChannel)) {
+        return true;
+      }
+      if (not_channels?.includes(firefoxChannel)) {
+        return true;
+      }
+    }
+    if (min_version && firefoxVersion < min_version) {
+      return true;
+    }
+    if (max_version) {
+      // Make sure to handle the case where only the major version matters,
+      // for instance if we want 138 and the version number is 138.1.
+      if (String(max_version).includes(".")) {
+        if (firefoxVersion > max_version) {
+          return true;
+        }
+      } else if (Math.floor(firefoxVersion) > max_version) {
+        return true;
+      }
+    }
+    if (ua_string) {
+      for (let ua of Array.isArray(ua_string) ? ua_string : [ua_string]) {
+        if (!InterventionHelpers.ua_change_functions[ua.change ?? ua]) {
+          return true;
+        }
+      }
+    }
+    if (skip_if) {
+      try {
+        if (
+          !this.skip_if_functions[skip_if] ||
+          this.skip_if_functions[skip_if]?.()
+        ) {
+          return true;
+        }
+      } catch (e) {
+        console.trace(
+          `Error while checking skip-if condition ${skip_if} for bug ${bug}:`,
+          e
+        );
+        return true;
+      }
+    }
+    return false;
+  },
+
+  nonCustomInterventionKeys: Object.freeze(
+    new Set([
+      "content_scripts",
+      "enabled",
+      "max_version",
+      "min_version",
+      "not_platforms",
+      "platforms",
+      "not_channels",
+      "only_channels",
+      "pref_check",
+      "skip_if",
+      "ua_string",
+    ])
+  ),
+
+  isMissingCustomFunctions(intervention, customFunctionNames) {
+    for (let key of Object.keys(intervention)) {
+      if (
+        !InterventionHelpers.nonCustomInterventionKeys.has(key) &&
+        !customFunctionNames.has(key)
+      ) {
+        return true;
+      }
+    }
+    return false;
+  },
+
+  async getOS() {
+    const os =
+      browser.aboutConfigPrefs.getPref("platform_override") ??
+      (await browser.runtime.getPlatformInfo()).os;
+    if (os === "win") {
+      return "windows";
+    }
+    return os;
+  },
+
+  async getPlatformMatches() {
+    if (!InterventionHelpers._platformMatches) {
+      const os = await this.getOS();
+      InterventionHelpers._platformMatches = [
+        "all",
+        os,
+        os == "android" ? "android" : "desktop",
+      ];
+      if (os == "android") {
+        const packageName = await browser.appConstants.getAndroidPackageName();
+        if (packageName.includes("fenix") || packageName.includes("firefox")) {
+          InterventionHelpers._platformMatches.push("fenix");
+        }
+      }
+    }
+    return InterventionHelpers._platformMatches;
+  },
+
+  async checkPlatformMatches(intervention) {
+    let desired = intervention.platforms;
+    let undesired = intervention.not_platforms;
+    if (!desired && !undesired) {
+      return true;
+    }
+
+    const actual = await InterventionHelpers.getPlatformMatches();
+    if (undesired) {
+      if (!Array.isArray(undesired)) {
+        undesired = [undesired];
+      }
+      if (
+        undesired.includes("all") ||
+        actual.filter(x => undesired.includes(x)).length
+      ) {
+        return false;
+      }
+    }
+
+    if (!desired) {
+      return true;
+    }
+    if (!Array.isArray(desired)) {
+      desired = [desired];
+    }
+    return (
+      desired.includes("all") ||
+      !!actual.filter(x => desired.includes(x)).length
+    );
+  },
+
+  applyUAChanges(ua, changes) {
+    if (!Array.isArray(changes)) {
+      changes = [changes];
+    }
+    for (let config of changes) {
+      if (typeof config === "string") {
+        config = { change: config };
+      }
+      let finalChanges = config.change;
+      if (!Array.isArray(finalChanges)) {
+        finalChanges = [finalChanges];
+      }
+      for (const change of finalChanges) {
+        try {
+          ua = InterventionHelpers.ua_change_functions[change](ua, config);
+        } catch (e) {
+          console.trace(
+            `Error while calling UA change function ${change} for bug ${config.bug}:`,
+            e
+          );
+          return ua;
+        }
+      }
+    }
+    return ua;
+  },
+
   /**
    * Useful helper to generate a list of domains with a fixed base domain and
    * multiple country-TLDs or other cases with various TLDs.
@@ -229,5 +498,3 @@ var InterventionHelpers = {
     return InterventionHelpers.matchPatternsForTLDs(base, suffix, GOOGLE_TLDS);
   },
 };
-
-module.exports = InterventionHelpers;

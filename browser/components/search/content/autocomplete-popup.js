@@ -6,9 +6,12 @@
 
 // Wrap in a block to prevent leaking to window scope.
 {
-  ChromeUtils.defineESModuleGetters(this, {
+  const lazy = {};
+  ChromeUtils.defineESModuleGetters(lazy, {
+    BrowserSearchTelemetry:
+      "moz-src:///browser/components/search/BrowserSearchTelemetry.sys.mjs",
     BrowserUtils: "resource://gre/modules/BrowserUtils.sys.mjs",
-    SearchOneOffs: "resource:///modules/SearchOneOffs.sys.mjs",
+    SearchOneOffs: "moz-src:///browser/components/search/SearchOneOffs.sys.mjs",
   });
 
   /**
@@ -99,7 +102,9 @@
       this._searchOneOffsContainer = this.querySelector(".search-one-offs");
       this._searchbarEngine = this.querySelector(".search-panel-header");
       this._searchbarEngineName = this.querySelector(".searchbar-engine-name");
-      this._oneOffButtons = new SearchOneOffs(this._searchOneOffsContainer);
+      this._oneOffButtons = new lazy.SearchOneOffs(
+        this._searchOneOffsContainer
+      );
       this._searchbar = document.getElementById("searchbar");
     }
 
@@ -189,9 +194,8 @@
       }
 
       // Check for middle-click or modified clicks on the search bar
-      BrowserSearchTelemetry.recordSearchSuggestionSelectionMethod(
+      lazy.BrowserSearchTelemetry.recordSearchSuggestionSelectionMethod(
         aEvent,
-        "searchbar",
         this.selectedIndex
       );
 
@@ -199,7 +203,7 @@
       let search = this.input.controller.getValueAt(this.selectedIndex);
 
       // open the search results according to the clicking subtlety
-      let where = BrowserUtils.whereToOpenLink(aEvent, false, true);
+      let where = lazy.BrowserUtils.whereToOpenLink(aEvent, false, true);
       let params = {};
 
       // But open ctrl/cmd clicks on autocomplete items in a new background tab.
@@ -228,6 +232,18 @@
       }
     }
 
+    /**
+     * @type {string}
+     *   The current engine name being displayed in updateHeader.
+     */
+    #currentEngineName;
+
+    /**
+     * Updates the header of the pop-up with the search engine name and icon.
+     *
+     * @param {nsISearchEngine} [engine]
+     *   The engine to use, if not specified falls back to the default engine.
+     */
     async updateHeader(engine) {
       if (!engine) {
         if (PrivateBrowsingUtils.isWindowPrivate(window)) {
@@ -236,8 +252,18 @@
           engine = await Services.search.getDefault();
         }
       }
+      this.#currentEngineName = engine.name;
 
       let uri = await engine.getIconURL();
+
+      // If the engine name has changed since we started loading, this means
+      // that getIconURL probably took a long time and we had an update in
+      // the meantime. Hence we skip updating to avoid displaying the wrong
+      // thing.
+      if (engine.name != this.#currentEngineName) {
+        return;
+      }
+
       if (uri) {
         this.setAttribute("src", uri);
       } else {
@@ -256,8 +282,16 @@
     /**
      * This is called when a one-off is clicked and when "search in new tab"
      * is selected from a one-off context menu.
+     *
+     * @param {Event} event
+     *   The event that triggered the search.
+     * @param {nsISearchEngine} engine
+     *   The search engine being used for the search.
+     * @param {string} where
+     *   Where the search should be opened (current tab, new tab, window etc).
+     * @param {object} params
+     *   The parameters associated with opening the search.
      */
-    /* eslint-disable-next-line valid-jsdoc */
     handleOneOffSearch(event, engine, where, params) {
       this.searchbar.handleSearchCommandWhere(event, engine, where, params);
     }

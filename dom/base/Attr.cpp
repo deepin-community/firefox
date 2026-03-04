@@ -9,24 +9,26 @@
  */
 
 #include "mozilla/dom/Attr.h"
-#include "mozilla/dom/AttrBinding.h"
-#include "mozilla/dom/Element.h"
+
+#include "NodeUbiReporting.h"
+#include "mozAutoDocUpdate.h"
 #include "mozilla/EventDispatcher.h"
-#include "mozilla/InternalMutationEvent.h"
 #include "mozilla/StaticPrefs_dom.h"
-#include "nsContentCreatorFunctions.h"
-#include "nsError.h"
-#include "nsUnicharUtils.h"
-#include "nsDOMString.h"
-#include "nsIContentInlines.h"
+#include "mozilla/dom/AttrBinding.h"
 #include "mozilla/dom/Document.h"
-#include "nsGkAtoms.h"
+#include "mozilla/dom/Element.h"
+#include "mozilla/dom/TrustedTypeUtils.h"
+#include "mozilla/dom/TrustedTypesConstants.h"
 #include "nsCOMArray.h"
+#include "nsContentCreatorFunctions.h"
+#include "nsDOMString.h"
+#include "nsError.h"
+#include "nsGkAtoms.h"
+#include "nsIContentInlines.h"
 #include "nsNameSpaceManager.h"
 #include "nsTextNode.h"
-#include "mozAutoDocUpdate.h"
+#include "nsUnicharUtils.h"
 #include "nsWrapperCacheInlines.h"
-#include "NodeUbiReporting.h"
 
 namespace mozilla::dom {
 
@@ -146,6 +148,30 @@ void Attr::GetValue(nsAString& aValue) {
 
 void Attr::SetValue(const nsAString& aValue, nsIPrincipal* aTriggeringPrincipal,
                     ErrorResult& aRv) {
+  nsCOMPtr<Element> element = GetElement();
+  if (!element) {
+    mValue = aValue;
+    return;
+  }
+
+  RefPtr<nsAtom> nameAtom = mNodeInfo->NameAtom();
+
+  Maybe<nsAutoString> compliantStringHolder;
+  const nsAString* compliantString =
+      TrustedTypeUtils::GetTrustedTypesCompliantAttributeValue(
+          *element, nameAtom, mNodeInfo->NamespaceID(), aValue,
+          aTriggeringPrincipal, compliantStringHolder, aRv);
+  if (aRv.Failed()) {
+    return;
+  }
+
+  // After the GetTrustedTypesCompliantAttributeValue() call, the attribute may
+  // have been detached or moved to another element so perform the check on
+  // GetElement() again.
+  SetValueInternal(*compliantString, aRv);
+}
+
+void Attr::SetValueInternal(const nsAString& aValue, ErrorResult& aRv) {
   Element* element = GetElement();
   if (!element) {
     mValue = aValue;
@@ -154,23 +180,22 @@ void Attr::SetValue(const nsAString& aValue, nsIPrincipal* aTriggeringPrincipal,
 
   RefPtr<nsAtom> nameAtom = mNodeInfo->NameAtom();
   aRv = element->SetAttr(mNodeInfo->NamespaceID(), nameAtom,
-                         mNodeInfo->GetPrefixAtom(), aValue,
-                         aTriggeringPrincipal, true);
-}
-
-void Attr::SetValue(const nsAString& aValue, ErrorResult& aRv) {
-  SetValue(aValue, nullptr, aRv);
+                         mNodeInfo->GetPrefixAtom(), aValue, nullptr, true);
 }
 
 bool Attr::Specified() const { return true; }
 
 Element* Attr::GetOwnerElement() { return GetElement(); }
 
+void Attr::SetNodeValue(const nsAString& aNodeValue, ErrorResult& aError) {
+  SetValue(aNodeValue, nullptr, aError);
+}
+
 void Attr::GetNodeValueInternal(nsAString& aNodeValue) { GetValue(aNodeValue); }
 
 void Attr::SetNodeValueInternal(const nsAString& aNodeValue,
-                                ErrorResult& aError) {
-  SetValue(aNodeValue, nullptr, aError);
+                                ErrorResult& aError, MutationEffectOnScript) {
+  SetValueInternal(aNodeValue, aError);
 }
 
 nsresult Attr::Clone(dom::NodeInfo* aNodeInfo, nsINode** aResult) const {
@@ -191,6 +216,12 @@ nsIURI* Attr::GetBaseURI(bool aTryUseXHRDocBaseURI) const {
                 : OwnerDoc()->GetBaseURI(aTryUseXHRDocBaseURI);
 }
 
+void Attr::SetTextContent(const nsAString& aTextContent,
+                          nsIPrincipal* aSubjectPrincipal,
+                          ErrorResult& aError) {
+  SetValue(aTextContent, aSubjectPrincipal, aError);
+}
+
 void Attr::GetTextContentInternal(nsAString& aTextContent,
                                   OOMReporter& aError) {
   GetValue(aTextContent);
@@ -198,8 +229,8 @@ void Attr::GetTextContentInternal(nsAString& aTextContent,
 
 void Attr::SetTextContentInternal(const nsAString& aTextContent,
                                   nsIPrincipal* aSubjectPrincipal,
-                                  ErrorResult& aError) {
-  SetNodeValueInternal(aTextContent, aError);
+                                  ErrorResult& aError, MutationEffectOnScript) {
+  SetValueInternal(aTextContent, aError);
 }
 
 void Attr::GetEventTargetParent(EventChainPreVisitor& aVisitor) {

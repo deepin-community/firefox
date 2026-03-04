@@ -75,7 +75,7 @@ async function AssertNoPrivateResult(win) {
 
 async function AssertPrivateResult(win, engine, isPrivateEngine) {
   let count = await UrlbarTestUtils.getResultCount(win);
-  Assert.ok(count > 1, "Sanity check result count");
+  Assert.greater(count, 1, "Sanity check result count");
   let result = await UrlbarTestUtils.getDetailsOfResultAt(window, 1);
   Assert.equal(
     result.type,
@@ -304,5 +304,5 @@ add_task(async function test_restrict_search() {
     value: "test" + UrlbarTokenizer.RESTRICT.SEARCH,
   });
   result = await AssertPrivateResult(window, engine, true);
-  Assert.equal(result.searchParams.query, "test");
+  Assert.equal(result.searchParams.query, "test?");
 });

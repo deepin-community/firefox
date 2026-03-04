@@ -122,9 +122,6 @@ tabbrowser-confirm-caretbrowsing-title = Kursoriga lehitsemine
 tabbrowser-confirm-caretbrowsing-message = F7 vajutamisega lülitatakse kursoriga lehitsemine sisse või välja. See lahendus paigutab veebilehele liigutatava kursori, mis võimaldab teksti valimist klaviatuuri abil. Kas soovid kursoriga veebilehitsemise sisse lülitada?
 tabbrowser-confirm-caretbrowsing-checkbox = Seda akent rohkem ei näidata.
 
-## Confirmation dialog for closing all duplicate tabs
-
-
 ##
 
 # Variables:
@@ -157,5 +154,7 @@ tabbrowser-context-unmute-selected-tabs =
 tabbrowser-ctrl-tab-list-all-tabs =
     .label = Kuva kõik kaardid ({ $tabCount })
 
-## Tab manager menu buttons
+##
 
+tab-group-editor-action-delete =
+    .label = Kustuta grupp

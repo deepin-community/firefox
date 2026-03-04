@@ -9,6 +9,7 @@
 
 #include "gc/Barrier.h"
 #include "gc/Cell.h"
+#include "gc/Policy.h"
 #include "js/TypeDecls.h"
 #include "js/UbiNode.h"
 #include "js/Utility.h"  // JS::UniqueChars
@@ -933,6 +934,11 @@ class DictionaryPropMap final : public PropMap {
   // compacting heuristics.
   uint32_t holeCount_ = 0;
 
+  // Empty Dictionary prop map used during reshape.
+  explicit DictionaryPropMap(std::nullptr_t) : linkedData_(nullptr) {
+    setHeaderFlagBits(IsDictionaryFlag | CanHaveTableFlag);
+  }
+
   DictionaryPropMap(JS::Handle<DictionaryPropMap*> prev, PropertyKey key,
                     PropertyInfo prop)
       : linkedData_(prev) {
@@ -1011,6 +1017,9 @@ class DictionaryPropMap final : public PropMap {
     MOZ_ASSERT(hasKey(index));
     return linkedData_.propInfos[index];
   }
+
+  // Create an empty prop map for dictionary mode teleporting
+  static DictionaryPropMap* createEmpty(JSContext* cx);
 
   // Add a new property to this map. Returns the new map/mapLength and object
   // flags. The caller is responsible for generating a new dictionary shape.
@@ -1166,6 +1175,44 @@ struct SharedChildrenHasher {
     uint32_t newIndex = SharedPropMap::indexOfNextProperty(index);
     return index == l.index && map->matchProperty(newIndex, l.key, l.prop);
   }
+};
+
+// An iterator that walks a shared prop map in property definition order
+class MOZ_RAII SharedPropMapIter {
+ public:
+  // Iterate over all properties of propMap.
+  SharedPropMapIter(JSContext* cx, SharedPropMapAndIndex propMap);
+
+  // Iterate over all properties after (but not including) startAfter.
+  SharedPropMapIter(JSContext* cx, SharedPropMapAndIndex startAfter,
+                    SharedPropMapAndIndex end);
+
+  PropertyKey key() const {
+    MOZ_ASSERT(!done());
+    return maps_[mapIdx_]->getKey(propIdx_);
+  }
+  PropertyInfo prop() const {
+    MOZ_ASSERT(!done());
+    return maps_[mapIdx_]->getPropertyInfo(propIdx_);
+  }
+
+  bool done() const { return mapIdx_ == 0 && propIdx_ > endIdx_; }
+  void next() {
+    MOZ_ASSERT(!done());
+    if (++propIdx_ == PropMap::Capacity && mapIdx_ > 0) {
+      propIdx_ = 0;
+      mapIdx_--;
+    }
+  }
+
+ private:
+  SharedPropMapIter(JSContext* cx, mozilla::Maybe<SharedPropMapAndIndex> start,
+                    SharedPropMapAndIndex end);
+
+  JS::RootedVector<SharedPropMap*> maps_;
+  uint32_t mapIdx_;
+  uint32_t propIdx_;
+  uint32_t endIdx_;
 };
 
 }  // namespace js

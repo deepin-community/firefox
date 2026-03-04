@@ -79,6 +79,10 @@ WEBEXT_SCHEMADIRS_MAPPING = glbl["WEBEXT_SCHEMADIRS_MAPPING"]
 # android builds.
 WEBEXT_ANDROID_EXCLUDED = glbl["WEBEXT_ANDROID_EXCLUDED"]
 
+# List of schema files that should be ignored and not loaded. Paths are relative
+# to the root of the topsrcdir and use / separators.
+WEBEXT_IGNORED_SCHEMA_FILES = glbl["WEBEXT_IGNORED_SCHEMA_FILES"]
+
 # Define a custom jsonschema validation class
 WebExtAPIValidator = jsonschema.validators.extend(
     jsonschema.validators.Draft4Validator,
@@ -126,6 +130,7 @@ def run_diff(
                 right_file.flush()
                 diff_output = subprocess.run(
                     [diff_cmd, "-u", left_file.name, right_file.name],
+                    check=False,
                     capture_output=True,
                 ).stdout.decode("utf-8")
 
@@ -167,7 +172,7 @@ def write_with_overwrite_confirm(
         newcontent = newcontent + "\n"
 
     if os.path.exists(abspath):
-        with open(abspath, "r") as existingfile:
+        with open(abspath) as existingfile:
             existingcontent = existingfile.read()
         if existingcontent == newcontent:
             no_changes = True
@@ -193,7 +198,7 @@ def write_with_overwrite_confirm(
                         run_diff(
                             diff_command,
                             "%s--existing" % diff_prefix,
-                            "".join(open(abspath, "r").readlines()),
+                            "".join(open(abspath).readlines()),
                             "%s--updated" % diff_prefix,
                             newcontent,
                         )
@@ -475,12 +480,10 @@ class WebIDLHelpers:
             if group and group not in api_event.schema_groups:
                 return ""
             attrs = ["Replaceable", "SameObject"]
-            return "\n".join(
-                [
-                    "  [%s]" % ", ".join(attrs),
-                    "  readonly attribute ExtensionEventManager %s;" % api_event.name,
-                ]
-            )
+            return "\n".join([
+                "  [%s]" % ", ".join(attrs),
+                "  readonly attribute ExtensionEventManager %s;" % api_event.name,
+            ])
 
         if schema_group is not None:
             return generate_webidl(schema_group)
@@ -505,12 +508,10 @@ class WebIDLHelpers:
             lines = []
             for fn_params in api_fun.iter_multiple_webidl_signatures_params(group):
                 params = ", ".join(cls.webidl_method_params(api_fun, group, fn_params))
-                lines.extend(
-                    [
-                        "  [%s]" % ", ".join(attrs),
-                        "  %s %s(%s);" % (retval_type, api_fun.name, params),
-                    ]
-                )
+                lines.extend([
+                    "  [%s]" % ", ".join(attrs),
+                    "  %s %s(%s);" % (retval_type, api_fun.name, params),
+                ])
             return "\n".join(lines)
 
         if schema_group is not None:
@@ -852,9 +853,8 @@ class APIEntry:
                 return []
             if "allowedContexts" in self.schema_data_by_group[schema_group]:
                 return self.schema_data_by_group[schema_group]["allowedContexts"]
-        else:
-            if "allowedContexts" in self.schema_data_list[0]:
-                return self.schema_data_list[0]["allowedContexts"]
+        elif "allowedContexts" in self.schema_data_list[0]:
+            return self.schema_data_list[0]["allowedContexts"]
 
         if self.parent:
             return self.parent.default_contexts
@@ -1314,16 +1314,18 @@ class APINamespace:
     def get_boilerplate_cpp_header(self):
         template = self.root.jinja_env.get_template("ExtensionAPI.h.in")
         webidl_props = WebIDLHelpers.to_template_props(self)
-        return template.render(
-            {"webidl_name": webidl_props["webidl_name"], "api_namespace": self.name}
-        )
+        return template.render({
+            "webidl_name": webidl_props["webidl_name"],
+            "api_namespace": self.name,
+        })
 
     def get_boilerplate_cpp(self):
         template = self.root.jinja_env.get_template("ExtensionAPI.cpp.in")
         webidl_props = WebIDLHelpers.to_template_props(self)
-        return template.render(
-            {"webidl_name": webidl_props["webidl_name"], "api_namespace": self.name}
-        )
+        return template.render({
+            "webidl_name": webidl_props["webidl_name"],
+            "api_namespace": self.name,
+        })
 
     def dump(self, schema_group=None):
         """
@@ -1403,6 +1405,11 @@ class Schemas:
             if file_name.endswith(".json"):
                 full_path = os.path.join(schema_dir_path, file_name)
                 rel_path = os.path.relpath(full_path, buildconfig.topsrcdir)
+
+                normalized_rel_path = mozpath.normsep(rel_path)
+                if normalized_rel_path in WEBEXT_IGNORED_SCHEMA_FILES:
+                    logging.debug("Ignoring schema file %s", rel_path)
+                    continue
 
                 logging.debug("Loading schema file %s", rel_path)
 

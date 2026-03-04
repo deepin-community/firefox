@@ -51,9 +51,6 @@ sinon.assert.fail = function (message) {
   ok(false, message);
 };
 
-// Prep Telemetry to receive events from tests
-TelemetryEvents.init();
-
 this.TEST_XPI_URL = (function () {
   const dir = getChromeDir(getResolvedURI(gTestPath));
   dir.append("addons");
@@ -421,6 +418,7 @@ this.CryptoUtils = {
 
   /**
    * Get the computed hash for a given file
+   *
    * @param {nsIFile} file The file to be hashed
    * @param {string} [algorithm] The hashing algorithm to use
    */
@@ -632,10 +630,12 @@ function withClearStorage() {
   return function (testFunction) {
     return async function wrappedTestFunction(args) {
       Storage.clearAllStorage();
+      ShowHeartbeatAction._clearAllStorage();
       try {
         await testFunction(args);
       } finally {
         Storage.clearAllStorage();
+        ShowHeartbeatAction._clearAllStorage();
       }
     };
   };

@@ -12,6 +12,8 @@ about-processes-column-action =
 
 about-processes-shutdown-process =
     .title = ჩანართების გაუქმება და პროცესის გათიშვა
+about-processes-kill-process =
+    .title = პროცესის გათიშვა
 about-processes-shutdown-tab =
     .title = ჩანართის დახურვა
 # Profiler icons
@@ -51,6 +53,7 @@ about-processes-remote-sandbox-broker-process = გარე Sandbox-Broker ({ $
 about-processes-fork-server-process = Fork-სერვერი ({ $pid })
 about-processes-preallocated-process = წინასწარ გამოყოფილი ({ $pid })
 about-processes-utility-process = დამხმარე პროგრამა ({ $pid })
+about-processes-inference-process = გამოტანილი ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.
@@ -64,9 +67,9 @@ about-processes-unknown-process = სხვა: { $type } ({ $pid })
 
 about-processes-web-isolated-process = { $origin } ({ $pid })
 about-processes-web-serviceworker = { $origin } ({ $pid }, serviceworker)
-about-processes-with-coop-coep-process = { $origin } ({ $pid }, საიტთაშორისი გამიჯნული)
+about-processes-with-coop-coep-process = { $origin } ({ $pid }, წარმომავლობით გამიჯნული)
 about-processes-web-isolated-process-private = { $origin } — პირადი ({ $pid })
-about-processes-with-coop-coep-process-private = { $origin } — პირადი ({ $pid }, საიტთაშორისი გამიჯნული)
+about-processes-with-coop-coep-process-private = { $origin } — პირადი ({ $pid }, წარმომავლობით გამიჯნული)
 
 ## Details within processes
 
@@ -128,6 +131,7 @@ about-processes-utility-actor-mf-media-engine = Windows Media Foundation Media E
 about-processes-utility-actor-js-oracle = JavaScript Oracle
 about-processes-utility-actor-windows-utils = დამხმარე Windows-პროგრამები
 about-processes-utility-actor-windows-file-dialog = Windows-ის ფაილთა სარკმელი
+about-processes-utility-actor-pkcs11-module = უსაფრთხოების მოდულის დამხმარე
 
 ## Displaying CPU (percentage and total)
 ## Variables:

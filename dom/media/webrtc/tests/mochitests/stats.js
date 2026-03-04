@@ -9,6 +9,7 @@ const statsExpectedByType = {
     expected: [
       "trackIdentifier",
       "id",
+      "mid",
       "timestamp",
       "type",
       "ssrc",
@@ -22,26 +23,33 @@ const statsExpectedByType = {
       "jitter",
       "lastPacketReceivedTimestamp",
       "headerBytesReceived",
-      // Always missing from libwebrtc stats
-      // "estimatedPlayoutTimestamp",
       "jitterBufferDelay",
+      "jitterBufferTargetDelay",
+      "jitterBufferMinimumDelay",
       "jitterBufferEmittedCount",
     ],
-    optional: ["remoteId", "nackCount", "qpSum"],
+    optional: ["remoteId", "nackCount", "qpSum", "estimatedPlayoutTimestamp"],
     localVideoOnly: [
       "firCount",
       "pliCount",
       "framesDecoded",
+      "keyFramesDecoded",
       "framesDropped",
       "discardedPackets",
       "framesPerSecond",
       "frameWidth",
       "frameHeight",
       "framesReceived",
+      "framesAssembledFromMultiplePackets",
       "totalDecodeTime",
       "totalInterFrameDelay",
       "totalProcessingDelay",
       "totalSquaredInterFrameDelay",
+      "pauseCount",
+      "totalPausesDuration",
+      "freezeCount",
+      "totalFreezesDuration",
+      "totalAssemblyTime",
     ],
     localAudioOnly: [
       "totalSamplesReceived",
@@ -75,6 +83,7 @@ const statsExpectedByType = {
   "outbound-rtp": {
     expected: [
       "id",
+      "mid",
       "timestamp",
       "type",
       "ssrc",
@@ -88,7 +97,7 @@ const statsExpectedByType = {
       "retransmittedPacketsSent",
       "retransmittedBytesSent",
     ],
-    optional: ["nackCount", "qpSum"],
+    optional: ["nackCount", "qpSum", "rid"],
     localAudioOnly: [],
     localVideoOnly: [
       "framesEncoded",
@@ -183,9 +192,8 @@ const statsExpectedByType = {
       "transportId",
       "mimeType",
       "clockRate",
-      "sdpFmtpLine",
     ],
-    optional: ["codecType", "channels"],
+    optional: ["codecType", "channels", "sdpFmtpLine"],
     unimplemented: [],
     deprecated: [],
   },
@@ -210,16 +218,16 @@ const statsExpectedByType = {
       "bytesReceived",
       "lastPacketSentTimestamp",
       "lastPacketReceivedTimestamp",
+      "totalRoundTripTime",
+      "currentRoundTripTime",
+      "responsesReceived",
     ],
     optional: ["selected"],
     unimplemented: [
-      "totalRoundTripTime",
-      "currentRoundTripTime",
       "availableOutgoingBitrate",
       "availableIncomingBitrate",
       "requestsReceived",
       "requestsSent",
-      "responsesReceived",
       "responsesSent",
       "retransmissionsReceived",
       "retransmissionsSent",
@@ -348,6 +356,11 @@ function pedanticChecks(report) {
   report.forEach((statObj, mapKey) => {
     info(`"${mapKey} = ${JSON.stringify(statObj, null, 2)}`);
   });
+
+  // These matter when checking candidate-pair stats for bytes sent/received
+  let sending = false;
+  let receiving = false;
+
   // eslint-disable-next-line complexity
   report.forEach((statObj, mapKey) => {
     let tested = {};
@@ -381,6 +394,7 @@ function pedanticChecks(report) {
       date.getFullYear() > 1970,
       `${stat.type}.timestamp is relative to current time, date=${date}`
     );
+
     //
     // RTCStreamStats attributes with common behavior
     //
@@ -510,6 +524,8 @@ function pedanticChecks(report) {
     }
 
     if (stat.type == "inbound-rtp") {
+      receiving = true;
+
       //
       // Required fields
       //
@@ -517,6 +533,25 @@ function pedanticChecks(report) {
       // trackIdentifier
       is(typeof stat.trackIdentifier, "string");
       isnot(stat.trackIdentifier, "");
+
+      // mid
+      ok(
+        parseInt(stat.mid) >= 0,
+        `${stat.type}.mid is a positive integer. value=${stat.mid}`
+      );
+      let inboundRtpMids = [];
+      report.forEach(r => {
+        if (r.type == "inbound-rtp") {
+          inboundRtpMids.push(r.mid);
+        }
+      });
+      is(
+        inboundRtpMids.filter(mid => mid == stat.mid).length,
+        1,
+        `${stat.type}.mid is distinct. value=${
+          stat.mid
+        }, others=${JSON.stringify(inboundRtpMids)}`
+      );
 
       // packetsReceived
       ok(
@@ -562,24 +597,42 @@ function pedanticChecks(report) {
 
       // headerBytesReceived
       ok(
-        stat.headerBytesReceived >= 0 && stat.headerBytesReceived < 50000,
+        stat.headerBytesReceived >= 0 && stat.headerBytesReceived < 500000,
         `${stat.type}.headerBytesReceived is sane for a short test. ` +
           `value=${stat.headerBytesReceived}`
       );
 
-      // Always missing from libwebrtc stats
       // estimatedPlayoutTimestamp
-      // ok(
-      //   stat.estimatedPlayoutTimestamp !== undefined,
-      //   `${stat.type}.estimatedPlayoutTimestamp has a value`
-      // );
+      if (stat.estimatedPlayoutTimestamp !== undefined) {
+        ok(
+          stat.estimatedPlayoutTimestamp < stat.timestamp + 100000,
+          `${stat.type}.estimatedPlayoutTimestamp is not too far in the future`
+        );
+        ok(
+          stat.estimatedPlayoutTimestamp > stat.timestamp - 100000,
+          `${stat.type}.estimatedPlayoutTimestamp is not too far in the past`
+        );
+      }
 
       // jitterBufferEmittedCount
-      let expectedJitterBufferEmmitedCount = stat.kind == "video" ? 7 : 1000;
       ok(
-        stat.jitterBufferEmittedCount > expectedJitterBufferEmmitedCount,
+        stat.jitterBufferEmittedCount > 0,
         `${stat.type}.jitterBufferEmittedCount is a sane number for a short ` +
           `${stat.kind} test. value=${stat.jitterBufferEmittedCount}`
+      );
+
+      // jitterBufferTargetDelay
+      ok(
+        stat.jitterBufferTargetDelay >= 0,
+        `${stat.type}.jitterBufferTargetDelay is a sane number for a short ` +
+          `${stat.kind} test. value=${stat.jitterBufferTargetDelay}`
+      );
+
+      // jitterBufferMinimumDelay
+      ok(
+        stat.jitterBufferMinimumDelay >= 0,
+        `${stat.type}.jitterBufferMinimumDelay is a sane number for a short ` +
+          `${stat.kind} test. value=${stat.jitterBufferMinimumDelay}`
       );
 
       // jitterBufferDelay
@@ -733,6 +786,13 @@ function pedanticChecks(report) {
             `${stat.kind} test. value=${stat.framesDecoded}`
         );
 
+        // keyFramesDecoded
+        ok(
+          stat.keyFramesDecoded >= 0 && stat.keyFramesDecoded < 1000000,
+          `${stat.type}.keyFramesDecoded is a sane number for a short ` +
+            `${stat.kind} test. value=${stat.keyFramesDecoded}`
+        );
+
         // framesDropped
         ok(
           stat.framesDropped >= 0 && stat.framesDropped < 100,
@@ -763,14 +823,15 @@ function pedanticChecks(report) {
 
         // totalProcessingDelay
         ok(
-          stat.totalProcessingDelay < 100,
+          stat.totalProcessingDelay <
+            (navigator.userAgent.includes("Android") ? 2000 : 1000),
           `${stat.type}.totalProcessingDelay is sane number for a short test ` +
             `local only test. value=${stat.totalProcessingDelay}`
         );
 
         // totalInterFrameDelay
         ok(
-          stat.totalInterFrameDelay >= 0 && stat.totalInterFrameDelay < 100,
+          stat.totalInterFrameDelay >= 0 && stat.totalInterFrameDelay < 1000,
           `${stat.type}.totalInterFrameDelay is sane for a short test. ` +
             `value=${stat.totalInterFrameDelay}`
         );
@@ -778,9 +839,37 @@ function pedanticChecks(report) {
         // totalSquaredInterFrameDelay
         ok(
           stat.totalSquaredInterFrameDelay >= 0 &&
-            stat.totalSquaredInterFrameDelay < 100,
+            stat.totalSquaredInterFrameDelay < 10000,
           `${stat.type}.totalSquaredInterFrameDelay is sane for a short test. ` +
             `value=${stat.totalSquaredInterFrameDelay}`
+        );
+
+        // pauseCount
+        ok(
+          stat.pauseCount >= 0 && stat.pauseCount < 100,
+          `${stat.type}.pauseCount is a sane number for a short ` +
+            `${stat.kind} test. value=${stat.pauseCount}`
+        );
+
+        // totalPausesDuration
+        ok(
+          stat.totalPausesDuration >= 0 && stat.totalPausesDuration < 10000,
+          `${stat.type}.totalPausesDuration is sane for a short test. ` +
+            `value=${stat.totalPausesDuration}`
+        );
+
+        // freezeCount
+        ok(
+          stat.freezeCount >= 0 && stat.freezeCount < 100,
+          `${stat.type}.freezeCount is a sane number for a short ` +
+            `${stat.kind} test. value=${stat.freezeCount}`
+        );
+
+        // totalFreezesDuration
+        ok(
+          stat.totalFreezesDuration >= 0 && stat.totalFreezesDuration < 10000,
+          `${stat.type}.totalFreezesDuration is sane for a short test. ` +
+            `value=${stat.totalFreezesDuration}`
         );
 
         // framesReceived
@@ -788,6 +877,22 @@ function pedanticChecks(report) {
           stat.framesReceived >= 0 && stat.framesReceived < 100000,
           `${stat.type}.framesReceived is a sane number for a short ` +
             `${stat.kind} test. value=${stat.framesReceived}`
+        );
+
+        // framesAssembledFromMultiplePackets
+        ok(
+          stat.framesAssembledFromMultiplePackets >= 0 &&
+            stat.framesAssembledFromMultiplePackets < 100,
+          `${stat.type}.framesAssembledFromMultiplePackets is a sane number ` +
+            `for a short ${stat.kind} test.` +
+            `value=${stat.framesAssembledFromMultiplePackets}`
+        );
+
+        // totalAssemblyTime
+        ok(
+          stat.totalAssemblyTime >= 0 && stat.totalAssemblyTime < 10000,
+          `${stat.type}.totalAssemblyTime is sane for a short test. ` +
+            `value=${stat.totalAssemblyTime}`
         );
       }
     } else if (stat.type == "remote-inbound-rtp") {
@@ -850,9 +955,17 @@ function pedanticChecks(report) {
           `${stat.kind} test. value=${stat.roundTripTimeMeasurements}`
       );
     } else if (stat.type == "outbound-rtp") {
+      sending = true;
+
       //
       // Required fields
       //
+
+      // mid
+      ok(
+        parseInt(stat.mid) >= 0,
+        `${stat.type}.mid a positive integer. value=${stat.mid}`
+      );
 
       // packetsSent
       ok(
@@ -901,11 +1014,43 @@ function pedanticChecks(report) {
       // Optional fields
       //
 
+      // rid
+      if (stat.kind == "audio") {
+        ok(
+          stat.rid === undefined,
+          `${stat.type}.rid" MUST NOT exist for audio. value=${stat.rid}`
+        );
+      } else {
+        let numSendVideoStreamsForMid = 0;
+        report.forEach(r => {
+          if (
+            r.type == "outbound-rtp" &&
+            r.kind == "video" &&
+            r.mid == stat.mid
+          ) {
+            numSendVideoStreamsForMid += 1;
+          }
+        });
+        if (numSendVideoStreamsForMid == 1) {
+          is(
+            stat.rid,
+            undefined,
+            `${stat.type}.rid" does not exist for singlecast video. value=${stat.rid}`
+          );
+        } else {
+          isnot(
+            stat.rid,
+            undefined,
+            `${stat.type}.rid" does exist for simulcast video. value=${stat.rid}`
+          );
+        }
+      }
+
       // qpSum
-      // This is supported for all of our vpx codecs (on the encode side, see
-      // bug 1519590)
+      // This is supported for all of our vpx codecs and AV1 (on the encode
+      // side, see bug 1519590)
       const mimeType = report.get(stat.codecId).mimeType;
-      if (mimeType.includes("VP")) {
+      if (mimeType.includes("VP") || mimeType.includes("AV1")) {
         ok(
           stat.qpSum >= 0,
           `${stat.type}.qpSum is a sane number (${stat.kind}) ` +
@@ -1128,6 +1273,9 @@ function pedanticChecks(report) {
             `codec.payloadType for H264 was ${stat.payloadType}, exp. 97, 126, 103, or 105`
           );
           break;
+        case "video/AV1":
+          is(stat.payloadType, 99, "codec.payloadType for AV1");
+          break;
         default:
           ok(
             false,
@@ -1150,7 +1298,10 @@ function pedanticChecks(report) {
 
       // sdpFmtpLine
       // (not technically mandated by spec, but expected here)
-      ok(stat.sdpFmtpLine, "codec.sdpFmtpLine is set");
+      // AV1 has no required parameters, so don't require sdpFmtpLine for it.
+      if (stat.mimeType != "video/AV1") {
+        ok(stat.sdpFmtpLine, "codec.sdp FmtpLine is set");
+      }
       const opusParams = [
         "maxplaybackrate",
         "maxaveragebitrate",
@@ -1173,9 +1324,21 @@ function pedanticChecks(report) {
         "max-br",
         "max-mbps",
       ];
-      for (const param of stat.sdpFmtpLine.split(";")) {
+      // AV1 parameters:
+      //  https://aomediacodec.github.io/av1-rtp-spec/#721-mapping-of-media-subtype-parameters-to-sdp
+      const av1Params = ["profile", "level-idx", "tier"];
+      // Check that the parameters are as expected. AV1 may have no parameters.
+      for (const param of (stat.sdpFmtpLine || "").split(";")) {
         const [key, value] = param.split("=");
-        if (stat.payloadType == 109) {
+        if (stat.payloadType == 99) {
+          // AV1 might not have any parameters, if it does make sure they are as expected.
+          if (key) {
+            ok(
+              av1Params.includes(key),
+              `codec.sdpFmtpLine param ${key}=${value} for AV1`
+            );
+          }
+        } else if (stat.payloadType == 109) {
           ok(
             opusParams.includes(key),
             `codec.sdpFmtpLine param ${key}=${value} for opus`
@@ -1332,6 +1495,41 @@ function pedanticChecks(report) {
           `(${stat.kind})`
       );
 
+      // totalRoundTripTime
+      ok(
+        stat.totalRoundTripTime !== undefined && stat.totalRoundTripTime >= 0,
+        `${stat.type}.totalRoundTripTime has a value. value=` +
+          `${stat.totalRoundTripTime} (${stat.kind})`
+      );
+
+      // currentRoundTripTime
+      ok(
+        stat.currentRoundTripTime !== undefined &&
+          stat.currentRoundTripTime >= 0,
+        `${stat.type}.currentRoundTripTime has a value. value=` +
+          `${stat.currentRoundTripTime} (${stat.kind})`
+      );
+
+      // responsesReceived
+      ok(
+        stat.responsesReceived !== undefined && stat.responsesReceived >= 0,
+        `${stat.type}.responsesReceived has a value. value=` +
+          `${stat.responsesReceived} (${stat.kind})`
+      );
+
+      const stateValues = [
+        "frozen",
+        "waiting",
+        "in-progress",
+        "failed",
+        "succeeded",
+        "cancelled",
+      ];
+      ok(
+        stateValues.includes(stat.state),
+        `${stat.type}.state '${stat.state}' not in ${stateValues}`
+      );
+
       // state
       if (
         stat.state == "succeeded" &&
@@ -1346,17 +1544,21 @@ function pedanticChecks(report) {
             `(${stat.kind})`
         );
 
+        const sentExpectation = sending ? 100 : 0;
+
         // bytesSent
         ok(
-          stat.bytesSent > 100,
-          `${stat.type}.bytesSent is a sane number (>100) if media is flowing. ` +
+          stat.bytesSent >= sentExpectation,
+          `${stat.type}.bytesSent is a sane number (>${sentExpectation}) if media is flowing. ` +
             `value=${stat.bytesSent}`
         );
 
+        const recvExpectation = receiving ? 100 : 0;
+
         // bytesReceived
         ok(
-          stat.bytesReceived > 100,
-          `${stat.type}.bytesReceived is a sane number (>100) if media is flowing. ` +
+          stat.bytesReceived >= recvExpectation,
+          `${stat.type}.bytesReceived is a sane number (>${recvExpectation}) if media is flowing. ` +
             `value=${stat.bytesReceived}`
         );
 
@@ -1576,6 +1778,18 @@ async function waitForSyncedRtcp(pc) {
   );
 }
 
+function checkSendCodecsMimeType(senderStats, mimeType, sdpFmtpLine = null) {
+  const codecReports = senderStats.values().filter(s => s.type == "codec");
+  isnot(codecReports.length, 0, "Should have send codecs");
+  for (const c of codecReports) {
+    is(c.codecType, "encode", "Send codec is always encode");
+    is(c.mimeType, mimeType, "Mime type as expected");
+    if (sdpFmtpLine) {
+      is(c.sdpFmtpLine, sdpFmtpLine, "Sdp fmtp line as expected");
+    }
+  }
+}
+
 function checkSenderStats(senderStats, streamCount) {
   const outboundRtpReports = [];
   const remoteInboundRtpReports = [];
@@ -1602,6 +1816,18 @@ function checkSenderStats(senderStats, streamCount) {
       1,
       "Simulcast send track SSRCs are distinct"
     );
+    is(
+      outboundRtpReports.filter(r => r.mid == outboundRtpReport.mid).length,
+      streamCount,
+      "Simulcast send track MIDs are identical"
+    );
+    if (outboundRtpReport.kind == "video" && streamCount > 1) {
+      is(
+        outboundRtpReports.filter(r => r.rid == outboundRtpReport.rid).length,
+        1,
+        "Simulcast send track RIDs are distinct"
+      );
+    }
     const remoteReports = remoteInboundRtpReports.filter(
       r => r.id == outboundRtpReport.remoteId
     );

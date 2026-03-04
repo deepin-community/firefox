@@ -7,13 +7,12 @@
 #ifndef nsMathMLmtableFrame_h___
 #define nsMathMLmtableFrame_h___
 
-#include "mozilla/Attributes.h"
 #include "mozilla/UniquePtr.h"
-#include "nsMathMLContainerFrame.h"
 #include "nsBlockFrame.h"
-#include "nsTableWrapperFrame.h"
-#include "nsTableRowFrame.h"
+#include "nsMathMLContainerFrame.h"
 #include "nsTableCellFrame.h"
+#include "nsTableRowFrame.h"
+#include "nsTableWrapperFrame.h"
 
 namespace mozilla {
 class nsDisplayListBuilder;
@@ -41,7 +40,7 @@ class nsMathMLmtableWrapperFrame final : public nsTableWrapperFrame,
               nsReflowStatus& aStatus) override;
 
   nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
-                            int32_t aModType) override;
+                            AttrModType aModType) override;
 
  protected:
   explicit nsMathMLmtableWrapperFrame(ComputedStyle* aStyle,
@@ -161,8 +160,8 @@ class nsMathMLmtrFrame final : public nsTableRowFrame {
 
   // overloaded nsTableRowFrame methods
 
-  virtual nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
-                                    int32_t aModType) override;
+  nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
+                            AttrModType aModType) override;
 
   void AppendFrames(ChildListID aListID, nsFrameList&& aFrameList) override {
     nsTableRowFrame::AppendFrames(aListID, std::move(aFrameList));
@@ -215,9 +214,9 @@ class nsMathMLmtdFrame final : public nsTableCellFrame {
             nsIFrame* aPrevInFlow) override;
 
   nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
-                            int32_t aModType) override;
+                            AttrModType aModType) override;
 
-  mozilla::StyleVerticalAlignKeyword GetVerticalAlign() const override;
+  TableCellAlignment GetTableCellAlignment() const override;
   void ProcessBorders(nsTableFrame* aFrame,
                       mozilla::nsDisplayListBuilder* aBuilder,
                       const mozilla::nsDisplayListSet& aLists) override;
@@ -247,9 +246,10 @@ class nsMathMLmtdInnerFrame final : public nsBlockFrame, public nsMathMLFrame {
   // Overloaded nsIMathMLFrame methods
 
   NS_IMETHOD
-  UpdatePresentationDataFromChildAt(int32_t aFirstIndex, int32_t aLastIndex,
-                                    uint32_t aFlagsValues,
-                                    uint32_t aFlagsToUpdate) override {
+  UpdatePresentationDataFromChildAt(
+      int32_t aFirstIndex, int32_t aLastIndex,
+      MathMLPresentationFlags aFlagsValues,
+      MathMLPresentationFlags aFlagsToUpdate) override {
     nsMathMLContainerFrame::PropagatePresentationDataFromChildAt(
         this, aFirstIndex, aLastIndex, aFlagsValues, aFlagsToUpdate);
     return NS_OK;

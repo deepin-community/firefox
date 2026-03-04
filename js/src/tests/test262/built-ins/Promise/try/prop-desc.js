@@ -1,4 +1,3 @@
-// |reftest| skip -- promise-try is not supported
 // Copyright (C) 2024 Jordan Harband. All rights reserved.
 // See LICENSE for details.
 

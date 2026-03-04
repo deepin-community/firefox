@@ -5,9 +5,11 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "sdp/SdpAttribute.h"
-#include "sdp/SdpHelper.h"
-#include <iomanip>
+
 #include <bitset>
+#include <iomanip>
+
+#include "sdp/SdpHelper.h"
 
 #ifdef CRLF
 #  undef CRLF
@@ -160,7 +162,7 @@ bool SdpFmtpAttributeList::operator==(const SdpFmtpAttributeList& other) const {
 
 void SdpFmtpAttributeList::Serialize(std::ostream& os) const {
   for (auto i = mFmtps.begin(); i != mFmtps.end(); ++i) {
-    if (i->parameters) {
+    if (i->parameters && i->parameters->ShouldSerialize()) {
       os << "a=" << mType << ":" << i->format << " ";
       i->parameters->Serialize(os);
       os << CRLF;
@@ -1046,7 +1048,7 @@ bool SdpRidAttributeList::PushEntry(const std::string& raw, std::string* error,
 
 void SdpRidAttributeList::PushEntry(const std::string& id, sdp::Direction dir,
                                     const std::vector<uint16_t>& formats,
-                                    const EncodingConstraints& constraints,
+                                    const VideoEncodingConstraints& constraints,
                                     const std::vector<std::string>& dependIds) {
   SdpRidAttributeList::Rid rid;
 
@@ -1102,6 +1104,7 @@ static bool ShouldSerializeChannels(SdpRtpmapAttributeList::CodecType type) {
     case SdpRtpmapAttributeList::kiLBC:
     case SdpRtpmapAttributeList::kiSAC:
     case SdpRtpmapAttributeList::kH264:
+    case SdpRtpmapAttributeList::kAV1:
     case SdpRtpmapAttributeList::kRed:
     case SdpRtpmapAttributeList::kUlpfec:
     case SdpRtpmapAttributeList::kTelephoneEvent:
@@ -1332,6 +1335,8 @@ bool SdpAttribute::IsAllowedAtMediaLevel(AttributeType type) {
       return true;
     case kExtmapAttribute:
       return true;
+    case kExtmapAllowMixedAttribute:
+      return true;
     case kFingerprintAttribute:
       return true;
     case kFmtpAttribute:
@@ -1415,6 +1420,8 @@ bool SdpAttribute::IsAllowedAtSessionLevel(AttributeType type) {
       return true;
     case kExtmapAttribute:
       return true;
+    case kExtmapAllowMixedAttribute:
+      return true;
     case kFingerprintAttribute:
       return true;
     case kFmtpAttribute:
@@ -1493,6 +1500,8 @@ const std::string SdpAttribute::GetAttributeTypeString(AttributeType type) {
       return "end-of-candidates";
     case kExtmapAttribute:
       return "extmap";
+    case kExtmapAllowMixedAttribute:
+      return "extmap-allow-mixed";
     case kFingerprintAttribute:
       return "fingerprint";
     case kFmtpAttribute:

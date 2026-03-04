@@ -29,13 +29,29 @@ add_heuristic_tests([
     ],
   },
   {
-    description: `An address section is invalid when it contains less than threee fields`,
+    description: `An address section valid when it contains less than three fields when autocomplete is used`,
     fixtureData: `
         <html><body>
             <input id="postal-code" autocomplete="postal-code">
             <input id="email" autocomplete="email">
-
-            <input id="postal-code" autocomplete="postal-code">
+        </body></html>
+      `,
+    expectedResult: [
+      {
+        description: "A section with two fields",
+        fields: [
+          { fieldName: "postal-code", reason: "autocomplete" },
+          { fieldName: "email", reason: "autocomplete" },
+        ],
+      },
+    ],
+  },
+  {
+    description: `An address section is invalid when it contains less than three fields when autocomplete is not used`,
+    fixtureData: `
+        <html><body>
+            <input id="postal-code">
+            <input id="email">
         </body></html>
       `,
     expectedResult: [
@@ -43,14 +59,28 @@ add_heuristic_tests([
         description: "A section with two fields",
         invalid: true,
         fields: [
-          { fieldName: "postal-code", reason: "autocomplete" },
-          { fieldName: "email", reason: "autocomplete" },
+          { fieldName: "postal-code", reason: "regex-heuristic" },
+          { fieldName: "email", reason: "regex-heuristic" },
         ],
       },
+    ],
+  },
+  {
+    description: `An address section is invalid when it contains only less than three fields when autocomplete is used on only one field`,
+    fixtureData: `
+        <html><body>
+            <input id="postal-code">
+            <input id="email" autocomplete="email">
+        </body></html>
+      `,
+    expectedResult: [
       {
-        description: "A section with one field",
+        description: "A section with two fields",
         invalid: true,
-        fields: [{ fieldName: "postal-code", reason: "autocomplete" }],
+        fields: [
+          { fieldName: "postal-code", reason: "regex-heuristic" },
+          { fieldName: "email", reason: "autocomplete" },
+        ],
       },
     ],
   },
@@ -58,9 +88,9 @@ add_heuristic_tests([
     description: `Address section validation only counts the number of different address field name in the section`,
     fixtureData: `
         <html><body>
-            <input id="postal-code" autocomplete="postal-code">
-            <input id="email" autocomplete="email">
-            <input id="email" autocomplete="email">
+            <input id="postal-code">
+            <input id="email">
+            <input id="email">
         </body></html>
       `,
     expectedResult: [
@@ -69,9 +99,9 @@ add_heuristic_tests([
           "A section with three fields but has duplicated email fields",
         invalid: true,
         fields: [
-          { fieldName: "postal-code", reason: "autocomplete" },
-          { fieldName: "email", reason: "autocomplete" },
-          { fieldName: "email", reason: "autocomplete" },
+          { fieldName: "postal-code", reason: "regex-heuristic" },
+          { fieldName: "email", reason: "regex-heuristic" },
+          { fieldName: "email", reason: "regex-heuristic" },
         ],
       },
     ],

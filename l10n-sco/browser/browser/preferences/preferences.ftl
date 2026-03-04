@@ -96,6 +96,10 @@ startup-header = Stertup
 always-check-default =
     .label = Ayeweys check if { -brand-short-name } is yer staunart stravaiger
     .accesskey = y
+is-default-browser =
+    .message = { -brand-short-name } is yer staunart stravaiger the noo
+is-not-default-browser =
+    .message = { -brand-short-name } isnae yer staunart stravaiger
 is-default = { -brand-short-name } is yer staunart stravaiger the noo
 is-not-default = { -brand-short-name } isnae yer staunart stravaiger
 set-as-my-default-browser =
@@ -108,6 +112,8 @@ startup-restore-warn-on-quit =
     .label = Warn ye when quittin the stravaiger
 disable-extension =
     .label = Disable Extension
+tabs-group-header2 =
+    .label = Tabs
 tabs-group-header = Tabs
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab gangs through tabs in the order ye last yaised them
@@ -120,7 +126,7 @@ confirm-on-close-multiple-tabs =
     .accesskey = m
 # This string is used for the confirm before quitting preference.
 # Variables:
-#   $quitKey (String) - the quit keyboard shortcut, and formatted
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
 #                       in the same manner as it would appear,
 #                       for example, in the File menu.
 confirm-on-quit-with-key =
@@ -143,6 +149,8 @@ browser-containers-settings =
     .label = Settins…
     .accesskey = i
 containers-disable-alert-title = Sneck Aw Conteener Tabs?
+startup-group =
+    .label = Stertup
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -163,7 +171,7 @@ containers-disable-alert-ok-button =
 containers-disable-alert-cancel-button = Stey enabled
 containers-remove-alert-title = Remuive This Conteener?
 # Variables:
-#   $count (Number) - Number of tabs that will be closed.
+#   $count (number) - Number of tabs that will be closed.
 containers-remove-alert-msg =
     { $count ->
         [one] Gin ye remuive this Conteener the noo, { $count } conteener tab will be sneckit. Are ye shair ye want tae remuive this Conteener?
@@ -175,6 +183,12 @@ containers-remove-cancel-button = Dinnae remuive this Conteener
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Leid and Kythe
+default-font-2 =
+    .label = Staunart font
+    .accesskey = S
+default-font-size-2 =
+    .label = Size
+    .accesskey = z
 default-font = Staunart font
     .accesskey = S
 default-font-size = Size
@@ -183,9 +197,17 @@ advanced-fonts =
     .label = Advanced…
     .accesskey = A
 # Zoom is a noun, and the message is used as header for a group of options
+preferences-zoom-header2 =
+    .label = Zoom
+preferences-default-zoom-label =
+    .label = Staunart zoom
+    .accesskey = z
+# Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Zoom
 preferences-default-zoom = Staunart zoom
     .accesskey = z
+# Variables:
+#   $percentage (number) - Zoom percentage value
 preferences-default-zoom-value =
     .label = { $percentage }%
 preferences-zoom-text-only =
@@ -223,6 +245,11 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = Files and Applications
+downloads-header-2 =
+    .label = Doonloads
+download-save-where-2 =
+    .label = Save files tae
+    .accesskey = v
 download-header = Doonloads
 download-save-where = Save files tae
     .accesskey = v
@@ -278,15 +305,15 @@ applications-manage-app =
 applications-always-ask =
     .label = Ayeweys speir
 # Variables:
-#   $type-description (String) - Description of the type (e.g "Portable Document Format")
-#   $type (String) - the MIME type (e.g application/binary)
+#   $type-description (string) - Description of the type (e.g "Portable Document Format")
+#   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 # Variables:
-#   $extension (String) - file extension (e.g .TXT)
-#   $type (String) - the MIME type (e.g application/binary)
+#   $extension (string) - File extension (e.g .TXT)
+#   $type (string) - The MIME type (e.g application/binary)
 applications-file-ending-with-type = { applications-file-ending } ({ $type })
 # Variables:
-#   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
+#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = Yaise { $plugin-name } (in { -brand-short-name })
 applications-open-inapp =
@@ -315,6 +342,8 @@ applications-use-os-default-label =
 
 ##
 
+drm-group =
+    .label = Digital Richts Management (DRM) Content
 drm-content-header = Digital Richts Management (DRM) Content
 play-drm-content =
     .label = Pley DRM-controlled content
@@ -322,6 +351,8 @@ play-drm-content =
 play-drm-content-learn-more = Lairn mair
 update-application-title = { -brand-short-name } Updates
 update-application-description = Keep { -brand-short-name } up tae date for the best performance, stieveness, and siccarness.
+# Variables:
+# $version (string) - Firefox version
 update-application-version = Version { $version } <a data-l10n-name="learn-more">Whit’s new</a>
 update-history =
     .label = Kythe Update Historie...
@@ -345,7 +376,7 @@ update-application-use-service =
     .accesskey = b
 update-setting-write-failure-title2 = Mishanter savin Update settins
 # Variables:
-#   $path (String) - Path to the configuration file
+#   $path (string) - Path to the configuration file
 # The newlines between the main text and the line containing the path is
 # intentional so the path is easier to identify.
 update-setting-write-failure-message2 =
@@ -375,9 +406,11 @@ performance-limit-content-process-option = Content process leemit
 performance-limit-content-process-enabled-desc = Mair content processes can impruive performance when yaisin a wheen o tabs, but will yaise mair memory forby.
 performance-limit-content-process-blocked-desc = Chyngin the nummer o content processes can anely be duin wi multiprocess { -brand-short-name }. <a data-l10n-name="learn-more">Lairn how tae check if multiprocess is enabled</a>
 # Variables:
-#   $num - default value of the `dom.ipc.processCount` pref.
+#   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (staunart)
+performance-group =
+    .label = Performance
 
 ## General Section - Browsing
 
@@ -412,6 +445,8 @@ browsing-cfr-features =
     .label = Recommend featurs as ye stravaig
     .accesskey = f
 browsing-cfr-recommendations-learn-more = Lairn mair
+browsing-group =
+    .label = Stravaigin
 
 ## General Section - Proxy
 
@@ -421,16 +456,27 @@ network-proxy-connection-learn-more = Lairn mair
 network-proxy-connection-settings =
     .label = Settins…
     .accesskey = e
+network-proxy-group =
+    .label = Netwark settins
+    .description = Confeegur how { -brand-short-name } connects tae the internet.
 
 ## Home Section
 
 home-new-windows-tabs-header = New Windaes and Tabs
 home-new-windows-tabs-description2 = Decide whit ye see when ye open yer hamepage, new windaes, and new tabs.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = Mak Staunart
+    .accesskey = S
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = Hamepage and new windaes
 home-newtabs-mode-label = New tabs
+home-homepage-new-tabs =
+    .label = New tabs
 home-restore-defaults =
     .label = Restore Staunarts
     .accesskey = R
@@ -465,8 +511,7 @@ home-prefs-shortcuts-description = Sites ye save or veesit
 home-prefs-shortcuts-by-option-sponsored =
     .label = Sponsored shortcuts
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Recommendit by { $provider }
@@ -495,6 +540,8 @@ home-prefs-recent-activity-description = A walin o recent sites and content
 home-prefs-snippets-header =
     .label = Bitties
 home-prefs-snippets-description-new = Tips and news fae { -vendor-short-name } and { -brand-product-name }
+# Variables:
+#   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
     .label =
         { $num ->
@@ -523,6 +570,8 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Kythe airt-oot suggestions in address baur results
     .accesskey = l
+search-suggestions-cant-show-2 =
+    .message = Airt-oot suggestions willnae be kythed in location baur results acause ye've confeegurt { -brand-short-name } tae nivver mind o historie.
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
@@ -554,15 +603,21 @@ search-find-more-link = Find mair airt-oot engines
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = Keywird Awready in Yaise
 # Variables:
-#   $name (String) - Name of a search engine.
+#   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Ye've waled a keywird that's awready in yaise by “{ $name }”. Gonnae wale anither.
 search-keyword-warning-bookmark = Ye've waled a keywird that's awready in yaise by a buikmerk. Gonnae wale anither.
+search-engine-group =
+    .label = Staunart Airt-oot Engine
+search-default-engine =
+    .aria-label = Staunart Airt-oot Engine
 
 ## Containers Section
 
 containers-back-button2 =
     .aria-label = Back tae Settins
 containers-header = Conteener Tabs
+containers-section-header =
+    .heading = Conteener Tabs
 containers-add-button =
     .label = Eik On New Conteener
     .accesskey = E
@@ -573,6 +628,11 @@ containers-settings-button =
     .label = Settins
 containers-remove-button =
     .label = Remuive
+
+## Account and sync
+
+sync-group-label =
+    .label = Sync
 
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
@@ -602,11 +662,18 @@ sync-profile-picture-with-alt =
 sync-sign-out =
     .label = Sign Oot…
     .accesskey = g
+sync-sign-out2 =
+    .label = Sign Oot
+    .accesskey = g
 sync-manage-account = Manage accoont
+    .accesskey = o
+sync-manage-account2 =
+    .label = Manage accoont
     .accesskey = o
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } isnae trystmakkit
 sync-signedin-login-failure = Gonnae sign in tae reconnect { $email }
@@ -630,6 +697,9 @@ prefs-syncing-off = Syncin: AFF
 prefs-sync-turn-on-syncing =
     .label = Turn on syncin…
     .accesskey = s
+prefs-sync-turn-on-syncing-2 =
+    .label = Turn on syncin
+    .accesskey = s
 prefs-sync-offer-setup-label2 = Synchronise yer buikmerks, historie, tabs, passwirds, eik-ons, and settins across aw yer devices.
 prefs-sync-now =
     .labelnotsyncing = Sync Noo
@@ -638,8 +708,14 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = Sync Noo
     .accesskey = N
+prefs-sync-now-button-2 =
+    .label = Sync Noo
+    .accesskey = N
 prefs-syncing-button =
     .label = Syncin…
+prefs-syncing-button-2 =
+    .label = Syncin…
+    .title = Sync Noo
 
 ## The list of things currently syncing.
 
@@ -698,6 +774,16 @@ sync-engine-settings =
 ## The device name controls.
 
 sync-device-name-header = Device Nemme
+sync-device-name-header-2 =
+    .label = Device Nemme
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Device Nemme
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Chynge Device Nemme
+    .accesskey = h
 sync-device-name-change =
     .label = Chynge Device Nemme…
     .accesskey = h
@@ -708,6 +794,8 @@ sync-device-name-save =
     .label = Save
     .accesskey = v
 sync-connect-another-device = Connect anither device
+sync-connect-another-device-2 =
+    .label = Connect anither device
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -787,12 +875,19 @@ primary-password-os-auth-dialog-message-win = Tae mak a Primary Passwird, inpit 
 primary-password-os-auth-dialog-message-macosx = mak a Primary Passwird
 master-password-os-auth-dialog-caption = { -brand-full-name }
 
-## Privacy section - Autofill
-
-
 ## Privacy Section - History
 
 history-header = Historie
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label2 = { -brand-short-name } will
 # This label is followed, on the same line, by a dropdown list of options
 # (Remember history, etc.).
 # In English it visually creates a full sentence, e.g.
@@ -810,6 +905,18 @@ history-remember-option-never =
     .label = Nivver mind yer historie
 history-remember-option-custom =
     .label = Yaise custom settins for historie
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } will mind yer stravaigin, doonload, form and sairch historie.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } will yaise the same settins as private stravaigin, and willnae mind o onie historie as ye stravaig the Wab.
+history-remember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } will mind yer stravaigin, doonload, form and sairch historie.
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } will yaise the same settins as private stravaigin, and willnae mind o onie historie as ye stravaig the Wab.
 history-remember-description = { -brand-short-name } will mind yer stravaigin, doonload, form and sairch historie.
 history-dontremember-description = { -brand-short-name } will yaise the same settins as private stravaigin, and willnae mind o onie historie as ye stravaig the Wab.
 history-private-browsing-permanent =
@@ -830,14 +937,16 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = Dicht Historie…
     .accesskey = s
+history-group =
+    .label = Historie
 
 ## Privacy Section - Site Data
 
 sitedata-header = Cookies and Site Data
 sitedata-total-size-calculating = Wirkin oot site data and cache size...
 # Variables:
-#   $value (Number) - Value of the unit (for example: 4.6, 500)
-#   $unit (String) - Name of the unit (for example: "bytes", "KB")
+#   $value (number) - Value of the unit (for example: 4.6, 500)
+#   $unit (string) - Name of the unit (for example: "bytes", "KB")
 sitedata-total-size = Yer stored cookies, site data, and cache richt noo are yaisin { $value } { $unit } o disk space.
 sitedata-learn-more = Lairn mair
 sitedata-delete-on-close =
@@ -873,14 +982,10 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = Manage Exceptions…
     .accesskey = x
+cookies-site-data-group =
+    .label = Cookies and Site Data
 
-## Privacy Section - Cookie Banner Handling
-
-
-## Privacy Section - Cookie Banner Blocking
-
-
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = Address Baur
 addressbar-suggest = When yaisin the address baur, suggest
@@ -1011,6 +1116,8 @@ permissions-notification-link = Lairn mair
 permissions-notification-pause =
     .label = Pit notifications on haud the noo until { -brand-short-name } resterts
     .accesskey = n
+permissions-autoplay2 =
+    .label = Autopley
 permissions-autoplay = Autopley
 permissions-autoplay-settings =
     .label = Settins…
@@ -1030,6 +1137,16 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = Exceptions…
     .accesskey = E
+permissions-location2 =
+    .label = Airtin
+permissions-xr2 =
+    .label = Virtual Reality
+permissions-camera2 =
+    .label = Camera
+permissions-microphone2 =
+    .label = Microphone
+permissions-notification2 =
+    .label = Notifications
 
 ## Privacy Section - Data Collection
 
@@ -1053,11 +1170,6 @@ addon-recommendations-link = Lairn mair
 collection-health-report-disabled = Data reportin is disabled fur this build confeeguration
 collection-backlogged-crash-reports-with-link = Alloo { -brand-short-name } tae send backlogged crash reports on yer behauf <a data-l10n-name="crash-reports-link">Lairn mair</a>
     .accesskey = c
-collection-backlogged-crash-reports = Alloo { -brand-short-name } tae send backlogged crash reports on yer behauf
-    .accesskey = c
-
-## Privacy Section - Website Advertising Preferences
-
 
 ## Privacy Section - Security
 ##
@@ -1065,6 +1177,8 @@ collection-backlogged-crash-reports = Alloo { -brand-short-name } tae send backl
 ## https://developers.google.com/safe-browsing/developers_guide_v2#AcceptableUsage
 
 security-header = Siccarness
+browsing-protection-group =
+    .label = Begowkin Content and Uncannie Saftware Bieldin
 security-browsing-protection = Begowkin Content and Uncannie Saftware Bieldin
 security-enable-safe-browsing =
     .label = Block uncannie and begowkin content
@@ -1089,6 +1203,7 @@ certs-view =
 certs-devices =
     .label = Siccarness Devices…
     .accesskey = D
+certs-devices-enable-fips = Enable FIPS
 space-alert-over-5gb-settings-button =
     .label = Open Settins
     .accesskey = O
@@ -1106,9 +1221,6 @@ httpsonly-radio-enabled-pbm =
     .label = Yaise HTTPS-Anely Mode in private windaes, jist
 httpsonly-radio-disabled =
     .label = Dinnae yaise HTTPS-Anely Mode
-
-## DoH Section
-
 
 ## The following strings are used in the Download section of settings
 

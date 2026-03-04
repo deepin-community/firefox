@@ -15,6 +15,7 @@ import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.Fragment
 import mozilla.components.support.utils.Browsers
 import mozilla.telemetry.glean.private.NoExtras
@@ -53,36 +54,43 @@ class OnboardingSecondFragment : Fragment() {
             ),
         )
         return ComposeView(requireContext()).apply {
-            setContent {
-                FocusTheme {
-                    OnBoardingSecondScreenCompose(
-                        setAsDefaultBrowser = {
-                            Onboarding.defaultBrowserButton.record(NoExtras())
-                            onboardingInteractor.onMakeFocusDefaultBrowserButtonClicked(activityResultLauncher)
-                        },
-                        skipScreen = {
-                            Onboarding.skipButton.record(NoExtras())
-                            onboardingInteractor.onFinishOnBoarding()
-                        },
-                        onCloseButtonClick = {
-                            Onboarding.secondScreenCloseButton.record(NoExtras())
-                            onboardingInteractor.onFinishOnBoarding()
-                        },
-                    )
-                }
-            }
             isTransitionGroup = true
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+        }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        (view as ComposeView).setContent {
+            FocusTheme {
+                OnBoardingSecondScreenCompose(
+                    setAsDefaultBrowser = {
+                        Onboarding.defaultBrowserButton.record(NoExtras())
+                        onboardingInteractor.onMakeFocusDefaultBrowserButtonClicked(activityResultLauncher)
+                    },
+                    skipScreen = {
+                        Onboarding.skipButton.record(NoExtras())
+                        onboardingInteractor.onFinishOnBoarding()
+                    },
+                )
+            }
         }
     }
 
     override fun onResume() {
         super.onResume()
-        // check if the default browser was changed from OS settings for devices with Android 7,8 and 9.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
-            Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
+        // check if the default browser was changed from OS settings for devices with Android 8 & 9.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
             Browsers.all(requireContext()).isDefaultBrowser
         ) {
             onboardingInteractor.onFinishOnBoarding()
         }
+    }
+
+    /**
+     * Companion object for [OnboardingSecondFragment].
+     */
+    companion object {
+        const val FRAGMENT_TAG = "onboarding-second-fragment"
     }
 }

@@ -7,23 +7,20 @@
 #include "nsDOMMutationObserver.h"
 
 #include "mozilla/AnimationTarget.h"
+#include "mozilla/BasePrincipal.h"
 #include "mozilla/CycleCollectedJSContext.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/OwningNonNull.h"
-
 #include "mozilla/dom/Animation.h"
-#include "mozilla/dom/KeyframeEffect.h"
+#include "mozilla/dom/CharacterDataBuffer.h"
 #include "mozilla/dom/DocGroup.h"
-
-#include "mozilla/BasePrincipal.h"
-
-#include "nsContentUtils.h"
+#include "mozilla/dom/KeyframeEffect.h"
 #include "nsCSSPseudoElements.h"
+#include "nsContentUtils.h"
 #include "nsError.h"
 #include "nsIScriptGlobalObject.h"
 #include "nsNameSpaceManager.h"
 #include "nsServiceManagerUtils.h"
-#include "nsTextFragment.h"
 #include "nsThreadUtils.h"
 
 using namespace mozilla;
@@ -140,8 +137,7 @@ void nsMutationReceiver::Disconnect(bool aRemoveFromObserver) {
 
 void nsMutationReceiver::AttributeWillChange(Element* aElement,
                                              int32_t aNameSpaceID,
-                                             nsAtom* aAttribute,
-                                             int32_t aModType) {
+                                             nsAtom* aAttribute, AttrModType) {
   if (nsAutoMutationBatch::IsBatching() ||
       !ObservesAttr(RegisterTarget(), aElement, aNameSpaceID, aAttribute)) {
     return;
@@ -187,11 +183,12 @@ void nsMutationReceiver::CharacterDataWillChange(
     m->mTarget = aContent;
   }
   if (CharacterDataOldValue() && m->mPrevValue.IsVoid()) {
-    aContent->GetText()->AppendTo(m->mPrevValue);
+    aContent->GetCharacterDataBuffer()->AppendTo(m->mPrevValue);
   }
 }
 
-void nsMutationReceiver::ContentAppended(nsIContent* aFirstNewContent) {
+void nsMutationReceiver::ContentAppended(nsIContent* aFirstNewContent,
+                                         const ContentAppendInfo&) {
   nsINode* parent = aFirstNewContent->GetParentNode();
   bool wantsChildList =
       ChildList() && ((Subtree() && RegisterTarget()->SubtreeRoot() ==
@@ -225,7 +222,8 @@ void nsMutationReceiver::ContentAppended(nsIContent* aFirstNewContent) {
   m->mPreviousSibling = aFirstNewContent->GetPreviousSibling();
 }
 
-void nsMutationReceiver::ContentInserted(nsIContent* aChild) {
+void nsMutationReceiver::ContentInserted(nsIContent* aChild,
+                                         const ContentInsertInfo&) {
   nsINode* parent = aChild->GetParentNode();
   bool wantsChildList =
       ChildList() && ((Subtree() && RegisterTarget()->SubtreeRoot() ==
@@ -254,8 +252,8 @@ void nsMutationReceiver::ContentInserted(nsIContent* aChild) {
   m->mNextSibling = aChild->GetNextSibling();
 }
 
-void nsMutationReceiver::ContentRemoved(nsIContent* aChild,
-                                        nsIContent* aPreviousSibling) {
+void nsMutationReceiver::ContentWillBeRemoved(nsIContent* aChild,
+                                              const ContentRemoveInfo&) {
   if (!IsObservable(aChild)) {
     return;
   }
@@ -333,9 +331,8 @@ void nsMutationReceiver::ContentRemoved(nsIContent* aChild,
     m->mTarget = parent;
     m->mRemovedNodes = new nsSimpleContentList(parent);
     m->mRemovedNodes->AppendElement(aChild);
-    m->mPreviousSibling = aPreviousSibling;
-    m->mNextSibling = aPreviousSibling ? aPreviousSibling->GetNextSibling()
-                                       : parent->GetFirstChild();
+    m->mPreviousSibling = aChild->GetPreviousSibling();
+    m->mNextSibling = aChild->GetNextSibling();
   }
   // We need to schedule always, so that after microtask mTransientReceivers
   // can be cleared correctly.
@@ -372,7 +369,7 @@ void nsAnimationReceiver::RecordAnimationMutation(
   }
 
   // Record animations targeting to a pseudo element only when subtree is true.
-  if (animationTarget.mPseudoType != PseudoStyleType::NotPseudo && !Subtree()) {
+  if (!animationTarget.mPseudoRequest.IsNotPseudo() && !Subtree()) {
     return;
   }
 

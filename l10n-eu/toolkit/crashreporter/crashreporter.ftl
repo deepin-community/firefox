@@ -8,17 +8,18 @@ crashreporter-crashed-and-restore = { -brand-short-name }(e)k arazo bat izan du 
 crashreporter-plea = Arazo hau aztertu eta konpontzen laguntzeko, hutsegitearen txostena bidal diezagukezu.
 crashreporter-information = Aplikazio hau hutsegite baten ondoren exekutatzen da { -vendor-short-name }(r)i arazoaren berri emateko. Ez litzateke zuzenean exekutatu behar.
 crashreporter-error = { -brand-short-name }(e)k arazo bat izan du eta huts egin du. Tamalez, hutsegiteen berriemailea ez da gai hutsegite honen txostena bidaltzeko.
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = Xehetasunak: { $details }
+crashreporter-error-details-header = Xehetasunak:
 crashreporter-no-run-message = Aplikazio hau hutsegite baten ondoren exekutatzen da aplikazioaren egileari hutsegitearen berri emateko. Ez litzateke zuzenean exekutatu behar.
 crashreporter-button-details = Xehetasunak…
 crashreporter-loading-details = Kargatzen…
 crashreporter-view-report-title = Txostenaren edukia
 crashreporter-comment-prompt = Gehitu iruzkina (iruzkinak publikoki ikus daitezke)
 crashreporter-report-info = Aplikazioak huts egin zueneko egoerari buruzko informazio teknikoa ere badu txosten honek.
-crashreporter-send-report = Eman { -vendor-short-name }(r)i hutsegite honen berri konpontzen saia daitezen.
-crashreporter-include-url = Sartu bisitatzen ari nintzen orriaren helbidea.
+crashreporter-checkbox-test-hardware = Egiaztatu hardware- eta konfigurazio-arazoak nire gailuan.
+crashreporter-checkbox-send-report = Eman { -vendor-short-name }(r)i hutsegite honen berri konpontzen saia daitezen.
+crashreporter-checkbox-include-url = Sartu bisitatzen ari nintzen orriaren helbidea.
 crashreporter-submit-status = Hutsegite-txostena irten edo berrabiarazi aurretik bidaliko da.
+crashreporter-submit-waiting-hardware-tests = Hardware- eta konfigurazio-arazoak egiaztatzen…
 crashreporter-submit-in-progress = Txostena bidaltzen…
 crashreporter-submit-success = Txostena ongi bidali da!
 crashreporter-submit-failure = Arazoa egon da txostena bidaltzean.
@@ -34,7 +35,6 @@ crashreporter-crash-details = Hutsegite honen xehetasunak ondorengo helbidean ik
 
 # Error strings
 
-crashreporter-error-minidump-analyzer = Huts egin du minidump-analyzer exekutatzean
 # $path (String) - the file path
 crashreporter-error-opening-file = Huts egin du fitxategia irekitzerakoan ({ $path })
 # $path (String) - the file path
@@ -46,3 +46,4 @@ crashreporter-error-no-home-dir = Etxe direktorioa falta da
 # $to (String) - the destination path
 crashreporter-error-moving-path = Huts egin du { $from } bidetik { $to } bidera lekuz aldatzean
 crashreporter-error-version-eol = Bertsioaren balio-bizitza amaituta: ez da hutsegite-txosten gehiago onartzen.
+crashreporter-error-failed-to-generate-minidump = Aplikazioak huts egin du hutsegite-informazioa sortzean.

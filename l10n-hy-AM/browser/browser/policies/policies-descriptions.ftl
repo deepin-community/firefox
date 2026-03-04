@@ -50,7 +50,7 @@ policy-DisableSetAsDesktopBackground = Անջատել ցանկային հրամ�
 policy-DisableSystemAddonUpdate = Հետ պահել դիտարկիչը ծրագրային հավելումների տեղակայումից և թարմացումից։
 policy-DisableTelemetry = Անջատել հեռաչափությունը:
 policy-DisplayBookmarksToolbar = Ցուցադրել էջանիշերի գործիքագոտին սկզբնադրորեն։
-policy-DisplayMenuBar = Ցուցադրել Ցանկ գոտին լռելյայն։
+policy-DisplayMenuBar = Ցուցադրել ցանկագոտին սկզբնադրորեն։
 policy-DNSOverHTTPS = Կազմաձևել DNS- ը HTTPS- ի միջոցով:
 policy-DontCheckDefaultBrowser = Անջատել կանխադրված դիտարկիչը գործարկման ժամանակ:
 policy-DownloadDirectory = Սահմանեք և կողպեք ներբեռման պանակը։
@@ -64,12 +64,13 @@ policy-EncryptedMediaExtensions = Միացնել կամ անջատել գաղտ�
 policy-Extensions = Տեղադրել, ապատեղադրել կամ կողպել ընդլայնումները։ Տեղակադրան ընտրանքը վերցնում է URL-ը կամ ուղիները որպես հարաչափեր։ Ապատեղադրված և կողպված ընտրանքները վերցնում են ընդլայնման ID-ները։
 policy-ExtensionSettings = Կառավարել ընդլայնման տեղակադրան բոլոր կողմերը։
 policy-ExtensionUpdate = Միացնել կամ անջատել ընդլայումների ինքնաթարմացումները։
-policy-FirefoxHome2 = Կարգավորել { -firefox-home-brand-name }-ը:
-policy-FirefoxSuggest = Կարգավորել { -firefox-suggest-brand-name }-ը:
+policy-FirefoxHome2 = Կազմաձևել  { -firefox-home-brand-name }-ը:
+policy-FirefoxSuggest = Կազմաձևել { -firefox-suggest-brand-name }-ը:
 policy-Handlers = Կարգավորել սկզբնադիր հավելվածների մշակիչները:
 policy-HardwareAcceleration = Եթե կեղծ է՝ անջատել սարքի արագացումը։
 # “lock” means that the user won’t be able to change this setting
 policy-Homepage = Սահմանեք և ընտրովի կողպեք տնէջը։
+policy-HttpsOnlyMode = Թույլատրել Միայն HTTPS ռեժիմի միացումը։
 policy-InstallAddonsPermission = Թույլատրել որոշ կայքերին տեղադրել հավելումներ։
 policy-LegacyProfiles = Անջատեք առանձնահատկությունը, որն ամրացնում է առանձին պրոֆիլ յուրաքանչյուր տեղադրման համար
 
@@ -80,30 +81,30 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Վերադարձրեք
 
 ##
 
-policy-LocalFileLinks = Թույլատրել հատուկ կայքերին կապվել տեղային նիշքերի հետ։
+policy-LocalFileLinks = Թույլատրել հատուկ կայքերին կապվել տեղային ֆայլերի հետ։
 policy-PrimaryPassword = Պահանջում կամ կանխում է Հիմնական գաղտնաբառի օգտագործումը:
 policy-PrintingEnabled = Միացնել կամ անջատել տպումը:
 policy-NetworkPrediction = Միացնել կամ անջատել ցանցի կանխատեսումը (DNS նախապատվությունը):
 policy-NewTabPage = Միացնել կամ անջատել Նոր ներդիրի էջը:
-policy-NoDefaultBookmarks = Անջատեք լռելյայն էջանիշների ստեղծումը, որոնք զուգորդվում են { -brand-short-name } և «Խելացի էջանիշեր» (առավել այցելված, վերջին պիտակներով): Նշում. Այս կանոնը արդյունավետ է միայն այն դեպքում, երբ օգտագործվում է հաշվի առաջին գործարկումից առաջ:
+policy-NoDefaultBookmarks = Անջատել { -brand-short-name }-ում ներառված սկզբնադիր էջանիշների ստեղծումը և «Խելացի էջանիշերը» (առավել այցելված, վերջին պիտակներով): Նշում. այս կանոնը արդյունավետ կարող է օգտագործվել միայն հաշվի առաջին աշխատեցումից առաջ:
 policy-OfferToSaveLogins = Կարգավորեք կարգավորումը, որպեսզի { -brand-short-name }-ը` թույլ տա առաջարկել հիշել պահպանված մուտքանունները և գաղտնաբառերը: Թե՛ իրական, և թե՛ կեղծ արժեքներն ընդունվել են:
-policy-OfferToSaveLoginsDefault = Սահմանեք լռելյայն արժեքը { -brand-short-name }- ը թույլ տալու համար` առաջարկել պահպանված մուտքերի և գաղտնաբառերի հիշում: Թե՛ իրական, և թե՛ կեղծ արժեքներն ընդունվել են:
+policy-OfferToSaveLoginsDefault = Սահմանել սկզբնադիր արժեքը, { -brand-short-name }-ին թույլ տալով առաջարկել պահպանված մուտքերի և գաղտնաբառերի հիշում: Թե՛ true, և թե՛ false արժեքները ընդունելի են:
 policy-OverrideFirstRunPage = Անցկացրեք առաջին գործարկման էջը: Այս քաղաքականությունը դատարկեք, եթե ցանկանում եք անջատել առաջին գործարկման էջը:
 policy-OverridePostUpdatePage = Հետևեք «Ի՞նչն է նոր» էջի թարմացումից: Եթե ցանկանում եք անջատել  թարմացումը՝ դատարկեք այս քաղաքականությունը:
 policy-PasswordManagerEnabled = Միացրեք գաղտնաբառերի պահպանումը գաղտնաբառի կառավարում:
 policy-PasswordManagerExceptions = Կանխել { -brand-short-name }-ին՝ պահել գաղտնաբառեր որոշակի կայքերի համար:
 # PDF.js and PDF should not be translated
 policy-PDFjs = Անջատել կամ կազմաձևել PDF.js-ը, ներկառուցված PDF դիտակը { -brand-short-name }-ում:
-policy-Permissions2 = Կարգավորեք թույլտվությունները խցիկի, խոսափողի, գտնվելու վայրի, ծանուցումների և ինքնաբացարկի համար:
-policy-PictureInPicture = Միացնել կամ անջատել նկարը նկարում:
-policy-PopupBlocking = Թույլատրել որոշ կայքերին լռելյայն ցուցադրել թռուցիկներ:
+policy-Permissions2 = Կարգավորում է թույլտվությունները տեսախցիկի, խոսափողի, տեղագրության, ծանուցումների և ինքնանվագարկման համար:
+policy-PictureInPicture = Միացնել կամ անջատել Նկարը նկարում:
+policy-PopupBlocking = Թույլատրել որոշ կայքերին սկզբնադրորեն ցուցադրել թռուցիկներ:
 policy-Preferences = Սահմանեք և կողպեք արժեքը նախապատվությունների ենթաբազմության համար:
-policy-PromptForDownloadLocation = Ներբեռնելու ժամանակ հարցրեք, թե որտեղ պահել նիշքերը:
+policy-PromptForDownloadLocation = Ներբեռնելու ժամանակ հարցրեք, թե որտեղ պահել ֆայլերը:
 policy-Proxy = Կազմաձևել միջնորդի կարգավորումները:
 policy-RequestedLocales = Նախապատվության կարգով սահմանե՛ք հայտի համար պահանջվող տեղանիների ցանկը:
 policy-SanitizeOnShutdown2 = Մաքրել ուղղորդման տվյալները անջատման վերաբերյալ:
-policy-SearchBar = Սահմանեք որոնման սանդղակի գտնվելու լռելյայն վայրը: Օգտատիրոջը դեռ թույլատրվում է հարմարեցնել այն:
-policy-SearchEngines = Կարգավորե՛ք որոնիչի շարժիչ կարգավորումները: Այս քաղաքականությունը հասանելի է միայն Ընդլայնված աջակցության թողարկման (ESR) տարբերակում:
+policy-SearchBar = Սահմանեք որոնման գոտու գտնվելու սկզբնադիր վայրը: Օգտատիրոջը դեռ թույլատրվում է հարմարեցնել այն:
+policy-SearchEngines = Կարգավորել որոնողական համակարգը: Այս քաղաքականությունը հասանելի է միայն Ընդլայնված աջակցության թողարկման (ESR) տարբերակում:
 policy-SearchSuggestEnabled = Միացնել կամ անջատել որոնման առաջարկները:
 policy-SSLVersionMax = Սահմանել SSL-֊ի առավելագույն տարբերակը:
 policy-SSLVersionMin = Սահմանել SSL-ի նվազագույն տարբերակը:

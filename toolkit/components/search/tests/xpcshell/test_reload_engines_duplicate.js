@@ -41,15 +41,15 @@ add_task(async function test_reload_engines_with_duplicate() {
   let engines = await Services.search.getEngines();
 
   Assert.deepEqual(
-    engines.map(e => e.identifier),
+    engines.map(e => e.id),
     ["appDefault"],
     "Should have the expected default engines"
   );
   // Simulate a user installing a search engine that shares the same name as an
   // application provided search engine not currently installed in their browser.
   let engine = await SearchTestUtils.installOpenSearchEngine({
-    url: `${gDataUrl}engineMaker.sjs?${JSON.stringify({
-      baseURL: gDataUrl,
+    url: `${gHttpURL}/sjs/engineMaker.sjs?${JSON.stringify({
+      baseURL: `${gHttpURL}/data/`,
       name: "Not In FR",
       method: "GET",
     })}`,
@@ -71,7 +71,7 @@ add_task(async function test_reload_engines_with_duplicate() {
   engines = await Services.search.getEngines();
 
   Assert.deepEqual(
-    engines.map(e => e.identifier),
+    engines.map(e => e.id),
     ["appDefault", "notInFR"],
     "Should have the expected default engines"
   );

@@ -4,6 +4,8 @@
 ChromeUtils.defineESModuleGetters(this, {
   AddonTestUtils: "resource://testing-common/AddonTestUtils.sys.mjs",
   clearTimeout: "resource://gre/modules/Timer.sys.mjs",
+  EnterprisePolicyTesting:
+    "resource://testing-common/EnterprisePolicyTesting.sys.mjs",
   ExtensionTestUtils:
     "resource://testing-common/ExtensionXPCShellUtils.sys.mjs",
   FileUtils: "resource://gre/modules/FileUtils.sys.mjs",
@@ -12,11 +14,14 @@ ChromeUtils.defineESModuleGetters(this, {
   RemoteSettings: "resource://services-settings/remote-settings.sys.mjs",
   RemoteSettingsClient:
     "resource://services-settings/RemoteSettingsClient.sys.mjs",
-  SearchEngineSelector: "resource://gre/modules/SearchEngineSelector.sys.mjs",
+  SearchEngineClassification:
+    "moz-src:///toolkit/components/uniffi-bindgen-gecko-js/components/generated/RustSearch.sys.mjs",
+  SearchEngineSelector:
+    "moz-src:///toolkit/components/search/SearchEngineSelector.sys.mjs",
   SearchService: "resource://gre/modules/SearchService.sys.mjs",
-  SearchSettings: "resource://gre/modules/SearchSettings.sys.mjs",
+  SearchSettings: "moz-src:///toolkit/components/search/SearchSettings.sys.mjs",
   SearchTestUtils: "resource://testing-common/SearchTestUtils.sys.mjs",
-  SearchUtils: "resource://gre/modules/SearchUtils.sys.mjs",
+  SearchUtils: "moz-src:///toolkit/components/search/SearchUtils.sys.mjs",
   TestUtils: "resource://testing-common/TestUtils.sys.mjs",
   updateAppInfo: "resource://testing-common/AppInfo.sys.mjs",
   Utils: "resource://services-settings/Utils.sys.mjs",
@@ -33,7 +38,7 @@ const RemoteSettingsUtils = Utils;
 updateAppInfo({ name: "XPCShell", version: "48", platformVersion: "48" });
 
 // We generally also need a profile set-up, for saving search settings etc.
-do_get_profile();
+do_get_profile(true);
 
 SearchTestUtils.init(this);
 
@@ -224,24 +229,22 @@ function isSubObjectOf(expectedObj, actualObj, skipProp) {
 }
 
 /**
- * After useHttpServer() is called, this string contains the URL of the "data"
- * directory, including the final slash.
+ * After useHttpServer() is called, this string contains the URL test directory,
+ * excluding the final slash.
  */
-var gDataUrl;
+var gHttpURL;
 
 /**
  * Initializes the HTTP server and ensures that it is terminated when tests end.
  *
- * @param {string} dir
- *   The test sub-directory to use for the engines.
  * @returns {HttpServer}
  *   The HttpServer object in case further customization is needed.
  */
-function useHttpServer(dir = "data") {
+function useHttpServer() {
   let httpServer = new HttpServer();
   httpServer.start(-1);
   httpServer.registerDirectory("/", do_get_cwd());
-  gDataUrl = `http://localhost:${httpServer.identity.primaryPort}/${dir}/`;
+  gHttpURL = `http://localhost:${httpServer.identity.primaryPort}`;
   registerCleanupFunction(async function cleanup_httpServer() {
     await new Promise(resolve => {
       httpServer.stop(resolve);
@@ -279,25 +282,6 @@ function checkCountryResultTelemetry(aExpectedValue) {
 }
 
 /**
- * Provides a basic set of remote settings for use in tests.
- */
-async function setupRemoteSettings() {
-  const settings = await RemoteSettings("hijack-blocklists");
-  sinon.stub(settings, "get").returns([
-    {
-      id: "load-paths",
-      matches: ["[addon]searchignore@mozilla.com"],
-      _status: "synced",
-    },
-    {
-      id: "submission-urls",
-      matches: ["ignore=true"],
-      _status: "synced",
-    },
-  ]);
-}
-
-/**
  * Reads the specified file from the data directory and returns its contents as
  * an Uint8Array.
  *
@@ -307,7 +291,7 @@ async function setupRemoteSettings() {
  *   The contents of the file in an Uint8Array.
  */
 async function getFileDataBuffer(filename) {
-  return IOUtils.read(PathUtils.join(do_get_cwd().path, "data", filename));
+  return IOUtils.read(PathUtils.join(do_get_cwd().path, "icons", filename));
 }
 
 /**
@@ -455,25 +439,14 @@ function useCustomGeoServer(region, waitToRespond = Promise.resolve()) {
  *   An object with the expected details for the private search engine.
  */
 async function assertGleanDefaultEngine(expected) {
-  await TestUtils.waitForCondition(
-    () =>
-      Glean.searchEngineDefault.engineId.testGetValue() ==
-      (expected.normal.engineId ?? ""),
-    "Should have set the correct telemetry id for the normal engine"
-  );
-
-  await TestUtils.waitForCondition(
-    () =>
-      Glean.searchEnginePrivate.engineId.testGetValue() ==
-      (expected.private?.engineId ?? ""),
-    "Should have set the correct telemetry id for the private engine"
-  );
-
   for (let property of [
+    "providerId",
+    "partnerCode",
+    "overriddenByThirdParty",
+    "engineId",
     "displayName",
     "loadPath",
     "submissionUrl",
-    "verified",
   ]) {
     if (property in expected.normal) {
       Assert.equal(
@@ -493,14 +466,57 @@ async function assertGleanDefaultEngine(expected) {
 }
 
 /**
+ * Loads a new enterprise policy, and re-initialise the search service
+ * with the new policy. Also waits for the search service to write the settings
+ * file to disk.
+ *
+ * @param {object} policy
+ *   The enterprise policy to use.
+ */
+async function setupPolicyEngineWithJson(policy) {
+  Services.search.wrappedJSObject.reset();
+
+  await this.EnterprisePolicyTesting.setupPolicyEngineWithJson(policy);
+
+  let settingsWritten = SearchTestUtils.promiseSearchNotification(
+    "write-settings-to-disk-complete"
+  );
+  await Services.search.init();
+  await settingsWritten;
+}
+
+/**
+ * Makes Services.policies.isEnterprise return true by loading an enterprise
+ * policy and re-initialise the search service with the new policy. Also waits
+ * for the search service to write the settings file to disk.
+ */
+async function enableEnterprise() {
+  await setupPolicyEngineWithJson({
+    // Use any policy.
+    policies: {
+      BlockAboutSupport: true,
+    },
+  });
+  Assert.ok(Services.policies.isEnterprise, "isEnterprise");
+}
+
+/**
  * A simple observer to ensure we get only the expected notifications.
  */
 class SearchObserver {
-  constructor(expectedNotifications, returnEngineForNotification = false) {
+  /**
+   *
+   * @param {Array<[string, string|null]>} expectedNotifications
+   *   An array of [notificationType, engineName] tuples. Use null for
+   *   engineName if we don't care which engine triggered the notification.
+   */
+  constructor(expectedNotifications) {
     this.observer = this.observer.bind(this);
     this.deferred = Promise.withResolvers();
-    this.expectedNotifications = expectedNotifications;
-    this.returnEngineForNotification = returnEngineForNotification;
+    this.expectedNotifications = expectedNotifications.map(([type, name]) => {
+      return { type, name };
+    });
+    this.receivedNotifications = [];
 
     Services.obs.addObserver(this.observer, SearchUtils.TOPIC_ENGINE_MODIFIED);
 
@@ -512,10 +528,18 @@ class SearchObserver {
   }
 
   handleTimeout() {
+    let stillExpecting = this.expectedNotifications
+      .map(n => `[type: ${n.type}, name: ${n.name}]`)
+      .join(", ");
+    let received = this.receivedNotifications
+      .map(n => `[type: ${n.type}, name: ${n.engineName}]`)
+      .join(", ");
+
     this.deferred.reject(
       new Error(
-        "Waiting for Notifications timed out, only received: " +
-          this.expectedNotifications.join(",")
+        `Waiting for Notifications timed out:
+          still expecting - [${stillExpecting || "(none)"}]
+          received - [${received || "(none);"}]`
       )
     );
   }
@@ -526,20 +550,25 @@ class SearchObserver {
       0,
       "Should be expecting a notification"
     );
-    Assert.equal(
-      data,
-      this.expectedNotifications[0],
-      "Should have received the next expected notification"
+
+    let maybeEngine = subject.QueryInterface(Ci.nsISearchEngine);
+    let engineName = maybeEngine?.name ?? null;
+    this.receivedNotifications.push({ type: data, engineName });
+
+    let matchIndex = this.expectedNotifications.findIndex(
+      expected =>
+        expected.type == data &&
+        (expected.name == null || expected.name == engineName)
     );
 
-    if (
-      this.returnEngineForNotification &&
-      data == this.returnEngineForNotification
-    ) {
-      this.engineToReturn = subject.QueryInterface(Ci.nsISearchEngine);
+    if (matchIndex == -1) {
+      info(
+        `SearchObserver received unexpected notification: ${data}, ${engineName}`
+      );
+      return;
     }
 
-    this.expectedNotifications.shift();
+    this.expectedNotifications.splice(matchIndex, 1);
 
     if (!this.expectedNotifications.length) {
       clearTimeout(this.timeout);
@@ -603,3 +632,83 @@ registerCleanupFunction(async () => {
     }
   }
 });
+
+/**
+ * This function asserts if the actual engines returned equals the expected
+ * engines.
+ *
+ * @param {SearchEngineSelector} engineSelector
+ *   The search engine selector to use for the test.
+ * @param {object} config
+ *   A fake search config containing engines.
+ * @param {object} userEnv
+ *   A fake user's environment including locale and region, experiment, etc.
+ * @param {Array} expectedEngines
+ *   The array of expected engines to be returned from the fake config.
+ * @param {string} message
+ *   The assertion message.
+ */
+async function assertSelectorEnginesEqualsExpected(
+  engineSelector,
+  config,
+  userEnv,
+  expectedEngines,
+  message
+) {
+  engineSelector.clearCachedConfigurationForTests();
+  SearchTestUtils.setRemoteSettingsConfig(config);
+
+  if (expectedEngines.length) {
+    let { engines } = await engineSelector.fetchEngineConfiguration(userEnv);
+
+    // Add default parameters to match the selector output.
+    for (let i = 0; i < expectedEngines.length; i++) {
+      expectedEngines[i] = {
+        aliases: [],
+        charset: "UTF-8",
+        optional: false,
+        partnerCode: "",
+        telemetrySuffix: "",
+        orderHint: null,
+        clickUrl: null,
+        isNewUntil: null,
+        ...expectedEngines[i],
+      };
+      expectedEngines[i].classification =
+        expectedEngines[i].classification == "general"
+          ? SearchEngineClassification.GENERAL
+          : SearchEngineClassification.UNKNOWN;
+
+      expectedEngines[i].urls = {
+        suggestions: null,
+        trending: null,
+        searchForm: null,
+        visualSearch: null,
+        ...expectedEngines[i].urls,
+      };
+      expectedEngines[i].urls.search = {
+        method: "GET",
+        ...expectedEngines[i].urls.search,
+      };
+      if (!expectedEngines[i].urls.search.params) {
+        expectedEngines[i].urls.search.params = [];
+      }
+      for (let j = 0; j < expectedEngines[i].urls.search.params.length; j++) {
+        expectedEngines[i].urls.search.params[j] = {
+          enterpriseValue: null,
+          experimentConfig: null,
+          value: null,
+          ...expectedEngines[i].urls.search.params[j],
+        };
+      }
+    }
+
+    Assert.deepEqual(engines, expectedEngines, message);
+  } else {
+    await Assert.rejects(
+      engineSelector.fetchEngineConfiguration(userEnv),
+      /Could not find any engines in the filtered configuration/,
+      message
+    );
+  }
+}

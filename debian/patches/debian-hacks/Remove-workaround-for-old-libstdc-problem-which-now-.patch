@@ -10,7 +10,7 @@ Subject: Remove workaround for old libstdc++ problem, which now causes
  3 files changed, 12 deletions(-)
 
 diff --git a/intl/icu/source/common/unicode/std_string.h b/intl/icu/source/common/unicode/std_string.h
-index bf87230..c8388ef 100644
+index bf872301..c8388ef 100644
 --- a/intl/icu/source/common/unicode/std_string.h
 +++ b/intl/icu/source/common/unicode/std_string.h
 @@ -29,11 +29,6 @@

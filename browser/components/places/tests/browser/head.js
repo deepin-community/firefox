@@ -6,8 +6,8 @@ ChromeUtils.defineLazyGetter(this, "gFluentStrings", function () {
   return new Localization(["branding/brand.ftl", "browser/browser.ftl"], true);
 });
 
-function openLibrary(callback, aLeftPaneRoot) {
-  let library = window.openDialog(
+function openLibrary(callback, aLeftPaneRoot, win = window) {
+  let library = win.openDialog(
     "chrome://browser/content/places/places.xhtml",
     "",
     "chrome,toolbar=yes,dialog=no,resizable",
@@ -27,10 +27,12 @@ function openLibrary(callback, aLeftPaneRoot) {
  *
  * @param {object} aLeftPaneRoot
  *        Hierarchy to open and select in the left pane.
+ * @param {Window} [win]
+ *        The window to use to open the library.
  * @returns {Promise}
  *          Resolves to the handle to the library window.
  */
-function promiseLibrary(aLeftPaneRoot) {
+function promiseLibrary(aLeftPaneRoot, win = window) {
   return new Promise(resolve => {
     let library = Services.wm.getMostRecentWindow("Places:Organizer");
     if (library && !library.closed) {
@@ -42,7 +44,7 @@ function promiseLibrary(aLeftPaneRoot) {
       checkLibraryPaneVisibility(library, aLeftPaneRoot);
       resolve(library);
     } else {
-      openLibrary(resolve, aLeftPaneRoot);
+      openLibrary(resolve, aLeftPaneRoot, win);
     }
   });
 }
@@ -174,7 +176,7 @@ function synthesizeClickOnSelectedTreeCell(aTree, aOptions) {
 function promiseSetToolbarVisibility(aToolbar, aVisible) {
   if (isToolbarVisible(aToolbar) != aVisible) {
     let visibilityChanged = TestUtils.waitForCondition(
-      () => aToolbar.collapsed != aVisible
+      () => isToolbarVisible(aToolbar) == aVisible
     );
     setToolbarVisibility(aToolbar, aVisible, undefined, false);
     return visibilityChanged;
@@ -194,9 +196,7 @@ function promiseSetToolbarVisibility(aToolbar, aVisible) {
 function isToolbarVisible(aToolbar) {
   let hidingAttribute =
     aToolbar.getAttribute("type") == "menubar" ? "autohide" : "collapsed";
-  let hidingValue = aToolbar.getAttribute(hidingAttribute)?.toLowerCase();
-  // Check for both collapsed="true" and collapsed="collapsed"
-  return hidingValue !== "true" && hidingValue !== hidingAttribute;
+  return !aToolbar.hasAttribute(hidingAttribute);
 }
 
 /**
@@ -323,21 +323,10 @@ var openContextMenuForContentSelector = async function (browser, selector) {
     dump(`openContextMenuForContentSelector: found ${elt}\n`);
 
     /* Open context menu so chrome can access the element */
-    const domWindowUtils = content.windowUtils;
-    let rect = elt.getBoundingClientRect();
-    let left = rect.left + rect.width / 2;
-    let top = rect.top + rect.height / 2;
-    domWindowUtils.sendMouseEvent(
-      "contextmenu",
-      left,
-      top,
-      2,
-      1,
-      0,
-      false,
-      0,
-      0,
-      true
+    EventUtils.synthesizeMouseAtCenter(
+      elt,
+      { type: "contextmenu", button: 2, clickCount: 1, buttons: 0 },
+      content
     );
   });
   await contextPromise;
@@ -380,9 +369,11 @@ function fillBookmarkTextField(id, text, win, blur = true) {
  * @param {Function} taskFn
  *        The task to execute once the sidebar is ready. Will get the Places
  *        tree view as input.
+ * @param {Window} [win]
+ *        The window to open the sidebar in, else uses the default window.
  */
-var withSidebarTree = async function (type, taskFn) {
-  let sidebar = document.getElementById("sidebar");
+var withSidebarTree = async function (type, taskFn, win = window) {
+  let sidebar = win.document.getElementById("sidebar");
   info("withSidebarTree: waiting sidebar load");
   let sidebarLoadedPromise = new Promise(resolve => {
     sidebar.addEventListener(
@@ -395,7 +386,7 @@ var withSidebarTree = async function (type, taskFn) {
   });
   let sidebarId =
     type == "bookmarks" ? "viewBookmarksSidebar" : "viewHistorySidebar";
-  SidebarController.show(sidebarId);
+  win.SidebarController.show(sidebarId);
   await sidebarLoadedPromise;
 
   let treeId = type == "bookmarks" ? "bookmarks-view" : "historyTree";
@@ -406,7 +397,7 @@ var withSidebarTree = async function (type, taskFn) {
   try {
     await taskFn(tree);
   } finally {
-    SidebarController.hide();
+    win.SidebarController.hide();
   }
 };
 
@@ -419,9 +410,11 @@ var withSidebarTree = async function (type, taskFn) {
  * @param {Function} taskFn
  *        The task to execute once the Library is ready.
  *        Will get { left, right } trees as argument.
+ * @param {Window} [win]
+ *        The window to use to open the library.
  */
-var withLibraryWindow = async function (hierarchy, taskFn) {
-  let library = await promiseLibrary(hierarchy);
+var withLibraryWindow = async function (hierarchy, taskFn, win = window) {
+  let library = await promiseLibrary(hierarchy, win);
   let left = library.document.getElementById("placesList");
   let right = library.document.getElementById("placeContent");
   info("withLibrary: executing the task");
@@ -477,8 +470,8 @@ function promisePopupHidden(popup) {
 }
 
 // Identify a bookmark node in the Bookmarks Toolbar by its guid.
-function getToolbarNodeForItemGuid(itemGuid) {
-  let children = document.getElementById("PlacesToolbarItems").childNodes;
+function getToolbarNodeForItemGuid(itemGuid, win = window) {
+  let children = win.document.getElementById("PlacesToolbarItems").childNodes;
   for (let child of children) {
     if (itemGuid === child._placesNode.bookmarkGuid) {
       return child;
@@ -565,6 +558,21 @@ async function showLibraryColumn(library, columnName) {
   });
 
   library.document.getElementById(`menucol_${columnName}`).click();
+}
+
+// Given a moz-input-search element, fill it with the query `query`.
+function setSearch(searchBox, query) {
+  return new Promise(resolve => {
+    searchBox.addEventListener("MozInputSearch:search", resolve, {
+      once: true,
+    });
+    searchBox.select();
+    if (query) {
+      EventUtils.sendString(query, searchBox.ownerGlobal);
+    } else {
+      searchBox.clear();
+    }
+  });
 }
 
 registerCleanupFunction(async () => {

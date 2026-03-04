@@ -143,10 +143,6 @@ this.PartitionedStorageHelper = {
           ["dom.storage_access.enabled", true],
           ["network.cookie.cookieBehavior.optInPartitioning", true],
           ["network.cookie.CHIPS.enabled", true],
-          [
-            "privacy.partition.always_partition_third_party_non_cookie_storage",
-            true,
-          ],
           ["privacy.dynamic_firstparty.limitForeign", limitForeignContexts],
           ["privacy.trackingprotection.enabled", false],
           ["privacy.trackingprotection.pbmode.enabled", false],
@@ -156,6 +152,7 @@ this.PartitionedStorageHelper = {
             "privacy.restrict3rdpartystorage.userInteractionRequiredForHosts",
             "not-tracking.example.com",
           ],
+          ["security.allow_eval_with_system_principal", true],
         ],
       });
 
@@ -236,8 +233,8 @@ this.PartitionedStorageHelper = {
                 { once: true }
               );
 
-              content.document.body.appendChild(ifr);
               ifr.src = obj.page;
+              content.document.body.appendChild(ifr);
             });
           }
         );

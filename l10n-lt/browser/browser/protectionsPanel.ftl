@@ -23,12 +23,6 @@ protections-panel-etp-more-info =
     .aria-label = Daugiau informacijos apie išplėstą apsaugą nuo stebėjimo
 protections-panel-etp-on-header = Išplėsta apsauga nuo stebėjimo šioje svetainėje įjungta
 protections-panel-etp-off-header = Išplėsta apsauga nuo stebėjimo šioje svetainėje išjungta
-
-## Text for the toggles shown when ETP is enabled/disabled for a given site.
-## .description is transferred into a separate paragraph by the moz-toggle
-## custom element code.
-##   $host (String): the hostname of the site that is being displayed.
-
 # The link to be clicked to open the sub-panel view
 protections-panel-site-not-working = Neveikia svetainė?
 # The heading/title of the sub-panel view
@@ -67,7 +61,6 @@ protections-panel-not-found-label = Neaptikta jokių
 ##
 
 protections-panel-settings-label = Apsaugos nuostatos
-# This should match the "appmenuitem-protection-dashboard-title" string in browser/appmenu.ftl.
 protections-panel-protectionsdashboard-label = Apsaugos skydelis
 
 ## In the Site Not Working? view, we suggest turning off protections if
@@ -100,7 +93,6 @@ protections-panel-content-blocking-manage-settings =
 protections-panel-content-blocking-breakage-report-view =
     .title = Pranešti apie neveikiančią svetainę
 protections-panel-content-blocking-breakage-report-view-description = Stebėjimo elementų blokavimas gali sutrikdyti kai kurių svetainių veikimą. Pranešdami apie problemas, padėsite tobulinti „{ -brand-short-name }“. Išsiuntus šį pranešimą, „Mozillai“ bus perduotas svetainės adresas bei informacija apie jūsų naršyklės nuostatas. <label data-l10n-name="learn-more">Sužinoti daugiau</label>
-protections-panel-content-blocking-breakage-report-view-description2 = Stebėjimo elementų blokavimas gali sutrikdyti kai kurių svetainių veikimą. Pranešdami apie problemas, padėsite tobulinti „{ -brand-short-name }“. Išsiuntus šį pranešimą, „{ -vendor-short-name }i“ bus perduotas svetainės adresas bei informacija apie jūsų naršyklės nuostatas.
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =
     .aria-label = URL

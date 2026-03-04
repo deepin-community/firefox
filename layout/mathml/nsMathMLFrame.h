@@ -7,12 +7,11 @@
 #ifndef nsMathMLFrame_h___
 #define nsMathMLFrame_h___
 
-#include "mozilla/Attributes.h"
-#include "nsFontMetrics.h"
-#include "nsMathMLOperators.h"
-#include "nsIMathMLFrame.h"
 #include "nsBoundingMetrics.h"
+#include "nsFontMetrics.h"
 #include "nsIFrame.h"
+#include "nsIMathMLFrame.h"
+#include "nsMathMLOperators.h"
 
 class nsMathMLChar;
 class nsCSSValue;
@@ -28,8 +27,8 @@ class nsMathMLFrame : public nsIMathMLFrame {
  public:
   // nsIMathMLFrame ---
 
-  virtual bool IsSpaceLike() override {
-    return NS_MATHML_IS_SPACE_LIKE(mPresentationData.flags);
+  bool IsSpaceLike() override {
+    return mPresentationData.flags.contains(MathMLPresentationFlag::SpaceLike);
   }
 
   NS_IMETHOD
@@ -50,7 +49,7 @@ class nsMathMLFrame : public nsIMathMLFrame {
     return NS_OK;
   }
 
-  virtual eMathMLFrameType GetMathMLFrameType() override;
+  MathMLFrameType GetMathMLFrameType() override;
 
   NS_IMETHOD
   Stretch(mozilla::gfx::DrawTarget* aDrawTarget,
@@ -79,13 +78,14 @@ class nsMathMLFrame : public nsIMathMLFrame {
   TransmitAutomaticData() override { return NS_OK; }
 
   NS_IMETHOD
-  UpdatePresentationData(uint32_t aFlagsValues,
-                         uint32_t aFlagsToUpdate) override;
+  UpdatePresentationData(MathMLPresentationFlags aFlagsValues,
+                         MathMLPresentationFlags aFlagsToUpdate) override;
 
   NS_IMETHOD
-  UpdatePresentationDataFromChildAt(int32_t aFirstIndex, int32_t aLastIndex,
-                                    uint32_t aFlagsValues,
-                                    uint32_t aFlagsToUpdate) override {
+  UpdatePresentationDataFromChildAt(
+      int32_t aFirstIndex, int32_t aLastIndex,
+      MathMLPresentationFlags aFlagsValues,
+      MathMLPresentationFlags aFlagsToUpdate) override {
     return NS_OK;
   }
 
@@ -121,23 +121,21 @@ class nsMathMLFrame : public nsIMathMLFrame {
   // All values are stored in twips.
   // @pre  aLengthValue is the default length value of the attribute.
   // @post aLengthValue is the length value computed from the attribute.
-  static void ParseNumericValue(const nsString& aString, nscoord* aLengthValue,
-                                uint32_t aFlags, nsPresContext* aPresContext,
-                                mozilla::ComputedStyle* aComputedStyle,
-                                float aFontSizeInflation);
+  static void ParseAndCalcNumericValue(const nsString& aString,
+                                       nscoord* aLengthValue, uint32_t aFlags,
+                                       float aFontSizeInflation,
+                                       nsIFrame* aFrame);
 
-  static nscoord CalcLength(nsPresContext* aPresContext,
-                            mozilla::ComputedStyle* aComputedStyle,
-                            const nsCSSValue& aCSSValue,
-                            float aFontSizeInflation);
+  static nscoord CalcLength(const nsCSSValue& aCSSValue,
+                            float aFontSizeInflation, nsIFrame* aFrame);
 
-  static eMathMLFrameType GetMathMLFrameTypeFor(nsIFrame* aFrame) {
+  static MathMLFrameType GetMathMLFrameTypeFor(nsIFrame* aFrame) {
     if (aFrame->IsMathMLFrame()) {
       if (nsIMathMLFrame* mathMLFrame = do_QueryFrame(aFrame)) {
         return mathMLFrame->GetMathMLFrameType();
       }
     }
-    return eMathMLFrameType_UNKNOWN;
+    return MathMLFrameType::Unknown;
   }
 
   // estimate of the italic correction
@@ -268,13 +266,6 @@ class nsMathMLFrame : public nsIMathMLFrame {
                                    nscoord& aRadicalVerticalGap);
 
  protected:
-#if defined(DEBUG) && defined(SHOW_BOUNDING_BOX)
-  void DisplayBoundingMetrics(mozilla::nsDisplayListBuilder* aBuilder,
-                              nsIFrame* aFrame, const nsPoint& aPt,
-                              const nsBoundingMetrics& aMetrics,
-                              const nsDisplayListSet& aLists);
-#endif
-
   /**
    * Display a solid rectangle in the frame's text color. Used for drawing
    * fraction separators and root/sqrt overbars.

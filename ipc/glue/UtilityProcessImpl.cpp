@@ -5,7 +5,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "UtilityProcessImpl.h"
 
-#include "mozilla/ipc/IOThreadChild.h"
 #include "mozilla/GeckoArgs.h"
 #include "mozilla/ProcInfo.h"
 
@@ -97,7 +96,7 @@ bool UtilityProcessImpl::Init(int aArgc, char* aArgv[]) {
 
   if (*sandboxingKind == SandboxingKind::GENERIC_UTILITY) {
     // Preload audio generic libraries required for ffmpeg only
-    UtilityAudioDecoderParent::GenericPreloadForSandbox();
+    UtilityMediaServiceParent::GenericPreloadForSandbox();
   }
 
   if (*sandboxingKind == SandboxingKind::UTILITY_AUDIO_DECODING_WMF
@@ -105,7 +104,7 @@ bool UtilityProcessImpl::Init(int aArgc, char* aArgv[]) {
       || *sandboxingKind == SandboxingKind::MF_MEDIA_ENGINE_CDM
 #  endif
   ) {
-    UtilityAudioDecoderParent::WMFPreloadForSandbox();
+    UtilityMediaServiceParent::WMFPreloadForSandbox();
   }
 
   // Go for it
@@ -137,6 +136,13 @@ bool UtilityProcessImpl::Init(int aArgc, char* aArgv[]) {
   if (!ProcessChild::InitPrefs(aArgc, aArgv)) {
     return false;
   }
+
+#if defined(MOZ_MEMORY) && defined(DEBUG)
+  jemalloc_stats_t stats;
+  jemalloc_stats(&stats);
+  MOZ_ASSERT(stats.opt_randomize_small,
+             "Utility process should randomize small allocations");
+#endif
 
   return mUtility->Init(TakeInitialEndpoint(), nsCString(*parentBuildID),
                         *sandboxingKind);

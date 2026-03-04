@@ -23,69 +23,116 @@ let gCUITestUtils = new CustomizableUITestUtils(window);
 const CHECKBOX_ID = "searchShowSearchTermCheckbox";
 const PREF_SEARCHTERMS = "browser.urlbar.showSearchTerms.enabled";
 const PREF_FEATUREGATE = "browser.urlbar.showSearchTerms.featureGate";
+const PREF_SCOTCH_BONNET = "browser.urlbar.scotchBonnet.enableOverride";
 
-/*
-  If Nimbus experiment is enabled, check option visibility.
-*/
-add_task(async function showSearchTermsVisibility_experiment_beforeOpen() {
+add_task(async function showSearchTermsVisibility_scotchBonnet() {
   await SpecialPowers.pushPrefEnv({
-    set: [[PREF_FEATUREGATE, false]],
+    set: [[PREF_SCOTCH_BONNET, false]],
   });
-  await QuickSuggestTestUtils.withExperiment({
-    valueOverrides: {
-      showSearchTermsFeatureGate: true,
-    },
-    callback: async () => {
-      await openPreferencesViaOpenPreferencesAPI("search", {
-        leaveOpen: true,
-      });
-      let doc = gBrowser.selectedBrowser.contentDocument;
-      let container = doc.getElementById(CHECKBOX_ID);
+
+  await BrowserTestUtils.withNewTab(
+    "about:preferences#search",
+    async browser => {
+      let container = browser.contentDocument.getElementById(CHECKBOX_ID);
+      Assert.ok(
+        !BrowserTestUtils.isVisible(container),
+        "The option box is not visible"
+      );
+    }
+  );
+
+  await SpecialPowers.pushPrefEnv({
+    set: [[PREF_SCOTCH_BONNET, true]],
+  });
+
+  await BrowserTestUtils.withNewTab(
+    "about:preferences#search",
+    async browser => {
+      let container = browser.contentDocument.getElementById(CHECKBOX_ID);
       Assert.ok(
         BrowserTestUtils.isVisible(container),
         "The option box is visible"
       );
-      gBrowser.removeCurrentTab();
-    },
-  });
+    }
+  );
+
   await SpecialPowers.popPrefEnv();
 });
 
-/*
-  If Nimbus experiment is not enabled initially but eventually enabled,
-  check option visibility on Preferences page.
-*/
-add_task(async function showSearchTermsVisibility_experiment_afterOpen() {
+// To avoid impacting users who could be using Persisted Search but not Scotch
+// Bonnet, deprecate the feature gate preference only after Scotch Bonnet is
+// enabled by default.
+add_task(async function showSearchTermsVisibility_featureGate() {
   await SpecialPowers.pushPrefEnv({
-    set: [[PREF_FEATUREGATE, false]],
+    set: [
+      [PREF_SCOTCH_BONNET, false],
+      [PREF_FEATUREGATE, false],
+    ],
   });
-  await openPreferencesViaOpenPreferencesAPI("search", { leaveOpen: true });
-  let doc = gBrowser.selectedBrowser.contentDocument;
-  let container = doc.getElementById(CHECKBOX_ID);
-  Assert.ok(
-    BrowserTestUtils.isHidden(container),
-    "The option box is initially hidden."
+  await BrowserTestUtils.withNewTab(
+    "about:preferences#search",
+    async browser => {
+      let container = browser.contentDocument.getElementById(CHECKBOX_ID);
+      Assert.ok(
+        !BrowserTestUtils.isVisible(container),
+        "The option box is not visible"
+      );
+    }
   );
+  await SpecialPowers.popPrefEnv();
 
-  // Install experiment.
-  await QuickSuggestTestUtils.withExperiment({
-    valueOverrides: {
-      showSearchTermsFeatureGate: true,
-    },
-    callback: async () => {
+  await SpecialPowers.pushPrefEnv({
+    set: [
+      [PREF_SCOTCH_BONNET, false],
+      [PREF_FEATUREGATE, true],
+    ],
+  });
+  await BrowserTestUtils.withNewTab(
+    "about:preferences#search",
+    async browser => {
+      let container = browser.contentDocument.getElementById(CHECKBOX_ID);
       Assert.ok(
         BrowserTestUtils.isVisible(container),
         "The option box is visible"
       );
-    },
-  });
-
-  Assert.ok(
-    BrowserTestUtils.isHidden(container),
-    "The option box is hidden again after the experiment is uninstalled."
+    }
   );
+  await SpecialPowers.popPrefEnv();
 
-  gBrowser.removeCurrentTab();
+  await SpecialPowers.pushPrefEnv({
+    set: [
+      [PREF_SCOTCH_BONNET, true],
+      [PREF_FEATUREGATE, false],
+    ],
+  });
+  await BrowserTestUtils.withNewTab(
+    "about:preferences#search",
+    async browser => {
+      let container = browser.contentDocument.getElementById(CHECKBOX_ID);
+      Assert.ok(
+        BrowserTestUtils.isVisible(container),
+        "The option box is visible"
+      );
+    }
+  );
+  await SpecialPowers.popPrefEnv();
+
+  await SpecialPowers.pushPrefEnv({
+    set: [
+      [PREF_SCOTCH_BONNET, true],
+      [PREF_FEATUREGATE, true],
+    ],
+  });
+  await BrowserTestUtils.withNewTab(
+    "about:preferences#search",
+    async browser => {
+      let container = browser.contentDocument.getElementById(CHECKBOX_ID);
+      Assert.ok(
+        BrowserTestUtils.isVisible(container),
+        "The option box is visible"
+      );
+    }
+  );
   await SpecialPowers.popPrefEnv();
 });
 
@@ -143,21 +190,23 @@ add_task(async function showSearchTerms_checkbox() {
 });
 
 /*
-  When loading the search preferences panel, the
-  showSearchTerms checkbox should be hidden if
-  the search bar is enabled.
+  When loading the search preferences panel, the showSearchTerms checkbox
+  should be hidden if the search bar is enabled.
 */
 add_task(async function showSearchTerms_and_searchBar_preference_load() {
   // Enable the feature.
   await SpecialPowers.pushPrefEnv({
-    set: [[PREF_FEATUREGATE, true]],
+    set: [
+      [PREF_SCOTCH_BONNET, true],
+      [PREF_FEATUREGATE, true],
+    ],
   });
   await gCUITestUtils.addSearchBar();
 
   await openPreferencesViaOpenPreferencesAPI("search", { leaveOpen: true });
   let doc = gBrowser.selectedBrowser.contentDocument;
 
-  let checkbox = doc.getElementById(CHECKBOX_ID);
+  let checkbox = doc.getElementById(CHECKBOX_ID).parentElement;
   Assert.ok(
     checkbox.hidden,
     "showSearchTerms checkbox should be hidden when search bar is enabled."
@@ -170,20 +219,22 @@ add_task(async function showSearchTerms_and_searchBar_preference_load() {
 });
 
 /*
-  If the search bar is enabled while the search
-  preferences panel is open, the showSearchTerms
-  checkbox should not be clickable.
+  If the search bar is enabled while the search preferences panel is open, the
+  showSearchTerms checkbox should not be clickable.
 */
 add_task(async function showSearchTerms_and_searchBar_preference_change() {
   // Enable the feature.
   await SpecialPowers.pushPrefEnv({
-    set: [[PREF_FEATUREGATE, true]],
+    set: [
+      [PREF_SCOTCH_BONNET, true],
+      [PREF_FEATUREGATE, true],
+    ],
   });
 
   await openPreferencesViaOpenPreferencesAPI("search", { leaveOpen: true });
   let doc = gBrowser.selectedBrowser.contentDocument;
 
-  let checkbox = doc.getElementById(CHECKBOX_ID);
+  let checkbox = doc.getElementById(CHECKBOX_ID).parentElement;
   Assert.ok(!checkbox.hidden, "showSearchTerms checkbox should be shown.");
 
   await gCUITestUtils.addSearchBar();
@@ -194,6 +245,10 @@ add_task(async function showSearchTerms_and_searchBar_preference_change() {
 
   // Clean-up.
   gCUITestUtils.removeSearchBar();
+  await TestUtils.waitForCondition(
+    () => !checkbox.hidden,
+    "Wait for preferences to know search bar has been removed."
+  );
   Assert.ok(!checkbox.hidden, "showSearchTerms checkbox should be shown.");
 
   gBrowser.removeCurrentTab();

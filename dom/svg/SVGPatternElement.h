@@ -13,8 +13,8 @@
 #include "SVGAnimatedString.h"
 #include "SVGAnimatedTransformList.h"
 #include "SVGAnimatedViewBox.h"
-#include "mozilla/dom/SVGElement.h"
 #include "mozilla/UniquePtr.h"
+#include "mozilla/dom/SVGElement.h"
 
 nsresult NS_NewSVGPatternElement(
     nsIContent** aResult, already_AddRefed<mozilla::dom::NodeInfo>&& aNodeInfo);
@@ -41,6 +41,7 @@ class SVGPatternElement final : public SVGPatternElementBase {
  public:
   // nsIContent interface
   nsresult Clone(dom::NodeInfo*, nsINode** aResult) const override;
+  NS_IMETHOD_(bool) IsAttributeMapped(const nsAtom* aAttribute) const override;
 
   // SVGSVGElement methods:
   bool HasValidDimensions() const override;

@@ -19,21 +19,21 @@ def make_task_description(config, jobs):
             job,
             "worker-type",
             item_name=job["name"],
-            **{"release-level": release_level(config.params["project"])}
+            **{"release-level": release_level(config.params)},
         )
         resolve_keyed_by(
             job,
             "scopes",
             item_name=job["name"],
-            **{"release-level": release_level(config.params["project"])}
+            **{"release-level": release_level(config.params)},
         )
 
-        job["worker"][
-            "release-name"
-        ] = "{product}-{version}-build{build_number}".format(
-            product=job["shipping-product"].capitalize(),
-            version=release_config["version"],
-            build_number=release_config["build_number"],
+        job["worker"]["release-name"] = (
+            "{product}-{version}-build{build_number}".format(
+                product=job["shipping-product"].capitalize(),
+                version=release_config["version"],
+                build_number=release_config["build_number"],
+            )
         )
 
         yield job

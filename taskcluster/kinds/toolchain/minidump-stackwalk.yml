@@ -6,7 +6,7 @@ task-defaults:
     description: "minidump-stackwalk toolchain build"
     attributes:
         local-toolchain: true
-    worker-type: b-linux-gcp
+    worker-type: b-linux-docker-amd
     worker:
         max-run-time: 1800
         env:
@@ -29,6 +29,17 @@ linux64-minidump-stackwalk:
             - linux64-rust-toolchain
             - sysroot-x86_64-linux-gnu
 
+linux64-aarch64-minidump-stackwalk:
+    treeherder:
+        symbol: TLA64(stackwalk)
+    run:
+        arguments: ['aarch64-unknown-linux-gnu']
+    fetches:
+        toolchain:
+            - linux64-clang-toolchain
+            - linux64-rust-toolchain
+            - sysroot-aarch64-linux-gnu
+
 macosx64-minidump-stackwalk:
     treeherder:
         symbol: TM(stackwalk)
@@ -42,7 +53,7 @@ macosx64-minidump-stackwalk:
 
 macosx64-aarch64-minidump-stackwalk:
     treeherder:
-        symbol: TM(stackwalk-arm64)
+        symbol: TMA64(stackwalk)
     run:
         arguments: ['aarch64-apple-darwin']
     fetches:

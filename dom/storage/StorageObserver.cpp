@@ -11,25 +11,24 @@
 #include "StorageDBThread.h"
 #include "StorageIPC.h"
 #include "StorageUtils.h"
-
 #include "mozilla/BasePrincipal.h"
-#include "nsCOMPtr.h"
-#include "nsICookieNotification.h"
-#include "nsIObserverService.h"
-#include "nsIURI.h"
-#include "nsIPermission.h"
-#include "nsNetUtil.h"
-#include "nsICookiePermission.h"
-
-#include "nsPrintfCString.h"
-#include "nsXULAppAPI.h"
-#include "nsEscape.h"
-#include "nsNetCID.h"
-#include "mozilla/dom/LocalStorageCommon.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/Services.h"
 #include "mozilla/SpinEventLoopUntil.h"
+#include "mozilla/dom/LocalStorageCommon.h"
+#include "nsCOMPtr.h"
+#include "nsEscape.h"
+#include "nsIClearBySiteEntry.h"
+#include "nsICookieNotification.h"
+#include "nsICookiePermission.h"
+#include "nsIObserverService.h"
+#include "nsIPermission.h"
+#include "nsIURI.h"
+#include "nsNetCID.h"
+#include "nsNetUtil.h"
+#include "nsPrintfCString.h"
 #include "nsServiceManagerUtils.h"
+#include "nsXULAppAPI.h"
 
 namespace mozilla::dom {
 
@@ -72,6 +71,7 @@ nsresult StorageObserver::Init() {
   obs->AddObserver(sSelf, "dom-storage:clear-origin-attributes-data", true);
   obs->AddObserver(sSelf, "extension:purge-localStorage", true);
   obs->AddObserver(sSelf, "browser:purge-sessionStorage", true);
+  obs->AddObserver(sSelf, "extension:purge-sessionStorage", true);
 
   // Shutdown
   obs->AddObserver(sSelf, "profile-after-change", true);
@@ -359,8 +359,34 @@ StorageObserver::Observe(nsISupports* aSubject, const char* aTopic,
     return NS_OK;
   }
 
-  if (!strcmp(aTopic, "browser:purge-sessionStorage")) {
-    if (aData) {
+  if (!strcmp(aTopic, "browser:purge-sessionStorage") ||
+      !strcmp(aTopic, "extension:purge-sessionStorage")) {
+    // The caller passed an nsIClearBySiteEntry object which consists of both
+    // site and pattern.
+    // If both are passed, aSubject takes precedence over aData.
+    if (aSubject) {
+      nsCOMPtr<nsIClearBySiteEntry> entry = do_QueryInterface(aSubject);
+
+      NS_ENSURE_TRUE(entry, NS_ERROR_FAILURE);
+
+      nsAutoCString schemelessSite;
+      rv = entry->GetSchemelessSite(schemelessSite);
+      NS_ENSURE_SUCCESS(rv, rv);
+
+      nsAutoString patternJSON;
+      rv = entry->GetPatternJSON(patternJSON);
+      NS_ENSURE_SUCCESS(rv, rv);
+
+      nsCString originScope;
+      if (!schemelessSite.IsEmpty()) {
+        rv = GetOriginScope(NS_ConvertUTF8toUTF16(schemelessSite).get(),
+                            originScope);
+        NS_ENSURE_SUCCESS(rv, rv);
+      }
+
+      Notify(aTopic, patternJSON, originScope);
+    } else if (aData) {
+      // The caller passed only a schemeless site, origin or host.
       nsCString originScope;
       rv = GetOriginScope(aData, originScope);
       if (NS_WARN_IF(NS_FAILED(rv))) {
@@ -369,6 +395,7 @@ StorageObserver::Observe(nsISupports* aSubject, const char* aTopic,
 
       Notify(aTopic, u""_ns, originScope);
     } else {
+      // The caller passed nothing, clear everything.
       Notify(aTopic, u""_ns, ""_ns);
     }
 

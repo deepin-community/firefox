@@ -26,6 +26,10 @@ namespace a11y {
 class Accessible;
 enum class RelationType;
 
+struct UiaRegistrations {
+  PROPERTYID mAccessibleActions = 0;
+};
+
 /**
  * IRawElementProviderSimple implementation (maintains IAccessibleEx approach).
  */
@@ -39,7 +43,8 @@ class uiaRawElmProvider : public IAccessibleEx,
                           public IValueProvider,
                           public IRangeValueProvider,
                           public ISelectionProvider,
-                          public ISelectionItemProvider {
+                          public ISelectionItemProvider,
+                          public ITextChildProvider {
  public:
   static constexpr enum ProviderOptions kProviderOptions =
       static_cast<enum ProviderOptions>(ProviderOptions_ServerSideProvider |
@@ -181,6 +186,14 @@ class uiaRawElmProvider : public IAccessibleEx,
       /* [retval][out] */ __RPC__deref_out_opt IRawElementProviderSimple**
           aRetVal);
 
+  // ITextChildProvider
+  virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_TextContainer(
+      /* [retval][out] */ __RPC__deref_out_opt IRawElementProviderSimple**
+          aRetVal);
+
+  virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_TextRange(
+      /* [retval][out] */ __RPC__deref_out_opt ITextRangeProvider** aRetVal);
+
  private:
   Accessible* Acc() const;
   bool IsControl();
@@ -200,6 +213,15 @@ class uiaRawElmProvider : public IAccessibleEx,
 };
 
 SAFEARRAY* AccessibleArrayToUiaArray(const nsTArray<Accessible*>& aAccs);
+
+/**
+ * Get ids for custom UI Automation properties and events which are not defined
+ * by Windows and therefore need to be registered at runtime. This function will
+ * register the properties and events the first time it is called. Thereafter,
+ * cached ids will be returned, since they are valid for the lifetime of the
+ * process.
+ */
+const UiaRegistrations& GetUiaRegistrations();
 
 }  // namespace a11y
 }  // namespace mozilla

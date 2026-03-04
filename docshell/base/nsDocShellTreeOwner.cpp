@@ -41,11 +41,8 @@
 #include "nsRect.h"
 #include "nsIContent.h"
 #include "nsServiceManagerUtils.h"
-#include "nsViewManager.h"
-#include "nsView.h"
 #include "nsXULTooltipListener.h"
 #include "nsIConstraintValidation.h"
-#include "mozilla/Attributes.h"
 #include "mozilla/EventListenerManager.h"
 #include "mozilla/Try.h"
 #include "mozilla/dom/DragEvent.h"
@@ -485,16 +482,6 @@ nsDocShellTreeOwner::GetPersistence(bool* aPersistPosition, bool* aPersistSize,
 }
 
 NS_IMETHODIMP
-nsDocShellTreeOwner::GetTabCount(uint32_t* aResult) {
-  if (mTreeOwner) {
-    return mTreeOwner->GetTabCount(aResult);
-  }
-
-  *aResult = 0;
-  return NS_OK;
-}
-
-NS_IMETHODIMP
 nsDocShellTreeOwner::GetHasPrimaryContent(bool* aResult) {
   *aResult = mPrimaryRemoteTab || mPrimaryContentShell;
   return NS_OK;
@@ -503,13 +490,6 @@ nsDocShellTreeOwner::GetHasPrimaryContent(bool* aResult) {
 //*****************************************************************************
 // nsDocShellTreeOwner::nsIBaseWindow
 //*****************************************************************************
-
-NS_IMETHODIMP
-nsDocShellTreeOwner::InitWindow(nativeWindow aParentNativeWindow,
-                                nsIWidget* aParentWidget, int32_t aX,
-                                int32_t aY, int32_t aCX, int32_t aCY) {
-  return NS_ERROR_NULL_POINTER;
-}
 
 NS_IMETHODIMP
 nsDocShellTreeOwner::Destroy() {
@@ -611,29 +591,12 @@ nsDocShellTreeOwner::GetDimensions(DimensionKind aDimensionKind, int32_t* aX,
 }
 
 NS_IMETHODIMP
-nsDocShellTreeOwner::Repaint(bool aForce) { return NS_ERROR_NULL_POINTER; }
-
-NS_IMETHODIMP
 nsDocShellTreeOwner::GetParentWidget(nsIWidget** aParentWidget) {
   return NS_ERROR_NULL_POINTER;
 }
 
 NS_IMETHODIMP
 nsDocShellTreeOwner::SetParentWidget(nsIWidget* aParentWidget) {
-  return NS_ERROR_NULL_POINTER;
-}
-
-NS_IMETHODIMP
-nsDocShellTreeOwner::GetParentNativeWindow(nativeWindow* aParentNativeWindow) {
-  nsCOMPtr<nsIBaseWindow> ownerWin = GetOwnerWin();
-  if (ownerWin) {
-    return ownerWin->GetParentNativeWindow(aParentNativeWindow);
-  }
-  return NS_ERROR_NULL_POINTER;
-}
-
-NS_IMETHODIMP
-nsDocShellTreeOwner::SetParentNativeWindow(nativeWindow aParentNativeWindow) {
   return NS_ERROR_NULL_POINTER;
 }
 
@@ -957,9 +920,10 @@ nsDocShellTreeOwner::HandleEvent(Event* aEvent) {
 #endif
               LoadURIOptions loadURIOptions;
               loadURIOptions.mTriggeringPrincipal = triggeringPrincipal;
-              nsCOMPtr<nsIContentSecurityPolicy> csp;
-              handler->GetCsp(dragEvent, getter_AddRefs(csp));
-              loadURIOptions.mCsp = csp;
+              nsCOMPtr<nsIPolicyContainer> policyContainer;
+              handler->GetPolicyContainer(dragEvent,
+                                          getter_AddRefs(policyContainer));
+              loadURIOptions.mPolicyContainer = policyContainer;
               webnav->FixupAndLoadURIString(url, loadURIOptions);
             }
           }
@@ -1146,7 +1110,8 @@ nsresult ChromeTooltipListener::MouseMove(Event* aMouseEvent) {
   // within the timer callback. On win32, we'll get a MouseMove event even when
   // a popup goes away -- even when the mouse doesn't change position! To get
   // around this, we make sure the mouse has really moved before proceeding.
-  CSSIntPoint newMouseClientPoint = mouseEvent->ClientPoint();
+  const CSSIntPoint newMouseClientPoint =
+      RoundedToInt(mouseEvent->ClientPoint());
   if (mMouseClientPoint == newMouseClientPoint) {
     return NS_OK;
   }
@@ -1177,7 +1142,8 @@ nsresult ChromeTooltipListener::MouseMove(Event* aMouseEvent) {
       nsresult rv = NS_NewTimerWithFuncCallback(
           getter_AddRefs(mTooltipTimer), sTooltipCallback, this,
           StaticPrefs::ui_tooltip_delay_ms(), nsITimer::TYPE_ONE_SHOT,
-          "ChromeTooltipListener::MouseMove", GetMainThreadSerialEventTarget());
+          "ChromeTooltipListener::MouseMove"_ns,
+          GetMainThreadSerialEventTarget());
       if (NS_FAILED(rv)) {
         mPossibleTooltipNode = nullptr;
         NS_WARNING("Could not create a timer for tooltip tracking");

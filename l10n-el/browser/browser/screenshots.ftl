@@ -29,16 +29,16 @@ screenshots-meta-key =
        *[other] Ctrl
     }
 screenshots-notification-link-copied-title = Ο σύνδεσμος αντιγράφηκε
-screenshots-notification-link-copied-details = Ο σύνδεσμος προς την λήψη σας αντιγράφηκε στο πρόχειρο. Πατήστε { screenshots-meta-key }-V για επικόλληση.
+screenshots-notification-link-copied-details = Ο σύνδεσμος για το στιγμιότυπο οθόνης σας έχει αντιγραφεί στο πρόχειρο. Πατήστε { screenshots-meta-key }-V για επικόλληση.
 screenshots-notification-image-copied-title = Το στιγμιότυπο αντιγράφηκε
 screenshots-notification-image-copied-details = Το στιγμιότυπο έχει αντιγραφεί στο πρόχειρο. Πατήστε { screenshots-meta-key }-V για επικόλληση.
 screenshots-request-error-title = Εκτός λειτουργίας.
-screenshots-request-error-details = Συγνώμη! Δεν μπορέσαμε να αποθηκεύουμε την λήψη σας. Προσπαθήστε ξανά αργότερα.
+screenshots-request-error-details = Δυστυχώς, δεν ήταν δυνατή η αποθήκευση του στιγμιότυπου οθόνης σας. Δοκιμάστε ξανά αργότερα.
 screenshots-connection-error-title = Δεν μπορούμε να συνδεθούμε στις λήψεις σας.
 screenshots-connection-error-details = Ελέγξτε τη σύνδεσή σας στο Internet. Εάν είστε σε θέση να συνδεθείτε στο Internet, ίσως υπάρχει ένα προσωρινό πρόβλημα με την υπηρεσία { -screenshots-brand-name }.
-screenshots-login-error-details = Δεν μπορέσαμε να αποθηκεύσουμε την λήψη σας γιατί υπάρχει κάποιο πρόβλημα με την υπηρεσία { -screenshots-brand-name }. Προσπαθήστε ξανά αργότερα.
+screenshots-login-error-details = Δεν ήταν δυνατή η αποθήκευση του στιγμιότυπου οθόνης σας επειδή υπάρχει κάποιο πρόβλημα με την υπηρεσία του { -screenshots-brand-name }. Δοκιμάστε ξανά αργότερα.
 screenshots-unshootable-page-error-title = Δεν μπορούμε να λάβουμε στιγμιότυπο αυτής της σελίδας.
-screenshots-unshootable-page-error-details = Δεν μπορεί να γίνει λήψη στιγμιότυπου καθώς αυτή δεν είναι μια τυπική ιστοσελίδα.
+screenshots-unshootable-page-error-details = Δεν είναι δυνατή η λήψη στιγμιότυπου οθόνης, καθώς αυτή δεν είναι μια τυπική ιστοσελίδα.
 screenshots-empty-selection-error-title = Η επιλογή σας είναι πολύ μικρή
 screenshots-private-window-error-title = Το { -screenshots-brand-name } είναι απενεργοποιημένο στη λειτουργία ιδιωτικής περιήγησης
 screenshots-private-window-error-details = Λυπούμαστε για την ταλαιπωρία. Εργαζόμαστε πάνω σε αυτό το χαρακτηριστικό για μελλοντικές εκδόσεις.
@@ -66,6 +66,11 @@ screenshots-component-copy-button-2 = Αντιγραφή
 screenshots-component-download-button-2 = Λήψη
     .title = Λήψη ({ $shortcut })
     .aria-label = Λήψη
+# Variables
+#   $shortcut (String) - A keyboard shortcut for the screenshot command.
+screenshot-toolbar-button =
+    .label = Στιγμιότυπο οθόνης
+    .tooltiptext = Λήψη στιγμιότυπου οθόνης ({ $shortcut })
 
 ## The below strings are used to capture keydown events so the strings should
 ## not be changed unless the keyboard layout in the locale requires it.

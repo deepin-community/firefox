@@ -16,14 +16,22 @@ import {
   teardownWorkers,
 } from "./utils/bootstrap";
 
+import { initialTabState } from "./reducers/tabs";
 import { initialBreakpointsState } from "./reducers/breakpoints";
 import { initialSourcesState } from "./reducers/sources";
+import { initialSourcesTreeState } from "./reducers/sources-tree";
 import { initialUIState } from "./reducers/ui";
 import { initialSourceBlackBoxState } from "./reducers/source-blackbox";
+import { initialEventListenerState } from "./reducers/event-listeners";
 
 const {
   sanitizeBreakpoints,
 } = require("resource://devtools/client/shared/thread-utils.js");
+const {
+  START_IGNORE_ACTION,
+} = require("resource://devtools/client/shared/redux/middleware/ignore.js");
+
+let gStore;
 
 async function syncBreakpoints() {
   const breakpoints = await asyncStore.pendingBreakpoints;
@@ -59,24 +67,36 @@ function setPauseOnDebuggerStatement() {
 }
 
 function setPauseOnExceptions() {
-  const { pauseOnExceptions, pauseOnCaughtException } = prefs;
+  const { pauseOnExceptions, pauseOnCaughtExceptions } = prefs;
   return firefox.clientCommands.pauseOnExceptions(
     pauseOnExceptions,
-    pauseOnCaughtException
+    pauseOnCaughtExceptions
   );
 }
 
-async function loadInitialState() {
+async function loadInitialState(commands) {
   const pendingBreakpoints = sanitizeBreakpoints(
     await asyncStore.pendingBreakpoints
   );
-  const tabs = { tabs: await asyncStore.tabs };
+  const tabs = initialTabState({
+    urls: await asyncStore.openedURLs,
+    prettyPrintedURLs: new Set(await asyncStore.prettyPrintedURLs),
+  });
   const xhrBreakpoints = await asyncStore.xhrBreakpoints;
   const blackboxedRanges = await asyncStore.blackboxedRanges;
   const eventListenerBreakpoints = await asyncStore.eventListenerBreakpoints;
+  if (eventListenerBreakpoints && !eventListenerBreakpoints.byPanel) {
+    // Firefox 132 changed the layout of the event listener data to support both breakpoints and tracer
+    eventListenerBreakpoints.byPanel = initialEventListenerState().byPanel;
+  }
+
   const breakpoints = initialBreakpointsState(xhrBreakpoints);
   const sourceBlackBox = initialSourceBlackBoxState({ blackboxedRanges });
   const sources = initialSourcesState();
+  const sourcesTree = initialSourcesTreeState({
+    mainThreadProjectDirectoryRoots: await asyncStore.directoryRoots,
+    isWebExtension: commands.descriptorFront.isWebExtensionDescriptor,
+  });
   const ui = initialUIState();
 
   return {
@@ -85,6 +105,7 @@ async function loadInitialState() {
     breakpoints,
     eventListenerBreakpoints,
     sources,
+    sourcesTree,
     sourceBlackBox,
     ui,
   };
@@ -103,7 +124,7 @@ export async function bootstrap({
   // record events.
   setToolboxTelemetry(panel.toolbox.telemetry);
 
-  const initialState = await loadInitialState();
+  const initialState = await loadInitialState(commands);
   const workers = bootstrapWorkers(panelWorkers);
 
   const { store, actions, selectors } = bootstrapStore(
@@ -112,6 +133,7 @@ export async function bootstrap({
     panel,
     initialState
   );
+  gStore = store;
 
   const connected = firefox.onConnect(
     commands,
@@ -143,7 +165,18 @@ export async function bootstrap({
 }
 
 export async function destroy() {
+  // Instruct redux to start ignoring any further action
+  if (gStore) {
+    gStore.dispatch(START_IGNORE_ACTION);
+    gStore = null;
+  }
+
+  // Unregister all listeners set on DevTools RDP client
   firefox.onDisconnect();
+
+  // Unmount all React components
   unmountRoot();
+
+  // Unregister and cleanup everything about parser, pretty print and source map workers
   teardownWorkers();
 }

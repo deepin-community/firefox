@@ -9,13 +9,13 @@ import android.app.UiModeManager;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Rect;
-import android.os.Build;
 import android.os.SystemClock;
 import android.util.Log;
 import android.util.Pair;
 import android.view.DragEvent;
 import android.view.InputDevice;
 import android.view.MotionEvent;
+import android.view.View;
 import androidx.annotation.AnyThread;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
@@ -30,6 +30,12 @@ import org.mozilla.gecko.mozglue.JNIObject;
 import org.mozilla.gecko.util.GeckoBundle;
 import org.mozilla.gecko.util.ThreadUtils;
 
+/**
+ * Manages panning, zooming, and input event handling for a GeckoSession.
+ *
+ * <p>This controller processes touch, mouse, and scroll events to update the web content viewport,
+ * supports fling and smooth scrolling behaviors, and reports input handling results.
+ */
 @UiThread
 public class PanZoomController {
   private static final String LOGTAG = "GeckoNPZC";
@@ -44,6 +50,7 @@ public class PanZoomController {
   private float mPointerScrollFactor = 64.0f;
   private long mLastDownTime;
 
+  /** Scroll behavior type definitions for scrolling animation. */
   @Retention(RetentionPolicy.SOURCE)
   @IntDef({SCROLL_BEHAVIOR_SMOOTH, SCROLL_BEHAVIOR_AUTO})
   public @interface ScrollBehaviorType {}
@@ -54,6 +61,7 @@ public class PanZoomController {
   /** Specifies auto scrolling which jumps content to the desired scroll position. */
   public static final int SCROLL_BEHAVIOR_AUTO = 1;
 
+  /** Input result type definitions for input event handling. */
   @Retention(RetentionPolicy.SOURCE)
   @IntDef({
     INPUT_RESULT_UNHANDLED,
@@ -87,6 +95,11 @@ public class PanZoomController {
    */
   @WrapForJNI public static final int INPUT_RESULT_IGNORED = 3;
 
+  /**
+   * Represents which directions can be scrolled in the scroll container where an input event was
+   * handled. This value is only useful in the case of {@link
+   * PanZoomController#INPUT_RESULT_HANDLED}.
+   */
   @Retention(RetentionPolicy.SOURCE)
   @IntDef(
       flag = true,
@@ -99,40 +112,39 @@ public class PanZoomController {
       })
   public @interface ScrollableDirections {}
 
-  /**
-   * Represents which directions can be scrolled in the scroll container where an input event was
-   * handled. This value is only useful in the case of {@link
-   * PanZoomController#INPUT_RESULT_HANDLED}.
-   */
-  /* The container cannot be scrolled. */
+  /** The container cannot be scrolled. */
   @WrapForJNI public static final int SCROLLABLE_FLAG_NONE = 0;
 
-  /* The container cannot be scrolled to top */
+  /** The container cannot be scrolled to top */
   @WrapForJNI public static final int SCROLLABLE_FLAG_TOP = 1 << 0;
-  /* The container cannot be scrolled to right */
-  @WrapForJNI public static final int SCROLLABLE_FLAG_RIGHT = 1 << 1;
-  /* The container cannot be scrolled to bottom */
-  @WrapForJNI public static final int SCROLLABLE_FLAG_BOTTOM = 1 << 2;
-  /* The container cannot be scrolled to left */
-  @WrapForJNI public static final int SCROLLABLE_FLAG_LEFT = 1 << 3;
 
-  @Retention(RetentionPolicy.SOURCE)
-  @IntDef(
-      flag = true,
-      value = {OVERSCROLL_FLAG_NONE, OVERSCROLL_FLAG_HORIZONTAL, OVERSCROLL_FLAG_VERTICAL})
-  public @interface OverscrollDirections {}
+  /** The container cannot be scrolled to right */
+  @WrapForJNI public static final int SCROLLABLE_FLAG_RIGHT = 1 << 1;
+
+  /** The container cannot be scrolled to bottom */
+  @WrapForJNI public static final int SCROLLABLE_FLAG_BOTTOM = 1 << 2;
+
+  /** The container cannot be scrolled to left */
+  @WrapForJNI public static final int SCROLLABLE_FLAG_LEFT = 1 << 3;
 
   /**
    * Represents which directions can be over-scrolled in the scroll container where an input event
    * was handled. This value is only useful in the case of {@link
    * PanZoomController#INPUT_RESULT_HANDLED}.
    */
-  /* the container cannot be over-scrolled. */
+  @Retention(RetentionPolicy.SOURCE)
+  @IntDef(
+      flag = true,
+      value = {OVERSCROLL_FLAG_NONE, OVERSCROLL_FLAG_HORIZONTAL, OVERSCROLL_FLAG_VERTICAL})
+  public @interface OverscrollDirections {}
+
+  /** the container cannot be over-scrolled. */
   @WrapForJNI public static final int OVERSCROLL_FLAG_NONE = 0;
 
-  /* the container can be over-scrolled horizontally. */
+  /** the container can be over-scrolled horizontally. */
   @WrapForJNI public static final int OVERSCROLL_FLAG_HORIZONTAL = 1 << 0;
-  /* the container can be over-scrolled vertically. */
+
+  /** the container can be over-scrolled vertically. */
   @WrapForJNI public static final int OVERSCROLL_FLAG_VERTICAL = 1 << 1;
 
   /**
@@ -150,6 +162,16 @@ public class PanZoomController {
    */
   @WrapForJNI
   public static class InputResultDetail {
+    /**
+     * Creates a detail object describing how a MotionEvent was handled.
+     *
+     * @param handledResult one of {@link #INPUT_RESULT_UNHANDLED}, {@link #INPUT_RESULT_HANDLED},
+     *     {@link #INPUT_RESULT_HANDLED_CONTENT}, or {@link #INPUT_RESULT_IGNORED}
+     * @param scrollableDirections an OR-ed {@link ScrollableDirections} value indicating which
+     *     directions were scrollable when the event fired
+     * @param overscrollDirections an OR-ed {@link OverscrollDirections} value indicating which
+     *     directions were overscrollable when the event fired
+     */
     protected InputResultDetail(
         final @InputResult int handledResult,
         final @ScrollableDirections int scrollableDirections,
@@ -203,6 +225,7 @@ public class PanZoomController {
     public final int actionIndex;
     public final long time;
     public final int metaState;
+    public final int toolType;
     public final int pointerId[];
     public final int historySize;
     public final long historicalTime[];
@@ -216,6 +239,7 @@ public class PanZoomController {
     public final float y[];
     public final float orientation[];
     public final float pressure[];
+    public final float tilt[];
     public final float toolMajor[];
     public final float toolMinor[];
 
@@ -225,6 +249,7 @@ public class PanZoomController {
       actionIndex = event.getActionIndex();
       time = event.getEventTime();
       metaState = event.getMetaState();
+      toolType = event.getToolType(0);
       historySize = event.getHistorySize();
       historicalTime = new long[historySize];
       historicalX = new float[historySize * count];
@@ -238,6 +263,7 @@ public class PanZoomController {
       y = new float[count];
       orientation = new float[count];
       pressure = new float[count];
+      tilt = new float[count];
       toolMajor = new float[count];
       toolMinor = new float[count];
 
@@ -271,6 +297,7 @@ public class PanZoomController {
 
         orientation[i] = coords.orientation;
         pressure[i] = coords.pressure;
+        tilt[i] = coords.getAxisValue(MotionEvent.AXIS_TILT);
 
         // If we are converting to CSS pixels, we should adjust the radii as well.
         toolMajor[i] = coords.toolMajor;
@@ -301,7 +328,7 @@ public class PanZoomController {
     private native @InputResult int handleMouseEvent(
         int action, long time, int metaState, float x, float y, int buttons);
 
-    @WrapForJNI(calledFrom = "ui", dispatchTo = "gecko")
+    @WrapForJNI(calledFrom = "ui")
     private native void handleDragEvent(
         int action, long time, float x, float y, GeckoDragAndDrop.DropData data);
 
@@ -457,6 +484,11 @@ public class PanZoomController {
         event.getButtonState());
   }
 
+  /**
+   * Constructs a PanZoomController for the specified GeckoSession and initializes the event queue.
+   *
+   * @param session the GeckoSession to control panning and zooming for
+   */
   protected PanZoomController(final GeckoSession session) {
     mSession = session;
     enableEventQueue();
@@ -613,7 +645,8 @@ public class PanZoomController {
   public boolean onDragEvent(@NonNull final DragEvent event) {
     ThreadUtils.assertOnUiThread();
 
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+    if (!mAttached) {
+      // This might be during start up, so we cannot handle drag event.
       return false;
     }
 
@@ -812,6 +845,12 @@ public class PanZoomController {
         }
         break;
       case MotionEvent.ACTION_POINTER_DOWN:
+        // Android 14 workaround: The view is never focused by our synthesized
+        // touch events (bug 1982949).
+        final View view = mSession.getTextInput().getView();
+        if (view != null) {
+          view.requestFocus();
+        }
         if (pointerIndex < 0) {
           // Adding a new pointer
           pointerIndex = mPointerState.addPointer(pointerId, source);

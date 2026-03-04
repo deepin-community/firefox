@@ -149,9 +149,7 @@ main-context-menu-save-link-to-pocket =
     .label = Uložit odkaz do { -pocket-brand-name(case: "gen") }
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Kopírovat e-mailovou adresu
@@ -162,11 +160,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Zkopírovat odkaz
     .accesskey = a
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Zkopírovat odkaz bez sledovacích prvků
-    .accesskey = k
+main-context-menu-preview-link =
+    .label = Náhled odkazu
+    .accesskey = N
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Zkopírovat čistý odkaz
+    .accesskey = a
 
 ## Media (video/audio) controls
 ##
@@ -268,6 +270,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Zobrazit popis
     .accesskey = p
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Vyhledat obrázek pomocí { $engine }
+    .accesskey = e
 main-context-menu-video-save-as =
     .label = Uložit video jako…
     .accesskey = l
@@ -283,6 +290,9 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Poslat audio e-mailem…
     .accesskey = a
+main-context-menu-send-to-device-2 =
+    .label = Poslat do zařízení
+    .accesskey = n
 main-context-menu-save-to-pocket =
     .label = Uložit stránku do { -pocket-brand-name(case: "gen") }
     .accesskey = k
@@ -290,9 +300,7 @@ main-context-menu-send-to-device =
     .label = Poslat stránku do zařízení
     .accesskey = e
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Použit uložené uživatelské jméno
@@ -319,6 +327,9 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Přiřadit k tomuto vyhledávání klíčové slovo…
     .accesskey = h
+main-context-menu-add-engine =
+    .label = Přidat vyhledávač
+    .accesskey = v
 main-context-menu-link-send-to-device =
     .label = Poslat odkaz do zařízení
     .accesskey = e
@@ -389,3 +400,5 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Zobrazit heslo
     .accesskey = v
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Nové

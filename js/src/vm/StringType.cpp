@@ -9,7 +9,6 @@
 #include "mozilla/DebugOnly.h"
 #include "mozilla/HashFunctions.h"
 #include "mozilla/Latin1.h"
-#include "mozilla/MathAlgorithms.h"
 #include "mozilla/MemoryReporting.h"
 #include "mozilla/PodOperations.h"
 #include "mozilla/RangedPtr.h"
@@ -19,16 +18,12 @@
 #include "mozilla/Vector.h"
 
 #include <algorithm>    // std::{all_of,copy_n,enable_if,is_const,move}
-#include <iterator>     // std::size
 #include <type_traits>  // std::is_same, std::is_unsigned
 
 #include "jsfriendapi.h"
 #include "jsnum.h"
 
 #include "builtin/Boolean.h"
-#ifdef ENABLE_RECORD_TUPLE
-#  include "builtin/RecordObject.h"
-#endif
 #include "gc/AllocKind.h"
 #include "gc/MaybeRooted.h"
 #include "gc/Nursery.h"
@@ -48,10 +43,6 @@
 
 #include "gc/Marking-inl.h"
 #include "vm/GeckoProfiler-inl.h"
-#ifdef ENABLE_RECORD_TUPLE
-#  include "vm/RecordType.h"
-#  include "vm/TupleType.h"
-#endif
 
 using namespace js;
 
@@ -597,10 +588,17 @@ JSExtensibleString& JSLinearString::makeExtensible(size_t capacity) {
   MOZ_ASSERT(!isAtom());
   MOZ_ASSERT(!isExternal());
   MOZ_ASSERT(capacity >= length());
-  js::RemoveCellMemory(this, allocSize(), js::MemoryUse::StringContents);
+  size_t oldSize = allocSize();
+  js::RemoveCellMemory(this, oldSize, js::MemoryUse::StringContents);
   setLengthAndFlags(length(), flags() | EXTENSIBLE_FLAGS);
   d.s.u3.capacity = capacity;
-  js::AddCellMemory(this, allocSize(), js::MemoryUse::StringContents);
+  size_t newSize = allocSize();
+  js::AddCellMemory(this, newSize, js::MemoryUse::StringContents);
+  MOZ_ASSERT(newSize >= oldSize);
+  if (!isTenured() && newSize > oldSize) {
+    auto& nursery = runtimeFromMainThread()->gc.nursery();
+    nursery.addMallocedBufferBytes(newSize - oldSize);
+  }
   return asExtensible();
 }
 
@@ -612,8 +610,8 @@ static MOZ_ALWAYS_INLINE bool AllocCharsForFlatten(Nursery& nursery,
                                                    bool* hasStringBuffer) {
   /*
    * Grow by 12.5% if the buffer is very large. Otherwise, round up to the
-   * next power of 2. This is similar to what we do with arrays; see
-   * JSObject::ensureDenseArrayElements.
+   * next power of 2. This is similar to what we do with object elements; see
+   * NativeObject::goodElementsAllocationAmount.
    */
   auto calcCapacity = [](size_t length, size_t maxCapacity) {
     static const size_t DOUBLING_MAX = 1024 * 1024;
@@ -630,18 +628,14 @@ static MOZ_ALWAYS_INLINE bool AllocCharsForFlatten(Nursery& nursery,
     MOZ_ASSERT(length <= *capacity);
     MOZ_ASSERT(*capacity <= JSString::MAX_LENGTH);
 
-    auto buffer = str->zone()->make_pod_arena_array<CharT>(
-        js::StringBufferArena, *capacity);
+    size_t allocSize = *capacity * sizeof(CharT);
+    void* buffer = nursery.allocNurseryOrMallocBuffer(
+        str->zone(), str, allocSize, js::StringBufferArena);
     if (!buffer) {
       return false;
     }
-    if (!str->isTenured()) {
-      if (!nursery.registerMallocedBuffer(buffer.get(),
-                                          *capacity * sizeof(CharT))) {
-        return false;
-      }
-    }
-    *chars = buffer.release();
+
+    *chars = static_cast<CharT*>(buffer);
     *hasStringBuffer = false;
     return true;
   }
@@ -936,14 +930,20 @@ static bool UpdateNurseryBuffersOnTransfer(js::Nursery& nursery,
   // are in the nursery or not.
 
   if (from->hasStringBuffer()) {
-    if (!from->isTenured()) {
-      nursery.removeExtensibleStringBuffer(from);
-    }
+    // Note: addExtensibleStringBuffer is fallible so we have to call it before
+    // removeExtensibleStringBuffer.
+    // If both strings are in the nursery, avoid updating mallocedBufferBytes to
+    // not trigger an unnecessary minor GC in addMallocedBufferBytes.
+    bool updateMallocBytes = from->isTenured() || to->isTenured();
     if (!to->isTenured()) {
       auto* linear = static_cast<JSLinearString*>(to);
-      if (!nursery.addExtensibleStringBuffer(linear, from->stringBuffer())) {
+      if (!nursery.addExtensibleStringBuffer(linear, from->stringBuffer(),
+                                             updateMallocBytes)) {
         return false;
       }
+    }
+    if (!from->isTenured()) {
+      nursery.removeExtensibleStringBuffer(from, updateMallocBytes);
     }
     return true;
   }
@@ -964,7 +964,7 @@ static bool UpdateNurseryBuffersOnTransfer(js::Nursery& nursery,
 }
 
 static bool CanReuseLeftmostBuffer(JSString* leftmostChild, size_t wholeLength,
-                                   bool hasTwoByteChars) {
+                                   bool hasTwoByteChars, bool isTenured) {
   if (!leftmostChild->isExtensible()) {
     return false;
   }
@@ -977,8 +977,19 @@ static bool CanReuseLeftmostBuffer(JSString* leftmostChild, size_t wholeLength,
     return false;
   }
 
-  return str.capacity() >= wholeLength &&
-         str.hasTwoByteChars() == hasTwoByteChars;
+  if (str.capacity() < wholeLength ||
+      str.hasTwoByteChars() != hasTwoByteChars) {
+    return false;
+  }
+
+  // Don't try to reuse the buffer if the extensible string's characters are in
+  // the nursery and the (root) rope is tenured.
+  if (isTenured && !str.hasStringBuffer() && !str.ownsMallocedChars()) {
+    MOZ_ASSERT(IsInsideNursery(&str));
+    return false;
+  }
+
+  return true;
 }
 
 JSLinearString* JSRope::flatten(JSContext* maybecx) {
@@ -1093,7 +1104,8 @@ JSLinearString* JSRope::flattenInternal(JSRope* root) {
   JSString* leftmostChild = leftmostRope->leftChild();
 
   bool reuseLeftmostBuffer = CanReuseLeftmostBuffer(
-      leftmostChild, wholeLength, std::is_same_v<CharT, char16_t>);
+      leftmostChild, wholeLength, std::is_same_v<CharT, char16_t>,
+      root->isTenured());
 
   bool hasStringBuffer = false;
   if (reuseLeftmostBuffer) {
@@ -1215,7 +1227,7 @@ finish_root:
   root->setLengthAndFlags(wholeLength, flags);
   root->setNonInlineChars(wholeChars, hasStringBuffer);
   root->d.s.u3.capacity = wholeCapacity;
-  AddCellMemory(root, root->asLinear().allocSize(), MemoryUse::StringContents);
+  AddCellMemory(root, wholeCapacity * sizeof(CharT), MemoryUse::StringContents);
 
   if (reuseLeftmostBuffer) {
     // Remove memory association for left node we're about to make into a
@@ -1361,6 +1373,21 @@ template JSString* js::ConcatStrings<CanGC>(JSContext* cx, HandleString left,
 template JSString* js::ConcatStrings<NoGC>(JSContext* cx, JSString* const& left,
                                            JSString* const& right,
                                            gc::Heap heap);
+
+bool JSLinearString::hasCharsInCollectedNurseryRegion() const {
+  if (isPermanentAtom()) {
+    // Nursery::inCollectedRegion(void*) should only be called on the nursery's
+    // main thread to avoid races. Permanent atoms can be shared with worker
+    // threads but atoms are never allocated in the nursery.
+    MOZ_ASSERT(isTenured());
+    return false;
+  }
+  auto& nursery = runtimeFromMainThread()->gc.nursery();
+  if (isInline()) {
+    return nursery.inCollectedRegion(this);
+  }
+  return nursery.inCollectedRegion(nonInlineCharsRaw());
+}
 
 #if defined(DEBUG) || defined(JS_JITSPEW) || defined(JS_CACHEIR_SPEW)
 void JSDependentString::dumpOwnRepresentationFields(
@@ -1525,6 +1552,32 @@ int32_t js::CompareStrings(const JSLinearString* str1,
   return CompareStringsImpl(str1, str2);
 }
 
+int32_t js::CompareStrings(const JSOffThreadAtom* str1,
+                           const JSOffThreadAtom* str2) {
+  MOZ_ASSERT(str1);
+  MOZ_ASSERT(str2);
+
+  if (str1 == str2) {
+    return 0;
+  }
+
+  size_t len1 = str1->length();
+  size_t len2 = str2->length();
+
+  AutoCheckCannotGC nogc;
+  if (str1->hasLatin1Chars()) {
+    const Latin1Char* chars1 = str1->latin1Chars(nogc);
+    return str2->hasLatin1Chars()
+               ? CompareChars(chars1, len1, str2->latin1Chars(nogc), len2)
+               : CompareChars(chars1, len1, str2->twoByteChars(nogc), len2);
+  }
+
+  const char16_t* chars1 = str1->twoByteChars(nogc);
+  return str2->hasLatin1Chars()
+             ? CompareChars(chars1, len1, str2->latin1Chars(nogc), len2)
+             : CompareChars(chars1, len1, str2->twoByteChars(nogc), len2);
+}
+
 bool js::StringIsAscii(const JSLinearString* str) {
   JS::AutoCheckCannotGC nogc;
   if (str->hasLatin1Chars()) {
@@ -1638,6 +1691,17 @@ uint32_t JSAtom::getIndexSlow() const {
                           : AtomCharsToIndex(twoByteChars(nogc), len);
 }
 
+uint32_t JSOffThreadAtom::getIndexSlow() const {
+  MOZ_ASSERT(isIndex());
+  MOZ_ASSERT(!hasIndexValue());
+
+  size_t len = length();
+
+  AutoCheckCannotGC nogc;
+  return hasLatin1Chars() ? AtomCharsToIndex(latin1Chars(nogc), len)
+                          : AtomCharsToIndex(twoByteChars(nogc), len);
+}
+
 // Ensure that the incoming s.chars pointer is stable, as in, it cannot be
 // changed even across a GC. That requires that the string that owns the chars
 // not be collected or deduplicated.
@@ -1652,7 +1716,7 @@ void AutoStableStringChars::holdStableChars(JSLinearString* s) {
 }
 
 bool AutoStableStringChars::init(JSContext* cx, JSString* s) {
-  Rooted<JSLinearString*> linearString(cx, s->ensureLinear(cx));
+  JSLinearString* linearString = s->ensureLinear(cx);
   if (!linearString) {
     return false;
   }
@@ -1684,7 +1748,7 @@ bool AutoStableStringChars::init(JSContext* cx, JSString* s) {
 }
 
 bool AutoStableStringChars::initTwoByte(JSContext* cx, JSString* s) {
-  Rooted<JSLinearString*> linearString(cx, s->ensureLinear(cx));
+  JSLinearString* linearString = s->ensureLinear(cx);
   if (!linearString) {
     return false;
   }
@@ -1719,8 +1783,7 @@ T* AutoStableStringChars::allocOwnChars(JSContext* cx, size_t count) {
               sizeof(char16_t) * JSFatInlineString::MAX_LENGTH_TWO_BYTE,
       "InlineCapacity too small to hold fat inline strings");
 
-  static_assert((JSString::MAX_LENGTH &
-                 mozilla::tl::MulOverflowMask<sizeof(T)>::value) == 0,
+  static_assert(JSString::MAX_LENGTH * sizeof(T) >= JSString::MAX_LENGTH,
                 "Size calculation can overflow");
   MOZ_ASSERT(count <= JSString::MAX_LENGTH);
   size_t size = sizeof(T) * count;
@@ -1735,7 +1798,7 @@ T* AutoStableStringChars::allocOwnChars(JSContext* cx, size_t count) {
 }
 
 bool AutoStableStringChars::copyAndInflateLatin1Chars(
-    JSContext* cx, Handle<JSLinearString*> linearString) {
+    JSContext* cx, JSLinearString* linearString) {
   MOZ_ASSERT(state_ == Uninitialized);
   MOZ_ASSERT(s_ == nullptr);
 
@@ -1756,8 +1819,8 @@ bool AutoStableStringChars::copyAndInflateLatin1Chars(
   return true;
 }
 
-bool AutoStableStringChars::copyLatin1Chars(
-    JSContext* cx, Handle<JSLinearString*> linearString) {
+bool AutoStableStringChars::copyLatin1Chars(JSContext* cx,
+                                            JSLinearString* linearString) {
   MOZ_ASSERT(state_ == Uninitialized);
   MOZ_ASSERT(s_ == nullptr);
 
@@ -1774,8 +1837,8 @@ bool AutoStableStringChars::copyLatin1Chars(
   return true;
 }
 
-bool AutoStableStringChars::copyTwoByteChars(
-    JSContext* cx, Handle<JSLinearString*> linearString) {
+bool AutoStableStringChars::copyTwoByteChars(JSContext* cx,
+                                             JSLinearString* linearString) {
   MOZ_ASSERT(state_ == Uninitialized);
   MOZ_ASSERT(s_ == nullptr);
 
@@ -1838,9 +1901,10 @@ void JSExternalString::dumpOwnRepresentationFields(
 }
 #endif /* defined(DEBUG) || defined(JS_JITSPEW) || defined(JS_CACHEIR_SPEW) */
 
-JSLinearString* js::NewDependentString(JSContext* cx, JSString* baseArg,
-                                       size_t start, size_t length,
-                                       gc::Heap heap) {
+template <JS::ContractBaseChain contract>
+static JSLinearString* NewDependentStringHelper(JSContext* cx,
+                                                JSString* baseArg, size_t start,
+                                                size_t length, gc::Heap heap) {
   if (length == 0) {
     return cx->emptyString();
   }
@@ -1884,7 +1948,27 @@ JSLinearString* js::NewDependentString(JSContext* cx, JSString* baseArg,
     return NewInlineString<Latin1Char>(cx, rootedBase, start, length, heap);
   }
 
-  return JSDependentString::new_(cx, base, start, length, heap);
+  return JSDependentString::newImpl_<contract>(cx, base, start, length, heap);
+}
+
+JSLinearString* js::NewDependentString(JSContext* cx, JSString* baseArg,
+                                       size_t start, size_t length,
+                                       gc::Heap heap) {
+  return NewDependentStringHelper<JS::ContractBaseChain::Contract>(
+      cx, baseArg, start, length, heap);
+}
+
+JSLinearString* js::NewDependentStringForTesting(JSContext* cx,
+                                                 JSString* baseArg,
+                                                 size_t start, size_t length,
+                                                 JS::ContractBaseChain contract,
+                                                 gc::Heap heap) {
+  if (contract == JS::ContractBaseChain::Contract) {
+    return NewDependentStringHelper<JS::ContractBaseChain::Contract>(
+        cx, baseArg, start, length, heap);
+  }
+  return NewDependentStringHelper<JS::ContractBaseChain::AllowLong>(
+      cx, baseArg, start, length, heap);
 }
 
 static constexpr bool CanStoreCharsAsLatin1(const JS::Latin1Char* s,
@@ -2077,7 +2161,13 @@ JSLinearString* NewStringCopyNDontDeflateNonStaticValidLength(JSContext* cx,
 template JSLinearString* NewStringCopyNDontDeflateNonStaticValidLength<CanGC>(
     JSContext* cx, const char16_t* s, size_t n, gc::Heap heap);
 
+template JSLinearString* NewStringCopyNDontDeflateNonStaticValidLength<NoGC>(
+    JSContext* cx, const char16_t* s, size_t n, gc::Heap heap);
+
 template JSLinearString* NewStringCopyNDontDeflateNonStaticValidLength<CanGC>(
+    JSContext* cx, const Latin1Char* s, size_t n, gc::Heap heap);
+
+template JSLinearString* NewStringCopyNDontDeflateNonStaticValidLength<NoGC>(
     JSContext* cx, const Latin1Char* s, size_t n, gc::Heap heap);
 
 template <AllowGC allowGC, typename CharT>
@@ -2834,6 +2924,223 @@ bool JSString::tryReplaceWithAtomRef(JSAtom* atom) {
   return true;
 }
 
+template <typename CharT>
+bool js::StringChars<CharT>::maybeAlloc(JSContext* cx, size_t length,
+                                        gc::Heap heap) {
+  assertValidRequest(0, length);
+
+  if (JSInlineString::lengthFits<CharT>(length)) {
+    return true;
+  }
+
+  if (MOZ_UNLIKELY(!JSString::validateLength(cx, length))) {
+    return false;
+  }
+
+  auto chars = AllocChars<CharT>(cx, length, heap);
+  if (!chars) {
+    return false;
+  }
+
+  ownedChars_.set(std::move(chars));
+  return true;
+}
+
+template bool js::StringChars<JS::Latin1Char>::maybeAlloc(JSContext*, size_t,
+                                                          gc::Heap);
+template bool js::StringChars<char16_t>::maybeAlloc(JSContext*, size_t,
+                                                    gc::Heap);
+
+template <typename CharT>
+bool js::StringChars<CharT>::maybeRealloc(JSContext* cx, size_t oldLength,
+                                          size_t newLength, gc::Heap heap) {
+  assertValidRequest(oldLength, newLength);
+
+  // Nothing to do if new length still fits into inline storage.
+  if (JSInlineString::lengthFits<CharT>(newLength)) {
+    return true;
+  }
+
+  if (MOZ_UNLIKELY(!JSString::validateLength(cx, newLength))) {
+    return false;
+  }
+
+  // Unused |ownedChars_| means we were previously using inlining storage.
+  if (!ownedChars_) {
+    auto chars = AllocChars<CharT>(cx, newLength, heap);
+    if (!chars) {
+      return false;
+    }
+    std::memcpy(chars.data(), inlineChars_, InlineLength * sizeof(CharT));
+
+    ownedChars_.set(std::move(chars));
+    return true;
+  }
+
+  // Use |realloc| for malloc'ed characters.
+  if (ownedChars_.isMalloced()) {
+    CharT* oldChars = ownedChars_.release();
+    CharT* newChars = cx->pod_arena_realloc(js::StringBufferArena, oldChars,
+                                            oldLength, newLength);
+    if (!newChars) {
+      js_free(oldChars);
+      return false;
+    }
+
+    using Kind = typename JSString::OwnedChars<CharT>::Kind;
+    ownedChars_.set({newChars, newLength, Kind::Malloc});
+    return true;
+  }
+
+  // Use |StringBuffer::Realloc| for string buffers.
+  if (ownedChars_.hasStringBuffer()) {
+    static_assert(
+        mozilla::StringBuffer::IsValidLength<CharT>(JSString::MAX_LENGTH),
+        "JSString length must be valid for StringBuffer");
+
+    auto* oldBuffer = mozilla::StringBuffer::FromData(ownedChars_.release());
+
+    // Note: StringBuffers must be null-terminated.
+    auto* newBuffer = mozilla::StringBuffer::Realloc(
+        oldBuffer, (newLength + 1) * sizeof(CharT),
+        mozilla::Some(js::StringBufferArena));
+    if (!newBuffer) {
+      oldBuffer->Release();
+      ReportOutOfMemory(cx);
+      return false;
+    }
+    auto* newChars = static_cast<CharT*>(newBuffer->Data());
+    newChars[newLength] = '\0';
+
+    using Kind = typename JSString::OwnedChars<CharT>::Kind;
+    ownedChars_.set({newChars, newLength, Kind::StringBuffer});
+
+    MOZ_ASSERT(newBuffer->RefCount() == 1);
+    return true;
+  }
+
+  // Keep the previous nursery allocated chars alive.
+  Rooted<JSString::OwnedChars<CharT>> oldOwnedChars(
+      cx, std::move(ownedChars_.get()));
+
+  // Nursery allocated characters can't be reallocated, so perform a new
+  // allocation instead.
+  auto chars = AllocChars<CharT>(cx, newLength, heap);
+  if (!chars) {
+    return false;
+  }
+  mozilla::PodCopy(chars.data(), oldOwnedChars.data(), oldLength);
+
+  ownedChars_.set(std::move(chars));
+  return true;
+}
+
+template bool js::StringChars<JS::Latin1Char>::maybeRealloc(JSContext*, size_t,
+                                                            size_t, gc::Heap);
+template bool js::StringChars<char16_t>::maybeRealloc(JSContext*, size_t,
+                                                      size_t, gc::Heap);
+
+template <typename CharT>
+template <AllowGC allowGC>
+JSLinearString* js::StringChars<CharT>::toStringDontDeflate(JSContext* cx,
+                                                            size_t length,
+                                                            gc::Heap heap) {
+  MOZ_ASSERT(length == lastRequestedLength_);
+
+  if (JSInlineString::lengthFits<CharT>(length)) {
+    MOZ_ASSERT(!ownedChars_,
+               "unexpected OwnedChars allocation for inline strings");
+    if (auto* str = TryEmptyOrStaticString(cx, inlineChars_, length)) {
+      return str;
+    }
+    return NewInlineString<CanGC>(cx, inlineChars_, length, heap);
+  }
+
+  MOZ_ASSERT(ownedChars_,
+             "missing OwnedChars allocation for non-inline strings");
+  MOZ_ASSERT(length == ownedChars_.length(),
+             "requested length doesn't match allocation");
+  return JSLinearString::newValidLength<allowGC, CharT>(cx, &ownedChars_, heap);
+}
+
+template JSLinearString*
+js::StringChars<JS::Latin1Char>::toStringDontDeflate<CanGC>(JSContext*, size_t,
+                                                            gc::Heap);
+template JSLinearString* js::StringChars<char16_t>::toStringDontDeflate<CanGC>(
+    JSContext*, size_t, gc::Heap);
+template JSLinearString*
+js::StringChars<JS::Latin1Char>::toStringDontDeflate<NoGC>(JSContext*, size_t,
+                                                           gc::Heap);
+template JSLinearString* js::StringChars<char16_t>::toStringDontDeflate<NoGC>(
+    JSContext*, size_t, gc::Heap);
+
+template <typename CharT>
+template <AllowGC allowGC>
+JSLinearString* js::StringChars<CharT>::toStringDontDeflateNonStatic(
+    JSContext* cx, size_t length, gc::Heap heap) {
+  MOZ_ASSERT(length == lastRequestedLength_);
+
+  if (JSInlineString::lengthFits<CharT>(length)) {
+    MOZ_ASSERT(!ownedChars_,
+               "unexpected OwnedChars allocation for inline strings");
+    MOZ_ASSERT(!TryEmptyOrStaticString(cx, inlineChars_, length),
+               "unexpected static string found");
+    return NewInlineString<allowGC>(cx, inlineChars_, length, heap);
+  }
+
+  MOZ_ASSERT(ownedChars_,
+             "missing OwnedChars allocation for non-inline strings");
+  MOZ_ASSERT(length == ownedChars_.length(),
+             "requested length doesn't match allocation");
+  return JSLinearString::newValidLength<allowGC, CharT>(cx, &ownedChars_, heap);
+}
+
+template JSLinearString*
+js::StringChars<JS::Latin1Char>::toStringDontDeflateNonStatic<CanGC>(JSContext*,
+                                                                     size_t,
+                                                                     gc::Heap);
+template JSLinearString*
+js::StringChars<char16_t>::toStringDontDeflateNonStatic<CanGC>(JSContext*,
+                                                               size_t,
+                                                               gc::Heap);
+template JSLinearString*
+js::StringChars<JS::Latin1Char>::toStringDontDeflateNonStatic<NoGC>(JSContext*,
+                                                                    size_t,
+                                                                    gc::Heap);
+template JSLinearString*
+js::StringChars<char16_t>::toStringDontDeflateNonStatic<NoGC>(JSContext*,
+                                                              size_t, gc::Heap);
+
+template <typename CharT>
+bool js::AtomStringChars<CharT>::maybeAlloc(JSContext* cx, size_t length) {
+  assertValidRequest(0, length);
+
+  if (JSInlineString::lengthFits<CharT>(length)) {
+    return true;
+  }
+
+  if (MOZ_UNLIKELY(!JSString::validateLength(cx, length))) {
+    return false;
+  }
+
+  mallocChars_ = cx->make_pod_arena_array<CharT>(js::StringBufferArena, length);
+  return !!mallocChars_;
+}
+
+template bool js::AtomStringChars<JS::Latin1Char>::maybeAlloc(JSContext*,
+                                                              size_t);
+template bool js::AtomStringChars<char16_t>::maybeAlloc(JSContext*, size_t);
+
+template <typename CharT>
+JSAtom* js::AtomStringChars<CharT>::toAtom(JSContext* cx, size_t length) {
+  MOZ_ASSERT(length == lastRequestedLength_);
+  return AtomizeChars(cx, data(), length);
+}
+
+template JSAtom* js::AtomStringChars<JS::Latin1Char>::toAtom(JSContext*,
+                                                             size_t);
+template JSAtom* js::AtomStringChars<char16_t>::toAtom(JSContext*, size_t);
+
 /*** Conversions ************************************************************/
 
 UniqueChars js::EncodeLatin1(JSContext* cx, JSString* str) {
@@ -2932,22 +3239,7 @@ JSString* js::ToStringSlow(
     }
     RootedBigInt i(cx, v.toBigInt());
     str = BigInt::toString<CanGC>(cx, i, 10);
-  }
-#ifdef ENABLE_RECORD_TUPLE
-  else if (v.isExtendedPrimitive()) {
-    if (!allowGC) {
-      return nullptr;
-    }
-    if (IsTuple(v)) {
-      Rooted<TupleType*> tup(cx, &TupleType::thisTupleValue(v));
-      return TupleToSource(cx, tup);
-    }
-    Rooted<RecordType*> rec(cx);
-    MOZ_ALWAYS_TRUE(RecordObject::maybeUnbox(&v.getObjectPayload(), &rec));
-    return RecordToSource(cx, rec);
-  }
-#endif
-  else {
+  } else {
     MOZ_ASSERT(v.isUndefined());
     str = cx->names().undefined;
   }

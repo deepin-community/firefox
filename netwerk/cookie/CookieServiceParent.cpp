@@ -6,9 +6,9 @@
 #include "CookieCommons.h"
 #include "CookieLogging.h"
 #include "CookieServiceParent.h"
+#include "mozilla/dom/ContentParent.h"
 #include "mozilla/net/CookieService.h"
 #include "mozilla/net/CookieServiceParent.h"
-#include "mozilla/net/NeckoParent.h"
 
 #include "mozilla/ipc/URIUtils.h"
 #include "mozilla/StoragePrincipalHelper.h"
@@ -25,7 +25,9 @@ using namespace mozilla::ipc;
 namespace mozilla {
 namespace net {
 
-CookieServiceParent::CookieServiceParent() {
+CookieServiceParent::CookieServiceParent(dom::ContentParent* aContentParent) {
+  MOZ_ASSERT(aContentParent);
+
   // Instantiate the cookieservice via the service manager, so it sticks around
   // until shutdown.
   nsCOMPtr<nsICookieService> cs = do_GetService(NS_COOKIESERVICE_CONTRACTID);
@@ -38,6 +40,14 @@ CookieServiceParent::CookieServiceParent() {
   MOZ_ALWAYS_TRUE(mTLDService);
 
   mProcessingCookie = false;
+
+  nsTArray<nsCOMPtr<nsIPrincipal>> list;
+  aContentParent->TakeCookieInProcessCache(list);
+
+  for (nsIPrincipal* principal : list) {
+    nsCOMPtr<nsIURI> uri = principal->GetURI();
+    UpdateCookieInContentList(uri, principal->OriginAttributesRef());
+  }
 }
 
 void CookieServiceParent::RemoveBatchDeletedCookies(nsIArray* aCookieList) {
@@ -61,12 +71,13 @@ void CookieServiceParent::RemoveBatchDeletedCookies(nsIArray* aCookieList) {
     cookieStructList.AppendElement(cookieStruct);
     attrsList.AppendElement(attrs);
   }
-  Unused << SendRemoveBatchDeletedCookies(cookieStructList, attrsList);
+  (void)SendRemoveBatchDeletedCookies(cookieStructList, attrsList);
 }
 
-void CookieServiceParent::RemoveAll() { Unused << SendRemoveAll(); }
+void CookieServiceParent::RemoveAll() { (void)SendRemoveAll(); }
 
-void CookieServiceParent::RemoveCookie(const Cookie& cookie) {
+void CookieServiceParent::RemoveCookie(const Cookie& cookie,
+                                       const nsID* aOperationID) {
   const OriginAttributes& attrs = cookie.OriginAttributesRef();
   CookieStruct cookieStruct = cookie.ToIPC();
 
@@ -75,10 +86,12 @@ void CookieServiceParent::RemoveCookie(const Cookie& cookie) {
   if (cookie.IsHttpOnly() || !InsecureCookieOrSecureOrigin(cookie)) {
     cookieStruct.value() = "";
   }
-  Unused << SendRemoveCookie(cookieStruct, attrs);
+  (void)SendRemoveCookie(cookieStruct, attrs,
+                         aOperationID ? Some(*aOperationID) : Nothing());
 }
 
-void CookieServiceParent::AddCookie(const Cookie& cookie) {
+void CookieServiceParent::AddCookie(const Cookie& cookie,
+                                    const nsID* aOperationID) {
   const OriginAttributes& attrs = cookie.OriginAttributesRef();
   CookieStruct cookieStruct = cookie.ToIPC();
 
@@ -87,25 +100,35 @@ void CookieServiceParent::AddCookie(const Cookie& cookie) {
   if (cookie.IsHttpOnly() || !InsecureCookieOrSecureOrigin(cookie)) {
     cookieStruct.value() = "";
   }
-  Unused << SendAddCookie(cookieStruct, attrs);
+  (void)SendAddCookie(cookieStruct, attrs,
+                      aOperationID ? Some(*aOperationID) : Nothing());
 }
 
 bool CookieServiceParent::ContentProcessHasCookie(const Cookie& cookie) {
+  return ContentProcessHasCookie(cookie.Host(), cookie.OriginAttributesRef());
+}
+
+bool CookieServiceParent::ContentProcessHasCookie(
+    const nsACString& aHost, const OriginAttributes& aOriginAttributes) {
   nsCString baseDomain;
   if (NS_WARN_IF(NS_FAILED(CookieCommons::GetBaseDomainFromHost(
-          mTLDService, cookie.Host(), baseDomain)))) {
+          mTLDService, aHost, baseDomain)))) {
     return false;
   }
 
-  CookieKey cookieKey(baseDomain, cookie.OriginAttributesRef());
+  CookieKey cookieKey(baseDomain, aOriginAttributes);
   return mCookieKeysInContent.MaybeGet(cookieKey).isSome();
 }
 
 bool CookieServiceParent::InsecureCookieOrSecureOrigin(const Cookie& cookie) {
   nsCString baseDomain;
-  // CookieStorage notifications triggering this won't fail to get base domain
-  MOZ_ALWAYS_SUCCEEDS(CookieCommons::GetBaseDomainFromHost(
-      mTLDService, cookie.Host(), baseDomain));
+  if (NS_FAILED(CookieCommons::GetBaseDomainFromHost(mTLDService, cookie.Host(),
+                                                     baseDomain))) {
+    MOZ_ASSERT(false,
+               "CookieServiceParent::InsecureCookieOrSecureOrigin - "
+               "GetBaseDomainFromHost shouldn't fail");
+    return false;
+  }
 
   // cookie is insecure or cookie is associated with a secure-origin process
   CookieKey cookieKey(baseDomain, cookie.OriginAttributesRef());
@@ -184,7 +207,7 @@ void CookieServiceParent::TrackCookieLoad(nsIChannel* aChannel) {
       foundCookieList);
   nsTArray<CookieStructTable> matchingCookiesListTable;
   SerializeCookieListTable(foundCookieList, matchingCookiesListTable, uri);
-  Unused << SendTrackCookiesLoad(matchingCookiesListTable);
+  (void)SendTrackCookiesLoad(matchingCookiesListTable);
 }
 
 // we append outgoing cookie info into a list here so the ContentParent can
@@ -288,6 +311,10 @@ IPCResult CookieServiceParent::RecvSetCookies(
     const nsCString& aBaseDomain, const OriginAttributes& aOriginAttributes,
     nsIURI* aHost, bool aFromHttp, bool aIsThirdParty,
     const nsTArray<CookieStruct>& aCookies) {
+  if (!ContentProcessHasCookie(aBaseDomain, aOriginAttributes)) {
+    return IPC_FAIL(this, "Invalid set-cookie request from content process");
+  }
+
   return SetCookies(aBaseDomain, aOriginAttributes, aHost, aFromHttp,
                     aIsThirdParty, aCookies);
 }
@@ -307,15 +334,22 @@ IPCResult CookieServiceParent::SetCookies(
     return IPC_FAIL(this, "aHost must not be null");
   }
 
-  // We set this to true while processing this cookie update, to make sure
-  // we don't send it back to the same content process.
-  mProcessingCookie = true;
+  // We set the cookie processing flag to true while processing this cookie
+  // update, to make sure we don't send it back to the same content process.
+  CookieProcessingGuard guard(this);
 
-  bool ok = mCookieService->SetCookiesFromIPC(aBaseDomain, aOriginAttributes,
-                                              aHost, aFromHttp, aIsThirdParty,
-                                              aCookies, aBrowsingContext);
-  mProcessingCookie = false;
-  return ok ? IPC_OK() : IPC_FAIL(this, "Invalid cookie received.");
+  nsICookieValidation::ValidationError error =
+      mCookieService->SetCookiesFromIPC(aBaseDomain, aOriginAttributes, aHost,
+                                        aFromHttp, aIsThirdParty, aCookies,
+                                        aBrowsingContext);
+  MOZ_DIAGNOSTIC_ASSERT(error == nsICookieValidation::eOK);
+
+  if (error != nsICookieValidation::eOK) {
+    MOZ_LOG(gCookieLog, LogLevel::Warning,
+            ("Invalid cookie submission from the content process: %d", error));
+  }
+
+  return IPC_OK();
 }
 
 }  // namespace net

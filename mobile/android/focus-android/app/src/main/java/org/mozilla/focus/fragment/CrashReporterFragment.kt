@@ -33,8 +33,13 @@ class CrashReporterFragment : Fragment(R.layout.fragment_crash_reporter) {
     }
 
     companion object {
-        val FRAGMENT_TAG = "crash-reporter"
+        const val FRAGMENT_TAG = "crash-reporter"
 
+        /**
+         * Creates a new instance of the CrashReporterFragment.
+         *
+         * @return A new instance of CrashReporterFragment.
+         */
         fun create() = CrashReporterFragment()
     }
 }

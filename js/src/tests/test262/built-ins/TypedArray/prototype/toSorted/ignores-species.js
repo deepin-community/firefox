@@ -1,9 +1,8 @@
-// |reftest| shell-option(--enable-float16array)
 // Copyright (C) 2021 Igalia, S.L. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.
 
 /*---
-esid: sec-%typedarray%.prototype.toSorted
+esid: sec-%typedarray%.prototype.tosorted
 description: >
   %TypedArray%.prototype.toSorted ignores @@species
 info: |

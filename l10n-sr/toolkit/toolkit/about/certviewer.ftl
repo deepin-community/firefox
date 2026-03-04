@@ -15,7 +15,7 @@ certificate-viewer-algorithm = Алгоритам
 certificate-viewer-certificate-authority = Сертификационо тело
 certificate-viewer-cipher-suite = Cipher Suite
 certificate-viewer-common-name = Уобичајени назив
-certificate-viewer-email-address = Имејл-адреса
+certificate-viewer-email-address = Адреса е-поште
 # Variables:
 #   $firstCertName (String) - Common Name for the displayed certificate
 certificate-viewer-tab-title = Сертификат за { $firstCertName }
@@ -36,6 +36,7 @@ certificate-viewer-key-size = Величина кључа
 certificate-viewer-inc-locality = Место оснивања
 certificate-viewer-locality = Место
 certificate-viewer-location = Локација
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = ID дневника
 certificate-viewer-method = Метода
 certificate-viewer-modulus = Модул
@@ -81,7 +82,6 @@ certificate-viewer-authority-info-aia = Подаци сертификацион�
 certificate-viewer-certificate-policies = Сертификационе политике
 certificate-viewer-embedded-scts = Уграђени SCTs
 certificate-viewer-crl-endpoints = Крајње тачке CRL-а
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Преузми
@@ -101,7 +101,6 @@ certificate-viewer-download-pem = PEM (сертификат)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (ланац)
     .download = { $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Овај додатак је означен као критичан, што значи да клијенти морају да одбију сертификат ако га не разумеју.

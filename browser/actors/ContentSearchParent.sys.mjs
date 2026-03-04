@@ -5,13 +5,17 @@
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
-  BrowserSearchTelemetry: "resource:///modules/BrowserSearchTelemetry.sys.mjs",
+  AboutNewTab: "resource:///modules/AboutNewTab.sys.mjs",
+  BrowserSearchTelemetry:
+    "moz-src:///browser/components/search/BrowserSearchTelemetry.sys.mjs",
   BrowserUtils: "resource://gre/modules/BrowserUtils.sys.mjs",
+  DEFAULT_FORM_HISTORY_PARAM:
+    "moz-src:///toolkit/components/search/SearchSuggestionController.sys.mjs",
   FormHistory: "resource://gre/modules/FormHistory.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
   SearchSuggestionController:
-    "resource://gre/modules/SearchSuggestionController.sys.mjs",
-  UrlbarPrefs: "resource:///modules/UrlbarPrefs.sys.mjs",
+    "moz-src:///toolkit/components/search/SearchSuggestionController.sys.mjs",
+  UrlbarPrefs: "moz-src:///browser/components/urlbar/UrlbarPrefs.sys.mjs",
 });
 
 const MAX_LOCAL_SUGGESTIONS = 3;
@@ -167,6 +171,7 @@ export let ContentSearch = {
 
   /**
    * Observes changes in prefs tracked by UrlbarPrefs.
+   *
    * @param {string} pref
    *   The name of the pref, relative to `browser.urlbar.` if the pref is
    *   in that branch.
@@ -189,7 +194,7 @@ export let ContentSearch = {
       );
       lazy.FormHistory.update({
         op: "remove",
-        fieldname: browserData.controller.formHistoryParam,
+        fieldname: lazy.DEFAULT_FORM_HISTORY_PARAM,
         value: entry,
         guid: result.guid,
       }).catch(err =>
@@ -203,14 +208,9 @@ export let ContentSearch = {
       "engineName",
       "searchString",
       "healthReportKey",
-      "searchPurpose",
     ]);
     let engine = Services.search.getEngineByName(data.engineName);
-    let submission = engine.getSubmission(
-      data.searchString,
-      "",
-      data.searchPurpose
-    );
+    let submission = engine.getSubmission(data.searchString, "");
     let win = browser.ownerGlobal;
     if (!win) {
       // The browser may have been closed between the time its content sent the
@@ -265,13 +265,18 @@ export let ContentSearch = {
     let browserData = this._suggestionDataForBrowser(browser, true);
     let { controller } = browserData;
     let ok = lazy.SearchSuggestionController.engineOffersSuggestions(engine);
-    controller.maxLocalResults = ok ? MAX_LOCAL_SUGGESTIONS : MAX_SUGGESTIONS;
-    controller.maxRemoteResults = ok ? MAX_SUGGESTIONS : 0;
-    let priv = lazy.PrivateBrowsingUtils.isBrowserPrivate(browser);
+    let maxLocalResults = ok ? MAX_LOCAL_SUGGESTIONS : MAX_SUGGESTIONS;
+    let maxRemoteResults = ok ? MAX_SUGGESTIONS : 0;
     // fetch() rejects its promise if there's a pending request, but since we
     // process our event queue serially, there's never a pending request.
     this._currentSuggestion = { controller, browser };
-    let suggestions = await controller.fetch(searchString, priv, engine);
+    let suggestions = await controller.fetch({
+      searchString,
+      inPrivateBrowsing: lazy.PrivateBrowsingUtils.isBrowserPrivate(browser),
+      engine,
+      maxLocalResults,
+      maxRemoteResults,
+    });
 
     // Simplify results since we do not support rich results in this component.
     suggestions.local = suggestions.local.map(e => e.value);
@@ -322,17 +327,21 @@ export let ContentSearch = {
     ) {
       return false;
     }
-    let browserData = this._suggestionDataForBrowser(browser, true);
     lazy.FormHistory.update({
       op: "bump",
-      fieldname: browserData.controller.formHistoryParam,
+      fieldname: lazy.DEFAULT_FORM_HISTORY_PARAM,
       value: entry.value,
       source: entry.engineName,
     }).catch(err => console.error("Error adding form history entry: ", err));
     return true;
   },
 
-  async currentStateObj(window) {
+  /**
+   * Construct a state object representing the search engine state.
+   *
+   * @returns {object} state
+   */
+  async currentStateObj() {
     let state = {
       engines: [],
       currentEngine: await this._currentEngineObj(false),
@@ -344,15 +353,8 @@ export let ContentSearch = {
         name: engine.name,
         iconData: await this._getEngineIconURL(engine),
         hidden: engine.hideOneOffButton,
-        isAppProvided: engine.isAppProvided,
+        isConfigEngine: engine.isConfigEngine,
       });
-    }
-
-    if (window) {
-      state.isInPrivateBrowsingMode =
-        lazy.PrivateBrowsingUtils.isContentWindowPrivate(window);
-      state.isAboutPrivateBrowsing =
-        window.gBrowser.currentURI.spec == "about:privatebrowsing";
     }
 
     return state;
@@ -411,21 +413,19 @@ export let ContentSearch = {
     }
   },
 
-  _onMessageGetState({ actor, browser }) {
-    return this.currentStateObj(browser.ownerGlobal).then(state => {
-      this._reply(actor, "State", state);
-    });
+  async _onMessageGetState({ actor }) {
+    let state = await this.currentStateObj();
+    return this._reply(actor, "State", state);
   },
 
-  _onMessageGetEngine({ actor, browser }) {
-    return this.currentStateObj(browser.ownerGlobal).then(state => {
-      this._reply(actor, "Engine", {
-        isPrivateEngine: state.isInPrivateBrowsingMode,
-        isAboutPrivateBrowsing: state.isAboutPrivateBrowsing,
-        engine: state.isInPrivateBrowsingMode
-          ? state.currentPrivateEngine
-          : state.currentEngine,
-      });
+  async _onMessageGetEngine({ actor }) {
+    let state = await this.currentStateObj();
+    let { usePrivateBrowsing } = actor.browsingContext;
+    return this._reply(actor, "Engine", {
+      isPrivateEngine: usePrivateBrowsing,
+      engine: usePrivateBrowsing
+        ? state.currentPrivateEngine
+        : state.currentEngine,
     });
   },
 
@@ -494,6 +494,88 @@ export let ContentSearch = {
     }
   },
 
+  _onMessageSearchHandoff({ browser, data, actor }) {
+    let win = browser.ownerGlobal;
+    let text = data.text;
+    let urlBar = win.gURLBar;
+    let inPrivateBrowsing = lazy.PrivateBrowsingUtils.isBrowserPrivate(browser);
+    let searchEngine = inPrivateBrowsing
+      ? Services.search.defaultPrivateEngine
+      : Services.search.defaultEngine;
+    let isFirstChange = true;
+
+    // It's possible that this is a handoff from about:home / about:newtab,
+    // in which case we want to include the newtab_session_id in our call to
+    // urlBar.handoff. We have to jump through some unfortunate hoops to get
+    // that.
+    let newtabSessionId = null;
+    let newtabActor =
+      browser.browsingContext?.currentWindowGlobal?.getExistingActor(
+        "AboutNewTab"
+      );
+    if (newtabActor) {
+      const portID = newtabActor.getTabDetails()?.portID;
+      if (portID) {
+        newtabSessionId = lazy.AboutNewTab.activityStream.store.feeds
+          .get("feeds.telemetry")
+          ?.sessions.get(portID)?.session_id;
+      }
+    }
+
+    if (!text) {
+      urlBar.setHiddenFocus();
+    } else {
+      // Pass the provided text to the awesomebar
+      urlBar.handoff(text, searchEngine, newtabSessionId);
+      isFirstChange = false;
+    }
+
+    let checkFirstChange = () => {
+      // Check if this is the first change since we hidden focused. If it is,
+      // remove hidden focus styles, prepend the search alias and hide the
+      // in-content search.
+      if (isFirstChange) {
+        isFirstChange = false;
+        urlBar.removeHiddenFocus(true);
+        urlBar.handoff("", searchEngine, newtabSessionId);
+        actor.sendAsyncMessage("DisableSearch");
+        urlBar.removeEventListener("compositionstart", checkFirstChange);
+        urlBar.removeEventListener("paste", checkFirstChange);
+      }
+    };
+
+    let onKeydown = ev => {
+      // Check if the keydown will cause a value change.
+      if (ev.key.length === 1 && !ev.altKey && !ev.ctrlKey && !ev.metaKey) {
+        checkFirstChange();
+      }
+      // If the Esc button is pressed, we are done. Show in-content search and cleanup.
+      if (ev.key === "Escape") {
+        onDone();
+      }
+    };
+
+    let onDone = ev => {
+      // We are done. Show in-content search again and cleanup.
+      const forceSuppressFocusBorder = ev?.type === "mousedown";
+      urlBar.removeHiddenFocus(forceSuppressFocusBorder);
+
+      urlBar.removeEventListener("keydown", onKeydown);
+      urlBar.removeEventListener("mousedown", onDone);
+      urlBar.removeEventListener("blur", onDone);
+      urlBar.removeEventListener("compositionstart", checkFirstChange);
+      urlBar.removeEventListener("paste", checkFirstChange);
+
+      actor.sendAsyncMessage("ShowSearch");
+    };
+
+    urlBar.addEventListener("keydown", onKeydown);
+    urlBar.addEventListener("mousedown", onDone);
+    urlBar.addEventListener("blur", onDone);
+    urlBar.addEventListener("compositionstart", checkFirstChange);
+    urlBar.addEventListener("paste", checkFirstChange);
+  },
+
   async _onObserve(eventItem) {
     let engine;
     switch (eventItem.data) {
@@ -549,7 +631,7 @@ export let ContentSearch = {
     let obj = {
       name: engine.name,
       iconData: await this._getEngineIconURL(engine),
-      isAppProvided: engine.isAppProvided,
+      isConfigEngine: engine.isConfigEngine,
     };
     return obj;
   },

@@ -23,9 +23,22 @@ const CONFIG = [
     base: {
       name: "Application Default Private",
       urls: {
-        search: { base: "https://example.org", searchTermParamName: "q2" },
+        search: {
+          base: "https://example.org",
+          params: [{ name: "pc", value: "{partnerCode}" }],
+          searchTermParamName: "q2",
+        },
       },
     },
+    variants: [
+      {
+        environment: {
+          allLocalesAndRegions: true,
+        },
+        telemetrySuffix: "123",
+        partnerCode: "foo",
+      },
+    ],
   },
   {
     identifier: "otherEngine1",
@@ -81,7 +94,7 @@ add_setup(async () => {
     true
   );
 
-  useHttpServer("opensearch");
+  useHttpServer();
 
   await Services.search.init();
 
@@ -93,35 +106,42 @@ add_setup(async () => {
 
 add_task(async function test_defaultPrivateEngine() {
   Assert.equal(
-    Services.search.defaultPrivateEngine.identifier,
-    appPrivateDefault.identifier,
+    Services.search.defaultPrivateEngine.id,
+    appPrivateDefault.id,
     "Should have the app private default as the default private engine"
   );
   Assert.equal(
-    Services.search.defaultEngine.identifier,
-    appDefault.identifier,
+    Services.search.defaultEngine.id,
+    appDefault.id,
     "Should have the app default as the default engine"
   );
 
   await assertGleanDefaultEngine({
     normal: {
+      providerId: "appDefault",
+      partnerCode: "",
+      overriddenByThirdParty: false,
       engineId: "appDefault",
       displayName: "Application Default",
       loadPath: "[app]appDefault",
       submissionUrl: "https://example.org/?q1=",
-      verified: "default",
     },
     private: {
-      engineId: "appDefaultPrivate",
+      providerId: "appDefaultPrivate",
+      partnerCode: "foo",
+      overriddenByThirdParty: false,
+      engineId: "appDefaultPrivate-123",
       displayName: "Application Default Private",
       loadPath: "[app]appDefaultPrivate",
-      submissionUrl: "https://example.org/?q2=",
-      verified: "default",
+      submissionUrl: "https://example.org/?pc=foo&q2=",
     },
   });
 
   let promise = promiseDefaultNotification("private");
-  Services.search.defaultPrivateEngine = engine1;
+  await Services.search.setDefaultPrivate(
+    engine1,
+    Ci.nsISearchService.CHANGE_REASON_UNKNOWN
+  );
   Assert.equal(
     await promise,
     engine1,
@@ -141,18 +161,22 @@ add_task(async function test_defaultPrivateEngine() {
 
   await assertGleanDefaultEngine({
     normal: {
+      providerId: "appDefault",
+      partnerCode: "",
+      overriddenByThirdParty: false,
       engineId: "appDefault",
       displayName: "Application Default",
       loadPath: "[app]appDefault",
       submissionUrl: "https://example.org/?q1=",
-      verified: "default",
     },
     private: {
+      providerId: "otherEngine1",
+      partnerCode: "",
+      overriddenByThirdParty: false,
       engineId: "otherEngine1",
       displayName: "Other Engine 1",
       loadPath: "[app]otherEngine1",
       submissionUrl: "https://example.org/engine1/?q=",
-      verified: "default",
     },
   });
 
@@ -188,18 +212,22 @@ add_task(async function test_defaultPrivateEngine() {
 
   await assertGleanDefaultEngine({
     normal: {
+      providerId: "appDefault",
+      partnerCode: "",
+      overriddenByThirdParty: false,
       engineId: "appDefault",
       displayName: "Application Default",
       loadPath: "[app]appDefault",
       submissionUrl: "https://example.org/?q1=",
-      verified: "default",
     },
     private: {
+      providerId: "otherEngine2",
+      partnerCode: "",
+      overriddenByThirdParty: false,
       engineId: "otherEngine2",
       displayName: "Other Engine 2",
       loadPath: "[app]otherEngine2",
       submissionUrl: "https://example.org/engine2/?q=",
-      verified: "default",
     },
   });
 
@@ -221,9 +249,11 @@ add_task(async function test_defaultPrivateEngine() {
 
   await assertGleanDefaultEngine({
     normal: {
+      providerId: "appDefault",
       engineId: "appDefault",
     },
     private: {
+      providerId: "otherEngine1",
       engineId: "otherEngine1",
     },
   });
@@ -242,15 +272,20 @@ add_task(async function test_defaultPrivateEngine() {
 
   await assertGleanDefaultEngine({
     normal: {
+      providerId: "appDefault",
       engineId: "appDefault",
     },
     private: {
-      engineId: "appDefaultPrivate",
+      providerId: "appDefaultPrivate",
+      engineId: "appDefaultPrivate-123",
     },
   });
 
   engine1.hidden = false;
-  Services.search.defaultEngine = engine1;
+  await Services.search.setDefault(
+    engine1,
+    Ci.nsISearchService.CHANGE_REASON_UNKNOWN
+  );
   Assert.equal(
     Services.search.defaultPrivateEngine,
     appPrivateDefault,
@@ -259,19 +294,24 @@ add_task(async function test_defaultPrivateEngine() {
 
   await assertGleanDefaultEngine({
     normal: {
+      providerId: "otherEngine1",
       engineId: "otherEngine1",
     },
     private: {
-      engineId: "appDefaultPrivate",
+      providerId: "appDefaultPrivate",
+      engineId: "appDefaultPrivate-123",
     },
   });
 
-  Services.search.defaultEngine = appDefault;
+  await Services.search.setDefault(
+    appDefault,
+    Ci.nsISearchService.CHANGE_REASON_UNKNOWN
+  );
 });
 
 add_task(async function test_telemetry_private_empty_submission_url() {
   await SearchTestUtils.installOpenSearchEngine({
-    url: `${gDataUrl}simple.xml`,
+    url: `${gHttpURL}/opensearch/simple.xml`,
     setAsDefaultPrivate: true,
     // We don't want it to reset to the default at the test end, as we
     // reset the search service in a later test in this file.
@@ -280,29 +320,45 @@ add_task(async function test_telemetry_private_empty_submission_url() {
 
   await assertGleanDefaultEngine({
     normal: {
+      providerId: "appDefault",
+      partnerCode: "",
+      overriddenByThirdParty: false,
       engineId: appDefault.telemetryId,
     },
     private: {
+      providerId: "other",
+      partnerCode: "",
+      overriddenByThirdParty: false,
       engineId: "other-simple",
       displayName: "simple",
       loadPath: "[http]localhost/simple.xml",
       submissionUrl: "blank:",
-      verified: "verified",
     },
   });
 
-  Services.search.defaultEngine = appDefault;
+  await Services.search.setDefault(
+    appDefault,
+    Ci.nsISearchService.CHANGE_REASON_UNKNOWN
+  );
 });
 
 add_task(async function test_defaultPrivateEngine_turned_off() {
-  Services.search.defaultEngine = appDefault;
-  Services.search.defaultPrivateEngine = engine1;
+  await Services.search.setDefault(
+    appDefault,
+    Ci.nsISearchService.CHANGE_REASON_UNKNOWN
+  );
+  await Services.search.setDefaultPrivate(
+    engine1,
+    Ci.nsISearchService.CHANGE_REASON_UNKNOWN
+  );
 
   await assertGleanDefaultEngine({
     normal: {
+      providerId: "appDefault",
       engineId: "appDefault",
     },
     private: {
+      providerId: "otherEngine1",
       engineId: "otherEngine1",
     },
   });
@@ -320,16 +376,21 @@ add_task(async function test_defaultPrivateEngine_turned_off() {
 
   await assertGleanDefaultEngine({
     normal: {
+      providerId: "appDefault",
       engineId: "appDefault",
     },
     private: {
+      providerId: "",
       engineId: "",
     },
   });
 
   promise = promiseDefaultNotification("normal");
   let privatePromise = promiseDefaultNotification("private");
-  Services.search.defaultEngine = engine1;
+  await Services.search.setDefault(
+    engine1,
+    Ci.nsISearchService.CHANGE_REASON_UNKNOWN
+  );
   Assert.equal(
     await promise,
     engine1,
@@ -353,15 +414,20 @@ add_task(async function test_defaultPrivateEngine_turned_off() {
 
   await assertGleanDefaultEngine({
     normal: {
+      providerId: "otherEngine1",
       engineId: "otherEngine1",
     },
     private: {
+      providerId: "",
       engineId: "",
     },
   });
 
   promise = promiseDefaultNotification("private");
-  Services.search.defaultPrivateEngine = engine2;
+  await Services.search.setDefaultPrivate(
+    engine2,
+    Ci.nsISearchService.CHANGE_REASON_UNKNOWN
+  );
   Assert.equal(
     await promise,
     engine2,
@@ -388,15 +454,20 @@ add_task(async function test_defaultPrivateEngine_turned_off() {
 
   await assertGleanDefaultEngine({
     normal: {
+      providerId: "otherEngine1",
       engineId: "otherEngine1",
     },
     private: {
+      providerId: "otherEngine2",
       engineId: "otherEngine2",
     },
   });
 
   promise = promiseDefaultNotification("private");
-  Services.search.defaultPrivateEngine = engine1;
+  await Services.search.setDefaultPrivate(
+    engine1,
+    Ci.nsISearchService.CHANGE_REASON_UNKNOWN
+  );
   Assert.equal(
     await promise,
     engine1,
@@ -415,9 +486,11 @@ add_task(async function test_defaultPrivateEngine_turned_off() {
 
   await assertGleanDefaultEngine({
     normal: {
+      providerId: "otherEngine1",
       engineId: "otherEngine1",
     },
     private: {
+      providerId: "otherEngine1",
       engineId: "otherEngine1",
     },
   });
@@ -431,14 +504,22 @@ add_task(async function test_defaultPrivateEngine_ui_turned_off() {
     true
   );
 
-  Services.search.defaultEngine = engine2;
-  Services.search.defaultPrivateEngine = engine1;
+  await Services.search.setDefault(
+    engine2,
+    Ci.nsISearchService.CHANGE_REASON_UNKNOWN
+  );
+  await Services.search.setDefaultPrivate(
+    engine1,
+    Ci.nsISearchService.CHANGE_REASON_UNKNOWN
+  );
 
   await assertGleanDefaultEngine({
     normal: {
+      providerId: "otherEngine2",
       engineId: "otherEngine2",
     },
     private: {
+      providerId: "otherEngine1",
       engineId: "otherEngine1",
     },
   });
@@ -456,15 +537,20 @@ add_task(async function test_defaultPrivateEngine_ui_turned_off() {
 
   await assertGleanDefaultEngine({
     normal: {
+      providerId: "otherEngine2",
       engineId: "otherEngine2",
     },
     private: {
+      providerId: "",
       engineId: "",
     },
   });
 
   promise = promiseDefaultNotification("normal");
-  Services.search.defaultPrivateEngine = engine1;
+  await Services.search.setDefaultPrivate(
+    engine1,
+    Ci.nsISearchService.CHANGE_REASON_UNKNOWN
+  );
   Assert.equal(
     await promise,
     engine1,
@@ -478,9 +564,11 @@ add_task(async function test_defaultPrivateEngine_ui_turned_off() {
 
   await assertGleanDefaultEngine({
     normal: {
+      providerId: "otherEngine1",
       engineId: "otherEngine1",
     },
     private: {
+      providerId: "",
       engineId: "",
     },
   });
@@ -497,14 +585,22 @@ add_task(async function test_defaultPrivateEngine_same_engine_toggle_pref() {
   );
 
   // Set the normal and private engines to be the same
-  Services.search.defaultEngine = engine2;
-  Services.search.defaultPrivateEngine = engine2;
+  await Services.search.setDefault(
+    engine2,
+    Ci.nsISearchService.CHANGE_REASON_UNKNOWN
+  );
+  await Services.search.setDefaultPrivate(
+    engine2,
+    Ci.nsISearchService.CHANGE_REASON_UNKNOWN
+  );
 
   await assertGleanDefaultEngine({
     normal: {
+      providerId: "otherEngine2",
       engineId: "otherEngine2",
     },
     private: {
+      providerId: "otherEngine2",
       engineId: "otherEngine2",
     },
   });
@@ -527,9 +623,11 @@ add_task(async function test_defaultPrivateEngine_same_engine_toggle_pref() {
 
   await assertGleanDefaultEngine({
     normal: {
+      providerId: "otherEngine2",
       engineId: "otherEngine2",
     },
     private: {
+      providerId: "",
       engineId: "",
     },
   });
@@ -552,9 +650,11 @@ add_task(async function test_defaultPrivateEngine_same_engine_toggle_pref() {
 
   await assertGleanDefaultEngine({
     normal: {
+      providerId: "otherEngine2",
       engineId: "otherEngine2",
     },
     private: {
+      providerId: "otherEngine2",
       engineId: "otherEngine2",
     },
   });
@@ -571,14 +671,22 @@ add_task(async function test_defaultPrivateEngine_same_engine_toggle_ui_pref() {
   );
 
   // Set the normal and private engines to be the same
-  Services.search.defaultEngine = engine2;
-  Services.search.defaultPrivateEngine = engine2;
+  await Services.search.setDefault(
+    engine2,
+    Ci.nsISearchService.CHANGE_REASON_UNKNOWN
+  );
+  await Services.search.setDefaultPrivate(
+    engine2,
+    Ci.nsISearchService.CHANGE_REASON_UNKNOWN
+  );
 
   await assertGleanDefaultEngine({
     normal: {
+      providerId: "otherEngine2",
       engineId: "otherEngine2",
     },
     private: {
+      providerId: "otherEngine2",
       engineId: "otherEngine2",
     },
   });
@@ -601,9 +709,11 @@ add_task(async function test_defaultPrivateEngine_same_engine_toggle_ui_pref() {
 
   await assertGleanDefaultEngine({
     normal: {
+      providerId: "otherEngine2",
       engineId: "otherEngine2",
     },
     private: {
+      providerId: "",
       engineId: "",
     },
   });
@@ -626,9 +736,11 @@ add_task(async function test_defaultPrivateEngine_same_engine_toggle_ui_pref() {
 
   await assertGleanDefaultEngine({
     normal: {
+      providerId: "otherEngine2",
       engineId: "otherEngine2",
     },
     private: {
+      providerId: "otherEngine2",
       engineId: "otherEngine2",
     },
   });

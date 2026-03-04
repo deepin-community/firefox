@@ -19,7 +19,7 @@
 #  include "mozilla/java/CompositorSurfaceManagerWrappers.h"
 #endif
 
-class nsBaseWidget;
+class nsIWidget;
 
 namespace mozilla {
 namespace layers {
@@ -32,11 +32,10 @@ class UiCompositorControllerChild final
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(UiCompositorControllerChild, final)
 
   static RefPtr<UiCompositorControllerChild> CreateForSameProcess(
-      const LayersId& aRootLayerTreeId, nsBaseWidget* aWidget);
+      const LayersId& aRootLayerTreeId, nsIWidget* aWidget);
   static RefPtr<UiCompositorControllerChild> CreateForGPUProcess(
       const uint64_t& aProcessToken,
-      Endpoint<PUiCompositorControllerChild>&& aEndpoint,
-      nsBaseWidget* aWidget);
+      Endpoint<PUiCompositorControllerChild>&& aEndpoint, nsIWidget* aWidget);
 
   bool Pause();
   bool Resume();
@@ -80,15 +79,15 @@ class UiCompositorControllerChild final
   void HandleFatalError(const char* aMsg) override;
   mozilla::ipc::IPCResult RecvToolbarAnimatorMessageFromCompositor(
       const int32_t& aMessage);
-  mozilla::ipc::IPCResult RecvRootFrameMetrics(const ScreenPoint& aScrollOffset,
-                                               const CSSToScreenScale& aZoom);
+  mozilla::ipc::IPCResult RecvNotifyCompositorScrollUpdate(
+      const CompositorScrollUpdate& aUpdate);
   mozilla::ipc::IPCResult RecvScreenPixels(Shmem&& aMem,
                                            const ScreenIntSize& aSize,
                                            bool aNeedsYFlip);
 
  private:
   explicit UiCompositorControllerChild(const uint64_t& aProcessToken,
-                                       nsBaseWidget* aWidget);
+                                       nsIWidget* aWidget);
   virtual ~UiCompositorControllerChild();
   void OpenForSameProcess();
   void OpenForGPUProcess(Endpoint<PUiCompositorControllerChild>&& aEndpoint);
@@ -103,7 +102,7 @@ class UiCompositorControllerChild final
   Maybe<int32_t> mMaxToolbarHeight;
   Maybe<uint32_t> mDefaultClearColor;
   Maybe<bool> mLayerUpdateEnabled;
-  RefPtr<nsBaseWidget> mWidget;
+  RefPtr<nsIWidget> mWidget;
   // Should only be set when compositor is in process.
   RefPtr<UiCompositorControllerParent> mParent;
 

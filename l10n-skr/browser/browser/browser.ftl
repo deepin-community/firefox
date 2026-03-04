@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # These are the default window titles everywhere except macOS.
 # .data-title-default and .data-title-private are used when the web content
 # opened has no title:
@@ -51,6 +48,75 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = { -brand-shortcut-name } نجی براؤزنگ
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } نجی براؤزنگ
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } نجی براؤزنگ
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — { -brand-full-name } نجی براؤزنگ
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — { -brand-full-name } نجی براؤزنگ
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — نجی براؤزنگ
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } نجی براؤزنگ
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } —نجی براؤزنگ
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — نجی براؤزنگ
+# This is the initial default title for the browser window.
+# It gets updated based on loaded tabs or private browsing state.
+browser-main-window-default-title = { -brand-full-name }
+# Note: only on macOS do we use a `-` separator between the brand name and the
+# "Private Browsing" suffix.
+browser-main-private-window-title =
+    { PLATFORM() ->
+        [macos] { -brand-full-name } — نجی براؤزنگ
+       *[other] { -brand-full-name } نجی براؤزنگ
+    }
 
 ##
 
@@ -281,7 +347,6 @@ quickactions-print2 = ورقہ پرنٹ کرو
 quickactions-cmd-print = چھاپو
 # Opens the print dialog at the save to PDF option
 quickactions-savepdf = ورقہ پی ڈی ایف دے طور تے محفوظ کرو
-quickactions-cmd-savepdf = پی ڈی ایف
 # Opens a new private browsing window
 quickactions-private2 = نجی ونڈو کھولو
 quickactions-cmd-private = نجی براؤزنگ
@@ -552,8 +617,6 @@ urlbar-page-action-button =
     .tooltiptext = عملاں دا ورقہ
 urlbar-revert-button =
     .tooltiptext = لوکیشن بار وِچ  پتے ݙکھاؤ
-urlbar-show-page-actions-button =
-    .tooltiptext = سارے ورقہ عمل ݙکھاؤ
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -608,12 +671,44 @@ urlbar-result-action-copy-to-clipboard = نقل کرو
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+# Shows the result of a formula expression being calculated, in scientific notation.
+# The last = sign will be shown as part of the result (e.g. "= 1.0e17").
+# Variables
+#  $result (String): the string representation for a result in scientific notation
+#  (e.g. "1.0e17").
+urlbar-result-action-calculator-result-scientific-notation = = { $result }
 
 ## Strings used for buttons in the urlbar
 
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = { $engine } نال ڳولو
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords }  - { $localSearchMode } ڳولو
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords }  - { $engine } نال ڳولو
+urlbar-searchmode-dropmarker =
+    .tooltiptext = ڳولݨ انجݨ چݨو
+urlbar-searchmode-bookmarks =
+    .label = نشانیاں
+urlbar-searchmode-tabs =
+    .label = ٹیباں
+urlbar-searchmode-history =
+    .label = تاریخ
+urlbar-searchmode-actions =
+    .label = عمل
+urlbar-searchmode-exit-button =
+    .tooltiptext = بند کرو
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = ایں واری، دے نال ڳولو:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = ڳولݨ ترتیباں
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -936,15 +1031,15 @@ data-reporting-notification-button =
     .accesskey = C
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = نجی براؤزنگ
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = نجی براؤزنگ
 # Tooltip for the indicator shown in the window titlebar when content analysis is active.
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
 content-analysis-indicator-tooltip =
     .tooltiptext = ڈیٹا ضایا تِھیوݨ کنوں بچاء (ڈی ایل پی) بذریعہ { $agentName }۔ ودھیک معلومات کِیتے دباؤ۔
 content-analysis-panel-title = ڈیٹا حفاظت
-# Variables:
-#   $agentName (String): The name of the DLP agent that is connected
-content-analysis-panel-text = تُہاݙی تنظیم ڈیٹا دے ضایا تِھیوݨ کنوں بچاوݨ کِیتے { $agentName } دا استعمال کرین٘دی ہِے۔ <a data-l10n-name="info"> ودھیک ڄاݨو</a>
 
 ## Unified extensions (toolbar) button
 
@@ -1009,10 +1104,7 @@ firefox-relay-offer-legal-notice = "ای میل ماسک استعمال کرو" 
 popup-notification-addon-install-unsigned =
     .value = (غیر تصدیق شدہ)
 popup-notification-xpinstall-prompt-learn-more = محفوظ طریقے نال ایڈ آنز انسٹال کرݨ بارے مزید سکھو۔
-# Note: Access key is set to P to match "Private" in the corresponding localized label.
-popup-notification-addon-privatebrowsing-checkbox =
-    .label = نجی ونڈوز وِچ چلاؤ
-    .accesskey = P
+popup-notification-xpinstall-prompt-block-url = تفصیلاں ݙیکھو
 
 ## Pop-up warning
 

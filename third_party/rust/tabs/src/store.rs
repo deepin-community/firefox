@@ -2,8 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use crate::storage::{ClientRemoteTabs, RemoteTab, TabsStorage};
+use crate::storage::{ClientRemoteTabs, LocalTabsInfo, RemoteTab, TabsStorage};
 use crate::{ApiResult, PendingCommand, RemoteCommand};
+use std::collections::HashMap;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
@@ -24,8 +25,25 @@ impl TabsStore {
         }
     }
 
+    // Closes connection to the tabs DB, this is named slightly
+    // different since Kotlin implements AutoClosable and doesn't
+    // want us using close
+    pub fn close_connection(&self) {
+        self.storage.lock().unwrap().close()
+    }
+
+    /// For when we have no concept of tab groups or windows.
+    /// Deprecated for desktop, hopefully one day deprecated on mobile.
     pub fn set_local_tabs(&self, local_state: Vec<RemoteTab>) {
-        self.storage.lock().unwrap().update_local_state(local_state);
+        self.set_local_tabs_info(LocalTabsInfo {
+            tabs: local_state,
+            tab_groups: HashMap::new(),
+            windows: HashMap::new(),
+        })
+    }
+
+    pub fn set_local_tabs_info(&self, info: LocalTabsInfo) {
+        self.storage.lock().unwrap().update_local_state(info);
     }
 
     // like remote_tabs, but serves the uniffi layer

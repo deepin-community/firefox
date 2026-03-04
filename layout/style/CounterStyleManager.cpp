@@ -13,7 +13,8 @@
 #include "mozilla/CheckedInt.h"
 #include "mozilla/MathAlgorithms.h"
 #include "mozilla/PresShell.h"
-#include "mozilla/Types.h"
+#include "mozilla/ServoBindings.h"
+#include "mozilla/ServoStyleSet.h"
 #include "mozilla/WritingModes.h"
 #include "nsPresContext.h"
 #include "nsPresContextInlines.h"
@@ -21,8 +22,6 @@
 #include "nsTArray.h"
 #include "nsTHashtable.h"
 #include "nsUnicodeProperties.h"
-#include "mozilla/ServoBindings.h"
-#include "mozilla/ServoStyleSet.h"
 
 namespace mozilla {
 
@@ -420,12 +419,17 @@ static bool HebrewToText(CounterValue aOrdinal, nsAString& aResult) {
     }  // if
 
     // Process digit for 1 - 9
-    if (n3 > 0) thousandsGroup.Append(gHebrewDigit[n3 - 1]);
-    if (outputSep) thousandsGroup.Append((char16_t)HEBREW_GERESH);
-    if (allText.IsEmpty())
+    if (n3 > 0) {
+      thousandsGroup.Append(gHebrewDigit[n3 - 1]);
+    }
+    if (outputSep) {
+      thousandsGroup.Append((char16_t)HEBREW_GERESH);
+    }
+    if (allText.IsEmpty()) {
       allText = thousandsGroup;
-    else
+    } else {
       allText = thousandsGroup + allText;
+    }
     aOrdinal /= 1000;
     outputSep = true;
   } while (aOrdinal >= 1);
@@ -1821,7 +1825,7 @@ CounterStyle* CounterStyleManager::ResolveCounterStyle(nsAtom* aName) {
 
 /* static */
 CounterStyle* CounterStyleManager::GetBuiltinStyle(ListStyle aStyle) {
-  MOZ_ASSERT(size_t(aStyle) < ArrayLength(gBuiltinStyleTable),
+  MOZ_ASSERT(size_t(aStyle) < std::size(gBuiltinStyleTable),
              "Require a valid builtin style constant");
   MOZ_ASSERT(!gBuiltinStyleTable[size_t(aStyle)].IsDependentStyle(),
              "Cannot get dependent builtin style");

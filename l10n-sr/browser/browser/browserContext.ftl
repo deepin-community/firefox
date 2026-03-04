@@ -78,6 +78,12 @@ toolbar-button-fxaccount =
     .label = { -fxaccount-brand-name }
     .tooltiptext = { -fxaccount-brand-name }
 
+## Account toolbar Button
+
+toolbar-button-account =
+    .label = Налог
+    .tooltiptext = Налог
+
 ## Save Page
 
 main-context-menu-page-save =
@@ -143,9 +149,7 @@ main-context-menu-save-link-to-pocket =
     .label = Сачувај везу у { -pocket-brand-name(case: "loc") }
     .accesskey = а
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Копирај имејл-адресу
@@ -156,10 +160,11 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Копирај везу
     .accesskey = К
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Копирај везу без праћења са странице
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Копирај чисту везу
     .accesskey = у
 
 ## Media (video/audio) controls
@@ -284,13 +289,12 @@ main-context-menu-send-to-device =
     .label = Пошаљи страницу на уређај
     .accesskey = ш
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Користи сачувано корисничко име
     .accesskey = К
+# Displayed when there are saved passwords and the user clicks inside a username or password field
 main-context-menu-use-saved-password =
     .label = Користи сачувану лозинку
     .accesskey = К
@@ -304,6 +308,9 @@ main-context-menu-suggest-strong-password =
     .label = Предложи јаку лозинку…
     .accesskey = ж
 main-context-menu-manage-logins2 =
+    .label = Управљај лозинкама
+    .accesskey = У
+main-context-menu-manage-passwords =
     .label = Управљај лозинкама
     .accesskey = У
 main-context-menu-keyword =

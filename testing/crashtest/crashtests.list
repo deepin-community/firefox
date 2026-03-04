@@ -19,6 +19,7 @@ include ../../dom/fs/test/crashtests/crashtests.list
 include ../../dom/html/crashtests/crashtests.list
 include ../../dom/indexedDB/test/crashtests/crashtests.list
 include ../../dom/jsurl/crashtests/crashtests.list
+include ../../dom/locks/test/crashtests/crashtests.list
 include ../../dom/media/mediasession/test/crashtests/crashtests.list
 include ../../dom/media/mediasource/test/crashtests/crashtests.list
 include ../../dom/media/test/crashtests/crashtests.list
@@ -75,8 +76,6 @@ include ../../netwerk/test/crashtests/crashtests.list
 include ../../parser/htmlparser/tests/crashtests/crashtests.list
 
 include ../../security/manager/ssl/crashtests/crashtests.list
-
-include ../../view/crashtests/crashtests.list
 
 include ../../widget/cocoa/crashtests/crashtests.list
 include ../../widget/crashtests/crashtests.list

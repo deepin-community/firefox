@@ -7,8 +7,6 @@
 #ifndef jit_AtomicOperations_h
 #define jit_AtomicOperations_h
 
-#include "mozilla/Types.h"
-
 #include <string.h>
 
 #include "jit/AtomicOperationsGenerated.h"
@@ -173,6 +171,9 @@ class AtomicOperations {
 
   // Execute a full memory barrier (LoadLoad+LoadStore+StoreLoad+StoreStore).
   static inline void fenceSeqCst();
+
+  // Pause or yield instruction.
+  static inline void pause();
 
   // All clients should use the APIs that take SharedMem pointers.
   // See above for semantics and acceptable types.
@@ -343,7 +344,7 @@ constexpr inline bool AtomicOperations::isLockfreeJS(int32_t size) {
 
 #ifdef JS_HAVE_GENERATED_ATOMIC_OPS
 #  include "jit/shared/AtomicOperations-shared-jit.h"
-#elif defined(JS_SIMULATOR_MIPS32) || defined(__mips__)
+#elif defined(__mips__)
 #  include "jit/mips-shared/AtomicOperations-mips-shared.h"
 #else
 #  include "jit/shared/AtomicOperations-feeling-lucky.h"

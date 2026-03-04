@@ -25,6 +25,8 @@ return-to-amo-subtitle = Bra, du har { -brand-short-name }
 return-to-amo-addon-title = La oss nå hente <img data-l10n-name="icon"/><b>{ $addon-name }</b>.
 return-to-amo-add-extension-label = Legg til utvidelsen
 return-to-amo-add-theme-label = Legg til temaet
+return-to-amo-theme-install-complete-label = Tema installert
+return-to-amo-extension-install-complete-label = Utvidelse installert
 
 ##  Variables: $addon-name (String) - Name of the add-on to be installed
 
@@ -53,9 +55,6 @@ mr1-onboarding-import-primary-button-label-attribution = Importer fra { $previou
 mr1-onboarding-theme-header = Gjør den til din egen
 mr1-onboarding-theme-subtitle = Tilpass { -brand-short-name } med et tema.
 mr1-onboarding-theme-secondary-button-label = Ikke nå
-newtab-wallpaper-onboarding-title = Prøv en fargeklatt
-newtab-wallpaper-onboarding-subtitle = Velg et bakgrunnsbilde for å gi Ny fane-siden et friskt utseende.
-newtab-wallpaper-onboarding-primary-button-label = Velg bakgrunnsbilde
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Systemtema
 mr1-onboarding-theme-label-light = Lyst
@@ -225,7 +224,9 @@ mr2022-onboarding-set-default-subtitle = Bruk en nettleser støttet av en ideell
 mr2022-onboarding-get-started-primary-subtitle = Vår nyeste versjon er laget for å møte dine behov og gjøre det enklere å navigere på nettet. Den er fullpakket med funksjoner vi tror du vil elske.
 mr2022-onboarding-get-started-primary-button-label = Hurtig konfigurering
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Lynrask konfigurering
 mr2022-onboarding-import-subtitle = Konfiguer { -brand-short-name } slik du liker det. Legg til bokmerker, passord og mer fra den gamle nettleseren din.
@@ -356,6 +357,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Når du er synkronise
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } passer på deg
 onboarding-gratitude-security-and-privacy-subtitle = Takk for at du bruker { -brand-short-name }, støttet av Mozilla Foundation. Med din støtte jobber vi for å gjøre internett tryggere og mer tilgjengelig for alle.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Synkroniser dine data på tvers av enheter
+onboarding-sign-up-description = Registrer en konto, så lagres all viktig informasjon — passord, bokmerker og mer — sikkert og er tilgjengelig når du logger deg på en hvilken som helst enhet.
+onboarding-sign-up-button = Registrer deg eller logg inn
+onboarding-sign-up-secondary-button = Begynn å surfe
 
 ## New user time and familiarity survey strings
 
@@ -375,3 +381,208 @@ onboarding-new-user-survey-familiarity-based-option-1 = Jeg er helt ny
 onboarding-new-user-survey-familiarity-based-option-2 = Jeg har brukt den en del
 onboarding-new-user-survey-familiarity-based-option-3 = Jeg er veldig kjent med den
 onboarding-new-user-survey-familiarity-based-option-4 = Jeg brukte den tidligere, men det er en stund siden
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Fortell oss hvor du vil ha fanene dine
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Slå den opp når du vil i sidestolpeinnstillingene.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Dine faner, på din måte
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Har du mange faner åpne? Prøv fanene på siden for en mer strømlinjeformet visning. Eller hold på det klassiske med faner øverst. Bytt når som helst.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Velg faneoppsett
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = For en strømlinjeformet visning som kan hjelpe deg å holde fokus, prøv faner på siden. Eller behold det klassiske med faner på toppen. Bytt når som helst.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Faner på siden
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Faner på toppen
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Vertikale faner er her
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Introduserer vertikale faner
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Prøv fanene på siden. Endre når du vil i innstillinger for sidestolpe.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Prøv vertikale faner
+onboarding-flair-text = Nyhet!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Behold horisontale faner
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Et nettleservindu som viser faner langs siden av skjermen som en del av { -brand-shorter-name }-sidestolpen.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Et nettleservindu som viser faner langs siden av skjermen som en del av { -brand-shorter-name }-sidestolpen.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Et nettleservindu som viser faner øverst.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Et nettleservindu som viser faner øverst.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Prøv en AI-chatbot i sidestolpen
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Oppsummer innhold på nettet, ha en idédugnad, lag utkast til meldinger — alt mens du surfer. Velg mellom flere leverandører. Bytt når som helst. <a data-l10n-name="learn-more">Les mer</a>
+onboarding-genai-sidebar-primary-button = Velg en samtalerobot
+onboarding-genai-sidebar-secondary-button = Begynn å surfe
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Fullfør oppsettet av { -brand-short-name }
+onboarding-checklist-subtitle = Fullfør disse trinnene for å få mest mulig ut av nettleseropplevelsen din.
+onboarding-checklist-set-default = Gjør { -brand-short-name } til standardnettleser
+onboarding-checklist-pin = Fest { -brand-short-name } til oppgavelinjen
+onboarding-checklist-import = Importer fra tidligere nettleser
+onboarding-checklist-extension = Legg til en utvidelse
+onboarding-checklist-sign-up = Registrer deg eller logg inn på kontoen din
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Prøv fanegrupper for mindre rot, mer fokus
+tab-groups-onboarding-feature-callout-subtitle = Organiser fanene dine ved å dra én fane oppå en annen for å opprette den første gruppen.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-create-group-title-3 = Finn fanegruppene dine når som helst i List opp alle faner-menyen.
+tab-groups-onboarding-create-group-title-2 = Finn fanegruppene dine her når som helst.
+tab-groups-onboarding-create-group-no-alltabs-button-title = Finn gruppene dine ved å søke etter dem i adresselinjen.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-saved-groups-title-3 = Når du lukker en fanegruppe, kan du når som helst åpne den på nytt fra List opp alle faner-menyen.
+tab-groups-onboarding-saved-groups-title-2 = Når du lukker en fanegruppe, kan du åpne den på nytt her når som helst.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title-2 = Finn dine lukkede grupper ved å søke etter dem i adressefeltet.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-session-restore-title-2 = Åpne fanegruppene dine på nytt fra List opp alle faner-menyen når som helst.
+tab-groups-onboarding-session-restore-title = Gjenåpne fanegruppene dine her når som helst.
+tab-groups-onboarding-dismiss = OK
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Si hei til { -brand-product-name }-profiler
+multi-profile-spotlight-body = Bytt enkelt mellom å bruke nettleseren til jobb og fritid. Profiler holder nettleserdata som søkelogg og passord helt adskilt, slik at du kan holde orden.
+multi-profile-spotlight-cta = Opprett en profil
+multi-profile-callout-title = Lag forskjellige profiler for jobb og fritid
+multi-profile-callout-subtitle = Profiler lar deg holde nettleserinformasjonen din, som søkehistorikk og passord, helt adskilt.
+multi-profile-callout-cta = Opprett en profil
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Synkroniser med Firefox for mobilen
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Skann QR-koden for å laste ned { -brand-product-name } for mobil. Når den er installert, velg «Synkroniser til mobil» for å få tilgang til passordene, bokmerkene og mer mens du er på farten.
+dismiss-button-label = Ignorer
+sync-to-mobile-button-label = Synkroniser til mobil
+desktop-to-mobile-qr-code-alt =
+    .aria-label = QR-kode for å laste ned { -brand-product-name } for mobil
+
+## Fx Backup onboarding: Create Backup spotlight
+
+create-backup-screen-1-title =
+    Oppgraderer du til Windows 11?
+    La oss sikkerhetskopiere dine { -brand-product-name }-data.
+create-backup-screen-1-subtitle = Beskytt automatisk passord, bokmerker og mer på 1–2 minutter.
+create-backup-screen-1-flair = Anbefalt
+create-backup-learn-more-link = <a data-l10n-name="learn-more-label">Les mer</a>
+create-backup-screen-1-sync-label = Synkroniser med { -brand-product-name }
+create-backup-screen-1-sync-body = Sikkerhetskopierer alle påloggede enheter
+create-backup-screen-1-backup-label = Sikkerhetskopier til PC
+create-backup-screen-1-backup-body = Lagrer på enheten din eller OneDrive
+create-backup-select-tile-button-label = Velg
+create-backup-back-button-label = Tilbake
+create-backup-show-fewer =
+    .label = Vis færre som dette
+create-backup-screen-2-title = Velg { -brand-product-name }-data som skal sikkerhetskopieres
+create-backup-screen-2-subtitle = Det tar bare ett minutt. Dataene dine sikkerhetskopieres én gang per dag.
+# Label for the "Easy setup" backup option
+create-backup-screen-2-easy-label = Enkelt oppsett
+# Preceded by a green check mark indicating that these are included in "Easy setup" backup
+create-backup-screen-2-easy-list-1 = Bokmerker, historikk, innstillinger og mer
+# Preceded by a red X indicating that these are not included in the "Easy setup" backup
+create-backup-screen-2-easy-list-2 = Inkluderer ikke passord og betalinger
+# Preceded by a red X indicating that "Easy setup" backups are not encrypted
+create-backup-screen-2-easy-list-3 = Ikke kryptert
+# Label for the "All data" backup option
+create-backup-screen-2-all-label = Alle data
+# Preceded by a green check mark indicating that these are included in the "All data" backup
+create-backup-screen-2-all-list-2 = Inkluderer passord og betalinger
+# Preceded by a green check mark and shield indicating "All data" backups are encrypted
+create-backup-screen-2-all-list-3 = Kryptert med et passord
+# Title for a screen asking users to choose a file location
+create-backup-screen-3-location = Hvor vil du lagre sikkerhetskopien din?
+# Title for a screen asking users to create a password that will encrypt the backup
+create-backup-screen-3-title = Opprett et passord for sikkerhetskopifil
+create-backup-screen-3-subtitle = Kreves for å kryptere dataene dine. Lagre dem på et sted du husker.
+fx-backup-opt-in-header = Velg filplassering
+fx-backup-opt-in-filepath-label = Velg et sted du planlegger å overføre til en ny enhet, for eksempel OneDrive.
+fx-backup-opt-in-create-password-label = Skriv inn passord
+fx-backup-opt-in-confirm-btn-label = Fortsett
+fx-backup-opt-in-cancel-btn-label = Tilbake
+
+## Fx Backup confirmation screen strings
+
+fx-backup-confirmation-screen-title = Sikkerhetskopien din er planlagt
+fx-backup-confirmation-screen-close-button = Lukk
+
+## These strings appear as a confirmation of which items will or won't be included as part of the selected backup method.
+
+fx-backup-confirmation-screen-all-data-item-text-1 = Alle nettleserdata inkludert
+fx-backup-confirmation-screen-all-data-item-text-2 = Lagret på din enhet
+fx-backup-confirmation-screen-all-data-item-text-3 = Kryptert og passordbeskyttet
+fx-backup-confirmation-screen-easy-setup-item-text-1 = Bokmerker, historikk, innstillinger og andre data inkludert
+fx-backup-confirmation-screen-easy-setup-item-text-2 = Lagret på din enhet
+fx-backup-confirmation-screen-easy-setup-item-text-3 = Passord og betalinger er ikke inkludert
+fx-backup-confirmation-screen-easy-setup-item-subtext-3 = Gå til <a data-l10n-name="settings">innstillinger</a> for å inkludere sensitive data.
+fx-backup-confirmation-screen-item-subtext-1 = Sikkerhetskopieringen starter om noen få minutter og kjører én gang om dagen. Du kan sjekke fremdriften i <a data-l10n-name="settings">innstillinger</a>.
+fx-backup-confirmation-screen-item-subtext-2 = { -brand-short-name } vil se etter sikkerhetskopien din hvis du trenger å installere på nytt.
+
+## Restore from Backup Flow about:welcome screens
+
+restore-from-backup-secondary-top-button = Gjenopprett fra sikkerhetskopi
+restore-from-backup-title = La oss få { -brand-short-name } tilbake slik du liker det
+restore-from-backup-subtitle = Gjenopprett alle bokmerkene, historikken og andre data for å komme tilbake til nettlesing.
+restore-from-backup-secondary-button = Ikke gjenopprett
+
+## Restored from Backup spotlight
+
+restored-from-backup-success-title = Vi er tilbake! Dine { -brand-short-name }-data er gjenopprettet.
+restored-from-backup-success-with-checklist-subtitle = Vil du ha din favoritt-nettleser med fokus på personvern bare ett klikk unna?
+restored-from-backup-success-no-checklist-subtitle = Du kan slå på sikkerhetskopiering for denne enheten i <a data-l10n-name="settings">innstillinger</a>.
+restored-from-backup-success-with-checklist-primary-button = Lagre og fortsett
+restored-from-backup-success-with-checklist-secondary-button = Hopp over dette trinnet
+restored-from-backup-success-no-checklist-primary-button = Fortsett
+restored-from-backup-error-title = Hmm, det oppstod et problem med sikkerhetskopifilen din.
+restored-from-backup-error-subtitle = Hvis du har en annen sikkerhetskopifil for { -brand-short-name }, kan du prøve å gjenopprette fra den. <a data-l10n-name="restore-problems">Har du fortsatt problemer?</a>
+restored-from-backup-error-primary-button = Lukk
+
+## Onboarding Personalization Screen
+## A screen shown to users during the onboarding process that asks them two qualifying questions about their use of the browser
+
+onboarding-personalization-title = Tilpass { -brand-short-name }-opplevelsen din
+onboarding-personalization-subtitle = Svar på noen få spørsmål, så anbefaler vi funksjoner og utvidelser som kan forbedre bruken av { -brand-short-name }.
+onboarding-personalization-use-case-title = Hva skal du bruke { -brand-short-name } til?
+onboarding-personalization-use-case-personal-option = Personlig
+onboarding-personalization-use-case-school-option = Skole
+onboarding-personalization-use-case-work-option = Arbeid
+onboarding-personalization-motivation-title = Hvilke funksjoner i { -brand-short-name } er viktigst for deg?
+onboarding-personalization-motivation-privacy-option = Personvern og sikkerhet
+onboarding-personalization-motivation-productivity-option = Produktivitet
+onboarding-personalization-motivation-other-option = Annen
+
+## Onboarding 2026 brand refresh
+
+onboarding-refresh-pin-set-default-subtitle = Vi beskytter dataene dine og blokkerer selskaper fra å spionere på klikkene dine — automatisk.
+# "safe paws" is a play on "safe hands", meaning you're being well taken care of or protected
+# If it doesn’t translate well, you can use the alternative: “You’re safe with Firefox.”
+onboarding-refresh-pin-set-default-title = Du er i trygge poter
+onboarding-refresh-import-subtitle = Ta med deg passord, bokmerker, historikk og mer.
+onboarding-refresh-import-title = Få { -brand-short-name } til å føles mer som hjemme
+onboarding-refresh-onboarding-addons-subtitle = Utvidelser er små apper som lar deg tilpasse { -brand-short-name }. De kan styrke personvernet ditt, øke produktiviteten, endre hvordan { -brand-short-name } ser ut og mye mer.
+# "Give your browsing a boost" means to enhance or improve the browsing experience
+onboarding-refresh-onboarding-addons-title = Gi nettlesingen din et løft
+onboarding-refresh-sync-subtitle = Få tilgang til bokmerker, passord og mer overalt der du er logget på { -brand-short-name }. I tillegg er dataene dine kryptert slik at bare du kan se dem.
+onboarding-refresh-sync-title = Dra hvor som helst. Synkroniser alt.
+onboarding-refresh-gratitude-subtitle = Takk for at du bruker { -brand-short-name }, den eneste store nettleseren som støttes av en ideell organisasjon. Med din støtte jobber vi for å gjøre internett tryggere og mer tilgjengelig for alle.
+# "has your back" is an idiom suggesting support and protection
+onboarding-refresh-gratitude-title = { -brand-short-name } passer på deg

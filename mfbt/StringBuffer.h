@@ -131,7 +131,9 @@ class StringBuffer {
    *
    * @see IsReadonly
    */
-  static StringBuffer* Realloc(StringBuffer* aHdr, size_t aSize) {
+  static StringBuffer* Realloc(
+      StringBuffer* aHdr, size_t aSize,
+      mozilla::Maybe<arena_id_t> aArena = mozilla::Nothing()) {
     MOZ_ASSERT(aSize != 0, "zero capacity allocation not allowed");
     MOZ_ASSERT(sizeof(StringBuffer) + aSize <= size_t(uint32_t(-1)) &&
                    sizeof(StringBuffer) + aSize > aSize,
@@ -148,7 +150,9 @@ class StringBuffer {
       logger.logRelease(0);
     }
 
-    aHdr = (StringBuffer*)realloc(aHdr, sizeof(StringBuffer) + aSize);
+    size_t bytes = sizeof(StringBuffer) + aSize;
+    aHdr = aArena ? (StringBuffer*)moz_arena_realloc(*aArena, aHdr, bytes)
+                  : (StringBuffer*)realloc(aHdr, bytes);
     if (aHdr) {
       detail::RefCountLogger::logAddRef(aHdr, 1);
       aHdr->mStorageSize = aSize;
@@ -211,6 +215,14 @@ class StringBuffer {
   uint32_t StorageSize() const { return mStorageSize; }
 
   /**
+   * This function returns the allocation size of a string buffer in bytes.
+   * This includes the size of the StringBuffer header.
+   */
+  uint32_t AllocationSize() const {
+    return sizeof(StringBuffer) + StorageSize();
+  }
+
+  /**
    * If this method returns false, then the caller can be sure that their
    * reference to the string buffer is the only reference to the string
    * buffer, and therefore it has exclusive access to the string buffer and
@@ -249,6 +261,11 @@ class StringBuffer {
     return mRefCount.load(std::memory_order_relaxed) > 1;
 #endif
   }
+
+  /**
+   * Alias for IsReadOnly.
+   */
+  bool HasMultipleReferences() const { return IsReadonly(); }
 
 #ifdef DEBUG
   /**

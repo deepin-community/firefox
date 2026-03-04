@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = Ny fane
     .accesskey = y
@@ -28,11 +32,17 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Lukk faner til venstre
     .accesskey = L
+close-tabs-to-the-start-vertical =
+    .label = Lukk faner ovenfor
+    .accesskey = L
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Lukk faner til høyre
     .accesskey = u
+close-tabs-to-the-end-vertical =
+    .label = Lukk faner nedenfor
+    .accesskey = k
 close-other-tabs =
     .label = Lukk andre faner
     .accesskey = a
@@ -69,6 +79,10 @@ move-to-end =
 move-to-new-window =
     .label = Flytt til et nytt vindu
     .accesskey = t
+# Variables
+#  $profileName (string): The name of the profile to move tab to
+move-to-new-profile =
+    .label = Flytt til { $profileName }
 tab-context-close-multiple-tabs =
     .label = Lukk flere faner
     .accesskey = f
@@ -78,6 +92,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Del
     .accesskey = D
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Ny fane til høyre
+    .accesskey = f
+tab-context-new-tab-open-vertical =
+    .label = Ny fane nedenfor
+    .accesskey = y
+tab-context-new-group =
+    .label = Ny gruppe
+    .accesskey = g
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -85,10 +109,10 @@ tab-context-share-url =
 tab-context-reopen-closed-tabs =
     .label =
         { $tabCount ->
-            [1] Gjenopprett lukket fane
-           *[other] Gjenopprett lukkede faner
+            [1] Gjenåpne lukket fane
+           *[other] Gjenåpne lukkede faner
         }
-    .accesskey = o
+    .accesskey = n
 tab-context-close-n-tabs =
     .label =
         { $tabCount ->
@@ -103,6 +127,14 @@ tab-context-move-tabs =
            *[other] Flytt faner
         }
     .accesskey = F
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-device =
+    .label =
+        { $tabCount ->
+            [1] Send til enhet
+           *[other] Send { $tabCount } faner til enhet
+        }
+    .accesskey = n
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->
@@ -110,3 +142,10 @@ tab-context-send-tabs-to-device =
            *[other] Send { $tabCount } faner til enhet
         }
     .accesskey = n
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [1] Frigjør fane
+           *[other] Frigjør { $tabCount } faner
+        }
+    .accesskey = F

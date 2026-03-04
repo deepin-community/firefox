@@ -59,10 +59,7 @@ history-section-label = Skiednis
 item-history-and-downloads =
     .label = Navigaasje- en downloadskiednis
     .accesskey = S
-item-history-form-data-downloads =
-    .label = Skiednis
-    .accesskey = S
-item-history-form-data-downloads-description = Wisket website- en downloadskiednis, bewarre formulierynformaasje en sykopdrachten.
+item-history-and-downloads-description2 = Wisket website- en downloadskiednis
 item-cookies =
     .label = Cookies
     .accesskey = C
@@ -98,6 +95,10 @@ item-form-search-history =
 item-site-prefs =
     .label = Websiteynstellingen
     .accesskey = i
+item-formdata-prefs =
+    .label = Bewarre formuliergegevens
+    .accesskey = o
+item-formdata-description = Wisket saken lykas nammen, e-mailadressen en oare items dy’t jo yn formulieren ynfiere
 item-site-prefs-description = Set jo tastimmingen en websitefoarkarren tebek nei de oarspronklike ynstellingen
 data-section-label = Gegevens
 item-site-settings =
@@ -127,3 +128,6 @@ sanitize-everything-warning = Alle skiednis sil wiske wurde.
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = Alle selektearre items sille wiske wurde.
+# Label shown next to the loading spinner while calculating the size of cached data
+# and cookies in the clear data dialog.
+sanitize-calculating-size = Berekkenje…

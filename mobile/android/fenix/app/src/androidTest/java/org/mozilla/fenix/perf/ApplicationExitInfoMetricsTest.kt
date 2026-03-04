@@ -39,7 +39,7 @@ class ApplicationExitInfoMetricsTest {
     private val server = MockWebServerHelper.createAlwaysOkMockWebServer()
 
     @get:Rule
-    val activityRule: ActivityTestRule<HomeActivity> = HomeActivityTestRule()
+    val activityRule: ActivityTestRule<HomeActivity> = HomeActivityTestRule(skipOnboarding = true)
 
     @get:Rule
     val gleanRule = GleanTestLocalServer(ApplicationProvider.getApplicationContext(), server.port)
@@ -59,6 +59,7 @@ class ApplicationExitInfoMetricsTest {
     }
 
     @Test(timeout = 30000) // adding timeout to make sure process kill does not cause infinite loop
+    @Ignore("Failing: https://bugzilla.mozilla.org/show_bug.cgi?id=1924593")
     fun recordProcessExitsShouldUpdateSharedPreferenceWhenKillSignalSentToChildProcess() {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
 
@@ -76,6 +77,7 @@ class ApplicationExitInfoMetricsTest {
     }
 
     @Test(timeout = 30000) // adding timeout to make sure process kill does not cause infinite loop
+    @Ignore("Failing: https://bugzilla.mozilla.org/show_bug.cgi?id=1924593")
     fun recordProcessExitsShouldRecordProcessKillWhenKillSignalSentToChildProcesses() {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
 

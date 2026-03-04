@@ -6,7 +6,6 @@
 
 /* Per JSContext object */
 
-#include "mozilla/MemoryReporting.h"
 #include "mozilla/UniquePtr.h"
 
 #include "xpcprivate.h"
@@ -18,13 +17,14 @@
 #include "mozJSModuleLoader.h"
 #include "nsNetUtil.h"
 #include "nsThreadUtils.h"
+#include "ExecutionTracerIntegration.h"
 
 #include "nsIObserverService.h"
 #include "nsIDebug2.h"
 #include "nsPIDOMWindow.h"
 #include "nsPrintfCString.h"
+#include "mozilla/AppShutdown.h"
 #include "mozilla/Preferences.h"
-#include "mozilla/Telemetry.h"
 #include "mozilla/MemoryTelemetry.h"
 #include "mozilla/Services.h"
 #ifdef FUZZING
@@ -34,21 +34,26 @@
 #include "mozilla/StaticPrefs_browser.h"
 #include "mozilla/StaticPrefs_javascript.h"
 #include "mozilla/dom/ScriptSettings.h"
+#include "mozilla/glean/JsXpconnectMetrics.h"
+#include "mozilla/scache/StartupCache.h"
 
 #include "nsContentUtils.h"
 #include "nsCCUncollectableMarker.h"
 #include "nsCycleCollectionNoteRootCallback.h"
 #include "nsCycleCollector.h"
+#include "nsINode.h"
 #include "nsJSEnvironment.h"
 #include "jsapi.h"
 #include "js/ArrayBuffer.h"
 #include "js/ContextOptions.h"
+#include "js/DOMEventDispatch.h"
 #include "js/experimental/LoggingInterface.h"
 #include "js/HelperThreadAPI.h"
 #include "js/Initialization.h"
 #include "js/MemoryMetrics.h"
 #include "js/Prefs.h"
 #include "js/WasmFeatures.h"
+#include "fmt/format.h"
 #include "mozilla/dom/BindingUtils.h"
 #include "mozilla/dom/ContentChild.h"
 #include "mozilla/dom/Document.h"
@@ -57,15 +62,14 @@
 #include "mozilla/dom/WindowBinding.h"
 #include "mozilla/dom/WakeLockBinding.h"
 #include "mozilla/extensions/WebExtensionPolicy.h"
+#include "mozilla/AsyncEventDispatcher.h"
 #include "mozilla/Atomics.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/ProcessHangMonitor.h"
 #include "mozilla/Sprintf.h"
 #include "mozilla/SystemPrincipal.h"
 #include "mozilla/TaskController.h"
-#include "mozilla/ThreadLocal.h"
 #include "mozilla/UniquePtrExtensions.h"
-#include "mozilla/Unused.h"
 #include "AccessCheck.h"
 #include "nsGlobalWindowInner.h"
 #include "nsAboutProtocolUtils.h"
@@ -91,6 +95,50 @@ using namespace mozilla;
 using namespace mozilla::dom;
 using namespace xpc;
 using namespace JS;
+
+// Callback for JIT trace events to dispatch DOM events to global target
+static void DispatchJitEventToDOM(JSContext* cx, const char* eventType) {
+  // Check if test interfaces are enabled
+  if (!StaticPrefs::dom_expose_test_interfaces()) {
+    return;
+  }
+
+  if (!cx) {
+    return;
+  }
+
+  // Get the global object from the context
+  JSObject* globalObj = JS::CurrentGlobalOrNull(cx);
+  if (!globalObj) {
+    return;
+  }
+
+  nsIGlobalObject* global = xpc::NativeGlobal(globalObj);
+  if (!global) {
+    return;
+  }
+
+  nsCOMPtr<nsPIDOMWindowInner> window = do_QueryInterface(global);
+  if (!window) {
+    return;
+  }
+
+  mozilla::dom::Document* doc = window->GetDoc();
+  if (!doc) {
+    return;
+  }
+
+  nsCOMPtr<nsINode> target = doc;
+  if (!target) {
+    return;
+  }
+
+  // Convert event type to nsString and dispatch to document
+  NS_ConvertUTF8toUTF16 eventTypeStr(eventType);
+  RefPtr<AsyncEventDispatcher> dispatcher = new AsyncEventDispatcher(
+      target, eventTypeStr, CanBubble::eYes, ChromeOnlyDispatch::eNo);
+  dispatcher->PostDOMEvent();
+}
 
 // We will clamp to reasonable values if this isn't set.
 #if !defined(PTHREAD_STACK_MIN)
@@ -156,7 +204,7 @@ class Watchdog {
       // instantiate a new service, and even when it is, we don't want fault in
       // extra pages if we can avoid it.
       nsCOMPtr<nsIDebug2> dbg = do_GetService("@mozilla.org/xpcom/debug;1");
-      Unused << dbg;
+      (void)dbg;
     }
 
     {
@@ -477,7 +525,7 @@ static void WatchdogMain(void* arg) {
   AUTO_PROFILER_REGISTER_THREAD("JS Watchdog");
   // Create an nsThread wrapper for the thread and register it with the thread
   // manager.
-  Unused << NS_GetCurrentThread();
+  (void)NS_GetCurrentThread();
   NS_SetCurrentThreadName("JS Watchdog");
 
   Watchdog* self = static_cast<Watchdog*>(arg);
@@ -586,7 +634,6 @@ AutoScriptActivity::~AutoScriptActivity() {
 }
 
 static const double sChromeSlowScriptTelemetryCutoff(10.0);
-static bool sTelemetryEventEnabled(false);
 
 // static
 bool XPCJSContext::InterruptCallback(JSContext* cx) {
@@ -600,7 +647,7 @@ bool XPCJSContext::InterruptCallback(JSContext* cx) {
     JS::AutoFilename scriptFilename;
     // Computing the line number can be very expensive (see bug 1330231 for
     // example), so don't request it here.
-    if (JS::DescribeScriptedCaller(cx, &scriptFilename)) {
+    if (JS::DescribeScriptedCaller(&scriptFilename, cx)) {
       if (const char* file = scriptFilename.get()) {
         filename.Assign(file, strlen(file));
       }
@@ -739,9 +786,9 @@ bool XPCJSContext::InterruptCallback(JSContext* cx) {
 
   // Accumulate slow script invokation delay.
   if (!chrome && !self->mTimeoutAccumulated) {
-    uint32_t delay = uint32_t(self->mSlowScriptActualWait.ToMilliseconds() -
-                              (limit * 1000.0));
-    Telemetry::Accumulate(Telemetry::SLOW_SCRIPT_NOTIFY_DELAY, delay);
+    TimeDuration delay =
+        self->mSlowScriptActualWait - TimeDuration::FromSeconds(limit);
+    glean::slow_script_warning::notify_delay.AccumulateRawDuration(delay);
     self->mTimeoutAccumulated = true;
   }
 
@@ -789,15 +836,7 @@ void xpc::SetPrefableRealmOptions(JS::RealmOptions& options) {
 }
 
 void xpc::SetPrefableCompileOptions(JS::PrefableCompileOptions& options) {
-  options
-      .setSourcePragmas(StaticPrefs::javascript_options_source_pragmas())
-#ifdef NIGHTLY_BUILD
-      .setImportAttributes(
-          StaticPrefs::javascript_options_experimental_import_attributes())
-      .setImportAttributesAssertSyntax(
-          StaticPrefs::
-              javascript_options_experimental_import_attributes_assert_syntax())
-#endif
+  options.setSourcePragmas(StaticPrefs::javascript_options_source_pragmas())
       .setAsmJS(StaticPrefs::javascript_options_asmjs())
       .setThrowOnAsmJSValidationFailure(
           StaticPrefs::javascript_options_throw_on_asmjs_validation_failure());
@@ -814,16 +853,12 @@ void xpc::SetPrefableContextOptions(JS::ContextOptions& options) {
       .setWasmIon(Preferences::GetBool(JS_OPTIONS_DOT_STR "wasm_optimizingjit"))
       .setWasmBaseline(
           Preferences::GetBool(JS_OPTIONS_DOT_STR "wasm_baselinejit"))
-      .setWasmVerbose(Preferences::GetBool(JS_OPTIONS_DOT_STR "wasm_verbose"))
       .setAsyncStack(Preferences::GetBool(JS_OPTIONS_DOT_STR "asyncstack"))
       .setAsyncStackCaptureDebuggeeOnly(Preferences::GetBool(
           JS_OPTIONS_DOT_STR "asyncstack_capture_debuggee_only"));
 
   SetPrefableCompileOptions(options.compileOptions());
 }
-
-// Mirrored value of javascript.options.self_hosted.use_shared_memory.
-static bool sSelfHostedUseSharedMemory = false;
 
 static void LoadStartupJSPrefs(XPCJSContext* xpccx) {
   // Prefs that require a restart are handled here. This includes the
@@ -841,8 +876,6 @@ static void LoadStartupJSPrefs(XPCJSContext* xpccx) {
   // about:config). Make sure we use explicit defaults here.
   bool useJitForTrustedPrincipals =
       Preferences::GetBool(JS_OPTIONS_DOT_STR "jit_trustedprincipals", false);
-  bool disableWasmHugeMemory = Preferences::GetBool(
-      JS_OPTIONS_DOT_STR "wasm_disable_huge_memory", false);
 
   bool safeMode = false;
   nsCOMPtr<nsIXULRuntime> xr = do_GetService("@mozilla.org/xre/runtime;1");
@@ -865,7 +898,7 @@ static void LoadStartupJSPrefs(XPCJSContext* xpccx) {
     JS_SetGlobalJitCompilerOption(cx, JSJITCOMPILER_NATIVE_REGEXP_ENABLE,
                                   false);
     JS_SetGlobalJitCompilerOption(cx, JSJITCOMPILER_JIT_HINTS_ENABLE, false);
-    sSelfHostedUseSharedMemory = false;
+    xpc::SelfHostedShmem::SetSelfHostedUseSharedMemory(false);
   } else {
     JS_SetGlobalJitCompilerOption(
         cx, JSJITCOMPILER_BASELINE_ENABLE,
@@ -886,9 +919,15 @@ static void LoadStartupJSPrefs(XPCJSContext* xpccx) {
         XRE_IsContentProcess()
             ? StaticPrefs::javascript_options_jithints_DoNotUseDirectly()
             : false);
-    sSelfHostedUseSharedMemory = StaticPrefs::
-        javascript_options_self_hosted_use_shared_memory_DoNotUseDirectly();
+    xpc::SelfHostedShmem::SetSelfHostedUseSharedMemory(
+        StaticPrefs::
+            javascript_options_self_hosted_use_shared_memory_DoNotUseDirectly());
   }
+
+  uint32_t strategyIndex = StaticPrefs::
+      javascript_options_baselinejit_offthread_compilation_strategy();
+  bool onDemandOMTBaselineEnabled = strategyIndex == 1 || strategyIndex == 3;
+  JS_SetOffthreadBaselineCompilationEnabled(cx, onDemandOMTBaselineEnabled);
 
   JS_SetOffthreadIonCompilationEnabled(
       cx, StaticPrefs::
@@ -918,8 +957,8 @@ static void LoadStartupJSPrefs(XPCJSContext* xpccx) {
       StaticPrefs::javascript_options_jit_full_debug_checks_DoNotUseDirectly());
 #endif
 
-#if !defined(JS_CODEGEN_MIPS32) && !defined(JS_CODEGEN_MIPS64) && \
-    !defined(JS_CODEGEN_RISCV64) && !defined(JS_CODEGEN_LOONG64)
+#if !defined(JS_CODEGEN_MIPS64) && !defined(JS_CODEGEN_RISCV64) && \
+    !defined(JS_CODEGEN_LOONG64)
   JS_SetGlobalJitCompilerOption(
       cx, JSJITCOMPILER_SPECTRE_INDEX_MASKING,
       StaticPrefs::javascript_options_spectre_index_masking_DoNotUseDirectly());
@@ -947,11 +986,6 @@ static void LoadStartupJSPrefs(XPCJSContext* xpccx) {
   }
   JS_SetGlobalJitCompilerOption(cx, JSJITCOMPILER_WRITE_PROTECT_CODE,
                                 writeProtectCode);
-
-  if (disableWasmHugeMemory) {
-    bool disabledHugeMemory = JS::DisableWasmHugeMemory();
-    MOZ_RELEASE_ASSERT(disabledHugeMemory);
-  }
 }
 
 static void ReloadPrefsCallback(const char* pref, void* aXpccx) {
@@ -982,17 +1016,6 @@ static void ReloadPrefsCallback(const char* pref, void* aXpccx) {
   auto& contextOptions = JS::ContextOptionsRef(cx);
   SetPrefableContextOptions(contextOptions);
 
-  JS_SetGlobalJitCompilerOption(
-      cx, JSJITCOMPILER_REGEXP_DUPLICATE_NAMED_GROUPS,
-      StaticPrefs::
-          javascript_options_experimental_regexp_duplicate_named_groups());
-
-#ifdef NIGHTLY_BUILD
-  JS_SetGlobalJitCompilerOption(
-      cx, JSJITCOMPILER_REGEXP_MODIFIERS,
-      StaticPrefs::javascript_options_experimental_regexp_modifiers());
-#endif
-
   // Set options not shared with workers.
   contextOptions
       .setThrowOnDebuggeeWouldRun(Preferences::GetBool(
@@ -1009,8 +1032,12 @@ static void ReloadPrefsCallback(const char* pref, void* aXpccx) {
     }
   }
 
-  JS_SetParallelParsingEnabled(
-      cx, StaticPrefs::javascript_options_parallel_parsing());
+  // Set up the callback for DOM event dispatch
+  if (StaticPrefs::dom_expose_test_interfaces()) {
+    JS::SetDispatchDOMEventCallback(cx, DispatchJitEventToDOM);
+  } else {
+    JS::SetDispatchDOMEventCallback(cx, nullptr);
+  }
 }
 
 XPCJSContext::~XPCJSContext() {
@@ -1152,8 +1179,22 @@ static void DispatchOffThreadTask(JS::HelperThreadTask* aTask) {
   TaskController::Get()->AddTask(MakeAndAddRef<HelperThreadTaskHandler>(aTask));
 }
 
+// Name of entry in mozilla::scache::StartupCache to use for SpiderMonkey
+// self-hosted JS precompiled bytecode.
+static constexpr char kSelfHostCacheKey[] = "js.self-hosted";
+
 static bool CreateSelfHostedSharedMemory(JSContext* aCx,
                                          JS::SelfHostedCache aBuf) {
+  // Record the data to the "StartupCache" for future restarts to use to
+  // initialize the shmem with.
+  if (auto* sc = scache::StartupCache::GetSingleton()) {
+    UniqueFreePtr<char[]> copy(static_cast<char*>(malloc(aBuf.LengthBytes())));
+    if (copy) {
+      memcpy(copy.get(), aBuf.Elements(), aBuf.LengthBytes());
+      sc->PutBuffer(kSelfHostCacheKey, std::move(copy), aBuf.LengthBytes());
+    }
+  }
+
   auto& shm = xpc::SelfHostedShmem::GetSingleton();
   MOZ_RELEASE_ASSERT(shm.Content().IsEmpty());
   // Failures within InitFromParent output warnings but do not cause
@@ -1175,13 +1216,20 @@ static void LogPrintVA(JS::OpaqueLogger aLogger, mozilla::LogLevel level,
   logmod->Printv(level, aFmt, ap);
 }
 
+static void LogPrintFMT(JS::OpaqueLogger aLogger, mozilla::LogLevel level,
+                        fmt::string_view fmt, fmt::format_args args) {
+  LogModule* logmod = static_cast<LogModule*>(aLogger);
+
+  logmod->PrintvFmt(level, fmt, args);
+}
+
 static AtomicLogLevel& GetLevelRef(JS::OpaqueLogger aLogger) {
   LogModule* logmod = static_cast<LogModule*>(aLogger);
   return logmod->LevelRef();
 }
 
 static JS::LoggingInterface loggingInterface = {GetLoggerByName, LogPrintVA,
-                                                GetLevelRef};
+                                                LogPrintFMT, GetLevelRef};
 
 nsresult XPCJSContext::Initialize() {
   if (StaticPrefs::javascript_options_external_thread_pool_DoNotUseDirectly()) {
@@ -1270,9 +1318,8 @@ nsresult XPCJSContext::Initialize() {
   struct rlimit rlim;
   const size_t kUncappedStackQuota =
       getrlimit(RLIMIT_STACK, &rlim) == 0
-          ? std::max(std::min(size_t(rlim.rlim_cur - kStackSafeMargin),
-                              kStackQuotaMax - kStackSafeMargin),
-                     kStackQuotaMin)
+          ? std::clamp(size_t(rlim.rlim_cur - kStackSafeMargin), kStackQuotaMin,
+                       kStackQuotaMax - kStackSafeMargin)
           : kStackQuotaMin;
 #  if defined(MOZ_ASAN)
   // See the standalone MOZ_ASAN branch below for the ASan case.
@@ -1338,7 +1385,7 @@ nsresult XPCJSContext::Initialize() {
       cx, kStackQuota, kStackQuota - kSystemCodeBuffer,
       kStackQuota - kSystemCodeBuffer - kTrustedScriptBuffer);
 
-  PROFILER_SET_JS_CONTEXT(cx);
+  PROFILER_SET_JS_CONTEXT(this);
 
   JS_AddInterruptCallback(cx, InterruptCallback);
 
@@ -1361,18 +1408,30 @@ nsresult XPCJSContext::Initialize() {
     NS_ABORT_OOM(0);  // Size is unknown.
   }
 
-  // When available, set the self-hosted shared memory to be read, so that we
-  // can decode the self-hosted content instead of parsing it.
+  // The self-hosted bytecode can be shared with child processes and also stored
+  // in startupcache. Only the parent process may initialize the data.
   auto& shm = xpc::SelfHostedShmem::GetSingleton();
-  JS::SelfHostedCache selfHostedContent = shm.Content();
   JS::SelfHostedWriter writer = nullptr;
-  if (XRE_IsParentProcess() && sSelfHostedUseSharedMemory) {
-    // Only the Parent process has permissions to write to the self-hosted
-    // shared memory.
-    writer = CreateSelfHostedSharedMemory;
+  if (XRE_IsParentProcess() &&
+      xpc::SelfHostedShmem::SelfHostedUseSharedMemory()) {
+    // Check the startup cache for a copy of the bytecode.
+    if (auto* sc = scache::StartupCache::GetSingleton()) {
+      const char* buf = nullptr;
+      uint32_t len = 0;
+      if (NS_SUCCEEDED(sc->GetBuffer(kSelfHostCacheKey, &buf, &len))) {
+        shm.InitFromParent(AsBytes(mozilla::Span(buf, len)));
+      }
+    }
+
+    // If we have no data then the InitSelfHostedCode call below will parse from
+    // scratch and invoke this callback with the results. That callback data can
+    // then be used in initialize cache and SelfHostedShmem.
+    if (shm.Content().IsEmpty()) {
+      writer = CreateSelfHostedSharedMemory;
+    }
   }
 
-  if (!JS::InitSelfHostedCode(cx, selfHostedContent, writer)) {
+  if (!JS::InitSelfHostedCode(cx, shm.Content(), writer)) {
     // Note: If no exception is pending, failure is due to OOM.
     if (!JS_IsExceptionPending(cx) || JS_IsThrowingOutOfMemory(cx)) {
       NS_ABORT_OOM(0);  // Size is unknown.
@@ -1381,6 +1440,10 @@ nsresult XPCJSContext::Initialize() {
     // Failed to execute self-hosted JavaScript! Uh oh.
     MOZ_CRASH("InitSelfHostedCode failed");
   }
+
+#ifdef MOZ_EXECUTION_TRACING
+  JS_SetCustomObjectSummaryCallback(cx, ExecutionTracerIntegration::Callback);
+#endif
 
   MOZ_RELEASE_ASSERT(Runtime()->InitializeStrings(cx),
                      "InitializeStrings failed");
@@ -1449,22 +1512,16 @@ void XPCJSContext::AfterProcessTask(uint32_t aNewRecursionDepth) {
       }
     }
     if (hangDuration > limit) {
-      if (!sTelemetryEventEnabled) {
-        sTelemetryEventEnabled = true;
-        Telemetry::SetEventRecordingEnabled("slow_script_warning"_ns, true);
-      }
-
-      auto uriType = mExecutedChromeScript ? "browser"_ns : "content"_ns;
       // Use AppendFloat to avoid printf-type APIs using locale-specific
       // decimal separators, when we definitely want a `.`.
       nsCString durationStr;
       durationStr.AppendFloat(hangDuration);
-      auto extra = Some<nsTArray<Telemetry::EventExtraEntry>>(
-          {Telemetry::EventExtraEntry{"hang_duration"_ns, durationStr},
-           Telemetry::EventExtraEntry{"uri_type"_ns, uriType}});
-      Telemetry::RecordEvent(
-          Telemetry::EventID::Slow_script_warning_Shown_Browser, Nothing(),
-          extra);
+
+      glean::slow_script_warning::ShownBrowserExtra extra = {
+          .hangDuration = Some(durationStr),
+          .uriType = Some(mExecutedChromeScript ? "browser"_ns : "content"_ns),
+      };
+      glean::slow_script_warning::shown_browser.Record(Some(extra));
     }
   }
 

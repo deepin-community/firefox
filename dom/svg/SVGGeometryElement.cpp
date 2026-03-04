@@ -7,21 +7,22 @@
 #include "SVGGeometryElement.h"
 
 #include "DOMSVGPoint.h"
-#include "gfxPlatform.h"
-#include "nsCOMPtr.h"
 #include "SVGAnimatedLength.h"
 #include "SVGCircleElement.h"
 #include "SVGEllipseElement.h"
 #include "SVGGeometryProperty.h"
 #include "SVGPathElement.h"
 #include "SVGRectElement.h"
-#include "nsStyleTransformMatrix.h"
+#include "gfxPlatform.h"
+#include "mozilla/RefPtr.h"
+#include "mozilla/SVGContentUtils.h"
+#include "mozilla/SVGUtils.h"
 #include "mozilla/dom/DOMPointBinding.h"
 #include "mozilla/dom/SVGLengthBinding.h"
 #include "mozilla/gfx/2D.h"
-#include "mozilla/RefPtr.h"
+#include "nsCOMPtr.h"
 #include "nsLayoutUtils.h"
-#include "mozilla/SVGContentUtils.h"
+#include "nsStyleTransformMatrix.h"
 
 using namespace mozilla::gfx;
 
@@ -173,8 +174,7 @@ static Point GetPointFrom(const DOMPointInit& aPoint) {
 }
 
 bool SVGGeometryElement::IsPointInFill(const DOMPointInit& aPoint) {
-  // d is a presentation attribute, so make sure style is up to date:
-  FlushStyleIfNeeded();
+  FlushIfNeeded();
 
   RefPtr<Path> path = GetOrBuildPathForHitTest();
   if (!path) {
@@ -188,9 +188,7 @@ bool SVGGeometryElement::IsPointInFill(const DOMPointInit& aPoint) {
 bool SVGGeometryElement::IsPointInStroke(const DOMPointInit& aPoint) {
   // stroke-* attributes and the d attribute are presentation attributes, so we
   // flush the layout before building the path.
-  if (auto* doc = GetComposedDoc()) {
-    doc->FlushPendingNotifications(FlushType::Layout);
-  }
+  (void)GetPrimaryFrame(FlushType::Layout);
 
   RefPtr<Path> path = GetOrBuildPathForHitTest();
   if (!path) {
@@ -207,9 +205,7 @@ bool SVGGeometryElement::IsPointInStroke(const DOMPointInit& aPoint) {
         // We have non-scaling-stroke as well as a non-translation transform.
         // We should transform the path first then apply the stroke on the
         // transformed path to preserve the stroke-width.
-        RefPtr<PathBuilder> builder = path->TransformedCopyToBuilder(mat);
-
-        path = builder->Finish();
+        Path::Transform(path, mat);
         point = mat.TransformPoint(point);
       }
     }
@@ -224,15 +220,14 @@ bool SVGGeometryElement::IsPointInStroke(const DOMPointInit& aPoint) {
 }
 
 float SVGGeometryElement::GetTotalLengthForBinding() {
-  // d is a presentation attribute, so make sure style is up to date:
-  FlushStyleIfNeeded();
+  FlushIfNeeded();
   return GetTotalLength();
 }
 
 already_AddRefed<DOMSVGPoint> SVGGeometryElement::GetPointAtLength(
     float distance, ErrorResult& rv) {
-  // d is a presentation attribute, so make sure style is up to date:
-  FlushStyleIfNeeded();
+  FlushIfNeeded();
+
   RefPtr<Path> path = GetOrBuildPathForMeasuring();
   if (!path) {
     rv.ThrowInvalidStateError("No path available for measuring");
@@ -240,35 +235,24 @@ already_AddRefed<DOMSVGPoint> SVGGeometryElement::GetPointAtLength(
   }
 
   return do_AddRef(new DOMSVGPoint(path->ComputePointAtLength(
-      clamped(distance, 0.f, path->ComputeLength()))));
+      std::clamp(distance, 0.f, path->ComputeLength()))));
 }
 
 gfx::Matrix SVGGeometryElement::LocalTransform() const {
-  gfx::Matrix result;
   nsIFrame* f = GetPrimaryFrame();
   if (!f || !f->IsTransformed()) {
-    return result;
+    return {};
   }
-  nsStyleTransformMatrix::TransformReferenceBox refBox(f);
-  const float a2d = f->PresContext()->AppUnitsPerDevPixel();
-  nsDisplayTransform::FrameTransformProperties props(f, refBox, a2d);
-  if (!props.HasTransform()) {
-    return result;
-  }
-  auto matrix = nsStyleTransformMatrix::ReadTransforms(
-      props.mTranslate, props.mRotate, props.mScale,
-      props.mMotion.ptrOr(nullptr), props.mTransform, refBox, a2d);
-  if (!matrix.IsIdentity()) {
-    std::ignore = matrix.CanDraw2D(&result);
-  }
-  return result;
+  return gfx::Matrix(SVGUtils::GetTransformMatrixInUserSpace(f));
 }
 
 float SVGGeometryElement::GetPathLengthScale(PathLengthScaleForType aFor) {
   MOZ_ASSERT(aFor == eForTextPath || aFor == eForStroking, "Unknown enum");
   if (mPathLength.IsExplicitlySet()) {
-    float authorsPathLengthEstimate = mPathLength.GetAnimValue();
-    if (authorsPathLengthEstimate >= 0) {
+    float zoom = UserSpaceMetrics::GetZoom(this);
+    float authorsPathLengthEstimate = mPathLength.GetAnimValue() * zoom;
+    if (std::isfinite(authorsPathLengthEstimate) &&
+        authorsPathLengthEstimate >= 0) {
       RefPtr<Path> path = GetOrBuildPathForMeasuring();
       if (!path) {
         // The path is empty or invalid so its length must be zero and
@@ -281,8 +265,7 @@ float SVGGeometryElement::GetPathLengthScale(PathLengthScaleForType aFor) {
         // we need to take that into account.
         auto matrix = LocalTransform();
         if (!matrix.IsIdentity()) {
-          RefPtr<PathBuilder> builder = path->TransformedCopyToBuilder(matrix);
-          path = builder->Finish();
+          Path::Transform(path, matrix);
         }
       }
       return path->ComputeLength() / authorsPathLengthEstimate;
@@ -300,20 +283,10 @@ float SVGGeometryElement::GetTotalLength() {
   return flat ? flat->ComputeLength() : 0.f;
 }
 
-void SVGGeometryElement::FlushStyleIfNeeded() {
-  // Note: we still can set d property on other elements which don't have d
-  // attribute, but we don't look at the d property on them, so here we only
-  // care about the element with d attribute, i.e. SVG path element.
-  if (GetPathDataAttrName() != nsGkAtoms::d) {
-    return;
-  }
-
-  RefPtr<Document> doc = GetComposedDoc();
-  if (!doc) {
-    return;
-  }
-
-  doc->FlushPendingNotifications(FlushType::Style);
+void SVGGeometryElement::FlushIfNeeded() {
+  FlushType flushType =
+      GeometryDependsOnCoordCtx() ? FlushType::Layout : FlushType::Style;
+  (void)GetPrimaryFrame(flushType);
 }
 
 }  // namespace mozilla::dom

@@ -4,12 +4,11 @@
 
 sidebar-menu-bookmarks =
     .label = Хатбаракҳо
+sidebar-menu-bookmarks-2 = Хатбаракҳо
 sidebar-menu-history =
     .label = Таърих
 sidebar-menu-synced-tabs =
     .label = Варақаҳои ҳамоҳангшуда
-sidebar-menu-megalist =
-    .label = Ниҳонвожаҳо
 sidebar-menu-close =
     .label = Пӯшидани навори ҷонибӣ
 sidebar-close-button =

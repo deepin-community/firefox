@@ -21,9 +21,6 @@ perftools-heading-threads = Niti
 perftools-heading-threads-jvm = Niti JVM
 perftools-heading-local-build = Lokalna graditev
 
-##
-
-
 ## The controls for the interval at which the profiler samples the code.
 
 perftools-range-interval-label = Interval vzorčenja:
@@ -58,6 +55,14 @@ perftools-button-restart = Znova zaženi
 perftools-button-add-directory = Dodaj imenik
 perftools-button-remove-directory = Odstrani izbrane
 perftools-button-edit-settings = Uredi nastavitve …
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Več dejanj
+perftools-menu-more-actions-restart-with-profiling = Znova zaženi { -brand-shorter-name } z omogočenim spremljanjem zmogljivosti ob zagonu
+perftools-menu-more-actions-copy-for-startup = Kopiraj okoljske spremenljivke za spremljanje zmogljivosti ob zagonu
+perftools-menu-more-actions-copy-for-perf-tests = Kopiraj parametre za preskuse učinkovitosti delovanja
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -117,6 +122,8 @@ perftools-presets-graphics-label = Grafika
 perftools-presets-graphics-description = Prednastavitev za preiskovanje napak grafike v { -brand-shorter-name(sklon: "mestnik") }
 perftools-presets-media-label = Predstavnost
 perftools-presets-media-description2 = Prednastavitev za preiskovanje napak zvoka in videa v { -brand-shorter-name(sklon: "mestnik") }.
+perftools-presets-ml-label = Strojno učenje
+perftools-presets-ml-description2 = Prednastavitev za preiskovanje napak v strojnem učenju v { -brand-shorter-name(sklon: "mestnik") }.
 perftools-presets-networking-label = Omrežje
 perftools-presets-networking-description = Prednastavitev za preiskovanje napak v delovanju omrežja v { -brand-shorter-name(sklon: "mestnik") }
 # "Power" is used in the sense of energy (electricity used by the computer).
@@ -124,7 +131,6 @@ perftools-presets-power-label = Napajanje
 perftools-presets-power-description = Prednastavitev za preiskovanje napak pri porabi energije v { -brand-shorter-name(sklon: "mestnik") } z nizko porabo sredstev.
 perftools-presets-debug-label = Razhroščevanje
 perftools-presets-debug-description = Prednastavitev za razhroščevanje v { -brand-shorter-name(sklon: "mestnik") }. Visoka poraba sredstev – ne uporabljajte za delo pri visoki zmogljivosti, temveč za osredotočanje na razumevanje delovanja brskalnika.
+perftools-presets-web-compat-label = Spletna združljivost
+perftools-presets-web-compat-description = Priporočena prednastavitev za razhroščevanje težav s spletno združljivostjo na spletnih mestih in ne za sledenje učinkovitosti.
 perftools-presets-custom-label = Po meri
-
-##
-

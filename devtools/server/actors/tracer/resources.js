@@ -6,10 +6,7 @@
 
 const { throttle } = require("resource://devtools/shared/throttle.js");
 
-const {
-  makeDebuggeeValue,
-  createValueGripForTarget,
-} = require("devtools/server/actors/object/utils");
+const { makeDebuggeeValue } = require("devtools/server/actors/object/utils");
 
 const {
   TYPES,
@@ -52,7 +49,10 @@ class ResourcesTracingListener {
 
   // Index of the next collected frame
   #frameIndex = 0;
-  // Map of frame identifier string to frame index.
+  // Three level of Maps, ultimately storing frame indexes.
+  // The first level of Map is keyed by source ID,
+  // the second by line number,
+  // the last by column number.
   // Frame objects are sent to the client and not being held in memory,
   // we only store their related indexes which are put in trace arrays.
   #frameMap = new Map();
@@ -86,9 +86,9 @@ class ResourcesTracingListener {
    * in case it stops by itself, instead of being stopped when the Actor's stopTracing
    * method is called by the user.
    *
-   * @param {Boolean} enabled
+   * @param {boolean} enabled
    *        True if the tracer starts tracing, false it it stops.
-   * @return {Boolean}
+   * @return {boolean}
    *         Return true, if the JavaScriptTracer should log a message to stdout.
    */
   onTracingToggled(enabled) {
@@ -121,49 +121,24 @@ class ResourcesTracingListener {
     return false;
   }
 
-  onTracingInfiniteLoop() {
-    const consoleMessageWatcher = getResourceWatcher(
-      this.targetActor,
-      TYPES.CONSOLE_MESSAGE
-    );
-    if (!consoleMessageWatcher) {
-      return true;
-    }
-
-    const message =
-      "Looks like an infinite recursion? We stopped the JavaScript tracer, but code may still be running! " +
-      `(This is configurable via ${lazy.JSTracer.MAX_DEPTH_PREF} preference)`;
-    consoleMessageWatcher.emitMessages([
-      {
-        arguments: [message],
-        styles: [],
-        level: "jstracer",
-        chromeContext: false,
-        timeStamp: ChromeUtils.dateNow(),
-      },
-    ]);
-
-    return false;
-  }
-
   /**
    * Called by JavaScriptTracer class when a new mutation happened on any DOM Element.
    *
-   * @param {Object} options
-   * @param {Number} options.depth
+   * @param {object} options
+   * @param {number} options.depth
    *        Represents the depth of the frame in the call stack.
-   * @param {String} options.prefix
+   * @param {string} options.prefix
    *        A string to be displayed as a prefix of any logged frame.
    * @param {nsIStackFrame} options.caller
    *        The JS Callsite which caused this mutation.
-   * @param {String} options.type
+   * @param {string} options.type
    *        Type of DOM Mutation:
    *        - "add": Node being added,
    *        - "attributes": Node whose attributes changed,
    *        - "remove": Node being removed,
    * @param {DOMNode} options.element
    *        The DOM Node related to the current mutation.
-   * @return {Boolean}
+   * @return {boolean}
    *         Return true, if the JavaScriptTracer should log a message to stdout.
    */
   onTracingDOMMutation({ depth, prefix, type, caller, element }) {
@@ -185,7 +160,7 @@ class ResourcesTracingListener {
       ChromeUtils.dateNow(),
       depth,
       type,
-      createValueGripForTarget(this.targetActor, dbgObj),
+      this.traceActor.createValueGrip(dbgObj),
     ]);
     this.throttleEmitTraces();
     return false;
@@ -194,14 +169,14 @@ class ResourcesTracingListener {
   /**
    * Called by JavaScriptTracer class on each step of a function call.
    *
-   * @param {Object} options
+   * @param {object} options
    * @param {Debugger.Frame} options.frame
    *        A descriptor object for the JavaScript frame.
-   * @param {Number} options.depth
+   * @param {number} options.depth
    *        Represents the depth of the frame in the call stack.
-   * @param {String} options.prefix
+   * @param {string} options.prefix
    *        A string to be displayed as a prefix of any logged frame.
-   * @return {Boolean}
+   * @return {boolean}
    *         Return true, if the JavaScriptTracer should log the step to stdout.
    */
   onTracingFrameStep({ frame, depth, prefix }) {
@@ -243,8 +218,18 @@ class ResourcesTracingListener {
   }
 
   #getFrameIndex(implementation, name, sourceId, line, column, url) {
-    const key = `${sourceId}:${line}:${column}`;
-    let frameIndex = this.#frameMap.get(key);
+    let perSourceMap = this.#frameMap.get(sourceId);
+    if (!perSourceMap) {
+      perSourceMap = new Map();
+      this.#frameMap.set(sourceId, perSourceMap);
+    }
+    let perLineMap = perSourceMap.get(line);
+    if (!perLineMap) {
+      perLineMap = new Map();
+      perSourceMap.set(line, perLineMap);
+    }
+    let frameIndex = perLineMap.get(column);
+
     if (frameIndex == undefined) {
       frameIndex = this.#frameIndex++;
 
@@ -259,7 +244,7 @@ class ResourcesTracingListener {
         url,
       ];
 
-      this.#frameMap.set(key, frameIndex);
+      perLineMap.set(column, frameIndex);
       this.#throttledTraces.push(frameArray);
     }
     return frameIndex;
@@ -270,17 +255,17 @@ class ResourcesTracingListener {
    *
    * @param {Debugger.Frame} frame
    *        A descriptor object for the JavaScript frame.
-   * @param {Number} depth
+   * @param {number} depth
    *        Represents the depth of the frame in the call stack.
-   * @param {String} formatedDisplayName
+   * @param {string} formatedDisplayName
    *        A human readable name for the current frame.
-   * @param {String} prefix
+   * @param {string} prefix
    *        A string to be displayed as a prefix of any logged frame.
-   * @param {String} currentDOMEvent
+   * @param {string} currentDOMEvent
    *        If this is a top level frame (depth==0), and we are currently processing
    *        a DOM Event, this will refer to the name of that DOM Event.
    *        Note that it may also refer to setTimeout and setTimeout callback calls.
-   * @return {Boolean}
+   * @return {boolean}
    *         Return true, if the JavaScriptTracer should log the frame to stdout.
    */
   onTracingFrame({
@@ -336,7 +321,7 @@ class ResourcesTracingListener {
         }
         // Instantiate a object actor so that the tools can easily inspect these objects
         const dbgObj = makeDebuggeeValue(this.targetActor, arg);
-        args.push(createValueGripForTarget(this.targetActor, dbgObj));
+        args.push(this.traceActor.createValueGrip(dbgObj));
       }
       argNames = frame.callee.script.parameterNames;
     }
@@ -371,25 +356,25 @@ class ResourcesTracingListener {
   /**
    * Called by JavaScriptTracer class when a JavaScript frame exits (i.e. a function returns or throw).
    *
-   * @param {Object} options
-   * @param {Number} options.frameId
+   * @param {object} options
+   * @param {number} options.frameId
    *        Unique identifier for the current frame.
    *        This should match a frame notified via onTracingFrame.
    * @param {Debugger.Frame} options.frame
    *        A descriptor object for the JavaScript frame.
-   * @param {Number} options.depth
+   * @param {number} options.depth
    *        Represents the depth of the frame in the call stack.
-   * @param {String} options.formatedDisplayName
+   * @param {string} options.formatedDisplayName
    *        A human readable name for the current frame.
-   * @param {String} options.prefix
+   * @param {string} options.prefix
    *        A string to be displayed as a prefix of any logged frame.
-   * @param {String} options.why
+   * @param {string} options.why
    *        A string to explain why the function stopped.
    *        See tracer.sys.mjs's FRAME_EXIT_REASONS.
    * @param {Debugger.Object|primitive} options.rv
    *        The returned value. It can be the returned value, or the thrown exception.
    *        It is either a primitive object, otherwise it is a Debugger.Object for any other JS Object type.
-   * @return {Boolean}
+   * @return {boolean}
    *         Return true, if the JavaScriptTracer should log the frame to stdout.
    */
   onTracingFrameExit({
@@ -427,7 +412,7 @@ class ResourcesTracingListener {
       }
       // Instantiate a object actor so that the tools can easily inspect these objects
       const dbgObj = makeDebuggeeValue(this.targetActor, rv);
-      returnedValue = createValueGripForTarget(this.targetActor, dbgObj);
+      returnedValue = this.traceActor.createValueGrip(dbgObj);
     }
 
     const frameIndex = this.#getFrameIndex(

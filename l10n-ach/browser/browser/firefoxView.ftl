@@ -28,21 +28,6 @@ firefoxview-closed-tabs-title = Ma kiloro cokki
 firefoxview-colorway-description = { $intensity } · { $collection }
 firefoxview-synced-tabs-placeholder-header = Petye gin mo me anena pudi
 
-## History in this context refers to browser history
-
-
-## Open Tabs in this context refers to all open tabs in the browser
-
-
-## Recently closed tabs in this context refers to recently closed tabs from all windows
-
-
-## Tabs from other devices refers in this context refers to synced tabs from other devices
-
-
-##
-
-
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
 
@@ -50,30 +35,3 @@ firefoxview-history-date-today = Tin - { DATETIME($date, dateStyle: "full") }
 firefoxview-history-date-yesterday = Lawo - { DATETIME($date, dateStyle: "full") }
 firefoxview-history-date-this-month = { DATETIME($date, dateStyle: "full") }
 firefoxview-history-date-prev-month = { DATETIME($date, month: "long", year: "numeric") }
-
-##
-
-
-## Message displayed in Firefox View when the user has no history data
-
-
-##
-
-
-## Message displayed in Firefox View when the user has chosen to never remember History
-
-
-##
-
-
-## Text displayed in a dismissable banner to import bookmarks/history from another browser
-
-
-## Message displayed in Firefox View when the user has no recently closed tabs data
-
-
-##
-
-
-## This message is displayed below the name of another connected device when it doesn't have any open tabs.
-

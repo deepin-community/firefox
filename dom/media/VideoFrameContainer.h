@@ -7,13 +7,13 @@
 #ifndef VIDEOFRAMECONTAINER_H_
 #define VIDEOFRAMECONTAINER_H_
 
-#include "mozilla/Mutex.h"
-#include "mozilla/TimeStamp.h"
-#include "gfxPoint.h"
-#include "nsCOMPtr.h"
 #include "ImageContainer.h"
 #include "MediaSegment.h"
 #include "VideoSegment.h"
+#include "gfxPoint.h"
+#include "mozilla/Mutex.h"
+#include "mozilla/TimeStamp.h"
+#include "nsCOMPtr.h"
 
 namespace mozilla {
 
@@ -41,7 +41,9 @@ class VideoFrameContainer {
                       already_AddRefed<ImageContainer> aContainer);
 
   void SetCurrentFrame(const gfx::IntSize& aIntrinsicSize, Image* aImage,
-                       const TimeStamp& aTargetTime);
+                       const TimeStamp& aTargetTime,
+                       const media::TimeUnit& aProcessingDuration,
+                       const media::TimeUnit& aMediaTime);
   // Returns the last principalHandle we notified mElement about.
   PrincipalHandle GetLastPrincipalHandle();
   PrincipalHandle GetLastPrincipalHandleLocked() MOZ_REQUIRES(mMutex);
@@ -57,10 +59,6 @@ class VideoFrameContainer {
   void SetCurrentFrames(
       const gfx::IntSize& aIntrinsicSize,
       const nsTArray<ImageContainer::NonOwningImage>& aImages);
-  void ClearCurrentFrame(const gfx::IntSize& aIntrinsicSize) {
-    SetCurrentFrames(aIntrinsicSize,
-                     nsTArray<ImageContainer::NonOwningImage>());
-  }
 
   // Make the current frame the only frame in the container, i.e. discard
   // all future frames.
@@ -70,8 +68,11 @@ class VideoFrameContainer {
   // but was actually painted at t+n, this returns n in seconds. Threadsafe.
   double GetFrameDelay();
 
-  // Clear any resources that are not immediately necessary.
+  // Clear any resources in client that are not immediately necessary.
   void ClearCachedResources();
+
+  // Clear images in host.
+  void ClearImagesInHost(layers::ClearImagesType aType);
 
   // Returns a new frame ID for SetCurrentFrames().  The client must either
   // call this on only one thread or provide barriers.  Do not use together
@@ -94,6 +95,8 @@ class VideoFrameContainer {
     MutexAutoLock lock(mMutex);
     return mIntrinsicSize;
   }
+
+  bool SupportsOnly8BitImage() const { return mSupportsOnly8BitImage; }
 
  protected:
   void SetCurrentFramesLocked(
@@ -142,6 +145,9 @@ class VideoFrameContainer {
       MOZ_GUARDED_BY(mMutex);
 
   const RefPtr<AbstractThread> mMainThread;
+
+  // True when Android GL implementation support only 8-bit texture.
+  const bool mSupportsOnly8BitImage;
 };
 
 }  // namespace mozilla

@@ -1,20 +1,36 @@
+use alloc::{
+    borrow::Cow,
+    string::{String, ToString},
+};
+use core::mem;
+
+use hashbrown::HashSet;
+use thiserror::Error;
+
 use super::PipelineConstants;
 use crate::{
     arena::HandleVec,
+    compact::{compact, KeepUnused},
+    ir,
     proc::{ConstantEvaluator, ConstantEvaluatorError, Emitter},
     valid::{Capabilities, ModuleInfo, ValidationError, ValidationFlags, Validator},
     Arena, Block, Constant, Expression, Function, Handle, Literal, Module, Override, Range, Scalar,
     Span, Statement, TypeInner, WithSpan,
 };
-use std::{borrow::Cow, collections::HashSet, mem};
-use thiserror::Error;
+
+// Possibly unused if not compiled with no_std
+#[allow(unused_imports)]
+use num_traits::float::FloatCore as _;
 
 #[derive(Error, Debug, Clone)]
 #[cfg_attr(test, derive(PartialEq))]
 pub enum PipelineConstantError {
     #[error("Missing value for pipeline-overridable constant with identifier string: '{0}'")]
     MissingValue(String),
-    #[error("Source f64 value needs to be finite (NaNs and Inifinites are not allowed) for number destinations")]
+    #[error(
+        "Source f64 value needs to be finite ({}) for number destinations",
+        "NaNs and Inifinites are not allowed"
+    )]
     SrcNeedsToBeFinite,
     #[error("Source f64 value doesn't fit in destination")]
     DstRangeTooSmall,
@@ -22,31 +38,59 @@ pub enum PipelineConstantError {
     ConstantEvaluatorError(#[from] ConstantEvaluatorError),
     #[error(transparent)]
     ValidationError(#[from] WithSpan<ValidationError>),
+    #[error("workgroup_size override isn't strictly positive")]
+    NegativeWorkgroupSize,
+    #[error("max vertices or max primitives is negative")]
+    NegativeMeshOutputMax,
 }
 
-/// Replace all overrides in `module` with constants.
+/// Compact `module` and replace all overrides with constants.
 ///
-/// If no changes are needed, this just returns `Cow::Borrowed`
-/// references to `module` and `module_info`. Otherwise, it clones
-/// `module`, edits its [`global_expressions`] arena to contain only
-/// fully-evaluated expressions, and returns `Cow::Owned` values
-/// holding the simplified module and its validation results.
+/// If no changes are needed, this just returns `Cow::Borrowed` references to
+/// `module` and `module_info`. Otherwise, it clones `module`, retains only the
+/// selected entry point, compacts the module, edits its [`global_expressions`]
+/// arena to contain only fully-evaluated expressions, and returns the
+/// simplified module and its validation results.
 ///
-/// In either case, the module returned has an empty `overrides`
-/// arena, and the `global_expressions` arena contains only
-/// fully-evaluated expressions.
+/// The module returned has an empty `overrides` arena, and the
+/// `global_expressions` arena contains only fully-evaluated expressions.
 ///
 /// [`global_expressions`]: Module::global_expressions
 pub fn process_overrides<'a>(
     module: &'a Module,
     module_info: &'a ModuleInfo,
+    entry_point: Option<(ir::ShaderStage, &str)>,
     pipeline_constants: &PipelineConstants,
 ) -> Result<(Cow<'a, Module>, Cow<'a, ModuleInfo>), PipelineConstantError> {
-    if module.overrides.is_empty() {
+    if (entry_point.is_none() || module.entry_points.len() <= 1) && module.overrides.is_empty() {
+        // We skip compacting the module here mostly to reduce the risk of
+        // hitting corner cases like https://github.com/gfx-rs/wgpu/issues/7793.
+        // Compaction doesn't cost very much [1], so it would also be reasonable
+        // to do it unconditionally. Even when there is a single entry point or
+        // when no entry point is specified, it is still possible that there
+        // are unreferenced items in the module that would be removed by this
+        // compaction.
+        //
+        // [1]: https://github.com/gfx-rs/wgpu/pull/7703#issuecomment-2902153760
         return Ok((Cow::Borrowed(module), Cow::Borrowed(module_info)));
     }
 
     let mut module = module.clone();
+    if let Some((ep_stage, ep_name)) = entry_point {
+        module
+            .entry_points
+            .retain(|ep| ep.stage == ep_stage && ep.name == ep_name);
+    }
+
+    // Compact the module to remove anything not reachable from an entry point.
+    // This is necessary because we may not have values for overrides that are
+    // not reachable from the/an entry point.
+    compact(&mut module, KeepUnused::No);
+
+    // If there are no overrides in the module, then we can skip the rest.
+    if module.overrides.is_empty() {
+        return revalidate(module);
+    }
 
     // A map from override handles to the handles of the constants
     // we've replaced them with.
@@ -69,10 +113,12 @@ pub fn process_overrides<'a>(
     let mut adjusted_constant_initializers = HashSet::with_capacity(module.constants.len());
 
     let mut global_expression_kind_tracker = crate::proc::ExpressionKindTracker::new();
+    let mut layouter = crate::proc::Layouter::default();
 
     // An iterator through the original overrides table, consumed in
     // approximate tandem with the global expressions.
-    let mut override_iter = module.overrides.drain();
+    let mut overrides = mem::take(&mut module.overrides);
+    let mut override_iter = overrides.iter_mut_span();
 
     // Do two things in tandem:
     //
@@ -141,6 +187,7 @@ pub fn process_overrides<'a>(
         let mut evaluator = ConstantEvaluator::for_wgsl_module(
             &mut module,
             &mut global_expression_kind_tracker,
+            &mut layouter,
             false,
         );
         adjust_expr(&adjusted_global_expressions, &mut expr);
@@ -150,15 +197,26 @@ pub fn process_overrides<'a>(
 
     // Finish processing any overrides we didn't visit in the loop above.
     for entry in override_iter {
-        process_override(
-            entry,
-            pipeline_constants,
-            &mut module,
-            &mut override_map,
-            &adjusted_global_expressions,
-            &mut adjusted_constant_initializers,
-            &mut global_expression_kind_tracker,
-        )?;
+        match *entry.1 {
+            Override { name: Some(_), .. } | Override { id: Some(_), .. } => {
+                process_override(
+                    entry,
+                    pipeline_constants,
+                    &mut module,
+                    &mut override_map,
+                    &adjusted_global_expressions,
+                    &mut adjusted_constant_initializers,
+                    &mut global_expression_kind_tracker,
+                )?;
+            }
+            Override {
+                init: Some(ref mut init),
+                ..
+            } => {
+                *init = adjusted_global_expressions[*init];
+            }
+            _ => {}
+        }
     }
 
     // Update the initialization expression handles of all `Constant`s
@@ -180,30 +238,95 @@ pub fn process_overrides<'a>(
 
     let mut functions = mem::take(&mut module.functions);
     for (_, function) in functions.iter_mut() {
-        process_function(&mut module, &override_map, function)?;
+        process_function(&mut module, &override_map, &mut layouter, function)?;
     }
     module.functions = functions;
 
     let mut entry_points = mem::take(&mut module.entry_points);
     for ep in entry_points.iter_mut() {
-        process_function(&mut module, &override_map, &mut ep.function)?;
+        process_function(&mut module, &override_map, &mut layouter, &mut ep.function)?;
+        process_workgroup_size_override(&mut module, &adjusted_global_expressions, ep)?;
+        process_mesh_shader_overrides(&mut module, &adjusted_global_expressions, ep)?;
     }
     module.entry_points = entry_points;
+    module.overrides = overrides;
 
     // Now that we've rewritten all the expressions, we need to
     // recompute their types and other metadata. For the time being,
     // do a full re-validation.
-    let mut validator = Validator::new(ValidationFlags::all(), Capabilities::all());
-    let module_info = validator.validate_no_overrides(&module)?;
+    revalidate(module)
+}
 
+fn revalidate(
+    module: Module,
+) -> Result<(Cow<'static, Module>, Cow<'static, ModuleInfo>), PipelineConstantError> {
+    let mut validator = Validator::new(ValidationFlags::all(), Capabilities::all());
+    let module_info = validator.validate_resolved_overrides(&module)?;
     Ok((Cow::Owned(module), Cow::Owned(module_info)))
+}
+
+fn process_workgroup_size_override(
+    module: &mut Module,
+    adjusted_global_expressions: &HandleVec<Expression, Handle<Expression>>,
+    ep: &mut crate::EntryPoint,
+) -> Result<(), PipelineConstantError> {
+    match ep.workgroup_size_overrides {
+        None => {}
+        Some(overrides) => {
+            overrides.iter().enumerate().try_for_each(
+                |(i, overridden)| -> Result<(), PipelineConstantError> {
+                    match *overridden {
+                        None => Ok(()),
+                        Some(h) => {
+                            ep.workgroup_size[i] = module
+                                .to_ctx()
+                                .eval_expr_to_u32(adjusted_global_expressions[h])
+                                .map(|n| {
+                                    if n == 0 {
+                                        Err(PipelineConstantError::NegativeWorkgroupSize)
+                                    } else {
+                                        Ok(n)
+                                    }
+                                })
+                                .map_err(|_| PipelineConstantError::NegativeWorkgroupSize)??;
+                            Ok(())
+                        }
+                    }
+                },
+            )?;
+            ep.workgroup_size_overrides = None;
+        }
+    }
+    Ok(())
+}
+
+fn process_mesh_shader_overrides(
+    module: &mut Module,
+    adjusted_global_expressions: &HandleVec<Expression, Handle<Expression>>,
+    ep: &mut crate::EntryPoint,
+) -> Result<(), PipelineConstantError> {
+    if let Some(ref mut mesh_info) = ep.mesh_info {
+        if let Some(r#override) = mesh_info.max_vertices_override {
+            mesh_info.max_vertices = module
+                .to_ctx()
+                .eval_expr_to_u32(adjusted_global_expressions[r#override])
+                .map_err(|_| PipelineConstantError::NegativeMeshOutputMax)?;
+        }
+        if let Some(r#override) = mesh_info.max_primitives_override {
+            mesh_info.max_primitives = module
+                .to_ctx()
+                .eval_expr_to_u32(adjusted_global_expressions[r#override])
+                .map_err(|_| PipelineConstantError::NegativeMeshOutputMax)?;
+        }
+    }
+    Ok(())
 }
 
 /// Add a [`Constant`] to `module` for the override `old_h`.
 ///
 /// Add the new `Constant` to `override_map` and `adjusted_constant_initializers`.
 fn process_override(
-    (old_h, override_, span): (Handle<Override>, Override, Span),
+    (old_h, r#override, span): (Handle<Override>, &mut Override, &Span),
     pipeline_constants: &PipelineConstants,
     module: &mut Module,
     override_map: &mut HandleVec<Override, Handle<Constant>>,
@@ -211,20 +334,20 @@ fn process_override(
     adjusted_constant_initializers: &mut HashSet<Handle<Constant>>,
     global_expression_kind_tracker: &mut crate::proc::ExpressionKindTracker,
 ) -> Result<Handle<Constant>, PipelineConstantError> {
-    // Determine which key to use for `override_` in `pipeline_constants`.
-    let key = if let Some(id) = override_.id {
+    // Determine which key to use for `r#override` in `pipeline_constants`.
+    let key = if let Some(id) = r#override.id {
         Cow::Owned(id.to_string())
-    } else if let Some(ref name) = override_.name {
+    } else if let Some(ref name) = r#override.name {
         Cow::Borrowed(name)
     } else {
         unreachable!();
     };
 
-    // Generate a global expression for `override_`'s value, either
+    // Generate a global expression for `r#override`'s value, either
     // from the provided `pipeline_constants` table or its initializer
     // in the module.
     let init = if let Some(value) = pipeline_constants.get::<str>(&key) {
-        let literal = match module.types[override_.ty].inner {
+        let literal = match module.types[r#override.ty].inner {
             TypeInner::Scalar(scalar) => map_value_to_literal(*value, scalar)?,
             _ => unreachable!(),
         };
@@ -233,7 +356,7 @@ fn process_override(
             .append(Expression::Literal(literal), Span::UNDEFINED);
         global_expression_kind_tracker.insert(expr, crate::proc::ExpressionKind::Const);
         expr
-    } else if let Some(init) = override_.init {
+    } else if let Some(init) = r#override.init {
         adjusted_global_expressions[init]
     } else {
         return Err(PipelineConstantError::MissingValue(key.to_string()));
@@ -241,13 +364,14 @@ fn process_override(
 
     // Generate a new `Constant` to represent the override's value.
     let constant = Constant {
-        name: override_.name,
-        ty: override_.ty,
+        name: r#override.name.clone(),
+        ty: r#override.ty,
         init,
     };
-    let h = module.constants.append(constant, span);
+    let h = module.constants.append(constant, *span);
     override_map.insert(old_h, h);
     adjusted_constant_initializers.insert(h);
+    r#override.init = Some(init);
     Ok(h)
 }
 
@@ -263,6 +387,7 @@ fn process_override(
 fn process_function(
     module: &mut Module,
     override_map: &HandleVec<Override, Handle<Constant>>,
+    layouter: &mut crate::proc::Layouter,
     function: &mut Function,
 ) -> Result<(), ConstantEvaluatorError> {
     // A map from original local expression handles to
@@ -287,8 +412,10 @@ fn process_function(
         module,
         &mut function.expressions,
         &mut local_expression_kind_tracker,
+        layouter,
         &mut emitter,
         &mut block,
+        false,
     );
 
     for (old_h, mut expr, span) in expressions.drain() {
@@ -376,6 +503,7 @@ fn adjust_expr(new_pos: &HandleVec<Expression, Handle<Expression>>, expr: &mut E
             ref mut level,
             ref mut depth_ref,
             gather: _,
+            clamp_to_edge: _,
         } => {
             adjust(image);
             adjust(sampler);
@@ -525,6 +653,25 @@ fn adjust_expr(new_pos: &HandleVec<Expression, Handle<Expression>>, expr: &mut E
         | Expression::WorkGroupUniformLoadResult { ty: _ }
         | Expression::SubgroupBallotResult
         | Expression::SubgroupOperationResult { .. } => {}
+        Expression::RayQueryVertexPositions {
+            ref mut query,
+            committed: _,
+        } => {
+            adjust(query);
+        }
+        Expression::CooperativeLoad { ref mut data, .. } => {
+            adjust(&mut data.pointer);
+            adjust(&mut data.stride);
+        }
+        Expression::CooperativeMultiplyAdd {
+            ref mut a,
+            ref mut b,
+            ref mut c,
+        } => {
+            adjust(a);
+            adjust(b);
+            adjust(c);
+        }
     }
 }
 
@@ -634,6 +781,20 @@ fn adjust_stmt(new_pos: &HandleVec<Expression, Handle<Expression>>, stmt: &mut S
                 | crate::AtomicFunction::Exchange { compare: None } => {}
             }
         }
+        Statement::ImageAtomic {
+            ref mut image,
+            ref mut coordinate,
+            ref mut array_index,
+            fun: _,
+            ref mut value,
+        } => {
+            adjust(image);
+            adjust(coordinate);
+            if let Some(ref mut array_index) = *array_index {
+                adjust(array_index);
+            }
+            adjust(value);
+        }
         Statement::WorkGroupUniformLoad {
             ref mut pointer,
             ref mut result,
@@ -669,9 +830,11 @@ fn adjust_stmt(new_pos: &HandleVec<Expression, Handle<Expression>>, stmt: &mut S
                 | crate::GatherMode::Shuffle(ref mut index)
                 | crate::GatherMode::ShuffleDown(ref mut index)
                 | crate::GatherMode::ShuffleUp(ref mut index)
-                | crate::GatherMode::ShuffleXor(ref mut index) => {
+                | crate::GatherMode::ShuffleXor(ref mut index)
+                | crate::GatherMode::QuadBroadcast(ref mut index) => {
                     adjust(index);
                 }
+                crate::GatherMode::QuadSwap(_) => {}
             }
             adjust(argument);
             adjust(result)
@@ -704,10 +867,26 @@ fn adjust_stmt(new_pos: &HandleVec<Expression, Handle<Expression>>, stmt: &mut S
                 crate::RayQueryFunction::Proceed { ref mut result } => {
                     adjust(result);
                 }
+                crate::RayQueryFunction::GenerateIntersection { ref mut hit_t } => {
+                    adjust(hit_t);
+                }
+                crate::RayQueryFunction::ConfirmIntersection => {}
                 crate::RayQueryFunction::Terminate => {}
             }
         }
-        Statement::Break | Statement::Continue | Statement::Kill | Statement::Barrier(_) => {}
+        Statement::CooperativeStore {
+            ref mut target,
+            ref mut data,
+        } => {
+            adjust(target);
+            adjust(&mut data.pointer);
+            adjust(&mut data.stride);
+        }
+        Statement::Break
+        | Statement::Continue
+        | Statement::Kill
+        | Statement::ControlBarrier(_)
+        | Statement::MemoryBarrier(_) => {}
     }
 }
 
@@ -836,6 +1015,19 @@ fn map_value_to_literal(value: f64, scalar: Scalar) -> Result<Literal, PipelineC
             let value = value as u32;
             Ok(Literal::U32(value))
         }
+        Scalar::F16 => {
+            // https://webidl.spec.whatwg.org/#js-float
+            if !value.is_finite() {
+                return Err(PipelineConstantError::SrcNeedsToBeFinite);
+            }
+
+            let value = half::f16::from_f64(value);
+            if !value.is_finite() {
+                return Err(PipelineConstantError::DstRangeTooSmall);
+            }
+
+            Ok(Literal::F16(value))
+        }
         Scalar::F32 => {
             // https://webidl.spec.whatwg.org/#js-float
             if !value.is_finite() {
@@ -857,7 +1049,10 @@ fn map_value_to_literal(value: f64, scalar: Scalar) -> Result<Literal, PipelineC
 
             Ok(Literal::F64(value))
         }
-        _ => unreachable!(),
+        Scalar::ABSTRACT_FLOAT | Scalar::ABSTRACT_INT => {
+            unreachable!("abstract values should not be validated out of override processing")
+        }
+        _ => unreachable!("unrecognized scalar type for override"),
     }
 }
 

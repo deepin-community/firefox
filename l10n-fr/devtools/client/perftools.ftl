@@ -30,6 +30,7 @@ perftools-description-intro =
     Les enregistrements lancent <a>profiler.firefox.com</a> dans un nouvel onglet. Toutes les données sont stockées
     localement, mais vous pouvez choisir de les envoyer pour les partager.
 perftools-description-local-build = Si vous profilez une version que vous avez vous-même compilée, sur cette machine, veuillez ajouter le dossier « objdir » de votre compilation à la liste ci-dessous pour qu’il puisse être utilisé pour rechercher des informations sur les symboles.
+perftools-pick-local-build-directory = Choisir le répertoire de compilation
 
 ## The controls for the interval at which the profiler samples the code.
 
@@ -65,6 +66,14 @@ perftools-button-restart = Redémarrer
 perftools-button-add-directory = Ajouter un répertoire
 perftools-button-remove-directory = Supprimer les éléments sélectionnés
 perftools-button-edit-settings = Modifier les paramètres…
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Actions supplémentaires
+perftools-menu-more-actions-restart-with-profiling = Redémarrer { -brand-shorter-name } en activant le profilage au démarrage
+perftools-menu-more-actions-copy-for-startup = Copier les variables d’environnement pour le profilage au démarrage
+perftools-menu-more-actions-copy-for-perf-tests = Copier les paramètres des tests de performances
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -138,6 +147,8 @@ perftools-presets-graphics-label = Accélération graphique
 perftools-presets-graphics-description = Réglage conçu pour examiner les bugs graphiques dans { -brand-shorter-name }.
 perftools-presets-media-label = Multimédia
 perftools-presets-media-description2 = Réglage conçu pour examiner les bugs audio et vidéo dans { -brand-shorter-name }.
+perftools-presets-ml-label = Apprentissage automatique
+perftools-presets-ml-description2 = Réglage conçu pour examiner les bugs d’apprentissage automatique dans { -brand-shorter-name }.
 perftools-presets-networking-label = Réseau
 perftools-presets-networking-description = Réglage conçu pour examiner les bugs réseau dans { -brand-shorter-name }.
 # "Power" is used in the sense of energy (electricity used by the computer).
@@ -145,7 +156,6 @@ perftools-presets-power-label = Énergie
 perftools-presets-power-description = Réglage conçu pour examiner les bugs liés à la consommation d’énergie dans { -brand-shorter-name }, avec une surcharge faible.
 perftools-presets-debug-label = Débogage
 perftools-presets-debug-description = Réglage conçu pour le débogage dans { -brand-shorter-name }. Sa surcharge est importante, à utiliser non pour étudier les performances, mais pour comprendre le comportement du navigateur.
+perftools-presets-web-compat-label = Compatibilité web
+perftools-presets-web-compat-description = Réglage recommandé pour déboguer les problèmes de compatibilité web avec les sites web, plutôt que pour le suivi des performances.
 perftools-presets-custom-label = Personnalisé
-
-##
-

@@ -6,22 +6,25 @@ package org.mozilla.fenix.components.toolbar
 
 import androidx.navigation.NavController
 import mozilla.components.browser.state.action.ContentAction
+import mozilla.components.browser.state.action.ShareResourceAction
 import mozilla.components.browser.state.ext.getUrl
 import mozilla.components.browser.state.selector.findCustomTabOrSelectedTab
 import mozilla.components.browser.state.selector.findTab
 import mozilla.components.browser.state.selector.getNormalOrPrivateTabs
 import mozilla.components.browser.state.selector.selectedTab
 import mozilla.components.browser.state.state.SessionState
+import mozilla.components.browser.state.state.content.ShareResourceState
 import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.concept.engine.EngineView
 import mozilla.components.concept.engine.prompt.ShareData
 import mozilla.components.feature.tabs.TabsUseCases
+import mozilla.components.support.ktx.kotlin.isContentUrl
 import mozilla.components.support.ktx.kotlin.isUrl
 import mozilla.components.ui.tabcounter.TabCounterMenu
 import mozilla.telemetry.glean.private.NoExtras
 import org.mozilla.fenix.GleanMetrics.Events
-import org.mozilla.fenix.GleanMetrics.NavigationBar
 import org.mozilla.fenix.GleanMetrics.ReaderMode
+import org.mozilla.fenix.GleanMetrics.Toolbar
 import org.mozilla.fenix.GleanMetrics.Translations
 import org.mozilla.fenix.HomeActivity
 import org.mozilla.fenix.NavGraphDirections
@@ -35,12 +38,16 @@ import org.mozilla.fenix.components.AppStore
 import org.mozilla.fenix.components.appstate.AppAction.SnackbarAction
 import org.mozilla.fenix.components.menu.MenuAccessPoint
 import org.mozilla.fenix.components.toolbar.interactor.BrowserToolbarInteractor
+import org.mozilla.fenix.components.usecases.FenixBrowserUseCases
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.nav
 import org.mozilla.fenix.ext.navigateSafe
 import org.mozilla.fenix.ext.settings
-import org.mozilla.fenix.home.HomeFragment
 import org.mozilla.fenix.home.HomeScreenViewModel
+import org.mozilla.fenix.telemetry.ACTION_ADD_NEW_TAB
+import org.mozilla.fenix.telemetry.ACTION_ADD_NEW_TAB_LONG_CLICKED
+import org.mozilla.fenix.telemetry.ACTION_HOME_CLICKED
+import org.mozilla.fenix.telemetry.SOURCE_ADDRESS_BAR
 import org.mozilla.fenix.utils.Settings
 
 /**
@@ -59,21 +66,6 @@ interface BrowserToolbarController {
      * @see [BrowserToolbarInteractor.onHomeButtonClicked]
      */
     fun handleHomeButtonClick()
-
-    /**
-     * @see [BrowserToolbarInteractor.onEraseButtonClicked]
-     */
-    fun handleEraseButtonClick()
-
-    /**
-     * @see [BrowserToolbarInteractor.onShoppingCfrActionClicked]
-     */
-    fun handleShoppingCfrActionClick()
-
-    /**
-     * @see [BrowserToolbarInteractor.onShoppingCfrDisplayed]
-     */
-    fun handleShoppingCfrDisplayed()
 
     /**
      * @see [BrowserToolbarInteractor.onTranslationsButtonClicked]
@@ -98,16 +90,19 @@ interface BrowserToolbarController {
     /**
      * @see [BrowserToolbarInteractor.onMenuButtonClicked]
      */
-    fun handleMenuButtonClicked(accessPoint: MenuAccessPoint, customTabSessionId: String? = null)
+    fun handleMenuButtonClicked(
+        accessPoint: MenuAccessPoint,
+        customTabSessionId: String? = null,
+        isSandboxCustomTab: Boolean = false,
+    )
 }
-
-private const val MAX_DISPLAY_NUMBER_SHOPPING_CFR = 3
 
 @Suppress("LongParameterList")
 class DefaultBrowserToolbarController(
     private val store: BrowserStore,
     private val appStore: AppStore,
     private val tabsUseCases: TabsUseCases,
+    private val fenixBrowserUseCases: FenixBrowserUseCases,
     private val activity: HomeActivity,
     private val settings: Settings,
     private val navController: NavController,
@@ -137,7 +132,7 @@ class DefaultBrowserToolbarController(
     override fun handleToolbarPasteAndGo(text: String) {
         if (text.isUrl()) {
             store.updateSearchTermsOfSelectedSession("")
-            activity.components.useCases.sessionUseCases.loadUrl.invoke(text)
+            activity.components.useCases.sessionUseCases.loadUrl(text)
             return
         }
 
@@ -228,29 +223,19 @@ class DefaultBrowserToolbarController(
     }
 
     override fun handleHomeButtonClick() {
-        Events.browserToolbarHomeTapped.record(NoExtras())
-        browserAnimator.captureEngineViewAndDrawStatically {
-            navController.navigate(
-                BrowserFragmentDirections.actionGlobalHome(),
-            )
-        }
-    }
-
-    override fun handleEraseButtonClick() {
-        Events.browserToolbarEraseTapped.record(NoExtras())
-        homeViewModel.sessionToDelete = HomeFragment.ALL_PRIVATE_TABS
-        val directions = BrowserFragmentDirections.actionGlobalHome()
-        navController.navigate(directions)
-    }
-
-    override fun handleShoppingCfrActionClick() {
-        navController.navigate(
-            BrowserFragmentDirections.actionBrowserFragmentToReviewQualityCheckDialogFragment(),
+        Toolbar.buttonTapped.record(
+            Toolbar.ButtonTappedExtra(source = SOURCE_ADDRESS_BAR, item = ACTION_HOME_CLICKED),
         )
-    }
 
-    override fun handleShoppingCfrDisplayed() {
-        updateShoppingCfrSettings()
+        if (settings.enableHomepageAsNewTab) {
+            fenixBrowserUseCases.navigateToHomepage()
+        } else {
+            browserAnimator.captureEngineViewAndDrawStatically {
+                navController.navigate(
+                    BrowserFragmentDirections.actionGlobalHome(),
+                )
+            }
+        }
     }
 
     override fun handleTranslationsButtonClick() {
@@ -268,28 +253,41 @@ class DefaultBrowserToolbarController(
         val url = sessionId?.let {
             store.state.findTab(it)?.getUrl()
         }
-        val directions = NavGraphDirections.actionGlobalShareFragment(
-            sessionId = sessionId,
-            data = arrayOf(
-                ShareData(
-                    url = url,
-                    title = currentSession?.content?.title,
+
+        if (url?.isContentUrl() == true) {
+            val tab = store.state.findTab(sessionId) ?: return
+
+            store.dispatch(
+                ShareResourceAction.AddShareAction(
+                    tab.id,
+                    ShareResourceState.LocalResource(url),
                 ),
-            ),
-            showPage = true,
-        )
-        navController.navigate(directions)
+            )
+        } else {
+            val directions = NavGraphDirections.actionGlobalShareFragment(
+                sessionId = sessionId,
+                data = arrayOf(
+                    ShareData(
+                        url = url,
+                        title = currentSession?.content?.title,
+                    ),
+                ),
+                showPage = true,
+            )
+            navController.navigate(directions)
+        }
     }
 
     override fun handleNewTabButtonClick() {
         if (settings.enableHomepageAsNewTab) {
-            tabsUseCases.addTab.invoke(
-                startLoading = false,
+            fenixBrowserUseCases.addNewHomepageTab(
                 private = currentSession?.content?.private ?: false,
             )
         }
 
-        NavigationBar.browserNewTabTapped.record(NoExtras())
+        Toolbar.buttonTapped.record(
+            Toolbar.ButtonTappedExtra(source = SOURCE_ADDRESS_BAR, item = ACTION_ADD_NEW_TAB),
+        )
 
         browserAnimator.captureEngineViewAndDrawStatically {
             navController.navigate(
@@ -299,36 +297,23 @@ class DefaultBrowserToolbarController(
     }
 
     override fun handleNewTabButtonLongClick() {
-        NavigationBar.browserNewTabLongTapped.record(NoExtras())
+        Toolbar.buttonTapped.record(
+            Toolbar.ButtonTappedExtra(source = SOURCE_ADDRESS_BAR, item = ACTION_ADD_NEW_TAB_LONG_CLICKED),
+        )
     }
 
-    override fun handleMenuButtonClicked(accessPoint: MenuAccessPoint, customTabSessionId: String?) {
+    override fun handleMenuButtonClicked(
+        accessPoint: MenuAccessPoint,
+        customTabSessionId: String?,
+        isSandboxCustomTab: Boolean,
+    ) {
         navController.navigate(
             BrowserFragmentDirections.actionGlobalMenuDialogFragment(
                 accesspoint = accessPoint,
                 customTabSessionId = customTabSessionId,
+                isSandboxCustomTab = isSandboxCustomTab,
             ),
         )
-    }
-
-    companion object {
-        internal const val TELEMETRY_BROWSER_IDENTIFIER = "browserMenu"
-    }
-
-    /**
-     * Stop showing the CFR after being displayed three times with
-     * with at least 12 hrs in-between.
-     * As described in: https://bugzilla.mozilla.org/show_bug.cgi?id=1861173#c0
-     */
-    private fun updateShoppingCfrSettings() = with(activity.settings()) {
-        reviewQualityCheckCFRClosedCounter++
-        if (reviewQualityCheckCfrDisplayTimeInMillis != 0L &&
-            reviewQualityCheckCFRClosedCounter >= MAX_DISPLAY_NUMBER_SHOPPING_CFR
-        ) {
-            shouldShowReviewQualityCheckCFR = false
-        } else {
-            reviewQualityCheckCfrDisplayTimeInMillis = System.currentTimeMillis()
-        }
     }
 }
 

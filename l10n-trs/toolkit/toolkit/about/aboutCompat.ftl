@@ -5,16 +5,11 @@
 label-disable = Dunikïn'
 label-enable = Dugi'iaj sun' man
 label-interventions = Nej sa natsít
+# Variables:
+#   $bug (string) - Bug number
 label-more-information = Doj nuguan' huaa: Bug { $bug }
 label-overrides = Sa nadure' agentê 'iaj sun aga' nan
 text-disabled-in-about-config = Nan narè' ngà gisîj gachîn about.config
 text-no-interventions = Nitaj si araj sun ni nej interbensiôn
 text-no-overrides = Nitaj si araj sun ñunj nej sa dure' UA
 text-title = about:compat
-
-## Do not translate "SmartBlock". For reference, SmartBlock is a feature
-## of Firefox anti-tracking which fixes website breakage caused when
-## trackers are blocked, by acting just enough like those trackers to fix the
-## breakage. SmartBlock also contains special fixes for sites broken by
-## Firefox's Total Cookie Protection feature.
-

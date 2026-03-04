@@ -25,6 +25,8 @@ return-to-amo-subtitle = 恭喜，您已經安裝好 { -brand-short-name }
 return-to-amo-addon-title = 現在來安裝 <img data-l10n-name="icon"/><b>{ $addon-name }</b> 吧。
 return-to-amo-add-extension-label = 安裝擴充套件
 return-to-amo-add-theme-label = 安裝佈景主題
+return-to-amo-theme-install-complete-label = 已安裝佈景主題
+return-to-amo-extension-install-complete-label = 已安裝擴充套件
 
 ##  Variables: $addon-name (String) - Name of the add-on to be installed
 
@@ -53,9 +55,6 @@ mr1-onboarding-import-primary-button-label-attribution = 從 { $previous } 匯�
 mr1-onboarding-theme-header = 有您的風格
 mr1-onboarding-theme-subtitle = 使用佈景主題，讓 { -brand-short-name } 有您的風格
 mr1-onboarding-theme-secondary-button-label = 現在不要
-newtab-wallpaper-onboarding-title = 試用新色彩
-newtab-wallpaper-onboarding-subtitle = 挑選一套背景圖，讓您的新分頁有新風貌
-newtab-wallpaper-onboarding-primary-button-label = 設定背景圖
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = 系統佈景主題
 mr1-onboarding-theme-label-light = 亮色
@@ -141,7 +140,7 @@ fx100-thank-you-hero-text =
 fx100-thank-you-subtitle = 這一版是我們的第 100 版！非常感謝您與我們一起打造更好、更健康的網路環境。
 fx100-thank-you-pin-primary-button-label =
     { PLATFORM() ->
-        [macos] 將 { -brand-short-name } 保留在 Dock
+        [macos] 將 { -brand-short-name } 放置於 Dock
        *[other] 將 { -brand-short-name } 釘選到工具列
     }
 fx100-upgrade-thanks-header = 100 倍的感謝您
@@ -173,7 +172,7 @@ mr2022-onboarding-welcome-pin-subtitle = 只要輕鬆一點就可以從任何地
 # Primary button string used on welcome page for when Firefox is not pinned.
 mr2022-onboarding-pin-primary-button-label =
     { PLATFORM() ->
-        [macos] 將 { -brand-short-name } 保留在 Dock
+        [macos] 將 { -brand-short-name } 放置於 Dock
        *[other] 將 { -brand-short-name } 釘選到工具列
     }
 # Primary button string used on welcome page for when Firefox is not pinned on MSIX
@@ -213,7 +212,9 @@ mr2022-onboarding-set-default-subtitle = 使用由非營利組織在背後開發
 mr2022-onboarding-get-started-primary-subtitle = 最新版本是圍繞您打造的。讓您更簡單就可在網路中探索，希望您也會喜歡我們推出的滿滿功能。
 mr2022-onboarding-get-started-primary-button-label = 幾秒鐘就能設定完成
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = 設定光速快
 mr2022-onboarding-import-subtitle = 根據您的喜好來設定 { -brand-short-name }。可從您的舊瀏覽器匯入書籤、密碼與更多資料。
@@ -286,7 +287,7 @@ mr2022-onboarding-privacy-segmentation-button-secondary-label = 顯示詳細資�
 ## MR2022 Multistage Gratitude screen strings
 
 mr2022-onboarding-gratitude-title = 您正在幫助我們打造更好的網路環境
-mr2022-onboarding-gratitude-subtitle = 感謝您使用由 Mozilla Foundation 所支持開發的 { -brand-short-name }。透過您的支援，我們努力讓網路環境變得更好、更開放、更可被所有人使用。
+mr2022-onboarding-gratitude-subtitle = 感謝您使用由 Mozilla 基金會開發的 { -brand-short-name }。透過您的支援，我們努力讓網路環境變得更好、更開放、更可被所有人使用。
 mr2022-onboarding-gratitude-primary-button-label = 看看有什麼新鮮事
 mr2022-onboarding-gratitude-secondary-button-label = 開始上網
 
@@ -343,7 +344,12 @@ onboarding-mobile-download-security-and-privacy-title = 在不同裝置間切換
 onboarding-mobile-download-security-and-privacy-subtitle = 資料同步完成後，{ -brand-short-name } 即可加密您的網站密碼、書籤與更多資料。另外還可以直接取得您在其他裝置上開啟的分頁。
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } 是您的堅強後盾
-onboarding-gratitude-security-and-privacy-subtitle = 感謝您使用由 Mozilla Foundation 所支持開發的 { -brand-short-name }。透過您的支援，我們努力讓網路環境變得更安全、更可被所有人使用。
+onboarding-gratitude-security-and-privacy-subtitle = 感謝您使用由 Mozilla 基金會開發的 { -brand-short-name }。透過您的支援，我們努力讓網路環境變得更安全、更可被所有人使用。
+# Sign up or Sign in screen
+onboarding-sign-up-title = 在不同裝置間同步資料
+onboarding-sign-up-description = 註冊一組帳號，即可將您的所有重要資訊（密碼、書籤等資訊）安全地儲存下來，並且在登入的裝置中同步使用。
+onboarding-sign-up-button = 註冊或登入
+onboarding-sign-up-secondary-button = 開始上網
 
 ## New user time and familiarity survey strings
 
@@ -363,3 +369,208 @@ onboarding-new-user-survey-familiarity-based-option-1 = 我剛開始使用
 onboarding-new-user-survey-familiarity-based-option-2 = 我大概會用
 onboarding-new-user-survey-familiarity-based-option-3 = 我很熟悉操作
 onboarding-new-user-survey-familiarity-based-option-4 = 我曾經用過，但已經好一陣子了
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = 告訴我們您想將分頁列放在哪裡
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = 可以到側邊欄設定中隨時切換。
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = 用您的方式管理分頁
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = 開啟很多分頁嗎？可以將分頁放到畫面側邊，讓畫面更流暢；也可以繼續放在畫面頂部，或隨時切換。
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = 選擇您的分頁版面
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = 若想讓畫面更流暢，可以將分頁放到畫面側邊；也可以繼續放在畫面頂部，或隨時切換。
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = 放在側邊
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = 放在頂端
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = 垂直分頁將顯示於此處
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = 正式推出垂直分頁功能
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = 試試看將分頁列移到側邊，可在側邊欄設定中隨時切換。
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = 試用垂直分頁標籤功能
+onboarding-flair-text = 新功能！
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = 保留水平分頁標籤
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = 於 { -brand-shorter-name } 側邊欄顯示分頁列的瀏覽器視窗。
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = 於 { -brand-shorter-name } 側邊欄顯示分頁列的瀏覽器視窗。
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = 於頂端顯示分頁列的瀏覽器視窗。
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = 於頂端顯示分頁列的瀏覽器視窗。
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = 在側邊欄試用 AI 聊天機器人
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = 一邊上網一邊摘要網頁內容、找出新點子、撰寫訊息草稿。多套機器人可供使用，並可隨時切換。<a data-l10n-name="learn-more">更多資訊</a>
+onboarding-genai-sidebar-primary-button = 挑選一套機器人
+onboarding-genai-sidebar-secondary-button = 開始上網
+
+## New user onboarding checklist
+
+onboarding-checklist-title = 完成設定 { -brand-short-name }
+onboarding-checklist-subtitle = 完成下列步驟，讓您獲得最完整的的上網體驗。
+onboarding-checklist-set-default = 將 { -brand-short-name } 設為預設瀏覽器
+onboarding-checklist-pin = 將 { -brand-short-name } 釘選到工具列
+onboarding-checklist-import = 從先前使用的瀏覽器匯入資料
+onboarding-checklist-extension = 新增擴充套件
+onboarding-checklist-sign-up = 註冊或登入帳號
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = 試用分頁群組，減少雜亂、更能專注
+tab-groups-onboarding-feature-callout-subtitle = 將一個分頁拖曳到另一個分頁，即可建立第一個分頁群組。
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-create-group-title-3 = 隨時使用「列出所有分頁」選單來尋找您的分頁群組。
+tab-groups-onboarding-create-group-title-2 = 可隨時在此處尋找您的分頁群組。
+tab-groups-onboarding-create-group-no-alltabs-button-title = 可以在網址列搜尋分頁群組。
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-saved-groups-title-3 = 關閉分頁群組後，可隨時到「列出所有分頁」選單重新開啟。
+tab-groups-onboarding-saved-groups-title-2 = 關閉分頁群組後，可以隨時在此處重新開啟。
+tab-groups-onboarding-saved-groups-no-alltabs-button-title-2 = 可以在網址列搜尋關閉的分頁群組。
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-session-restore-title-2 = 隨時從「列出所有分頁」選單重新開啟分頁群組。
+tab-groups-onboarding-session-restore-title = 可隨時在此處重新開啟您的分頁群組。
+tab-groups-onboarding-dismiss = 確定
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = 跟 { -brand-product-name } 設定檔切換功能說聲嗨！
+multi-profile-spotlight-body = 設定檔中包含您的搜尋紀錄、密碼等上網資訊，不同設定檔間彼此完全隔離，您可輕鬆切換、更能管理工作與私人上網情境。
+multi-profile-spotlight-cta = 建立設定檔
+multi-profile-callout-title = 為工作與私人上網情境，建立不同設定檔
+multi-profile-callout-subtitle = 您可以透過不同設定檔完全隔離搜尋紀錄、網站密碼等上網資訊。
+multi-profile-callout-cta = 建立設定檔
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = 下載、同步、出發！
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = 掃描 QR Code 即可下載 { -brand-product-name } 行動版。安裝完成後，請選擇「同步到行動裝置」即可隨時隨地取得您的密碼、書籤與更多資訊。
+dismiss-button-label = 知道了！
+sync-to-mobile-button-label = 同步到行動裝置
+desktop-to-mobile-qr-code-alt =
+    .aria-label = { -brand-product-name } 行動版的下載 QR Code
+
+## Fx Backup onboarding: Create Backup spotlight
+
+create-backup-screen-1-title =
+    準備升級到 Windows 11 嗎？
+    一起來備份您的 { -brand-product-name } 資料。
+create-backup-screen-1-subtitle = 只要 1~2 分鐘，就能自動保護您的密碼、書籤與更多資料。
+create-backup-screen-1-flair = 推薦
+create-backup-learn-more-link = <a data-l10n-name="learn-more-label">更多資訊</a>
+create-backup-screen-1-sync-label = 與 { -brand-product-name } 同步
+create-backup-screen-1-sync-body = 可備份所有登入的裝置
+create-backup-screen-1-backup-label = 備份到電腦
+create-backup-screen-1-backup-body = 儲存到您的裝置或 OneDrive 當中
+create-backup-select-tile-button-label = 選擇
+create-backup-back-button-label = 上一頁
+create-backup-show-fewer =
+    .label = 減少顯示這類內容
+create-backup-screen-2-title = 請選擇要備份的 { -brand-product-name } 資料
+create-backup-screen-2-subtitle = 只要一分鐘就能完成。您的資料會每天備份一次。
+# Label for the "Easy setup" backup option
+create-backup-screen-2-easy-label = 設定簡單
+# Preceded by a green check mark indicating that these are included in "Easy setup" backup
+create-backup-screen-2-easy-list-1 = 書籤、瀏覽紀錄、設定與更多資訊
+# Preceded by a red X indicating that these are not included in the "Easy setup" backup
+create-backup-screen-2-easy-list-2 = 不包含密碼與付款資訊
+# Preceded by a red X indicating that "Easy setup" backups are not encrypted
+create-backup-screen-2-easy-list-3 = 未加密
+# Label for the "All data" backup option
+create-backup-screen-2-all-label = 所有資料
+# Preceded by a green check mark indicating that these are included in the "All data" backup
+create-backup-screen-2-all-list-2 = 包含密碼與付款資訊
+# Preceded by a green check mark and shield indicating "All data" backups are encrypted
+create-backup-screen-2-all-list-3 = 使用密碼加密
+# Title for a screen asking users to choose a file location
+create-backup-screen-3-location = 您想將備份檔案放在哪裡？
+# Title for a screen asking users to create a password that will encrypt the backup
+create-backup-screen-3-title = 為備份檔設定密碼
+create-backup-screen-3-subtitle = 需要有密碼才能加密資料，請將密碼保存於能記得的地方。
+fx-backup-opt-in-header = 選擇檔案位置
+fx-backup-opt-in-filepath-label = 挑一個能將備份檔轉移到新裝置的地方，例如 OneDrive。
+fx-backup-opt-in-create-password-label = 輸入密碼
+fx-backup-opt-in-confirm-btn-label = 繼續
+fx-backup-opt-in-cancel-btn-label = 上一頁
+
+## Fx Backup confirmation screen strings
+
+fx-backup-confirmation-screen-title = 已排定備份
+fx-backup-confirmation-screen-close-button = 關閉
+
+## These strings appear as a confirmation of which items will or won't be included as part of the selected backup method.
+
+fx-backup-confirmation-screen-all-data-item-text-1 = 包含所有瀏覽資料
+fx-backup-confirmation-screen-all-data-item-text-2 = 已儲存到您的裝置
+fx-backup-confirmation-screen-all-data-item-text-3 = 已加密，並用密碼保護
+fx-backup-confirmation-screen-easy-setup-item-text-1 = 包含書籤、上網紀錄、設定與其他資料
+fx-backup-confirmation-screen-easy-setup-item-text-2 = 已儲存到您的裝置
+fx-backup-confirmation-screen-easy-setup-item-text-3 = 不含密碼與付款資訊
+fx-backup-confirmation-screen-easy-setup-item-subtext-3 = 可到<a data-l10n-name="settings">設定</a>當中將敏感資料列入備份。
+fx-backup-confirmation-screen-item-subtext-1 = 將在幾分鐘後開始備份，接下來每天備份一次。可以到<a data-l10n-name="settings">設定</a>當中確認備份狀態。
+fx-backup-confirmation-screen-item-subtext-2 = 需要重新安裝時，{ -brand-short-name } 會自動尋找您的備份資料。
+
+## Restore from Backup Flow about:welcome screens
+
+restore-from-backup-secondary-top-button = 從備份還原
+restore-from-backup-title = 讓我們把 { -brand-short-name } 還原成您習慣的樣子
+restore-from-backup-subtitle = 還原您所有書籤、瀏覽紀錄與其他資料，即可繼續上網。
+restore-from-backup-secondary-button = 不要還原
+
+## Restored from Backup spotlight
+
+restored-from-backup-success-title = 歡迎回來！已將您的 { -brand-short-name } 資料還原成功！
+restored-from-backup-success-with-checklist-subtitle = 想要維持讓您最愛的隱私保護瀏覽器，只要滑鼠一點就能立即使用嗎？
+restored-from-backup-success-no-checklist-subtitle = 您可以在<a data-l10n-name="settings">設定</a>當中，替此裝置開啟備份功能。
+restored-from-backup-success-with-checklist-primary-button = 儲存並繼續
+restored-from-backup-success-with-checklist-secondary-button = 跳過這步
+restored-from-backup-success-no-checklist-primary-button = 繼續
+restored-from-backup-error-title = 嗯…您的備份檔案有點問題。
+restored-from-backup-error-subtitle = 若您有其他的 { -brand-short-name } 備份檔，請嘗試還原該檔案。<a data-l10n-name="restore-problems">還有問題嗎？</a>
+restored-from-backup-error-primary-button = 關閉
+
+## Onboarding Personalization Screen
+## A screen shown to users during the onboarding process that asks them two qualifying questions about their use of the browser
+
+onboarding-personalization-title = 自訂您的 { -brand-short-name } 使用體驗
+onboarding-personalization-subtitle = 回答幾個小問題，我們就可推薦您能夠加強 { -brand-short-name } 使用體驗的功能與擴充套件。
+onboarding-personalization-use-case-title = 您的 { -brand-short-name } 主要用於什麼環境？
+onboarding-personalization-use-case-personal-option = 私人
+onboarding-personalization-use-case-school-option = 學校
+onboarding-personalization-use-case-work-option = 工作
+onboarding-personalization-motivation-title = { -brand-short-name } 的哪些功能，對您來說最重要？
+onboarding-personalization-motivation-privacy-option = 隱私權與安全性
+onboarding-personalization-motivation-productivity-option = 生產力
+onboarding-personalization-motivation-other-option = 其他
+
+## Onboarding 2026 brand refresh
+
+onboarding-refresh-pin-set-default-subtitle = 我們會保護您的資料，並自動防止企業偷窺您的點擊行為。
+# "safe paws" is a play on "safe hands", meaning you're being well taken care of or protected
+# If it doesn’t translate well, you can use the alternative: “You’re safe with Firefox.”
+onboarding-refresh-pin-set-default-title = 一切都安全了
+onboarding-refresh-import-subtitle = 將您的密碼、書籤、瀏覽紀錄等資料移轉過來。
+onboarding-refresh-import-title = 讓 { -brand-short-name } 更有家的風格
+onboarding-refresh-onboarding-addons-subtitle = 擴充套件就是一些能讓您自訂 { -brand-short-name } 的迷你小程式。它們可以加強您的隱私、提高生產力、改變 { -brand-short-name } 的外觀，或有更多功能。
+# "Give your browsing a boost" means to enhance or improve the browsing experience
+onboarding-refresh-onboarding-addons-title = 加強您的上網體驗
+onboarding-refresh-sync-subtitle = 在您登入 { -brand-short-name } 的所有裝置取得同步的書籤、密碼與更多資料。此外，所有資料都加密後才同步，只有您看得見。
+onboarding-refresh-sync-title = 去到哪就同步到哪
+onboarding-refresh-gratitude-subtitle = 感謝您使用 { -brand-short-name }，這是唯一一套由非營利組織在背後全力相挺的主流瀏覽器。透過您的支援，我們努力讓網際網路環境變得更安全、更可被所有人使用。
+# "has your back" is an idiom suggesting support and protection
+onboarding-refresh-gratitude-title = { -brand-short-name } 是您的堅強後盾

@@ -6,13 +6,14 @@
 
 #include "DOMSVGTransformList.h"
 
+#include <algorithm>
+
+#include "DOMSVGTransform.h"
+#include "SVGAnimatedTransformList.h"
 #include "mozilla/dom/SVGElement.h"
 #include "mozilla/dom/SVGMatrix.h"
 #include "mozilla/dom/SVGTransformListBinding.h"
-#include "DOMSVGTransform.h"
-#include "SVGAnimatedTransformList.h"
 #include "nsError.h"
-#include <algorithm>
 
 // local helper functions
 namespace {
@@ -118,7 +119,7 @@ SVGTransformList& DOMSVGTransformList::InternalList() const {
 //----------------------------------------------------------------------
 void DOMSVGTransformList::Clear(ErrorResult& error) {
   if (IsAnimValList()) {
-    error.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    error.ThrowNoModificationAllowedError("Animated values cannot be set");
     return;
   }
 
@@ -139,7 +140,7 @@ void DOMSVGTransformList::Clear(ErrorResult& error) {
 already_AddRefed<DOMSVGTransform> DOMSVGTransformList::Initialize(
     DOMSVGTransform& newItem, ErrorResult& error) {
   if (IsAnimValList()) {
-    error.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    error.ThrowNoModificationAllowedError("Animated values cannot be set");
     return nullptr;
   }
 
@@ -166,7 +167,7 @@ already_AddRefed<DOMSVGTransform> DOMSVGTransformList::GetItem(
   bool found;
   RefPtr<DOMSVGTransform> item = IndexedGetter(index, found, error);
   if (!found) {
-    error.Throw(NS_ERROR_DOM_INDEX_SIZE_ERR);
+    error.ThrowIndexSizeError("Index out of range");
   }
   return item.forget();
 }
@@ -186,13 +187,13 @@ already_AddRefed<DOMSVGTransform> DOMSVGTransformList::IndexedGetter(
 already_AddRefed<DOMSVGTransform> DOMSVGTransformList::InsertItemBefore(
     DOMSVGTransform& newItem, uint32_t index, ErrorResult& error) {
   if (IsAnimValList()) {
-    error.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    error.ThrowNoModificationAllowedError("Animated values cannot be set");
     return nullptr;
   }
 
   index = std::min(index, LengthNoFlush());
   if (index >= DOMSVGTransform::MaxListIndex()) {
-    error.Throw(NS_ERROR_DOM_INDEX_SIZE_ERR);
+    error.ThrowIndexSizeError("Index out of range");
     return nullptr;
   }
 
@@ -235,12 +236,12 @@ already_AddRefed<DOMSVGTransform> DOMSVGTransformList::InsertItemBefore(
 already_AddRefed<DOMSVGTransform> DOMSVGTransformList::ReplaceItem(
     DOMSVGTransform& newItem, uint32_t index, ErrorResult& error) {
   if (IsAnimValList()) {
-    error.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    error.ThrowNoModificationAllowedError("Animated values cannot be set");
     return nullptr;
   }
 
   if (index >= LengthNoFlush()) {
-    error.Throw(NS_ERROR_DOM_INDEX_SIZE_ERR);
+    error.ThrowIndexSizeError("Index out of range");
     return nullptr;
   }
 
@@ -269,12 +270,12 @@ already_AddRefed<DOMSVGTransform> DOMSVGTransformList::ReplaceItem(
 already_AddRefed<DOMSVGTransform> DOMSVGTransformList::RemoveItem(
     uint32_t index, ErrorResult& error) {
   if (IsAnimValList()) {
-    error.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    error.ThrowNoModificationAllowedError("Animated values cannot be set");
     return nullptr;
   }
 
   if (index >= LengthNoFlush()) {
-    error.Throw(NS_ERROR_DOM_INDEX_SIZE_ERR);
+    error.ThrowIndexSizeError("Index out of range");
     return nullptr;
   }
 
@@ -301,15 +302,15 @@ already_AddRefed<DOMSVGTransform> DOMSVGTransformList::RemoveItem(
 
 already_AddRefed<DOMSVGTransform>
 DOMSVGTransformList::CreateSVGTransformFromMatrix(const DOMMatrix2DInit& matrix,
-                                                  ErrorResult& rv) {
-  RefPtr<DOMSVGTransform> result = new DOMSVGTransform(matrix, rv);
+                                                  ErrorResult& aRv) {
+  RefPtr<DOMSVGTransform> result = new DOMSVGTransform(matrix, aRv);
   return result.forget();
 }
 
 already_AddRefed<DOMSVGTransform> DOMSVGTransformList::Consolidate(
     ErrorResult& error) {
   if (IsAnimValList()) {
-    error.Throw(NS_ERROR_DOM_NO_MODIFICATION_ALLOWED_ERR);
+    error.ThrowNoModificationAllowedError("Animated values cannot be set");
     return nullptr;
   }
 

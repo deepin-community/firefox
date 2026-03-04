@@ -6,19 +6,10 @@ import React, { Component } from "devtools/client/shared/vendor/react";
 import ReactDOM from "devtools/client/shared/vendor/react-dom";
 
 import actions from "../../actions/index";
-import { div } from "devtools/client/shared/vendor/react-dom-factories";
 import PropTypes from "devtools/client/shared/vendor/react-prop-types";
-import InlinePreviewRow from "./InlinePreviewRow";
 import InlinePreview from "./InlinePreview";
 import { connect } from "devtools/client/shared/vendor/react-redux";
-import {
-  getSelectedFrame,
-  getCurrentThread,
-  getInlinePreviews,
-} from "../../selectors/index";
-
-import { features } from "../../utils/prefs";
-import { markerTypes } from "../../constants";
+import { getInlinePreviews } from "../../selectors/index";
 
 function hasPreviews(previews) {
   return !!previews && !!Object.keys(previews).length;
@@ -49,23 +40,18 @@ class InlinePreviews extends Component {
       unHighlightDomElement,
     } = this.props;
 
-    if (!features.codemirrorNext) {
-      return;
-    }
-
     if (!previews) {
-      editor.removeLineContentMarker(markerTypes.INLINE_PREVIEW_MARKER);
+      editor.removeLineContentMarker(editor.markerTypes.INLINE_PREVIEW_MARKER);
       return;
     }
 
     editor.setLineContentMarker({
-      id: markerTypes.INLINE_PREVIEW_MARKER,
+      id: editor.markerTypes.INLINE_PREVIEW_MARKER,
       lines: Object.keys(previews).map(line => {
-        // CM6 line is 1-based unlike CM5 which is 0-based.
-        // The preview keys line numbers as strings so cast to number to avoid string concatenation
-        line = Number(line);
+        // CM6 line is 1-based.
+        // The preview keys line numbers as strings so cast to number
         return {
-          line: line + 1,
+          line: Number(line),
           value: previews[line],
         };
       }),
@@ -98,52 +84,18 @@ class InlinePreviews extends Component {
   }
 
   componentWillUnmount() {
-    if (!features.codemirrorNext) {
-      return;
-    }
-    this.props.editor.removeLineContentMarker(
-      markerTypes.INLINE_PREVIEW_MARKER
-    );
+    const { editor } = this.props;
+    editor.removeLineContentMarker(editor.markerTypes.INLINE_PREVIEW_MARKER);
   }
 
   render() {
-    const { editor, previews } = this.props;
-
-    if (features.codemirrorNext) {
-      return null;
-    }
-
-    if (!previews) {
-      return null;
-    }
-    const previewsObj = previews;
-
-    let inlinePreviewRows;
-    editor.codeMirror.operation(() => {
-      inlinePreviewRows = Object.keys(previewsObj).map(line => {
-        const lineNum = parseInt(line, 10);
-        return React.createElement(InlinePreviewRow, {
-          editor,
-          key: line,
-          line: lineNum,
-          previews: previewsObj[line],
-        });
-      });
-    });
-    return div(null, inlinePreviewRows);
+    return null;
   }
 }
 
-const mapStateToProps = (state, props) => {
-  const thread = getCurrentThread(state);
-  const selectedFrame = getSelectedFrame(state, thread);
-  const previews = getInlinePreviews(state, thread, selectedFrame?.id);
-  // When we are paused, render only if currently open file is the one where debugger is paused
-  if (
-    (selectedFrame &&
-      selectedFrame.location.source.id !== props.selectedSource.id) ||
-    !hasPreviews(previews)
-  ) {
+const mapStateToProps = state => {
+  const previews = getInlinePreviews(state);
+  if (!hasPreviews(previews)) {
     return {
       previews: null,
     };

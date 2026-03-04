@@ -7,9 +7,9 @@
 const {
   createFactory,
   PureComponent,
-} = require("resource://devtools/client/shared/vendor/react.js");
+} = require("resource://devtools/client/shared/vendor/react.mjs");
 const dom = require("resource://devtools/client/shared/vendor/react-dom-factories.js");
-const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.js");
+const PropTypes = require("resource://devtools/client/shared/vendor/react-prop-types.mjs");
 const { LocalizationHelper } = require("resource://devtools/shared/l10n.js");
 
 const ComputedProperty = createFactory(
@@ -48,7 +48,7 @@ class BoxModelProperties extends PureComponent {
    * This returns the right element if there needs to be one, and one was passed in the
    * props.
    *
-   * @return {Object} An object with 2 properties:
+   * @return {object} An object with 2 properties:
    * - referenceElement {NodeFront}
    * - referenceElementType {String}
    */
@@ -57,9 +57,14 @@ class BoxModelProperties extends PureComponent {
 
     if (
       propertyName === "position" &&
+      this.props.boxModel.offsetParent &&
       value !== "static" &&
-      value !== "fixed" &&
-      this.props.boxModel.offsetParent
+      // A fixed position element's offsetParent is the <body> element if its
+      // containing block is the viewport. We only show the offsetParent for
+      // fixed position elements if the offsetParent is not the viewport. This
+      // can occur if the element has an ancestor that creates a fixed position
+      // containing block, for instance with a `transform` declaration.
+      (value !== "fixed" || this.props.boxModel.offsetParent.tagName !== "BODY")
     ) {
       return {
         referenceElement: this.props.boxModel.offsetParent,

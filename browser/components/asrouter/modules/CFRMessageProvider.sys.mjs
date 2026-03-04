@@ -2,6 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// eslint-disable-next-line mozilla/use-static-import
+const { PlacesUtils } = ChromeUtils.importESModule(
+  "resource://gre/modules/PlacesUtils.sys.mjs"
+);
+
+// 30 days ago, 60 visits, bookmarked.
+const MIN_FRECENCY_THRESHOLD = PlacesUtils.history.pageFrecencyThreshold(
+  30,
+  60,
+  true
+);
+
 const FACEBOOK_CONTAINER_PARAMS = {
   existing_addons: [
     "@contain-facebook",
@@ -10,7 +22,7 @@ const FACEBOOK_CONTAINER_PARAMS = {
   ],
   open_urls: ["www.facebook.com", "facebook.com"],
   sumo_path: "extensionrecommendations",
-  min_frecency: 10000,
+  min_frecency: MIN_FRECENCY_THRESHOLD,
 };
 const GOOGLE_TRANSLATE_PARAMS = {
   existing_addons: [
@@ -40,7 +52,7 @@ const GOOGLE_TRANSLATE_PARAMS = {
   ],
   open_urls: ["translate.google.com"],
   sumo_path: "extensionrecommendations",
-  min_frecency: 10000,
+  min_frecency: MIN_FRECENCY_THRESHOLD,
 };
 const YOUTUBE_ENHANCE_PARAMS = {
   existing_addons: [
@@ -54,7 +66,7 @@ const YOUTUBE_ENHANCE_PARAMS = {
   ],
   open_urls: ["www.youtube.com", "youtube.com"],
   sumo_path: "extensionrecommendations",
-  min_frecency: 10000,
+  min_frecency: MIN_FRECENCY_THRESHOLD,
 };
 const WIKIPEDIA_CONTEXT_MENU_SEARCH_PARAMS = {
   existing_addons: [
@@ -66,13 +78,13 @@ const WIKIPEDIA_CONTEXT_MENU_SEARCH_PARAMS = {
   ],
   open_urls: ["www.wikipedia.org", "wikipedia.org"],
   sumo_path: "extensionrecommendations",
-  min_frecency: 10000,
+  min_frecency: MIN_FRECENCY_THRESHOLD,
 };
 const REDDIT_ENHANCEMENT_PARAMS = {
   existing_addons: ["jid1-xUfzOsOFlzSOXg@jetpack"],
   open_urls: ["www.reddit.com", "reddit.com"],
   sumo_path: "extensionrecommendations",
-  min_frecency: 10000,
+  min_frecency: MIN_FRECENCY_THRESHOLD,
 };
 
 const CFR_MESSAGES = [
@@ -142,8 +154,8 @@ const CFR_MESSAGES = [
       (${JSON.stringify(
         FACEBOOK_CONTAINER_PARAMS.open_urls
       )} intersect topFrecentSites[.frecency >= ${
-      FACEBOOK_CONTAINER_PARAMS.min_frecency
-    }]|mapToProperty('host'))|length > 0`,
+        FACEBOOK_CONTAINER_PARAMS.min_frecency
+      }]|mapToProperty('host'))|length > 0`,
     trigger: { id: "openURL", params: FACEBOOK_CONTAINER_PARAMS.open_urls },
   },
   {
@@ -213,8 +225,8 @@ const CFR_MESSAGES = [
       (${JSON.stringify(
         GOOGLE_TRANSLATE_PARAMS.open_urls
       )} intersect topFrecentSites[.frecency >= ${
-      GOOGLE_TRANSLATE_PARAMS.min_frecency
-    }]|mapToProperty('host'))|length > 0`,
+        GOOGLE_TRANSLATE_PARAMS.min_frecency
+      }]|mapToProperty('host'))|length > 0`,
     trigger: { id: "openURL", params: GOOGLE_TRANSLATE_PARAMS.open_urls },
   },
   {
@@ -284,8 +296,8 @@ const CFR_MESSAGES = [
       (${JSON.stringify(
         YOUTUBE_ENHANCE_PARAMS.open_urls
       )} intersect topFrecentSites[.frecency >= ${
-      YOUTUBE_ENHANCE_PARAMS.min_frecency
-    }]|mapToProperty('host'))|length > 0`,
+        YOUTUBE_ENHANCE_PARAMS.min_frecency
+      }]|mapToProperty('host'))|length > 0`,
     trigger: { id: "openURL", params: YOUTUBE_ENHANCE_PARAMS.open_urls },
   },
   {
@@ -356,8 +368,8 @@ const CFR_MESSAGES = [
       (${JSON.stringify(
         WIKIPEDIA_CONTEXT_MENU_SEARCH_PARAMS.open_urls
       )} intersect topFrecentSites[.frecency >= ${
-      WIKIPEDIA_CONTEXT_MENU_SEARCH_PARAMS.min_frecency
-    }]|mapToProperty('host'))|length > 0`,
+        WIKIPEDIA_CONTEXT_MENU_SEARCH_PARAMS.min_frecency
+      }]|mapToProperty('host'))|length > 0`,
     trigger: {
       id: "openURL",
       params: WIKIPEDIA_CONTEXT_MENU_SEARCH_PARAMS.open_urls,
@@ -431,8 +443,8 @@ const CFR_MESSAGES = [
       (${JSON.stringify(
         REDDIT_ENHANCEMENT_PARAMS.open_urls
       )} intersect topFrecentSites[.frecency >= ${
-      REDDIT_ENHANCEMENT_PARAMS.min_frecency
-    }]|mapToProperty('host'))|length > 0`,
+        REDDIT_ENHANCEMENT_PARAMS.min_frecency
+      }]|mapToProperty('host'))|length > 0`,
     trigger: { id: "openURL", params: REDDIT_ENHANCEMENT_PARAMS.open_urls },
   },
   {

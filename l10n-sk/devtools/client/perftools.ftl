@@ -30,6 +30,7 @@ perftools-description-intro =
     Nahrávky spúšťajú <a>profiler.firefox.com</a> na novej karte. Všetky údaje sú uložené
     lokálne, ale môžete sa rozhodnúť ich zdieľať.
 perftools-description-local-build = Ak profilujete zostavenie, ktoré ste si sami zostavili na tomto zariadení, pridajte do zoznamu nižšie priečinok objdir vášho zostavenia, aby ho bolo možné použiť na vyhľadanie informácií o symboloch.
+perftools-pick-local-build-directory = Vyberte priečinok so zostavením
 
 ## The controls for the interval at which the profiler samples the code.
 
@@ -65,6 +66,14 @@ perftools-button-restart = Reštartovať
 perftools-button-add-directory = Pridať priečinok
 perftools-button-remove-directory = Odstrániť vybraté
 perftools-button-edit-settings = Upraviť nastavenia…
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Ďalšie akcie
+perftools-menu-more-actions-restart-with-profiling = Reštartovať { -brand-shorter-name(case: "acc") } so zapnutým profilovaním spustenia
+perftools-menu-more-actions-copy-for-startup = Skopírovať premenné prostredia pri profilovaní spustenia
+perftools-menu-more-actions-copy-for-perf-tests = Kopírovať parametre pre testy výkonu
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -138,6 +147,8 @@ perftools-presets-graphics-label = Grafika
 perftools-presets-graphics-description = Predvoľba na diagnostiku grafických chýb v prehliadači { -brand-shorter-name }.
 perftools-presets-media-label = Médiá
 perftools-presets-media-description2 = Predvoľba na diagnostiku problémov so zvukom a videom v prehliadači { -brand-shorter-name }.
+perftools-presets-ml-label = Strojové učenie
+perftools-presets-ml-description2 = Predvoľba na skúmanie chýb strojového učenia vo { -brand-shorter-name(case: "loc") }.
 perftools-presets-networking-label = Sieťová aktivita
 perftools-presets-networking-description = Predvoľba pre diagnostiku sieťovej aktivity v prehliadači { -brand-shorter-name }.
 # "Power" is used in the sense of energy (electricity used by the computer).
@@ -145,7 +156,6 @@ perftools-presets-power-label = Napájanie
 perftools-presets-power-description = Predvoľba pre diagnostiku chýb zvyšujúcich spotrebu energie prehliadača { -brand-shorter-name }, s nízkou réžiou
 perftools-presets-debug-label = Ladenie
 perftools-presets-debug-description = Nastavenia pre ladenie vo { -brand-shorter-name(case: "loc") }. Vysoká réžia, nepoužívajte na výkonnú prácu, ale na pochopenie správania sa prehliadača.
+perftools-presets-web-compat-label = Webová kompatibilita
+perftools-presets-web-compat-description = Odporúčaná predvoľba na ladenie problémov s webovou kompatibilitou na webových stránkach, a nie na sledovanie výkonu.
 perftools-presets-custom-label = Vlastné
-
-##
-

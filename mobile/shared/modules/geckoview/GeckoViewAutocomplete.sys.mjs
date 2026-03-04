@@ -9,6 +9,8 @@ const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
   EventDispatcher: "resource://gre/modules/Messaging.sys.mjs",
   GeckoViewPrompter: "resource://gre/modules/GeckoViewPrompter.sys.mjs",
+  AddressRecord: "resource://gre/modules/shared/AddressRecord.sys.mjs",
+  CreditCardRecord: "resource://gre/modules/shared/CreditCardRecord.sys.mjs",
 });
 
 ChromeUtils.defineLazyGetter(lazy, "LoginInfo", () =>
@@ -180,12 +182,9 @@ export class Address {
   }
 
   toGecko() {
-    return {
+    let address = {
       version: this.version,
       name: this.name,
-      "given-name": this.givenName,
-      "additional-name": this.additionalName,
-      "family-name": this.familyName,
       organization: this.organization,
       "street-address": this.streetAddress,
       "address-level1": this.addressLevel1,
@@ -196,7 +195,16 @@ export class Address {
       tel: this.tel,
       email: this.email,
       guid: this.guid,
+      ...(this.givenName && {
+        "given-name": this.givenName,
+        "additional-name": this.additionalName,
+        "family-name": this.familyName,
+      }),
     };
+
+    lazy.AddressRecord.computeFields(address);
+
+    return address;
   }
 }
 
@@ -231,12 +239,7 @@ export class CreditCard {
   }
 
   isValid() {
-    return (
-      this.name !== "" &&
-      this.number !== "" &&
-      this.expMonth !== "" &&
-      this.expYear !== ""
-    );
+    return this.number !== "";
   }
 
   static fromGecko(aObj) {
@@ -263,7 +266,7 @@ export class CreditCard {
   }
 
   toGecko() {
-    return {
+    let creditCard = {
       version: this.version,
       "cc-name": this.name,
       "cc-number": this.number,
@@ -272,6 +275,10 @@ export class CreditCard {
       "cc-type": this.type,
       guid: this.guid,
     };
+
+    lazy.CreditCardRecord.computeFields(creditCard);
+
+    return creditCard;
   }
 }
 

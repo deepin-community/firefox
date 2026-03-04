@@ -15,37 +15,17 @@
 class nsIFile;
 class nsIURLParser;
 
-enum netCoalesceFlags {
-  NET_COALESCE_NORMAL = 0,
-
-  /**
-   * retains /../ that reach above dir root (useful for FTP
-   * servers in which the root of the FTP URL is not necessarily
-   * the root of the FTP filesystem).
-   */
-  NET_COALESCE_ALLOW_RELATIVE_ROOT = 1 << 0,
-
-  /**
-   * recognizes /%2F and // as markers for the root directory
-   * and handles them properly.
-   */
-  NET_COALESCE_DOUBLE_SLASH_IS_ROOT = 1 << 1
-};
-
 //----------------------------------------------------------------------------
 // This module contains some private helper functions related to URL parsing.
 //----------------------------------------------------------------------------
 
 /* shutdown frees URL parser */
 void net_ShutdownURLHelper();
-#ifdef XP_MACOSX
-void net_ShutdownURLHelperOSX();
-#endif
 
 /* access URL parsers */
-nsIURLParser* net_GetAuthURLParser();
-nsIURLParser* net_GetNoAuthURLParser();
-nsIURLParser* net_GetStdURLParser();
+already_AddRefed<nsIURLParser> net_GetAuthURLParser();
+already_AddRefed<nsIURLParser> net_GetNoAuthURLParser();
+already_AddRefed<nsIURLParser> net_GetStdURLParser();
 
 /* convert between nsIFile and file:// URL spec
  * net_GetURLSpecFromFile does an extra stat, so callers should
@@ -65,7 +45,7 @@ nsresult net_ParseFileURL(const nsACString& inURL, nsACString& outDirectory,
 // Return a tuple containing:
 // (index of the last slash, index of the end of the basename)
 mozilla::Maybe<mozilla::CompactPair<uint32_t, uint32_t>> net_CoalesceDirs(
-    netCoalesceFlags flags, char* path);
+    char* path);
 
 /**
  * Check if a URL is absolute
@@ -219,7 +199,7 @@ inline char* net_RFindCharNotInSet(const char* str, const char* set) {
  * This function returns true if the given hostname does not include any
  * restricted characters.  Otherwise, false is returned.
  */
-bool net_IsValidHostName(const nsACString& host);
+bool net_IsValidDNSHost(const nsACString& host);
 
 /**
  * Checks whether the IPv4 address is valid according to RFC 3986 section 3.2.2.

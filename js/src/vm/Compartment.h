@@ -201,11 +201,7 @@ class ObjectWrapperMap {
     return size;
   }
   size_t sizeOfIncludingThis(mozilla::MallocSizeOf mallocSizeOf) {
-    size_t size = map.shallowSizeOfIncludingThis(mallocSizeOf);
-    for (OuterMap::Enum e(map); !e.empty(); e.popFront()) {
-      size += e.front().value().sizeOfIncludingThis(mallocSizeOf);
-    }
-    return size;
+    return mallocSizeOf(this) + sizeOfExcludingThis(mallocSizeOf);
   }
 
   bool hasNurseryAllocatedWrapperEntries(const CompartmentFilter& f) {
@@ -240,6 +236,7 @@ class ObjectWrapperMap {
         e.removeFront();
       }
     }
+    map.compact();
   }
 };
 
@@ -317,10 +314,10 @@ class JS::Compartment {
   RealmVector& realms() { return realms_; }
 
   // Cross-compartment wrappers are shared by all realms in the compartment, but
-  // they still have a per-realm ObjectGroup etc. To prevent us from having
-  // multiple realms, each with some cross-compartment wrappers potentially
-  // keeping the realm alive longer than necessary, we always allocate CCWs in
-  // the first realm.
+  // are still associated with a realm. To prevent us from having multiple
+  // realms, each with some cross-compartment wrappers potentially keeping the
+  // realm alive longer than necessary, we always allocate CCWs in the first
+  // realm.
   js::GlobalObject& firstGlobal() const;
   js::GlobalObject& globalForNewCCW() const { return firstGlobal(); }
 
@@ -364,10 +361,6 @@ class JS::Compartment {
       JS::MutableHandle<mozilla::Maybe<JS::PropertyDescriptor>> desc);
   [[nodiscard]] bool wrap(JSContext* cx,
                           JS::MutableHandle<JS::GCVector<JS::Value>> vec);
-#ifdef ENABLE_RECORD_TUPLE
-  [[nodiscard]] bool wrapExtendedPrimitive(JSContext* cx,
-                                           JS::MutableHandleObject obj);
-#endif
   [[nodiscard]] bool rewrap(JSContext* cx, JS::MutableHandleObject obj,
                             JS::HandleObject existing);
 

@@ -7,6 +7,7 @@ export const CONCEALED_PASSWORD_TEXT = " ".repeat(8);
 /**
  * Dispatches a custom event to the AboutLoginsChild.sys.mjs script which
  * will record the event.
+ *
  * @param {object} event.method The telemety event method
  * @param {object} event.object The telemety event object
  * @param {object} event.value [optional] The telemety event value
@@ -51,14 +52,19 @@ export function setKeyboardAccessForNonDialogElements(enableKeyboardAccess) {
   });
 }
 
-export function promptForPrimaryPassword(messageId) {
+export function promptForPrimaryPassword(messageId, reason) {
   return new Promise(resolve => {
-    window.AboutLoginsUtils.promptForPrimaryPassword(resolve, messageId);
+    window.AboutLoginsUtils.promptForPrimaryPassword(
+      resolve,
+      messageId,
+      reason
+    );
   });
 }
 
 /**
  * Initializes a dialog based on a template using shadow dom.
+ *
  * @param {HTMLElement} element The element to attach the shadow dom to.
  * @param {string} templateSelector The selector of the template to be used.
  * @returns {object} The shadow dom that is attached.

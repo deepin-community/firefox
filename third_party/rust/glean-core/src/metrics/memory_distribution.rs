@@ -2,16 +2,17 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+use std::mem;
 use std::sync::Arc;
 
-use crate::common_metric_data::CommonMetricDataInternal;
+use crate::common_metric_data::{CommonMetricDataInternal, DynamicLabelType};
 use crate::error_recording::{record_error, test_get_num_recorded_errors, ErrorType};
 use crate::histogram::{Functional, Histogram};
 use crate::metrics::memory_unit::MemoryUnit;
 use crate::metrics::{DistributionData, Metric, MetricType};
 use crate::storage::StorageManager;
-use crate::CommonMetricData;
 use crate::Glean;
+use crate::{CommonMetricData, TestGetValue};
 
 // The base of the logarithm used to determine bucketing
 const LOG_BASE: f64 = 2.0;
@@ -41,8 +42,8 @@ pub(crate) fn snapshot(hist: &Histogram<Functional>) -> DistributionData {
         // specialized snapshot function.
         values: hist
             .snapshot()
-            .into_iter()
-            .map(|(k, v)| (k as i64, v as i64))
+            .iter()
+            .map(|(&k, &v)| (k as i64, v as i64))
             .collect(),
         sum: hist.sum() as i64,
         count: hist.count() as i64,
@@ -63,7 +64,7 @@ impl MetricType for MemoryDistributionMetric {
         }
     }
 
-    fn with_dynamic_label(&self, label: String) -> Self {
+    fn with_dynamic_label(&self, label: DynamicLabelType) -> Self {
         let mut meta = (*self.meta).clone();
         meta.inner.dynamic_label = Some(label);
         Self {
@@ -267,25 +268,6 @@ impl MemoryDistributionMetric {
         }
     }
 
-    /// **Test-only API (exported for FFI purposes).**
-    ///
-    /// Gets the currently stored value.
-    ///
-    /// This doesn't clear the stored value.
-    ///
-    /// # Arguments
-    ///
-    /// * `ping_name` - the optional name of the ping to retrieve the metric
-    ///                 for. Defaults to the first value in `send_in_pings`.
-    ///
-    /// # Returns
-    ///
-    /// The stored value or `None` if nothing stored.
-    pub fn test_get_value(&self, ping_name: Option<String>) -> Option<DistributionData> {
-        crate::block_on_dispatcher();
-        crate::core::with_glean(|glean| self.get_value(glean, ping_name.as_deref()))
-    }
-
     /// **Exported for test purposes.**
     ///
     /// Gets the number of recorded errors for the given metric and error type.
@@ -303,5 +285,122 @@ impl MemoryDistributionMetric {
         crate::core::with_glean(|glean| {
             test_get_num_recorded_errors(glean, self.meta(), error).unwrap_or(0)
         })
+    }
+
+    /// **Experimental:** Start a new histogram buffer associated with this memory distribution metric.
+    ///
+    /// A histogram buffer accumulates in-memory.
+    /// Data is recorded into the metric on drop.
+    pub fn start_buffer(&self) -> LocalMemoryDistribution<'_> {
+        LocalMemoryDistribution::new(self)
+    }
+
+    fn commit_histogram(&self, histogram: Histogram<Functional>, errors: usize) {
+        let metric = self.clone();
+        crate::launch_with_glean(move |glean| {
+            if errors > 0 {
+                let msg = format!("Accumulated {} samples larger than 1TB", errors);
+                record_error(
+                    glean,
+                    &metric.meta,
+                    ErrorType::InvalidValue,
+                    msg,
+                    Some(errors as i32),
+                );
+            }
+
+            glean
+                .storage()
+                .record_with(glean, &metric.meta, move |old_value| {
+                    let mut hist = match old_value {
+                        Some(Metric::MemoryDistribution(hist)) => hist,
+                        _ => Histogram::functional(LOG_BASE, BUCKETS_PER_MAGNITUDE),
+                    };
+
+                    hist.merge(&histogram);
+                    Metric::MemoryDistribution(hist)
+                });
+        });
+    }
+}
+
+impl TestGetValue for MemoryDistributionMetric {
+    type Output = DistributionData;
+
+    /// **Test-only API (exported for FFI purposes).**
+    ///
+    /// Gets the currently stored value.
+    ///
+    /// This doesn't clear the stored value.
+    ///
+    /// # Arguments
+    ///
+    /// * `ping_name` - the optional name of the ping to retrieve the metric
+    ///                 for. Defaults to the first value in `send_in_pings`.
+    ///
+    /// # Returns
+    ///
+    /// The stored value or `None` if nothing stored.
+    fn test_get_value(&self, ping_name: Option<String>) -> Option<DistributionData> {
+        crate::block_on_dispatcher();
+        crate::core::with_glean(|glean| self.get_value(glean, ping_name.as_deref()))
+    }
+}
+
+/// **Experimental:** A histogram buffer associated with a specific instance of a [`MemoryDistributionMetric`].
+///
+/// Accumulation happens in-memory.
+/// Data is merged into the metric on [`Drop::drop`].
+#[derive(Debug)]
+pub struct LocalMemoryDistribution<'a> {
+    histogram: Histogram<Functional>,
+    metric: &'a MemoryDistributionMetric,
+    errors: usize,
+}
+
+impl<'a> LocalMemoryDistribution<'a> {
+    /// Create a new histogram buffer referencing the memory distribution it will record into.
+    fn new(metric: &'a MemoryDistributionMetric) -> Self {
+        let histogram = Histogram::functional(LOG_BASE, BUCKETS_PER_MAGNITUDE);
+        Self {
+            histogram,
+            metric,
+            errors: 0,
+        }
+    }
+
+    /// Accumulates one sample into the histogram.
+    ///
+    /// The provided sample must be in the "unit" declared by the instance of the metric type
+    /// (e.g. if the instance this method was called on is using [`crate::MemoryUnit::Kilobyte`], then
+    /// `sample` is assumed to be in kilobytes).
+    ///
+    /// Accumulation happens in-memory only.
+    pub fn accumulate(&mut self, sample: u64) {
+        let mut sample = self.metric.memory_unit.as_bytes(sample);
+        if sample > MAX_BYTES {
+            self.errors += 1;
+            sample = MAX_BYTES;
+        }
+        self.histogram.accumulate(sample)
+    }
+
+    /// Abandon this histogram buffer and don't commit accumulated data.
+    pub fn abandon(mut self) {
+        // Replace any recordings with an empty histogram.
+        self.histogram.clear();
+    }
+}
+
+impl Drop for LocalMemoryDistribution<'_> {
+    fn drop(&mut self) {
+        if self.histogram.is_empty() {
+            return;
+        }
+
+        // We want to move that value.
+        // A `0/0` histogram doesn't allocate.
+        let buffer = mem::replace(&mut self.histogram, Histogram::functional(0.0, 0.0));
+        self.metric.commit_histogram(buffer, self.errors);
     }
 }

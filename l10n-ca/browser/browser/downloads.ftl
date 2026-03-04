@@ -31,8 +31,8 @@ downloads-cmd-cancel-panel =
 downloads-cmd-show-menuitem-2 =
     .label =
         { PLATFORM() ->
-            [macos] Mostra-ho en el Finder
-           *[other] Obre la carpeta on es troba
+            [macos] Mostra en el Finder
+           *[other] Mostra en la carpeta
         }
     .accesskey = M
 
@@ -70,20 +70,20 @@ downloads-cmd-always-open-similar-files =
 downloads-cmd-show-button-2 =
     .tooltiptext =
         { PLATFORM() ->
-            [macos] Mostra-ho en el Finder
-           *[other] Obre la carpeta on es troba
+            [macos] Mostra en el Finder
+           *[other] Mostra en la carpeta
         }
 downloads-cmd-show-panel-2 =
     .aria-label =
         { PLATFORM() ->
-            [macos] Mostra-ho en el Finder
-           *[other] Obre la carpeta on es troba
+            [macos] Mostra en el Finder
+           *[other] Mostra en la carpeta
         }
 downloads-cmd-show-description-2 =
     .value =
         { PLATFORM() ->
-            [macos] Mostra-ho en el Finder
-           *[other] Obre la carpeta on es troba
+            [macos] Mostra en el Finder
+           *[other] Mostra en la carpeta
         }
 downloads-cmd-show-downloads =
     .label = Mostra la carpeta de baixades
@@ -182,6 +182,18 @@ downloads-history =
 # that we are showing the details of a single download.
 downloads-details =
     .title = Detalls de la baixada
+
+## These strings are displayed in the private browsing view of the downloads panel
+
+downloads-private-browsing-details =
+    .title = Els fitxers es queden al dispositiu
+downloads-private-browsing-message = Qualsevol persona que utilitzi aquest dispositiu pot veure les baixades, fins i tot quan tanqueu totes les finestres privades.
+downloads-private-browsing-delete-button =
+    .label = Suprimeix els fitxers automàticament
+    .accesskey = S
+downloads-private-browsing-accept-button =
+    .label = Entesos
+    .accesskey = E
 
 ## Displayed when a site attempts to automatically download many files.
 ## Variables:

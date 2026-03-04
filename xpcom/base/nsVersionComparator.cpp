@@ -11,9 +11,13 @@
 #include <stdint.h>
 #include <errno.h>
 #include "mozilla/CheckedInt.h"
-#if defined(XP_WIN) && !defined(UPDATER_NO_STRING_GLUE_STL)
-#  include <wchar.h>
-#  include "nsString.h"
+#if defined(XP_WIN)
+#  if !defined(UPDATER_NO_STRING_GLUE_STL)
+#    include <wchar.h>
+#    include "nsString.h"
+#  endif
+#  include "nsAlgorithm.h"
+#  include "mozilla/Char16.h"
 #endif
 
 struct VersionPart {

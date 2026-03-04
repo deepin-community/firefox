@@ -6,7 +6,10 @@
 
 add_setup(async function () {
   await SpecialPowers.pushPrefEnv({
-    set: [["browser.toolbars.bookmarks.visibility", "newtab"]],
+    set: [
+      ["browser.toolbars.bookmarks.visibility", "newtab"],
+      ["browser.urlbar.trustPanel.featureGate", false],
+    ],
   });
 
   info("Open new tab and bookmarks toolbar");
@@ -142,9 +145,7 @@ async function testForDndFromChevron(chevronMenu) {
   );
 
   let destElement = document.getElementById(
-    gBrowser.tabContainer.hasAttribute("overflow")
-      ? "new-tab-button"
-      : "tabs-newtab-button"
+    gBrowser.tabContainer.overflowing ? "new-tab-button" : "tabs-newtab-button"
   );
   let onNewTabByDnD = BrowserTestUtils.waitForNewTab(
     gBrowser,

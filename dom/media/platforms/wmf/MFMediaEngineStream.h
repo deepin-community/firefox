@@ -15,7 +15,6 @@
 #include "PlatformDecoderModule.h"
 #include "mozilla/Atomics.h"
 #include "mozilla/Mutex.h"
-#include "mozilla/SPSCQueue.h"
 
 namespace mozilla {
 
@@ -42,7 +41,7 @@ class MFMediaEngineStream
   virtual nsCString GetCodecName() const = 0;
 
   HRESULT RuntimeClassInitialize(uint64_t aStreamId, const TrackInfo& aInfo,
-                                 bool aIsEncrytpedCustomInit,
+                                 bool aIsEncryptedCustomInit,
                                  MFMediaSource* aParentSource);
 
   // Called by MFMediaSource.
@@ -77,7 +76,7 @@ class MFMediaEngineStream
 
   void NotifyEndOfStream() {
     Microsoft::WRL::ComPtr<MFMediaEngineStream> self = this;
-    Unused << mTaskQueue->Dispatch(NS_NewRunnableFunction(
+    (void)mTaskQueue->Dispatch(NS_NewRunnableFunction(
         "MFMediaEngineStream::NotifyEndOfStream",
         [self]() { self->NotifyEndOfStreamInternal(); }));
   }
@@ -191,7 +190,7 @@ class MFMediaEngineStream
   bool mReceivedEOS;
 
   // https://github.com/w3c/encrypted-media/issues/251#issuecomment-819783073
-  bool mIsEncrytpedCustomInit;
+  bool mIsEncryptedCustomInit;
 };
 
 /**
@@ -222,6 +221,8 @@ class MFMediaEngineStreamWrapper final : public MediaDataDecoder {
   nsCString GetCodecName() const override;
   ConversionRequired NeedsConversion() const override;
   bool ShouldDecoderAlwaysBeRecycled() const override;
+
+  bool IsHardwareAccelerated(nsACString& aFailureReason) const override;
 
  private:
   ~MFMediaEngineStreamWrapper() = default;

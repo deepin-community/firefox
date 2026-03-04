@@ -32,14 +32,9 @@ namespace {
 void InitializeClientDirectory(const ClientMetadata& aClientMetadata) {
   QuotaManager* quotaManager = QuotaManager::Get();
 
-  QM_TRY(MOZ_TO_RESULT(
-             quotaManager->EnsureTemporaryStorageIsInitializedInternal()),
-         QM_TEST_FAIL);
-
   QM_TRY_INSPECT(
       const auto& directory,
-      quotaManager->EnsureTemporaryOriginIsInitializedInternal(aClientMetadata)
-          .map([](const auto& aPair) { return aPair.first; }),
+      quotaManager->GetOrCreateTemporaryOriginDirectory(aClientMetadata),
       QM_TEST_FAIL);
 
   QM_TRY(MOZ_TO_RESULT(directory->Append(
@@ -188,9 +183,11 @@ class TestStorageConnection : public QuotaManagerDependencyFixture {
   struct NSSInitContextDeleter {
     void operator()(NSSInitContext* p) { NSS_ShutdownContext(p); }
   };
-  inline static std::unique_ptr<NSSInitContext, NSSInitContextDeleter>
-      sNssContext;
+  static std::unique_ptr<NSSInitContext, NSSInitContextDeleter> sNssContext;
 };
+constinit std::unique_ptr<NSSInitContext,
+                          TestStorageConnection::NSSInitContextDeleter>
+    TestStorageConnection::sNssContext;
 
 TEST_F(TestStorageConnection, BaseVFS) {
   // XXX This call can't be wrapped with ASSERT_NO_FATAL_FAILURE because

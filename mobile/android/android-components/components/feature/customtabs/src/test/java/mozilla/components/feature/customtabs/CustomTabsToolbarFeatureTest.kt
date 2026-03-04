@@ -8,6 +8,8 @@ import android.app.PendingIntent
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.os.Build
+import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.widget.FrameLayout
@@ -16,10 +18,6 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat.getColor
 import androidx.core.view.forEach
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.setMain
 import mozilla.components.browser.menu.BrowserMenu
 import mozilla.components.browser.menu.BrowserMenuBuilder
 import mozilla.components.browser.menu.item.SimpleBrowserMenuItem
@@ -35,21 +33,25 @@ import mozilla.components.browser.state.state.CustomTabMenuItem
 import mozilla.components.browser.state.state.createCustomTab
 import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.browser.toolbar.BrowserToolbar
+import mozilla.components.browser.toolbar.display.DisplayToolbar
 import mozilla.components.concept.toolbar.Toolbar
 import mozilla.components.feature.session.SessionUseCases
 import mozilla.components.feature.tabs.CustomTabsUseCases
 import mozilla.components.support.ktx.android.content.res.resolveAttribute
 import mozilla.components.support.test.any
 import mozilla.components.support.test.argumentCaptor
-import mozilla.components.support.test.ext.joinBlocking
+import mozilla.components.support.test.eq
 import mozilla.components.support.test.middleware.CaptureActionsMiddleware
 import mozilla.components.support.test.mock
 import mozilla.components.support.test.robolectric.testContext
+import mozilla.components.support.test.rule.MainCoroutineRule
+import mozilla.components.support.test.whenever
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.anyInt
@@ -63,10 +65,20 @@ import org.robolectric.annotation.Config
 
 @RunWith(AndroidJUnit4::class)
 class CustomTabsToolbarFeatureTest {
+
+    @get:Rule
+    val coroutinesTestRule = MainCoroutineRule()
+
     @Test
     fun `start without sessionId invokes nothing`() {
         val store = BrowserStore()
         val toolbar: BrowserToolbar = mock()
+        val display: DisplayToolbar = mock()
+        val colors: DisplayToolbar.Colors = mock()
+        whenever(toolbar.display).thenReturn(display)
+        whenever(display.colors).thenReturn(colors)
+        whenever(colors.menu).thenReturn(0)
+
         val useCases = CustomTabsUseCases(
             store = store,
             loadUrlUseCase = SessionUseCases(store).loadUrl,
@@ -155,6 +167,7 @@ class CustomTabsToolbarFeatureTest {
         )
         val window: Window = mock()
         `when`(window.decorView).thenReturn(mock())
+        `when`(window.context).thenReturn(testContext)
         val feature = CustomTabsToolbarFeature(store, toolbar, sessionId = "mozilla", useCases = useCases, window = window) {}
 
         feature.init(tab.config)
@@ -167,9 +180,10 @@ class CustomTabsToolbarFeatureTest {
         assertEquals(Color.WHITE, toolbar.display.colors.text)
     }
 
+    @Config(sdk = [Build.VERSION_CODES.UPSIDE_DOWN_CAKE])
     @Suppress("DEPRECATION")
     @Test
-    fun `initialize updates toolbar, window and text color`() {
+    fun `initialize updates toolbar, window and text color on SDK lower than 35`() {
         val tab = createCustomTab(
             "https://www.mozilla.org",
             id = "mozilla",
@@ -195,6 +209,7 @@ class CustomTabsToolbarFeatureTest {
         )
         val window: Window = mock()
         `when`(window.decorView).thenReturn(mock())
+        `when`(window.context).thenReturn(testContext)
         `when`(window.insetsController).thenReturn(mock())
 
         val feature = CustomTabsToolbarFeature(store, toolbar, sessionId = "mozilla", useCases = useCases, window = window) {}
@@ -207,6 +222,54 @@ class CustomTabsToolbarFeatureTest {
 
         assertEquals(Color.WHITE, toolbar.display.colors.title)
         assertEquals(Color.WHITE, toolbar.display.colors.text)
+    }
+
+    @Suppress("DEPRECATION")
+    @Test
+    fun `initialize updates toolbar, window and text color on SDK 35`() {
+        val tab = createCustomTab(
+            "https://www.mozilla.org",
+            id = "mozilla",
+            config = CustomTabConfig(
+                colorSchemes = ColorSchemes(
+                    defaultColorSchemeParams = ColorSchemeParams(
+                        toolbarColor = Color.RED,
+                        navigationBarColor = Color.BLUE,
+                    ),
+                ),
+            ),
+        )
+
+        val store = BrowserStore(
+            BrowserState(
+                customTabs = listOf(tab),
+            ),
+        )
+        val toolbar = spy(BrowserToolbar(testContext))
+        val useCases = CustomTabsUseCases(
+            store = store,
+            loadUrlUseCase = SessionUseCases(store).loadUrl,
+        )
+        val window: Window = mock()
+        val decorView: View = mock()
+        `when`(decorView.findViewById<View>(anyInt())).thenReturn(mock())
+        `when`(window.decorView).thenReturn(decorView)
+        `when`(window.context).thenReturn(testContext)
+        `when`(window.insetsController).thenReturn(mock())
+
+        val feature = CustomTabsToolbarFeature(store, toolbar, sessionId = "mozilla", useCases = useCases, window = window) {}
+
+        feature.init(tab.config)
+
+        verify(window, never()).navigationBarColor = Color.RED
+        verify(window, never()).statusBarColor = Color.RED
+        verify(window, never()).navigationBarColor = Color.BLUE
+
+        assertEquals(Color.WHITE, toolbar.display.colors.title)
+        assertEquals(Color.WHITE, toolbar.display.colors.text)
+
+        assertEquals(window.statusBarColor, Color.TRANSPARENT)
+        assertEquals(window.navigationBarColor, Color.TRANSPARENT)
     }
 
     @Test
@@ -232,7 +295,10 @@ class CustomTabsToolbarFeatureTest {
             loadUrlUseCase = SessionUseCases(store).loadUrl,
         )
         val window: Window = mock()
-        `when`(window.decorView).thenReturn(mock())
+        val decorView: View = mock()
+        `when`(decorView.findViewById<View>(anyInt())).thenReturn(mock())
+        `when`(window.decorView).thenReturn(decorView)
+        `when`(window.context).thenReturn(testContext)
         `when`(window.insetsController).thenReturn(mock())
         val initialDisplayToolbarColors = toolbar.display.colors
 
@@ -273,9 +339,10 @@ class CustomTabsToolbarFeatureTest {
         }
     }
 
+    @Config(sdk = [Build.VERSION_CODES.UPSIDE_DOWN_CAKE])
     @Suppress("DEPRECATION")
     @Test
-    fun `GIVEN changing the status bar color is enabled WHEN customizing the UI for a custom tab THEN change the status bar color`() {
+    fun `GIVEN changing the status bar color is enabled WHEN customizing the UI for a custom tab on SDK lower than 35 THEN change the status bar color`() {
         val tab = createCustomTab(
             "https://www.mozilla.org",
             id = "mozilla",
@@ -297,6 +364,7 @@ class CustomTabsToolbarFeatureTest {
         )
         val window: Window = mock()
         `when`(window.decorView).thenReturn(mock())
+        `when`(window.context).thenReturn(testContext)
         `when`(window.insetsController).thenReturn(mock())
 
         run {
@@ -314,6 +382,54 @@ class CustomTabsToolbarFeatureTest {
             feature.init(tab.config)
 
             verify(window).statusBarColor = Color.GREEN
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    @Test
+    fun `GIVEN changing the status bar color is enabled WHEN customizing the UI for a custom tab on SDK 35 THEN the status bar color is not changed`() {
+        val tab = createCustomTab(
+            "https://www.mozilla.org",
+            id = "mozilla",
+            config = CustomTabConfig(
+                colorSchemes = ColorSchemes(
+                    defaultColorSchemeParams = ColorSchemeParams(toolbarColor = Color.GREEN),
+                ),
+            ),
+        )
+        val store = BrowserStore(
+            BrowserState(
+                customTabs = listOf(tab),
+            ),
+        )
+        val toolbar = BrowserToolbar(testContext)
+        val useCases = CustomTabsUseCases(
+            store = store,
+            loadUrlUseCase = SessionUseCases(store).loadUrl,
+        )
+        val window: Window = mock()
+        val decorView: View = mock()
+        `when`(decorView.findViewById<View>(anyInt())).thenReturn(mock())
+        `when`(window.decorView).thenReturn(decorView)
+        `when`(window.context).thenReturn(testContext)
+        `when`(window.insetsController).thenReturn(mock())
+
+        run {
+            val feature = CustomTabsToolbarFeature(
+                store,
+                toolbar,
+                sessionId = "mozilla",
+                useCases = useCases,
+                window = window,
+                customTabsColorsConfig = CustomTabsColorsConfig(
+                    updateStatusBarColor = true,
+                ),
+            ) {}
+
+            feature.init(tab.config)
+
+            verify(window, never()).navigationBarColor = Color.GREEN
+            assertEquals(window.navigationBarColor, Color.TRANSPARENT)
         }
     }
 
@@ -340,7 +456,10 @@ class CustomTabsToolbarFeatureTest {
             loadUrlUseCase = SessionUseCases(store).loadUrl,
         )
         val window: Window = mock()
-        `when`(window.decorView).thenReturn(mock())
+        val decorView: View = mock()
+        `when`(decorView.findViewById<View>(anyInt())).thenReturn(mock())
+        `when`(window.decorView).thenReturn(decorView)
+        `when`(window.context).thenReturn(testContext)
         `when`(window.insetsController).thenReturn(mock())
 
         run {
@@ -361,9 +480,10 @@ class CustomTabsToolbarFeatureTest {
         }
     }
 
+    @Config(sdk = [Build.VERSION_CODES.UPSIDE_DOWN_CAKE])
     @Suppress("DEPRECATION")
     @Test
-    fun `GIVEN changing the system navigation bar color is enabled WHEN customizing the UI for a custom tab THEN change the system navigation bar color`() {
+    fun `GIVEN changing the system navigation bar color is enabled WHEN customizing the UI for a custom tab on SDK lower than 35 THEN change the system navigation bar color`() {
         val tab = createCustomTab(
             "https://www.mozilla.org",
             id = "mozilla",
@@ -386,6 +506,7 @@ class CustomTabsToolbarFeatureTest {
         )
         val window: Window = mock()
         `when`(window.decorView).thenReturn(mock())
+        `when`(window.context).thenReturn(testContext)
         `when`(window.insetsController).thenReturn(mock())
 
         run {
@@ -403,6 +524,55 @@ class CustomTabsToolbarFeatureTest {
             feature.init(tab.config)
 
             verify(window).navigationBarColor = Color.BLUE
+        }
+    }
+
+    @Test
+    @Suppress("DEPRECATION")
+    fun `GIVEN changing the system navigation bar color is enabled WHEN customizing the UI for a custom tab on SDK 35 THEN change the system navigation bar color is not called`() {
+        val tab = createCustomTab(
+            "https://www.mozilla.org",
+            id = "mozilla",
+            config = CustomTabConfig(
+                colorSchemes = ColorSchemes(
+                    defaultColorSchemeParams = ColorSchemeParams(toolbarColor = Color.BLUE),
+                ),
+            ),
+        )
+
+        val store = BrowserStore(
+            BrowserState(
+                customTabs = listOf(tab),
+            ),
+        )
+        val toolbar = BrowserToolbar(testContext)
+        val useCases = CustomTabsUseCases(
+            store = store,
+            loadUrlUseCase = SessionUseCases(store).loadUrl,
+        )
+        val window: Window = mock()
+        val decorView: View = mock()
+        `when`(decorView.findViewById<View>(anyInt())).thenReturn(mock())
+        `when`(window.decorView).thenReturn(decorView)
+        `when`(window.context).thenReturn(testContext)
+        `when`(window.insetsController).thenReturn(mock())
+
+        run {
+            val feature = CustomTabsToolbarFeature(
+                store,
+                toolbar,
+                sessionId = "mozilla",
+                useCases = useCases,
+                window = window,
+                customTabsColorsConfig = CustomTabsColorsConfig(
+                    updateSystemNavigationBarColor = true,
+                ),
+            ) {}
+
+            feature.init(tab.config)
+
+            verify(window, never()).navigationBarColor = eq(Color.BLUE)
+            assertEquals(window.navigationBarColor, Color.TRANSPARENT)
         }
     }
 
@@ -430,7 +600,10 @@ class CustomTabsToolbarFeatureTest {
             loadUrlUseCase = SessionUseCases(store).loadUrl,
         )
         val window: Window = mock()
-        `when`(window.decorView).thenReturn(mock())
+        val decorView: View = mock()
+        `when`(decorView.findViewById<View>(anyInt())).thenReturn(mock())
+        `when`(window.decorView).thenReturn(decorView)
+        `when`(window.context).thenReturn(testContext)
         `when`(window.insetsController).thenReturn(mock())
 
         run {
@@ -665,7 +838,7 @@ class CustomTabsToolbarFeatureTest {
 
         feature.start()
 
-        verify(feature, never()).addMenuButton(anyInt())
+        verify(feature, never()).addMenuButton()
         verify(toolbar, never()).addBrowserAction(any())
     }
 
@@ -700,7 +873,7 @@ class CustomTabsToolbarFeatureTest {
 
         feature.start()
 
-        verify(feature).addMenuButton(anyInt())
+        verify(feature).addMenuButton()
 
         val captor = argumentCaptor<Toolbar.ActionButton>()
         verify(toolbar).addBrowserAction(captor.capture())
@@ -971,7 +1144,7 @@ class CustomTabsToolbarFeatureTest {
                 "mozilla",
                 "https://github.com/mozilla-mobile/android-components",
             ),
-        ).joinBlocking()
+        )
 
         verify(feature).addActionButton(anyInt(), any())
         verify(toolbar).addBrowserAction(captor.capture())
@@ -1076,6 +1249,7 @@ class CustomTabsToolbarFeatureTest {
                 toolbar,
                 sessionId = "mozilla",
                 useCases = useCases,
+                menuBuilder = BrowserMenuBuilder(listOf()),
             ) {},
         )
 
@@ -1265,7 +1439,15 @@ class CustomTabsToolbarFeatureTest {
             store = store,
             loadUrlUseCase = SessionUseCases(store).loadUrl,
         )
-        val feature = spy(CustomTabsToolbarFeature(store, toolbar, sessionId = "mozilla", useCases = useCases) {})
+        val feature = spy(
+            CustomTabsToolbarFeature(
+                store,
+                toolbar,
+                sessionId = "mozilla",
+                useCases = useCases,
+                menuBuilder = BrowserMenuBuilder(listOf()),
+            ) {},
+        )
 
         feature.start()
 
@@ -1274,7 +1456,7 @@ class CustomTabsToolbarFeatureTest {
                 "mozilla",
                 "https://github.com/mozilla-mobile/android-components",
             ),
-        ).joinBlocking()
+        )
 
         val menuBuilder = toolbar.display.menuBuilder!!
 
@@ -1639,9 +1821,6 @@ class CustomTabsToolbarFeatureTest {
 
     @Test
     fun `show title only if not empty`() {
-        val dispatcher = UnconfinedTestDispatcher()
-        Dispatchers.setMain(dispatcher)
-
         val tab = createCustomTab(
             "https://www.mozilla.org",
             id = "mozilla",
@@ -1678,18 +1857,13 @@ class CustomTabsToolbarFeatureTest {
                 "mozilla",
                 "Internet for people, not profit - Mozilla",
             ),
-        ).joinBlocking()
+        )
 
         assertEquals("Internet for people, not profit - Mozilla", toolbar.title)
-
-        Dispatchers.resetMain()
     }
 
     @Test
     fun `Will use URL as title if title was shown once and is now empty`() {
-        val dispatcher = UnconfinedTestDispatcher()
-        Dispatchers.setMain(dispatcher)
-
         val tab = createCustomTab(
             "https://www.mozilla.org",
             id = "mozilla",
@@ -1725,7 +1899,7 @@ class CustomTabsToolbarFeatureTest {
 
         store.dispatch(
             ContentAction.UpdateUrlAction("mozilla", "https://www.mozilla.org/en-US/firefox/"),
-        ).joinBlocking()
+        )
 
         assertEquals("", toolbar.title)
 
@@ -1734,31 +1908,31 @@ class CustomTabsToolbarFeatureTest {
                 "mozilla",
                 "Firefox - Protect your life online with privacy-first products",
             ),
-        ).joinBlocking()
+        )
 
         assertEquals("Firefox - Protect your life online with privacy-first products", toolbar.title)
 
         store.dispatch(
             ContentAction.UpdateUrlAction("mozilla", "https://github.com/mozilla-mobile/android-components"),
-        ).joinBlocking()
+        )
 
         assertEquals("https://github.com/mozilla-mobile/android-components", toolbar.title)
 
         store.dispatch(
             ContentAction.UpdateTitleAction("mozilla", "Le GitHub"),
-        ).joinBlocking()
+        )
 
         assertEquals("Le GitHub", toolbar.title)
 
         store.dispatch(
             ContentAction.UpdateUrlAction("mozilla", "https://github.com/mozilla-mobile/fenix"),
-        ).joinBlocking()
+        )
 
         assertEquals("https://github.com/mozilla-mobile/fenix", toolbar.title)
 
         store.dispatch(
             ContentAction.UpdateTitleAction("mozilla", ""),
-        ).joinBlocking()
+        )
 
         assertEquals("https://github.com/mozilla-mobile/fenix", toolbar.title)
 
@@ -1767,15 +1941,50 @@ class CustomTabsToolbarFeatureTest {
                 "mozilla",
                 "A collection of Android libraries to build browsers or browser-like applications.",
             ),
-        ).joinBlocking()
+        )
 
         assertEquals("A collection of Android libraries to build browsers or browser-like applications.", toolbar.title)
 
         store.dispatch(
             ContentAction.UpdateTitleAction("mozilla", ""),
-        ).joinBlocking()
+        )
 
         assertEquals("https://github.com/mozilla-mobile/fenix", toolbar.title)
+    }
+
+    @Test
+    fun `WHEN menuBuilder is not passed in as a parameter THEN feature does not create a menu and add items to it`() {
+        val tab = createCustomTab(
+            "https://www.mozilla.org",
+            id = "mozilla",
+            config = CustomTabConfig(
+                menuItems = listOf(
+                    CustomTabMenuItem("Share", mock()),
+                ),
+            ),
+        )
+        val store = BrowserStore(
+            BrowserState(
+                customTabs = listOf(tab),
+            ),
+        )
+        val toolbar = spy(BrowserToolbar(testContext))
+        val useCases = CustomTabsUseCases(
+            store = store,
+            loadUrlUseCase = SessionUseCases(store).loadUrl,
+        )
+        val feature = spy(
+            CustomTabsToolbarFeature(
+                store,
+                toolbar,
+                sessionId = "mozilla",
+                useCases = useCases,
+            ) {},
+        )
+
+        feature.start()
+
+        assertEquals(null, toolbar.display.menuBuilder)
     }
 
     private fun extractActionView(

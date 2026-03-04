@@ -20,7 +20,7 @@ neterror-copy-to-clipboard-button = Պատճենել սեղմատախտակին
 neterror-learn-more-link = Իմանալ ավելին…
 neterror-open-portal-login-page-button = Բացել ցանց մուտք գործելու էջը
 neterror-override-exception-button = Ընդունել վտանգը և շարունակել
-neterror-pref-reset-button = Վերականգնել հիմնական կարգավորումները
+neterror-pref-reset-button = Վերականգնել սկզբնադիր կարգավորումները
 neterror-return-to-previous-page-button = Հետ գնալ
 neterror-return-to-previous-page-recommended-button = Հետ գնալ (առաջարկվում է)
 neterror-try-again-button = Կրկին փորձել
@@ -56,14 +56,14 @@ neterror-dns-not-found-bad-trr-url = Անվավեր URL:
 ## Variables:
 ##   $trrDomain (String) - Hostname of the DNS over HTTPS server that is currently in use.
 
-neterror-dns-not-found-native-fallback-heuristic = DNS՝ HTTPS-ի միջոցովը անջատված է ձեր  ցանցում:
+neterror-dns-not-found-native-fallback-heuristic = DNS-ը HTTPS-ի միջովն անջատված է Ձեր ցանցում:
 neterror-dns-not-found-native-fallback-not-confirmed2 = { -brand-short-name }-ը անկարող է միանալ { $trrDomain }-ին:
 
 ##
 
 neterror-file-not-found-filename = Ստուգեք ֆայլի անունը մեծատառերի կամ այլ տպագրական սխալների համար:
 neterror-file-not-found-moved = Ստուգեք, թե արդյոք ֆայլը չի տեղափոխվել, անվանափոխվել կամ ջնջվել:
-neterror-access-denied = Հնարավոր է՝ այն հեռացվել է, տեղափոխվել կամ նիշքի թույլտվությունները կանխել են մատչումը։
+neterror-access-denied = Հնարավոր է՝ այն հեռացվել է, տեղափոխվել կամ ֆայլի թույլտվությունները կանխել են մատչումը։
 neterror-unknown-protocol = Այս հասցեն բացելու համար ձեզ հավանաբար անհրաժեշտ է ձեռք բերել այլ ծրագիր:
 neterror-redirect-loop = Այս խնդիրը երբեմն կարող է ծագել cookie-ների  անջատումից կամ մերժումից:
 neterror-unknown-socket-type-psm-installed = Ստուգեք և համոզվեք, որ ձեր համակարգը ունի տեղակայված Անվտանգության  Անձնական Կառավարիչ:

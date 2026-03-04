@@ -14,6 +14,9 @@ const DEFAULT_HELP_URL =
   "awesome-bar-result-menu";
 
 add_setup(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.urlbar.scotchBonnet.enableOverride", false]],
+  });
   // Add enough results to fill up the view.
   await PlacesUtils.history.clear();
   for (let i = 0; i < MAX_RESULTS; i++) {
@@ -71,7 +74,7 @@ async function doHelpTest({
     window,
     expectedResultIndex
   );
-  let menuButton = result.element.row._buttons.get("menu");
+  let menuButton = result.element.row._buttons.get("result-menu");
   Assert.ok(menuButton, "Sanity check: menu button should exist");
 
   let menuitem = await UrlbarTestUtils.openResultMenuAndGetItem({
@@ -347,14 +350,12 @@ function registerTestProvider({
 
   let provider = new UrlbarTestUtils.TestProvider({
     results: [
-      Object.assign(
-        new UrlbarResult(
-          UrlbarUtils.RESULT_TYPE.URL,
-          UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
-          payload
-        ),
-        { suggestedIndex }
-      ),
+      new UrlbarResult({
+        type: UrlbarUtils.RESULT_TYPE.URL,
+        source: UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
+        suggestedIndex,
+        payload,
+      }),
     ],
   });
   UrlbarProvidersManager.registerProvider(provider);
@@ -382,7 +383,10 @@ async function assertIsTestResult(index) {
   );
 
   let { row } = result.element;
-  Assert.ok(row._buttons.get("menu"), "The result should have a menu button");
+  Assert.ok(
+    row._buttons.get("result-menu"),
+    "The result should have a menu button"
+  );
   Assert.ok(row._content.id, "Row-inner has an ID");
   Assert.equal(
     row.getAttribute("role"),
@@ -445,7 +449,7 @@ function assertMainPartSelected(expectedSelectedElementIndex) {
 function assertButtonSelected(expectedSelectedElementIndex) {
   assertSelection(
     expectedSelectedElementIndex,
-    "urlbarView-button-menu",
+    "urlbarView-button-result-menu",
     "menu button"
   );
 }

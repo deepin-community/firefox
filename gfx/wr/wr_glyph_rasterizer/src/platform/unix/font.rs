@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#![allow(non_camel_case_types)]
+
 use api::{ColorU, GlyphDimensions, FontKey, FontRenderMode};
 use api::{FontInstancePlatformOptions, FontLCDFilter, FontHinting};
 use api::{FontInstanceFlags, FontTemplate, FontVariation, NativeFontHandle};
@@ -18,8 +20,9 @@ use freetype::freetype::{FT_LOAD_COLOR, FT_LOAD_DEFAULT, FT_LOAD_FORCE_AUTOHINT}
 use freetype::freetype::{FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH, FT_LOAD_NO_AUTOHINT};
 use freetype::freetype::{FT_LOAD_NO_BITMAP, FT_LOAD_NO_HINTING};
 use freetype::freetype::{FT_FACE_FLAG_SCALABLE, FT_FACE_FLAG_FIXED_SIZES};
-use freetype::freetype::{FT_FACE_FLAG_MULTIPLE_MASTERS};
+use freetype::freetype::FT_FACE_FLAG_MULTIPLE_MASTERS;
 use freetype::succeeded;
+use crate::gamma_lut::{ColorLut, GammaLut};
 use crate::rasterizer::{FontInstance, GlyphFormat, GlyphKey};
 use crate::rasterizer::{GlyphRasterError, GlyphRasterResult, RasterizedGlyph};
 use crate::types::FastHashMap;
@@ -30,6 +33,15 @@ use std::{cmp, mem, ptr, slice};
 use std::cmp::max;
 use std::ffi::CString;
 use std::sync::{Arc, Condvar, Mutex, MutexGuard};
+
+#[cfg(not(target_os = "android"))]
+const FONT_GAMMA: f32 = 0.0;
+#[cfg(target_os = "android")]
+const FONT_GAMMA: f32 = 1.4;
+
+lazy_static! {
+    static ref GAMMA_LUT: GammaLut = GammaLut::new(0.0, FONT_GAMMA, FONT_GAMMA);
+}
 
 // These constants are not present in the freetype
 // bindings due to bindgen not handling the way
@@ -780,9 +792,21 @@ impl FontContext {
                 // Subpixel positioning is disabled in mono mode.
                 font.disable_subpixel_position();
             }
-            FontRenderMode::Alpha | FontRenderMode::Subpixel => {
-                // We don't do any preblending with FreeType currently, so the color is not used.
-                font.color = ColorU::new(0xFF, 0xFF, 0xFF, 0xFF);
+            FontRenderMode::Alpha => {
+                if FONT_GAMMA > 0.0 {
+                    font.color = font.color.luminance_color().quantize();
+                } else {
+                    // Color is unused if there is no preblend.
+                    font.color = ColorU::new(0xFF, 0xFF, 0xFF, 0xFF);
+                }
+            }
+            FontRenderMode::Subpixel => {
+                if FONT_GAMMA > 0.0 {
+                    font.color = font.color.quantize();
+                } else {
+                    // Color is unused if there is no preblend.
+                    font.color = ColorU::new(0xFF, 0xFF, 0xFF, 0xFF);
+                }
             }
         }
     }
@@ -1029,6 +1053,12 @@ impl FontContext {
             dest = row_end + 8 * padding;
         }
 
+        if FONT_GAMMA > 0.0 &&
+           pixel_mode != FT_Pixel_Mode::FT_PIXEL_MODE_MONO &&
+           pixel_mode != FT_Pixel_Mode::FT_PIXEL_MODE_BGRA {
+          GAMMA_LUT.preblend(&mut final_buffer, font.color);
+        }
+
         if font.use_texture_padding() {
             left -= padding as i32;
             top += padding as i32;
@@ -1093,6 +1123,7 @@ impl FontContext {
             scale,
             format: glyph_format,
             bytes: final_buffer,
+            is_packed_glyph: false,
         })
     }
 }

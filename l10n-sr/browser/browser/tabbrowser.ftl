@@ -141,6 +141,10 @@ tabbrowser-confirm-caretbrowsing-checkbox = Не показуј поново о�
 
 ## Confirmation dialog for closing all duplicate tabs
 
+tabbrowser-confirm-close-all-duplicate-tabs-title = Затворити дупле картице?
+tabbrowser-confirm-close-all-duplicate-tabs-text =
+    Затворићемо дупле картице у овом прозору. Последње
+    покренут језичак остаће отворен.
 
 ##
 
@@ -176,11 +180,15 @@ tabbrowser-tab-audio-playing-description = Репродукција звука
 tabbrowser-ctrl-tab-list-all-tabs =
     .label =
         { $tabCount ->
-            [few] Прикажи { $tabCount } картице
-           *[other] Прикажи { $tabCount } картица
+            [one] Приажи { $tabCount } картицу
+            [few] Прикажи све { $tabCount } картице
+           *[other] Прикажи свих { $tabCount } картица
         }
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = Искључи звук картице

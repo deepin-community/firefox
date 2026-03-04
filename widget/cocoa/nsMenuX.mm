@@ -31,7 +31,7 @@
 #include "nsUnicharUtils.h"
 #include "nsGkAtoms.h"
 #include "nsCRT.h"
-#include "nsBaseWidget.h"
+#include "nsIWidget.h"
 
 #include "nsIContent.h"
 #include "nsIDocumentObserver.h"
@@ -45,6 +45,11 @@ using namespace mozilla::dom;
 
 static bool gConstructingMenu = false;
 static bool gMenuMethodsSwizzled = false;
+
+// Protect against really deep menu nestings, for example from recursive
+// bookmark folders. This avoids hangs when the system enumerates the entire
+// menu tree.
+static const size_t kMaxMenuNestingDepth = 20;
 
 int32_t nsMenuX::sIndexingMenuLevel = 0;
 
@@ -86,7 +91,10 @@ static void SwizzleDynamicIndexingMethods() {
 
 nsMenuX::nsMenuX(nsMenuParentX* aParent, nsMenuGroupOwnerX* aMenuGroupOwner,
                  nsIContent* aContent)
-    : mContent(aContent), mParent(aParent), mMenuGroupOwner(aMenuGroupOwner) {
+    : mContent(aContent),
+      mParent(aParent),
+      mMenuGroupOwner(aMenuGroupOwner),
+      mNestingDepth(aParent ? aParent->NestingDepth() + 1 : 0) {
   NS_OBJC_BEGIN_TRY_ABORT_BLOCK;
 
   MOZ_COUNT_CTOR(nsMenuX);
@@ -116,10 +124,16 @@ nsMenuX::nsMenuX(nsMenuParentX* aParent, nsMenuGroupOwnerX* aMenuGroupOwner,
   mVisible = !nsMenuUtilsX::NodeIsHiddenOrCollapsed(mContent);
 
   NSString* newCocoaLabelString = nsMenuUtilsX::GetTruncatedCocoaLabel(mLabel);
-  mNativeMenuItem = [[NSMenuItem alloc] initWithTitle:newCocoaLabelString
-                                               action:nil
-                                        keyEquivalent:@""];
+  mNativeMenuItem = [[GeckoNSMenuItem alloc] initWithTitle:newCocoaLabelString
+                                                    action:nil
+                                             keyEquivalent:@""];
   mNativeMenuItem.submenu = mNativeMenu;
+
+  if (mNestingDepth > kMaxMenuNestingDepth) {
+    // If we're nested too deep, turn this item into a regular item without a
+    // submenu.
+    mNativeMenuItem.submenu = nil;
+  }
 
   SetEnabled(!mContent->IsElement() ||
              !mContent->AsElement()->AttrValueIs(
@@ -132,7 +146,8 @@ nsMenuX::nsMenuX(nsMenuParentX* aParent, nsMenuGroupOwnerX* aMenuGroupOwner,
   // menu gets selected, which is bad.
   RebuildMenu();
 
-  if (IsXULWindowMenu(mContent)) {
+  bool isXULWindowMenu = IsXULWindowMenu(mContent);
+  if (isXULWindowMenu) {
     // Let the OS know that this is our Window menu.
     NSApp.windowsMenu = mNativeMenu;
   }
@@ -140,6 +155,9 @@ nsMenuX::nsMenuX(nsMenuParentX* aParent, nsMenuGroupOwnerX* aMenuGroupOwner,
   mIcon = MakeUnique<nsMenuItemIconX>(this);
 
   if (mVisible) {
+    if (!isXULWindowMenu && !IsXULEditMenu(mContent)) {
+      SetRebuild(true);
+    }
     SetupIcon();
   }
 
@@ -794,9 +812,9 @@ void nsMenuX::InsertPlaceholderIfNeeded() {
 
   if ([mNativeMenu numberOfItems] == 0) {
     MOZ_RELEASE_ASSERT(mVisibleItemsCount == 0);
-    NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:@""
-                                                  action:nil
-                                           keyEquivalent:@""];
+    NSMenuItem* item = [[GeckoNSMenuItem alloc] initWithTitle:@""
+                                                       action:nil
+                                                keyEquivalent:@""];
     item.enabled = NO;
     item.view =
         [[[NSView alloc] initWithFrame:NSMakeRect(0, 0, 150, 1)] autorelease];
@@ -1008,6 +1026,18 @@ bool nsMenuX::IsXULWindowMenu(nsIContent* aMenuContent) {
   return retval;
 }
 
+bool nsMenuX::IsXULEditMenu(nsIContent* aMenuContent) {
+  bool retval = false;
+  if (aMenuContent && aMenuContent->IsElement()) {
+    nsAutoString id;
+    aMenuContent->AsElement()->GetAttr(nsGkAtoms::id, id);
+    if (id.Equals(u"edit-menu"_ns)) {
+      retval = true;
+    }
+  }
+  return retval;
+}
+
 //
 // nsChangeObserver
 //
@@ -1059,8 +1089,8 @@ void nsMenuX::ObserveAttributeChanged(dom::Document* aDocument,
 }
 
 void nsMenuX::ObserveContentRemoved(dom::Document* aDocument,
-                                    nsIContent* aContainer, nsIContent* aChild,
-                                    nsIContent* aPreviousSibling) {
+                                    nsIContent* aContainer,
+                                    nsIContent* aChild) {
   if (gConstructingMenu) {
     return;
   }

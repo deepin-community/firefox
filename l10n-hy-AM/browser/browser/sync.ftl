@@ -5,7 +5,7 @@
 fxa-toolbar-sync-syncing2 = Համաժամեցում…
 sync-disconnect-dialog-title2 = Անջատե՞լ
 sync-disconnect-dialog-body = { -brand-product-name } կդադարի համաժամեցնել ձեր հաշիվը, բայց չի ջնջի այս սարքի ձեր զննարկման ցանկացած տվյալ։
-sync-disconnect-dialog-button = Կապախզել
+sync-disconnect-dialog-button = Անջատել
 fxa-signout-dialog-title2 = Դուր՞ս գալ Ձեր հաշվից
 fxa-signout-dialog-body = Համաժամեցված տվյալները կմնան Ձեր հաշվում։
 fxa-signout-dialog2-button = Դուրս գալ
@@ -17,6 +17,16 @@ fxa-menu-turn-on-sync =
 fxa-menu-turn-on-sync-default = Միացնել համաժամացումը
 fxa-menu-connect-another-device =
     .label = Կապակցել այլ սարք...
+# Variables:
+#   $tabCount (Number): The number of tabs sent to the device.
+# The following string intentionally omits the word "tab" from the singular and includes it in the plural.
+fxa-menu-send-to-device =
+    .label =
+        { $tabCount ->
+            [1] Ուղարկել սարքի
+            [one] Ուղարկել { $tabCount } ներդիրներ սարքի
+           *[other] Ուղարկել { $tabCount } ներդիրներ սարքի
+        }
 # Variables:
 #   $tabCount (Number): The number of tabs sent to the device.
 fxa-menu-send-tab-to-device =
@@ -32,5 +42,20 @@ fxa-menu-send-tab-to-device-syncnotready =
 fxa-menu-send-tab-to-device-description = Անմիջապես ուղարկեք ներդիր ցանկացած մուտք գործած սարքին։
 fxa-menu-sign-out =
     .label = Դուրս գալ…
-fxa-menu-sync-title = Համաժամեցնել
 fxa-menu-sync-description = Համացանցային հասանելիություն՝ ամեն վայրից
+fxa-avatar-sign-in = Մուտք գործել
+fxa-avatar-sign-up = Գրանցվել
+fxa-avatar-tooltip =
+    .tooltiptext = Մուտք գործեք ձեր հաշիվ
+sync-setup-verify-continue = Շարունակել
+sync-setup-verify-title = Միացնել զգուշացումը
+
+## Sync warning strings that support the browser profiles feature, these will be shown when the user might be merging data
+
+# Dialog 2 - account signed in on another profile without option to merge
+sync-account-in-use-header = Հաշիվն արդեն գոյություն ունի
+sync-button-create-profile = Ստեղծել նոր պրոֆիլ
+sync-button-sync-and-merge = Համաժամեցնել և ձուլել տվյալները
+# Variables:
+#   $profileName (String) - Name of the profile to switch to
+sync-button-sync-profile = Համաժամացնել «{ $profileName }»-ը

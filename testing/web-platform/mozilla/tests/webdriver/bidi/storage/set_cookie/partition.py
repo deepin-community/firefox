@@ -10,6 +10,10 @@ from webdriver.bidi.modules.storage import (
 pytestmark = pytest.mark.asyncio
 
 
+# This is a gecko-specific test because Firefox and Chrome define partitioning
+# on a browsing context differently. Firefox as a combination of an origin loaded
+# in this browsing context and a related user context, where Chrome defines it
+# as only a user context, which leads to different returned partition keys.
 async def test_partition_context(
     bidi_session,
     set_cookie,
@@ -38,11 +42,15 @@ async def test_partition_context(
             domain=cookie_domain,
             name=cookie_name,
             value=NetworkStringValue(cookie_value),
+            same_site="none",
+            secure=True,
         ),
         partition=new_tab_partition,
     )
 
-    assert set_cookie_result == {"partitionKey": {"userContext": "default"}}
+    assert set_cookie_result == {
+        "partitionKey": {"sourceOrigin": source_origin_1, "userContext": "default"}
+    }
 
     # Check that added cookies are present on the right context.
     cookies = await bidi_session.storage.get_cookies(partition=new_tab_partition)
@@ -56,7 +64,7 @@ async def test_partition_context(
                     "name": cookie_name,
                     "path": "/",
                     "sameSite": "none",
-                    "secure": False,
+                    "secure": True,
                     "size": 6,
                     "value": {"type": "string", "value": cookie_value},
                 }
@@ -103,6 +111,8 @@ async def test_partition_context_iframe(
             domain=domain_value(domain),
             name=cookie_name,
             value=NetworkStringValue(cookie_value),
+            same_site="none",
+            secure=True,
         ),
         partition=iframe_partition,
     )
@@ -117,7 +127,7 @@ async def test_partition_context_iframe(
             "name": cookie_name,
             "path": "/",
             "sameSite": "none",
-            "secure": False,
+            "secure": True,
             "size": 6,
             "value": {"type": "string", "value": cookie_value},
         }

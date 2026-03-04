@@ -56,7 +56,7 @@ example is the `ProviderPlaces <https://searchfox.org/mozilla-central/sou
 rce/browser/components/urlbar/UrlbarProviderPlaces.sys.mjs>`_, which fetches
 results from the Places database. Another component that’s good for writing
 XPCShell test is the `urlbarMuxer <https://searchfox.org/mozilla-central/
-source/browser/components/urlbar/UrlbarMuxerUnifiedComplete.sys.mjs>`_.
+source/browser/components/urlbar/UrlbarMuxerStandard.sys.mjs>`_.
 
 There may be times where writing both an XPCShell test and browser test is
 necessary. In these situations, you could be testing the result from a Provider
@@ -105,11 +105,10 @@ manifest in alphabetical order.
 
 Start in the manifest file and add your test name in alphabetical
 order. The manifest file we should add our test in is
-`browser.ini <https://searchfox.org/mozilla-central/source/browser/components/
-urlbar/tests/browser/browser.ini>`_. The ``urlbar/test/browser/`` directory
+`browser.toml <https://searchfox.org/mozilla-central/source/browser/components/
+urlbar/tests/browser/browser.toml>`_. The ``urlbar/test/browser/`` directory
 is the main browser test directory for address bar, and the manifest file
 linked above is the main browser test manifest.
-The ``.ini`` file extension is an initialization file for Windows or MS-DOS.
 
 Manifest Metadata
 ~~~~~~~~~~~~~~~~~
@@ -152,7 +151,7 @@ any variables and functions it defines will be available in the scope of
 each test. This file is small because most of our Utils are actually in other
 `.sys.mjs` files.
 
-The ``XPCOMUtils.defineLazyModuleGetters`` method within ``head.js`` sets up
+The ``ChromeUtils.defineESModuleGetters`` method within ``head.js`` sets up
 modules names to where they can be found, their paths. ``Lazy`` means the files
 are only imported if or when it is used. Any tests in this directory can use
 these modules without importing it themselves in their own file.
@@ -196,8 +195,7 @@ a specific preference to change, and etc.
 
 PlacesTestUtils
 ~~~~~~~~~~~~~~~
-:searchfox:`PlacesTestUtils.sys.mjs <toolkit/components/places/tests/PlacesTestU
-tils.sys.mjs>` is useful for adding visits, adding
+:searchfox:`PlacesTestUtils.sys.mjs <toolkit/components/places/tests/PlacesTestUtils.sys.mjs>` is useful for adding visits, adding
 bookmarks, waiting for notification of visited pages, and etc.
 
 EventUtils

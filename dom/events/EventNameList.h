@@ -150,6 +150,8 @@
 
 EVENT(abort, eImageAbort, EventNameType_All, eBasicEventClass)
 EVENT(beforetoggle, eBeforeToggle, EventNameType_HTMLXUL, eBasicEventClass)
+// https://html.spec.whatwg.org/#event-beforematch
+EVENT(beforematch, eBeforematch, EventNameType_All, eBasicEventClass)
 EVENT(cancel, eCancel, EventNameType_HTMLXUL, eBasicEventClass)
 EVENT(canplay, eCanPlay, EventNameType_HTML, eBasicEventClass)
 EVENT(canplaythrough, eCanPlayThrough, EventNameType_HTML, eBasicEventClass)
@@ -165,6 +167,7 @@ EVENT(contentvisibilityautostatechange, eContentVisibilityAutoStateChange,
       EventNameType_All, eBasicEventClass)
 EVENT(contextmenu, eContextMenu,
       EventNameType_HTMLXUL | EventNameType_SVGGraphic, ePointerEventClass)
+EVENT(command, eCommand, EventNameType_HTMLXUL, eBasicEventClass)
 NON_IDL_EVENT(mouselongtap, eMouseLongTap, EventNameType_HTMLXUL,
               eMouseEventClass)
 EVENT(cuechange, eCueChange, EventNameType_All, eBasicEventClass)
@@ -179,6 +182,7 @@ EVENT(dragstart, eDragStart, EventNameType_HTMLXUL, eDragEventClass)
 EVENT(drop, eDrop, EventNameType_HTMLXUL, eDragEventClass)
 EVENT(durationchange, eDurationChange, EventNameType_HTML, eBasicEventClass)
 EVENT(emptied, eEmptied, EventNameType_HTML, eBasicEventClass)
+EVENT(encrypted, eEncrypted, EventNameType_HTMLMedia, eBasicEventClass)
 EVENT(ended, eEnded, EventNameType_HTML, eBasicEventClass)
 EVENT(formdata, eFormData, EventNameType_HTML, eBasicEventClass)
 EVENT(fullscreenchange, eFullscreenChange, EventNameType_HTML, eBasicEventClass)
@@ -222,6 +226,8 @@ EVENT(pointerover, ePointerOver, EventNameType_All, ePointerEventClass)
 EVENT(pointerout, ePointerOut, EventNameType_All, ePointerEventClass)
 EVENT(pointerenter, ePointerEnter, EventNameType_All, ePointerEventClass)
 EVENT(pointerleave, ePointerLeave, EventNameType_All, ePointerEventClass)
+EVENT(pointerrawupdate, ePointerRawUpdate, EventNameType_All,
+      ePointerEventClass)
 EVENT(gotpointercapture, ePointerGotCapture, EventNameType_All,
       ePointerEventClass)
 EVENT(lostpointercapture, ePointerLostCapture, EventNameType_All,
@@ -254,6 +260,7 @@ EVENT(timeupdate, eTimeUpdate, EventNameType_HTML, eBasicEventClass)
 EVENT(toggle, eToggle, EventNameType_HTML, eBasicEventClass)
 EVENT(volumechange, eVolumeChange, EventNameType_HTML, eBasicEventClass)
 EVENT(waiting, eWaiting, EventNameType_HTML, eBasicEventClass)
+EVENT(waitingforkey, eWaitingForKey, EventNameType_HTMLMedia, eBasicEventClass)
 EVENT(wheel, eWheel, EventNameType_All, eWheelEventClass)
 EVENT(copy, eCopy, EventNameType_HTMLXUL | EventNameType_SVGGraphic,
       eClipboardEventClass)
@@ -261,11 +268,6 @@ EVENT(cut, eCut, EventNameType_HTMLXUL | EventNameType_SVGGraphic,
       eClipboardEventClass)
 EVENT(paste, ePaste, EventNameType_HTMLXUL | EventNameType_SVGGraphic,
       eClipboardEventClass)
-// Gecko-specific extensions that apply to elements
-EVENT(beforescriptexecute, eBeforeScriptExecute, EventNameType_HTMLXUL,
-      eBasicEventClass)
-EVENT(afterscriptexecute, eAfterScriptExecute, EventNameType_HTMLXUL,
-      eBasicEventClass)
 
 FORWARDED_EVENT(blur, eBlur, EventNameType_HTMLXUL, eFocusEventClass)
 ERROR_EVENT(error, eLoadError, EventNameType_All, eBasicEventClass)
@@ -295,10 +297,8 @@ WINDOW_EVENT(hashchange, eHashChange,
              eBasicEventClass)
 WINDOW_EVENT(languagechange, eLanguageChange,
              EventNameType_HTMLBodyOrFramesetOnly, eBasicEventClass)
-// XXXbz Should the onmessage attribute on <body> really not work?  If so, do we
-// need a different macro to flag things like that (IDL, but not content
-// attributes on body/frameset), or is just using EventNameType_None enough?
-WINDOW_EVENT(message, eMessage, EventNameType_None, eBasicEventClass)
+WINDOW_EVENT(message, eMessage, EventNameType_HTMLBodyOrFramesetOnly,
+             eBasicEventClass)
 WINDOW_EVENT(rtctransform, eRTCTransform, EventNameType_None, eBasicEventClass)
 WINDOW_EVENT(messageerror, eMessageError, EventNameType_HTMLBodyOrFramesetOnly,
              eBasicEventClass)
@@ -356,11 +356,11 @@ TOUCH_EVENT(touchend, eTouchEnd, EventNameType_All, eTouchEventClass)
 TOUCH_EVENT(touchmove, eTouchMove, EventNameType_All, eTouchEventClass)
 TOUCH_EVENT(touchcancel, eTouchCancel, EventNameType_All, eTouchEventClass)
 
-DOCUMENT_ONLY_EVENT(readystatechange, eReadyStateChange, EventNameType_HTMLXUL,
+DOCUMENT_ONLY_EVENT(readystatechange, eReadyStateChange, EventNameType_XUL,
                     eBasicEventClass)
 EVENT(selectionchange, eSelectionChange, EventNameType_HTMLXUL,
       eBasicEventClass)
-DOCUMENT_ONLY_EVENT(visibilitychange, eVisibilityChange, EventNameType_HTMLXUL,
+DOCUMENT_ONLY_EVENT(visibilitychange, eVisibilityChange, EventNameType_XUL,
                     eBasicEventClass)
 
 NON_IDL_EVENT(MozMouseHittest, eMouseHitTest, EventNameType_None,
@@ -368,21 +368,6 @@ NON_IDL_EVENT(MozMouseHittest, eMouseHitTest, EventNameType_None,
 
 NON_IDL_EVENT(MozMouseExploreByTouch, eMouseExploreByTouch, EventNameType_None,
               eMouseEventClass)
-
-NON_IDL_EVENT(DOMAttrModified, eLegacyAttrModified, EventNameType_HTMLXUL,
-              eMutationEventClass)
-NON_IDL_EVENT(DOMCharacterDataModified, eLegacyCharacterDataModified,
-              EventNameType_HTMLXUL, eMutationEventClass)
-NON_IDL_EVENT(DOMNodeInserted, eLegacyNodeInserted, EventNameType_HTMLXUL,
-              eMutationEventClass)
-NON_IDL_EVENT(DOMNodeRemoved, eLegacyNodeRemoved, EventNameType_HTMLXUL,
-              eMutationEventClass)
-NON_IDL_EVENT(DOMNodeInsertedIntoDocument, eLegacyNodeInsertedIntoDocument,
-              EventNameType_HTMLXUL, eMutationEventClass)
-NON_IDL_EVENT(DOMNodeRemovedFromDocument, eLegacyNodeRemovedFromDocument,
-              EventNameType_HTMLXUL, eMutationEventClass)
-NON_IDL_EVENT(DOMSubtreeModified, eLegacySubtreeModified, EventNameType_HTMLXUL,
-              eMutationEventClass)
 
 NON_IDL_EVENT(DOMActivate, eLegacyDOMActivate, EventNameType_HTMLXUL,
               eUIEventClass)
@@ -419,7 +404,6 @@ NON_IDL_EVENT(compositionupdate, eCompositionUpdate, EventNameType_XUL,
               eCompositionEventClass)
 NON_IDL_EVENT(compositionend, eCompositionEnd, EventNameType_XUL,
               eCompositionEventClass)
-NON_IDL_EVENT(command, eXULCommand, EventNameType_XUL, eInputEventClass)
 NON_IDL_EVENT(popupshowing, eXULPopupShowing, EventNameType_XUL,
               eBasicEventClass)
 NON_IDL_EVENT(popupshown, eXULPopupShown, EventNameType_XUL, eBasicEventClass)
@@ -557,6 +541,9 @@ NON_IDL_EVENT(audioprocess, eAudioProcess, EventNameType_None, eBasicEventClass)
 NON_IDL_EVENT(complete, eAudioComplete, EventNameType_None, eBasicEventClass)
 
 EVENT(scrollend, eScrollend, EventNameType_All, eBasicEventClass)
+
+EVENT(mozorientationchange, eMozOrientationChange, EventNameType_All,
+      eBasicEventClass)
 
 #ifdef DEFINED_FORWARDED_EVENT
 #  undef DEFINED_FORWARDED_EVENT

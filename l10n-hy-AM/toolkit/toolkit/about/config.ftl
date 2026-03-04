@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
 ## These strings appear on the warning you see when first visiting about:config.
 
 about-config-intro-warning-title = Շարունակեք զգուշությամբ
@@ -12,14 +13,12 @@ about-config-intro-warning-button = Ընդունել վտանգը եւ շարո�
 ##
 
 # This is shown on the page before searching but after the warning is accepted.
-about-config-caution-text = Այս նախասիրությունների փոփոխությունը կարող է ազդել { -brand-short-name } ֊ի աշխատանքի կամ անվտանգության վրա:
-
-about-config-page-title = Ընդլայնված նախընտրություններ
-
+about-config-caution-text = Այս նախապատվությունների փոփոխությունը կարող է ազդել { -brand-short-name } ֊ի արտադրողականության կամ անվտանգության վրա։
+about-config-page-title = Ընդլայնված նախապատվություններ
 about-config-search-input1 =
-    .placeholder = Որոնել նախընտրանքի անուն
+    .placeholder = Որոնել նախապատվության անուն
 about-config-show-all = Ցուցադրել բոլորը
-
+about-config-show-only-modified = Ցուցադրել միայն փոփոխված նախապատվությունները
 about-config-pref-add-button =
     .title = Ավելացնել
 about-config-pref-toggle-button =
@@ -27,7 +26,7 @@ about-config-pref-toggle-button =
 about-config-pref-edit-button =
     .title = Խմբագրել
 about-config-pref-save-button =
-    .title = Պահպանել
+    .title = Պահել
 about-config-pref-reset-button =
     .title = Վերակայել
 about-config-pref-delete-button =

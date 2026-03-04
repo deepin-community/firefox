@@ -12,24 +12,24 @@
 
 #include "mozilla/BasePrincipal.h"
 #include "mozilla/DebugOnly.h"
+#include "mozilla/NullPrincipal.h"
+#include "mozilla/StaticPrefs_dom.h"
+#include "mozilla/dom/DocGroup.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/NodeInfo.h"
 #include "mozilla/dom/NodeInfoInlines.h"
-#include "mozilla/dom/DocGroup.h"
-#include "mozilla/NullPrincipal.h"
-#include "mozilla/StaticPrefs_dom.h"
-#include "nsCOMPtr.h"
-#include "nsString.h"
 #include "nsAtom.h"
-#include "nsIPrincipal.h"
-#include "nsContentUtils.h"
-#include "nsReadableUtils.h"
-#include "nsGkAtoms.h"
-#include "nsComponentManagerUtils.h"
-#include "nsLayoutStatics.h"
-#include "nsHashKeys.h"
 #include "nsCCUncollectableMarker.h"
+#include "nsCOMPtr.h"
+#include "nsComponentManagerUtils.h"
+#include "nsContentUtils.h"
+#include "nsGkAtoms.h"
+#include "nsHashKeys.h"
+#include "nsIPrincipal.h"
+#include "nsLayoutStatics.h"
 #include "nsNameSpaceManager.h"
+#include "nsReadableUtils.h"
+#include "nsString.h"
 #include "nsWindowSizes.h"
 
 using namespace mozilla;
@@ -351,6 +351,21 @@ static bool IsSystemOrAddonOrAboutPrincipal(nsIPrincipal* aPrincipal) {
          aPrincipal->SchemeIs("about");
 }
 
+static bool IsAndroidResource(nsIURI* aURI) {
+#ifdef ANDROID
+  if (aURI->SchemeIs("resource")) {
+    nsAutoCString host, path;
+    aURI->GetHost(host);
+    aURI->GetFilePath(path);
+    if (host.EqualsLiteral("android") &&
+        StringBeginsWith(path, "/assets/"_ns)) {
+      return true;
+    }
+  }
+#endif
+  return false;
+}
+
 bool nsNodeInfoManager::InternalSVGEnabled() {
   MOZ_ASSERT(!mSVGEnabled, "Caller should use the cached mSVGEnabled!");
 
@@ -376,6 +391,7 @@ bool nsNodeInfoManager::InternalSVGEnabled() {
   // of system or add-on UI or about: page)
   bool conclusion =
       (SVGEnabled || IsSystemOrAddonOrAboutPrincipal(mPrincipal) ||
+       IsAndroidResource(mDocument->GetDocumentURI()) ||
        (loadInfo &&
         (loadInfo->GetExternalContentPolicyType() ==
              ExtContentPolicy::TYPE_IMAGE ||

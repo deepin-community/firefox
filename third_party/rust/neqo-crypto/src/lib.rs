@@ -4,8 +4,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-#![allow(clippy::module_name_repetitions)] // This lint doesn't work here.
-#![allow(clippy::unseparated_literal_suffix, clippy::used_underscore_binding)] // For bindgen code.
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 
 mod aead;
 #[cfg(feature = "disable-encryption")]
@@ -31,7 +30,7 @@ pub mod selfencrypt;
 mod ssl;
 mod time;
 
-use std::{ffi::CString, path::PathBuf, ptr::null, sync::OnceLock};
+use std::{env, ffi::CString, path::PathBuf, ptr::null, sync::OnceLock};
 
 #[cfg(not(feature = "disable-encryption"))]
 pub use self::aead::RealAead as Aead;
@@ -40,6 +39,7 @@ pub use self::aead::RealAead;
 #[cfg(feature = "disable-encryption")]
 pub use self::aead_null::AeadNull as Aead;
 pub use self::{
+    aead::Aead as AeadTrait,
     agent::{
         Agent, AllowZeroRtt, Client, HandshakeState, Record, RecordList, ResumptionToken,
         SecretAgent, SecretAgentInfo, SecretAgentPreInfo, Server, ZeroRttCheckResult,
@@ -63,14 +63,14 @@ mod min_version;
 use min_version::MINIMUM_NSS_VERSION;
 use neqo_common::qerror;
 
-#[allow(non_upper_case_globals)]
+#[expect(non_upper_case_globals, reason = "Code is bindgen-generated.")]
 mod nss {
     include!(concat!(env!("OUT_DIR"), "/nss_init.rs"));
 }
 
 // Need to map the types through.
 fn secstatus_to_res(code: nss::SECStatus) -> Res<()> {
-    crate::err::secstatus_to_res(code as crate::ssl::SECStatus)
+    err::secstatus_to_res(code)
 }
 
 enum NssLoaded {
@@ -91,10 +91,6 @@ impl Drop for NssLoaded {
 
 static INITIALIZED: OnceLock<Res<NssLoaded>> = OnceLock::new();
 
-fn already_initialized() -> bool {
-    unsafe { nss::NSS_IsInitialized() != 0 }
-}
-
 fn version_check() -> Res<()> {
     let min_ver = CString::new(MINIMUM_NSS_VERSION)?;
     if unsafe { nss::NSS_VersionCheck(min_ver.as_ptr()) } == 0 {
@@ -104,65 +100,30 @@ fn version_check() -> Res<()> {
     Ok(())
 }
 
-/// Initialize NSS.  This only executes the initialization routines once, so if there is any chance
-/// that
-///
-/// # Errors
-///
-/// When NSS initialization fails.
-pub fn init() -> Res<()> {
-    // Set time zero.
-    time::init();
-    let res = INITIALIZED.get_or_init(|| {
-        version_check()?;
-        if already_initialized() {
-            return Ok(NssLoaded::External);
-        }
-
-        secstatus_to_res(unsafe { nss::NSS_NoDB_Init(null()) })?;
-        secstatus_to_res(unsafe { nss::NSS_SetDomesticPolicy() })?;
-        secstatus_to_res(unsafe {
-            p11::NSS_SetAlgorithmPolicy(
-                p11::SECOidTag::SEC_OID_XYBER768D00,
-                p11::NSS_USE_ALG_IN_SSL_KX,
-                0,
-            )
-        })?;
-
-        Ok(NssLoaded::NoDb)
-    });
-    res.as_ref().map(|_| ()).map_err(Clone::clone)
-}
-
 /// This enables SSLTRACE by calling a simple, harmless function to trigger its
 /// side effects.  SSLTRACE is not enabled in NSS until a socket is made or
 /// global options are accessed.  Reading an option is the least impact approach.
 /// This allows us to use SSLTRACE in all of our unit tests and programs.
 #[cfg(debug_assertions)]
 fn enable_ssl_trace() -> Res<()> {
-    let opt = ssl::Opt::Locking.as_int();
+    let opt = Opt::Locking.as_int();
     let mut v: ::std::os::raw::c_int = 0;
     secstatus_to_res(unsafe { ssl::SSL_OptionGetDefault(opt, &mut v) })
 }
 
-/// Initialize with a database.
-///
-/// # Errors
-///
-/// If NSS cannot be initialized.
-pub fn init_db<P: Into<PathBuf>>(dir: P) -> Res<()> {
+fn init_once(db: Option<PathBuf>) -> Res<NssLoaded> {
+    // Set time zero.
     time::init();
-    let res = INITIALIZED.get_or_init(|| {
-        version_check()?;
-        if already_initialized() {
-            return Ok(NssLoaded::External);
-        }
+    version_check()?;
+    if unsafe { nss::NSS_IsInitialized() != 0 } {
+        return Ok(NssLoaded::External);
+    }
 
-        let path = dir.into();
+    let state = if let Some(path) = db {
         if !path.is_dir() {
-            return Err(Error::InternalError);
+            return Err(Error::Internal);
         }
-        let pathstr = path.to_str().ok_or(Error::InternalError)?;
+        let pathstr = path.to_str().ok_or(Error::Internal)?;
         let dircstr = CString::new(pathstr)?;
         let empty = CString::new("")?;
         secstatus_to_res(unsafe {
@@ -175,23 +136,44 @@ pub fn init_db<P: Into<PathBuf>>(dir: P) -> Res<()> {
             )
         })?;
 
-        secstatus_to_res(unsafe { nss::NSS_SetDomesticPolicy() })?;
-        secstatus_to_res(unsafe {
-            p11::NSS_SetAlgorithmPolicy(
-                p11::SECOidTag::SEC_OID_XYBER768D00,
-                p11::NSS_USE_ALG_IN_SSL_KX,
-                0,
-            )
-        })?;
         secstatus_to_res(unsafe {
             ssl::SSL_ConfigServerSessionIDCache(1024, 0, 0, dircstr.as_ptr())
         })?;
+        NssLoaded::Db
+    } else {
+        secstatus_to_res(unsafe { nss::NSS_NoDB_Init(null()) })?;
+        NssLoaded::NoDb
+    };
 
-        #[cfg(debug_assertions)]
-        enable_ssl_trace()?;
+    secstatus_to_res(unsafe { nss::NSS_SetDomesticPolicy() })?;
 
-        Ok(NssLoaded::Db)
-    });
+    #[cfg(debug_assertions)]
+    enable_ssl_trace()?;
+
+    Ok(state)
+}
+
+/// Initialize NSS.  This only executes the initialization routines once, so if there is any chance
+/// that this is invoked twice, that's OK.
+///
+/// # Errors
+///
+/// When NSS initialization fails.
+pub fn init() -> Res<()> {
+    let res = INITIALIZED.get_or_init(|| init_once(None));
+    res.as_ref().map(|_| ()).map_err(Clone::clone)
+}
+
+/// Initialize with a database.
+///
+/// # Errors
+///
+/// If NSS cannot be initialized.
+pub fn init_db<P: Into<PathBuf>>(dir: P) -> Res<()> {
+    // Allow overriding the NSS database path with an environment variable.
+    let dir =
+        env::var("NSS_DB_PATH").unwrap_or(dir.into().to_str().ok_or(Error::Internal)?.to_string());
+    let res = INITIALIZED.get_or_init(|| init_once(Some(dir.into())));
     res.as_ref().map(|_| ()).map_err(Clone::clone)
 }
 
@@ -222,7 +204,7 @@ where
     if data.is_null() || len == 0 {
         &[]
     } else {
-        #[allow(clippy::disallowed_methods)]
+        #[expect(clippy::disallowed_methods, reason = "This is non-null.")]
         std::slice::from_raw_parts(data, len)
     }
 }

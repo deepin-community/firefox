@@ -29,7 +29,7 @@ function getHashCommon(aStr, useBase64) {
   let stringStream = Cc["@mozilla.org/io/string-input-stream;1"].createInstance(
     Ci.nsIStringInputStream
   );
-  stringStream.data = aStr;
+  stringStream.setByteStringData(aStr);
   hasher.updateFromStream(stringStream, -1);
 
   return hasher.finish(useBase64);
@@ -157,7 +157,7 @@ add_task(async function test_preload_empty() {
     certDB,
     ee_cert,
     SEC_ERROR_UNKNOWN_ISSUER,
-    certificateUsageSSLServer
+    Ci.nsIX509CertDB.verifyUsageTLSServer
   );
 });
 
@@ -210,7 +210,7 @@ add_task(async function test_preload_invalid_hash() {
     certDB,
     ee_cert,
     SEC_ERROR_UNKNOWN_ISSUER,
-    certificateUsageSSLServer
+    Ci.nsIX509CertDB.verifyUsageTLSServer
   );
 });
 
@@ -245,7 +245,7 @@ add_task(async function test_preload_invalid_length() {
     certDB,
     ee_cert,
     SEC_ERROR_UNKNOWN_ISSUER,
-    certificateUsageSSLServer
+    Ci.nsIX509CertDB.verifyUsageTLSServer
   );
 });
 
@@ -275,13 +275,13 @@ add_task(async function test_preload_basic() {
     certDB,
     ee_cert,
     SEC_ERROR_UNKNOWN_ISSUER,
-    certificateUsageSSLServer
+    Ci.nsIX509CertDB.verifyUsageTLSServer
   );
   await checkCertErrorGeneric(
     certDB,
     ee_cert_2,
     SEC_ERROR_UNKNOWN_ISSUER,
-    certificateUsageSSLServer
+    Ci.nsIX509CertDB.verifyUsageTLSServer
   );
 
   let intermediateBytes = readFile(
@@ -323,7 +323,7 @@ add_task(async function test_preload_basic() {
     certDB,
     ee_cert,
     PRErrorCodeSuccess,
-    certificateUsageSSLServer
+    Ci.nsIX509CertDB.verifyUsageTLSServer
   );
 
   let localDB = await IntermediatePreloadsClient.client.db;
@@ -345,7 +345,7 @@ add_task(async function test_preload_basic() {
     certDB,
     ee_cert_2,
     SEC_ERROR_UNKNOWN_ISSUER,
-    certificateUsageSSLServer
+    Ci.nsIX509CertDB.verifyUsageTLSServer
   );
 });
 
@@ -422,6 +422,22 @@ add_task(async function test_delete() {
     resultsAfter.length,
     0,
     "shouldn't find intermediate in cert storage now"
+  );
+});
+
+add_task(async function test_bug1966632() {
+  let certDB = Cc["@mozilla.org/security/x509certdb;1"].getService(
+    Ci.nsIX509CertDB
+  );
+
+  constructCertFromFile("test_intermediate_preloads/bug1966632-int1.pem", ",,");
+  await checkRootOfBuiltChain(
+    certDB,
+    constructCertFromFile("test_intermediate_preloads/bug1966632-ee.pem", ",,"),
+    "G/ANXI8TwJTdF+AFBM8IiIUPEv0Gf6H5LA/b9guG4yE=",
+    new Date("2025-05-21T00:00:00Z").getTime() / 1000,
+    undefined,
+    Ci.nsIX509CertDB.FLAG_LOCAL_ONLY
   );
 });
 

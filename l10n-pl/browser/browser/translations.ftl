@@ -126,13 +126,6 @@ translations-manage-description = Pobierz języki do tłumaczenia bez dostępu d
 translations-manage-all-language = Wszystkie języki
 translations-manage-download-button = Pobierz
 translations-manage-delete-button = Usuń
-translations-manage-intro = Ustaw preferencje dotyczące języka i tłumaczenia witryn oraz zarządzaj językami zainstalowanymi do tłumaczenia bez dostępu do Internetu.
-translations-manage-install-description = Zainstaluj języki do tłumaczenia bez dostępu do Internetu
-translations-manage-language-install-button =
-    .label = Zainstaluj
-translations-manage-language-install-all-button =
-    .label = Zainstaluj wszystkie
-    .accesskey = Z
 translations-manage-intro-2 = Ustaw preferencje dotyczące języka i tłumaczenia witryn oraz zarządzaj językami pobranymi do tłumaczenia bez dostępu do Internetu.
 translations-manage-download-description = Pobierz języki do tłumaczenia bez dostępu do Internetu
 translations-manage-language-download-button =
@@ -145,7 +138,6 @@ translations-manage-language-remove-button =
 translations-manage-language-remove-all-button =
     .label = Usuń wszystkie
     .accesskey = U
-translations-manage-error-install = Wystąpił problem przy instalacji plików językowych. Spróbuj ponownie.
 translations-manage-error-download = Wystąpił problem przy pobieraniu plików językowych. Spróbuj ponownie.
 translations-manage-error-delete = Wystąpił błąd podczas usuwania plików językowych. Spróbuj ponownie.
 translations-manage-error-remove = Wystąpił błąd podczas usuwania plików językowych. Spróbuj ponownie.
@@ -194,7 +186,7 @@ main-context-menu-translate-selection-to-language =
 # the text of a hyperlink to a yet-to-be-determined language.
 main-context-menu-translate-link-text =
     .label = Przetłumacz tekst odnośnika…
-    .accesskey = P
+    .accesskey = c
 # Text displayed in the right-click context menu for translating
 # the text of a hyperlink to a target language.
 #
@@ -202,7 +194,7 @@ main-context-menu-translate-link-text =
 #   $language (string) - The localized display name of the target language
 main-context-menu-translate-link-text-to-language =
     .label = Przetłumacz tekst odnośnika na { $language }
-    .accesskey = P
+    .accesskey = c
 # Text displayed in the select translations panel header.
 select-translations-panel-header = Tłumaczenie
 # Text displayed above the from-language dropdown menu.
@@ -230,7 +222,7 @@ select-translations-panel-try-again-button =
 # Text displayed as a placeholder when the panel is idle.
 select-translations-panel-idle-placeholder-text = Tutaj będzie wyświetlany przetłumaczony tekst.
 # Text displayed as a placeholder when the panel is actively translating.
-select-translations-panel-translating-placeholder-text = Tłumaczenie…
+select-translations-panel-translating-placeholder-text = Trwa tłumaczenie…
 select-translations-panel-init-failure-message =
     .message = Nie można wczytać języków. Sprawdź połączenie z Internetem i spróbuj ponownie.
 # Text displayed when the translation fails to complete.

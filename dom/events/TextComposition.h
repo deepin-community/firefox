@@ -7,20 +7,19 @@
 #ifndef mozilla_TextComposition_h
 #define mozilla_TextComposition_h
 
-#include "nsCOMPtr.h"
-#include "nsINode.h"
-#include "nsIWidget.h"
-#include "nsTArray.h"
-#include "nsThreadUtils.h"
-#include "nsPresContext.h"
 #include "mozilla/AlreadyAddRefed.h"
-#include "mozilla/Assertions.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/EventForwards.h"
 #include "mozilla/RangeBoundary.h"
 #include "mozilla/TextRange.h"
 #include "mozilla/dom/BrowserParent.h"
 #include "mozilla/dom/Text.h"
+#include "nsCOMPtr.h"
+#include "nsINode.h"
+#include "nsIWidget.h"
+#include "nsPresContext.h"
+#include "nsTArray.h"
+#include "nsThreadUtils.h"
 
 class nsRange;
 
@@ -89,6 +88,10 @@ class TextComposition final {
     }
     return do_AddRef(mPresContext->GetRootWidget());
   }
+  /**
+   * GetEditorBase() returns EditorBase pointer of mEditorBaseWeak.
+   */
+  already_AddRefed<EditorBase> GetEditorBase() const;
   // Returns the tab parent which has this composition in its remote process.
   BrowserParent* GetBrowserParent() const { return mBrowserParent; }
   // Returns true if the composition is started with synthesized event which
@@ -187,6 +190,19 @@ class TextComposition final {
    * Otherwise, false.
    */
   bool IsComposing() const { return mIsComposing; }
+
+  /**
+   * If we're requesting IME to commit or cancel composition, or we've already
+   * requested it, or we've already known this composition has been ended in
+   * IME, we don't need to request commit nor cancel composition anymore and
+   * shouldn't do so if we're in content process for not committing/canceling
+   * "current" composition in native IME.  So, when this returns true,
+   * RequestIMEToCommit() does nothing.
+   */
+  [[nodiscard]] bool CanRequsetIMEToCommitOrCancelComposition() const {
+    return !mIsRequestingCommit && !mIsRequestingCancel &&
+           !mRequestedToCommitOrCancel && !mHasReceivedCommitEvent;
+  }
 
   /**
    * Returns true if editor has started or already ended handling an event which
@@ -411,24 +427,6 @@ class TextComposition final {
   // mWasCompositionStringEmpty is true if the composition string was empty
   // when DispatchCompositionEvent() is called.
   bool mWasCompositionStringEmpty;
-
-  /**
-   * If we're requesting IME to commit or cancel composition, or we've already
-   * requested it, or we've already known this composition has been ended in
-   * IME, we don't need to request commit nor cancel composition anymore and
-   * shouldn't do so if we're in content process for not committing/canceling
-   * "current" composition in native IME.  So, when this returns true,
-   * RequestIMEToCommit() does nothing.
-   */
-  bool CanRequsetIMEToCommitOrCancelComposition() const {
-    return !mIsRequestingCommit && !mIsRequestingCancel &&
-           !mRequestedToCommitOrCancel && !mHasReceivedCommitEvent;
-  }
-
-  /**
-   * GetEditorBase() returns EditorBase pointer of mEditorBaseWeak.
-   */
-  already_AddRefed<EditorBase> GetEditorBase() const;
 
   /**
    * HasEditor() returns true if mEditorBaseWeak holds EditorBase instance

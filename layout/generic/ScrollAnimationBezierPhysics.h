@@ -44,12 +44,12 @@ class ScrollAnimationBezierPhysics final : public ScrollAnimationPhysics {
   nsPoint PositionAt(const TimeStamp& aTime) override;
 
   bool IsFinished(const TimeStamp& aTime) override {
-    return aTime > mStartTime + mDuration;
+    return mDuration.IsZero() || aTime > mStartTime + mDuration;
   }
 
  protected:
   double ProgressAt(const TimeStamp& aTime) const {
-    return clamped((aTime - mStartTime) / mDuration, 0.0, 1.0);
+    return std::clamp((aTime - mStartTime) / mDuration, 0.0, 1.0);
   }
 
   nscoord VelocityComponent(double aTimeProgress,

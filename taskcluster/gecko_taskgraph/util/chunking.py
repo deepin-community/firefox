@@ -5,53 +5,49 @@
 
 """Utility functions to handle test chunking."""
 
-import json
 import logging
 import os
+import traceback
 from abc import ABCMeta, abstractmethod
 
 from manifestparser import TestManifest
 from manifestparser.filters import chunk_by_runtime, tags
 from mozbuild.util import memoize
+from mozinfo.platforminfo import PlatformInfo
 from moztest.resolve import TEST_SUITES, TestManifestLoader, TestResolver
+from requests.exceptions import RetryError
+from taskgraph.util import json
 from taskgraph.util.yaml import load_yaml
 
-from gecko_taskgraph import GECKO
+from gecko_taskgraph import GECKO, TEST_CONFIGS
 from gecko_taskgraph.util.bugbug import CT_LOW, BugbugTimeoutException, push_schedules
 
 logger = logging.getLogger(__name__)
 here = os.path.abspath(os.path.dirname(__file__))
 resolver = TestResolver.from_environment(cwd=here, loader_cls=TestManifestLoader)
 
+VARIANTS_YML = os.path.join(TEST_CONFIGS, "variants.yml")
 TEST_VARIANTS = {}
-if os.path.exists(os.path.join(GECKO, "taskcluster", "kinds", "test", "variants.yml")):
-    TEST_VARIANTS = load_yaml(GECKO, "taskcluster", "kinds", "test", "variants.yml")
+if os.path.exists(VARIANTS_YML):
+    TEST_VARIANTS = load_yaml(VARIANTS_YML)
 
 WPT_SUBSUITES = {
     "canvas": ["html/canvas"],
     "webgpu": ["_mozilla/webgpu"],
-    "privatebrowsing": ["/service-workers/cache-storage"],
     "webcodecs": ["webcodecs"],
     "eme": ["encrypted-media"],
 }
 
 
 def get_test_tags(config, env):
-    test_tags = []
-    try_config = json.loads(
+    tags = json.loads(
         config.params["try_task_config"].get("env", {}).get("MOZHARNESS_TEST_TAG", "[]")
     )
-    env_tags = env.get("MOZHARNESS_TEST_TAG", [])
-    if env_tags:
-        if try_config:
-            env_tags.extend(try_config)
-        test_tags = list(set(env_tags))
-    elif try_config:
-        test_tags = try_config
-    return test_tags
+    tags.extend(env.get("MOZHARNESS_TEST_TAG", []))
+    return list(set(tags))
 
 
-def guess_mozinfo_from_task(task, repo="", test_tags=[]):
+def guess_mozinfo_from_task(task, repo="", app_version="", test_tags=[]):
     """Attempt to build a mozinfo dict from a task definition.
 
     This won't be perfect and many values used in the manifests will be missing. But
@@ -66,29 +62,27 @@ def guess_mozinfo_from_task(task, repo="", test_tags=[]):
     """
     setting = task["test-setting"]
     runtime_keys = setting["runtime"].keys()
-    arch = setting["platform"]["arch"]
-    p_os = setting["platform"]["os"]
+
+    platform_info = PlatformInfo(setting)
 
     info = {
+        "debug": platform_info.debug,
+        "bits": platform_info.bits,
         "asan": setting["build"].get("asan", False),
-        "bits": 32 if "32" in arch else 64,
-        "ccov": setting["build"].get("ccov", False),
-        "debug": setting["build"]["type"] in ("debug", "debug-isolated-process"),
         "tsan": setting["build"].get("tsan", False),
+        "ccov": setting["build"].get("ccov", False),
         "mingwclang": setting["build"].get("mingwclang", False),
-        "nightly_build": repo in ["mozilla-central", "autoland", "try", ""],  # trunk
+        "nightly_build": "a1"
+        in app_version,  # https://searchfox.org/mozilla-central/source/build/moz.configure/init.configure#1101
+        "release_or_beta": "a" not in app_version,
         "repo": repo,
     }
     # the following are used to evaluate reftest skip-if
-    info["release_or_beta"] = not info["nightly_build"]  # TO BE VALIDATED
     info["webrtc"] = not info["mingwclang"]
-
-    for platform in ("android", "linux", "mac", "win"):
-        if p_os["name"].startswith(platform):
-            info["os"] = platform
-            break
-    else:
-        raise ValueError("{} is not a known platform!".format(p_os["name"]))
+    info["opt"] = (
+        not info["debug"] and not info["asan"] and not info["tsan"] and not info["ccov"]
+    )
+    info["os"] = platform_info.os
 
     # crashreporter is disabled for asan / tsan builds
     if info["asan"] or info["tsan"]:
@@ -97,16 +91,9 @@ def guess_mozinfo_from_task(task, repo="", test_tags=[]):
         info["crashreporter"] = True
 
     info["appname"] = "fennec" if info["os"] == "android" else "firefox"
+    info["buildapp"] = "browser"
 
-    # guess processor
-    if arch == "aarch64":
-        info["processor"] = "aarch64"
-    elif info["os"] == "android" and "arm" in arch:
-        info["processor"] = "arm"
-    elif info["bits"] == 32:
-        info["processor"] = "x86"
-    else:
-        info["processor"] = "x86_64"
+    info["processor"] = platform_info.arch
 
     # guess toolkit
     if info["os"] == "android":
@@ -117,21 +104,9 @@ def guess_mozinfo_from_task(task, repo="", test_tags=[]):
         info["toolkit"] = "cocoa"
     else:
         info["toolkit"] = "gtk"
-        info["display"] = setting["platform"].get("display", "x11")
+        info["display"] = platform_info.display or "x11"
 
-    # guess os_version
-    os_versions = {
-        ("linux", "1804"): "18.04",
-        ("macosx", "1015"): "10.15",
-        ("macosx", "1100"): "11.20",
-        ("macosx", "1400"): "14.40",
-        ("windows", "10"): "10.2009",
-        ("windows", "11"): "11.2009",
-    }
-    for (name, old_ver), new_ver in os_versions.items():
-        if p_os["name"] == name and p_os["version"] == old_ver:
-            info["os_version"] = new_ver
-            break
+    info["os_version"] = platform_info.os_version
 
     for variant in TEST_VARIANTS:
         tag = TEST_VARIANTS[variant].get("mozinfo", "")
@@ -185,7 +160,7 @@ def get_runtimes(platform, suite_name):
         raise OSError(f"manifest runtime file at {path} not found.")
 
     with open(path) as fh:
-        return json.load(fh)[suite_name]
+        return json.load(fh).get(suite_name, {})
 
 
 def chunk_manifests(suite, platform, chunks, manifests):
@@ -200,32 +175,22 @@ def chunk_manifests(suite, platform, chunks, manifests):
         A list of length `chunks` where each item contains a list of manifests
         that run in that chunk.
     """
-    ini_manifests = set([x.replace(".toml", ".ini") for x in manifests])
-
     if "web-platform-tests" not in suite:
+        ini_manifests = {x.replace(".toml", ".ini"): x for x in manifests}
         runtimes = {
             k: v for k, v in get_runtimes(platform, suite).items() if k in ini_manifests
         }
-        retVal = []
-        for c in chunk_by_runtime(None, chunks, runtimes).get_chunked_manifests(
-            ini_manifests
-        ):
-            retVal.append(
-                [m if m in manifests else m.replace(".ini", ".toml") for m in c[1]]
-            )
+
+        cbr = chunk_by_runtime(None, chunks, runtimes)
+        return [
+            [ini_manifests.get(m, m) for m in c]
+            for _, c in cbr.get_chunked_manifests(manifests)
+        ]
 
     # Keep track of test paths for each chunk, and the runtime information.
-    chunked_manifests = [[] for _ in range(chunks)]
-
     # Spread out the test manifests evenly across all chunks.
-    for index, key in enumerate(sorted(manifests)):
-        chunked_manifests[index % chunks].append(key)
-
-    # One last sort by the number of manifests. Chunk size should be more or less
-    # equal in size.
-    chunked_manifests.sort(key=lambda x: len(x))
-
-    # Return just the chunked test paths.
+    sorted_manifests = sorted(manifests)
+    chunked_manifests = [sorted_manifests[c::chunks] for c in range(chunks)]
     return chunked_manifests
 
 
@@ -273,66 +238,83 @@ class DefaultLoader(BaseManifestLoader):
     @memoize
     def get_manifests(self, suite, frozen_mozinfo):
         mozinfo = dict(frozen_mozinfo)
-        # Compute all tests for the given suite/subsuite.
+
         tests = self.get_tests(suite)
+
+        mozinfo_tags = json.loads(mozinfo.get("tag", "[]"))
 
         if "web-platform-tests" in suite:
             manifests = set()
-            subsuite = [x for x in WPT_SUBSUITES.keys() if mozinfo[x]]
-            for t in tests:
-                if json.loads(mozinfo["tag"]) and not any(
-                    x in t.get("tags", []) for x in json.loads(mozinfo["tag"])
-                ):
-                    continue
-                if subsuite:
-                    # add specific directories
-                    if any(x in t["manifest"] for x in WPT_SUBSUITES[subsuite[0]]):
-                        manifests.add(t["manifest"])
-                else:
-                    containsSubsuite = False
-                    for subsuites in WPT_SUBSUITES.values():
-                        if any(subsuite in t["manifest"] for subsuite in subsuites):
-                            containsSubsuite = True
-                            break
 
-                    if containsSubsuite:
+            subsuite = next((x for x in WPT_SUBSUITES.keys() if mozinfo.get(x)), None)
+
+            if subsuite:
+                subsuite_paths = WPT_SUBSUITES[subsuite]
+                for t in tests:
+                    if mozinfo_tags and not any(
+                        x in t.get("tags", []) for x in mozinfo_tags
+                    ):
                         continue
 
-                    manifests.add(t["manifest"])
+                    manifest = t["manifest"]
+                    if any(x in manifest for x in subsuite_paths):
+                        manifests.add(manifest)
+            else:
+                all_subsuite_paths = [
+                    path for paths in WPT_SUBSUITES.values() for path in paths
+                ]
+                for t in tests:
+                    if mozinfo_tags and not any(
+                        x in t.get("tags", []) for x in mozinfo_tags
+                    ):
+                        continue
+
+                    manifest = t["manifest"]
+                    if not any(path in manifest for path in all_subsuite_paths):
+                        manifests.add(manifest)
+
             return {
                 "active": list(manifests),
                 "skipped": [],
-                "other_dirs": dict.fromkeys(manifests, ""),
+                "other_dirs": {},
             }
 
-        manifests = {chunk_by_runtime.get_manifest(t) for t in tests}
-
         filters = []
-        if json.loads(mozinfo["tag"]):
-            filters.extend([tags([x]) for x in json.loads(mozinfo["tag"])])
+        SUITES_WITHOUT_TAG = {
+            "crashtest",
+            "crashtest-qr",
+            "jsreftest",
+            "reftest",
+            "reftest-qr",
+        }
 
-        # Compute  the active tests.
+        # Exclude suites that don't support --tag to prevent manifests from
+        # being optimized out, which would result in no jobs being triggered.
+        # No need to check suites like gtest, as all suites in compiled.yml
+        # have test-manifest-loader set to null, meaning this function is never
+        # called.
+        # Note there's a similar list in desktop_unittest.py in
+        # DesktopUnittest's _query_abs_base_cmd method. The lists should be
+        # kept in sync.
+        assert suite not in ["gtest", "cppunittest", "jittest"]
+
+        if suite not in SUITES_WITHOUT_TAG and mozinfo_tags:
+            filters.extend([tags([x]) for x in mozinfo_tags])
+
         m = TestManifest()
         m.tests = tests
-        tests = m.active_tests(disabled=False, exists=False, filters=filters, **mozinfo)
-        active = {}
-        # map manifests and 'other' directories included
-        for t in tests:
-            mp = chunk_by_runtime.get_manifest(t)
-            active.setdefault(mp, [])
+        active_tests = m.active_tests(
+            disabled=False, exists=False, filters=filters, **mozinfo
+        )
 
-            if not mp.startswith(t["dir_relpath"]):
-                active[mp].append(t["dir_relpath"])
+        active_manifests = {chunk_by_runtime.get_manifest(t) for t in active_tests}
 
-        skipped = manifests - set(active.keys())
-        other = {}
-        for m in active:
-            if len(active[m]) > 0:
-                other[m] = list(set(active[m]))
+        skipped_manifests = {chunk_by_runtime.get_manifest(t) for t in tests}
+        skipped_manifests.difference_update(active_manifests)
         return {
-            "active": list(active.keys()),
-            "skipped": list(skipped),
-            "other_dirs": other,
+            "active": list(active_manifests),
+            "skipped": list(skipped_manifests),
+            "other_dirs": {},
         }
 
 
@@ -356,7 +338,8 @@ class BugbugLoader(DefaultLoader):
 
         try:
             data = push_schedules(self.params["project"], self.params["head_rev"])
-        except BugbugTimeoutException:
+        except (BugbugTimeoutException, RetryError):
+            traceback.print_exc()
             logger.warning("Timed out waiting for bugbug, loading all test manifests.")
             self.timedout = True
             return self.get_manifests(suite, mozinfo)

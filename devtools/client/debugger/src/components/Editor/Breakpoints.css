@@ -62,16 +62,17 @@
    * The solution is to make the line number take the whole gutters element width,
    * using a pseudo-element so it will widen the :hover target for line number elements.
    */
+  /* prettier-ignore */
   :is(
     &:not(.cm6-gutter-breakpoint),
     &.cm6-gutter-breakpoint .breakpoint-marker
-    )::after {
-      content: "";
-      position: absolute;
-      height: 1lh;
-      right: 0;
-      left: 0;
-    }
+  )::after {
+    content: "";
+    position: absolute;
+    height: 1lh;
+    right: 0;
+    left: 0;
+  }
 }
 
 /* CodeMirror puts a padding on the line gutter, but we want the breakpoint to take the whole gutter */
@@ -86,29 +87,39 @@
 }
 
 .cm6-gutter-breakpoint .breakpoint-marker {
+  --breakpoint-marker-opacity: 1;
+  --breakpoint-marker-fill: var(--breakpoint-fill);
+  --breakpoint-marker-stroke: var(--breakpoint-stroke);
+
   background: url(chrome://devtools/content/debugger/images/breakpoint.svg) no-repeat;
   background-size: auto 15px;
   background-position: right;
   -moz-context-properties: fill, stroke;
-  fill: var(--breakpoint-fill);
-  stroke: var(--breakpoint-stroke);
+
+  /* When the breakpoint is disabled, we don't want to lower the opacity of the line number,
+     so we can't use opacity on the whole element. Instead, we use relative color syntax
+     to lower the stroke and fill opacity. */
+  fill: rgba(from var(--breakpoint-marker-fill) r g b / var(--breakpoint-marker-opacity));
+  stroke: rgba(from var(--breakpoint-marker-stroke) r g b / var(--breakpoint-marker-opacity));
   color: white;
+
+  &.breakpoint-disabled {
+    --breakpoint-marker-opacity: var(--breakpoint-disabled-opacity);
+  }
 }
 
 .cm6-gutter-breakpoint .breakpoint-marker.has-condition {
-  fill: var(--breakpoint-condition-fill);
-  stroke: var(--breakpoint-condition-stroke);
+  --breakpoint-marker-fill: var(--breakpoint-condition-fill);
+  --breakpoint-marker-stroke: var(--breakpoint-condition-stroke);
 }
 
 .cm6-gutter-breakpoint .breakpoint-marker.has-log {
-  fill: var(--logpoint-fill);
-  stroke: var(--logpoint-stroke);
+  --breakpoint-marker-fill: var(--logpoint-fill);
+  --breakpoint-marker-stroke: var(--logpoint-stroke);
 }
 /* End CM6 */
 
-.editor-wrapper :not(.new-breakpoint)
-  > .CodeMirror-gutter-wrapper
-  > .CodeMirror-linenumber:hover::after {
+.editor-wrapper :not(.new-breakpoint) > .CodeMirror-gutter-wrapper > .CodeMirror-linenumber:hover::after {
   content: "";
   position: absolute;
   /* paint below the number */
@@ -119,8 +130,7 @@
   bottom: 0;
   height: 15px;
   background-color: var(--gutter-hover-background-color);
-  mask: url(chrome://devtools/content/debugger/images/breakpoint.svg)
-    no-repeat;
+  mask: url(chrome://devtools/content/debugger/images/breakpoint.svg) no-repeat;
   mask-size: auto 15px;
   mask-position: right;
 }
@@ -141,7 +151,7 @@
   width: 60px;
   height: 15px;
   position: absolute;
-  top: 0px;
+  top: 0;
   right: -4px;
 }
 
@@ -166,7 +176,6 @@
 
 .editor.new-breakpoint.breakpoint-disabled svg,
 .blackboxed-line .editor.new-breakpoint svg,
-.cm6-gutter-breakpoint .breakpoint-marker.breakpoint-disabled svg,
 .cm6-gutter-breakpoint.blackboxed-line .breakpoint-marker svg {
   fill-opacity: var(--breakpoint-disabled-opacity);
   stroke-opacity: var(--breakpoint-disabled-opacity);
@@ -230,6 +239,6 @@
   fill-opacity: var(--breakpoint-skipped-opacity);
 }
 
-.img.column-marker {
+.dbg-img.dbg-img-column-marker {
   background-image: url(chrome://devtools/content/debugger/images/column-marker.svg);
 }

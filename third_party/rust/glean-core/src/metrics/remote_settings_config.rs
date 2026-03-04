@@ -4,18 +4,21 @@
 
 use std::collections::HashMap;
 
+use malloc_size_of_derive::MallocSizeOf;
 use serde::{Deserialize, Serialize};
 
 /// Represents a list of metrics and an associated boolean property
-/// indicating if the metric is enabledfrom the remote-settings
-/// configuration store. The expected format of this data is stringified JSON
-/// in the following format:
+/// indicating if the metric is enabled from the remote-settings
+/// configuration store.
+///
+/// The expected format of this data is stringified JSON in the following format:
+///
 /// ```json
 /// {
 ///     "category.metric_name": true
 /// }
 /// ```
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, MallocSizeOf)]
 pub struct RemoteSettingsConfig {
     /// This is a `HashMap` consisting of base_identifiers as keys
     /// and bool values representing an override for the `disabled`

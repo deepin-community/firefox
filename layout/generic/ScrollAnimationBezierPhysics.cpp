@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "ScrollAnimationBezierPhysics.h"
+
 #include "mozilla/StaticPrefs_general.h"
 
 using namespace mozilla;
@@ -70,8 +71,8 @@ TimeDuration ScrollAnimationBezierPhysics::ComputeDuration(
   // duration, we average event intervals using the recent 4 timestamps (now +
   // three prev -> 3 intervals).
   int32_t durationMS =
-      clamped<int32_t>(eventsDeltaMs * mSettings.mIntervalRatio,
-                       mSettings.mMinMS, mSettings.mMaxMS);
+      std::clamp<int32_t>(eventsDeltaMs * mSettings.mIntervalRatio,
+                          mSettings.mMinMS, mSettings.mMaxMS);
 
   return TimeDuration::FromMilliseconds(durationMS);
 }
@@ -143,7 +144,9 @@ nscoord ScrollAnimationBezierPhysics::VelocityComponent(
     nscoord aDestination) const {
   double dt, dxy;
   aTimingFunction.GetSplineDerivativeValues(aTimeProgress, dt, dxy);
-  if (dt == 0) return dxy >= 0 ? nscoord_MAX : nscoord_MIN;
+  if (dt == 0) {
+    return dxy >= 0 ? nscoord_MAX : nscoord_MIN;
+  }
 
   const TimeDuration oneSecond = TimeDuration::FromSeconds(1);
   double slope = dxy / dt;

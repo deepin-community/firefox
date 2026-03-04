@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+ #![allow(unknown_lints, mismatched_lifetime_syntaxes)]
+
 extern crate glsl;
 
 mod hir;
@@ -100,7 +102,10 @@ fn parse_shader(file: String) -> (hir::State, hir::TranslationUnit, bool) {
 
     //println!("{:#?}", r);
     let mut ast_glsl = String::new();
-    let r = r.unwrap();
+    let r = match r {
+        Ok(ok) => ok,
+        Err(e) => panic!("failed to parse {:?}: {:?}", file, e),
+    };
     glsl::transpiler::glsl::show_translation_unit(&mut ast_glsl, &r);
     //let mut fast = std::fs::File::create("ast").unwrap();
     //fast.write(ast_glsl.as_bytes());
@@ -1860,6 +1865,9 @@ pub fn show_hir_expr_inner(state: &OutputState, expr: &hir::Expr, top_level: boo
                                         );
                                         return;
                                     }
+                                } else if sym.name.starts_with("swgl_commitDithered") {
+                                    state.used_fragcoord.set(
+                                        state.used_fragcoord.get() | 1 | 2);
                                 }
                                 show_sym(state, name)
                             }

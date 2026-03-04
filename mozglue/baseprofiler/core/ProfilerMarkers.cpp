@@ -229,6 +229,10 @@ void MarkerSchema::Stream(JSONWriter& aWriter,
       aWriter.StringProperty("tableLabel", mTableLabel);
     }
 
+    if (mIsStackBased) {
+      aWriter.BoolProperty("isStackBased", true);
+    }
+
     aWriter.StartArrayProperty("display");
     {
       for (Location location : mLocations) {
@@ -250,10 +254,15 @@ void MarkerSchema::Stream(JSONWriter& aWriter,
                 }
                 aWriter.StringProperty("format",
                                        FormatToStringSpan(aData.mFormat));
-                if (aData.mSearchable) {
-                  aWriter.BoolProperty(
-                      "searchable",
-                      *aData.mSearchable == Searchable::Searchable);
+
+                if (uint32_t(aData.mPayloadFlags) &
+                    uint32_t(PayloadFlags::Searchable)) {
+                  aWriter.BoolProperty("searchable", true);
+                }
+
+                if (uint32_t(aData.mPayloadFlags) &
+                    uint32_t(PayloadFlags::Hidden)) {
+                  aWriter.BoolProperty("hidden", true);
                 }
               },
               [&aWriter](const StaticData& aStaticData) {
@@ -346,6 +355,10 @@ Span<const char> MarkerSchema::FormatToStringSpan(
       return mozilla::MakeStringSpan("integer");
     case Format::Decimal:
       return mozilla::MakeStringSpan("decimal");
+    case Format::Flow:
+      return mozilla::MakeStringSpan("flow-id");
+    case Format::TerminatingFlow:
+      return mozilla::MakeStringSpan("terminating-flow-id");
     default:
       MOZ_CRASH("Unexpected Format enum");
       return {};

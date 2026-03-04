@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* This is a JavaScript module (JSM) to be imported via
- * ChromeUtils.import() and acts as a singleton. Only the following
+/* This is a JavaScript module to be imported via
+ * ChromeUtils.importESModule() and acts as a singleton. Only the following
  * listed symbols will exposed on import, and only when and where imported.
  */
 
@@ -485,7 +485,7 @@ export var TPS = {
                 (await passwordOb.Find()) != -1,
                 "password not found"
               );
-              passwordOb.Update();
+              await passwordOb.Update();
             }
             break;
           default:
@@ -1357,9 +1357,8 @@ export var TPS = {
   /**
    * Triggers a sync operation
    *
-   * @param {String} [wipeAction]
+   * @param {string} [wipeAction]
    *        Type of wipe to perform (resetClient, wipeClient, wipeRemote)
-   *
    */
   async Sync(wipeAction) {
     if (this._syncActive) {

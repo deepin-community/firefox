@@ -23,12 +23,10 @@ newtab-topsites-edit-topsites-header = खास साईट संपादि
 newtab-topsites-title-label = शिर्षक
 newtab-topsites-title-input =
     .placeholder = शिर्षक प्रविष्ट करा
-
 newtab-topsites-url-label = URL
 newtab-topsites-url-input =
     .placeholder = URL चिकटवा किंवा टाईप करा
 newtab-topsites-url-validation = वैध URL आवश्यक
-
 newtab-topsites-image-url-label = सानुकूल प्रतिमा URL
 newtab-topsites-use-image-link = सानुकूल प्रतिमा वापरा…
 newtab-topsites-image-validation = प्रतिमा लोड झाली नाही. वेगळी URL वापरून पहा.
@@ -47,18 +45,15 @@ newtab-confirm-delete-history-p1 = आपल्या इतिहासाम�
 # "This action" refers to deleting a page from history.
 newtab-confirm-delete-history-p2 = ही क्रिया पूर्ववत केली जाऊ शकत नाही.
 
-## Top Sites - Sponsored label
-
 ## Context Menu - Action Tooltips.
 
 # General tooltip for context menus.
 newtab-menu-section-tooltip =
     .title = मेनु उघडा
     .aria-label = मेनु उघडा
-
 # This tooltip is for the context menu of Pocket cards or Topsites
 # Variables:
-#  $title (String): The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
+#   $title (string) - The label or hostname of the site. This is for screen readers when the context menu button is focused/active.
 newtab-menu-content-tooltip =
     .title = मेनु उघडा
     .aria-label = { $title } साठी संदर्भ मेनू उघडा
@@ -86,8 +81,6 @@ newtab-menu-show-privacy-info = आमचे प्रायोजक आणि 
 newtab-privacy-modal-button-done = झाले
 newtab-privacy-modal-header = आपली गोपनीयता महत्वाची आहे.
 newtab-privacy-modal-link = नवीन टॅबवर गोपनीयता कसे कार्य करते ते जाणून घ्या
-
-
 
 ##
 
@@ -150,18 +143,16 @@ newtab-section-expand-section-label =
 
 newtab-section-header-topsites = खास साईट
 # Variables:
-#  $provider (String): Name of the corresponding content provider.
+#   $provider (string) - Name of the corresponding content provider.
 newtab-section-header-pocket = { $provider } तर्फे शिफारस
 
 ## Empty Section States: These show when there are no more items in a section. Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 
 newtab-empty-section-highlights = ब्राउझिंग सुरू करा, आणि आम्ही आपल्याला इथे आपण अलीकडील भेट दिलेले किंवा वाचनखूण लावलेले उत्कृष्ठ लेख, व्हिडिओ, आणि इतर पृष्ठांपैकी काही दाखवू.
-
 # Ex. When there are no more Pocket story recommendations, in the space where there would have been stories, this is shown instead.
 # Variables:
-#  $provider (String): Name of the content provider for this section, e.g "Pocket".
+#   $provider (string) - Name of the content provider for this section, e.g "Pocket".
 newtab-empty-section-topstories = तुम्ही सर्व बघितले. { $provider } कडून आणखी महत्वाच्या गोष्टी बघण्यासाठी नंतर परत तपासा. प्रतीक्षा करू शकत नाही? वेबवरील छान गोष्टी शोधण्यासाठी लोकप्रिय विषय निवडा.
-
 
 ## Empty Section (Content Discovery Experience). These show when there are no more stories or when some stories fail to load.
 
@@ -178,16 +169,8 @@ newtab-pocket-read-more = लोकप्रिय विषय:
 newtab-pocket-more-recommendations = अधिक शिफारसी
 newtab-pocket-cta-button = { -pocket-brand-name } मिळवा
 
-## Pocket Final Card Section.
-## This is for the final card in the Pocket grid.
-
-## Pocket content onboarding experience dialog and modal for new users seeing the Pocket section for the first time, shown as the first item in the Pocket section.
-
 ## Error Fallback Content.
 ## This message and suggested action link are shown in each section of UI that fails to render.
 
 newtab-error-fallback-info = अरेरे, हा मजकूर लोड करताना काहीतरी गोंधळ झाला.
 newtab-error-fallback-refresh-link = पुन्हा प्रयत्न करण्यासाठी पृष्ठ रिफ्रेश करा.
-
-## Customization Menu
-

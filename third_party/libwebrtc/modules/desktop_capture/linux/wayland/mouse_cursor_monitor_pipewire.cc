@@ -10,12 +10,16 @@
 
 #include "modules/desktop_capture/linux/wayland/mouse_cursor_monitor_pipewire.h"
 
-#include <utility>
+#include <memory>
+#include <optional>
 
+#include "api/sequence_checker.h"
 #include "modules/desktop_capture/desktop_capture_options.h"
 #include "modules/desktop_capture/desktop_capturer.h"
+#include "modules/desktop_capture/desktop_geometry.h"
+#include "modules/desktop_capture/mouse_cursor.h"
+#include "modules/desktop_capture/mouse_cursor_monitor.h"
 #include "rtc_base/checks.h"
-#include "rtc_base/logging.h"
 
 namespace webrtc {
 
@@ -40,7 +44,7 @@ void MouseCursorMonitorPipeWire::Capture() {
   RTC_DCHECK_RUN_ON(&sequence_checker_);
   RTC_DCHECK(callback_);
 
-  absl::optional<DesktopVector> mouse_cursor_position =
+  std::optional<DesktopVector> mouse_cursor_position =
       options_.screencast_stream()->CaptureCursorPosition();
   // Invalid cursor or position
   if (!mouse_cursor_position) {

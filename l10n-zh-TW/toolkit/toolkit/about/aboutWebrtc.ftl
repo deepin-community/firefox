@@ -33,8 +33,6 @@ about-webrtc-aec-logging-toggled-off-state-msg = 捕捉到的記錄檔位於: { 
 
 # The autorefresh checkbox causes a stats section to autorefresh its content when checked
 about-webrtc-auto-refresh-label = 自動重新整理
-# Determines the default state of the Auto Refresh check boxes
-about-webrtc-auto-refresh-default-label = 預設自動重新整理
 # A button which forces a refresh of displayed statistics
 about-webrtc-force-refresh-button = 重新整理
 # "PeerConnection" is a proper noun associated with the WebRTC module. "ID" is
@@ -98,8 +96,8 @@ about-webrtc-save-page-label = 儲存本頁
 about-webrtc-debug-mode-msg-label = 除錯模式
 about-webrtc-debug-mode-off-state-label = 開始除錯模式
 about-webrtc-debug-mode-on-state-label = 停止除錯模式
-about-webrtc-enable-logging-label = 開啟 WebRTC 保留紀錄
 about-webrtc-stats-heading = 使用階段統計
+about-webrtc-enable-logging-label = 開啟 WebRTC 保留紀錄
 about-webrtc-peerconnections-section-heading = RTCPeerConnection 統計資訊
 about-webrtc-peerconnections-section-show-msg = 顯示 RTCPeerConnection 統計資訊
 about-webrtc-peerconnections-section-hide-msg = 隱藏 RTCPeerConnection 統計資訊
@@ -159,7 +157,7 @@ about-webrtc-fold-default-show-msg = 顯示詳細資訊
     .title = 點擊展開此段落
 about-webrtc-fold-default-hide-msg = 隱藏詳細資訊
     .title = 點擊摺疊此段落
-about-webrtc-dropped-frames-label = 捨棄的畫框數:
+about-webrtc-dropped-frames-label = 捨棄的畫框數：
 about-webrtc-discarded-packets-label = 捨棄的封包數:
 about-webrtc-decoder-label = 解碼器
 about-webrtc-encoder-label = 編碼器
@@ -229,10 +227,7 @@ about-webrtc-round-trip-time-ms = RTT（ms）
 #   $track-identifier (String) - The unique identifier for the MediaStreamTrack.
 about-webrtc-frame-stats-heading = 畫框統計資訊 - MediaStreamTrack ID: { $track-identifier }
 
-## These are paths used for saving the about:webrtc page or log files so
-## they can be attached to bug reports.
-## Variables:
-##  $path (String) - The path to which the file is saved.
+##
 
 about-webrtc-save-page-msg = 已將頁面儲存至: { $path }
 about-webrtc-debug-mode-off-state-msg = 追蹤紀錄位於: { $path }
@@ -286,7 +281,7 @@ about-webrtc-jitter-label = 抖動 { $jitter }
 # ICE candidates arriving after the remote answer arrives are considered trickled
 # (an attribute of an ICE candidate). These are highlighted in the ICE stats
 # table with light blue background.
-about-webrtc-trickle-caption-msg = 使用 藍色 強調太晚抵達的候選（接聽後才抵達）
+about-webrtc-trickle-caption-msg = 使用藍色強調太晚抵達的候選（接聽後才抵達）
 
 ## "SDP" is an abbreviation for Session Description Protocol, an IETF standard.
 ## See http://wikipedia.org/wiki/Session_Description_Protocol
@@ -317,6 +312,3 @@ about-webrtc-hide-msg-sdp = 隱藏 SDP
 about-webrtc-media-context-show-msg = 顯示媒體內容環境
 about-webrtc-media-context-hide-msg = 隱藏媒體內容環境
 about-webrtc-media-context-heading = 媒體內容環境
-
-##
-

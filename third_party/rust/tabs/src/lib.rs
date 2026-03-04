@@ -14,44 +14,28 @@ mod sync;
 
 pub use types::Timestamp;
 
-// for the UDL
-impl UniffiCustomTypeConverter for Timestamp {
-    type Builtin = i64;
-
-    fn into_custom(val: Self::Builtin) -> uniffi::Result<Self> {
-        Ok(Self(val as u64))
-    }
-
-    fn from_custom(obj: Self) -> Self::Builtin {
-        obj.as_millis() as i64
-    }
-}
+uniffi::custom_type!(Timestamp, i64, {
+    remote,
+    try_lift: |val| Ok(Self(val as u64)),
+    lower: |obj| obj.as_millis() as i64,
+});
 
 uniffi::include_scaffolding!("tabs");
 
 // Our UDL uses a `Guid` type.
 use sync_guid::Guid as TabsGuid;
-impl UniffiCustomTypeConverter for TabsGuid {
-    type Builtin = String;
+uniffi::custom_type!(TabsGuid, String, {
+    remote,
+    try_lift: |val| Ok(TabsGuid::new(val.as_str())),
+    lower: |obj| obj.into(),
+});
 
-    fn into_custom(val: Self::Builtin) -> uniffi::Result<TabsGuid> {
-        Ok(TabsGuid::new(val.as_str()))
-    }
-
-    fn from_custom(obj: Self) -> Self::Builtin {
-        obj.into()
-    }
-}
-
-pub use crate::storage::{ClientRemoteTabs, RemoteTabRecord, TabsDeviceType};
+pub use crate::storage::{ClientRemoteTabs, LocalTabsInfo, RemoteTabRecord, TabsDeviceType};
 pub use crate::store::{RemoteCommandStore, TabsStore};
 pub use error::{ApiResult, Error, Result, TabsApiError};
 use sync15::DeviceType;
 
-pub use crate::sync::engine::get_registered_sync_engine;
-
-pub use crate::sync::bridge::TabsBridgedEngine;
-pub use crate::sync::engine::TabsEngine;
+pub use crate::sync::{get_registered_sync_engine, TabsBridgedEngine, TabsEngine};
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub enum RemoteCommand {

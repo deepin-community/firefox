@@ -85,11 +85,12 @@ class GCHashMap : public js::HashMap<Key, Value, HashPolicy, AllocPolicy> {
   bool traceWeak(JSTracer* trc) {
     typename Base::Enum e(*this);
     traceWeakEntries(trc, e);
+    Base::compact();
     return !this->empty();
   }
 
   void traceWeakEntries(JSTracer* trc, typename Base::Enum& e) {
-    for (typename Base::Enum e(*this); !e.empty(); e.popFront()) {
+    for (; !e.empty(); e.popFront()) {
       if (!MapEntryGCPolicy::traceWeak(trc, &e.front().mutableKey(),
                                        &e.front().value())) {
         e.removeFront();
@@ -274,6 +275,7 @@ class GCHashSet : public js::HashSet<T, HashPolicy, AllocPolicy> {
   bool traceWeak(JSTracer* trc) {
     typename Base::Enum e(*this);
     traceWeakEntries(trc, e);
+    Base::compact();
     return !this->empty();
   }
 
@@ -538,7 +540,7 @@ class WeakCache<
   bool has(const Lookup& l) const { return lookup(l).found(); }
 
   size_t sizeOfExcludingThis(mozilla::MallocSizeOf mallocSizeOf) const {
-    return map.sizeOfExcludingThis(mallocSizeOf);
+    return map.shallowSizeOfExcludingThis(mallocSizeOf);
   }
   size_t sizeOfIncludingThis(mozilla::MallocSizeOf mallocSizeOf) const {
     return mallocSizeOf(this) + map.shallowSizeOfExcludingThis(mallocSizeOf);
@@ -645,6 +647,21 @@ class WeakCache<GCHashSet<T, HashPolicy, AllocPolicy>> final
   }
 
   bool needsIncrementalBarrier() const override { return barrierTracer; }
+
+  // Steal the contents of this weak cache.
+  Set stealContents() {
+    // This operation is not currently allowed while barriers are in place
+    // since it doesn't make sense to steal the contents while we are
+    // sweeping.
+    MOZ_ASSERT(!barrierTracer);
+
+    auto rval = std::move(set);
+    // Ensure set is in a specified (empty) state after the move
+    set.clear();
+
+    // Return set; no move to avoid invalidating NRVO.
+    return rval;
+  }
 
  private:
   static bool entryNeedsSweep(JSTracer* barrierTracer, const Entry& prior) {

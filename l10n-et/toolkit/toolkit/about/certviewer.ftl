@@ -36,6 +36,7 @@ certificate-viewer-key-size = Võtme suurus
 certificate-viewer-inc-locality = Asutamise asukoht
 certificate-viewer-locality = Lokaat
 certificate-viewer-location = Asukoht
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = Logi ID
 certificate-viewer-method = Meetod
 certificate-viewer-modulus = Moodul
@@ -81,7 +82,6 @@ certificate-viewer-authority-info-aia = SK info (AIA)
 certificate-viewer-certificate-policies = Sertifikaadi reeglid
 certificate-viewer-embedded-scts = Manustatud SCTd
 certificate-viewer-crl-endpoints = CRLi aadressid
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Laadi alla
@@ -101,7 +101,6 @@ certificate-viewer-download-pem = PEM (sert)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (ahel)
     .download = { $fileName }-ahel.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = See laiendus on märgitud kriitiliseks, mis tähendab, et kliendid peavad serdi tagasi lükkama, kui nad sellest aru ei saa.

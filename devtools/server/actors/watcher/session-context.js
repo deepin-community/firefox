@@ -27,6 +27,12 @@
 // - supportedResources: Boolean
 //   An object keyed by resource type, whose value indicates if we have watcher support
 //   for the resource.
+// - enableWindowGlobalThreadActors: Boolean
+//   If false (the default), Resource Watchers will avoid spawning the thread actors of
+//   WindowGlobal targets. In such configuration, the WindowGlobal scripts will be
+//   debugged by the Content Process targets.
+//   This is used by the Browser Toolbox, and explicitly not used by VS.Code
+//   which reuse the Browser Toolbox codepath, but doesn't use the Content Process targets.
 
 const Targets = require("resource://devtools/server/actors/targets/index.js");
 const Resources = require("resource://devtools/server/actors/resources/index.js");
@@ -47,8 +53,14 @@ const SESSION_TYPES = {
  * - all processes: parent and content,
  * - all privileges: privileged/chrome and content/web,
  * - all components/targets: HTML documents, processes, workers, add-ons,...
+ *
+ * @param {object} config
+ *        An object with optional configuration. Only supports "enableWindowGlobalThreadActors" attribute.
+ *        See jsdoc in this file header for more info.
  */
-function createBrowserSessionContext() {
+function createBrowserSessionContext({
+  enableWindowGlobalThreadActors = false,
+} = {}) {
   const type = SESSION_TYPES.ALL;
 
   return {
@@ -58,6 +70,8 @@ function createBrowserSessionContext() {
     isServerTargetSwitchingEnabled: false,
     supportedTargets: getWatcherSupportedTargets(type),
     supportedResources: getWatcherSupportedResources(type),
+
+    enableWindowGlobalThreadActors,
   };
 }
 
@@ -66,7 +80,7 @@ function createBrowserSessionContext() {
  *
  * @param {BrowserElement} browserElement
  *        The tab to debug. It should be a reference to a <browser> element.
- * @param {Object} config
+ * @param {object} config
  *        An object with optional configuration. Only supports "isServerTargetSwitchingEnabled" attribute.
  *        See jsdoc in this file header for more info.
  */
@@ -89,34 +103,19 @@ function createBrowserElementSessionContext(browserElement, config) {
 /**
  * Create the SessionContext used by the web extension toolboxes.
  *
- * @param {Object} addon
+ * @param {object} addon
  *        First object argument to describe the add-on.
- * @param {String} addon.addonId
+ * @param {string} addon.addonId
  *        The web extension ID, to uniquely identify the debugged add-on.
- * @param {String} addon.browsingContextID
- *        The ID of the BrowsingContext into which this add-on is loaded.
- *        For now the top level target is associated with this one precise BrowsingContext.
- *        Knowing about it later helps associate resources to the same BrowsingContext ID and so the same target.
- * @param {String} addon.innerWindowId
- *        The ID of the WindowGlobal into which this add-on is loaded.
- *        This is used for the same reason as browsingContextID. It helps match the resource with the right target.
- *        We now also use the WindowGlobal ID/innerWindowId to identify the targets.
- * @param {Object} config
+ * @param {object} config
  *        An object with optional configuration. Only supports "isServerTargetSwitchingEnabled" attribute.
  *        See jsdoc in this file header for more info.
  */
-function createWebExtensionSessionContext(
-  { addonId, browsingContextID, innerWindowId },
-  config
-) {
+function createWebExtensionSessionContext({ addonId }, config) {
   const type = SESSION_TYPES.WEBEXTENSION;
   return {
     type,
     addonId,
-    addonBrowsingContextID: browsingContextID,
-    addonInnerWindowId: innerWindowId,
-    // For now, there is only one target (WebExtensionTargetActor), it is never replaced,
-    // and is only created via WebExtensionDescriptor.getTarget (and never by the watcher actor).
     isServerTargetSwitchingEnabled: config.isServerTargetSwitchingEnabled,
     supportedTargets: getWatcherSupportedTargets(type),
     supportedResources: getWatcherSupportedResources(type),
@@ -152,8 +151,8 @@ function createWorkerSessionContext() {
 /**
  * Get the supported targets by the watcher given a session context type.
  *
- * @param {String} type
- * @returns {Object}
+ * @param {string} type
+ * @returns {object}
  */
 function getWatcherSupportedTargets(type) {
   return {
@@ -162,28 +161,27 @@ function getWatcherSupportedTargets(type) {
     [Targets.TYPES.WORKER]: true,
     [Targets.TYPES.SERVICE_WORKER]:
       type == SESSION_TYPES.BROWSER_ELEMENT || type == SESSION_TYPES.ALL,
+
+    // Bug 1607778 - Shared workers aren't yet exposed in tab toolboxes
     [Targets.TYPES.SHARED_WORKER]: type == SESSION_TYPES.ALL,
+
+    // Content scripts may only be exposed to tab and browser toolboxes
+    // (and not the extension toolboxes)
+    [Targets.TYPES.CONTENT_SCRIPT]:
+      type == SESSION_TYPES.BROWSER_ELEMENT || type == SESSION_TYPES.ALL,
   };
 }
 
 /**
  * Get the supported resources by the watcher given a session context type.
  *
- * @param {String} type
- * @returns {Object}
+ * @param {string} _type
+ * @returns {object}
  */
-function getWatcherSupportedResources(type) {
-  // All resources types are supported for tab debugging and web extensions.
-  // Some watcher classes are still disabled for the Multiprocess Browser Toolbox (type=SESSION_TYPES.ALL).
-  // And they may also be disabled for workers once we start supporting them by the watcher.
-  // So set the traits to false for all the resources that we don't support yet
-  // and keep using the legacy listeners.
-  const isTabOrWebExtensionToolbox =
-    type == SESSION_TYPES.BROWSER_ELEMENT || type == SESSION_TYPES.WEBEXTENSION;
-
+function getWatcherSupportedResources(_type) {
   return {
     [Resources.TYPES.CONSOLE_MESSAGE]: true,
-    [Resources.TYPES.CSS_CHANGE]: isTabOrWebExtensionToolbox,
+    [Resources.TYPES.CSS_CHANGE]: true,
     [Resources.TYPES.CSS_MESSAGE]: true,
     [Resources.TYPES.CSS_REGISTERED_PROPERTIES]: true,
     [Resources.TYPES.DOCUMENT_EVENT]: true,
@@ -203,6 +201,7 @@ function getWatcherSupportedResources(type) {
     [Resources.TYPES.THREAD_STATE]: true,
     [Resources.TYPES.SERVER_SENT_EVENT]: true,
     [Resources.TYPES.WEBSOCKET]: true,
+    [Resources.TYPES.WEBTRANSPORT]: true,
     [Resources.TYPES.JSTRACER_TRACE]: true,
     [Resources.TYPES.JSTRACER_STATE]: true,
     [Resources.TYPES.LAST_PRIVATE_CONTEXT_EXIT]: true,

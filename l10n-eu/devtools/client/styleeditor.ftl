@@ -40,7 +40,6 @@ styleeditor-go-to-line =
     .accesskey = J
 # Label displayed when searching a term that is not found in any stylesheet path
 styleeditor-stylesheet-all-filtered = Ez da aurkitu bat datorren estilo-orririk.
-
 # This string is shown in the style sheets list
 # Variables:
 #   $ruleCount (Integer) - The number of rules in the stylesheet.
@@ -49,3 +48,13 @@ styleeditor-stylesheet-rule-count =
         [one] erregela { $ruleCount }.
        *[other] { $ruleCount } erregela.
     }
+# Title for the pretty print button in the editor footer.
+styleeditor-pretty-print-button =
+    .title = Txukundu estilo-orria
+# Title for the pretty print button in the editor footer, when it's disabled
+styleeditor-pretty-print-button-disabled =
+    .title = CSS fitxategiak txukundu ditzake soilik
+# Title for the pretty print button in the editor footer, when it's disabled because
+# the stylesheet is read-only
+styleeditor-pretty-print-button-disabled-read-only =
+    .title = Ezin ditu irakurtzeko soilik diren estilo-orriak txukundu.

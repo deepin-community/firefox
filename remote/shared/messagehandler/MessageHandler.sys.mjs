@@ -26,9 +26,11 @@ ChromeUtils.defineLazyGetter(lazy, "logger", () => lazy.Log.get());
  *     The type of context
  * @property {string=} id
  *     Unique id of a given context for the provided type.
- *     For ContextDescriptorType.All, id can be ommitted.
+ *     For ContextDescriptorType.All, id can be omitted.
  *     For ContextDescriptorType.TopBrowsingContext, the id should be the
  *     browserId corresponding to a top-level browsing context.
+ *     For ContextDescriptorType.UserContext, the id should be the
+ *     platform user context id.
  */
 
 /**
@@ -39,6 +41,7 @@ ChromeUtils.defineLazyGetter(lazy, "logger", () => lazy.Log.get());
 export const ContextDescriptorType = {
   All: "All",
   TopBrowsingContext: "TopBrowsingContext",
+  UserContext: "UserContext",
 };
 
 /**
@@ -152,6 +155,28 @@ export class MessageHandler extends EventEmitter {
   }
 
   /**
+   * Check if the provided context matches provided contextDescriptor.
+   *
+   * @param {BrowsingContext} browsingContext
+   *     The browsing context to verify.
+   * @param {ContextDescriptor} contextDescriptor
+   *     The context descriptor to match.
+   *
+   * @returns {boolean}
+   *     Return "true" if the context matches the context descriptor,
+   *     "false" otherwise.
+   */
+  contextMatchesDescriptor(browsingContext, contextDescriptor) {
+    return (
+      contextDescriptor.type === ContextDescriptorType.All ||
+      (contextDescriptor.type === ContextDescriptorType.TopBrowsingContext &&
+        contextDescriptor.id === browsingContext.browserId) ||
+      (contextDescriptor.type === ContextDescriptorType.UserContext &&
+        contextDescriptor.id === browsingContext.originAttributes.userContextId)
+    );
+  }
+
+  /**
    * Emit a message handler event.
    *
    * Such events should bubble up to the root of a MessageHandler network.
@@ -187,7 +212,7 @@ export class MessageHandler extends EventEmitter {
    * @typedef {object} CommandDestination
    * @property {string} type
    *     One of MessageHandler.type.
-   * @property {string=} id
+   * @property {string | number=} id
    *     Unique context identifier. The format depends on the type.
    *     For WINDOW_GLOBAL destinations, this is a browsing context id.
    *     Optional, should only be provided if `contextDescriptor` is missing.
@@ -210,7 +235,9 @@ export class MessageHandler extends EventEmitter {
    * @property {boolean=} retryOnAbort
    *     Optional. When true, commands will be retried upon AbortError, which
    *     can occur when the underlying JSWindowActor pair is destroyed.
-   *     Defaults to `false`.
+   *     If not explicitly set, the framework will automatically retry if the
+   *     destination is likely to be replaced (e.g. browsingContext on the
+   *     initial document or loading a document).
    */
 
   /**
@@ -263,7 +290,7 @@ export class MessageHandler extends EventEmitter {
   }
 
   /**
-   * Execute the required initialization steps, inlcluding apply the initial session data items
+   * Execute the required initialization steps, including apply the initial session data items
    * provided to this MessageHandler on startup. Implementation is specific to each MessageHandler class.
    *
    * By default the implementation is a no-op.

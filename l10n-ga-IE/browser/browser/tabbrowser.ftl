@@ -3,40 +3,20 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 tabbrowser-empty-tab-title = Cluaisín Nua
-
 tabbrowser-menuitem-close-tab =
     .label = Dún Cluaisín
 tabbrowser-menuitem-close =
     .label = Dún
-
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
 #   $containerName (String): the name of the current container.
 tabbrowser-container-tab-title = { $title } - { $containerName }
 
-## Tooltips for tab audio control
-## Variables:
-##   $tabCount (Number): The number of tabs that will be affected.
-
-
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
 tabbrowser-confirm-close-tabs-button = Dún cluaisíní
-
-## Confirmation dialog when quitting using the menu and multiple windows are open.
-
-
-## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
-## Windows does not show a prompt on quit when using the keyboard shortcut by default.
-
-
-## Confirmation dialog when opening multiple tabs simultaneously
-
-
-## Confirmation dialog for enabling caret browsing
-
 
 ##
 
@@ -63,6 +43,3 @@ tabbrowser-ctrl-tab-list-all-tabs =
             [many] Liostaigh na { $tabCount } gCluaisín
            *[other] Liostaigh na { $tabCount } Cluaisín
         }
-
-## Tab manager menu buttons
-

@@ -1,7 +1,10 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
+const lazy = {};
+ChromeUtils.defineESModuleGetters(lazy, {
+  EveryWindow: "resource:///modules/EveryWindow.sys.mjs",
+});
 /**
  * Methods for setting up and tearing down page event listeners. These are used
  * to dismiss Feature Callouts when the callout's anchor element is clicked.
@@ -9,31 +12,33 @@
 export class PageEventManager {
   /**
    * A set of parameters defining a page event listener.
-   * @typedef {Object} PageEventListenerParams
-   * @property {String} type Event type string e.g. `click`
-   * @property {String} [selectors] Target selector, e.g. `tag.class, #id[attr]`
+   *
+   * @typedef {object} PageEventListenerParams
+   * @property {string} type Event type string e.g. `click`
+   * @property {string} [selectors] Target selector, e.g. `tag.class, #id[attr]`
    * @property {PageEventListenerOptions} [options] addEventListener options
    *
-   * @typedef {Object} PageEventListenerOptions
-   * @property {Boolean} [capture] Use event capturing phase?
-   * @property {Boolean} [once] Remove listener after first event?
-   * @property {Boolean} [preventDefault] Inverted value for `passive` option
-   * @property {Number} [interval] Used only for `timeout` and `interval` event
+   * @typedef {object} PageEventListenerOptions
+   * @property {boolean} [capture] Use event capturing phase?
+   * @property {boolean} [once] Remove listener after first event?
+   * @property {boolean} [preventDefault] Inverted value for `passive` option
+   * @property {number} [interval] Used only for `timeout` and `interval` event
    *   types. These don't set up real event listeners, but instead invoke the
    *   action on a timer.
    *
-   * @typedef {Object} PageEventListener
+   * @typedef {object} PageEventListener
    * @property {Function} callback Function to call when event is triggered
    * @property {AbortController} controller Handle for aborting the listener
    *
-   * @typedef {Object} PageEvent
-   * @property {String} type Event type string e.g. `click`
+   * @typedef {object} PageEvent
+   * @property {string} type Event type string e.g. `click`
    * @property {Element} [target] Event target
    */
 
   /**
    * Maps event listener params to their PageEventListeners, so they can be
    * called and cancelled.
+   *
    * @type {Map<PageEventListenerParams, PageEventListener>}
    */
   _listeners = new Map();
@@ -48,6 +53,7 @@ export class PageEventManager {
 
   /**
    * Adds a page event listener.
+   *
    * @param {PageEventListenerParams} params
    * @param {Function} callback Function to call when event is triggered
    */
@@ -64,9 +70,28 @@ export class PageEventManager {
         passive: !options.preventDefault,
         signal: controller.signal,
       };
-      const targets = this.doc.querySelectorAll(selectors);
-      for (const target of targets) {
-        target.addEventListener(type, callback, opt);
+      if (options?.every_window) {
+        // Using unique ID for each listener in case there are multiple
+        // listeners with the same type
+        let uuid = Services.uuid.generateUUID().number;
+        lazy.EveryWindow.registerCallback(
+          uuid,
+          win => {
+            for (const target of win.document.querySelectorAll(selectors)) {
+              target.addEventListener(type, callback, opt);
+            }
+          },
+          win => {
+            for (const target of win.document.querySelectorAll(selectors)) {
+              target.removeEventListener(type, callback, opt);
+            }
+          }
+        );
+        listener.uninit = () => lazy.EveryWindow.unregisterCallback(uuid, true);
+      } else {
+        for (const target of this.doc.querySelectorAll(selectors)) {
+          target.addEventListener(type, callback, opt);
+        }
       }
       listener.controller = controller;
     } else if (["timeout", "interval"].includes(type) && options.interval) {
@@ -87,6 +112,7 @@ export class PageEventManager {
 
   /**
    * Removes a page event listener.
+   *
    * @param {PageEventListenerParams} params
    */
   off(params) {
@@ -94,12 +120,14 @@ export class PageEventManager {
     if (!listener) {
       return;
     }
+    listener.uninit?.();
     listener.controller?.abort();
     this._listeners.delete(params);
   }
 
   /**
    * Adds a page event listener that is removed after the first event.
+   *
    * @param {PageEventListenerParams} params
    * @param {Function} callback Function to call when event is triggered
    */
@@ -116,6 +144,7 @@ export class PageEventManager {
    */
   clear() {
     for (const listener of this._listeners.values()) {
+      listener.uninit?.();
       listener.controller?.abort();
     }
     this._listeners.clear();
@@ -123,6 +152,7 @@ export class PageEventManager {
 
   /**
    * Calls matching page event listeners. A way to dispatch a "fake" event.
+   *
    * @param {PageEvent} event
    */
   emit(event) {

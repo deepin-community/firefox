@@ -21,6 +21,9 @@ unified-extensions-manage-extensions =
 unified-extensions-item-open-menu =
     .aria-label = Abrir menú para { $extensionName }
 unified-extensions-item-message-manage = Gestionar extensión
+# Variables:
+#   $extensionName (String) - Name of the user-enabled soft-blocked extension.
+unified-extensions-item-messagebar-softblocked = { $extensionName } viola las políticas de Mozilla. Usarla podría ser arriesgado.
 
 ## Extension's context menu
 
@@ -47,3 +50,32 @@ unified-extensions-mb-quarantined-domain-message-3 =
     .message = Para proteger tus datos, algunas extensiones no pueden leer ni cambiar datos en este sitio. Utiliza la configuración de la extensión para permitir sitios restringidos por { -vendor-short-name }.
 unified-extensions-mb-quarantined-domain-learn-more = Saber más
     .aria-label = Saber más: Algunas extensiones no están permitidas
+unified-extensions-mb-about-addons-link = Ir a los ajustes de extensiones
+# Variables:
+#   $extensionName (String) - Name of the extension disabled through a soft-block.
+unified-extensions-mb-blocklist-warning-single =
+    .heading = { $extensionName } deshabilitada
+    .message =
+        Esta extensión viola las políticas de Mozilla y ha sido deshabilitada.
+        Puedes habilitarla en los ajustes, pero podría ser arriesgado.
+# Variables:
+#   $extensionName (String) - Name of the extension disabled through a hard-block.
+unified-extensions-mb-blocklist-error-single =
+    .heading = { $extensionName } deshabilitada
+    .message = Esta extensión viola las políticas de Mozilla y ha sido deshabilitada.
+# Variables:
+#   $extensionsCount (Number) - Number of extensions disabled through both soft and hard-blocks (always going to be greater than 1)
+unified-extensions-mb-blocklist-warning-multiple =
+    .heading =
+        { $extensionsCount ->
+           *[other] { $extensionsCount } extensions disabled
+        }
+    .message = { $extensionsCount } extensiones deshabilitadas
+# Variables:
+#   $extensionsCount (Number) - Number of extensions disabled through hard-blocks.
+unified-extensions-mb-blocklist-error-multiple =
+    .heading =
+        { $extensionsCount ->
+           *[other] { $extensionsCount } extensions disabled
+        }
+    .message = { $extensionsCount } extensiones deshabilitadas

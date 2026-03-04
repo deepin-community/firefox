@@ -38,6 +38,19 @@ bool ForOfLoopControl::emitBeginCodeNeedingIteratorClose(BytecodeEmitter* bce) {
   return true;
 }
 
+#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
+bool ForOfLoopControl::prepareForForOfLoopIteration(
+    BytecodeEmitter* bce, const EmitterScope* headLexicalEmitterScope,
+    bool hasAwaitUsing) {
+  MOZ_ASSERT(headLexicalEmitterScope);
+  if (headLexicalEmitterScope->hasDisposables()) {
+    forOfDisposalEmitter_.emplace(bce, hasAwaitUsing);
+    return forOfDisposalEmitter_->prepareForForOfLoopIteration();
+  }
+  return true;
+}
+#endif
+
 bool ForOfLoopControl::emitEndCodeNeedingIteratorClose(BytecodeEmitter* bce) {
   if (!tryCatch_->emitCatch(TryEmitter::ExceptionStack::Yes)) {
     //              [stack] ITER ... EXCEPTION STACK
@@ -49,9 +62,11 @@ bool ForOfLoopControl::emitEndCodeNeedingIteratorClose(BytecodeEmitter* bce) {
   // https://arai-a.github.io/ecma262-compare/?pr=3000&id=sec-runtime-semantics-forin-div-ofbodyevaluation-lhs-stmt-iterator-lhskind-labelset
   // Step 9.i.i.1 Set result to
   // Completion(DisposeResources(iterationEnv.[[DisposeCapability]], result)).
-  if (!bce->innermostEmitterScope()->prepareForForOfIteratorCloseOnThrow()) {
-    //              [stack] ITER ... EXCEPTION STACK
-    return false;
+  if (forOfDisposalEmitter_.isSome()) {
+    if (!forOfDisposalEmitter_->emitEnd()) {
+      //              [stack] ITER ... EXCEPTION STACK
+      return false;
+    }
   }
 #endif
 
@@ -126,8 +141,7 @@ bool ForOfLoopControl::emitEndCodeNeedingIteratorClose(BytecodeEmitter* bce) {
 }
 
 bool ForOfLoopControl::emitIteratorCloseInInnermostScopeWithTryNote(
-    BytecodeEmitter* bce,
-    CompletionKind completionKind /* = CompletionKind::Normal */) {
+    BytecodeEmitter* bce, CompletionKind completionKind) {
   BytecodeOffset start = bce->bytecodeSection().offset();
   if (!emitIteratorCloseInScope(bce, *bce->innermostEmitterScope(),
                                 completionKind)) {
@@ -137,9 +151,9 @@ bool ForOfLoopControl::emitIteratorCloseInInnermostScopeWithTryNote(
   return bce->addTryNote(TryNoteKind::ForOfIterClose, 0, start, end);
 }
 
-bool ForOfLoopControl::emitIteratorCloseInScope(
-    BytecodeEmitter* bce, EmitterScope& currentScope,
-    CompletionKind completionKind /* = CompletionKind::Normal */) {
+bool ForOfLoopControl::emitIteratorCloseInScope(BytecodeEmitter* bce,
+                                                EmitterScope& currentScope,
+                                                CompletionKind completionKind) {
   return bce->emitIteratorCloseInScope(currentScope, iterKind_, completionKind,
                                        selfHostedIter_);
 }
@@ -175,16 +189,36 @@ bool ForOfLoopControl::emitPrepareForNonLocalJumpFromScope(
     return false;
   }
 
+#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
+  // Explicit Resource Management Proposal
+  // https://arai-a.github.io/ecma262-compare/?pr=3000&id=sec-runtime-semantics-forin-div-ofbodyevaluation-lhs-stmt-iterator-lhskind-labelset
+  // Step 9.k.i. Set result to
+  // Completion(DisposeResources(iterationEnv.[[DisposeCapability]], result)).
+  NonLocalIteratorCloseUsingEmitter disposeBeforeIterClose(bce);
+
+  if (!disposeBeforeIterClose.prepareForIteratorClose(currentScope)) {
+    //              [stack] EXC-DISPOSE? DISPOSE-THROWING? ITER
+    return false;
+  }
+#endif
+
   if (!bce->emit1(JSOp::Dup)) {
-    //              [stack] ITER ITER
+    //              [stack] EXC-DISPOSE? DISPOSE-THROWING? ITER ITER
     return false;
   }
 
   *tryNoteStart = bce->bytecodeSection().offset();
   if (!emitIteratorCloseInScope(bce, currentScope, CompletionKind::Normal)) {
+    //              [stack] EXC-DISPOSE? DISPOSE-THROWING? ITER
+    return false;
+  }
+
+#ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
+  if (!disposeBeforeIterClose.emitEnd()) {
     //              [stack] ITER
     return false;
   }
+#endif
 
   if (isTarget) {
     // At the level of the target block, there's bytecode after the

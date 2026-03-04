@@ -19,6 +19,7 @@ sanitize-dialog-title-everything =
     .title = Garbitu historia osoa
     .style = min-width: 34em
 clear-data-settings-label = { -brand-short-name } ixtean, garbitu automatikoki
+sanitize-on-shutdown-description = Garbitu automatikoki markatutako elementu guztiak { -brand-short-name } ixtean.
 
 ## clear-time-duration-prefix is followed by a dropdown list, with
 ## values localized using clear-time-duration-value-* messages.
@@ -40,6 +41,10 @@ clear-time-duration-value-last-2-hours =
     .label = Azken bi orduak
 clear-time-duration-value-last-4-hours =
     .label = Azken lau orduak
+# Variables:
+#   $midnightTime (String) - Time of midnight (00:00 hours) - to inform the user that history will be cleared after midnight
+clear-time-duration-value-since-midnight =
+    .label = { $midnightTime } ondoren
 clear-time-duration-value-today =
     .label = Gaur
 clear-time-duration-value-everything =
@@ -54,27 +59,46 @@ history-section-label = Historia
 item-history-and-downloads =
     .label = Nabigatze- eta deskarga-historia
     .accesskey = b
-item-history-form-data-downloads =
-    .label = Historia
-    .accesskey = H
+item-history-and-downloads-description2 = Gunearen eta deskargen historia garbitzen du
 item-cookies =
     .label = Cookieak
     .accesskey = C
+# Variables:
+#   $amount (Number) - Amount of site data currently stored on disk
+#   $unit (String) - Abbreviation of the unit that $amount is in, e.g. "MB"
+item-cookies-site-data-with-size =
+    .label = Cookieak eta guneen datuak ({ $amount } { $unit })
+    .accesskey = e
 item-cookies-site-data =
     .label = Cookieak eta guneetako datuak
     .accesskey = e
+item-cookies-site-data-description = Guneetako saioak amaitu edo erosketa-orgak hustu litezke
 item-active-logins =
     .label = Saio-hasiera aktiboak
     .accesskey = S
 item-cache =
     .label = Cachea
     .accesskey = a
+# Variables:
+#   $amount (Number) - Amount of cached data
+#   $unit (String) - Abbreviation of the unit that $amount is in, e.g. "MB"
+item-cached-content-with-size =
+    .label = Behin-behinean cacheratutako fitxategi eta orriak ({ $amount } { $unit })
+    .accesskey = f
+item-cached-content =
+    .label = Behin-behinean cacheratutako fitxategi eta orriak
+    .accesskey = f
+item-cached-content-description = Garbitu guneak azkarrago kargatzen lagun dezaketen elementuak
 item-form-search-history =
     .label = Inprimaki- eta bilaketa-historia
     .accesskey = n
 item-site-prefs =
     .label = Gunearen ezarpenak
     .accesskey = u
+item-formdata-prefs =
+    .label = Gordetako inprimaki-informazioa
+    .accesskey = o
+item-formdata-description = Garbitu izenak, helbide elektronikoak edo inprimakietan sartzen dituzun bestelako elementuak
 item-site-prefs-description = Zure baimenak eta gunearen hobespenak jatorrizko ezarpenetara berrezartzen ditu
 data-section-label = Datuak
 item-site-settings =
@@ -104,3 +128,6 @@ sanitize-everything-warning = Historia guztia garbituko da.
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = Hautatutako elementu guztiak garbituko dira.
+# Label shown next to the loading spinner while calculating the size of cached data
+# and cookies in the clear data dialog.
+sanitize-calculating-size = Kalkulatzen…

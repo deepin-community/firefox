@@ -6,36 +6,36 @@
 
 #include "nsBidiPresUtils.h"
 
-#include "mozilla/intl/Bidi.h"
+#include <algorithm>
+
+#include "RubyUtils.h"
+#include "gfxContext.h"
 #include "mozilla/Casting.h"
 #include "mozilla/IntegerRange.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/PresShell.h"
 #include "mozilla/dom/Text.h"
-
-#include "gfxContext.h"
-#include "nsFontMetrics.h"
-#include "nsGkAtoms.h"
-#include "nsPresContext.h"
+#include "mozilla/intl/Bidi.h"
 #include "nsBidiUtils.h"
+#include "nsBlockFrame.h"
 #include "nsCSSFrameConstructor.h"
 #include "nsContainerFrame.h"
+#include "nsFirstLetterFrame.h"
+#include "nsFontMetrics.h"
+#include "nsGkAtoms.h"
+#include "nsIFrameInlines.h"
 #include "nsInlineFrame.h"
 #include "nsPlaceholderFrame.h"
 #include "nsPointerHashKeys.h"
-#include "nsFirstLetterFrame.h"
-#include "nsUnicodeProperties.h"
-#include "nsTextFrame.h"
-#include "nsBlockFrame.h"
-#include "nsIFrameInlines.h"
-#include "nsStyleStructInlines.h"
-#include "RubyUtils.h"
-#include "nsRubyFrame.h"
-#include "nsRubyBaseFrame.h"
-#include "nsRubyTextFrame.h"
+#include "nsPresContext.h"
 #include "nsRubyBaseContainerFrame.h"
+#include "nsRubyBaseFrame.h"
+#include "nsRubyFrame.h"
 #include "nsRubyTextContainerFrame.h"
-#include <algorithm>
+#include "nsRubyTextFrame.h"
+#include "nsStyleStructInlines.h"
+#include "nsTextFrame.h"
+#include "nsUnicodeProperties.h"
 
 #undef NOISY_BIDI
 #undef REALLY_NOISY_BIDI
@@ -224,7 +224,9 @@ struct MOZ_STACK_CLASS BidiParagraphData {
           aPrevFrame ? aPrevFrame : aLineIter->GetLine()->mFirstChild;
       for (nsIFrame* frame = startFrame; frame && frame != endFrame;
            frame = frame->GetNextSibling()) {
-        if (frame == aFrame) return true;
+        if (frame == aFrame) {
+          return true;
+        }
       }
       return false;
     }
@@ -631,9 +633,6 @@ static void SplitInlineAncestors(nsContainerFrame* aParent,
 
       nsFrameList tail = parent->StealFramesAfter(frame);
 
-      // Reparent views as necessary
-      nsContainerFrame::ReparentFrameViewList(tail, parent, newParent);
-
       // The parent's continuation adopts the siblings after the split.
       MOZ_ASSERT(!newParent->IsBlockFrameOrSubclass(),
                  "blocks should not be IsBidiSplittable");
@@ -698,7 +697,9 @@ static void JoinInlineAncestors(nsIFrame* aFrame) {
       MakeContinuationFluid(frame, next);
     }
     // Join the parent only as long as we're its last child.
-    if (frame->GetNextSibling()) break;
+    if (frame->GetNextSibling()) {
+      break;
+    }
     frame = frame->GetParent();
   }
 }
@@ -1170,7 +1171,9 @@ nsresult nsBidiPresUtils::ResolveParagraph(BidiParagraphData* aBpd) {
 
 void nsBidiPresUtils::TraverseFrames(nsIFrame* aCurrentFrame,
                                      BidiParagraphData* aBpd) {
-  if (!aCurrentFrame) return;
+  if (!aCurrentFrame) {
+    return;
+  }
 
 #ifdef DEBUG
   nsBlockFrame* initialLineContainer =
@@ -1387,9 +1390,13 @@ void nsBidiPresUtils::TraverseFrames(nsIFrame* aCurrentFrame,
         // "...inline objects (such as graphics) are treated as if they are ...
         // U+FFFC"
         // <wbr>, however, is treated as U+200B ZERO WIDTH SPACE. See
-        // http://dev.w3.org/html5/spec/Overview.html#phrasing-content-1
-        aBpd->AppendUnichar(
-            content->IsHTMLElement(nsGkAtoms::wbr) ? kZWSP : kObjectSubstitute);
+        // http://dev.w3.org/html5/spec/Overview.html#phrasing-content-1.
+        // Empty inline frames are also treated as kZWSP, to avoid unexpected
+        // bidi reordering of the surrounding content.
+        aBpd->AppendUnichar(content->IsHTMLElement(nsGkAtoms::wbr) ||
+                                    (frame->IsInlineFrame() && frame->IsEmpty())
+                                ? kZWSP
+                                : kObjectSubstitute);
         if (!frame->IsInlineOutside()) {
           // if it is not inline, end the paragraph
           ResolveParagraphWithinBlock(aBpd);
@@ -1464,7 +1471,7 @@ bool nsBidiPresUtils::ChildListMayRequireBidi(nsIFrame* aFirstChild,
         dom::Text* content = frame->GetContent()->AsText();
         if (content != *aCurrContent) {
           *aCurrContent = content;
-          const nsTextFragment* txt = &content->TextFragment();
+          const dom::CharacterDataBuffer* txt = &content->DataBuffer();
           if (txt->Is2b() &&
               HasRTLChars(Span(txt->Get2b(), txt->GetLength()))) {
             return true;
@@ -1772,7 +1779,9 @@ nscoord nsBidiPresUtils::RepositionFrame(
       aContainerWM.IsVertical() ? aContainerSize.height : aContainerSize.width;
   NS_ASSERTION(lineSize != NS_UNCONSTRAINEDSIZE,
                "Unconstrained inline line size in bidi frame reordering");
-  if (!aFrame) return 0;
+  if (!aFrame) {
+    return 0;
+  }
 
   bool isFirst, isLast;
   WritingMode frameWM = aFrame->GetWritingMode();
@@ -1971,6 +1980,12 @@ void nsBidiPresUtils::RemoveBidiContinuation(BidiParagraphData* aBpd,
                                              nsIFrame* aFrame,
                                              int32_t aFirstIndex,
                                              int32_t aLastIndex) {
+  // If we're only processing one frame, and it is already a fluid continuation
+  // (next-in-flow), there's nothing to do.
+  if (aLastIndex == aFirstIndex + 1 &&
+      aFrame->GetNextInFlow() == aFrame->GetNextContinuation()) {
+    return;
+  }
   FrameBidiData bidiData = aFrame->GetBidiData();
   bidiData.precedingControl = kBidiLevelNone;
   for (int32_t index = aFirstIndex + 1; index <= aLastIndex; index++) {
@@ -2260,7 +2275,9 @@ nsresult nsBidiPresUtils::ProcessText(const char16_t* aText, size_t aLength,
         /*
          * Did we already resolve this position's visual metric? If so, skip.
          */
-        if (posResolve->visualLeftTwips != kNotFound) continue;
+        if (posResolve->visualLeftTwips != kNotFound) {
+          continue;
+        }
 
         /*
          * First find out if the logical position is within this run.

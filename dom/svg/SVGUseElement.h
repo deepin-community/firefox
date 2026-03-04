@@ -7,14 +7,14 @@
 #ifndef DOM_SVG_SVGUSEELEMENT_H_
 #define DOM_SVG_SVGUSEELEMENT_H_
 
+#include "SVGAnimatedLength.h"
+#include "SVGAnimatedString.h"
+#include "mozilla/RefPtr.h"
 #include "mozilla/dom/FromParser.h"
 #include "mozilla/dom/IDTracker.h"
 #include "mozilla/dom/SVGGraphicsElement.h"
-#include "mozilla/RefPtr.h"
 #include "nsCOMPtr.h"
 #include "nsStubMutationObserver.h"
-#include "SVGAnimatedLength.h"
-#include "SVGAnimatedString.h"
 #include "nsTArray.h"
 
 class nsIContent;
@@ -64,16 +64,14 @@ class SVGUseElement final : public SVGUseElementBase,
   NS_DECL_NSIMUTATIONOBSERVER_NODEWILLBEDESTROYED
 
   // SVGElement specializations:
-  gfxMatrix PrependLocalTransformsTo(
-      const gfxMatrix& aMatrix,
-      SVGTransformTypes aWhich = eAllTransforms) const override;
+  gfxMatrix ChildToUserSpaceTransform() const override;
   bool HasValidDimensions() const override;
 
   // nsIContent interface
   nsresult Clone(dom::NodeInfo*, nsINode** aResult) const override;
   NS_IMETHOD_(bool) IsAttributeMapped(const nsAtom* aAttribute) const override;
 
-  static nsCSSPropertyID GetCSSPropertyIdForAttrEnum(uint8_t aAttrEnum);
+  static NonCustomCSSPropertyId GetCSSPropertyIdForAttrEnum(uint8_t aAttrEnum);
 
   // WebIDL
   already_AddRefed<DOMSVGAnimatedString> Href();
@@ -82,8 +80,9 @@ class SVGUseElement final : public SVGUseElementBase,
   already_AddRefed<DOMSVGAnimatedLength> Width();
   already_AddRefed<DOMSVGAnimatedLength> Height();
 
-  nsIURI* GetSourceDocURI();
-  const Encoding* GetSourceDocCharacterSet();
+  Document* GetSourceDocument() const;
+  nsIURI* GetSourceDocURI() const;
+  const Encoding* GetSourceDocCharacterSet() const;
   URLExtraData* GetContentURLData() const { return mContentURLData; }
 
   // Updates the internal shadow tree to be an up-to-date clone of the

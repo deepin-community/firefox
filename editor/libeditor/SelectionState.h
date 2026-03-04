@@ -97,7 +97,7 @@ struct RangeItem final {
 class SelectionState final {
  public:
   SelectionState() = default;
-  explicit SelectionState(const AutoRangeArray& aRanges);
+  explicit SelectionState(const AutoClonedSelectionRangeArray& aRanges);
 
   /**
    * Same as the API as dom::Selection
@@ -130,7 +130,7 @@ class SelectionState final {
   /**
    * Setting aRanges to have all ranges stored by this instance.
    */
-  void ApplyTo(AutoRangeArray& aRanges);
+  void ApplyTo(AutoClonedSelectionRangeArray& aRanges);
 
   /**
    * HasOnlyCollapsedRange() returns true only when there is a positioned range
@@ -274,8 +274,46 @@ class MOZ_STACK_CLASS RangeUpdater final {
     NS_WARNING_ASSERTION(mLocked, "Not locked");
     mLocked = false;
   }
-  void DidMoveNode(const nsINode& aOldParent, uint32_t aOldOffset,
-                   const nsINode& aNewParent, uint32_t aNewOffset);
+  template <typename PT, typename CT>
+  struct SimpleEditorDOMPointBase {
+    SimpleEditorDOMPointBase() = default;
+    SimpleEditorDOMPointBase(const nsINode* aContainer,
+                             const nsIContent* aChild, uint32_t aOffset)
+        : mContainer(const_cast<nsINode*>(aContainer)),
+          mChild(const_cast<nsIContent*>(aChild)),
+          mOffset(Some(aOffset)) {}
+    SimpleEditorDOMPointBase(const nsIContent* aChild, uint32_t aOffset)
+        : mContainer(aChild->GetParentNode()),
+          mChild(const_cast<nsIContent*>(aChild)),
+          mOffset(Some(aOffset)) {}
+    SimpleEditorDOMPointBase(const nsINode* aContainer,
+                             const nsIContent* aChild)
+        : mContainer(const_cast<nsINode*>(aContainer)),
+          mChild(const_cast<nsIContent*>(aChild)) {}
+    explicit SimpleEditorDOMPointBase(const nsIContent* aChild)
+        : mContainer(aChild->GetParentNode()),
+          mChild(const_cast<nsIContent*>(aChild)) {}
+
+    uint32_t Offset() const {
+      if (!mOffset && mContainer) {
+        mOffset = mContainer->ComputeIndexOf(mChild);
+      }
+      return mOffset.valueOr(0);
+    }
+    nsIContent* GetNextSiblingOfChild() const {
+      return mChild->GetNextSibling();
+    }
+    PT mContainer;
+    CT mChild;
+    mutable Maybe<uint32_t> mOffset;
+  };
+  using SimpleEditorDOMPoint =
+      SimpleEditorDOMPointBase<nsCOMPtr<nsINode>, nsCOMPtr<nsIContent>>;
+  using SimpleEditorRawDOMPoint =
+      SimpleEditorDOMPointBase<nsINode*, nsIContent*>;
+  void DidMoveNodes(const nsTArray<SimpleEditorDOMPoint>& aOldPoints,
+                    const SimpleEditorDOMPoint& aExpectedDestination,
+                    const nsTArray<SimpleEditorDOMPoint>& aNewPoints);
 
  private:
   // TODO: A lot of loop in these methods check whether each item `nullptr` or
@@ -283,6 +321,8 @@ class MOZ_STACK_CLASS RangeUpdater final {
   nsTArray<RefPtr<RangeItem>> mArray;
   bool mLocked;
 };
+
+enum class StopTracking : bool { No, Yes };
 
 /**
  * Helper class for using SelectionState.  Stack based class for doing
@@ -292,6 +332,9 @@ class MOZ_STACK_CLASS RangeUpdater final {
 class MOZ_STACK_CLASS AutoTrackDOMPoint final {
  public:
   AutoTrackDOMPoint() = delete;
+
+  AutoTrackDOMPoint(RangeUpdater& aRangeUpdater, CaretPoint* aCaretPoint);
+
   AutoTrackDOMPoint(RangeUpdater& aRangeUpdater, nsCOMPtr<nsINode>* aNode,
                     uint32_t* aOffset)
       : mRangeUpdater(aRangeUpdater),
@@ -328,11 +371,13 @@ class MOZ_STACK_CLASS AutoTrackDOMPoint final {
 
   ~AutoTrackDOMPoint() { FlushAndStopTracking(); }
 
-  void FlushAndStopTracking() {
+  void Flush(StopTracking aStopTracking) {
     if (!mIsTracking) {
       return;
     }
-    mIsTracking = false;
+    if (static_cast<bool>(aStopTracking)) {
+      mIsTracking = false;
+    }
     if (mPoint.isSome()) {
       mRangeUpdater.DropRangeItem(mRangeItem);
       // Setting `mPoint` with invalid DOM point causes hitting `NS_ASSERTION()`
@@ -375,6 +420,8 @@ class MOZ_STACK_CLASS AutoTrackDOMPoint final {
     }
   }
 
+  void FlushAndStopTracking() { Flush(StopTracking::Yes); }
+
   void StopTracking() { mIsTracking = false; }
 
  private:
@@ -405,7 +452,7 @@ class MOZ_STACK_CLASS AutoTrackDOMRange final {
     mEndPointTracker.emplace(aRangeUpdater,
                              const_cast<EditorDOMPoint*>(&aRange->EndRef()));
   }
-  AutoTrackDOMRange(RangeUpdater& aRangeUpdater, RefPtr<nsRange>* aRange)
+  AutoTrackDOMRange(RangeUpdater& aRangeUpdater, const RefPtr<nsRange>* aRange)
       : mStartPoint((*aRange)->StartRef()),
         mEndPoint((*aRange)->EndRef()),
         mRangeRefPtr(aRange),
@@ -413,7 +460,8 @@ class MOZ_STACK_CLASS AutoTrackDOMRange final {
     mStartPointTracker.emplace(aRangeUpdater, &mStartPoint);
     mEndPointTracker.emplace(aRangeUpdater, &mEndPoint);
   }
-  AutoTrackDOMRange(RangeUpdater& aRangeUpdater, OwningNonNull<nsRange>* aRange)
+  AutoTrackDOMRange(RangeUpdater& aRangeUpdater,
+                    const OwningNonNull<nsRange>* aRange)
       : mStartPoint((*aRange)->StartRef()),
         mEndPoint((*aRange)->EndRef()),
         mRangeRefPtr(nullptr),
@@ -496,8 +544,65 @@ class MOZ_STACK_CLASS AutoTrackDOMRange final {
   Maybe<AutoTrackDOMPoint> mEndPointTracker;
   EditorDOMPoint mStartPoint;
   EditorDOMPoint mEndPoint;
-  RefPtr<nsRange>* mRangeRefPtr;
-  OwningNonNull<nsRange>* mRangeOwningNonNull;
+  const RefPtr<nsRange>* mRangeRefPtr;
+  const OwningNonNull<nsRange>* mRangeOwningNonNull;
+};
+
+class MOZ_STACK_CLASS AutoTrackDOMMoveNodeResult final {
+ public:
+  AutoTrackDOMMoveNodeResult() = delete;
+  AutoTrackDOMMoveNodeResult(RangeUpdater& aRangeUpdater,
+                             MoveNodeResult* aMoveNodeResult);
+
+  void FlushAndStopTracking() {
+    mTrackCaretPoint.FlushAndStopTracking();
+    mTrackNextInsertionPoint.FlushAndStopTracking();
+    mTrackMovedContentRange.FlushAndStopTracking();
+  }
+  void StopTracking() {
+    mTrackCaretPoint.StopTracking();
+    mTrackNextInsertionPoint.StopTracking();
+    mTrackMovedContentRange.StopTracking();
+  }
+
+ private:
+  AutoTrackDOMPoint mTrackCaretPoint;
+  AutoTrackDOMPoint mTrackNextInsertionPoint;
+  AutoTrackDOMRange mTrackMovedContentRange;
+};
+
+class MOZ_STACK_CLASS AutoTrackDOMDeleteRangeResult final {
+ public:
+  AutoTrackDOMDeleteRangeResult() = delete;
+  AutoTrackDOMDeleteRangeResult(RangeUpdater& aRangeUpdater,
+                                DeleteRangeResult* aDeleteRangeResult);
+
+  void FlushAndStopTracking() {
+    mTrackCaretPoint.FlushAndStopTracking();
+    mTrackDeleteRange.FlushAndStopTracking();
+  }
+  void StopTracking() {
+    mTrackCaretPoint.StopTracking();
+    mTrackDeleteRange.StopTracking();
+  }
+
+ private:
+  AutoTrackDOMPoint mTrackCaretPoint;
+  AutoTrackDOMRange mTrackDeleteRange;
+};
+
+class MOZ_STACK_CLASS AutoTrackLineBreak final {
+ public:
+  AutoTrackLineBreak() = delete;
+  AutoTrackLineBreak(RangeUpdater& aRangeUpdater, EditorLineBreak* aLineBreak);
+
+  void FlushAndStopTracking();
+  void StopTracking() { mTracker.StopTracking(); }
+
+ private:
+  EditorLineBreak* mLineBreak;
+  EditorDOMPoint mPoint;
+  AutoTrackDOMPoint mTracker;
 };
 
 /**
@@ -592,29 +697,69 @@ class MOZ_STACK_CLASS AutoInsertContainerSelNotify final {
 
 class MOZ_STACK_CLASS AutoMoveNodeSelNotify final {
  public:
+  using SimpleEditorDOMPoint = RangeUpdater::SimpleEditorDOMPoint;
+
   AutoMoveNodeSelNotify() = delete;
-  AutoMoveNodeSelNotify(RangeUpdater& aRangeUpdater,
-                        const EditorRawDOMPoint& aOldPoint,
-                        const EditorRawDOMPoint& aNewPoint)
+  explicit AutoMoveNodeSelNotify(RangeUpdater& aRangeUpdater,
+                                 const EditorRawDOMPoint& aExpectedDestination)
       : mRangeUpdater(aRangeUpdater),
-        mOldParent(*aOldPoint.GetContainer()),
-        mNewParent(*aNewPoint.GetContainer()),
-        mOldOffset(aOldPoint.Offset()),
-        mNewOffset(aNewPoint.Offset()) {
-    MOZ_ASSERT(aOldPoint.IsSet());
-    MOZ_ASSERT(aNewPoint.IsSet());
+        mExpectedDestination(aExpectedDestination.GetContainer(), nullptr,
+                             aExpectedDestination.Offset()) {}
+  AutoMoveNodeSelNotify(RangeUpdater& aRangeUpdater, nsIContent& aContent,
+                        const EditorRawDOMPoint& aExpectedDestination)
+      : mRangeUpdater(aRangeUpdater),
+        mExpectedDestination(aExpectedDestination.GetContainer(), nullptr,
+                             aExpectedDestination.Offset()) {
+    if (aContent.GetParentNode()) {
+      mOldPoints.AppendElement(SimpleEditorDOMPoint(
+          &aContent, aContent.ComputeIndexInParentNode().valueOr(0)));
+      return;
+    }
+    mOldPoints.AppendElement(SimpleEditorDOMPoint(&aContent));
+  }
+
+  void AppendContentWhichWillBeMoved(nsIContent& aContent) {
+    if (!mOldPoints.IsEmpty() &&
+        mOldPoints.LastElement().GetNextSiblingOfChild() == &aContent) {
+      mOldPoints.AppendElement(SimpleEditorDOMPoint(
+          &aContent, mOldPoints.LastElement().Offset() + 1));
+      return;
+    }
+    if (aContent.GetParentNode()) {
+      mOldPoints.AppendElement(SimpleEditorDOMPoint(
+          &aContent, aContent.ComputeIndexInParentNode().valueOr(0)));
+      return;
+    }
+    mOldPoints.AppendElement(SimpleEditorDOMPoint(&aContent));
+  }
+
+  void DidMoveContent(nsIContent& aContent) {
+    if (!mNewPoints.IsEmpty() &&
+        mNewPoints.LastElement().GetNextSiblingOfChild() == &aContent) {
+      mNewPoints.AppendElement(SimpleEditorDOMPoint(
+          &aContent, mNewPoints.LastElement().Offset() + 1));
+      return;
+    }
+    // Compute offset when we need it.
+    mNewPoints.AppendElement(SimpleEditorDOMPoint(&aContent));
   }
 
   ~AutoMoveNodeSelNotify() {
-    mRangeUpdater.DidMoveNode(mOldParent, mOldOffset, mNewParent, mNewOffset);
+    mRangeUpdater.DidMoveNodes(mOldPoints, mExpectedDestination, mNewPoints);
+  }
+
+  [[nodiscard]] size_t MovingContentCount() const {
+    return mOldPoints.Length();
+  }
+  [[nodiscard]] nsIContent* GetContentAt(size_t index) const {
+    return mOldPoints[index].mChild;
   }
 
  private:
   RangeUpdater& mRangeUpdater;
-  nsINode& mOldParent;
-  nsINode& mNewParent;
-  const uint32_t mOldOffset;
-  const uint32_t mNewOffset;
+  SimpleEditorDOMPoint mExpectedDestination;
+  AutoTArray<SimpleEditorDOMPoint, 12> mOldPoints;
+  AutoTArray<SimpleEditorDOMPoint, 12> mNewPoints;
 };
 
 }  // namespace mozilla

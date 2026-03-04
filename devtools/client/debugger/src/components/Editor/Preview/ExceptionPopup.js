@@ -7,14 +7,16 @@ import { div, span } from "devtools/client/shared/vendor/react-dom-factories";
 import PropTypes from "devtools/client/shared/vendor/react-prop-types";
 import { connect } from "devtools/client/shared/vendor/react-redux";
 
-import Reps from "devtools/client/shared/components/reps/index";
+const Reps = ChromeUtils.importESModule(
+  "resource://devtools/client/shared/components/reps/index.mjs"
+);
 const {
   REPS: { StringRep },
 } = Reps;
 
 import actions from "../../../actions/index";
 
-import AccessibleImage from "../../shared/AccessibleImage";
+import DebuggerImage from "../../shared/DebuggerImage";
 const classnames = require("resource://devtools/client/shared/classnames.js");
 const ANONYMOUS_FN_NAME = "<anonymous>";
 
@@ -98,8 +100,9 @@ class ExceptionPopup extends Component {
 
   renderArrowIcon(stacktrace) {
     if (stacktrace.length) {
-      return React.createElement(AccessibleImage, {
-        className: classnames("arrow", {
+      return React.createElement(DebuggerImage, {
+        name: "arrow",
+        className: classnames({
           expanded: this.state.isStacktraceExpanded,
         }),
       });

@@ -6,25 +6,19 @@
 
 #include "BindingUtils.h"
 
-#include <algorithm>
-#include <cstdint>
 #include <stdarg.h>
 
-#include "mozilla/Assertions.h"
-#include "mozilla/DebugOnly.h"
-#include "mozilla/Encoding.h"
-#include "mozilla/FloatingPoint.h"
-#include "mozilla/Preferences.h"
-#include "mozilla/ScopeExit.h"
-#include "mozilla/StaticPrefs_dom.h"
-#include "mozilla/UniquePtr.h"
-#include "mozilla/Unused.h"
-#include "mozilla/UseCounter.h"
+#include <algorithm>
+#include <cstdint>
 
 #include "AccessCheck.h"
+#include "WorkerPrivate.h"
+#include "WorkerRunnable.h"
+#include "WrapperFactory.h"
+#include "XrayWrapper.h"
+#include "ipc/ErrorIPCUtils.h"
+#include "ipc/IPCMessageUtilsSpecializations.h"
 #include "js/CallAndConstruct.h"  // JS::Call, JS::IsCallable
-#include "js/experimental/JitInfo.h"  // JSJit{Getter,Setter,Method}CallArgs, JSJit{Getter,Setter}Op, JSJitInfo
-#include "js/friend/StackLimits.h"  // js::AutoCheckRecursionLimit
 #include "js/Id.h"
 #include "js/JSON.h"
 #include "js/MapAndSet.h"
@@ -33,7 +27,47 @@
 #include "js/StableStringChars.h"
 #include "js/String.h"  // JS::GetStringLength, JS::MaxStringLength, JS::StringHasLatin1Chars
 #include "js/Symbol.h"
+#include "js/experimental/JitInfo.h"  // JSJit{Getter,Setter,Method}CallArgs, JSJit{Getter,Setter}Op, JSJitInfo
+#include "js/friend/StackLimits.h"  // js::AutoCheckRecursionLimit
 #include "jsfriendapi.h"
+#include "mozilla/Assertions.h"
+#include "mozilla/DebugOnly.h"
+#include "mozilla/Encoding.h"
+#include "mozilla/Maybe.h"
+#include "mozilla/Preferences.h"
+#include "mozilla/ScopeExit.h"
+#include "mozilla/Sprintf.h"
+#include "mozilla/StaticPrefs_dom.h"
+#include "mozilla/UniquePtr.h"
+#include "mozilla/UseCounter.h"
+#include "mozilla/dom/CustomElementRegistry.h"
+#include "mozilla/dom/DOMException.h"
+#include "mozilla/dom/DeprecationReportBody.h"
+#include "mozilla/dom/DocGroup.h"
+#include "mozilla/dom/ElementBinding.h"
+#include "mozilla/dom/Exceptions.h"
+#include "mozilla/dom/HTMLElementBinding.h"
+#include "mozilla/dom/HTMLEmbedElement.h"
+#include "mozilla/dom/HTMLEmbedElementBinding.h"
+#include "mozilla/dom/HTMLObjectElement.h"
+#include "mozilla/dom/HTMLObjectElementBinding.h"
+#include "mozilla/dom/MaybeCrossOriginObject.h"
+#include "mozilla/dom/ObservableArrayProxyHandler.h"
+#include "mozilla/dom/Promise.h"
+#include "mozilla/dom/ReportingUtils.h"
+#include "mozilla/dom/ScriptSettings.h"
+#include "mozilla/dom/WebIDLGlobalNameHash.h"
+#include "mozilla/dom/WindowProxyHolder.h"
+#include "mozilla/dom/WorkerPrivate.h"
+#include "mozilla/dom/WorkerScope.h"
+#include "mozilla/dom/XULElementBinding.h"
+#include "mozilla/dom/XULFrameElementBinding.h"
+#include "mozilla/dom/XULMenuElementBinding.h"
+#include "mozilla/dom/XULPopupElementBinding.h"
+#include "mozilla/dom/XULResizerElementBinding.h"
+#include "mozilla/dom/XULTextElementBinding.h"
+#include "mozilla/dom/XULTreeElementBinding.h"
+#include "mozilla/dom/XrayExpandoClass.h"
 #include "nsContentCreatorFunctions.h"
 #include "nsContentUtils.h"
 #include "nsGlobalWindowInner.h"
@@ -43,48 +77,12 @@
 #include "nsIOService.h"
 #include "nsIPrincipal.h"
 #include "nsIXPConnect.h"
-#include "nsUTF8Utils.h"
-#include "WorkerPrivate.h"
-#include "WorkerRunnable.h"
-#include "WrapperFactory.h"
-#include "xpcprivate.h"
-#include "XrayWrapper.h"
 #include "nsPrintfCString.h"
-#include "mozilla/Sprintf.h"
 #include "nsReadableUtils.h"
+#include "nsUTF8Utils.h"
 #include "nsWrapperCacheInlines.h"
-
-#include "mozilla/dom/ScriptSettings.h"
-#include "mozilla/dom/CustomElementRegistry.h"
-#include "mozilla/dom/DeprecationReportBody.h"
-#include "mozilla/dom/DOMException.h"
-#include "mozilla/dom/ElementBinding.h"
-#include "mozilla/dom/Exceptions.h"
-#include "mozilla/dom/HTMLObjectElement.h"
-#include "mozilla/dom/HTMLObjectElementBinding.h"
-#include "mozilla/dom/HTMLEmbedElement.h"
-#include "mozilla/dom/HTMLElementBinding.h"
-#include "mozilla/dom/HTMLEmbedElementBinding.h"
-#include "mozilla/dom/MaybeCrossOriginObject.h"
-#include "mozilla/dom/ObservableArrayProxyHandler.h"
-#include "mozilla/dom/ReportingUtils.h"
-#include "mozilla/dom/XULElementBinding.h"
-#include "mozilla/dom/XULFrameElementBinding.h"
-#include "mozilla/dom/XULMenuElementBinding.h"
-#include "mozilla/dom/XULPopupElementBinding.h"
-#include "mozilla/dom/XULResizerElementBinding.h"
-#include "mozilla/dom/XULTextElementBinding.h"
-#include "mozilla/dom/XULTreeElementBinding.h"
-#include "mozilla/dom/Promise.h"
-#include "mozilla/dom/WebIDLGlobalNameHash.h"
-#include "mozilla/dom/WorkerPrivate.h"
-#include "mozilla/dom/WorkerScope.h"
-#include "mozilla/dom/XrayExpandoClass.h"
-#include "mozilla/dom/WindowProxyHolder.h"
-#include "ipc/ErrorIPCUtils.h"
-#include "ipc/IPCMessageUtilsSpecializations.h"
-#include "mozilla/dom/DocGroup.h"
 #include "nsXULElement.h"
+#include "xpcprivate.h"
 
 namespace mozilla {
 namespace dom {
@@ -130,7 +128,7 @@ static const JSErrorFormatString ErrorFormatString[] = {
 
 static const JSErrorFormatString* GetErrorMessage(void* aUserRef,
                                                   const unsigned aErrorNumber) {
-  MOZ_ASSERT(aErrorNumber < ArrayLength(ErrorFormatString));
+  MOZ_ASSERT(aErrorNumber < std::size(ErrorFormatString));
   return &ErrorFormatString[aErrorNumber];
 }
 
@@ -214,13 +212,6 @@ bool ThrowInvalidThis(JSContext* aCx, const JS::CallArgs& aArgs,
                       bool aSecurityError, prototypes::ID aProtoId) {
   return ThrowInvalidThis(aCx, aArgs, aSecurityError,
                           NamesOfInterfacesWithProtos(aProtoId));
-}
-
-bool ThrowNoSetterArg(JSContext* aCx, const JS::CallArgs& aArgs,
-                      prototypes::ID aProtoId) {
-  nsPrintfCString errorMessage("%s attribute setter",
-                               NamesOfInterfacesWithProtos(aProtoId));
-  return aArgs.requireAtLeast(aCx, errorMessage.get(), 1);
 }
 
 }  // namespace dom
@@ -626,10 +617,8 @@ void TErrorResult<CleanupPolicy>::SetPendingException(JSContext* cx,
                                                       const char* context) {
   AssertInOwningThread();
   if (IsUncatchableException()) {
-    // Nuke any existing exception on cx, to make sure we're uncatchable.
-    JS_ClearPendingException(cx);
-    // Don't do any reporting.  Just return, to create an
-    // uncatchable exception.
+    // Note: ReportUncatchableException will clear any existing exception on cx.
+    JS::ReportUncatchableException(cx);
     mResult = NS_OK;
     return;
   }
@@ -998,8 +987,8 @@ static JSObject* CreateInterfaceObject(
     JS::Rooted<JSObject*> legacyFactoryFunction(
         cx, CreateBuiltinFunctionForConstructor(
                 cx, LegacyFactoryFunctionJSNative,
-                LEGACY_FACTORY_FUNCTION_NATIVE_HOLDER_RESERVED_SLOT,
-                const_cast<JSNativeHolder*>(&lff.mHolder), lff.mNargs, nameId,
+                LEGACY_FACTORY_FUNCTION_RESERVED_SLOT,
+                const_cast<LegacyFactoryFunction*>(&lff), lff.mNargs, nameId,
                 nullptr));
     if (!legacyFactoryFunction ||
         !JS_DefineProperty(cx, legacyFactoryFunction, "prototype", proto,
@@ -1265,6 +1254,18 @@ static bool NativeInterface2JSObjectAndThrowIfFailed(
   return true;
 }
 
+/* static */
+size_t binding_detail::NeedsQIToWrapperCache::ObjectMoved(JSObject* aObj,
+                                                          JSObject* aOld) {
+  JS::AutoAssertGCCallback inCallback;
+  nsWrapperCache* cache = GetWrapperCache(aObj);
+  if (cache) {
+    cache->UpdateWrapper(aObj, aOld);
+  }
+
+  return 0;
+}
+
 bool TryPreserveWrapper(JS::Handle<JSObject*> obj) {
   MOZ_ASSERT(IsDOMObject(obj));
 
@@ -1280,9 +1281,6 @@ bool TryPreserveWrapper(JS::Handle<JSObject*> obj) {
     return true;
   }
 
-  // The addProperty hook for WebIDL classes does wrapper preservation, and
-  // nothing else, so call it, if present.
-
   const JSClass* clasp = JS::GetClass(obj);
   const DOMJSClass* domClass = GetDOMClass(clasp);
 
@@ -1290,17 +1288,23 @@ bool TryPreserveWrapper(JS::Handle<JSObject*> obj) {
   MOZ_RELEASE_ASSERT(clasp->isNativeObject(),
                      "Should not call addProperty for proxies.");
 
-  JSAddPropertyOp addProperty = clasp->getAddProperty();
-  if (!addProperty) {
+  if (!clasp->preservesWrapper()) {
     return true;
   }
 
-  // The class should have an addProperty hook iff it is a CC participant.
-  MOZ_RELEASE_ASSERT(domClass->mParticipant);
+  WrapperCacheGetter getter = domClass->mWrapperCacheGetter;
+  MOZ_RELEASE_ASSERT(getter);
 
-  JS::Rooted<jsid> dummyId(RootingCx());
-  JS::Rooted<JS::Value> dummyValue(RootingCx());
-  return addProperty(nullptr, obj, dummyId, dummyValue);
+  nsWrapperCache* cache = getter(obj);
+  // We obviously can't preserve if we're not initialized, we don't want
+  // to preserve if we don't have a wrapper or if the object is in the
+  // process of being finalized.
+  if (cache && cache->GetWrapperPreserveColor()) {
+    cache->PreserveWrapper(
+        cache, reinterpret_cast<nsScriptObjectTracer*>(domClass->mParticipant));
+  }
+
+  return true;
 }
 
 bool HasReleasedWrapper(JS::Handle<JSObject*> obj) {
@@ -1909,6 +1913,30 @@ static bool ResolvePrototypeOrConstructor(
         return true;
       }
     }
+
+    if (id.get() == GetJSIDByIndex(cx, XPCJSContext::IDX_NAME)) {
+      const char* name = IsInterfaceObject(obj)
+                             ? InterfaceInfoFromObject(obj)->mConstructorName
+                             : LegacyFactoryFunctionFromObject(obj)->mName;
+      JSString* nameStr = JS_NewStringCopyZ(cx, name);
+      if (!nameStr) {
+        return false;
+      }
+      desc.set(Some(JS::PropertyDescriptor::Data(
+          JS::StringValue(nameStr), {JS::PropertyAttribute::Configurable,
+                                     JS::PropertyAttribute::Enumerable})));
+      return true;
+    }
+
+    if (id.get() == GetJSIDByIndex(cx, XPCJSContext::IDX_LENGTH)) {
+      uint8_t length = IsInterfaceObject(obj)
+                           ? InterfaceInfoFromObject(obj)->mConstructorArgs
+                           : LegacyFactoryFunctionFromObject(obj)->mNargs;
+      desc.set(Some(JS::PropertyDescriptor::Data(
+          JS::Int32Value(length), {JS::PropertyAttribute::Configurable,
+                                   JS::PropertyAttribute::Enumerable})));
+      return true;
+    }
   } else if (type == eNamespace) {
     if (id.isWellKnownSymbol(JS::SymbolCode::toStringTag)) {
       JS::Rooted<JSString*> nameStr(
@@ -2406,6 +2434,7 @@ void UpdateReflectorGlobal(JSContext* aCx, JS::Handle<JSObject*> aObjArg,
   // propertyHolder. Otherwise, an object with |foo.x === foo| will
   // crash when JS_CopyOwnPropertiesAndPrivateFields tries to call wrap() on
   // foo.x.
+  static_assert(DOM_OBJECT_SLOT == JS_OBJECT_WRAPPER_SLOT);
   JS::SetReservedSlot(newobj, DOM_OBJECT_SLOT,
                       JS::GetReservedSlot(aObj, DOM_OBJECT_SLOT));
   JS::SetReservedSlot(aObj, DOM_OBJECT_SLOT, JS::PrivateValue(nullptr));
@@ -2481,7 +2510,7 @@ nsISupports* GlobalObject::GetAsSupports() const {
 
   // Remove everything below here once all our global objects are using new
   // bindings.  If that ever happens; it would need to include Sandbox and
-  // BackstagePass.
+  // SystemGlobal.
 
   // See whether mGlobalJSObject is an XPCWrappedNative.  This will redo the
   // IsWrapper bit above and the UnwrapDOMObjectToISupports in the case when
@@ -2804,7 +2833,7 @@ bool IsGlobalInExposureSet(JSContext* aCx, JSObject* aGlobal,
   const char* name = JS::GetClass(aGlobal)->name;
 
   if ((aGlobalSet & GlobalNames::Window) &&
-      (!strcmp(name, "Window") || !strcmp(name, "BackstagePass"))) {
+      (!strcmp(name, "Window") || !strcmp(name, "SystemGlobal"))) {
     return true;
   }
 
@@ -3208,13 +3237,23 @@ bool GenericSetter(JSContext* cx, unsigned argc, JS::Value* vp) {
           cx, args, rv == NS_ERROR_XPC_SECURITY_MANAGER_VETO, protoID);
     }
   }
-  if (args.length() == 0) {
-    return ThrowNoSetterArg(cx, args, protoID);
-  }
   MOZ_ASSERT(info->type() == JSJitInfo::Setter);
   JSJitSetterOp setter = info->setter;
-  if (!setter(cx, obj, self, JSJitSetterCallArgs(args))) {
-    return false;
+
+  // https://webidl.spec.whatwg.org/#dfn-attribute-setter
+  //
+  // Step 4.1.  Let |V| be <emu-val>undefined</emu-val>.
+  // Step 4.2.  If any arguments were passed, then set |V| to the value of the
+  //            first argument passed.
+  if (args.length() == 0) {
+    JS::Rooted<JS::Value> undef(cx);
+    if (!setter(cx, obj, self, JSJitSetterCallArgs(&undef))) {
+      return false;
+    }
+  } else {
+    if (!setter(cx, obj, self, JSJitSetterCallArgs(args))) {
+      return false;
+    }
   }
   args.rval().setUndefined();
 #ifdef DEBUG
@@ -3749,7 +3788,7 @@ bool HTMLConstructor(JSContext* aCx, unsigned aArgc, JS::Value* aVp,
 
   ErrorResult rv;
   auto scopeExit =
-      MakeScopeExit([&]() { Unused << rv.MaybeSetPendingException(aCx); });
+      MakeScopeExit([&]() { (void)rv.MaybeSetPendingException(aCx); });
 
   // Step 1.
   nsCOMPtr<nsPIDOMWindowInner> window =
@@ -3766,7 +3805,7 @@ bool HTMLConstructor(JSContext* aCx, unsigned aArgc, JS::Value* aVp,
   // Technically, per spec, a window always has a document.  In Gecko, a
   // sufficiently torn-down window might not, so check for that case.  We're
   // going to need a document to create an element.
-  Document* doc = window->GetExtantDoc();
+  RefPtr<Document> doc = window->GetExtantDoc();
   if (!doc) {
     rv.Throw(NS_ERROR_UNEXPECTED);
     return false;
@@ -3809,7 +3848,7 @@ bool HTMLConstructor(JSContext* aCx, unsigned aArgc, JS::Value* aVp,
   }
 
   // Step 3.
-  CustomElementDefinition* definition =
+  RefPtr<CustomElementDefinition> definition =
       registry->LookupCustomElementDefinition(aCx, newTarget);
   if (!definition) {
     rv.ThrowTypeError<MSG_ILLEGAL_CONSTRUCTOR>();
@@ -3909,6 +3948,21 @@ bool HTMLConstructor(JSContext* aCx, unsigned aArgc, JS::Value* aVp,
 
   // Steps 7 and 8.
   JS::Rooted<JSObject*> desiredProto(aCx);
+
+  // Check which construction path we're taking before running any JS.
+  // This determines whether we need AutoConstructionDepth protection.
+  nsTArray<RefPtr<Element>>& constructionStack = definition->mConstructionStack;
+  const bool isDirectConstruction = constructionStack.IsEmpty();
+
+  // For direct construction (not upgrade), create AutoConstructionDepth before
+  // GetDesiredProto. This ensures mConstructionDepth is incremented before any
+  // re-entrant JS can run via Proxy traps, preventing desynchronization with
+  // mPrefixStack which may be pushed by nsContentUtils::NewXULOrHTMLElement.
+  mozilla::Maybe<AutoConstructionDepth> autoDepth;
+  if (isDirectConstruction) {
+    autoDepth.emplace(definition);
+  }
+
   if (!GetDesiredProto(aCx, args, aProtoId, aCreator, &desiredProto)) {
     return false;
   }
@@ -3919,14 +3973,12 @@ bool HTMLConstructor(JSContext* aCx, unsigned aArgc, JS::Value* aVp,
   // one branch and steps 9-12 on another branch, then common up the "return
   // element" work.
   RefPtr<Element> element;
-  nsTArray<RefPtr<Element>>& constructionStack = definition->mConstructionStack;
-  if (constructionStack.IsEmpty()) {
+  if (isDirectConstruction) {
     // Step 8.
     // Now we go to construct an element.  We want to do this in global's
     // realm, not caller realm (the normal constructor behavior),
     // just in case those elements create JS things.
     JSAutoRealm ar(aCx, global.Get());
-    AutoConstructionDepth acd(definition);
 
     RefPtr<NodeInfo> nodeInfo = doc->NodeInfoManager()->GetNodeInfo(
         definition->mLocalName, definition->mPrefixStack.LastElement(), ns,
@@ -4046,7 +4098,7 @@ static const char* kDeprecatedOperations[] = {
     nullptr};
 #undef DEPRECATED_OPERATION
 
-void ReportDeprecation(nsIGlobalObject* aGlobal, nsIURI* aURI,
+void ReportDeprecation(nsIGlobalObject* aGlobal, Document* aDoc, nsIURI* aURI,
                        DeprecatedOperations aOperation,
                        const nsACString& aFileName,
                        const Nullable<uint32_t>& aLineNumber,
@@ -4070,8 +4122,8 @@ void ReportDeprecation(nsIGlobalObject* aGlobal, nsIURI* aURI,
   key.AppendASCII("Warning");
 
   nsAutoString msg;
-  rv = nsContentUtils::GetLocalizedString(nsContentUtils::eDOM_PROPERTIES,
-                                          key.get(), msg);
+  rv = nsContentUtils::GetMaybeLocalizedString(nsContentUtils::eDOM_PROPERTIES,
+                                               key.get(), aDoc, msg);
   if (NS_WARN_IF(NS_FAILED(rv))) {
     return;
   }
@@ -4133,7 +4185,7 @@ void MaybeShowDeprecationWarning(const GlobalObject& aGlobal,
 void MaybeReportDeprecation(const GlobalObject& aGlobal,
                             DeprecatedOperations aOperation) {
   nsCOMPtr<nsIURI> uri;
-
+  nsCOMPtr<Document> doc;
   if (NS_IsMainThread()) {
     nsCOMPtr<nsPIDOMWindowInner> window =
         do_QueryInterface(aGlobal.GetAsSupports());
@@ -4141,7 +4193,8 @@ void MaybeReportDeprecation(const GlobalObject& aGlobal,
       return;
     }
 
-    uri = window->GetExtantDoc()->GetDocumentURI();
+    doc = window->GetExtantDoc();
+    uri = doc->GetDocumentURI();
   } else {
     WorkerPrivate* workerPrivate =
         GetWorkerPrivateFromContext(aGlobal.Context());
@@ -4167,8 +4220,8 @@ void MaybeReportDeprecation(const GlobalObject& aGlobal,
   nsCOMPtr<nsIGlobalObject> global = do_QueryInterface(aGlobal.GetAsSupports());
   MOZ_ASSERT(global);
 
-  ReportDeprecation(global, uri, aOperation, location.FileName(), lineNumber,
-                    columnNumber);
+  ReportDeprecation(global, doc, uri, aOperation, location.FileName(),
+                    lineNumber, columnNumber);
 }
 
 }  // anonymous namespace
@@ -4290,7 +4343,43 @@ already_AddRefed<Promise> CreateRejectedPromiseFromThrownException(
   return Promise::RejectWithExceptionFromContext(global, aCx, aError);
 }
 
+/* static */
+void ReflectedHTMLAttributeSlotsBase::ForEachXrayReflectedHTMLAttributeSlots(
+    JS::RootingContext* aCx, JSObject* aObject, size_t aSlotIndex,
+    size_t aArrayIndex, void (*aFunc)(void* aSlots, size_t aArrayIndex)) {
+  xpc::ForEachXrayExpandoObject(
+      aCx, aObject, [aSlotIndex, aFunc, aArrayIndex](JSObject* aExpandObject) {
+        MOZ_ASSERT(JSCLASS_RESERVED_SLOTS(JS::GetClass(aExpandObject)) >
+                   aSlotIndex);
+        MOZ_ASSERT(aSlotIndex >= DOM_EXPANDO_RESERVED_SLOTS);
+        JS::Value array = JS::GetReservedSlot(aExpandObject, aSlotIndex);
+        if (!array.isUndefined()) {
+          aFunc(array.toPrivate(), aArrayIndex);
+        }
+      });
+}
+
+/* static */
+void ReflectedHTMLAttributeSlotsBase::XrayExpandoObjectFinalize(
+    JS::GCContext* aCx, JSObject* aObject) {
+  xpc::ExpandoObjectFinalize(aCx, aObject);
+}
+
+void ClearXrayExpandoSlots(JS::RootingContext* aCx, JSObject* aObject,
+                           size_t aSlotIndex) {
+  xpc::ForEachXrayExpandoObject(
+      aCx, aObject, [aSlotIndex](JSObject* aExpandObject) {
+        MOZ_ASSERT(JSCLASS_RESERVED_SLOTS(JS::GetClass(aExpandObject)) >
+                   aSlotIndex);
+        MOZ_ASSERT(aSlotIndex >= DOM_EXPANDO_RESERVED_SLOTS);
+        JS::SetReservedSlot(aExpandObject, aSlotIndex, JS::UndefinedValue());
+      });
+}
+
 }  // namespace binding_detail
+
+static_assert(UnderlyingValue(DOM_EXPANDO_RESERVED_SLOTS) ==
+              UnderlyingValue(xpc::JSSLOT_EXPANDO_COUNT));
 
 }  // namespace dom
 }  // namespace mozilla

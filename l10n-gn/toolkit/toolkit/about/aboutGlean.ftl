@@ -16,6 +16,12 @@ about-glean-interface-description =
     ha’e mba’ekuaarã ñembyatyha arandukarenda ojeporúva { -vendor-short-name } apopyrépe.
     Ko jehechaha ojejapo mboguatahára ha ta’ãhára
     <a data-l10n-name="fog-link">oha’ã hag̃ua ipoite rupi jeporupyrã</a>.
+about-glean-category-about-glean = { -glean-brand-name } rehegua
+about-glean-category-manual-testing = Po Rupivegua
+about-glean-category-adhoc-testing = Jeporu Reigua
+about-glean-category-profiler = Perfilador jeporu rehegua
+about-glean-category-about-data = Mba’ekuaarã rehegua
+about-glean-category-metrics-table = Métrica rehegua
 about-glean-upload-enabled = Mba’ekuaarã ñemyanyhẽ hendýma.
 about-glean-upload-disabled = Mba’ekuaarã ñemyanyhẽ oguéma.
 about-glean-upload-enabled-local = Mba’ekuaarã myanyhẽ hendýta emondo hag̃ua mohendahavusu ag̃uiguápe.
@@ -43,6 +49,9 @@ about-glean-glean-android = <code>MOZ_GLEAN_ANDROID</code>: { $glean-android-def
 #   $moz-official-define-value (Boolean): the value of the MOZILLA_OFFICIAL define.
 # Do not translate strings between <code> </code> tags.
 about-glean-moz-official = <code>MOZILLA_OFFICIAL</code>: { $moz-official-define-value }
+about-glean-additional-links =
+    Hesakãporãve hag̃ua mba’échapa eeñemboheraguapýta mba’ekuaarã jejuhu, eporandu
+    tendayke <strong>Mba’ekuaarã rehegua</strong>.
 about-glean-about-testing-header = Ñeha’ã rehegua
 # This message is followed by a numbered list.
 about-glean-manual-testing =
@@ -88,7 +97,7 @@ about-glean-adhoc-explanation =
     <code>Glean.metricCategory.metricName.testGetValue()</code> ramo.
 # Do not translate strings between <code> </code> tags.
 about-glean-adhoc-explanation2 =
-     Eha’ãve hag̃ua <i>ad hoc</i>,
+    Eha’ãve hag̃ua <i>ad hoc</i>,
     avei ehechakuaa porupyrã repy ag̃aguáva mba’e heta’ỹva rehegua
     embojurujávo tembiporu mba’e’okarupa ñemboguataha ko’ápe <code>about:glean</code>-pe
     ha eiporúvo pe API <code>testGetValue()</code>
@@ -99,7 +108,91 @@ about-glean-adhoc-note =
     Kóva he’ise pe métrica ha pe métrica réra oguerekoha ysaja
     <code>camelCase</code> ojuavýva umi APIs de Rust y C++ reheguágui.
 controls-button-label-verbose = Emboheko ha emondo ping
+about-glean-feedback-settings-only =
+    .message = ¡Ñemboheko jejapopyre!
+about-glean-feedback-settings-and-ping =
+    .message = ¡Ñemboheko jejapopyre ha ping mondopyre!
 about-glean-about-data-header = Mba’ekuaarã rehegua
+about-glean-about-data-description = Oĩ heta tembiporu eiporukuaáva ehecha hag̃ua ne mba’ekuaarãnguéra, eikuaa rire mba’etépa pe rehekáva.
+about-glean-about-data-description-list-intro =
+    Eporandu pe tysýi eku’evévo eikuaa hag̃ua mba’épepa ojeporu
+    peteĩteĩva tembiporu:
+about-glean-about-data-list-item-dictionary =
+    Ehechajey hag̃ua mba’ekuaarã rysýi ombyatýva { -glean-brand-name } hesakãva tembiporu’ípe, eporandu
+    <a data-l10n-name="glean-dictionary-link">{ -glean-brand-name } ñe’ẽryru</a>.
+about-glean-about-data-list-item-about-telemetry =
+    Ojehechávo umi mba’ekuaarã oñembyatýva telemetría heseguáva, eporandu
+     <a data-l10n-name="about-telemetry-link">about:telemetry</a>.
+about-glean-about-data-list-item-firefox-profiler =
+    Eikuaa hag̃ua mba’ete rembiapokue ha ehecha opaite métrica ñongatupyre, eiporu
+    <a data-l10n-name="about-glean-firefox-profiler">{ -profiler-brand-name }</a>.
+about-glean-metrics-table-header = Opavave métrica
+# This message refers to the category in which a given metric is recorded.
+about-glean-metrics-table-header-category = Mboja’opy
+# This message refers to the name of a given metric.
+about-glean-metrics-table-header-name = Téra
+# This message refers to a given metric's metric type.
+about-glean-metrics-table-header-type = Peteĩchagua
+# This message refers to the underlying value of a given metric.
+about-glean-metrics-table-header-value = Tepykue
+# This message refers to the UI action buttons for a given metric.
+about-glean-metrics-table-header-actions = Ñemongu’e
+about-glean-metrics-table-settings-button = Ñemboheko
+# Settings for the metrics table and its visualizations in about:glean
+about-glean-metrics-table-settings-title = Emboheko tabla métrica
+about-glean-metrics-table-settings-category-general = Tuichakue
+about-glean-metrics-table-settings-hide-empty-value-rows = Eñomi tysýi tepykue nandi ndive
+about-glean-metrics-table-settings-category-visualizations = Jehechapyreita
+# This is a heading that is immediately followed by an example data visualization
+about-glean-metrics-table-settings-visualization-example = Techapyrã
+about-glean-metrics-table-settings-category-visualizations-histogram = Histograma
+about-glean-metrics-table-settings-histograms-chart-max = Ta’ãnga ijyvatekue
+# The maximum height after to which the y-values on the chart will be scaled
+about-glean-metrics-table-settings-histograms-scaled-max = Yvatete jupipyre
+about-glean-metrics-table-settings-histograms-box-padding = Mba’yru rembe’y
+about-glean-metrics-table-settings-histograms-chart-padding = Ta’ãnga myanyhẽha
+about-glean-metrics-table-settings-histograms-left-padding = Asu rembe’y juajupyre
+about-glean-metrics-table-settings-category-visualizations-timeline = Oikovahína
+about-glean-metrics-table-settings-timelines-height = Yvategua
+about-glean-metrics-table-settings-timelines-width = Pekue
+about-glean-metrics-table-settings-timelines-chart-padding = Ta’ãnga myanyhẽha
+# The radius of each circle denoting individual events recorded for an event metric
+about-glean-metrics-table-settings-timelines-circle-radius = Mba’eapu’a mbyte
+# The offset on the x-axis from the end of the horizontal line for the y-axis line
+about-glean-metrics-table-settings-timelines-vertical-line-x-offset = Y X-pe jeva
+# The offset on the y-axis from the x-axis for the y-axis line
+about-glean-metrics-table-settings-timelines-vertical-line-y-offset = Y jeva Y mbojerehápe
+# Label displayed near an input field that can be used to filter metrics
+about-glean-label-for-filter-metrics = Mboguaha
+# This message sits alongside an input field, further describing its purpose.
+# Category refers to the category in which a given metric is recorded.
+# Name refers to the name of a given metric.
+# Type refers to a given metric's metric type.
+# Value refers to the underlying value of a given metric.
+# "Simple type" refers to a value type that does not have deeply-nested data, such as a boolean, number, string, or list of strings.
+about-glean-description-for-filter-metrics = Kóva omboguatáta pe tabla hapykuéri hendaiteháicha, héra, mba’echagua ha hepykue (pe hepykue ndahetáirõ).
+about-glean-button-load-all = Emyanyhẽte tepykue
+# A button that, when pressed, exports the data currently shown in the metrics table
+about-glean-button-export-data = Mba’ekuaarã mba’egueru
+about-glean-button-load-value = Myanyhẽ
+# "Docs" is shorthand for "documentation"
+about-glean-button-dictionary-link = Kuatiaite
+about-glean-button-watch = Ñema’ẽ
+# Meaning "to stop watching"
+about-glean-button-unwatch = Anive ehecha
+about-glean-no-data-to-display = Ndaipóri mba’ekuaarã jehechaukarã.
+# Do not translate strings between <code> </code> tags.
+about-glean-dual-labeled-metric-warning = Umi <code>DualLabeledCounter</code> métrica ndojokupytýi <code>about:glean</code> jehechauka ndive.
+about-glean-unknown-metric-type-warning = Peteĩ métrica ojekuaa’ỹva.
+about-glean-enable-new-features-button = Embojuruja tembiapoite pyahu
+about-glean-disable-new-features-button = Eipe’a tembiapoite pyahu
 about-glean-about-data-explanation =
     Eikundaha hag̃ua mba’ekuaarã mbyatypyre rysýire, eporandu pe
     <a data-l10n-name="glean-dictionary-link">{ -glean-brand-name } Ñe’ẽryru</a>.
+
+## These labels are displayed to organize the different ping types within the dropdown.
+
+about-glean-ping-list-optgroup-built-in =
+    .label = Pings oikepyréva
+about-glean-ping-list-optgroup-custom =
+    .label = Pings mboavapyre

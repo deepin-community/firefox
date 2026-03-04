@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-# ***** BEGIN LICENSE BLOCK *****
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
-# ***** END LICENSE BLOCK *****
 
 import copy
 import glob
@@ -69,7 +67,7 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
     config_options = copy.deepcopy(testing_config_options)
 
     def __init__(self, require_config_file=False):
-        super(AndroidProfileRun, self).__init__(
+        super().__init__(
             config_options=self.config_options,
             all_actions=[
                 "download",
@@ -96,7 +94,7 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
     def query_abs_dirs(self):
         if self.abs_dirs:
             return self.abs_dirs
-        abs_dirs = super(AndroidProfileRun, self).query_abs_dirs()
+        abs_dirs = super().query_abs_dirs()
         dirs = {}
 
         dirs["abs_test_install_dir"] = os.path.join(abs_dirs["abs_src_dir"], "testing")
@@ -140,9 +138,9 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
         """
         Install APKs on the device.
         """
-        assert (
-            self.installer_path is not None
-        ), "Either add installer_path to the config or use --installer-path."
+        assert self.installer_path is not None, (
+            "Either add installer_path to the config or use --installer-path."
+        )
         self.install_android_app(self.installer_path)
         self.info("Finished installing apps for %s" % self.device_serial)
 
@@ -180,7 +178,7 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
         httpd.start(block=False)
 
         profile_data_dir = os.path.join(topsrcdir, "testing", "profiles")
-        with open(os.path.join(profile_data_dir, "profiles.json"), "r") as fh:
+        with open(os.path.join(profile_data_dir, "profiles.json")) as fh:
             base_profiles = json.load(fh)["profileserver"]
 
         prefpaths = [
@@ -246,15 +244,6 @@ class AndroidProfileRun(TestingMixin, BaseScript, MozbaseMixin, AndroidMixin):
                 time.sleep(timeout)
 
             driver.quit(in_app=True)
-
-            # Bug 1914354: Remove polling of the profile data which is no longer
-            # needed when using the quit() command from Marionette.
-            for i in range(50):
-                if not adbdevice.process_exist(app):
-                    break
-                time.sleep(2)
-            else:
-                raise Exception("Android App (%s) never quit" % app)
 
             # Pull all the profraw files and en-US.log
             adbdevice.pull(outputdir, "/builds/worker/workspace/")

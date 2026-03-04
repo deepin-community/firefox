@@ -6,12 +6,4 @@
 ## Theme names and descriptions used in the Themes panel in about:addons
 
 extension-firefox-compact-light-name = အလင်း
-
 extension-firefox-compact-dark-name = အမှောင်
-
-## Colorway Themes
-## These themes are variants of a colorway. The colorway is specified in the
-## $colorway-name variable.
-## Variables
-##   $colorway-name (String) The name of a colorway (e.g. Graffiti, Elemental).
-

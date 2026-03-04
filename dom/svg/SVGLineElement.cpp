@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/dom/SVGLineElement.h"
+
 #include "mozilla/dom/SVGLengthBinding.h"
 #include "mozilla/dom/SVGLineElementBinding.h"
 #include "mozilla/gfx/2D.h"
@@ -42,8 +43,9 @@ void SVGLineElement::MaybeAdjustForZeroLength(float aX1, float aY1, float& aX2,
                                               float aY2) {
   if (aX1 == aX2 && aY1 == aY2) {
     SVGContentUtils::AutoStrokeOptions strokeOptions;
-    SVGContentUtils::GetStrokeOptions(&strokeOptions, this, nullptr, nullptr,
-                                      SVGContentUtils::eIgnoreStrokeDashing);
+    SVGContentUtils::GetStrokeOptions(
+        &strokeOptions, this, nullptr, nullptr,
+        SVGContentUtils::StrokeOptionFlag::IgnoreStrokeDashing);
 
     if (strokeOptions.mLineCap != CapStyle::BUTT) {
       float tinyLength =
@@ -81,7 +83,7 @@ already_AddRefed<DOMSVGAnimatedLength> SVGLineElement::Y2() {
 
 SVGElement::LengthAttributesInfo SVGLineElement::GetLengthInfo() {
   return LengthAttributesInfo(mLengthAttributes, sLengthInfo,
-                              ArrayLength(sLengthInfo));
+                              std::size(sLengthInfo));
 }
 
 //----------------------------------------------------------------------

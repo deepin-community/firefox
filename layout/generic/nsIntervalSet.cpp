@@ -7,8 +7,10 @@
 /* a set of ranges on a number-line */
 
 #include "nsIntervalSet.h"
-#include <new>
+
 #include <algorithm>
+#include <new>
+
 #include "mozilla/PresShell.h"  // for allocation
 
 using namespace mozilla;
@@ -42,7 +44,9 @@ void nsIntervalSet::IncludeInterval(coord_type aBegin, coord_type aEnd) {
   new (newInterval) Interval(aBegin, aEnd);
 
   Interval** current = &mList;
-  while (*current && (*current)->mEnd < aBegin) current = &(*current)->mNext;
+  while (*current && (*current)->mEnd < aBegin) {
+    current = &(*current)->mNext;
+  }
 
   newInterval->mNext = *current;
   *current = newInterval;
@@ -60,7 +64,9 @@ void nsIntervalSet::IncludeInterval(coord_type aBegin, coord_type aEnd) {
 bool nsIntervalSet::Intersects(coord_type aBegin, coord_type aEnd) const {
   Interval* current = mList;
   while (current && current->mBegin <= aEnd) {
-    if (current->mEnd >= aBegin) return true;
+    if (current->mEnd >= aBegin) {
+      return true;
+    }
     current = current->mNext;
   }
   return false;
@@ -69,7 +75,9 @@ bool nsIntervalSet::Intersects(coord_type aBegin, coord_type aEnd) const {
 bool nsIntervalSet::Contains(coord_type aBegin, coord_type aEnd) const {
   Interval* current = mList;
   while (current && current->mBegin <= aBegin) {
-    if (current->mEnd >= aEnd) return true;
+    if (current->mEnd >= aEnd) {
+      return true;
+    }
     current = current->mNext;
   }
   return false;

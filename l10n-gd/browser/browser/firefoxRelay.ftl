@@ -4,14 +4,14 @@
 
 
 ## Error messages for failed HTTP web requests.
-## https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#client_error_responses
+## https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status#client_error_responses
 ## Variables:
 ##   $status (Number) - HTTP status code, for example 403
 
 firefox-relay-mask-generation-failed = Cha b’ urrainn dha { -relay-brand-name } masg ùr a chruthachadh. Còd na mearachd HTTP: { $status }.
 firefox-relay-get-reusable-masks-failed = Cha do lorg { -relay-brand-name } masg sam bith a ghabhas a chleachdadh a-rithist. Còd na mearachd HTTP: { $status }.
 
-##
+## The "control" variation of the Relay offer popup
 
 firefox-relay-must-login-to-fxa = Feumaidh tu clàradh a-steach gu { -fxaccount-brand-name } mus urrainn dhut { -relay-brand-name } a chleachdadh.
 firefox-relay-must-login-to-account = Clàraich a-steach dhan chunntas agad airson na masgan puist-d { -relay-brand-name } agad a chleachdadh.

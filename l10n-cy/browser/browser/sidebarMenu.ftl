@@ -4,12 +4,11 @@
 
 sidebar-menu-bookmarks =
     .label = Nodau Tudalen
+sidebar-menu-bookmarks-2 = Nodau Tudalen
 sidebar-menu-history =
     .label = Hanes
 sidebar-menu-synced-tabs =
     .label = Tabiau wedi'u Cydweddu
-sidebar-menu-megalist =
-    .label = Cyfrineiriau
 sidebar-menu-close =
     .label = Cau'r Bar Ochr
 sidebar-close-button =

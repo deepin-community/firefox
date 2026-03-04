@@ -8,6 +8,19 @@ tabbrowser-menuitem-close-tab =
     .label = Ljepblêd slute
 tabbrowser-menuitem-close =
     .label = Slute
+# Displayed within the tooltip on tabs inside of a tab group.
+# Variables:
+#   $tabGroupName (String): the user-defined name of the current tab group.
+tabbrowser-tab-tooltip-tab-group = { $tabGroupName }
+# Displayed within the tooltip on tabs in a container.
+# Variables:
+#   $containerName (String): the name of the current container.
+tabbrowser-tab-tooltip-container = { $containerName }
+# Displayed within the tooltip on tabs inside of a tab group if the tab is also in a container.
+# Variables:
+#   $tabGroupName (String): the user-defined name of the current tab group.
+#   $containerName (String): the name of the current container.
+tabbrowser-tab-tooltip-tab-group-container = { $tabGroupName } – { $containerName }
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
@@ -72,6 +85,16 @@ tabbrowser-unblock-tab-audio-tooltip =
            *[other] { $tabCount } ljepblêden ôfspylje
         }
 
+## Tooltips for tab audio control
+
+tabbrowser-unmute-tab-audio-aria-label =
+    .aria-label = Ljepblêd dempe opheffe
+tabbrowser-mute-tab-audio-aria-label =
+    .aria-label = Ljepblêd dempe
+# Used to unblock a tab with audio from autoplaying
+tabbrowser-unblock-tab-audio-aria-label =
+    .aria-label = Ljepblêd ôfspylje
+
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
@@ -80,6 +103,7 @@ tabbrowser-unblock-tab-audio-tooltip =
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-confirm-close-tabs-title = { $tabCount } ljepblêden slute?
 tabbrowser-confirm-close-tabs-button = Ljepblêden slute
+tabbrowser-ask-close-tabs-checkbox = Freegje foar it sluten fan meardere ljepblêden
 tabbrowser-confirm-close-tabs-checkbox = Warskôgje by it sluten fan meardere ljepblêden
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
@@ -102,7 +126,21 @@ tabbrowser-confirm-close-tabs-with-key-title = Finster slute en { -brand-short-n
 tabbrowser-confirm-close-tabs-with-key-button = { -brand-short-name } ôfslute
 # Variables:
 #   $quitKey (String): the text of the keyboard shortcut for quitting.
+tabbrowser-ask-close-tabs-with-key-checkbox = Freegje foar ôfsluten mei { $quitKey }
+# Variables:
+#   $quitKey (String): the text of the keyboard shortcut for quitting.
 tabbrowser-confirm-close-tabs-with-key-checkbox = Befêstigje foardat jo stopje mei { $quitKey }
+
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
+
+tabbrowser-confirm-close-warn-shortcut-title = { -brand-short-name } ôfslute of aktuele ljepblêd slute?
+tabbrowser-confirm-close-windows-warn-shortcut-button =
+    { PLATFORM() ->
+        [windows] { -brand-short-name } ôfslute
+       *[other] { -brand-short-name } ôfslute
+    }
+tabbrowser-confirm-close-tab-only-button = Aktuele ljepblêd slute
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
@@ -124,8 +162,6 @@ tabbrowser-confirm-caretbrowsing-checkbox = Dit dialoochfinster net mear toane.
 
 ## Confirmation dialog for closing all duplicate tabs
 
-tabbrowser-confirm-close-duplicate-tabs-title = Let op!
-tabbrowser-confirm-close-duplicate-tabs-text = Wy hâlde it lêste aktive ljepblêd iepen
 tabbrowser-confirm-close-all-duplicate-tabs-title = Dûbele ljepblêden slute?
 tabbrowser-confirm-close-all-duplicate-tabs-text =
     Dûbele ljepblêden yn dit finster wurde sluten. It lêst aktive
@@ -167,6 +203,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
     .label = Alle { $tabCount } ljepblêdtitels toane
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = Ljepblêd dôvje
@@ -174,3 +213,232 @@ tabbrowser-manager-unmute-tab =
     .tooltiptext = Ljepblêd dôvje opheffe
 tabbrowser-manager-close-tab =
     .tooltiptext = Ljepblêd slute
+# This is for tab groups that have been "saved and closed" (see tab-group-editor-action-save). It does
+# not include "deleted" tab groups (see tab-group-editor-action-delete).
+tabbrowser-manager-closed-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } – Sluten
+tabbrowser-manager-current-window-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } – Aktueel finster
+
+##
+
+tab-group-editor-title-create = Ljepblêdgroep meitsje
+tab-group-editor-title-edit = Ljepblêdgroep beheare
+tab-group-editor-name-label = Namme
+tab-group-editor-name-field =
+    .placeholder = Foarbyld: winkelje
+tab-group-editor-cancel =
+    .label = Annulearje
+    .accesskey = A
+tab-group-editor-color-selector =
+    .aria-label = Ljepblêdgroepkleur
+tab-group-editor-color-selector2-blue = Blau
+    .title = Blau
+tab-group-editor-color-selector2-purple = Pears
+    .title = Pears
+tab-group-editor-color-selector2-cyan = Syaan
+    .title = Syaan
+tab-group-editor-color-selector2-orange = Oranje
+    .title = Oranje
+tab-group-editor-color-selector2-yellow = Giel
+    .title = Giel
+tab-group-editor-color-selector2-pink = Roze
+    .title = Roze
+tab-group-editor-color-selector2-green = Grien
+    .title = Grien
+tab-group-editor-color-selector2-gray = Griis
+    .title = Griis
+tab-group-editor-color-selector2-red = Read
+    .title = Read
+tab-group-description = { $tabGroupName } – Ljepblêdgroep
+tab-group-label-tooltip-collapsed = { $tabGroupName } – Ynklapt
+tab-group-label-tooltip-expanded = { $tabGroupName } – Utklapt
+tab-group-preview-name =
+    .aria-label = Ljepblêden yn in ynklapte groep
+tab-context-unnamed-group =
+    .label = Nammeleaze groep
+tab-group-name-default = Nammeleaze groep
+
+## When collapsed, the tab group label's aria-description will indicate
+## whether the hover menu is open or closed.
+
+tab-group-preview-open-description = Ljepblêdelist iepen
+tab-group-preview-closed-description = Ljepblêdelist sletten
+
+##
+
+tab-context-move-tab-to-new-group =
+    .label =
+        { $tabCount ->
+            [1] Ljepblêd oan nije groep tafoegje
+            [one] Ljepblêd oan nije groep tafoegje
+           *[other] Ljepblêden oan nije groep tafoegje
+        }
+    .accesskey = g
+tab-context-move-tab-to-group =
+    .label =
+        { $tabCount ->
+            [1] Ljepblêd oan groep tafoegje
+            [one] Ljepblêd oan groep tafoegje
+           *[other] Ljepblêden oan groep tafoegje
+        }
+    .accesskey = g
+tab-context-move-split-view-to-new-group =
+    .label =
+        { $splitViewCount ->
+            [1] Splitste werjefte oan nije groep tafoegje
+            [one] Splitste werjefte oan nije groep tafoegje
+           *[other] Splitste werjeften oan nije groep tafoegje
+        }
+    .accesskey = S
+tab-context-move-split-view-to-group =
+    .label =
+        { $splitViewCount ->
+            [1] Splitste werjefte oan groep tafoegje
+            [one] Splitste werjefte oan groep tafoegje
+           *[other] Splitste werjeften oan groep tafoegje
+        }
+    .accesskey = S
+tab-context-move-tab-to-group-saved-groups =
+    .label = Sletten groepen
+tab-group-editor-action-new-tab =
+    .label = Nij ljepblêd yn groep
+tab-group-editor-action-new-window =
+    .label = Groep nei nij finster ferpleatse
+tab-group-editor-action-save =
+    .label = Groep bewarje en slute
+tab-group-editor-action-ungroup =
+    .label = Ljepblêdgroepearring opheffe
+tab-group-editor-action-delete =
+    .label = Groep fuortsmite
+tab-group-editor-done =
+    .label = Dien
+    .accessKey = D
+tab-context-reopen-tab-group =
+    .label = Ljepblêdgroep opnij iepenje
+# Variables:
+#  $groupCount (Number): the number of tab groups that are affected by the action.
+tab-context-ungroup-tab =
+    .label =
+        { $groupCount ->
+            [1] Fuortsmite út groep
+            [one] Fuortsmite út groep
+           *[other] Fuortsmite út groepen
+        }
+    .accesskey = F
+# When a tab group containing the active tab is collapsed, the active tab
+# remains visible. An indicator appears at the end of the group showing the
+# number of remaining tabs that are hidden by the collapsed group,
+# e.g. "+2" for a group with 3 total tabs.
+tab-group-overflow-count = +{ $tabCount }
+tab-group-overflow-count-tooltip =
+    { $tabCount ->
+        [one] Noch { $tabCount } ljepblêd
+       *[other] Noch { $tabCount } ljepblêden
+    }
+
+## Open/saved tab group context menu
+
+# For a tab group open in any window, clicking this will create a new
+# window and move this tab group to that new window.
+tab-group-context-move-to-new-window =
+    .label = Groep nei nij finster ferpleatse
+# For a tab group open in a different window from the one that the
+# user is using to access the tab group menu, move that tab group into the
+# user's current window.
+tab-group-context-move-to-this-window =
+    .label = Groep nei dit finster ferpleatse
+# For a tab group that is open in any window, close the tab group and
+# do not save it. For a tab group that is closed but saved by the user, clicking
+# this will forget the saved tab group.
+tab-group-context-delete =
+    .label = Groep fuortsmite
+# For a saved tab group that is not open in any window, open the tab group
+# in the user's current window.
+tab-group-context-open-saved-group-in-this-window =
+    .label = Groep yn dit finster iepenje
+# For a saved tab group that is not open in any window, create a new window and
+# open the tab group in that window.
+tab-group-context-open-saved-group-in-new-window =
+    .label = Groep yn nij finster iepenje
+
+## Tab Notes
+
+tab-context-add-note =
+    .label = Notysje tafoegje
+    .accesskey = f
+tab-context-update-note =
+    .label = Notysje bywurkje
+    .accesskey = b
+tab-context-edit-note =
+    .label = Notysje bewurkje
+    .accesskey = w
+tab-context-delete-note =
+    .label = Notysje fuortsmite
+    .accesskey = f
+tab-note-editor-title-create = Notysje tafoegje
+tab-note-editor-title-edit = Notysje bewurkje
+tab-note-editor-text-field =
+    .placeholder = Wat wolle jo ûnthâlde oer dit ljepblêd?
+tab-note-editor-button-cancel =
+    .label = Annulearje
+    .accesskey = A
+tab-note-editor-button-save =
+    .label = Bewarje
+    .accesskey = r
+# Link to show the full tab note in case it was truncated.
+tab-note-preview-expand = Mear ynfo
+# Displayed within the tab note edit dialog box when the user has entered more
+# characters than are allowed.
+# Variables:
+#   $totalCharacters (Number): the number of characters the user has entered.
+#   $maxAllowedCharacters (Number): the maximum number of characters allowed for a tab note.
+tab-note-editor-character-limit =
+    { $maxAllowedCharacters ->
+        [one] { NUMBER($totalCharacters, useGrouping: "false") }/{ NUMBER($maxAllowedCharacters, useGrouping: "false") } teken
+       *[other] { NUMBER($totalCharacters, useGrouping: "false") }/{ NUMBER($maxAllowedCharacters, useGrouping: "false") } tekens
+    }
+
+## Split View
+
+# Split view tabs display their respective contents side by side
+# Displayed within the tooltip on tabs inside of a tab split view
+tabbrowser-tab-label-tab-split-view = Splitste werjefte
+# Open a new tab next to the current tab and display their contents side by side
+tab-context-add-split-view =
+    .label = Splitste werjefte tafoegje
+    .accesskey = t
+# Display the two selected tabs' contents side by side
+tab-context-open-in-split-view =
+    .label = Iepenje yn splitste werjefte
+    .accesskey = t
+# Separate the two split view tabs and display the tabs and their contents as normal
+tab-context-separate-split-view =
+    .label = Splitste werjefte ôfsûnderje
+    .accesskey = t
+tab-context-badge-new = Nij
+# Split view tabs display their respective contents side by side
+# Displayed within the tooltip on the left tab inside of a tab split view
+# "left" corresponds to the visual position. Translate literally; do not swap for RTL languages.
+# Variables:
+#   $label (String): the text label of the tab visible in the tab strip
+tabbrowser-tab-label-tab-split-view-left = { $label }, splitste werjefte links
+# Split view tabs display their respective contents side by side
+# Displayed within the tooltip on the right tab inside of a tab split view
+# "right" corresponds to the visual position. Translate literally; do not swap for RTL languages.
+# Variables:
+#   $label (String): the text label of the tab visible in the tab strip
+tabbrowser-tab-label-tab-split-view-right = { $label }, splitste werjefte rjochts
+
+## Manage Split View (icon in the address bar & three-dot menu in the footer)
+
+# "Separate" is a verb, as in "separate the split view tabs and display them normally".
+split-view-menuitem-separate-tabs =
+    .label = Ljepblêden skiede
+# "Reverse" is a verb, as in "reverse the order of split view tabs".
+split-view-menuitem-reverse-tabs =
+    .label = Ljepblêden omkeare
+split-view-menuitem-close-both-tabs =
+    .label = Beide ljepblêden slute

@@ -17,14 +17,14 @@ XPCOMUtils.defineLazyServiceGetter(
   lazy,
   "AppUpdateService",
   "@mozilla.org/updates/update-service;1",
-  "nsIApplicationUpdateService"
+  Ci.nsIApplicationUpdateService
 );
 
 XPCOMUtils.defineLazyServiceGetter(
   lazy,
   "UpdateManager",
   "@mozilla.org/updates/update-manager;1",
-  "nsIUpdateManager"
+  Ci.nsIUpdateManager
 );
 
 const PREF_APP_UPDATE_UNSUPPORTED_URL = "app.update.unsupported.url";
@@ -218,20 +218,20 @@ export var UpdateListener = {
   },
 
   showUpdateNotification(type, mainAction, mainActionDismiss, options = {}) {
-    const addTelemetry = id => {
+    const addTelemetry = metric => {
       // No telemetry for the "downloading" state.
       if (type !== "downloading") {
         // Histogram category labels can't have dashes in them.
         let telemetryType = type.replaceAll("-", "");
-        Services.telemetry.getHistogramById(id).add(telemetryType);
+        metric[telemetryType].add();
       }
     };
     let action = {
       callback(win, fromDoorhanger) {
         if (fromDoorhanger) {
-          addTelemetry("UPDATE_NOTIFICATION_MAIN_ACTION_DOORHANGER");
+          addTelemetry(Glean.update.notificationMainActionDoorhanger);
         } else {
-          addTelemetry("UPDATE_NOTIFICATION_MAIN_ACTION_MENU");
+          addTelemetry(Glean.update.notificationMainActionMenu);
         }
         mainAction(win);
       },
@@ -240,7 +240,7 @@ export var UpdateListener = {
 
     let secondaryAction = {
       callback() {
-        addTelemetry("UPDATE_NOTIFICATION_DISMISSED");
+        addTelemetry(Glean.update.notificationDismissed);
       },
       dismiss: true,
     };
@@ -251,16 +251,20 @@ export var UpdateListener = {
       options
     );
     if (options.dismissed) {
-      addTelemetry("UPDATE_NOTIFICATION_BADGE_SHOWN");
+      addTelemetry(Glean.update.notificationBadgeShown);
     } else {
-      addTelemetry("UPDATE_NOTIFICATION_SHOWN");
+      addTelemetry(Glean.update.notificationShown);
     }
   },
 
   showRestartNotification(update, dismissed) {
-    let notification = lazy.AppUpdateService.isOtherInstanceHandlingUpdates
-      ? "other-instance"
-      : "restart";
+    let notification = "restart";
+    if (lazy.AppUpdateService.isOtherInstanceHandlingUpdates) {
+      notification = "other-instance";
+      // It doesn't make sense to show the "Other Instance" notification in the
+      // dismissed (badge only) form because it has no menu component.
+      dismissed = false;
+    }
     if (!dismissed) {
       this.restartDoorhangerShown = true;
     }
@@ -395,7 +399,7 @@ export var UpdateListener = {
       case "applied-service":
       case "pending-service":
       case "pending-elevate":
-      case "success":
+      case "success": {
         this.clearCallbacks();
 
         let initialBadgeWaitTimeMs = this.badgeWaitTime * 1000;
@@ -421,10 +425,7 @@ export var UpdateListener = {
           this.showRestartNotification(update, true);
         } else if (badgeWaitTimeMs < doorhangerWaitTimeMs) {
           this.addTimeout(badgeWaitTimeMs, () => {
-            // Skip the badge if we're waiting for another instance.
-            if (!lazy.AppUpdateService.isOtherInstanceHandlingUpdates) {
-              this.showRestartNotification(update, true);
-            }
+            this.showRestartNotification(update, true);
 
             if (!this.restartDoorhangerShown) {
               // doorhangerWaitTimeMs is relative to when we initially received
@@ -442,6 +443,7 @@ export var UpdateListener = {
           });
         }
         break;
+      }
     }
   },
 

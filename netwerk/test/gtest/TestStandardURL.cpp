@@ -10,21 +10,18 @@
 #include "nsComponentManagerUtils.h"
 #include "nsIURIMutator.h"
 #include "mozilla/ipc/URIUtils.h"
-#include "mozilla/Unused.h"
 #include "nsSerializationHelper.h"
 #include "mozilla/Base64.h"
 #include "nsEscape.h"
 #include "nsURLHelper.h"
+#include "IPv4Parser.h"
 
 using namespace mozilla;
 
-// In nsStandardURL.cpp
-extern nsresult Test_NormalizeIPv4(const nsACString& host, nsCString& result);
-extern nsresult Test_ParseIPv4Number(const nsACString& input, int32_t base,
-                                     uint32_t& number, uint32_t maxNumber);
-extern int32_t Test_ValidateIPv4Number(const nsACString& host, int32_t bases[4],
-                                       int32_t dotIndex[3], bool& onlyBase10,
-                                       int32_t length);
+nsresult Test_NormalizeIPv4(const nsACString& host, nsCString& result) {
+  return net::IPv4Parser::NormalizeIPv4(host, result);
+}
+
 TEST(TestStandardURL, Simple)
 {
   nsCOMPtr<nsIURI> url;
@@ -273,24 +270,21 @@ MOZ_GTEST_BENCH(TestStandardURL, DISABLED_Perf, [] {
               NS_OK);
     ASSERT_EQ(url->GetSpec(out), NS_OK);
     url->Resolve("foo.html?q=45"_ns, out);
-    mozilla::Unused << NS_MutateURI(url).SetScheme("foo"_ns).Finalize(url);
+    (void)NS_MutateURI(url).SetScheme("foo"_ns).Finalize(url);
     url->GetScheme(out);
-    mozilla::Unused
-        << NS_MutateURI(url).SetHost("www.yahoo.com"_ns).Finalize(url);
+    (void)NS_MutateURI(url).SetHost("www.yahoo.com"_ns).Finalize(url);
     url->GetHost(out);
-    mozilla::Unused
-        << NS_MutateURI(url)
-               .SetPathQueryRef(nsLiteralCString(
-                   "/some-path/one-the-net/about.html?with-a-query#for-you"))
-               .Finalize(url);
+    (void)NS_MutateURI(url)
+        .SetPathQueryRef(nsLiteralCString(
+            "/some-path/one-the-net/about.html?with-a-query#for-you"))
+        .Finalize(url);
     url->GetPathQueryRef(out);
-    mozilla::Unused << NS_MutateURI(url)
-                           .SetQuery(nsLiteralCString(
-                               "a=b&d=c&what-ever-you-want-to-be-called=45"))
-                           .Finalize(url);
+    (void)NS_MutateURI(url)
+        .SetQuery(
+            nsLiteralCString("a=b&d=c&what-ever-you-want-to-be-called=45"))
+        .Finalize(url);
     url->GetQuery(out);
-    mozilla::Unused
-        << NS_MutateURI(url).SetRef("#some-book-mark"_ns).Finalize(url);
+    (void)NS_MutateURI(url).SetRef("#some-book-mark"_ns).Finalize(url);
     url->GetRef(out);
   }
 });
@@ -395,7 +389,7 @@ TEST(TestStandardURL, CorruptSerialization)
                                         getter_AddRefs(deserializedObject)));
 
   nsAutoCString canonicalBin;
-  Unused << Base64Decode(serialization, canonicalBin);
+  (void)Base64Decode(serialization, canonicalBin);
 
 // The spec serialization begins at byte 49
 // If the implementation of nsStandardURL::Write changes, this test will need
@@ -407,7 +401,7 @@ TEST(TestStandardURL, CorruptSerialization)
   nsAutoCString corruptedBin = canonicalBin;
   // change mScheme.mPos
   corruptedBin.BeginWriting()[SPEC_OFFSET + spec.Length()] = 1;
-  Unused << Base64Encode(corruptedBin, serialization);
+  (void)Base64Encode(corruptedBin, serialization);
   ASSERT_EQ(
       NS_ERROR_MALFORMED_URI,
       NS_DeserializeObject(serialization, getter_AddRefs(deserializedObject)));
@@ -415,7 +409,7 @@ TEST(TestStandardURL, CorruptSerialization)
   corruptedBin = canonicalBin;
   // change mScheme.mLen
   corruptedBin.BeginWriting()[SPEC_OFFSET + spec.Length() + 4] = 127;
-  Unused << Base64Encode(corruptedBin, serialization);
+  (void)Base64Encode(corruptedBin, serialization);
   ASSERT_EQ(
       NS_ERROR_MALFORMED_URI,
       NS_DeserializeObject(serialization, getter_AddRefs(deserializedObject)));
@@ -430,14 +424,14 @@ TEST(TestStandardURL, ParseIPv4Num)
   int32_t dotIndex[3];     // The positions of the dots in the string
   int32_t length = static_cast<int32_t>(host.Length());
 
-  ASSERT_EQ(2,
-            Test_ValidateIPv4Number(host, bases, dotIndex, onlyBase10, length));
+  ASSERT_EQ(2, mozilla::net::IPv4Parser::ValidateIPv4Number(
+                   host, bases, dotIndex, onlyBase10, length, false));
 
   nsCString result;
   ASSERT_EQ(NS_OK, Test_NormalizeIPv4("0x.0x.0"_ns, result));
 
   uint32_t number;
-  Test_ParseIPv4Number("0x10"_ns, 16, number, 255);
+  mozilla::net::IPv4Parser::ParseIPv4Number("0x10"_ns, 16, number, 255);
   ASSERT_EQ(number, (uint32_t)16);
 }
 
@@ -446,8 +440,7 @@ TEST(TestStandardURL, CoalescePath)
   auto testCoalescing = [](const char* input, const char* expected,
                            uint32_t lastSlash, uint32_t endOfBasename) {
     nsAutoCString buf(input);
-    auto resultCoalesceDirs =
-        net_CoalesceDirs(NET_COALESCE_NORMAL, buf.BeginWriting());
+    auto resultCoalesceDirs = net_CoalesceDirs(buf.BeginWriting());
 
     ASSERT_EQ(nsCString(buf.get()), nsCString(expected));
 
@@ -532,6 +525,13 @@ TEST(TestStandardURL, CoalescePath)
 
   testCoalescing("/coder/coder/edit/main/docs/./enterprise.md",
                  "/coder/coder/edit/main/docs/enterprise.md", 27, 41);
+
+  // bug 1942820
+  testCoalescing("/foo/bar/.%2e", "/foo/", 4, 5);
+  testCoalescing("/foo/bar/..", "/foo/", 4, 5);
+  testCoalescing("/foo/bar/%2e%2e", "/foo/", 4, 5);
+  testCoalescing("/foo/bar/%2e%2e#frag", "/foo/#frag", 4, 5);
+  testCoalescing("/foo/bar/%2e%2e?query", "/foo/?query", 4, 5);
 }
 
 TEST(TestStandardURL, bug1904582)

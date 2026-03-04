@@ -7,21 +7,25 @@ import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 import {
   UrlbarProvider,
   UrlbarUtils,
-} from "resource:///modules/UrlbarUtils.sys.mjs";
+} from "moz-src:///browser/components/urlbar/UrlbarUtils.sys.mjs";
 
 const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
-  UrlbarPrefs: "resource:///modules/UrlbarPrefs.sys.mjs",
-  UrlbarResult: "resource:///modules/UrlbarResult.sys.mjs",
-  UrlbarView: "resource:///modules/UrlbarView.sys.mjs",
+  UrlbarPrefs: "moz-src:///browser/components/urlbar/UrlbarPrefs.sys.mjs",
+  UrlbarResult: "moz-src:///browser/components/urlbar/UrlbarResult.sys.mjs",
+  UrlbarView: "moz-src:///browser/components/urlbar/UrlbarView.sys.mjs",
+});
+
+ChromeUtils.defineLazyGetter(lazy, "l10n", () => {
+  return new Localization(["browser/browser.ftl"], true);
 });
 
 XPCOMUtils.defineLazyServiceGetter(
   lazy,
   "ClipboardHelper",
   "@mozilla.org/widget/clipboardhelper;1",
-  "nsIClipboardHelper"
+  Ci.nsIClipboardHelper
 );
 
 // This pref is relative to the `browser.urlbar` branch.
@@ -59,12 +63,19 @@ const VIEW_TEMPLATE = {
 
 // Minimum number of parts of the expression before we show a result.
 const MIN_EXPRESSION_LENGTH = 3;
+const UNDEFINED_VALUE = "undefined";
+// Minimum and maximum value of result before it switches to scientific
+// notation. Displaying numbers longer than 10 digits long or a decimal
+// containing 5 or more leading zeroes in scientific notation improves
+// readability.
+const FULL_NUMBER_MAX_THRESHOLD = 1 * 10 ** 10;
+const FULL_NUMBER_MIN_THRESHOLD = 10 ** -5;
 
 /**
  * A provider that returns a suggested url to the user based on what
  * they have currently typed so they can navigate directly.
  */
-class ProviderCalculator extends UrlbarProvider {
+export class UrlbarProviderCalculator extends UrlbarProvider {
   constructor() {
     super();
     lazy.UrlbarResult.addDynamicResultType(DYNAMIC_RESULT_TYPE);
@@ -72,18 +83,7 @@ class ProviderCalculator extends UrlbarProvider {
   }
 
   /**
-   * Returns the name of this provider.
-   *
-   * @returns {string} the name of this provider.
-   */
-  get name() {
-    return DYNAMIC_RESULT_TYPE;
-  }
-
-  /**
-   * The type of the provider.
-   *
-   * @returns {UrlbarUtils.PROVIDER_TYPE}
+   * @returns {Values<typeof UrlbarUtils.PROVIDER_TYPE>}
    */
   get type() {
     return UrlbarUtils.PROVIDER_TYPE.PROFILE;
@@ -95,9 +95,8 @@ class ProviderCalculator extends UrlbarProvider {
    * with this provider, to save on resources.
    *
    * @param {UrlbarQueryContext} queryContext The query context object
-   * @returns {boolean} Whether this provider should be invoked for the search.
    */
-  isActive(queryContext) {
+  async isActive(queryContext) {
     return (
       queryContext.trimmedSearchString &&
       !queryContext.searchMode &&
@@ -106,12 +105,11 @@ class ProviderCalculator extends UrlbarProvider {
   }
 
   /**
-   * Starts querying. Extended classes should return a Promise resolved when the
-   * provider is done searching AND returning results.
+   * Starts querying.
    *
-   * @param {UrlbarQueryContext} queryContext The query context object
-   * @param {Function} addCallback Callback invoked by the provider to add a new
-   *        result. A UrlbarResult should be passed to it.
+   * @param {UrlbarQueryContext} queryContext
+   * @param {(provider: UrlbarProvider, result: UrlbarResult) => void} addCallback
+   *   Callback invoked by the provider to add a new result.
    */
   async startQuery(queryContext, addCallback) {
     try {
@@ -122,44 +120,56 @@ class ProviderCalculator extends UrlbarProvider {
         return;
       }
       let value = Calculator.evaluatePostfix(postfix);
-      const result = new lazy.UrlbarResult(
-        UrlbarUtils.RESULT_TYPE.DYNAMIC,
-        UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
-        {
+      const result = new lazy.UrlbarResult({
+        type: UrlbarUtils.RESULT_TYPE.DYNAMIC,
+        source: UrlbarUtils.RESULT_SOURCE.OTHER_LOCAL,
+        suggestedIndex: 1,
+        payload: {
           value,
           input: queryContext.searchString,
           dynamicType: DYNAMIC_RESULT_TYPE,
-        }
-      );
-      result.suggestedIndex = 1;
+        },
+      });
       addCallback(this, result);
     } catch (e) {}
   }
 
   getViewUpdate(result) {
-    const viewUpdate = {
+    const { value } = result.payload;
+
+    return {
       icon: {
         attributes: {
           src: "chrome://global/skin/icons/edit-copy.svg",
         },
       },
-      input: {
-        l10n: {
-          id: "urlbar-result-action-calculator-result",
-          args: { result: result.payload.value },
-        },
-      },
+      input:
+        value == UNDEFINED_VALUE
+          ? {
+              l10n: { id: "urlbar-result-action-undefined-calculator-result" },
+            }
+          : {
+              textContent: `= ${value}`,
+              attributes: { dir: "ltr" },
+            },
       action: {
         l10n: { id: "urlbar-result-action-copy-to-clipboard" },
       },
     };
-
-    return viewUpdate;
   }
 
   onEngagement(queryContext, controller, details) {
-    let { result } = details;
-    lazy.ClipboardHelper.copyString(result.payload.value);
+    const { result } = details;
+    const input = this.getViewUpdate(result).input;
+    let localizedResult;
+    if ("l10n" in input) {
+      const args = input.l10n.args || {};
+      localizedResult = lazy.l10n.formatValueSync(input.l10n.id, args);
+    } else {
+      localizedResult = input.textContent.replace(/^=\s*/, "");
+    }
+
+    lazy.ClipboardHelper.copyString(localizedResult);
   }
 }
 
@@ -187,11 +197,16 @@ class BaseCalculator {
     return this.numberSystems.some(sys => sys.isNumericToken(char));
   }
 
+  /**
+   * Parses a string into a float accounting for different localisations.
+   *
+   * @param {string} num
+   */
   parsel10nFloat(num) {
     for (const system of this.numberSystems) {
       num = system.transformNumber(num);
     }
-    return parseFloat(num, 10);
+    return parseFloat(num);
   }
 
   precedence(val) {
@@ -201,23 +216,36 @@ class BaseCalculator {
     if (["*", "/"].includes(val)) {
       return 3;
     }
+    if ("^" === val) {
+      return 4;
+    }
+
+    return null;
+  }
+
+  isLeftAssociative(val) {
+    if (["-", "+", "*", "/"].includes(val)) {
+      return true;
+    }
+    if ("^" === val) {
+      return false;
+    }
 
     return null;
   }
 
   // This is a basic implementation of the shunting yard algorithm
   // described http://en.wikipedia.org/wiki/Shunting-yard_algorithm
-  // Currently functions are unimplemented and only operators with
-  // left association are used
+  // Currently functions are unimplemented
   infix2postfix(infix) {
     let parser = new Parser(infix, this);
-    let tokens = parser.parse(infix);
+    let tokens = parser.parse();
     let output = [];
     let stack = [];
 
     tokens.forEach(token => {
       if (token.number) {
-        output.push(this.parsel10nFloat(token.value, 10));
+        output.push(this.parsel10nFloat(token.value));
       }
 
       if (this.isOperator(token.value)) {
@@ -225,7 +253,9 @@ class BaseCalculator {
         while (
           stack.length &&
           this.isOperator(stack[stack.length - 1]) &&
-          i(token.value) <= i(stack[stack.length - 1])
+          (i(token.value) < i(stack[stack.length - 1]) ||
+            (i(token.value) == i(stack[stack.length - 1]) &&
+              this.isLeftAssociative(token.value)))
         ) {
           output.push(stack.pop());
         }
@@ -256,29 +286,61 @@ class BaseCalculator {
     "+": (a, b) => a + b,
     "-": (a, b) => a - b,
     "/": (a, b) => a / b,
+    "^": (a, b) => a ** b,
   };
 
   evaluatePostfix(postfix) {
     let stack = [];
 
-    postfix.forEach(token => {
+    for (const token of postfix) {
       if (!this.isOperator(token)) {
         stack.push(token);
       } else {
         let op2 = stack.pop();
         let op1 = stack.pop();
         let result = this.evaluate[token](op1, op2);
-        if (isNaN(result)) {
+        if (token == "/" && op2 == 0) {
+          return UNDEFINED_VALUE;
+        }
+        if (isNaN(result) || !isFinite(result)) {
           throw new Error("Value is " + result);
         }
         stack.push(result);
       }
-    });
+    }
     let finalResult = stack.pop();
-    if (isNaN(finalResult)) {
+    if (isNaN(finalResult) || !isFinite(finalResult)) {
       throw new Error("Value is " + finalResult);
     }
-    return finalResult;
+
+    let locale = Services.locale.appLocaleAsBCP47;
+
+    if (
+      Math.abs(finalResult) >= FULL_NUMBER_MAX_THRESHOLD ||
+      (Math.abs(finalResult) <= FULL_NUMBER_MIN_THRESHOLD && finalResult != 0)
+    ) {
+      return new Intl.NumberFormat(locale, {
+        style: "decimal",
+        notation: "scientific",
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 8,
+        numberingSystem: "latn",
+      })
+        .format(finalResult)
+        .toLowerCase();
+    } else if (Math.abs(finalResult) < 1) {
+      return new Intl.NumberFormat(locale, {
+        style: "decimal",
+        maximumSignificantDigits: 9,
+        numberingSystem: "latn",
+      }).format(finalResult);
+    }
+    return new Intl.NumberFormat(locale, {
+      style: "decimal",
+      useGrouping: false,
+      maximumFractionDigits: 8,
+      numberingSystem: "latn",
+    }).format(finalResult);
   }
 }
 
@@ -433,11 +495,15 @@ Parser.prototype = {
 export let Calculator = new BaseCalculator();
 
 Calculator.addNumberSystem({
-  isOperator: char => ["÷", "×", "-", "+", "*", "/"].includes(char),
+  isOperator: char => ["÷", "×", "-", "+", "*", "/", "^"].includes(char),
   isNumericToken: char => /^[0-9\.,]/.test(char),
-  // parseFloat will only handle numbers that use periods as decimal
-  // seperators, various countries use commas. This function attempts
-  // to fixup the number so parseFloat will accept it.
+  /**
+   * parseFloat will only handle numbers that use periods as decimal
+   * separators, various countries use commas. This function attempts
+   * to fixup the number so parseFloat will accept it.
+   *
+   * @param {string} num
+   */
   transformNumber: num => {
     let firstComma = num.indexOf(",");
     let firstPeriod = num.indexOf(".");
@@ -452,12 +518,16 @@ Calculator.addNumberSystem({
       // Contains both a period and a comma and the comma came first
       // so strip the comma (ie 1,999.5).
       num = num.replace(/,/g, "");
+    } else if (firstComma != -1 && num.includes(",", firstComma + 1)) {
+      // Contains multiple commas and no periods, strip commas
+      num = num.replace(/,/g, "");
+    } else if (firstPeriod != -1 && num.includes(".", firstPeriod + 1)) {
+      // Contains multiple periods and no commas, strip periods
+      num = num.replace(/\./g, "");
     } else if (firstComma != -1) {
-      // Has commas but no periods so treat comma as decimal seperator
+      // Has a single comma and no periods, treat comma as decimal seperator
       num = num.replace(/,/g, ".");
     }
     return num;
   },
 });
-
-export var UrlbarProviderCalculator = new ProviderCalculator();

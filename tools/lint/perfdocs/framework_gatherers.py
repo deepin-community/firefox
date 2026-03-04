@@ -30,7 +30,7 @@ must implement the FrameworkGatherer class.
 """
 
 
-class FrameworkGatherer(object):
+class FrameworkGatherer:
     """
     Abstract class for framework gatherers.
     """
@@ -197,7 +197,7 @@ class RaptorGatherer(FrameworkGatherer):
 
     def _get_ci_tasks(self):
         for task in self._taskgraph.keys():
-            if type(self._taskgraph[task]) == dict:
+            if type(self._taskgraph[task]) is dict:
                 command = self._taskgraph[task]["task"]["payload"].get("command", [])
                 run_on_projects = self._taskgraph[task]["attributes"]["run_on_projects"]
             else:
@@ -257,6 +257,12 @@ class RaptorGatherer(FrameworkGatherer):
                 for metric in description.get("alert_on", "").split(",")
                 if metric.strip() != ""
             ]
+            if (
+                description.get("gather_cpuTime", None)
+                or "cpuTime" in description.get("measure", [])
+                or suite_name in ["desktop", "interactive", "mobile"]
+            ):
+                description["metrics"].append("cpuTime")
 
             subtests[subtest["name"]] = description
             self._descriptions.setdefault(suite_name, []).append(description)
@@ -275,9 +281,7 @@ class RaptorGatherer(FrameworkGatherer):
         :return str: A formatted string containing the reference link to the
             documented metric.
         """
-        metric_heading = super(RaptorGatherer, self)._get_metric_heading(
-            metric, metrics_info
-        )
+        metric_heading = super()._get_metric_heading(metric, metrics_info)
         return f"`{metric} <raptor-metrics.html#{metric_heading.lower().replace(' ', '-')}>`__"
 
     def get_test_list(self):
@@ -332,11 +336,11 @@ class RaptorGatherer(FrameworkGatherer):
         if len(matcher) == 0:
             logger.critical(
                 "No tests exist for the following name "
-                "(obtained from config.yml): {}".format(title)
+                f"(obtained from config.yml): {title}"
             )
             raise Exception(
                 "No tests exist for the following name "
-                "(obtained from config.yml): {}".format(title)
+                f"(obtained from config.yml): {title}"
             )
 
         result = f".. dropdown:: {title}\n"
@@ -345,7 +349,7 @@ class RaptorGatherer(FrameworkGatherer):
 
         for idx, description in enumerate(matcher):
             if description["name"] != title:
-                result += f"   {idx+1}. **{description['name']}**\n\n"
+                result += f"   {idx + 1}. **{description['name']}**\n\n"
             if "owner" in description.keys():
                 result += f"   **Owner**: {description['owner']}\n\n"
             if test_description:
@@ -389,6 +393,10 @@ class RaptorGatherer(FrameworkGatherer):
             if self._task_list.get(title, []):
                 result += "   * **Test Task**:\n\n"
                 for platform in sorted(self._task_list[title]):
+                    if (suite_name == "mobile" and "android" not in platform) or (
+                        suite_name == "desktop" and "android" in platform
+                    ):
+                        continue
                     self._task_list[title][platform].sort(key=lambda x: x["test_name"])
 
                     table = TableBuilder(
@@ -402,9 +410,13 @@ class RaptorGatherer(FrameworkGatherer):
                     for task in self._task_list[title][platform]:
                         values = [task["test_name"]]
                         values += [
-                            "\u2705"
-                            if match_run_on_projects(x, task["run_on_projects"])
-                            else "\u274C"
+                            (
+                                "\u2705"
+                                if match_run_on_projects(
+                                    {"project": x}, task["run_on_projects"]
+                                )
+                                else "\u274c"
+                            )
                             for x in BRANCHES
                         ]
                         table.add_row(values)
@@ -427,20 +439,21 @@ class RaptorGatherer(FrameworkGatherer):
             metric_content += (
                 f"  * **Aliases**: {', '.join(sorted(metric_info['aliases']))}\n"
             )
-            metric_content += "  * **Tests using it**:\n"
+            if metric_info.get("location", None):
+                metric_content += "  * **Tests using it**:\n"
 
-            for suite, tests in sorted(
-                metric_info["location"].items(), key=lambda item: item[0]
-            ):
-                metric_content += f"     * **{suite.capitalize()}**: "
+                for suite, tests in sorted(
+                    metric_info["location"].items(), key=lambda item: item[0]
+                ):
+                    metric_content += f"     * **{suite.capitalize()}**: "
 
-                test_links = []
-                for test in sorted(tests):
-                    test_links.append(
-                        f"`{test} <raptor.html#{test}-{suite.lower()[0]}>`__"
-                    )
+                    test_links = []
+                    for test in sorted(tests):
+                        test_links.append(
+                            f"`{test} <raptor.html#{test}-{suite.lower()[0]}>`__"
+                        )
 
-                metric_content += ", ".join(test_links) + "\n"
+                    metric_content += ", ".join(test_links) + "\n"
 
             metrics_documentation.extend(
                 self._build_section_with_header(
@@ -468,7 +481,7 @@ class MozperftestGatherer(FrameworkGatherer):
             }
         """
         for path in list(pathlib.Path(self.workspace_dir).rglob("perftest.toml")):
-            if "obj-" in str(path):
+            if "obj-" in str(path) or "objdir-" in str(path):
                 continue
             suite_name = str(path.parent).replace(str(self.workspace_dir), "")
 
@@ -483,13 +496,18 @@ class MozperftestGatherer(FrameworkGatherer):
 
             # Get the tests from perftest.toml
             test_manifest = TestManifest([str(path)], strict=False)
-            test_list = test_manifest.active_tests(exists=False, disabled=False)
+            test_list = test_manifest.active_tests(exists=False, disabled=True)
             for test in test_list:
                 si = ScriptInfo(test["path"])
-                self.script_infos[si["name"]] = si
-                self._test_list.setdefault(suite_name.replace("\\", "/"), {}).update(
-                    {si["name"]: {"path": str(path)}}
-                )
+                if si["name"].endswith(".js"):
+                    cleaned_name = si["name"]
+                else:
+                    cleaned_name = si["name"].replace(".", "")
+
+                self.script_infos[cleaned_name] = si
+                self._test_list.setdefault(suite_name.replace("\\", "/"), {}).update({
+                    cleaned_name: {"path": str(path)}
+                })
 
         return self._test_list
 
@@ -512,7 +530,7 @@ class TalosGatherer(FrameworkGatherer):
         for task_name in self._taskgraph.keys():
             task = self._taskgraph[task_name]
 
-            if type(task) == dict:
+            if type(task) is dict:
                 is_talos = task["task"]["extra"].get("suite", [])
                 command = task["task"]["payload"].get("command", [])
                 run_on_projects = task["attributes"]["run_on_projects"]
@@ -612,9 +630,13 @@ class TalosGatherer(FrameworkGatherer):
                 for task in self._task_list[title][platform]:
                     values = [task["test_name"]]
                     values += [
-                        "\u2705"
-                        if match_run_on_projects(x, task["run_on_projects"])
-                        else "\u274C"
+                        (
+                            "\u2705"
+                            if match_run_on_projects(
+                                {"project": x}, task["run_on_projects"]
+                            )
+                            else "\u274c"
+                        )
                         for x in BRANCHES
                     ]
                     table.add_row(values)
@@ -635,7 +657,7 @@ class AwsyGatherer(FrameworkGatherer):
         for task_name in self._taskgraph.keys():
             task = self._taskgraph[task_name]
 
-            if type(task) == dict:
+            if type(task) is dict:
                 awsy_test = task["task"]["extra"].get("suite", [])
                 run_on_projects = task["attributes"]["run_on_projects"]
             else:
@@ -677,7 +699,7 @@ class AwsyGatherer(FrameworkGatherer):
         result = f".. dropdown:: {title} ({test_description})\n"
         result += f"   :class-container: anchor-id-{title}-{dropdown_suite_name}\n\n"
         result += self.build_command_to_run_locally(
-            "awsy-test", "" if title == "tp5" else f"--{title}"
+            "awsy-test", "" if title == "tp6" else f"--{title}"
         )
 
         awsy_data = read_yaml(self._yaml_path)["suites"]["Awsy tests"]

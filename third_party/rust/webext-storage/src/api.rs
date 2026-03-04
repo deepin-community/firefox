@@ -69,7 +69,7 @@ fn save_to_db(tx: &Transaction<'_>, ext_id: &str, val: &StorageChangeOp) -> Resu
             )?
             .unwrap_or_default();
         if in_mirror {
-            log::trace!("saving data for '{}': leaving a tombstone", ext_id);
+            trace!("saving data for '{}': leaving a tombstone", ext_id);
             tx.execute_cached(
                 "
                 INSERT INTO storage_sync_data(ext_id, data, sync_change_counter)
@@ -81,7 +81,7 @@ fn save_to_db(tx: &Transaction<'_>, ext_id: &str, val: &StorageChangeOp) -> Resu
                 },
             )?;
         } else {
-            log::trace!("saving data for '{}': removing the row", ext_id);
+            trace!("saving data for '{}': removing the row", ext_id);
             tx.execute_cached(
                 "
                 DELETE FROM storage_sync_data WHERE ext_id = :ext_id",
@@ -104,7 +104,7 @@ fn save_to_db(tx: &Transaction<'_>, ext_id: &str, val: &StorageChangeOp) -> Resu
             StorageChangeOp::Clear => unreachable!(),
         };
 
-        log::trace!("saving data for '{}': writing", ext_id);
+        trace!("saving data for '{}': writing", ext_id);
         tx.execute_cached(
             "INSERT INTO storage_sync_data(ext_id, data, sync_change_counter)
                 VALUES (:ext_id, :data, 1)
@@ -232,7 +232,7 @@ pub fn set(tx: &Transaction<'_>, ext_id: &str, val: JsonValue) -> Result<Storage
 // A helper which takes a param indicating what keys should be returned and
 // converts that to a vec of real strings. Also returns "default" values to
 // be used if no item exists for that key.
-fn get_keys(keys: JsonValue) -> Vec<(String, Option<JsonValue>)> {
+fn get_keys_helper(keys: JsonValue) -> Vec<(String, Option<JsonValue>)> {
     match keys {
         JsonValue::String(s) => vec![(s, None)],
         JsonValue::Array(keys) => {
@@ -262,7 +262,7 @@ pub fn get(conn: &Connection, ext_id: &str, keys: JsonValue) -> Result<JsonValue
         return Ok(JsonValue::Object(existing));
     }
     // OK, so we need to build a list of keys to get.
-    let keys_and_defaults = get_keys(keys);
+    let keys_and_defaults = get_keys_helper(keys);
     let mut result = Map::with_capacity(keys_and_defaults.len());
     for (key, maybe_default) in keys_and_defaults {
         if let Some(v) = existing.remove(&key) {
@@ -276,6 +276,19 @@ pub fn get(conn: &Connection, ext_id: &str, keys: JsonValue) -> Result<JsonValue
     Ok(JsonValue::Object(result))
 }
 
+/// The implementation of `storage[.sync].getKeys()`. On success this returns
+/// a Json array of strings.
+pub fn get_keys(conn: &Connection, ext_id: &str) -> Result<JsonValue> {
+    let maybe_existing = get_from_db(conn, ext_id)?;
+    let existing = match maybe_existing {
+        None => return Ok(JsonValue::Array(vec![])),
+        Some(v) => v,
+    };
+    Ok(JsonValue::Array(
+        existing.keys().map(|k| k.to_string().into()).collect(),
+    ))
+}
+
 /// The implementation of `storage[.sync].remove()`. On success this returns the
 /// StorageChanges defined by the chrome API - it's assumed the caller will
 /// arrange to deliver this to observers as defined in that API.
@@ -285,9 +298,9 @@ pub fn remove(tx: &Transaction<'_>, ext_id: &str, keys: JsonValue) -> Result<Sto
         Some(v) => v,
     };
 
-    // Note: get_keys parses strings, arrays and objects, but remove()
+    // Note: get_keys_helper parses strings, arrays and objects, but remove()
     // is expected to only be passed a string or array of strings.
-    let keys_and_defs = get_keys(keys);
+    let keys_and_defs = get_keys_helper(keys);
 
     let mut result = StorageChanges::with_capacity(keys_and_defs.len());
     for (key, _) in keys_and_defs {
@@ -438,8 +451,9 @@ mod tests {
     #[test]
     fn test_simple() -> Result<()> {
         let ext_id = "x";
-        let mut db = new_mem_db();
-        let tx = db.transaction()?;
+        let db = new_mem_db();
+        let conn = db.get_connection().expect("should retrieve connection");
+        let tx = conn.unchecked_transaction()?;
 
         // an empty store.
         for q in vec![JsonValue::Null, json!("foo"), json!(["foo"])].into_iter() {
@@ -529,8 +543,9 @@ mod tests {
     fn test_check_get_impl() -> Result<()> {
         // This is a port of checkGetImpl in test_ext_storage.js in Desktop.
         let ext_id = "x";
-        let mut db = new_mem_db();
-        let tx = db.transaction()?;
+        let db = new_mem_db();
+        let conn = db.get_connection().expect("should retrieve connection");
+        let tx = conn.unchecked_transaction()?;
 
         let prop = "test-prop";
         let value = "test-value";
@@ -581,11 +596,33 @@ mod tests {
     }
 
     #[test]
+    fn test_check_get_keys_impl() -> Result<()> {
+        let ext_id = "getKeysExtId";
+        let db = new_mem_db();
+        let conn = db.get_connection().expect("should retrieve connection");
+        let tx = conn.unchecked_transaction()?;
+        assert_eq!(
+            get_keys(&tx, ext_id)?,
+            json!([]),
+            "get_keys should return an empty array when storage is uninitialized"
+        );
+        set(&tx, ext_id, json!({"foo": "bar", "baz": "qux" }))?;
+        let data = get_keys(&tx, ext_id)?;
+        assert_eq!(
+            data,
+            json!(vec!["foo", "baz"]),
+            "get_keys should return all keys"
+        );
+        Ok(())
+    }
+
+    #[test]
     fn test_bug_1621162() -> Result<()> {
         // apparently Firefox, unlike Chrome, will not optimize the changes.
         // See bug 1621162 for more!
-        let mut db = new_mem_db();
-        let tx = db.transaction()?;
+        let db = new_mem_db();
+        let conn = db.get_connection().expect("should retrieve connection");
+        let tx = conn.unchecked_transaction()?;
         let ext_id = "xyz";
 
         set(&tx, ext_id, json!({"foo": "bar" }))?;
@@ -599,8 +636,9 @@ mod tests {
 
     #[test]
     fn test_quota_maxitems() -> Result<()> {
-        let mut db = new_mem_db();
-        let tx = db.transaction()?;
+        let db = new_mem_db();
+        let conn = db.get_connection().expect("should retrieve connection");
+        let tx = conn.unchecked_transaction()?;
         let ext_id = "xyz";
         for i in 1..SYNC_MAX_ITEMS + 1 {
             set(
@@ -619,8 +657,9 @@ mod tests {
 
     #[test]
     fn test_quota_bytesperitem() -> Result<()> {
-        let mut db = new_mem_db();
-        let tx = db.transaction()?;
+        let db = new_mem_db();
+        let conn = db.get_connection().expect("should retrieve connection");
+        let tx = conn.unchecked_transaction()?;
         let ext_id = "xyz";
         // A string 5 bytes less than the max. This should be counted as being
         // 3 bytes less than the max as the quotes are counted. Plus the length
@@ -645,8 +684,9 @@ mod tests {
 
     #[test]
     fn test_quota_bytes() -> Result<()> {
-        let mut db = new_mem_db();
-        let tx = db.transaction()?;
+        let db = new_mem_db();
+        let conn = db.get_connection().expect("should retrieve connection");
+        let tx = conn.unchecked_transaction()?;
         let ext_id = "xyz";
         let val = "x".repeat(SYNC_QUOTA_BYTES + 1);
 
@@ -682,8 +722,9 @@ mod tests {
 
     #[test]
     fn test_get_bytes_in_use() -> Result<()> {
-        let mut db = new_mem_db();
-        let tx = db.transaction()?;
+        let db = new_mem_db();
+        let conn = db.get_connection().expect("should retrieve connection");
+        let tx = conn.unchecked_transaction()?;
         let ext_id = "xyz";
 
         assert_eq!(get_bytes_in_use(&tx, ext_id, json!(null))?, 0);
@@ -714,8 +755,9 @@ mod tests {
 
     #[test]
     fn test_usage() {
-        let mut db = new_mem_db();
-        let tx = db.transaction().unwrap();
+        let db = new_mem_db();
+        let conn = db.get_connection().expect("should retrieve connection");
+        let tx = conn.unchecked_transaction().unwrap();
         // '{"a":"a","b":"bb","c":"ccc","n":999999}': 39 bytes
         set(&tx, "xyz", json!({ "a": "a" })).unwrap();
         set(&tx, "xyz", json!({ "b": "bb" })).unwrap();
@@ -727,7 +769,7 @@ mod tests {
 
         tx.commit().unwrap();
 
-        let usage = usage(&db).unwrap();
+        let usage = usage(conn).unwrap();
         let expect = [
             UsageInfo {
                 ext_id: "abc".to_string(),

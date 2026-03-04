@@ -21,12 +21,15 @@ add_heuristic_tests(
           ],
         },
         {
-          invalid: true,
           fields: [
             {
               fieldName: "street-address",
               reason: "autocomplete",
               addressType: "billing",
+            },
+            {
+              fieldName: "tel",
+              reason: "regex-heuristic",
             },
           ],
         },
@@ -45,6 +48,7 @@ add_heuristic_tests(
           fields: [
             { fieldName: "cc-exp-month", reason: "regex-heuristic" }, // invisible
             { fieldName: "cc-exp-year", reason: "regex-heuristic" },  // invisible
+            { fieldName: "cc-csc", reason: "regex-heuristic" },
           ],
         },
       ],

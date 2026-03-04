@@ -8,7 +8,6 @@
 #define mozilla_dom_MediaMetadata_h
 
 #include "js/TypeDecls.h"
-#include "mozilla/Attributes.h"
 #include "mozilla/dom/BindingDeclarations.h"
 #include "mozilla/dom/MediaSessionBinding.h"
 #include "nsCycleCollectionParticipant.h"
@@ -33,6 +32,7 @@ class MediaMetadataBase {
   nsString mTitle;
   nsString mArtist;
   nsString mAlbum;
+  nsCString mUrl;
   CopyableTArray<MediaImage> mArtwork;
 };
 
@@ -41,7 +41,7 @@ class MediaMetadata final : public nsISupports,
                             private MediaMetadataBase {
  public:
   // Ref counting and cycle collection
-  NS_DECL_CYCLE_COLLECTING_ISUPPORTS
+  NS_DECL_CYCLE_COLLECTING_ISUPPORTS_FINAL
   NS_DECL_CYCLE_COLLECTION_WRAPPERCACHE_CLASS(MediaMetadata)
 
   // WebIDL methods

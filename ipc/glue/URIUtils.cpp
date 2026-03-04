@@ -6,7 +6,6 @@
 
 #include "URIUtils.h"
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/dom/BlobURL.h"
 #include "mozilla/net/DefaultURI.h"
@@ -25,7 +24,6 @@
 #include "nsIURIMutator.h"
 
 using namespace mozilla::ipc;
-using mozilla::ArrayLength;
 
 namespace {
 

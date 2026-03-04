@@ -7,6 +7,7 @@ Add notifications to tasks via Taskcluster's notify service.
 See https://docs.taskcluster.net/docs/reference/core/notify/usage for
 more information.
 """
+
 from voluptuous import ALLOW_EXTRA, Any, Exclusive, Optional, Required
 
 from taskgraph.transforms.base import TransformSequence
@@ -53,6 +54,7 @@ _route_keys = {
 }
 """Map each type to its primary key that will be used in the route."""
 
+#: Schema for notify transforms
 NOTIFY_SCHEMA = Schema(
     {
         Exclusive("notify", "config"): {
@@ -89,7 +91,6 @@ NOTIFY_SCHEMA = Schema(
     },
     extra=ALLOW_EXTRA,
 )
-"""Notify schema."""
 
 transforms = TransformSequence()
 transforms.add_validate(NOTIFY_SCHEMA)

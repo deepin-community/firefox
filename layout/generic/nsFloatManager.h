@@ -9,7 +9,6 @@
 #ifndef nsFloatManager_h_
 #define nsFloatManager_h_
 
-#include "mozilla/Attributes.h"
 #include "mozilla/TypedEnumBits.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/WritingModes.h"
@@ -218,7 +217,8 @@ class nsFloatManager {
    */
   enum class BandInfoType { BandFromPoint, WidthWithinHeight };
   enum class ShapeType { Margin, ShapeOutside };
-  nsFlowAreaRect GetFlowArea(mozilla::WritingMode aWM, nscoord aBCoord,
+  nsFlowAreaRect GetFlowArea(mozilla::WritingMode aCBWM,
+                             mozilla::WritingMode aWM, nscoord aBCoord,
                              nscoord aBSize, BandInfoType aBandInfoType,
                              ShapeType aShapeType,
                              mozilla::LogicalRect aContentArea,
@@ -315,13 +315,13 @@ class nsFloatManager {
    *
    * Both aBCoord and the result are relative to the current translation.
    */
-  nscoord ClearFloats(nscoord aBCoord, mozilla::StyleClear aClearType) const;
+  nscoord ClearFloats(nscoord aBCoord, mozilla::UsedClear aClearType) const;
 
   /**
    * Checks if clear would pass into the floats' BFC's next-in-flow,
    * i.e. whether floats affecting this clear have continuations.
    */
-  bool ClearContinues(mozilla::StyleClear aClearType) const;
+  bool ClearContinues(mozilla::UsedClear aClearType) const;
 
   void AssertStateMatches(SavedState* aState) const {
     NS_ASSERTION(

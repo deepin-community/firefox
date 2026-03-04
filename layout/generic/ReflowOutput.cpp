@@ -7,21 +7,18 @@
 /* struct containing the output from nsIFrame::Reflow */
 
 #include "mozilla/ReflowOutput.h"
+
 #include "mozilla/ReflowInput.h"
 #include "mozilla/WritingModes.h"
 
 namespace mozilla {
 
 static bool IsValidOverflowRect(const nsRect& aRect) {
-  // `IsEmpty` in the context of `nsRect` means "width OR height is zero."
-  // However, in the context of overflow, the rect having one axis as zero is
-  // NOT considered empty.
-  if (MOZ_LIKELY(!aRect.IsEmpty())) {
-    return true;
-  }
-
-  // Be defensive and consider rects with any negative size as invalid.
-  return !aRect.IsEqualEdges(nsRect()) && aRect.Width() >= 0 &&
+  // The reason we can't simply use `nsRect::IsEmpty` is that any one dimension
+  // being zero is considered empty by it - On the other hand, an overflow rect
+  // is valid if it has non-negative dimensions and at least one of them is
+  // non-zero.
+  return aRect.Size() != nsSize{0, 0} && aRect.Width() >= 0 &&
          aRect.Height() >= 0;
 }
 
@@ -29,7 +26,7 @@ static bool IsValidOverflowRect(const nsRect& aRect) {
 nsRect OverflowAreas::GetOverflowClipRect(const nsRect& aRectToClip,
                                           const nsRect& aBounds,
                                           PhysicalAxes aClipAxes,
-                                          const nsSize& aOverflowMargin) {
+                                          const nsMargin& aOverflowMargin) {
   auto inflatedBounds = aBounds;
   inflatedBounds.Inflate(aOverflowMargin);
   auto clip = aRectToClip;
@@ -45,10 +42,9 @@ nsRect OverflowAreas::GetOverflowClipRect(const nsRect& aRectToClip,
 }
 
 /* static */
-void OverflowAreas::ApplyOverflowClippingOnRect(nsRect& aOverflowRect,
-                                                const nsRect& aBounds,
-                                                PhysicalAxes aClipAxes,
-                                                const nsSize& aOverflowMargin) {
+void OverflowAreas::ApplyOverflowClippingOnRect(
+    nsRect& aOverflowRect, const nsRect& aBounds, PhysicalAxes aClipAxes,
+    const nsMargin& aOverflowMargin) {
   aOverflowRect = aOverflowRect.Intersect(
       GetOverflowClipRect(aOverflowRect, aBounds, aClipAxes, aOverflowMargin));
 }

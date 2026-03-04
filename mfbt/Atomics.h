@@ -24,8 +24,8 @@
 #  include <atomic>
 #endif  // __wasi__
 
-#include <stddef.h>  // For ptrdiff_t
-#include <stdint.h>
+#include <cstddef>
+#include <cstdint>
 #include <type_traits>
 
 #if defined(__i386) || defined(_M_IX86) || defined(__x86_64__) || \
@@ -65,7 +65,7 @@ namespace mozilla {
  * the modes we provide below, or not relevant for the CPUs we support
  * in Gecko.  These three modes are confusing enough as it is!
  */
-enum MemoryOrdering {
+enum MemoryOrdering : uint8_t {
   /*
    * Relaxed ordering is the simplest memory ordering: none at all.
    * When the result of a write is observed, nothing may be inferred
@@ -507,6 +507,27 @@ class Atomic<bool, Order> : protected detail::AtomicBase<uint32_t, Order> {
   bool compareExchange(bool aOldValue, bool aNewValue) {
     return Base::compareExchange(aOldValue, aNewValue);
   }
+
+ private:
+  Atomic(Atomic& aOther) = delete;
+};
+
+/**
+ * Atomic<T> implementation for double type.
+ */
+template <MemoryOrdering Order>
+class Atomic<double, Order> : protected detail::AtomicBase<double, Order> {
+  typedef typename detail::AtomicBase<double, Order> Base;
+
+ public:
+  constexpr Atomic() : Base() {}
+  explicit constexpr Atomic(double aInit) : Base(aInit) {}
+
+  operator double() const {
+    return double(Base::Intrinsics::load(Base::mValue));
+  }
+
+  double operator=(double aVal) { return Base::operator=(aVal); }
 
  private:
   Atomic(Atomic& aOther) = delete;

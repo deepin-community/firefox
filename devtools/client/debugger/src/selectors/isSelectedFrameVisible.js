@@ -2,13 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at <http://mozilla.org/MPL/2.0/>. */
 
-import { originalToGeneratedId } from "devtools/client/shared/source-map-loader/index";
 import { getSelectedLocation } from "./sources";
-import { getCurrentThread, getSelectedFrame } from "./pause";
+import { getSelectedFrame } from "./pause";
 
 function getGeneratedId(source) {
   if (source.isOriginal) {
-    return originalToGeneratedId(source.id);
+    return source.generatedSource.id;
   }
 
   return source.id;
@@ -19,9 +18,8 @@ function getGeneratedId(source) {
  * selected.
  */
 export function isSelectedFrameVisible(state) {
-  const thread = getCurrentThread(state);
   const selectedLocation = getSelectedLocation(state);
-  const selectedFrame = getSelectedFrame(state, thread);
+  const selectedFrame = getSelectedFrame(state);
 
   if (!selectedFrame || !selectedLocation) {
     return false;

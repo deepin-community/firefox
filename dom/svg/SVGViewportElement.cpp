@@ -7,29 +7,26 @@
 #include "mozilla/dom/SVGViewportElement.h"
 
 #include <stdint.h>
+
+#include <algorithm>
+
+#include "DOMSVGLength.h"
+#include "DOMSVGPoint.h"
 #include "mozilla/AlreadyAddRefed.h"
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/ContentEvents.h"
 #include "mozilla/EventDispatcher.h"
-#include "mozilla/FloatingPoint.h"
-#include "mozilla/Likely.h"
 #include "mozilla/SMILTypes.h"
 #include "mozilla/SVGContentUtils.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/SVGLengthBinding.h"
 #include "mozilla/dom/SVGViewElement.h"
-
-#include "DOMSVGLength.h"
-#include "DOMSVGPoint.h"
 #include "nsContentUtils.h"
-#include "nsFrameSelection.h"
 #include "nsError.h"
+#include "nsFrameSelection.h"
 #include "nsGkAtoms.h"
 #include "nsIFrame.h"
 #include "nsLayoutUtils.h"
 #include "nsStyleUtil.h"
-
-#include <algorithm>
 #include "prtime.h"
 
 using namespace mozilla::gfx;
@@ -118,7 +115,8 @@ void SVGViewportElement::UpdateHasChildrenOnlyTransform() {
        static_cast<SVGSVGElement*>(this)->IsScaledOrTranslated());
 }
 
-void SVGViewportElement::ChildrenOnlyTransformChanged(uint32_t aFlags) {
+void SVGViewportElement::ChildrenOnlyTransformChanged(
+    ChildrenOnlyTransformChangedFlags aFlags) {
   // Avoid wasteful calls:
   MOZ_ASSERT(!GetPrimaryFrame()->HasAnyStateBits(NS_FRAME_IS_NONDISPLAY),
              "Non-display SVG frames don't maintain overflow rects");
@@ -145,7 +143,7 @@ void SVGViewportElement::ChildrenOnlyTransformChanged(uint32_t aFlags) {
   // is being reflowed we're going to invalidate and repaint its entire area
   // anyway (which will include our children).
   if ((changeHint & nsChangeHint_ReconstructFrame) ||
-      !(aFlags & eDuringReflow)) {
+      !aFlags.contains(ChildrenOnlyTransformChangedFlag::DuringReflow)) {
     nsLayoutUtils::PostRestyleEvent(this, RestyleHint{0}, changeHint);
   }
 }
@@ -169,8 +167,7 @@ gfx::Matrix SVGViewportElement::GetViewBoxTransform() const {
 
   SVGViewBox viewBox = GetViewBoxWithSynthesis(viewportWidth, viewportHeight);
 
-  if (!std::isfinite(viewBox.width) || viewBox.width <= 0.0f ||
-      !std::isfinite(viewBox.height) || viewBox.height <= 0.0f) {
+  if (!viewBox.IsValid()) {
     return gfx::Matrix(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);  // singular
   }
 
@@ -237,52 +234,31 @@ float SVGViewportElement::GetLength(uint8_t aCtxType) const {
 // SVGElement methods
 
 /* virtual */
-gfxMatrix SVGViewportElement::PrependLocalTransformsTo(
-    const gfxMatrix& aMatrix, SVGTransformTypes aWhich) const {
-  // 'transform' attribute (or an override from a fragment identifier):
-  if (aWhich == eUserSpaceToParent) {
-    return aMatrix;
-  }
-
-  gfxMatrix childToUser;
-
+gfxMatrix SVGViewportElement::ChildToUserSpaceTransform() const {
+  auto viewBox = GetViewBoxTransform();
   if (IsInner()) {
     float x, y;
     const_cast<SVGViewportElement*>(this)->GetAnimatedLengthValues(&x, &y,
                                                                    nullptr);
-    childToUser = ThebesMatrix(GetViewBoxTransform().PostTranslate(x, y));
-  } else if (IsRootSVGSVGElement()) {
+    return ThebesMatrix(viewBox.PostTranslate(x, y));
+  }
+  if (IsRootSVGSVGElement()) {
     const auto* svg = static_cast<const SVGSVGElement*>(this);
     const SVGPoint& translate = svg->GetCurrentTranslate();
     float scale = svg->CurrentScale();
-    childToUser =
-        ThebesMatrix(GetViewBoxTransform()
-                         .PostScale(scale, scale)
-                         .PostTranslate(translate.GetX(), translate.GetY()));
-  } else {
-    // outer-<svg>, but inline in some other content:
-    childToUser = ThebesMatrix(GetViewBoxTransform());
+    return ThebesMatrix(viewBox.PostScale(scale, scale)
+                            .PostTranslate(translate.GetX(), translate.GetY()));
   }
-
-  MOZ_ASSERT(aWhich == eAllTransforms || aWhich == eChildToUserSpace,
-             "Unknown TransformTypes");
-  // The following may look broken because pre-multiplying our eChildToUserSpace
-  // transform with another matrix without including our eUserSpaceToParent
-  // transform between the two wouldn't make sense.  We don't expect that to
-  // ever happen though.  We get here either when the identity matrix has been
-  // passed because our caller just wants our eChildToUserSpace transform, or
-  // when our eUserSpaceToParent transform has already been multiplied into the
-  // matrix that our caller passes (such as when we're called from PaintSVG).
-  return childToUser * aMatrix;
+  // outer-<svg>, but inline in some other content:
+  return ThebesMatrix(viewBox);
 }
 
 /* virtual */
 bool SVGViewportElement::HasValidDimensions() const {
-  return !IsInner() ||
-         ((!mLengthAttributes[ATTR_WIDTH].IsExplicitlySet() ||
-           mLengthAttributes[ATTR_WIDTH].GetAnimValInSpecifiedUnits() > 0) &&
-          (!mLengthAttributes[ATTR_HEIGHT].IsExplicitlySet() ||
-           mLengthAttributes[ATTR_HEIGHT].GetAnimValInSpecifiedUnits() > 0));
+  return (!mLengthAttributes[ATTR_WIDTH].IsExplicitlySet() ||
+          mLengthAttributes[ATTR_WIDTH].GetAnimValInSpecifiedUnits() > 0) &&
+         (!mLengthAttributes[ATTR_HEIGHT].IsExplicitlySet() ||
+          mLengthAttributes[ATTR_HEIGHT].GetAnimValInSpecifiedUnits() > 0);
 }
 
 SVGAnimatedViewBox* SVGViewportElement::GetAnimatedViewBox() {
@@ -297,7 +273,11 @@ SVGViewportElement::GetAnimatedPreserveAspectRatio() {
 bool SVGViewportElement::ShouldSynthesizeViewBox() const {
   MOZ_ASSERT(!HasViewBox(), "Should only be called if we lack a viewBox");
 
-  return IsRootSVGSVGElement() && OwnerDoc()->IsBeingUsedAsImage();
+  // We synthesize a viewbox if we're the root node of an SVG image
+  // document (and lack an explicit viewBox), as long as our width &
+  // height attributes wouldn't yield an empty synthesized viewbox.
+  return IsRootSVGSVGElement() && OwnerDoc()->IsBeingUsedAsImage() &&
+         HasValidDimensions();
 }
 
 //----------------------------------------------------------------------
@@ -329,7 +309,7 @@ SVGViewBox SVGViewportElement::GetViewBoxWithSynthesis(
 
 SVGElement::LengthAttributesInfo SVGViewportElement::GetLengthInfo() {
   return LengthAttributesInfo(mLengthAttributes, sLengthInfo,
-                              ArrayLength(sLengthInfo));
+                              std::size(sLengthInfo));
 }
 
 }  // namespace mozilla::dom

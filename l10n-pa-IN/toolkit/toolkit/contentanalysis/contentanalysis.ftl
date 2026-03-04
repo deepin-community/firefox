@@ -13,6 +13,15 @@ contentanalysis-slow-agent-dialog-header = ਸਕੈਨ ਕਰਨਾ ਜਾਰ�
 contentanalysis-slow-agent-dialog-body-file = { $agent } ਤੁਹਾਡੇ ਸੰਗਠਨ ਦੀਆਂ ਡਾਟਾ ਨੀਤੀਆਂ ਦੇ ਉਲਟ “{ $filename }” ਦੀ ਪੜਤਾਲ ਕਰ ਰਿਹਾ ਹੈ। ਇਸ ਨੂੰ ਕੁਝ ਪਲ਼ ਲੱਗ ਸਕਦੇ ਹਨ।
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
+#   $filename - Name of a file being analyzed, such as "aFile.txt"
+#   $count (number) - The number of additional items in the request for analysis
+contentanalysis-slow-agent-dialog-body-file-and-more =
+    { $count ->
+        [one] { $agent } ਤੁਹਾਡੇ ਸੰਗਠਨ ਦੀ ਡਾਟਾ ਪਾਲਸੀ ਦੇ ਉਲਟ “{ $filename }” ਅਤੇ { $count } ਹੋਰ ਚੀਜ਼ ਦੀ ਪੜਤਾਲ ਕਰ ਰਿਹਾ ਹੈ। ਇਸ ਨੂੰ ਕੁਝ ਪਲ਼ ਲੱਗ ਸਕਦੇ ਹਨ।
+       *[other] { $agent } ਤੁਹਾਡੇ ਸੰਗਠਨ ਦੀ ਡਾਟਾ ਪਾਲਸੀ ਦੇ ਉਲਟ “{ $filename }” ਅਤੇ { $count } ਹੋਰ ਚੀਜ਼ਾ ਦੀ ਪੜਤਾਲ ਕਰ ਰਿਹਾ ਹੈ। ਇਸ ਨੂੰ ਕੁਝ ਪਲ਼ ਲੱਗ ਸਕਦੇ ਹਨ।
+    }
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
 contentanalysis-slow-agent-dialog-body-clipboard = { $agent } ਤੁਹਾਡੇ ਵਲੋਂ ਤੁਹਾਡੇ ਸੰਗਠਨ ਦੀਆਂ ਡਾਟਾ ਨੀਤੀਆਂ ਦੇ ਉਲਟ ਚੇਪਣ ਦੀ ਪੜਤਾਲ ਕਰ ਰਿਹਾ ਹੈ। ਇਸ ਨੂੰ ਕੁਝ ਪਲ਼ ਲੱਗ ਸਕਦੇ ਹਨ।
 # Note that this is shown when the user drag and drops text into the browser.
 # Variables:
@@ -25,7 +34,9 @@ contentanalysis-operationtype-clipboard = ਕਲਿੱਪਬੋਰਡ
 contentanalysis-operationtype-dropped-text = ਡਰੌਪ ਕੀਤੀ ਲਿਖਤ
 contentanalysis-operationtype-print = ਪਰਿੰਟ ਕਰੋ
 #   $filename - The filename associated with the request, such as "aFile.txt"
-contentanalysis-customdisplaystring-description = “{ $filename }” ਦਾ ਅੱਪਲੋਡ
+contentanalysis-upload-description = “{ $filename }” ਦਾ ਅੱਪਲੋਡ
+#   $filename - The filename associated with the request, such as "aFile.txt"
+contentanalysis-download-description = “{ $filename }” ਦਾ ਡਾਊਨਲੋਡ
 contentanalysis-warndialogtitle = ਇਹ ਸਮੱਗਰੀ ਅਸੁਰੱਖਿਅਤ ਹੋ ਸਕਦੀ ਹੈ
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
@@ -58,10 +69,18 @@ contentanalysis-error-message-upload-file = “{ $filename }” ਦੇ ਅੱਪ
 contentanalysis-error-message-dropped-text = ਡਰੈਗ ਅਤੇ ਡਰੌਪ ਤੋਂ ਇਨਕਾਰ ਹੈ।
 contentanalysis-error-message-clipboard = ਚੇਪਣ ਤੋਂ ਇਨਕਾਰ ਹੈ।
 contentanalysis-error-message-print = ਛਾਪਣ ਦੇਣ ਤੋਂ ਇਨਕਾਰ ਹੈ।
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $contentName - Description of the content, such as "clipboard" or "aFile.txt"
+contentanalysis-timeout-block-error-message-content = { $agent } ਲਈ ਕਨੈਕਸ਼ਨ ਦਾ ਸਮਾਂ ਸਮਾਪਤ ਹੋ ਗਿਆ ਹੈ। { $contentName } ਉੱਤੇ ਪਾਬੰਦੀ ਲਾਈ ਗਈ ਹੈ।
 contentanalysis-block-dialog-title-upload-file = ਤੁਹਾਨੂੰ ਇਹ ਫ਼ਾਇਲ ਅੱਪਲੋਡ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਹੈ
 # Variables:
 #   $filename - Name of the file that was blocked, such as "aFile.txt"
 contentanalysis-block-dialog-body-upload-file = ਤੁਹਾਡੇ ਸੰਗਠਨ ਦੀਆਂ ਡਾਟਾ ਸੁਰੱਖਿਆ ਨੀਤੀਆਂ ਦੇ ਤਹਿਤ ਤੁਹਾਨੂੰ “{ $filename }” ਫਾਇਲ ਅੱਪਲੋਡ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਹੈ। ਹੋਰ ਜਾਣਕਾਰੀ ਲਈ ਆਪਣੇ ਪਰਸ਼ਾਸ਼ਕ ਨਾਲ ਸੰਪਰਕ ਕਰੋ।
+contentanalysis-block-dialog-title-download-file = ਤੁਹਾਨੂੰ ਇਸ ਫ਼ਾਇਲ ਨੂੰ ਡਾਊਨਲੋਡ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਹੈ
+# Variables:
+#   $filename - Name of the file that was blocked, such as "aFile.txt"
+contentanalysis-block-dialog-body-download-file = ਤੁਹਾਡੇ ਸੰਗਠਨ ਦੀਆਂ ਡਾਟਾ ਸੁਰੱਖਿਆ ਨੀਤੀਆਂ ਦੇ ਤਹਿਤ ਤੁਹਾਨੂੰ “{ $filename }” ਫ਼ਾਇਲ ਡਾਊਨਲੋਡ ਕਰਨ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਹੈ। ਹੋਰ ਜਾਣਕਾਰੀ ਲਈ ਆਪਣੇ ਪਰਸ਼ਾਸ਼ਕ ਨਾਲ ਸੰਪਰਕ ਕਰੋ।
 contentanalysis-block-dialog-title-clipboard = ਤੁਹਾਨੂੰ ਇਹ ਸਮੱਗਰੀ ਚੇਪਣ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਹੈ
 contentanalysis-block-dialog-body-clipboard = ਤੁਹਾਡੇ ਸੰਗਠਨ ਦੀਆਂ ਡਾਟਾ ਸੁਰੱਖਿਆ ਨੀਤੀਆਂ ਦੇ ਤਹਿਤ ਤੁਹਾਨੂੰ ਇਹ ਸਮੱਗਰੀ ਚੇਪਣ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਹੈ। ਹੋਰ ਜਾਣਕਾਰੀ ਲਈ ਆਪਣੇ ਪਰਸ਼ਾਸ਼ਕ ਨਾਲ ਸੰਪਰਕ ਕਰੋ।
 contentanalysis-block-dialog-title-dropped-text = ਤੁਹਾਨੂੰ ਇਹ ਸਮੱਗਰੀ ਸੁੱਟਣ ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਹੈ

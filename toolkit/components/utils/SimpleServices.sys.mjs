@@ -10,8 +10,6 @@
  * eagerly loaded at startup.
  */
 
-/* globals WebExtensionPolicy */
-
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 
 const lazy = {};
@@ -24,7 +22,7 @@ XPCOMUtils.defineLazyServiceGetter(
   lazy,
   "streamConv",
   "@mozilla.org/streamConverters;1",
-  "nsIStreamConverterService"
+  Ci.nsIStreamConverterService
 );
 const ArrayBufferInputStream = Components.Constructor(
   "@mozilla.org/io/arraybuffer-input-stream;1",

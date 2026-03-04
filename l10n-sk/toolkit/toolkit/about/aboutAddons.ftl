@@ -170,6 +170,8 @@ extensions-warning-update-security-button = Zapnúť
 extensions-warning-imported-addons2 =
     .message = Dokončite inštaláciu rozšírení, ktoré boli importované do { -brand-short-name(case: "gen") }.
 extensions-warning-imported-addons-button = Nainštalovať rozšírenia
+extensions-warning-safe-mode3 =
+    .message = Všetky doplnky boli zakázané režimom riešenia problémov.
 
 ## Strings connected to add-on updates
 
@@ -206,6 +208,10 @@ addon-updates-manual-updates-found = Zobraziť dostupné aktualizácie
 
 addon-install-from-file = Nainštalovať doplnok zo súboru…
     .accesskey = N
+# Like `addon-install-from-file` but used when the `extensions.webextensions.prefer-update-over-install-for-existing-addon`
+# pref is set.
+addon-install-or-update-from-file = Nainštalovať alebo aktualizovať doplnok zo súboru…
+    .accesskey = i
 addon-install-from-file-dialog-title = Zvoľte doplnok, ktorý chcete nainštalovať
 addon-install-from-file-filter-name = Doplnky
 addon-open-about-debugging = Ladiť doplnky
@@ -278,6 +284,16 @@ discopane-notice-recommendations2 =
         Niektoré z týchto odporúčaní sú prispôsobené. Sú založené na iných rozšíreniach, ktoré už
         máte nainštalované, nastaveniach profilu a štatistikách používania.
 discopane-notice-learn-more = Ďalšie informácie
+# Notice for the colorway theme removal
+colorway-removal-notice-message =
+    .heading = Vaše farebné témy boli odstránené.
+    .message = { -brand-product-name } aktualizoval svoju kolekciu farebných tém. Starú verziu (verzie) sme odstránili zo zoznamu „Uložené témy“. Nové verzie nájdete na stránke s doplnkami.
+colorway-removal-notice-learn-more = Ďalšie informácie
+colorway-removal-notice-button = Získajte aktualizované farebné témy
+# Notice to make user aware that themes are not applied in forced colors mode.
+# This notice is only visible on Windows.
+forced-colors-theme-notice =
+    .message = Nastavenia kontrastu vo Windowse prepisujú témy vzhľadu { -brand-short-name(case: "gen") }. Ak chcete používať témy vo { -brand-short-name(case: "loc") }, vypnite tieto nastavenia.
 privacy-policy = Zásady ochrany osobných údajov
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
@@ -298,6 +314,16 @@ find-more-themes = Nájdite ďalšie témy vzhľadu
 # used for screen readers.
 addon-options-button =
     .aria-label = Ďalšie možnosti
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+# We hard code "Firefox" because we do not want to imply that a Firefox fork is
+# making this recommendation.
+discopane-intro3 =
+    Rozšírenia a témy vzhľadu vám umožňujú prispôsobiť { -brand-product-name }. Môžu zlepšiť súkromie,
+    zvýšiť produktivitu, vylepšiť médiá, zmeniť vzhľad { -brand-product-name(case: "gen") } a
+    mnoho ďalšieho. Tieto malé softvérové programy sú často vyvíjané tretími stranami. Tu je
+    výber Firefoxom <a data-l10n-name="learn-more-trigger">odporúčaných</a> doplnkov
+    pre výnimočné zabezpečenie, výkon a funkčnosť.
 
 ## Add-on actions
 
@@ -385,6 +411,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Povolené v súkromných oknách
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Povolené v súkromných oknách
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -424,6 +454,24 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Toto rozšírenie bolo skontrolované a spĺňa naše štandardy bezpečnosti a výkonu
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Oficiálne rozšírenie od autorov Firefoxu. Spĺňa bezpečnostné a výkonové štandardy.
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are performing the
+# security or performance reviews. As such, we avoid personalising language
+# like the words "our" or "we".
+addon-badge-verified4 =
+    .title = Toto rozšírenie bolo skontrolované a spĺňa štandardy pre bezpečnosť a výkon
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are making the
+# recommendation. As such, we hard code "Firefox" and avoid personalising
+# language like the words "our" or "we".
+addon-badge-recommended4 =
+    .title = Firefox odporúča len rozšírenia, ktoré spĺňajú štandardy pre bezpečnosť a výkon
 
 ##
 
@@ -431,6 +479,10 @@ available-updates-heading = K dispozícii je aktualizácia
 recent-updates-heading = Naposledy aktualizované
 release-notes-loading = Načítava sa…
 release-notes-error = Pri načítaní poznámok k vydaniu sa vyskytla chyba.
+addon-permissions-heading = Oprávnenia
+addon-permissions-empty2 = Toto rozšírenie nevyžaduje žiadne povolenia.
+addon-permissions-required-label = Vyžadované:
+addon-permissions-optional-label = Voliteľné:
 addon-permissions-empty = Toto rozšírenie nevyžaduje žiadne povolenia
 addon-permissions-required = Nevyhnutné povolenia pre splnenie základných funkcií:
 addon-permissions-optional = Voliteľné povolenia pre splnenie prídavných funkcií:
@@ -453,11 +505,14 @@ dictionary-heading = Spravujte svoje slovníky
 locale-heading = Spravujte svoje jazyky
 updates-heading = Spravujte svoje aktualizácie
 sitepermission-heading = Spravujte svoje doplnky pre oprávnenia stránok
-discover-heading = Prispôsobte si { -brand-short-name }
+discover-heading = Prispôsobte si { -brand-short-name(case: "acc") }
 shortcuts-heading = Správa klávesových skratiek pre rozšírenia
 default-heading-search-label = Zobraziť ďalšie doplnky
 addons-heading-search-input =
     .placeholder = Hľadať na addons.mozilla.org
+addons-heading-search-button =
+    .title = Hľadať na addons.mozilla.org
+    .aria-label = Hľadať na addons.mozilla.org
 addon-page-options-button =
     .title = Nástroje pre všetky doplnky
 
@@ -480,14 +535,32 @@ details-notification-unsigned-and-disabled-link = Ďalšie informácie
 details-notification-unsigned = Doplnok { $name } nemohol byť overený pre použitie v aplikácii { -brand-short-name }. Pokračujte opatrne.
 details-notification-unsigned2 =
     .message = Doplnok { $name } nemohol byť overený pre použitie v aplikácii { -brand-short-name }. Pokračujte opatrne.
+details-notification-hard-blocked-extension =
+    .message = Toto rozšírenie je zablokované z dôvodu porušenia pravidiel Mozilly a bolo preto zakázané.
+details-notification-hard-blocked-other =
+    .message = Tento doplnok je zablokovaný z dôvodu porušenia pravidiel Mozilly a bol preto zakázaný.
 details-notification-unsigned-link = Ďalšie informácie
 details-notification-blocked = Doplnok { $name } bol zablokovaný kvôli problémom so stabilitou alebo bezpečnosťou.
-details-notification-blocked2 =
-    .message = Doplnok { $name } bol zablokovaný kvôli problémom so stabilitou alebo bezpečnosťou.
+details-notification-blocked-link2 = Zobraziť podrobnosti
+details-notification-soft-blocked-extension-disabled2 =
+    .message = Toto rozšírenie je obmedzené a bolo zakázané. Môžete ho povoliť, ale môže to byť riskantné.
+details-notification-soft-blocked-extension-enabled2 =
+    .message = Toto rozšírenie je obmedzené. Jeho používanie môže byť riskantné.
+details-notification-soft-blocked-other-disabled2 =
+    .message = Tento doplnok je obmedzený a bol zakázaný. Môžete ho povoliť, ale môže to byť riskantné.
+details-notification-soft-blocked-other-enabled2 =
+    .message = Tento doplnok je obmedzený. Jeho používanie môže byť riskantné.
+details-notification-soft-blocked-extension-disabled =
+    .message = Toto rozšírenie je obmedzené z dôvodu porušovania pravidiel Mozilly a bolo preto zakázané. Môžete ho povoliť, ale môže to byť riskantné.
+details-notification-soft-blocked-extension-enabled =
+    .message = Toto rozšírenie porušuje pravidlá Mozilly. Jeho používanie môže byť riskantné.
+details-notification-soft-blocked-other-disabled =
+    .message = Tento doplnok je obmedzený z dôvodu porušovania pravidiel Mozilly a bol preto zakázaný. Môžete ho povoliť, ale môže to byť riskantné.
+details-notification-soft-blocked-other-enabled =
+    .message = Tento doplnok porušuje pravidlá Mozilly. Jeho používanie môže byť riskantné.
+details-notification-softblocked-link2 = Zobraziť podrobnosti
 details-notification-blocked-link = Ďalšie informácie
 details-notification-softblocked = Doplnok { $name } zapríčiňuje problémy so stabilitou alebo bezpečnosťou.
-details-notification-softblocked2 =
-    .message = Doplnok { $name } zapríčiňuje problémy so stabilitou alebo bezpečnosťou.
 details-notification-softblocked-link = Ďalšie informácie
 details-notification-gmp-pending = Doplnok { $name } bude čoskoro nainštalovaný.
 details-notification-gmp-pending2 =
@@ -501,3 +574,45 @@ plugins-openh264-name = Kodek OpenH264 Video od Cisco Systems, Inc.
 plugins-openh264-description = Tento zásuvný modul je automaticky inštalovaný Mozillou na zabezpečenie súladu so špecifikáciou pre WebRTC za účelom umožnenia hovorov prostredníctvom WebRTC so zariadeniami, ktoré vyžadujú videokodek H.264. Ďalšie informácie o implementácii a zdrojové kódy kodeku nájdete na stránkach http://www.openh264.org/.
 plugins-widevine-name = Modul na dekódovanie obsahu Widevine od Google Inc.
 plugins-widevine-description = Tento zásuvný modul umožňuje prehrávanie šifrovaných médií podľa špecifikácie Encrypted Media Extensions. Šifrované médiá sú typicky požívané na ochranu prémiového alebo plateného obsahu pred kopírovaním. Ďalšie informácie nájdete o Encrypted Media Extensions na stránke https://www.w3.org/TR/encrypted-media/.
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-permissions-required-data-collection = Požadovaný zber údajov:
+addon-permissions-optional-data-collection = Voliteľný zber údajov:
+# Name of the Permissions tab in `about:addons` when the data collection feature is enabled.
+permissions-data-addon-button = Povolenia a údaje
+# This is a description for extension that use this AI model
+# Variables:
+#   $extensionName (String) - Name of the extension
+mlmodel-extension-label = Používané rozšírením { $extensionName }
+addon-permissions-data-collection-heading = Zber údajov
+addon-permissions-data-collection-empty = Vývojár uvádza, že toto rozšírenie nevyžaduje zhromažďovanie údajov.
+addon-data-collection-provided = Informácie poskytnuté vývojárom rozšírenia
+addon-data-collection-learnmore = Ďalšie informácie o zbere údajov
+
+## Mapping Engine IDs from AI models to how that feature represented by the engine Id is described in the used by section in local model management
+
+mlmodel-about-inference = { -brand-short-name } toto používa na podstránke about:inference
+mlmodel-link-preview = { -brand-short-name } toto používa na generovanie kľúčových bodov pri zobrazovaní ukážok odkazov
+mlmodel-pdfjs = { -brand-short-name } toto používa na vytvorenie alternatívneho textu pre obrázky, ktoré pridávate do súborov PDF
+mlmodel-smart-tab-topic-engine = { -brand-short-name } toto používa na navrhovanie názvov pre vaše skupiny kariet
+mlmodel-smart-tab-embedding-engine = { -brand-short-name } toto používa na navrhovanie kariet pre vaše skupiny kariet
+# AI Model will be downloaded on the users device and used locally
+addon-category-mlmodel = Umelá inteligencia v zariadení
+addon-category-mlmodel-title =
+    .title = Umelá inteligencia v zariadení
+mlmodel-heading = Spravovať modely umelej inteligencie v zariadení
+mlmodel-description = Niektoré funkcie a rozšírenia vo { -brand-short-name(case: "loc") } sú poháňané modelmi umelej inteligencie, ktoré fungujú lokálne na vašom zariadení. Tento prístup chráni vaše súkromie a v mnohých prípadoch zrýchľuje výkon. <a data-l10n-name="learn-more">Ďalšie informácie</a>
+# Label for button that when clicked removed local model
+mlmodel-remove-addon-button =
+    .aria-label = Odstrániť
+# Label for the aggregated value of all files for a model
+mlmodel-addon-detail-totalsize-label = Veľkosť súboru
+mlmodel-addon-detail-last-used-label = Naposledy použité
+# This is a section label to describe what extensions or features use a specific local AI model
+mlmodel-addon-detail-used-by-label = Využívaný čím
+# This is a section label to describe the link to the model card on the Hugging Face website
+mlmodel-addon-detail-model-card = Karta modelu
+# This is a label for the Model Card link to Hugging face
+mlmodel-addon-detail-model-card-link-label = Zobraziť na Hugging Face

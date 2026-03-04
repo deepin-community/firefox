@@ -28,7 +28,6 @@
 #include "States.h"
 #include "nsISimpleEnumerator.h"
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/Sprintf.h"
 #include "nsAccessibilityService.h"
 #include "nsComponentManagerUtils.h"
@@ -269,6 +268,49 @@ void AccessibleWrap::Shutdown() {
   LocalAccessible::Shutdown();
 }
 
+static uint16_t CreateMaiInterfaces(Accessible* aAccessible) {
+  uint16_t interfaces = 1 << MAI_INTERFACE_COMPONENT;
+
+  if (aAccessible->IsHyperText() && aAccessible->IsTextRole()) {
+    interfaces |= (1 << MAI_INTERFACE_HYPERTEXT) | (1 << MAI_INTERFACE_TEXT) |
+                  (1 << MAI_INTERFACE_EDITABLE_TEXT);
+  }
+
+  if (aAccessible->IsLink()) {
+    interfaces |= 1 << MAI_INTERFACE_HYPERLINK_IMPL;
+  }
+
+  if (aAccessible->HasNumericValue()) {
+    interfaces |= 1 << MAI_INTERFACE_VALUE;
+  }
+
+  if (aAccessible->IsTable()) {
+    interfaces |= 1 << MAI_INTERFACE_TABLE;
+  }
+
+  if (aAccessible->IsTableCell()) {
+    interfaces |= 1 << MAI_INTERFACE_TABLE_CELL;
+  }
+
+  if (aAccessible->IsImage()) {
+    interfaces |= 1 << MAI_INTERFACE_IMAGE;
+  }
+
+  if (aAccessible->IsDoc()) {
+    interfaces |= 1 << MAI_INTERFACE_DOCUMENT;
+  }
+
+  if (aAccessible->IsSelect()) {
+    interfaces |= 1 << MAI_INTERFACE_SELECTION;
+  }
+
+  // XXX: Always include the action interface because aria-actions
+  // can define actions mid-life.
+  interfaces |= 1 << MAI_INTERFACE_ACTION;
+
+  return interfaces;
+}
+
 void AccessibleWrap::GetNativeInterface(void** aOutAccessible) {
   *aOutAccessible = nullptr;
 
@@ -279,7 +321,7 @@ void AccessibleWrap::GetNativeInterface(void** aOutAccessible) {
       return;
     }
 
-    GType type = GetMaiAtkType(CreateMaiInterfaces());
+    GType type = GetMaiAtkType(CreateMaiInterfaces(this));
     if (!type) return;
 
     mAtkObject = reinterpret_cast<AtkObject*>(g_object_new(type, nullptr));
@@ -305,52 +347,6 @@ AtkObject* AccessibleWrap::GetAtkObject(LocalAccessible* acc) {
   void* atkObjPtr = nullptr;
   acc->GetNativeInterface(&atkObjPtr);
   return atkObjPtr ? ATK_OBJECT(atkObjPtr) : nullptr;
-}
-
-/* private */
-uint16_t AccessibleWrap::CreateMaiInterfaces(void) {
-  uint16_t interfacesBits = 0;
-
-  // The Component interface is supported by all accessibles.
-  interfacesBits |= 1 << MAI_INTERFACE_COMPONENT;
-
-  // Add Action interface if the action count is more than zero.
-  if (ActionCount() > 0) interfacesBits |= 1 << MAI_INTERFACE_ACTION;
-
-  // Text, Editabletext, and Hypertext interface.
-  HyperTextAccessible* hyperText = AsHyperText();
-  if (hyperText && hyperText->IsTextRole()) {
-    interfacesBits |= 1 << MAI_INTERFACE_TEXT;
-    interfacesBits |= 1 << MAI_INTERFACE_EDITABLE_TEXT;
-    if (!nsAccUtils::MustPrune(this)) {
-      interfacesBits |= 1 << MAI_INTERFACE_HYPERTEXT;
-    }
-  }
-
-  // Value interface.
-  if (HasNumericValue()) interfacesBits |= 1 << MAI_INTERFACE_VALUE;
-
-  // Document interface.
-  if (IsDoc()) interfacesBits |= 1 << MAI_INTERFACE_DOCUMENT;
-
-  if (IsImage()) interfacesBits |= 1 << MAI_INTERFACE_IMAGE;
-
-  // HyperLink interface.
-  if (IsLink()) interfacesBits |= 1 << MAI_INTERFACE_HYPERLINK_IMPL;
-
-  if (!nsAccUtils::MustPrune(this)) {  // These interfaces require children
-    // Table interface.
-    if (AsTable()) interfacesBits |= 1 << MAI_INTERFACE_TABLE;
-
-    if (AsTableCell()) interfacesBits |= 1 << MAI_INTERFACE_TABLE_CELL;
-
-    // Selection interface.
-    if (IsSelect()) {
-      interfacesBits |= 1 << MAI_INTERFACE_SELECTION;
-    }
-  }
-
-  return interfacesBits;
 }
 
 static GType GetMaiAtkType(uint16_t interfacesBits) {
@@ -391,7 +387,7 @@ static GType GetMaiAtkType(uint16_t interfacesBits) {
   type = g_type_register_static(MAI_TYPE_ATK_OBJECT, atkTypeName, &tinfo,
                                 GTypeFlags(0));
 
-  for (uint32_t index = 0; index < ArrayLength(atk_if_infos); index++) {
+  for (uint32_t index = 0; index < std::size(atk_if_infos); index++) {
     if (interfacesBits & (1 << index)) {
       g_type_add_interface_static(type,
                                   GetAtkTypeForMai((MaiInterfaceType)index),
@@ -666,6 +662,7 @@ AtkAttributeSet* getAttributesCB(AtkObject* aAtkObj) {
     return nullptr;
   }
   RefPtr<AccAttributes> attributes = acc->Attributes();
+  nsAccUtils::SetAccGroupAttrs(attributes, acc);
   return ConvertToAtkAttributeSet(attributes);
 }
 
@@ -885,52 +882,10 @@ AtkObject* GetWrapperFor(Accessible* aAcc) {
   return AccessibleWrap::GetAtkObject(aAcc->AsLocal());
 }
 
-static uint16_t GetInterfacesForProxy(RemoteAccessible* aProxy) {
-  uint16_t interfaces = 1 << MAI_INTERFACE_COMPONENT;
-  if (aProxy->IsHyperText()) {
-    interfaces |= (1 << MAI_INTERFACE_HYPERTEXT) | (1 << MAI_INTERFACE_TEXT) |
-                  (1 << MAI_INTERFACE_EDITABLE_TEXT);
-  }
-
-  if (aProxy->IsLink()) {
-    interfaces |= 1 << MAI_INTERFACE_HYPERLINK_IMPL;
-  }
-
-  if (aProxy->HasNumericValue()) {
-    interfaces |= 1 << MAI_INTERFACE_VALUE;
-  }
-
-  if (aProxy->IsTable()) {
-    interfaces |= 1 << MAI_INTERFACE_TABLE;
-  }
-
-  if (aProxy->IsTableCell()) {
-    interfaces |= 1 << MAI_INTERFACE_TABLE_CELL;
-  }
-
-  if (aProxy->IsImage()) {
-    interfaces |= 1 << MAI_INTERFACE_IMAGE;
-  }
-
-  if (aProxy->IsDoc()) {
-    interfaces |= 1 << MAI_INTERFACE_DOCUMENT;
-  }
-
-  if (aProxy->IsSelect()) {
-    interfaces |= 1 << MAI_INTERFACE_SELECTION;
-  }
-
-  if (aProxy->IsActionable()) {
-    interfaces |= 1 << MAI_INTERFACE_ACTION;
-  }
-
-  return interfaces;
-}
-
 void a11y::ProxyCreated(RemoteAccessible* aProxy) {
   MOZ_ASSERT(aProxy->RemoteParent() || aProxy->IsDoc(),
              "Need parent to check for HyperLink interface");
-  GType type = GetMaiAtkType(GetInterfacesForProxy(aProxy));
+  GType type = GetMaiAtkType(CreateMaiInterfaces(aProxy));
   NS_ASSERTION(type, "why don't we have a type!");
 
   AtkObject* obj = reinterpret_cast<AtkObject*>(g_object_new(type, nullptr));
@@ -1009,6 +964,8 @@ void a11y::PlatformEvent(Accessible* aTarget, uint32_t aEventType) {
       g_signal_emit_by_name(wrapper, "text-attributes-changed");
       break;
     case nsIAccessibleEvent::EVENT_NAME_CHANGE: {
+      // Don't want to passively activate the cache because a name changed.
+      CacheDomainActivationBlocker cacheBlocker;
       nsAutoString newName;
       aTarget->Name(newName);
       MaybeFireNameChange(wrapper, newName);
@@ -1050,8 +1007,7 @@ void a11y::PlatformStateChangeEvent(Accessible* aTarget, uint64_t aState,
   atkObj->FireStateChangeEvent(aState, aEnabled);
 }
 
-void a11y::PlatformFocusEvent(Accessible* aTarget,
-                              const LayoutDeviceIntRect& aCaretRect) {
+void a11y::PlatformFocusEvent(Accessible* aTarget) {
   AtkObject* wrapper = GetWrapperFor(aTarget);
 
   // XXX Do we really need this check? If so, do we need a similar check for
@@ -1069,9 +1025,7 @@ void a11y::PlatformFocusEvent(Accessible* aTarget,
 
 void a11y::PlatformCaretMoveEvent(Accessible* aTarget, int32_t aOffset,
                                   bool aIsSelectionCollapsed,
-                                  int32_t aGranularity,
-                                  const LayoutDeviceIntRect& aCaretRect,
-                                  bool aFromUser) {
+                                  int32_t aGranularity, bool aFromUser) {
   AtkObject* wrapper = GetWrapperFor(aTarget);
   g_signal_emit_by_name(wrapper, "text_caret_moved", aOffset);
 }
@@ -1189,6 +1143,19 @@ void MaiAtkObject::FireAtkShowHideEvent(AtkObject* aParent, bool aIsAdded,
 void a11y::PlatformSelectionEvent(Accessible*, Accessible* aWidget, uint32_t) {
   MaiAtkObject* obj = MAI_ATK_OBJECT(GetWrapperFor(aWidget));
   g_signal_emit_by_name(obj, "selection_changed");
+}
+
+mozilla::StaticAutoPtr<nsCString> sReturnedString;
+
+// static
+const char* AccessibleWrap::ReturnString(nsAString& aString) {
+  if (!sReturnedString) {
+    sReturnedString = new nsCString();
+    ClearOnShutdown(&sReturnedString);
+  }
+
+  CopyUTF16toUTF8(aString, *sReturnedString);
+  return sReturnedString->get();
 }
 
 // static

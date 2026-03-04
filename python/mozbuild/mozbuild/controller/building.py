@@ -16,7 +16,6 @@ from collections import Counter, OrderedDict, namedtuple
 from itertools import dropwhile, islice, takewhile
 from textwrap import TextWrapper
 
-import six
 from mach.site import CommandSiteManager
 
 try:
@@ -35,6 +34,7 @@ from ..backend import get_backend_class
 from ..base import MozbuildObject
 from ..compilation.warnings import WarningsCollector, WarningsDatabase
 from ..dirutils import mkdir
+from ..serialized_logging import read_serialized_record
 from ..telemetry import get_cpu_brand
 from ..testing import install_test_files
 from ..util import FileAvoidWrite, resolve_target_to_make
@@ -55,10 +55,9 @@ Preferences.
 """.strip()
 
 
-INSTALL_TESTS_CLOBBER = "".join(
-    [
-        TextWrapper().fill(line) + "\n"
-        for line in """
+INSTALL_TESTS_CLOBBER = "".join([
+    TextWrapper().fill(line) + "\n"
+    for line in """
 The build system was unable to install tests because the CLOBBER file has \
 been updated. This means if you edited any test files, your changes may not \
 be picked up until a full/clobber build is performed.
@@ -73,8 +72,7 @@ and proceed with running tests. To do this run:
 
  $ touch {clobber_file}
 """.splitlines()
-    ]
-)
+])
 
 CLOBBER_REQUESTED_MESSAGE = """
 ===================
@@ -92,7 +90,7 @@ BuildOutputResult = namedtuple(
 )
 
 
-class TierStatus(object):
+class TierStatus:
     """Represents the state and progress of tier traversal.
 
     The build system is organized into linear phases called tiers. Each tier
@@ -259,7 +257,7 @@ class BuildMonitor(MozbuildObject):
         query this instance for the current state in order to update UI, etc.
 
         message is either None, or the content of a message to be
-        displayed to the user.
+        displayed to the user (as a str or a logging.LogRecord).
         """
         message = None
 
@@ -319,6 +317,9 @@ class BuildMonitor(MozbuildObject):
             record_cargo_timings(self.resources, cargo_timings)
             return BuildOutputResult(None, False, None)
 
+        if log_record := read_serialized_record(line):
+            return BuildOutputResult(None, False, log_record)
+
         warning = None
         message = line
 
@@ -359,11 +360,11 @@ class BuildMonitor(MozbuildObject):
                 build_resources_profile_path = self._get_state_filename(
                     "profile_build_resources.json"
                 )
-            with io.open(
+            with open(
                 build_resources_profile_path, "w", encoding="utf-8", newline="\n"
             ) as fh:
-                to_write = six.ensure_text(
-                    json.dumps(self.resources.as_profile(), separators=(",", ":"))
+                to_write = json.dumps(
+                    self.resources.as_profile(), separators=(",", ":")
                 )
                 fh.write(to_write)
         except Exception as e:
@@ -595,7 +596,7 @@ class BuildProgressFooter(Footer):
 
     def __init__(self, terminal, monitor):
         Footer.__init__(self, terminal)
-        self.tiers = six.viewitems(monitor.tiers.tier_status)
+        self.tiers = monitor.tiers.tier_status.items()
 
     def draw(self):
         """Draws this footer in the terminal."""
@@ -692,7 +693,10 @@ class BuildOutputManager(OutputManager):
         warning, state_changed, message = self.monitor.on_line(line)
 
         if message:
-            self.log(logging.INFO, "build_output", {"line": message}, "{line}")
+            if isinstance(message, logging.LogRecord):
+                self.log_record("build_output", message)
+            else:
+                self.log(logging.INFO, "build_output", {"line": message}, "{line}")
         elif state_changed:
             have_handler = hasattr(self, "_handler")
             if have_handler:
@@ -766,16 +770,17 @@ class StaticAnalysisOutputManager(OutputManager):
                     self._handler.release()
 
     def write(self, path, output_format):
-        assert output_format in ("text", "json"), "Invalid output format {}".format(
-            output_format
-        )
+        assert output_format in (
+            "text",
+            "json",
+        ), f"Invalid output format {output_format}"
         path = mozpath.realpath(path)
 
         if output_format == "json":
             self.monitor._warnings_database.save_to_file(path)
 
         else:
-            with io.open(path, "w", encoding="utf-8", newline="\n") as f:
+            with open(path, "w", encoding="utf-8", newline="\n") as f:
                 f.write(self.raw)
 
         self.log(
@@ -786,7 +791,7 @@ class StaticAnalysisOutputManager(OutputManager):
         )
 
 
-class CCacheStats(object):
+class CCacheStats:
     """Holds statistics from ccache.
 
     Instances can be subtracted from each other to obtain differences.
@@ -913,7 +918,6 @@ class CCacheStats(object):
                 self._parse_line(line)
 
     def _parse_line(self, line):
-        line = six.ensure_text(line)
         for stat_key, stat_description in self.STATS_KEYS:
             if line.startswith(stat_description):
                 raw_value = self._strip_prefix(line, stat_description)
@@ -1147,7 +1151,7 @@ class BuildDriver(MozbuildObject):
             monitor.start()
 
             if directory is not None and not what:
-                print("Can only use -C/--directory with an explicit target " "name.")
+                print("Can only use -C/--directory with an explicit target name.")
                 return 1
 
             if directory is not None:
@@ -1253,14 +1257,12 @@ class BuildDriver(MozbuildObject):
 
             status = None
 
-            if not config_rc and any(
-                [
-                    self.backend_out_of_date(
-                        mozpath.join(self.topobjdir, "backend.%sBackend" % backend)
-                    )
-                    for backend in all_backends
-                ]
-            ):
+            if not config_rc and any([
+                self.backend_out_of_date(
+                    mozpath.join(self.topobjdir, "backend.%sBackend" % backend)
+                )
+                for backend in all_backends
+            ]):
                 print("Build configuration changed. Regenerating backend.")
                 args = [
                     config.substs["PYTHON3"],
@@ -1422,9 +1424,9 @@ class BuildDriver(MozbuildObject):
             )
 
             if os.path.exists(pathToThirdparty):
-                with io.open(
-                    pathToThirdparty, encoding="utf-8", newline="\n"
-                ) as f, io.open(pathToGenerated, encoding="utf-8", newline="\n") as g:
+                with open(pathToThirdparty, encoding="utf-8", newline="\n") as f, open(
+                    pathToGenerated, encoding="utf-8", newline="\n"
+                ) as g:
                     # Normalize the path (no trailing /)
                     LOCAL_SUPPRESS_DIRS = tuple(
                         [line.strip("\n/") for line in f]
@@ -1484,7 +1486,7 @@ class BuildDriver(MozbuildObject):
                         logging.WARNING,
                         "compiler_warning",
                         warning,
-                        "warning: {normpath}:{line}:{column} [{flag}] " "{message}",
+                        "warning: {normpath}:{line}:{column} [{flag}] {message}",
                     )
                 else:
                     self.log(
@@ -1526,9 +1528,9 @@ class BuildDriver(MozbuildObject):
             self.notify("Build complete" if not status else "Build failed")
 
         if status:
-            if what and any(
-                [target for target in what if target not in ("faster", "binaries")]
-            ):
+            if what and any([
+                target for target in what if target not in ("faster", "binaries")
+            ]):
                 print(
                     "Hey! Builds initiated with `mach build "
                     "$A_SPECIFIC_TARGET` may not always work, even if the "
@@ -1542,7 +1544,7 @@ class BuildDriver(MozbuildObject):
             # if excessive:
             #    print(EXCESSIVE_SWAP_MESSAGE)
 
-            print("To view a profile of the build, run |mach " "resource-usage|.")
+            print("To view a profile of the build, run |mach resource-usage|.")
 
         long_build = monitor.elapsed > 1200
 
@@ -1713,17 +1715,16 @@ class BuildDriver(MozbuildObject):
     def _write_mozconfig_json(self):
         mozconfig_json = mozpath.join(self.topobjdir, ".mozconfig.json")
         with FileAvoidWrite(mozconfig_json) as fh:
-            to_write = six.ensure_text(
-                json.dumps(
-                    {
-                        "topsrcdir": self.topsrcdir,
-                        "topobjdir": self.topobjdir,
-                        "mozconfig": self.mozconfig,
-                    },
-                    sort_keys=True,
-                    indent=2,
-                )
+            to_write = json.dumps(
+                {
+                    "topsrcdir": self.topsrcdir,
+                    "topobjdir": self.topobjdir,
+                    "mozconfig": self.mozconfig,
+                },
+                sort_keys=True,
+                indent=2,
             )
+
             # json.dumps in python2 inserts some trailing whitespace while
             # json.dumps in python3 does not, which defeats the FileAvoidWrite
             # mechanism. Strip the trailing whitespace to avoid rewriting this
@@ -1787,7 +1788,7 @@ class BuildDriver(MozbuildObject):
         # Copy the original mozconfig to the objdir.
         mozconfig_objdir = mozpath.join(self.topobjdir, ".mozconfig")
         if mozconfig["path"]:
-            with open(mozconfig["path"], "r") as ifh:
+            with open(mozconfig["path"]) as ifh:
                 with FileAvoidWrite(mozconfig_objdir) as ofh:
                     ofh.write(ifh.read())
         else:
@@ -1835,13 +1836,11 @@ class BuildDriver(MozbuildObject):
         return `True` if the clobber was required but not completed, and return `False` if
         the clobber was not required and not completed.
         """
-        auto_clobber = any(
-            [
-                env.get("AUTOCLOBBER", False),
-                (mozconfig["env"] or {}).get("added", {}).get("AUTOCLOBBER", False),
-                "AUTOCLOBBER=1" in (mozconfig["make_extra"] or []),
-            ]
-        )
+        auto_clobber = any([
+            env.get("AUTOCLOBBER", False),
+            (mozconfig["env"] or {}).get("added", {}).get("AUTOCLOBBER", False),
+            "AUTOCLOBBER=1" in (mozconfig["make_extra"] or []),
+        ])
         from mozbuild.base import BuildEnvironmentNotFoundException
 
         substs = dict()
@@ -1851,7 +1850,7 @@ class BuildDriver(MozbuildObject):
             # We'll just use an empty substs if there is no config.
             pass
         clobberer = Clobberer(self.topsrcdir, self.topobjdir, substs)
-        clobber_output = six.StringIO()
+        clobber_output = io.StringIO()
         res = clobberer.maybe_do_clobber(os.getcwd(), auto_clobber, clobber_output)
         clobber_output.seek(0)
         for line in clobber_output.readlines():

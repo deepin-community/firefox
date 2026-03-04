@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "WindowNamedPropertiesHandler.h"
+
 #include "mozilla/dom/EventTargetBinding.h"
 #include "mozilla/dom/ProxyHandlerUtils.h"
 #include "mozilla/dom/WindowBinding.h"
@@ -153,7 +154,7 @@ bool WindowNamedPropertiesHandler::getOwnPropDescriptor(
   }
 
   ErrorResult rv;
-  bool found = document->ResolveName(aCx, str, &v, rv);
+  bool found = document->ResolveNameForWindow(aCx, str, &v, rv);
   if (rv.MaybeSetPendingException(aCx)) {
     return false;
   }
@@ -216,7 +217,7 @@ bool WindowNamedPropertiesHandler::ownPropNames(
   nsHTMLDocument* document = doc->AsHTMLDocument();
   // Document names are enumerable, so we want to get them no matter what flags
   // is.
-  document->GetSupportedNames(names);
+  document->GetSupportedNamesForWindow(names);
 
   JS::RootedVector<jsid> docProps(aCx);
   if (!AppendNamedPropertyIds(aCx, aProxy, names, false, &docProps)) {

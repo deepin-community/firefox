@@ -9,7 +9,6 @@
 #include "nsINIParser.h"
 #include "nsStringEnumerator.h"
 #include "nsTArray.h"
-#include "mozilla/Attributes.h"
 
 class nsINIParserImpl final : public nsIINIParser, public nsIINIParserWriter {
   ~nsINIParserImpl() = default;
@@ -51,17 +50,15 @@ bool nsINIParserImpl::ContainsNull(const nsACString& aStr) {
   return aStr.CountChar('\0') > 0;
 }
 
-static bool SectionCB(const char* aSection, void* aClosure) {
-  nsTArray<nsCString>* strings = static_cast<nsTArray<nsCString>*>(aClosure);
-  strings->AppendElement()->Assign(aSection);
-  return true;
-}
-
 NS_IMETHODIMP
 nsINIParserImpl::GetSections(nsIUTF8StringEnumerator** aResult) {
   nsTArray<nsCString>* strings = new nsTArray<nsCString>;
 
-  nsresult rv = mParser.GetSections(SectionCB, strings);
+  nsresult rv = mParser.GetSections([&strings](const char* aSection) {
+    strings->AppendElement()->Assign(aSection);
+    return true;
+  });
+
   if (NS_SUCCEEDED(rv)) {
     rv = NS_NewAdoptingUTF8StringEnumerator(aResult, strings);
   }
@@ -71,12 +68,6 @@ nsINIParserImpl::GetSections(nsIUTF8StringEnumerator** aResult) {
   }
 
   return rv;
-}
-
-static bool KeyCB(const char* aKey, const char* aValue, void* aClosure) {
-  nsTArray<nsCString>* strings = static_cast<nsTArray<nsCString>*>(aClosure);
-  strings->AppendElement()->Assign(aKey);
-  return true;
 }
 
 NS_IMETHODIMP
@@ -89,7 +80,12 @@ nsINIParserImpl::GetKeys(const nsACString& aSection,
   nsTArray<nsCString>* strings = new nsTArray<nsCString>;
 
   nsresult rv =
-      mParser.GetStrings(PromiseFlatCString(aSection).get(), KeyCB, strings);
+      mParser.GetStrings(PromiseFlatCString(aSection).get(),
+                         [&strings](const char* aKey, const char* aValue) {
+                           strings->AppendElement()->Assign(aKey);
+                           return true;
+                         });
+
   if (NS_SUCCEEDED(rv)) {
     rv = NS_NewAdoptingUTF8StringEnumerator(aResult, strings);
   }
@@ -115,6 +111,17 @@ nsINIParserImpl::GetString(const nsACString& aSection, const nsACString& aKey,
 NS_IMETHODIMP
 nsINIParserImpl::InitFromString(const nsACString& aData) {
   return mParser.InitFromString(nsCString(aData));
+}
+
+NS_IMETHODIMP
+nsINIParserImpl::DeleteString(const nsACString& aSection,
+                              const nsACString& aKey) {
+  if (ContainsNull(aSection) || ContainsNull(aKey)) {
+    return NS_ERROR_INVALID_ARG;
+  }
+
+  return mParser.DeleteString(PromiseFlatCString(aSection).get(),
+                              PromiseFlatCString(aKey).get());
 }
 
 NS_IMETHODIMP

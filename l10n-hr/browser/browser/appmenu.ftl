@@ -14,7 +14,7 @@ appmenuitem-banner-update-manual =
 appmenuitem-banner-update-unsupported =
     .label = Nije moguće nadograditi – sustav nije kompatibilan
 appmenuitem-banner-update-restart =
-    .label = Dostupna nadogradnja – ponovo pokreni sada
+    .label = Dostupna je nova verzija – ponovo pokreni sada
 appmenuitem-new-tab =
     .label = Nova kartica
 appmenuitem-new-window =
@@ -27,6 +27,10 @@ appmenuitem-downloads =
     .label = Preuzimanja
 appmenuitem-passwords =
     .label = Lozinke
+appmenuitem-extensions-and-themes =
+    .label = Proširenja i teme
+appmenuitem-extensions =
+    .label = Proširenja
 appmenuitem-addons-and-themes =
     .label = Dodaci i teme
 appmenuitem-print =
@@ -34,7 +38,7 @@ appmenuitem-print =
 appmenuitem-find-in-page =
     .label = Pronađi na stranici …
 appmenuitem-translate =
-    .label = Prevedi stranicu…
+    .label = Prevedi stranicu …
 appmenuitem-zoom =
     .value = Zumiraj
 appmenuitem-more-tools =
@@ -108,8 +112,11 @@ appmenu-fxa-sync-and-save-data2 = Sinkroniziraj i spremi podatke
 appmenu-fxa-signed-in-label = Prijavi se
 appmenu-fxa-setup-sync =
     .label = Uključi sinkronizaciju…
+appmenu-fxa-setup-sync-new = Uključi
 appmenuitem-save-page =
     .label = Spremi stranicu kao …
+appmenuitem-fxa-sync-off-title = Sinkronizacija je isključena
+appmenuitem-fxa-sync-off-description = Zaštiti i pristupi zabilješkama, lozinkama i drugim podacima bilo gdje.
 
 ## What's New panel in App menu.
 
@@ -125,14 +132,14 @@ whatsnew-panel-footer-checkbox =
 ## "Enable Profiler Menu Button".
 
 profiler-popup-button-idle =
-    .label = Alat za profiliranje
+    .label = Profiler
     .tooltiptext = Snimi profil performanse
 profiler-popup-button-recording =
-    .label = Alat za profiliranje
-    .tooltiptext = Alat za profiliranje zapisuje profil
+    .label = Profiler
+    .tooltiptext = Profiler snima jedan profil
 profiler-popup-button-capturing =
-    .label = Alat za profiliranje
-    .tooltiptext = Alat za profiliranje snima profil
+    .label = Profiler
+    .tooltiptext = Profiler snima jedan profil
 profiler-popup-header-text = { -profiler-brand-name }
 profiler-popup-reveal-description-button =
     .aria-label = Otkrij više informacija
@@ -163,6 +170,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Otvori ploču profilera
+    .tooltiptext = Otvori ploču profilera
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -177,28 +187,34 @@ profiler-popup-capture-shortcut =
 # devtools/client/performance-new/shared/background.sys.mjs
 # Please take care that the same values are also defined in devtools' perftools.ftl.
 
-profiler-popup-presets-web-developer-description = Preporučene postavke za većinu otklanjanja pogrešaka u web aplikacijama s malim opterećenjem.
+profiler-popup-presets-web-developer-description = Preporučena unaprijed postavljena postavka za otklanjanje grešaka u većini web aplikacija, s niskom potrošnjom resursa.
 profiler-popup-presets-web-developer-label =
     .label = Web programer
-profiler-popup-presets-firefox-description = Preporučena zadana postavka za profiliranje { -brand-shorter-name }a.
+profiler-popup-presets-firefox-description = Preporučena zadana postavka za profiliranje { -brand-shorter-name(case: "gen") }.
 profiler-popup-presets-firefox-label =
     .label = { -brand-shorter-name }
-profiler-popup-presets-graphics-description = Zadana postavka za istraživanje slikovnih grešaka u { -brand-shorter-name }u.
+profiler-popup-presets-graphics-description = Zadana postavka za istraživanje slikovnih grešaka u { -brand-shorter-name(case: "loc") }.
 profiler-popup-presets-graphics-label =
     .label = Slike
-profiler-popup-presets-media-description2 = Zadana postavka za istraživanje audio i video grešaka u { -brand-shorter-name }u.
+profiler-popup-presets-media-description2 = Zadana postavka za istraživanje audio i video grešaka u { -brand-shorter-name(case: "loc") }.
 profiler-popup-presets-media-label =
     .label = Mediji
-profiler-popup-presets-networking-description = Zadana postavka za istraživanje grešaka mrežnog povezivanja u { -brand-shorter-name }u.
+profiler-popup-presets-ml-description = Zadana postavka za istraživanje grešaka strojnog učenja u { -brand-shorter-name(case: "loc") }.
+profiler-popup-presets-ml-label =
+    .label = Strojno učenje
+profiler-popup-presets-networking-description = Zadana postavka za istraživanje grešaka mrežnog povezivanja u { -brand-shorter-name(case: "loc") }.
 profiler-popup-presets-networking-label =
     .label = Mrežno povezivanje
-profiler-popup-presets-power-description = Zadana postavka za istraživanje grešaka struje u { -brand-shorter-name }u.
+profiler-popup-presets-power-description = Zadana postavka za istraživanje grešaka potrošnje energije u { -brand-shorter-name(case: "loc") }.
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
-    .label = Struja
-profiler-popup-presets-debug-description = Preporučene postavke za otklanjanje pogrešaka u { -brand-shorter-name }. Visoko opterećenje, nemojte koristiti za rad koji zahtjeva performanse, već za fokusiranje na razumijevanje ponašanja preglednika.
+    .label = Energija
+profiler-popup-presets-debug-description = Preporučene postavke za otklanjanje grešaka u { -brand-shorter-name(case: "loc") }. Visoko opterećenje, nemoj koristiti za rad koji zahtijeva performanse, već za fokusiranje na razumijevanje ponašanja preglednika.
 profiler-popup-presets-debug-label =
     .label = Otklanjanje grešaka
+profiler-popup-presets-web-compat-description = Preporučena zadana postavka za ispravljanje grešaka s web-kompatibilnosti na web-stranicama, umjesto praćenja performansi.
+profiler-popup-presets-web-compat-label =
+    .label = Web-kompatibilnost
 profiler-popup-presets-custom-label =
     .label = Prilagođeno
 
@@ -224,7 +240,7 @@ appmenu-search-history =
 appmenu-help-header =
     .title = Pomoć za { -brand-shorter-name }
 appmenu-about =
-    .label = O { -brand-shorter-name }u
+    .label = O { -brand-shorter-name(case: "loc") }
     .accesskey = O
 appmenu-get-help =
     .label = Dobij pomoć
@@ -254,7 +270,7 @@ appmenu-help-exit-troubleshoot-mode =
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
 
 appmenu-help-report-deceptive-site =
-    .label = Prijavi obmanjujuću stranicu…
+    .label = Prijavi obmanjujuću stranicu …
     .accesskey = b
 appmenu-help-not-deceptive =
     .label = Ovo nije obmanjujuća stranica…
@@ -276,6 +292,27 @@ appmenuitem-sign-in-account = Prijavi se na tvoj račun
 appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Primaj upozorenja o povredi podataka
 appmenuitem-relay-title = { -relay-brand-short-name }
-appmenuitem-relay-description = Maskiraj svoju pravu e-mail adresu i telefon
+appmenuitem-relay-description = Maskiraj svoju pravu e-mail adresu i telefonski broj
+appmenuitem-services-relay-description = Pokreni nadzornu ploču za maske e-mail adresa
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Zaštiti svoju online aktivnost
+appmenu-services-header = Moje usluge
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Isprobaj druge alate zaštite od Mozille:
+appmenu-other-protection-header = Isprobaj druge { -vendor-short-name } alate za zaštitu:
+
+## Profiles panel
+
+appmenu-other-profiles = Drugi profili
+appmenu-manage-profiles =
+    .label = Upravljaj profilima
+appmenu-copy-profile =
+    .label = Kopiraj ovaj profil
+appmenu-create-profile =
+    .label = Novi profil
+appmenu-edit-profile =
+    .aria-label = Uredi profil
+appmenu-profiles-2 =
+    .label = Profili

@@ -3,9 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = ویب سائٹس کوں "ٹریک نہ کرو" سگنل بھیڄو جو تساں ٹریک نہیں کرݨ چاہندے
-do-not-track-description2 =
-    .label = ویب سائٹ کوں "ٹریک نہ کرو" دی عرضی گَھلُّو
-    .accesskey = ن
 do-not-track-learn-more = ٻیا سِکھو
 do-not-track-option-default-content-blocking-known =
     .label = صرف اوں ویلھے جݙاں { -brand-short-name } کوں معلوم ٹریکرز کوں بلاک کرݨ کیتے سیٹ کیتا ڳیا ہووے۔
@@ -14,6 +11,8 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = ویب سائٹاں کوں آکھو جو میݙا ڈیٹا نہ ویچِن تے نہ کئیں کوں ݙِکھاوِن
     .accesskey = ݙ
+non-technical-privacy-group =
+    .label = ویب سائٹ رازداری ترجیحاں
 non-technical-privacy-header = ویب سائٹ رازداری ترجیحاں
 # Do not translate.
 # "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
@@ -124,6 +123,10 @@ startup-header = سٹارٹ اپ
 always-check-default =
     .label = ہمیشاں جانچ پڑتال کرو جو { -brand-short-name } تہاݙا پہلے کنوں طے شدہ براؤزر ہے
     .accesskey = y
+is-default-browser =
+    .message = { -brand-short-name } فی الحال تہاݙا ڈیفالٹ براؤزر ہے۔
+is-not-default-browser =
+    .message = { -brand-short-name } تہاݙا ڈیفالٹ براؤزر کائنی۔
 is-default = { -brand-short-name } فی الحال تہاݙا ڈیفالٹ براؤزر ہے۔
 is-not-default = { -brand-short-name } تہاݙا ڈیفالٹ براؤزر کائنی۔
 set-as-my-default-browser =
@@ -145,6 +148,8 @@ preferences-data-migration-description = { -brand-short-name } وچ نشانیا
 preferences-data-migration-button =
     .label = ڈیٹا امپورٹ کرو
     .accesskey = m
+tabs-group-header2 =
+    .label = ٹیباں
 tabs-group-header = ٹیباں
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab حالیہ استعمال شدہ ترتیب وِچ ٹیباں دے ذریعے چکر لیندا ہے۔
@@ -180,6 +185,8 @@ browser-containers-settings =
     .label = ترتیباں …
     .accesskey = i
 containers-disable-alert-title = تمام کنٹینر ٹیباں بند کرو؟
+startup-group =
+    .label = سٹارٹ اپ
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -215,8 +222,20 @@ settings-tabs-show-image-in-preview =
 ## General Section - Language & Appearance
 
 language-and-appearance-header = زبان تے ظاہری شکل
+appearance-group =
+    .label = ویب سائٹ دی ظاہری شکل
+    .description = کجھ ویب سائٹاں تہاݙیاں ترجیحاں دی بنیاد تے اپݨی رنگ سکیم کوں اپݨیندیدیاں ہن۔ منتخب کرو جو تساں انہاں سائٹاں کیتے کیڑھی رنگ سکیم استعمال کرݨ چاہندے او۔
 preferences-web-appearance-header = ویب سائٹ دی ظاہری شکل
 preferences-web-appearance-description = کجھ ویب سائٹاں تہاݙیاں ترجیحاں دی بنیاد تے اپݨی رنگ سکیم کوں اپݨیندیدیاں ہن۔ منتخب کرو جو تساں انہاں سائٹاں کیتے کیڑھی رنگ سکیم استعمال کرݨ چاہندے او۔
+preferences-web-appearance-choice-auto2 =
+    .label = خود بخود
+    .title = اپݨے سسٹم دیاں ترتیباں تے { -brand-short-name } تھیم دی بنیاد تے ویب سائٹ دے پس منظر تے مواد کوں خودکار طور تے تبدیل کرو۔
+preferences-web-appearance-choice-light2 =
+    .label = پھکا
+    .title = ویب سائٹ دے پس منظر تے مواد کیتے ہلکی شکل دا استعمال کرو۔
+preferences-web-appearance-choice-dark2 =
+    .label = شوخ
+    .title = ویب سائٹ دے پس منظر تے مواد کیتے گہرے رنگ دا استعمال کرو۔
 preferences-web-appearance-choice-auto = خود بخود
 preferences-web-appearance-choice-light = پھکا
 preferences-web-appearance-choice-dark = شوخ
@@ -232,13 +251,11 @@ preferences-web-appearance-choice-input-light =
     .aria-description = { preferences-web-appearance-choice-tooltip-light.title }
 preferences-web-appearance-choice-input-dark =
     .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
+preferences-web-appearance-link =
+    .label = ایکسٹینشنز تے تھیمز وِچ { -brand-short-name } تھیمز دا انتظام کرو
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = تہاݙے رنگاں دے انتخاب ویب سائٹ دی ظاہری شکل کوں زیر کر یندے پئے او۔ <a data-l10n-name="colors-link">رنگاں دا بندوبست کرو</a>
-# This can appear when using windows HCM or "Override colors: always" without
-# system colors.
-preferences-web-appearance-override-warning2 =
-    .message = تہاݙے رنگاں دے انتخاب ویب سائٹ دی ظاہری شکل کوں زیر کر یندے پئے او۔
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = <a data-l10n-name="themes-link">ایکسٹینشنز تے تھیمز</a> وِچ { -brand-short-name } تھیمز دا انتظام کرو
@@ -247,6 +264,14 @@ preferences-colors-description = متن، ویب سائٹ دے پس منظر، �
 preferences-colors-manage-button =
     .label = رنگاں دا بندوبست کرو
     .accesskey = C
+preferences-fonts-header2 =
+    .label = فونٹس
+default-font-2 =
+    .label = طےشدہ فونٹ
+    .accesskey = D
+default-font-size-2 =
+    .label = سائز
+    .accesskey = S
 preferences-fonts-header = فونٹس
 default-font = طےشدہ فونٹ
     .accesskey = D
@@ -255,6 +280,12 @@ default-font-size = سائز
 advanced-fonts =
     .label = اعلیٰ …
     .accesskey = A
+# Zoom is a noun, and the message is used as header for a group of options
+preferences-zoom-header2 =
+    .label = زوم
+preferences-default-zoom-label =
+    .label = طے شدہ زوم
+    .accesskey = z
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = زوم
 preferences-default-zoom = طے شدہ زوم
@@ -300,6 +331,11 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = فائلاں تے ایپلی کیشن
+downloads-header-2 =
+    .label = ڈاؤن لوڈ
+download-save-where-2 =
+    .label = تے فائل ہتھیکڑی کرو
+    .accesskey = v
 download-header = ڈاؤن لوڈ
 download-save-where = تے فائل ہتھیکڑی کرو
     .accesskey = v
@@ -399,6 +435,8 @@ applications-save-for-new-types =
 applications-ask-before-handling =
     .label = فائلاں کھولیندیں یا ہتھیکڑا کریندیں پچھو
     .accesskey = A
+drm-group =
+    .label = ڈیجیٹل رائٹس مینجمنٹ (DRM) مواد
 drm-content-header = ڈیجیٹل رائٹس مینجمنٹ (DRM) مواد
 play-drm-content =
     .label = DRM دے زیرانتظام مواد چلاؤ
@@ -467,6 +505,8 @@ performance-limit-content-process-blocked-desc = مواد دے عمل دی تع�
 #   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (طے شدہ)
+performance-group =
+    .label = کارکردگی
 
 ## General Section - Browsing
 
@@ -510,6 +550,8 @@ browsing-cfr-features =
     .label = براؤز کریندے ویلھے خصوصیت تجویز کرو
     .accesskey = f
 browsing-cfr-recommendations-learn-more = ٻیا سِکھو
+browsing-group =
+    .label = براؤزنگ
 
 ## General Section - Proxy
 
@@ -519,16 +561,27 @@ network-proxy-connection-learn-more = ٻیا سِکھو
 network-proxy-connection-settings =
     .label = ترتیباں…
     .accesskey = e
+network-proxy-group =
+    .label = نیٹ ورک دیاں ترتیباں
+    .description = کنفیگر کرو جو کیویں { -brand-short-name } انٹرنیٹ نال جڑدا ہے۔
 
 ## Home Section
 
 home-new-windows-tabs-header = نویاں ونڈوز تے ٹیباں
 home-new-windows-tabs-description2 = جݙاں تساں اپݨا ہوم پیج، نویں ونڈوز، تے نویاں ٹیباں کھولیندے او تاں تساں جو کجھ ݙیکھدے او اونکوں منتخب کرو۔
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = طے شدہ بݨاؤ
+    .accesskey = D
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = ہوم پیج تے نویں ونڈوز
 home-newtabs-mode-label = نویاں ٹیباں
+home-homepage-new-tabs =
+    .label = نویاں ٹیباں
 home-restore-defaults =
     .label = ڈیفالٹس بحال کرو
     .accesskey = R
@@ -567,8 +620,7 @@ home-prefs-shortcuts-description = سائٹاں جہڑیاں تساں محفوظ
 home-prefs-shortcuts-by-option-sponsored =
     .label = سپانسر تھئے شارٹ کٹ
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = { $provider } دی طرفوں تجویز کردہ
@@ -639,6 +691,8 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = ایڈریس بار دے نتیجیاں وِچ ڳولݨ دیاں تجویزاں ظاہر کرو
     .accesskey = l
+search-suggestions-cant-show-2 =
+    .message = ڳولݨ دیاں صلاحیں لوکیشن بار دے نتیجے وِچ نہ ݙکھایاں ویسن کیوں جو تساں تاریخ کوں کݙاہیں یاد نہ رکھݨ کیتے { -brand-short-name } کوں ترتیب ݙتا ہے۔
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -678,12 +732,18 @@ search-keyword-warning-title = ڈپلی کیٹ کلیدی لفظ
 #   $name (string) - Name of a search engine.
 search-keyword-warning-engine = تساں اینجھا کلیدی لفظ منتخب کیتا ہے جینکوں { $name } ایں ویلھے استعمال کریندا پئے۔ مہربانی کر تے کوئی ٻیا منتخب کرو۔
 search-keyword-warning-bookmark = تساں اینجھا کلیدی لفظ منتخب کیتا ہے جینکوں ہک نشانی ایں ویلھے استعمال کریندی ہے۔ مہربانی کر تے کوئی ٻیا منتخب کرو۔
+search-engine-group =
+    .label = طے شدہ ڳولݨ انجݨ
+search-default-engine =
+    .aria-label = طے شدہ ڳولݨ انجݨ
 
 ## Containers Section
 
 containers-back-button2 =
     .aria-label = ترتیباں تے واپس ونڄو
 containers-header = کنٹینر ٹیباں
+containers-section-header =
+    .heading = کنٹینر ٹیباں
 containers-add-button =
     .label = نواں کنٹینر شامل کرو
     .accesskey = A
@@ -694,6 +754,11 @@ containers-settings-button =
     .label = ترتیباں
 containers-remove-button =
     .label = ہٹاؤ
+
+## Account and sync
+
+sync-group-label =
+    .label = ہم وقت
 
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
@@ -727,11 +792,18 @@ fxa-login-rejected-warning =
 sync-sign-out =
     .label = سائن آؤٹ …
     .accesskey = g
+sync-sign-out2 =
+    .label = سائن آؤٹ
+    .accesskey = g
 sync-manage-account = اکاؤنٹ منظم کرو
+    .accesskey = o
+sync-manage-account2 =
+    .label = اکاؤنٹ منظم کرو
     .accesskey = o
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } توثیق شدہ کائنی۔
 sync-signedin-login-failure = { $email } ولدا جوڑݨ کیتے براہ مہربانی سائن ان کرو
@@ -758,6 +830,9 @@ prefs-syncing-off = سینکنگ: بند ہے
 prefs-sync-turn-on-syncing =
     .label = سینکنگ چالو کرو …
     .accesskey = s
+prefs-sync-turn-on-syncing-2 =
+    .label = سینکنگ چالو کرو
+    .accesskey = s
 prefs-sync-offer-setup-label2 = اپݨے تمام آلات تے اپݨے نشانیاں، تاریخ، ٹیباں، پاس ورڈز، ایڈ آنز تے ترتیباں کوں سنکرونائز کرو۔
 prefs-sync-now =
     .labelnotsyncing = ہݨیں سینک کرو
@@ -766,8 +841,14 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = ہݨیں سینک کرو
     .accesskey = N
+prefs-sync-now-button-2 =
+    .label = ہݨیں سینک کرو
+    .accesskey = N
 prefs-syncing-button =
     .label = سینک تھیندا پئے …
+prefs-syncing-button-2 =
+    .label = سینک تھیندا پئے …
+    .title = ہݨیں سینک کرو
 
 ## The list of things currently syncing.
 
@@ -838,6 +919,16 @@ sync-engine-settings =
 ## The device name controls.
 
 sync-device-name-header = ڈیوائس دا ناں
+sync-device-name-header-2 =
+    .label = ڈیوائس دا ناں
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = ڈیوائس دا ناں
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = ڈیوائس ناں تبدیل کرو
+    .accesskey = h
 sync-device-name-change =
     .label = ڈیوائس ناں تبدیل کرو …
     .accesskey = h
@@ -848,6 +939,8 @@ sync-device-name-save =
     .label = ہتھیکڑا کرو
     .accesskey = v
 sync-connect-another-device = ٻئی ڈیوائس نال کنکٹ کرو
+sync-connect-another-device-2 =
+    .label = ٻئی ڈیوائس نال کنکٹ کرو
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -991,6 +1084,16 @@ history-header = تاریخ
 #   - Simply as "Firefox", moving the verb into each option.
 #     This will result in "Firefox" + "Will remember history", etc.
 #   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label2 = { -brand-short-name } ہوسے
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
 history-remember-label = { -brand-short-name } ہوسے
     .accesskey = w
 history-remember-option-all =
@@ -999,6 +1102,18 @@ history-remember-option-never =
     .label = کݙاہیں تاریخ یاد نہ رکھو
 history-remember-option-custom =
     .label = تاریخ کیتے من مرضی دیاں ترتیباں استعمال کرو
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } تہاݙی برائوزنگ ڈائون لوڈ  ڳولݨ تاریخ کوں یاد رکھیسے ۔
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } نجی براؤزنگ دیاں ترتیباں استعمال کریسے، تے تہاݙے براوز کریندے ویلھے کوئی تاریخ یاد کائنا رکھیسے۔
+history-remember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } تہاݙی برائوزنگ ڈائون لوڈ  ڳولݨ تاریخ کوں یاد رکھیسے ۔
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } نجی براؤزنگ دیاں ترتیباں استعمال کریسے، تے تہاݙے براوز کریندے ویلھے کوئی تاریخ یاد کائنا رکھیسے۔
 history-remember-description = { -brand-short-name } تہاݙی برائوزنگ ڈائون لوڈ  ڳولݨ تاریخ کوں یاد رکھیسے ۔
 history-dontremember-description = { -brand-short-name } نجی براؤزنگ دیاں ترتیباں استعمال کریسے، تے تہاݙے براوز کریندے ویلھے کوئی تاریخ یاد کائنا رکھیسے۔
 history-private-browsing-permanent =
@@ -1019,6 +1134,8 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = تاریخ صاف کرو…
     .accesskey = s
+history-group =
+    .label = تاریخ
 
 ## Privacy Section - Site Data
 
@@ -1032,6 +1149,8 @@ sitedata-learn-more = ٻیا سِکھو
 sitedata-delete-on-close =
     .label = { -brand-short-name } بند تھیوݨ تے سائٹ دا ڈیٹا تے کوکیاں مٹا ݙیو
     .accesskey = c
+sitedata-delete-on-close-private-browsing3 =
+    .message = تُہاݙی تریخ دیاں ترتیباں دی بنیاد اُتے، جہڑیلے تُساں براؤز کوں اُچّا کرین٘دے ہِیوے تاں تُہاݙے سیشن کوکیز اَتے سائٹ دے ڈیٹا کوں { -brand-short-name } حذف کرین٘دا ہِے۔
 sitedata-delete-on-close-private-browsing = مستقل نجی براؤزنگ موڈ وِچ، { -brand-short-name } بند تھیوݨ تے کوکیاں تے سائٹ دا ڈیٹا ہمیشاں صاف تھی ویسے۔
 sitedata-delete-on-close-private-browsing2 = تُہاݙی تریخ دیاں ترتیباں دی بنیاد اُتے، جہڑیلے تُساں براؤز کوں اُچّا کرین٘دے ہِیوے تاں تُہاݙے سیشن کوکیز اَتے سائٹ دے ڈیٹا کوں { -brand-short-name } حذف کرین٘دا ہِے۔
 sitedata-allow-cookies-option =
@@ -1065,6 +1184,8 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = مستثنیات کوں منظم کرو …
     .accesskey = x
+cookies-site-data-group =
+    .label = کوکیاں تے سائٹ ڈیٹا
 
 ## Privacy Section - Cookie Banner Handling
 
@@ -1081,7 +1202,7 @@ forms-handle-cookie-banners =
 cookie-banner-blocker-checkbox-label =
     .label = کوکی بینرز کوں خود کار طریقے نال ہَٹَک ݙیؤ
 
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = ایڈریس بار
 addressbar-suggest = ایڈریس بار استعمال کریندے ویلھے، صلاح ݙیو
@@ -1255,6 +1376,8 @@ permissions-notification-link = ٻیا سِکھو
 permissions-notification-pause =
     .label = جے تک { -brand-short-name } نویں سروں نئیں چلدا اطلاع نامے روک ݙیو
     .accesskey = n
+permissions-autoplay2 =
+    .label = آٹو پلے
 permissions-autoplay = آٹو پلے
 permissions-autoplay-settings =
     .label = ترتیباں …
@@ -1274,6 +1397,16 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = استثنیات …
     .accesskey = E
+permissions-location2 =
+    .label = مقام
+permissions-xr2 =
+    .label = مجازی حقیقت
+permissions-camera2 =
+    .label = کیمرہ
+permissions-microphone2 =
+    .label = مائیکروفون
+permissions-notification2 =
+    .label = اطلاع نامے
 
 ## Privacy Section - Data Collection
 
@@ -1299,8 +1432,6 @@ addon-recommendations-link = ٻیا سِکھو
 collection-health-report-disabled = ایں بلڈ کنفیگریشن کیتے ڈیٹا رپورٹنگ غیر فعال ہے۔
 collection-backlogged-crash-reports-with-link = { -brand-short-name } کوں اپݨی طرفوں بیک لاگ کریش رپورٹاں بھیڄݨ دی اجازت ݙیو <a data-l10n-name="crash-reports-link">ودھیک ڄاݨو </a>
     .accesskey = c
-collection-backlogged-crash-reports = { -brand-short-name } کوں اپݨی طرفوں بیک لاگ کریش رپورٹاں بھیڄݨ دی اجازت ݙیو
-    .accesskey = c
 privacy-segmentation-section-header = نویاں خصوصیات جیڑھیاں تہاݙی براؤزنگ کوں بہتر کریندیاں ہن۔
 privacy-segmentation-section-description = جݙاں اساں اینجھیاں خصوصیتاں پیش کریندے ہیں جیڑھیاں تہاکوں ودھیک ذاتی تجربہ ݙیوݨ کیتے تہاݙا ڈیٹا استعمال کریندیاں ہن:
 privacy-segmentation-radio-off =
@@ -1321,6 +1452,8 @@ website-advertising-private-attribution =
 ## https://developers.google.com/safe-browsing/developers_guide_v2#AcceptableUsage
 
 security-header = سلامتی
+browsing-protection-group =
+    .label = گمراہ کن مواد تے خطرناک سافٹ ویئر پروٹیکشن
 security-browsing-protection = گمراہ کن مواد تے خطرناک سافٹ ویئر پروٹیکشن
 security-enable-safe-browsing =
     .label = خطرناک تے گمراہ کن مواد کوں بلاک کرو
@@ -1348,6 +1481,7 @@ certs-devices =
 certs-thirdparty-toggle =
     .label = تُساں انسٹال کرین٘دے ہوئے ترِیجھی پارٹی دے جڑ دے سرٹیفیکیٹ اُتے خود کار طریقے نال بھرواسہ کرݨ دی{ -brand-short-name } اجازت ݙیؤ
     .accesskey = t
+certs-devices-enable-fips = FIPS کوں فعال کرو۔
 space-alert-over-5gb-settings-button =
     .label = ترتیباں کھولو
     .accesskey = O
@@ -1361,20 +1495,16 @@ httpsonly-description = HTTPS { -brand-short-name } تے انہاں ویب سا�
 httpsonly-learn-more = ٻیا سِکھو
 httpsonly-radio-enabled =
     .label = تمام ونڈوز وِچ HTTPS-Only Mode فعال کرو
-httpsonly-radio-enabled2 =
-    .label = ساریاں ونڈوز وچ صرف HTTPS ورتو
 httpsonly-radio-enabled-pbm =
     .label = صرف نجی ونڈوز وِچ HTTPS-Only Mode فعال کرو
-httpsonly-radio-enabled-pbm2 =
-    .label = نجی ونڈوز وچ صرف HTTPS ورتو
 httpsonly-radio-disabled =
     .label = HTTPS-Only Mode فعال نہ کرو
-httpsonly-radio-disabled2 =
-    .label = پہلے ایچ ٹی ٹی پی ایس دی کوشش کرو، پر انہاں کنکشناں دی اجازت ݙیوو جہڑے محفوظ کائنی۔
 
 ## DoH Section
 
 preferences-doh-header = HTTPS تے DNS
+dns-over-https-group =
+    .label = HTTPS تے DNS
 preferences-doh-description = HTTPS تے ڈومین نیم سسٹم (DNS) ہک خفیہ کنکشن دے ذریعے ڈومین ناں کیتے تہاݙی ارداس پٹھیندے، ہک محفوظ DNS بݨیندا ہے تے ٻنھاں کیتے ایہ اوکھیرا بݨیندا  ہے جو تساں کہڑی ویب سائٹ تائیں رسائی حاصل کرݨ آلے ہو۔
 preferences-doh-description2 = ایچ ٹی ٹی پی ایس کنوں وَدھ ڈومین ناں دا نظام (ڈی این ایس) ہِک خفیہ کِیتے ڳئے کنکشن دے ذریعے تُہاݙی عرضی کوں ڈومین دے ناں کِیتے گَھلین٘دا ہِے، ہِک محفوظ ڈی این ایس فراہم کرین٘دا ہِے اَتے ٻِنّھاں کوں اِیہ ݙیکھݨ اَوکھا بݨین٘دا ہِے جو تُساں کہڑی ویب سائٹ تئیں رسائل حاصل کرݨ وین٘دے پئے ہِیوے۔
 # Variables:

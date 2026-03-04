@@ -15,7 +15,7 @@ options-select-default-tools-label = Varsayılan geliştirici araçları
 options-tool-not-supported-label = * Geçerli araç kutusu hedefinde desteklenmiyor
 # The label for the heading of group of checkboxes corresponding to the developer tools
 # added by add-ons. This heading is hidden when there is no developer tool installed by add-ons.
-options-select-additional-tools-label = Eklentiler tarafından kurulan geliştirici araçları
+options-select-additional-tools-label = Eklentiler tarafından yüklenen geliştirici araçları
 # The label for the heading of group of checkboxes corresponding to the default developer
 # tool buttons.
 options-select-enabled-toolbox-buttons-label = Kullanılabilir araç kutusu düğmeleri
@@ -30,6 +30,10 @@ options-context-inspector = Denetçi
 options-show-user-agent-styles-label = Tarayıcı stillerini göster
 options-show-user-agent-styles-tooltip =
     .title = Bunu açarsanız tarayıcı tarafından yüklenen varsayılan stiller gösterilir.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Tarayıcı shadow DOM’unu göster
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Bunu açarsanız tarayıcı tarafından işlenen shadow DOM elemanları gösterilecektir.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = DOM özniteliklerini kısalt
 options-collapse-attrs-tooltip =
@@ -116,6 +120,8 @@ options-disable-http-cache-label = HTTP önbelleğini kapat (araç kutusu açık
 options-disable-http-cache-tooltip =
     .title = Bu seçeneği açarsanız araç kutusunun açık olduğu tüm sekmelerde HTTP önbelleği devre dışı kalacaktır. Bu seçenek Service Worker’ları etkilemez.
 # The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = JavaScript’i devre dışı bırak
+# The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = JavaScript’i devre dışı bırak *
 options-disable-javascript-tooltip =
     .title = Bu seçeneği açarsanız geçerli sekmede JavaScript devre dışı bırakılır. Sekme veya araç kutusu kapatılırsa bu ayar unutulacaktır.
@@ -143,5 +149,11 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Kaynak eşlemelerini etkinleştir
 options-source-maps-tooltip =
     .title = Bu seçeneği etkinleştirirseniz kaynaklar araçlarda eşlenecektir.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (Yalnızca bu oturumda geçerli. Sayfayı yeniden yükler.)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Yalnızca bu oturumda geçerli, sayfayı yeniden yükler
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (sayfayı tazeler)

@@ -7,10 +7,10 @@
 #ifndef mozilla_dom_AudioWorkletGlobalScope_h
 #define mozilla_dom_AudioWorkletGlobalScope_h
 
+#include "js/ForOfIterator.h"
 #include "mozilla/dom/AudioParamDescriptorMap.h"
 #include "mozilla/dom/FunctionBinding.h"
 #include "mozilla/dom/WorkletGlobalScope.h"
-#include "js/ForOfIterator.h"
 #include "nsRefPtrHashtable.h"
 
 namespace mozilla {
@@ -47,6 +47,10 @@ class AudioWorkletGlobalScope final : public WorkletGlobalScope {
 
   float SampleRate() const;
 
+  MessagePort* Port() const { return mPort; };
+
+  void SetPort(MessagePort* aPort) { mPort = aPort; }
+
   // If successful, returns true and sets aRetProcessor, which will be in the
   // compartment for the realm of this global.  Returns false on failure.
   MOZ_CAN_RUN_SCRIPT
@@ -76,6 +80,8 @@ class AudioWorkletGlobalScope final : public WorkletGlobalScope {
   // This does not need to be traversed during cycle-collection because it is
   // only set while this AudioWorkletGlobalScope is on the stack.
   RefPtr<MessagePort> mPortForProcessor;
+
+  RefPtr<MessagePort> mPort;
 };
 
 }  // namespace dom

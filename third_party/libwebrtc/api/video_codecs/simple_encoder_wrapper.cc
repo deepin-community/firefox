@@ -11,18 +11,31 @@
 #include "api/video_codecs/simple_encoder_wrapper.h"
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "absl/algorithm/container.h"
-#include "absl/types/variant.h"
+#include "absl/strings/string_view.h"
+#include "api/array_view.h"
+#include "api/scoped_refptr.h"
+#include "api/units/data_size.h"
+#include "api/units/frequency.h"
+#include "api/video/video_frame_buffer.h"
 #include "api/video_codecs/scalability_mode.h"
 #include "api/video_codecs/scalability_mode_helper.h"
 #include "api/video_codecs/video_encoder_factory_interface.h"
 #include "api/video_codecs/video_encoder_interface.h"
+#include "common_video/generic_frame_descriptor/generic_frame_info.h"
 #include "modules/video_coding/svc/create_scalability_structure.h"
+#include "modules/video_coding/svc/scalable_video_controller.h"
+#include "rtc_base/checks.h"
+#include "rtc_base/numerics/rational.h"
 
 namespace webrtc {
 using PredictionConstraints =
@@ -62,10 +75,12 @@ std::vector<std::string> SimpleEncoderWrapper::SupportedWebrtcSvcModes(
       std::min(3, prediction_constraints.max_spatial_layers);
   const int max_temporal_layers =
       std::min(3, prediction_constraints.max_temporal_layers);
-  const bool scale_by_half = absl::c_linear_search(
-      prediction_constraints.scaling_factors, Rational{1, 2});
-  const bool scale_by_two_thirds = absl::c_linear_search(
-      prediction_constraints.scaling_factors, Rational{2, 3});
+  const bool scale_by_half =
+      absl::c_linear_search(prediction_constraints.scaling_factors,
+                            Rational{.numerator = 1, .denominator = 2});
+  const bool scale_by_two_thirds =
+      absl::c_linear_search(prediction_constraints.scaling_factors,
+                            Rational{.numerator = 2, .denominator = 3});
   const bool inter_layer =
       prediction_constraints.max_references > 1 &&
       prediction_constraints.buffer_space_type !=
@@ -108,7 +123,7 @@ std::unique_ptr<SimpleEncoderWrapper> SimpleEncoderWrapper::Create(
     return nullptr;
   }
 
-  absl::optional<ScalabilityMode> sm =
+  std::optional<ScalabilityMode> sm =
       ScalabilityModeStringToEnum(scalability_mode);
   if (!sm) {
     return nullptr;
@@ -139,10 +154,9 @@ void SimpleEncoderWrapper::SetEncodeFps(int fps) {
   fps_ = fps;
 }
 
-void SimpleEncoderWrapper::Encode(
-    rtc::scoped_refptr<webrtc::VideoFrameBuffer> frame_buffer,
-    bool force_keyframe,
-    EncodeResultCallback callback) {
+void SimpleEncoderWrapper::Encode(scoped_refptr<VideoFrameBuffer> frame_buffer,
+                                  bool force_keyframe,
+                                  EncodeResultCallback callback) {
   std::vector<ScalableVideoController::LayerFrameConfig> configs =
       svc_controller_->NextFrameConfig(force_keyframe);
   std::vector<FrameEncodeSettings> encode_settings;
@@ -158,8 +172,8 @@ void SimpleEncoderWrapper::Encode(
     settings.temporal_id = config.TemporalId();
     const int num = layer_configs_.scaling_factor_num[s];
     const int den = layer_configs_.scaling_factor_den[s];
-    settings.resolution = {(frame_buffer->width() * num / den),
-                           (frame_buffer->height() * num / den)};
+    settings.resolution = {.width = (frame_buffer->width() * num / den),
+                           .height = (frame_buffer->height() * num / den)};
 
     bool buffer_updated = false;
     for (const CodecBufferUsage& buffer : config.Buffers()) {
@@ -178,14 +192,14 @@ void SimpleEncoderWrapper::Encode(
     }
 
     struct FrameOut : public VideoEncoderInterface::FrameOutput {
-      rtc::ArrayView<uint8_t> GetBitstreamOutputBuffer(DataSize size) override {
+      ArrayView<uint8_t> GetBitstreamOutputBuffer(DataSize size) override {
         bitstream.resize(size.bytes());
         return bitstream;
       }
 
       void EncodeComplete(
           const VideoEncoderInterface::EncodeResult& result) override {
-        auto* data = absl::get_if<VideoEncoderInterface::EncodedData>(&result);
+        auto* data = std::get_if<VideoEncoderInterface::EncodedData>(&result);
 
         SimpleEncoderWrapper::EncodeResult res;
         if (!data) {

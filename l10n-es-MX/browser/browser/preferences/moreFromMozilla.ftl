@@ -11,6 +11,7 @@ more-from-moz-category =
 more-from-moz-subtitle = Revisa otros productos de { -vendor-short-name } que funcionan para respaldar una Internet saludable.
 more-from-moz-firefox-mobile-title = { -brand-product-name } para móviles
 more-from-moz-firefox-mobile-description = El navegador móvil que pone tu privacidad en primer lugar.
+more-from-moz-firefox-mobile-title-1 = { -brand-product-name } para dispositivos móviles
 more-from-moz-mozilla-vpn-title = { -mozilla-vpn-brand-name }
 more-from-moz-mozilla-vpn-description = Descubre una capa adicional de navegación y protección anónimas.
 more-from-moz-qr-code-box-firefox-mobile-title = Descárgalo con tu dispositivo móvil. Apunta tu cámara al código QR. Cuando aparezca un enlace, seleccionalo.
@@ -32,3 +33,16 @@ more-from-moz-mozilla-monitor-title = { -mozmonitor-brand-name }
 more-from-moz-mozilla-monitor-us-description = Recupera automáticamente tu información personal expuesta.
 more-from-moz-mozilla-monitor-global-description = Reciba alertas cuando sus datos hayan sufrido una vulneración.
 more-from-moz-mozilla-monitor-button = Obtener { -monitor-brand-short-name }
+
+## These strings are for the Solo card in about:preferences moreFromMozilla page
+
+more-from-moz-solo-title = { -solo-ai-brand-name } IA
+more-from-moz-solo-description = Crea tu sitio web al instante y conecta tu propio dominio personalizado gratis.
+more-from-moz-solo-button = Probar { -solo-ai-brand-name }
+
+## These strings are for the MDN card in about:preferences moreFromMozilla page
+
+more-from-moz-mdn-title = Documentos web de MDN
+more-from-moz-mdn-description = Aprende a desarrollar paginas web con guías y referencias gratuitas y completas.
+more-from-moz-mdn-button = Aprende desarrollo web
+more-from-moz-mdn-title2 = { -mdn-brand-name }

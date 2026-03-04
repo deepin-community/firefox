@@ -9,7 +9,6 @@
 #include "nsIProtocolHandler.h"
 #include "nsSimpleNestedURI.h"
 #include "nsWeakReference.h"
-#include "mozilla/Attributes.h"
 #include "nsIURIMutator.h"
 
 class nsIURI;
@@ -65,8 +64,7 @@ class nsNestedAboutURI final : public nsSimpleNestedURI {
   NS_IMETHOD QueryInterface(REFNSIID aIID, void** aInstancePtr) override;
 
   // Override StartClone(), the nsISerializable methods, and
-  virtual nsSimpleURI* StartClone(RefHandlingEnum aRefHandlingMode,
-                                  const nsACString& newRef) override;
+  virtual already_AddRefed<nsSimpleURI> StartClone() override;
   NS_IMETHOD Mutate(nsIURIMutator** _retval) override;
   NS_IMETHOD_(void) Serialize(ipc::URIParams& aParams) override;
 

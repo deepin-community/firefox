@@ -34,7 +34,7 @@ credit-card-capture-cancel-button =
     .label = Όχι τώρα
     .accessKey = ρ
 credit-card-capture-never-save-button =
-    .label = Να μη γίνεται ποτέ αποθήκευση καρτών
+    .label = Να μην γίνεται ποτέ αποθήκευση καρτών
     .accessKey = Ν
 
 # Used on the doorhanger when an credit card change is detected.
@@ -81,3 +81,6 @@ autofill-category-name = όνομα
 autofill-category-organization = εταιρεία
 autofill-category-tel = τηλέφωνο
 autofill-category-email = email
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = Το { -brand-short-name } έχει εντοπίσει έναν επισφαλή ιστότοπο. Η αυτόματη συμπλήρωση φορμών έχει απενεργοποιηθεί προσωρινά.

@@ -53,6 +53,8 @@ fxviewtabrow-move-tab-end = העברה לסוף
     .accesskey = ס
 fxviewtabrow-move-tab-window = העברה לחלון חדש
     .accesskey = ח
+fxviewtabrow-send-to-device = שליחה למכשיר
+    .accesskey = ש
 fxviewtabrow-send-tab = שליחת לשונית למכשיר
     .accesskey = ש
 fxviewtabrow-pin-tab = נעיצת לשונית
@@ -67,14 +69,6 @@ fxviewtabrow-unmute-tab = ביטול השתקת לשונית
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = אפשרויות עבור { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = השתקת הלשונית { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = ביטול השתקת הלשונית { $tabTitle }
 
 ## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
 

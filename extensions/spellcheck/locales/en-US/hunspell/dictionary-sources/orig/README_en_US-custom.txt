@@ -1,6 +1,6 @@
 en_US-custom Hunspell Dictionary
 Generated from SCOWL Version 2020.12.07
-Tue May 28 09:38:46 CEST 2024
+Thu Aug 21 15:21:00 CEST 2025
 
 http://wordlist.sourceforge.net
 
@@ -344,5 +344,5 @@ and Australian word list.  It is under the following copyright:
   OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
   SUCH DAMAGE.
 
-Build Date: Tue May 28 09:38:46 CEST 2024
+Build Date: Thu Aug 21 15:21:00 CEST 2025
 With Input Command: ../mk-list -v1 --accents=both en_US 60

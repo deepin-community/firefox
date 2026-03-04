@@ -2,17 +2,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-@file:Suppress("TooManyFunctions")
-
 package org.mozilla.focus.state
 
+import androidx.annotation.VisibleForTesting
 import mozilla.components.feature.top.sites.TopSite
 import mozilla.components.lib.state.Reducer
 
 /**
  * Reducer creating a new [AppState] for dispatched [AppAction]s.
  */
-@Suppress("ComplexMethod")
 object AppReducer : Reducer<AppState, AppAction> {
     override fun invoke(state: AppState, action: AppAction): AppState {
         return when (action) {
@@ -46,8 +44,10 @@ object AppReducer : Reducer<AppState, AppAction> {
             )
             is AppAction.ShowHomeScreen -> showHomeScreen(state)
             is AppAction.ShowOnboardingSecondScreen -> showOnBoardingSecondScreen(state)
+            is AppAction.OpenCrashList -> openCrashlist(state)
             is AppAction.ShowSearchWidgetSnackBar -> showSearchWidgetSnackBarChanged(state, action)
             is AppAction.ShowCookieBannerCfrChange -> showCookieBannerCfrChanged(state, action)
+            is AppAction.UpdateIsPinningSupported -> updateIsPinningSupported(state, action)
         }
     }
 }
@@ -118,25 +118,41 @@ private fun finishFirstRun(state: AppState, action: AppAction.FinishFirstRun): A
 /**
  * Force showing the first run screen (for testing).
  */
-private fun showFirstRun(state: AppState): AppState {
+@VisibleForTesting
+internal fun showFirstRun(state: AppState): AppState {
+    if (state.screen is Screen.FirstRun) {
+        return state
+    }
     return state.copy(screen = Screen.FirstRun)
 }
 
-private fun showOnBoardingSecondScreen(state: AppState): AppState {
+@VisibleForTesting
+internal fun showOnBoardingSecondScreen(state: AppState): AppState {
+    if (state.screen is Screen.OnboardingSecondScreen) {
+        return state
+    }
     return state.copy(screen = Screen.OnboardingSecondScreen)
 }
 
 /**
  * Force showing the home screen.
  */
-private fun showHomeScreen(state: AppState): AppState {
+@VisibleForTesting
+internal fun showHomeScreen(state: AppState): AppState {
+    if (state.screen is Screen.Home) {
+        return state
+    }
     return state.copy(screen = Screen.Home)
 }
 
 /**
  * Lock the application.
  */
-private fun lock(state: AppState, action: AppAction.Lock): AppState {
+@VisibleForTesting
+internal fun lock(state: AppState, action: AppAction.Lock): AppState {
+    if (state.screen is Screen.Locked) {
+        return state
+    }
     return state.copy(screen = Screen.Locked(action.bundle))
 }
 
@@ -159,6 +175,10 @@ private fun openSettings(state: AppState, action: AppAction.OpenSettings): AppSt
     return state.copy(
         screen = Screen.Settings(page = action.page),
     )
+}
+
+private fun openCrashlist(state: AppState): AppState {
+    return state.copy(screen = Screen.CrashListScreen)
 }
 
 private fun openTab(state: AppState, action: AppAction.OpenTab): AppState {
@@ -251,7 +271,14 @@ private fun openSitePermissionOptionsScreen(
     return state.copy(screen = Screen.SitePermissionOptionsScreen(sitePermission = action.sitePermission))
 }
 
-@Suppress("ComplexMethod", "ReturnCount")
+private fun updateIsPinningSupported(
+    state: AppState,
+    action: AppAction.UpdateIsPinningSupported,
+): AppState {
+    return state.copy(isPinningSupported = action.value)
+}
+
+@Suppress("CyclomaticComplexMethod", "ReturnCount")
 private fun navigateUp(state: AppState, action: AppAction.NavigateUp): AppState {
     if (state.screen is Screen.Browser) {
         val screen = if (action.tabId != null) {
@@ -286,7 +313,6 @@ private fun navigateUp(state: AppState, action: AppAction.NavigateUp): AppState 
         Screen.Settings.Page.PrivacyExceptions -> Screen.Settings(page = Screen.Settings.Page.Privacy)
         Screen.Settings.Page.PrivacyExceptionsRemove -> Screen.Settings(page = Screen.Settings.Page.PrivacyExceptions)
         Screen.Settings.Page.SitePermissions -> Screen.Settings(page = Screen.Settings.Page.Privacy)
-        Screen.Settings.Page.Studies -> Screen.Settings(page = Screen.Settings.Page.Privacy)
         Screen.Settings.Page.SecretSettings -> Screen.Settings(page = Screen.Settings.Page.Advanced)
 
         Screen.Settings.Page.SearchList -> Screen.Settings(page = Screen.Settings.Page.Search)
@@ -305,6 +331,7 @@ private fun navigateUp(state: AppState, action: AppAction.NavigateUp): AppState 
         Screen.Settings.Page.Licenses -> Screen.Settings(page = Screen.Settings.Page.Mozilla)
         Screen.Settings.Page.Locale -> Screen.Settings(page = Screen.Settings.Page.General)
         Screen.Settings.Page.CookieBanner -> Screen.Settings(page = Screen.Settings.Page.Privacy)
+        Screen.Settings.Page.CrashList -> Screen.Settings(page = Screen.Settings.Page.Mozilla)
     }
 
     return state.copy(screen = screen)

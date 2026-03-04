@@ -51,7 +51,6 @@ mailing address.
 #include "gfxPlatform.h"
 #include "qcms.h"
 #include <algorithm>
-#include "mozilla/Telemetry.h"
 
 using namespace mozilla::gfx;
 
@@ -300,10 +299,6 @@ void nsGIFDecoder2::EndImageFrame() {
   // even if some of them weren't decoded properly and thus are blank.
   mGIFStruct.images_decoded++;
 
-  // Reset graphic control extension parameters that we shouldn't reuse
-  // between frames.
-  mGIFStruct.delay_time = 0;
-
   // Tell the superclass we finished a frame
   PostFrameStop(opacity);
 
@@ -312,6 +307,13 @@ void nsGIFDecoder2::EndImageFrame() {
     mColormap[mGIFStruct.tpixel] = mOldColor;
     mOldColor = 0;
   }
+
+  // Reset graphic control extension parameters that we shouldn't reuse
+  // between frames.
+  mGIFStruct.delay_time = 0;
+  mGIFStruct.is_transparent = 0;
+  mGIFStruct.tpixel = 0;
+  mGIFStruct.disposal_method = 0;
 
   mColormap = nullptr;
   mColormapSize = 0;
@@ -1125,8 +1127,9 @@ LexerTransition<nsGIFDecoder2::State> nsGIFDecoder2::SkipSubBlocks(
                                   nextSubBlockLength);
 }
 
-Maybe<Telemetry::HistogramID> nsGIFDecoder2::SpeedHistogram() const {
-  return Some(Telemetry::IMAGE_DECODE_SPEED_GIF);
+Maybe<glean::impl::MemoryDistributionMetric> nsGIFDecoder2::SpeedMetric()
+    const {
+  return Some(glean::image_decode::speed_gif);
 }
 
 }  // namespace image

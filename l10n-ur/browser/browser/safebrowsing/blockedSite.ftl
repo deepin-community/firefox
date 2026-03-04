@@ -10,29 +10,14 @@ safeb-blocked-phishing-page-short-desc = { -brand-short-name } نے اس صفح�
 safeb-blocked-malware-page-short-desc = { -brand-short-name } نے اس صفحے کو مسدود کردیا ہے کیونکہ اس میں ایسا نقصاندہ سافٹ ویئر انسٹال کرنے کی کوشش کی جاسکتی ہے جو آپ کے کمپیوٹر پر ذاتی معلومات چوری کرسکتی ہے یا حذف کرسکتی ہے۔
 safeb-blocked-unwanted-page-short-desc = { -brand-short-name } نے اس صفحے کو مسدود کردیا ہے کیونکہ اس سے آپ کو ایسے پروگراموں کی انسٹال کرنے کی کوشش کی جاسکتی ہے جو آپ کے براؤزنگ کے تجربے کو نقصان پہنچاتے ہیں (مثال کے طور پر ، آپ کے ہوم پیج کو تبدیل کرکے یا آپ جس سائٹ پر جاتے ہیں اس پر اضافی اشتہارات دکھاکر)۔
 safeb-blocked-harmful-page-short-desc = { -brand-short-name } نے اس صفحے کو مسدود کردیا ہے کیونکہ اس سے خطرناک ایپس انسٹال کرنے کی کوشش کی جاسکتی ہے جو آپ کی معلومات چوری کرتے ہیں یا حذف کرتے ہیں (مثال کے طور پر فوٹو ، پاس ورڈ ، پیغامات اور کریڈٹ کارڈز)
+# Variables:
+#   $advisoryname (string) - Name of the advisory entity
 safeb-palm-advisory-desc = <a data-l10n-name='advisory_provider'>{ $advisoryname }</a>کی طرف سے فراہم کرد مشاورتی۔
 safeb-palm-accept-label = واپس جائیں
 safeb-palm-see-details-label = تفصیلات دیکھیں
 
 ## Variables
 ##  $sitename (string) - Domain name for the blocked page
-
-##
-
-## Variables
-##  $sitename (string) - Domain name for the blocked page
-
-##
-
-## Variables
-##  $sitename (string) - Domain name for the blocked page
-
-##
-
-## Variables
-##  $sitename (string) - Domain name for the blocked page
-
-##
 
 safeb-blocked-harmful-page-learn-more = <a data-l10n-name='firefox_support'> support.mozilla.org </a> پر { -brand-short-name } کی فشنگ اور مالویئر پروٹیکشن کے بارے میں مزید معلومات حاصل کریں۔
 safeb-palm-notdeceptive =

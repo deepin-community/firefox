@@ -7,11 +7,11 @@
 #ifndef mozilla_layout_RemotePrintJobChild_h
 #define mozilla_layout_RemotePrintJobChild_h
 
-#include "mozilla/layout/PRemotePrintJobChild.h"
-
 #include "mozilla/RefPtr.h"
 #include "mozilla/gfx/Point.h"
+#include "mozilla/layout/PRemotePrintJobChild.h"
 #include "nsIWebProgressListener.h"
+#include "prio.h"
 
 class nsPagePrintTimer;
 class nsPrintJob;

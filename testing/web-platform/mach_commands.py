@@ -20,7 +20,7 @@ class WebPlatformTestsRunnerSetup(MozbuildObject):
     default_log_type = "mach"
 
     def __init__(self, *args, **kwargs):
-        super(WebPlatformTestsRunnerSetup, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._here = os.path.join(self.topsrcdir, "testing", "web-platform")
         kwargs["tests_root"] = os.path.join(self._here, "tests")
         sys.path.insert(0, kwargs["tests_root"])
@@ -89,7 +89,7 @@ class WebPlatformTestsRunnerSetup(MozbuildObject):
             kwargs["certutil_binary"] = self.get_binary_path("certutil")
 
         if kwargs["install_fonts"] is None:
-            kwargs["install_fonts"] = True
+            kwargs["install_fonts"] = False
 
         if kwargs["preload_browser"] is None:
             kwargs["preload_browser"] = False
@@ -99,6 +99,14 @@ class WebPlatformTestsRunnerSetup(MozbuildObject):
 
         if kwargs["stackfix_dir"] is None:
             kwargs["stackfix_dir"] = self.bindir
+
+        if kwargs["symbols_path"] is None:
+            kwargs["symbols_path"] = os.path.join(self.distdir, "crashreporter-symbols")
+
+        kwargs["gmp_path"] = os.pathsep.join(
+            os.path.join(self.distdir, "bin", p, "1.0")
+            for p in ("gmp-fake", "gmp-fakeopenh264")
+        )
 
         kwargs = wptcommandline.check_args(kwargs)
 
@@ -136,7 +144,7 @@ class WebPlatformTestsRunnerSetup(MozbuildObject):
             )
 
         if kwargs["install_fonts"] is None:
-            kwargs["install_fonts"] = True
+            kwargs["install_fonts"] = False
 
         if not kwargs["device_serial"]:
             kwargs["device_serial"] = ["emulator-5554"]
@@ -341,6 +349,7 @@ class WebPlatformTestsTestPathsRunner(MozbuildObject):
         )
         import logging
 
+        import localpaths  # noqa: F401
         import manifestupdate
         from manifest import testpaths
         from wptrunner import wptcommandline
@@ -364,15 +373,11 @@ class WebPlatformTestsTestPathsRunner(MozbuildObject):
         )
         results = {}
         for url_base, paths in test_paths.items():
-            if "manifest_path" not in paths:
-                paths["manifest_path"] = os.path.join(
-                    paths["metadata_path"], "MANIFEST.json"
-                )
             results.update(
                 testpaths.get_paths(
-                    path=paths["manifest_path"],
+                    path=paths.manifest_path,
                     src_root=src_root,
-                    tests_root=paths["tests_path"],
+                    tests_root=paths.tests_path,
                     update=kwargs["update"],
                     rebuild=kwargs["rebuild"],
                     url_base=url_base,
@@ -382,25 +387,6 @@ class WebPlatformTestsTestPathsRunner(MozbuildObject):
             )
         testpaths.write_output(results, kwargs["json"])
         return True
-
-
-class WebPlatformTestsFissionRegressionsRunner(MozbuildObject):
-    def run(self, **kwargs):
-        import fissionregressions
-        import mozlog
-
-        src_root = self.topsrcdir
-        obj_root = self.topobjdir
-        logger = mozlog.structuredlog.StructuredLogger("web-platform-tests")
-
-        try:
-            return fissionregressions.run(logger, src_root, obj_root, **kwargs)
-        except Exception:
-            import pdb
-            import traceback
-
-            traceback.print_exc()
-            pdb.post_mortem()
 
 
 def create_parser_update():
@@ -440,12 +426,6 @@ def create_parser_unittest():
     import unittestrunner
 
     return unittestrunner.get_parser()
-
-
-def create_parser_fission_regressions():
-    import fissionregressions
-
-    return fissionregressions.get_parser()
 
 
 def create_parser_fetch_logs():
@@ -667,19 +647,6 @@ def wpt_unittest(command_context, **params):
 )
 def wpt_test_paths(command_context, **params):
     runner = command_context._spawn(WebPlatformTestsTestPathsRunner)
-    runner.run(**params)
-    return 0
-
-
-@Command(
-    "wpt-fission-regressions",
-    category="testing",
-    description="Dump a list of fission-specific regressions",
-    parser=create_parser_fission_regressions,
-    virtualenv_name="wpt",
-)
-def wpt_fission_regressions(command_context, **params):
-    runner = command_context._spawn(WebPlatformTestsFissionRegressionsRunner)
     runner.run(**params)
     return 0
 

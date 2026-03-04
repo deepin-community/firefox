@@ -7,15 +7,14 @@
 #ifndef mozilla_ChaosMode_h
 #define mozilla_ChaosMode_h
 
+#include "mozilla/Assertions.h"
 #include "mozilla/Atomics.h"
-#include "mozilla/EnumSet.h"
 
-#include <stdint.h>
-#include <stdlib.h>
+#include <cstdint>
 
 namespace mozilla {
 
-enum ChaosFeature {
+enum class ChaosFeature : uint32_t {
   None = 0x0,
   // Altering thread scheduling.
   ThreadScheduling = 0x1,
@@ -37,7 +36,7 @@ enum ChaosFeature {
 };
 
 namespace detail {
-extern MFBT_DATA Atomic<uint32_t, SequentiallyConsistent> gChaosModeCounter;
+extern MFBT_DATA Atomic<uint32_t, Relaxed> gChaosModeCounter;
 extern MFBT_DATA ChaosFeature gChaosFeatures;
 }  // namespace detail
 
@@ -53,17 +52,14 @@ class ChaosMode {
   }
 
   static bool isActive(ChaosFeature aFeature) {
-    if (detail::gChaosModeCounter > 0) {
-      return true;
-    }
-    return detail::gChaosFeatures & aFeature;
+    return detail::gChaosModeCounter > 0 &&
+           (uint32_t(detail::gChaosFeatures) & uint32_t(aFeature));
   }
 
   /**
    * Increase the chaos mode activation level. An equivalent number of
    * calls to leaveChaosMode must be made in order to restore the original
-   * chaos mode state. If the activation level is nonzero all chaos mode
-   * features are activated.
+   * chaos mode state.
    */
   static void enterChaosMode() { detail::gChaosModeCounter++; }
 
@@ -82,6 +78,15 @@ class ChaosMode {
   static uint32_t randomUint32LessThan(uint32_t aBound) {
     MOZ_ASSERT(aBound != 0);
     return uint32_t(rand()) % aBound;
+  }
+
+  /**
+   * Returns a somewhat (but not uniformly) random int32_t <= aLow and >= aHigh.
+   * Not to be used for anything except ChaosMode, since it's not very random.
+   */
+  static int32_t randomInt32InRange(int32_t aLow, int32_t aHigh) {
+    MOZ_ASSERT(aHigh >= aLow);
+    return (int32_t(rand()) % (aHigh - aLow + 1)) + aLow;
   }
 };
 

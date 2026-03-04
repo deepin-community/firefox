@@ -10,6 +10,7 @@
 #include "mozilla/DebugOnly.h"
 
 #include "gc/AllocKind.h"
+#include "gc/Memory.h"
 #include "gc/Pretenuring.h"
 #include "js/HeapAPI.h"
 #include "js/TypeDecls.h"
@@ -228,8 +229,8 @@ class alignas(ArenaSize) Arena {
    */
   uint8_t data[ArenaSize - ArenaHeaderSize];
 
-  void init(GCRuntime* gc, JS::Zone* zoneArg, AllocKind kind,
-            const AutoLockGC& lock);
+  // Create a free arena in uninitialized committed memory.
+  void init(GCRuntime* gc, JS::Zone* zone, AllocKind kind);
 
   JS::Zone* zone() const { return zone_; }
 
@@ -243,27 +244,14 @@ class alignas(ArenaSize) Arena {
     last->initAsEmpty();
   }
 
-  // Initialize an arena to its unallocated state. For arenas that were
-  // previously allocated for some zone, use release() instead.
-  void setAsNotAllocated() {
-    firstFreeSpan.initAsEmpty();
+  // Unregister the associated atom marking bitmap index for an arena in the
+  // atoms zone.
+  inline void freeAtomMarkingBitmapIndex(GCRuntime* gc, const AutoLockGC& lock);
 
-    // Poison zone pointer to highlight UAF on released arenas in crash data.
-    AlwaysPoison(&zone_, JS_FREED_ARENA_PATTERN, sizeof(zone_),
-                 MemCheckKind::MakeNoAccess);
-
-    allocKind = AllocKind::LIMIT;
-    onDelayedMarkingList_ = 0;
-    hasDelayedBlackMarking_ = 0;
-    hasDelayedGrayMarking_ = 0;
-    nextDelayedMarkingArena_ = 0;
-    bufferedCells_ = nullptr;
-
-    MOZ_ASSERT(!allocated());
-  }
-
-  // Return an allocated arena to its unallocated state.
-  inline void release(GCRuntime* gc, const AutoLockGC& lock);
+  // Return an allocated arena to its unallocated (free) state.
+  // For arenas in the atoms zone, freeAtomMarkingBitmapIndex() must be called
+  // first.
+  inline void release();
 
   uintptr_t address() const {
     checkAddress();
@@ -272,15 +260,15 @@ class alignas(ArenaSize) Arena {
 
   inline void checkAddress() const;
 
-  inline TenuredChunk* chunk() const;
+  inline ArenaChunk* chunk() const;
 
-  bool allocated() const {
-    MOZ_ASSERT(IsAllocKind(AllocKind(allocKind)));
-    return IsValidAllocKind(AllocKind(allocKind));
-  }
+  // Return whether this arena is in the 'allocated' state, meaning that it has
+  // been initialized by calling init() and has a zone and alloc kind set.
+  // This is mostly used for assertions.
+  bool allocated() const;
 
   AllocKind getAllocKind() const {
-    MOZ_ASSERT(allocated());
+    MOZ_ASSERT(IsValidAllocKind(allocKind));
     return allocKind;
   }
 
@@ -319,7 +307,8 @@ class alignas(ArenaSize) Arena {
            firstFreeSpan.last == lastThingOffset(kind);
   }
 
-  bool hasFreeThings() const { return !firstFreeSpan.isEmpty(); }
+  bool isFull() const { return firstFreeSpan.isEmpty(); }
+  bool hasFreeThings() const { return !isFull(); }
 
   size_t numFreeThings(size_t thingSize) const {
     firstFreeSpan.checkSpan(this);
@@ -417,7 +406,7 @@ class alignas(ArenaSize) Arena {
   inline ArenaCellSet*& bufferedCells();
   inline size_t& atomBitmapStart();
 
-  template <typename T>
+  template <typename T, FinalizeKind finalizeKind>
   size_t finalize(JS::GCContext* gcx, AllocKind thingKind, size_t thingSize);
 
   static void staticAsserts();
@@ -478,38 +467,52 @@ inline void FreeSpan::checkRange(uintptr_t first, uintptr_t last,
 }
 
 /*
- * A chunk in the tenured heap. TenuredChunks contain arenas and associated data
+ * A chunk in the tenured heap. ArenaChunks contain arenas and associated data
  * structures (mark bitmap, delayed marking state).
  */
-class TenuredChunk : public TenuredChunkBase {
+class ArenaChunk : public ArenaChunkBase {
   Arena arenas[ArenasPerChunk];
 
   friend class GCRuntime;
   friend class MarkingValidator;
 
  public:
-  static TenuredChunk* fromAddress(uintptr_t addr) {
+  static ArenaChunk* fromAddress(uintptr_t addr) {
     addr &= ~ChunkMask;
-    return reinterpret_cast<TenuredChunk*>(addr);
+    return reinterpret_cast<ArenaChunk*>(addr);
   }
 
   static bool withinValidRange(uintptr_t addr) {
     uintptr_t offset = addr & ChunkMask;
-    if (TenuredChunk::fromAddress(addr)->isNurseryChunk()) {
+    if (ArenaChunk::fromAddress(addr)->isNurseryChunk()) {
       return offset >= sizeof(ChunkBase) && offset < ChunkSize;
     }
-    return offset >= offsetof(TenuredChunk, arenas) && offset < ChunkSize;
+    return offset >= offsetof(ArenaChunk, arenas) && offset < ChunkSize;
   }
 
   static size_t arenaIndex(const Arena* arena) {
     uintptr_t addr = arena->address();
-    MOZ_ASSERT(!TenuredChunk::fromAddress(addr)->isNurseryChunk());
+    MOZ_ASSERT(!ArenaChunk::fromAddress(addr)->isNurseryChunk());
     MOZ_ASSERT(withinValidRange(addr));
     uintptr_t offset = addr & ChunkMask;
-    return (offset - offsetof(TenuredChunk, arenas)) >> ArenaShift;
+    return (offset - offsetof(ArenaChunk, arenas)) >> ArenaShift;
   }
 
-  explicit TenuredChunk(JSRuntime* runtime) : TenuredChunkBase(runtime) {}
+  static size_t pageIndex(const Arena* arena) {
+    return arenaToPageIndex(arenaIndex(arena));
+  }
+
+  static size_t arenaToPageIndex(size_t arenaIndex) {
+    static_assert((offsetof(ArenaChunk, arenas) % PageSize) == 0,
+                  "First arena should be on a page boundary");
+    return arenaIndex / ArenasPerPage;
+  }
+
+  static size_t pageToArenaIndex(size_t pageIndex) {
+    return pageIndex * ArenasPerPage;
+  }
+
+  explicit ArenaChunk(JSRuntime* runtime) : ArenaChunkBase(runtime) {}
 
   uintptr_t address() const {
     uintptr_t addr = reinterpret_cast<uintptr_t>(this);
@@ -517,33 +520,34 @@ class TenuredChunk : public TenuredChunkBase {
     return addr;
   }
 
-  bool unused() const { return info.numArenasFree == ArenasPerChunk; }
+  bool isEmpty() const { return info.numArenasFree == ArenasPerChunk; }
 
-  bool hasAvailableArenas() const { return info.numArenasFree != 0; }
+  bool hasAvailableArenas() const { return !isFull(); }
+  bool isFull() const { return info.numArenasFree == 0; }
 
   bool isNurseryChunk() const { return storeBuffer; }
 
-  Arena* allocateArena(GCRuntime* gc, JS::Zone* zone, AllocKind kind,
-                       const AutoLockGC& lock);
+  Arena* allocateArena(GCRuntime* gc, JS::Zone* zone, AllocKind kind);
 
   void releaseArena(GCRuntime* gc, Arena* arena, const AutoLockGC& lock);
-  void recycleArena(Arena* arena, SortedArenaList& dest, size_t thingsPerArena);
 
   void decommitFreeArenas(GCRuntime* gc, const bool& cancel, AutoLockGC& lock);
   [[nodiscard]] bool decommitOneFreePage(GCRuntime* gc, size_t pageIndex,
-                                         AutoLockGC& lock);
+                                         const AutoLockGC& lock);
   void decommitAllArenas();
 
   // This will decommit each unused not-already decommitted arena. It performs a
   // system call for each arena but is only used during OOM.
   void decommitFreeArenasWithoutUnlocking(const AutoLockGC& lock);
 
-  static void* allocate(GCRuntime* gc);
-  static TenuredChunk* emplace(void* ptr, GCRuntime* gc,
-                               bool allMemoryCommitted);
+  static void* allocate(GCRuntime* gc, StallAndRetry stallAndRetry);
+  static ArenaChunk* init(void* ptr, GCRuntime* gc, bool allMemoryCommitted);
 
   /* Unlink and return the freeArenasHead. */
   Arena* fetchNextFreeArena(GCRuntime* gc);
+
+  // Merge arenas freed by background sweeping into the main free arenas bitmap.
+  void mergePendingFreeArenas(GCRuntime* gc, const AutoLockGC& lock);
 
 #ifdef DEBUG
   void verify() const;
@@ -554,9 +558,15 @@ class TenuredChunk : public TenuredChunkBase {
  private:
   void commitOnePage(GCRuntime* gc);
 
-  void updateChunkListAfterAlloc(GCRuntime* gc, const AutoLockGC& lock);
-  void updateChunkListAfterFree(GCRuntime* gc, size_t numArenasFree,
-                                const AutoLockGC& lock);
+  void updateFreeCountsAfterAlloc(GCRuntime* gc, size_t numArenasAlloced,
+                                  const AutoLockGC& lock);
+  void updateFreeCountsAfterFree(GCRuntime* gc, size_t numArenasFreed,
+                                 bool wasCommitted, const AutoLockGC& lock);
+
+  // Like updateFreeCountsAfterFree, but operates on the GCRuntime's current
+  // chunk. Does not take the lock unless the chunk is full or if we need to
+  // move the chunk between pools.
+  void updateCurrentChunkAfterAlloc(GCRuntime* gc);
 
   // Check if all arenas in a page are free.
   bool canDecommitPage(size_t pageIndex) const;
@@ -568,16 +578,8 @@ class TenuredChunk : public TenuredChunkBase {
   // build.
   bool isPageFree(const Arena* arena) const;
 
-  // Get the page index of the arena.
-  size_t pageIndex(const Arena* arena) const {
-    return pageIndex(arenaIndex(arena));
-  }
-  size_t pageIndex(size_t arenaIndex) const {
-    return arenaIndex / ArenasPerPage;
-  }
-
-  Arena* pageAddress(size_t pageIndex) {
-    return &arenas[pageIndex * ArenasPerPage];
+  void* pageAddress(size_t pageIndex) {
+    return &arenas[pageToArenaIndex(pageIndex)];
   }
 };
 
@@ -585,11 +587,11 @@ inline void Arena::checkAddress() const {
   mozilla::DebugOnly<uintptr_t> addr = uintptr_t(this);
   MOZ_ASSERT(addr);
   MOZ_ASSERT(!(addr & ArenaMask));
-  MOZ_ASSERT(TenuredChunk::withinValidRange(addr));
+  MOZ_ASSERT(ArenaChunk::withinValidRange(addr));
 }
 
-inline TenuredChunk* Arena::chunk() const {
-  return TenuredChunk::fromAddress(address());
+inline ArenaChunk* Arena::chunk() const {
+  return ArenaChunk::fromAddress(address());
 }
 
 // Cell header stored before all nursery cells.
@@ -602,7 +604,7 @@ struct alignas(gc::CellAlignBytes) NurseryCellHeader {
   static const uintptr_t TraceKindMask = 3;
 
   static uintptr_t MakeValue(AllocSite* const site, JS::TraceKind kind) {
-    MOZ_ASSERT(uintptr_t(kind) < TraceKindMask);
+    MOZ_ASSERT(uintptr_t(kind) <= TraceKindMask);
     MOZ_ASSERT((uintptr_t(site) & TraceKindMask) == 0);
     return uintptr_t(site) | uintptr_t(kind);
   }
@@ -633,6 +635,8 @@ static_assert(uintptr_t(JS::TraceKind::String) <=
               NurseryCellHeader::TraceKindMask);
 static_assert(uintptr_t(JS::TraceKind::BigInt) <=
               NurseryCellHeader::TraceKindMask);
+static_assert(uintptr_t(JS::TraceKind::GetterSetter) <=
+              NurseryCellHeader::TraceKindMask);
 
 } /* namespace gc */
 
@@ -646,6 +650,7 @@ enum class MarkInfo : int {
   NURSERY_FROMSPACE = -2,
   NURSERY_TOSPACE = -3,  // Unused if semispace disabled.
   UNKNOWN = -4,
+  BUFFER = -5,
 };
 
 // For calling from gdb only: given a pointer that is either in the nursery

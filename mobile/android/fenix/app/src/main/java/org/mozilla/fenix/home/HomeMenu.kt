@@ -17,25 +17,22 @@ import mozilla.components.browser.menu.BrowserMenuItem
 import mozilla.components.browser.menu.ext.getHighlight
 import mozilla.components.browser.menu.item.BrowserMenuDivider
 import mozilla.components.browser.menu.item.BrowserMenuHighlightableItem
-import mozilla.components.browser.menu.item.BrowserMenuImageSwitch
 import mozilla.components.browser.menu.item.BrowserMenuImageText
-import mozilla.components.browser.menu.item.SimpleBrowserMenuItem
 import mozilla.components.concept.sync.AccountObserver
 import mozilla.components.concept.sync.AuthType
 import mozilla.components.concept.sync.OAuthAccount
 import mozilla.components.support.ktx.android.content.getColorFromAttr
 import mozilla.telemetry.glean.private.NoExtras
-import org.mozilla.fenix.Config
 import org.mozilla.fenix.GleanMetrics.AppMenu
 import org.mozilla.fenix.R
 import org.mozilla.fenix.components.accounts.AccountState
 import org.mozilla.fenix.components.accounts.FenixAccountManager
 import org.mozilla.fenix.components.toolbar.BrowserMenuSignIn
 import org.mozilla.fenix.ext.components
-import org.mozilla.fenix.ext.settings
 import org.mozilla.fenix.nimbus.FxNimbus
 import org.mozilla.fenix.theme.ThemeManager
 import org.mozilla.fenix.whatsnew.WhatsNew
+import mozilla.components.ui.icons.R as iconsR
 
 @Suppress("LargeClass", "LongMethod")
 class HomeMenu(
@@ -57,17 +54,12 @@ class HomeMenu(
         object Extensions : Item()
         data class SyncAccount(val accountState: AccountState) : Item()
 
-        /**
-         * A button item to open up the settings page of FxA, shown up in mozilla online builds.
-         */
-        object ManageAccountAndDevices : Item()
         object WhatsNew : Item()
         object Help : Item()
         object CustomizeHome : Item()
         object Settings : Item()
         object Quit : Item()
         object ReconnectSync : Item()
-        data class DesktopMode(val checked: Boolean) : Item()
     }
 
     private val primaryTextColor = ThemeManager.resolveAttribute(R.attr.textPrimary, context)
@@ -98,7 +90,7 @@ class HomeMenu(
     private val quitItem by lazy {
         BrowserMenuImageText(
             context.getString(R.string.delete_browsing_data_on_quit_action),
-            R.drawable.mozac_ic_cross_circle_24,
+            iconsR.drawable.mozac_ic_cross_circle_24,
             primaryTextColor,
         ) {
             onItemTapped.invoke(Item.Quit)
@@ -111,15 +103,6 @@ class HomeMenu(
         }
     }
 
-    val desktopItem = BrowserMenuImageSwitch(
-        imageResource = R.drawable.ic_desktop,
-        label = context.getString(R.string.browser_menu_desktop_site),
-        initialState = { context.settings().openNextTabInDesktopMode },
-    ) { checked ->
-        onItemTapped.invoke(Item.DesktopMode(checked))
-    }
-
-    @Suppress("ComplexMethod")
     private fun coreMenuItems(): List<BrowserMenuItem> {
         val settings = context.components.settings
 
@@ -149,7 +132,7 @@ class HomeMenu(
 
         val passwordsItem = BrowserMenuImageText(
             context.getString(R.string.preferences_sync_logins_2),
-            R.drawable.mozac_ic_login_24,
+            iconsR.drawable.mozac_ic_login_24,
             primaryTextColor,
         ) {
             onItemTapped.invoke(Item.Passwords)
@@ -161,13 +144,6 @@ class HomeMenu(
             primaryTextColor,
         ) {
             onItemTapped.invoke(Item.Extensions)
-        }
-
-        val manageAccountAndDevicesItem = SimpleBrowserMenuItem(
-            context.getString(R.string.browser_menu_manage_account_and_devices),
-            textColorResource = primaryTextColor,
-        ) {
-            onItemTapped.invoke(Item.ManageAccountAndDevices)
         }
 
         val whatsNewItem = BrowserMenuHighlightableItem(
@@ -184,7 +160,7 @@ class HomeMenu(
 
         val helpItem = BrowserMenuImageText(
             context.getString(R.string.browser_menu_help),
-            R.drawable.mozac_ic_help_circle_24,
+            iconsR.drawable.mozac_ic_help_circle_24,
             primaryTextColor,
         ) {
             onItemTapped.invoke(Item.Help)
@@ -203,7 +179,7 @@ class HomeMenu(
         val nimbusValidation = FxNimbus.features.nimbusValidation.value()
         val settingsItem = BrowserMenuImageText(
             nimbusValidation.settingsTitle,
-            R.drawable.mozac_ic_settings_24,
+            iconsR.drawable.mozac_ic_settings_24,
             primaryTextColor,
         ) {
             onItemTapped.invoke(Item.Settings)
@@ -234,9 +210,7 @@ class HomeMenu(
             extensionsItem,
             syncSignInMenuItem,
             accountAuthItem,
-            if (Config.channel.isMozillaOnline) manageAccountAndDevicesItem else null,
             BrowserMenuDivider(),
-            desktopItem,
             BrowserMenuDivider(),
             whatsNewItem,
             helpItem,

@@ -8,7 +8,6 @@
 
 #include <stdio.h>   // for fprintf, stdout
 #include <stdint.h>  // for uint64_t
-#include <map>       // for _Rb_tree_iterator, etc
 #include <utility>   // for pair
 
 #include "apz/src/APZCTreeManager.h"  // for APZCTreeManager
@@ -59,11 +58,9 @@
 #include "mozilla/webrender/RenderThread.h"
 #include "mozilla/media/MediaSystemResourceService.h"  // for MediaSystemResourceService
 #include "mozilla/mozalloc.h"                          // for operator new, etc
-#include "mozilla/PodOperations.h"
 #include "mozilla/ProfilerLabels.h"
 #include "mozilla/ProfilerMarkers.h"
-#include "mozilla/Telemetry.h"
-#include "mozilla/glean/GleanMetrics.h"
+#include "mozilla/glean/GfxMetrics.h"
 #include "nsCOMPtr.h"         // for already_AddRefed
 #include "nsDebug.h"          // for NS_ASSERTION, etc
 #include "nsISupportsImpl.h"  // for MOZ_COUNT_CTOR, etc
@@ -73,14 +70,11 @@
 #ifdef XP_WIN
 #  include "mozilla/layers/CompositorD3D11.h"
 #  include "mozilla/widget/WinCompositorWidget.h"
-#  include "mozilla/WindowsVersion.h"
 #endif
 #include "mozilla/ipc/ProtocolTypes.h"
-#include "mozilla/Unused.h"
 #include "mozilla/Hal.h"
 #include "mozilla/HalTypes.h"
 #include "mozilla/StaticPtr.h"
-#include "mozilla/Telemetry.h"
 #include "mozilla/VsyncDispatcher.h"
 #if defined(XP_WIN) || defined(MOZ_WIDGET_GTK)
 #  include "VsyncSource.h"
@@ -102,14 +96,13 @@ using namespace mozilla::gfx;
 
 using base::ProcessId;
 
-using mozilla::Telemetry::LABELS_CONTENT_FRAME_TIME_REASON;
-
 /* static*/
 StaticMonitor CompositorBridgeParent::sIndirectLayerTreesLock;
 
 /* static */
-CompositorBridgeParent::LayerTreeMap CompositorBridgeParent::sIndirectLayerTrees
-    MOZ_GUARDED_BY(CompositorBridgeParent::sIndirectLayerTreesLock);
+MOZ_RUNINIT CompositorBridgeParent::LayerTreeMap
+    CompositorBridgeParent::sIndirectLayerTrees MOZ_GUARDED_BY(
+        CompositorBridgeParent::sIndirectLayerTreesLock);
 
 CompositorBridgeParentBase::CompositorBridgeParentBase(
     CompositorManagerParent* aManager)
@@ -141,7 +134,7 @@ void CompositorBridgeParentBase::NotifyNotUsed(PTextureParent* aTexture,
 
 void CompositorBridgeParentBase::SendAsyncMessage(
     const nsTArray<AsyncParentMessageData>& aMessage) {
-  Unused << SendParentAsyncMessages(aMessage);
+  (void)SendParentAsyncMessages(aMessage);
 }
 
 bool CompositorBridgeParentBase::AllocShmem(size_t aSize, ipc::Shmem* aShmem) {
@@ -435,7 +428,7 @@ CompositorBridgeParent::RecvWaitOnTransactionProcessed() {
 mozilla::ipc::IPCResult CompositorBridgeParent::RecvFlushRendering(
     const wr::RenderReasons& aReasons) {
   if (mWrBridge) {
-    mWrBridge->FlushRendering(aReasons);
+    mWrBridge->FlushRendering(aReasons, /* aBlocking */ true);
     return IPC_OK();
   }
   return IPC_OK();
@@ -449,7 +442,7 @@ mozilla::ipc::IPCResult CompositorBridgeParent::RecvNotifyMemoryPressure() {
 mozilla::ipc::IPCResult CompositorBridgeParent::RecvFlushRenderingAsync(
     const wr::RenderReasons& aReasons) {
   if (mWrBridge) {
-    mWrBridge->FlushRendering(aReasons, false);
+    mWrBridge->FlushRendering(aReasons, /* aBlocking */ false);
     return IPC_OK();
   }
   return IPC_OK();
@@ -675,6 +668,12 @@ RefPtr<OMTASampler> CompositorBridgeParent::GetOMTASampler() const {
   return mOMTASampler;
 }
 
+mozilla::ipc::IPCResult CompositorBridgeParent::RecvDynamicToolbarOffsetChanged(
+    const int32_t& aOffset) {
+  SetFixedLayerMargins(0, aOffset);
+  return IPC_OK();
+}
+
 CompositorBridgeParent*
 CompositorBridgeParent::GetCompositorBridgeParentFromLayersId(
     const LayersId& aLayersId) {
@@ -719,7 +718,7 @@ bool CompositorBridgeParent::SetTestSampleTime(const LayersId& aId,
   }
 
   if (mWrBridge) {
-    mWrBridge->FlushRendering(wr::RenderReasons::TESTING);
+    mWrBridge->FlushRendering(wr::RenderReasons::TESTING, /* aBlocking */ true);
     return true;
   }
 
@@ -753,7 +752,7 @@ void CompositorBridgeParent::NotifyJankedAnimations(
     const nsTArray<uint64_t>& animations = entry.second;
     if (layersId == mRootLayerTreeID) {
       if (mWrBridge) {
-        Unused << SendNotifyJankedAnimations(LayersId{0}, animations);
+        (void)SendNotifyJankedAnimations(LayersId{0}, animations);
       }
       // It unlikely happens multiple processes have janked animations at same
       // time, so it should be fine with enumerating sIndirectLayerTrees every
@@ -761,7 +760,7 @@ void CompositorBridgeParent::NotifyJankedAnimations(
     } else if (const LayerTreeState* state = GetIndirectShadowTree(layersId)) {
       if (ContentCompositorBridgeParent* cpcp =
               state->mContentCompositorBridgeParent) {
-        Unused << cpcp->SendNotifyJankedAnimations(layersId, animations);
+        (void)cpcp->SendNotifyJankedAnimations(layersId, animations);
       }
     }
   }
@@ -832,6 +831,14 @@ void CompositorBridgeParent::SetFixedLayerMargins(ScreenIntCoord aTop,
   }
 
   ScheduleComposition(wr::RenderReasons::RESIZE);
+}
+
+void CompositorBridgeParent::EndWheelTransaction(
+    const LayersId& aLayersId,
+    PWebRenderBridgeParent::EndWheelTransactionResolver&& aResolve) {
+  if (mApzcTreeManager) {
+    mApzcTreeManager->EndWheelTransaction(std::move(aResolve));
+  }
 }
 
 void CompositorBridgeParent::NotifyVsync(const VsyncEvent& aVsync,
@@ -1034,7 +1041,7 @@ mozilla::ipc::IPCResult CompositorBridgeParent::RecvAdoptChild(
     mApzUpdater->NotifyLayerTreeAdopted(child, oldApzUpdater);
   }
   if (apzEnablementChanged) {
-    Unused << SendCompositorOptionsChanged(child, mOptions);
+    (void)SendCompositorOptionsChanged(child, mOptions);
   }
   return IPC_OK();
 }
@@ -1406,7 +1413,7 @@ void CompositorBridgeParent::PostInsertVsyncProfilerMarker(
   }
 }
 
-widget::PCompositorWidgetParent*
+already_AddRefed<widget::PCompositorWidgetParent>
 CompositorBridgeParent::AllocPCompositorWidgetParent(
     const CompositorWidgetInitData& aInitData) {
 #if defined(MOZ_WIDGET_SUPPORTS_OOP_COMPOSITING)
@@ -1415,34 +1422,38 @@ CompositorBridgeParent::AllocPCompositorWidgetParent(
     return nullptr;
   }
 
-  widget::CompositorWidgetParent* widget =
+  RefPtr<widget::CompositorWidgetParent> widget =
       new widget::CompositorWidgetParent(aInitData, mOptions);
-  widget->AddRef();
 
   // Sending the constructor acts as initialization as well.
   mWidget = widget;
-  return widget;
+  return widget.forget();
 #else
   return nullptr;
 #endif
 }
 
-bool CompositorBridgeParent::DeallocPCompositorWidgetParent(
-    PCompositorWidgetParent* aActor) {
-#if defined(MOZ_WIDGET_SUPPORTS_OOP_COMPOSITING)
-  static_cast<widget::CompositorWidgetParent*>(aActor)->Release();
-  return true;
-#else
-  return false;
-#endif
+#ifdef XP_MACOSX
+mozilla::ipc::IPCResult
+CompositorBridgeParent::RecvPCompositorWidgetConstructor(
+    PCompositorWidgetParent* actor, CompositorWidgetInitData&& aInitData) {
+  // macOS CocoaCompositorWidget (a superclass of the platform-specific
+  // CompositorWidgetParent) requires an extra step to pass aInitData
+  // with move semantics, because IPDL can't generate move semantics
+  // in the constructor. The macOS-specific aInitData contains an
+  // Endpoint, so it *must* use move semantics.
+  auto* widget = static_cast<widget::CompositorWidgetParent*>(actor);
+  widget->Init(std::move(aInitData));
+  return IPC_OK();
 }
+#endif
 
 CompositorController*
 CompositorBridgeParent::LayerTreeState::GetCompositorController() const {
   return mParent;
 }
 
-void CompositorBridgeParent::NotifyDidSceneBuild(
+void CompositorBridgeParent::ScheduleFrameAfterSceneBuild(
     RefPtr<const wr::WebRenderPipelineInfo> aInfo) {
   MOZ_ASSERT(CompositorThreadHolder::IsInCompositorThread());
   if (mPaused) {
@@ -1450,7 +1461,7 @@ void CompositorBridgeParent::NotifyDidSceneBuild(
   }
 
   if (mWrBridge) {
-    mWrBridge->NotifyDidSceneBuild(aInfo);
+    mWrBridge->ScheduleFrameAfterSceneBuild(aInfo);
   }
 }
 
@@ -1482,7 +1493,7 @@ void CompositorBridgeParent::NotifyDidRender(const VsyncId& aCompositeStartId,
   nsTArray<ImageCompositeNotificationInfo> notifications;
   mWrBridge->ExtractImageCompositeNotifications(&notifications);
   if (!notifications.IsEmpty()) {
-    Unused << ImageBridgeParent::NotifyImageComposites(notifications);
+    (void)ImageBridgeParent::NotifyImageComposites(notifications);
   }
 }
 
@@ -1530,7 +1541,7 @@ void CompositorBridgeParent::MaybeDeclareStable() {
           } else {
             gfx::GPUParent* gpu = gfx::GPUParent::GetSingleton();
             if (gpu && gpu->CanSend()) {
-              Unused << gpu->SendDeclareStable();
+              (void)gpu->SendDeclareStable();
             }
           }
         }));
@@ -1582,11 +1593,11 @@ void CompositorBridgeParent::NotifyPipelineRendered(
   MaybeDeclareStable();
 
   LayersId layersId = isRoot ? LayersId{0} : wrBridge->GetLayersId();
-  Unused << compBridge->SendDidComposite(layersId, transactions,
-                                         aCompositeStart, aCompositeEnd);
+  (void)compBridge->SendDidComposite(layersId, transactions, aCompositeStart,
+                                     aCompositeEnd);
 
   if (!stats.IsEmpty()) {
-    Unused << SendNotifyFrameStats(stats);
+    (void)SendNotifyFrameStats(stats);
   }
 }
 
@@ -1764,7 +1775,7 @@ int32_t RecordContentFrameTime(
           static_cast<unsigned long long>(fracLatencyNorm));
     }
 
-    // Record CONTENT_FRAME_TIME_REASON.
+    // Record glean::gfx_content_frame_time::reason
     //
     // Note that deseralizing a layers update (RecvUpdate) can delay the receipt
     // of the composite vsync message
@@ -1791,8 +1802,6 @@ int32_t RecordContentFrameTime(
     // when we choose to not do it.
     if (fracLatencyNorm < 200) {
       // Success
-      Telemetry::AccumulateCategorical(
-          LABELS_CONTENT_FRAME_TIME_REASON::OnTime);
       mozilla::glean::gfx_content_frame_time::reason
           .EnumGet(glean::gfx_content_frame_time::ReasonLabel::eOnTime)
           .Add();
@@ -1800,44 +1809,32 @@ int32_t RecordContentFrameTime(
       if (aCompositeId == VsyncId()) {
         // aCompositeId is 0, possibly something got trigged from
         // outside vsync?
-        Telemetry::AccumulateCategorical(
-            LABELS_CONTENT_FRAME_TIME_REASON::NoVsyncNoId);
         mozilla::glean::gfx_content_frame_time::reason
             .EnumGet(glean::gfx_content_frame_time::ReasonLabel::eNoVsyncNoId)
             .Add();
       } else if (aTxnId >= aCompositeId) {
         // Vsync ids are nonsensical, maybe we're trying to catch up?
-        Telemetry::AccumulateCategorical(
-            LABELS_CONTENT_FRAME_TIME_REASON::NoVsync);
         mozilla::glean::gfx_content_frame_time::reason
             .EnumGet(glean::gfx_content_frame_time::ReasonLabel::eNoVsync)
             .Add();
       } else if (aCompositeId - aTxnId > 1) {
         // Composite started late (and maybe took too long as well)
         if (aFullPaintTime >= TimeDuration::FromMilliseconds(20)) {
-          Telemetry::AccumulateCategorical(
-              LABELS_CONTENT_FRAME_TIME_REASON::MissedCompositeLong);
           mozilla::glean::gfx_content_frame_time::reason
               .EnumGet(glean::gfx_content_frame_time::ReasonLabel::
                            eMissedCompositeLong)
               .Add();
         } else if (aFullPaintTime >= TimeDuration::FromMilliseconds(10)) {
-          Telemetry::AccumulateCategorical(
-              LABELS_CONTENT_FRAME_TIME_REASON::MissedCompositeMid);
           mozilla::glean::gfx_content_frame_time::reason
               .EnumGet(glean::gfx_content_frame_time::ReasonLabel::
                            eMissedCompositeMid)
               .Add();
         } else if (aFullPaintTime >= TimeDuration::FromMilliseconds(5)) {
-          Telemetry::AccumulateCategorical(
-              LABELS_CONTENT_FRAME_TIME_REASON::MissedCompositeLow);
           mozilla::glean::gfx_content_frame_time::reason
               .EnumGet(glean::gfx_content_frame_time::ReasonLabel::
                            eMissedCompositeLow)
               .Add();
         } else {
-          Telemetry::AccumulateCategorical(
-              LABELS_CONTENT_FRAME_TIME_REASON::MissedComposite);
           mozilla::glean::gfx_content_frame_time::reason
               .EnumGet(
                   glean::gfx_content_frame_time::ReasonLabel::eMissedComposite)
@@ -1845,8 +1842,6 @@ int32_t RecordContentFrameTime(
         }
       } else {
         // Composite started on time, but must have taken too long.
-        Telemetry::AccumulateCategorical(
-            LABELS_CONTENT_FRAME_TIME_REASON::SlowComposite);
         mozilla::glean::gfx_content_frame_time::reason
             .EnumGet(glean::gfx_content_frame_time::ReasonLabel::eSlowComposite)
             .Add();
@@ -1863,11 +1858,6 @@ int32_t RecordContentFrameTime(
           .AccumulateSingleSample(
               static_cast<unsigned long long>(fracLatencyNorm));
 
-      if (aStats) {
-        latencyMs -= (double(aStats->gpu_cache_upload_time) / 1000000.0);
-        latencyNorm = latencyMs / aVsyncRate.ToMilliseconds();
-        fracLatencyNorm = lround(latencyNorm * 100.0);
-      }
       mozilla::glean::gfx_content_frame_time::without_resource_upload
           .AccumulateSingleSample(
               static_cast<unsigned long long>(fracLatencyNorm));

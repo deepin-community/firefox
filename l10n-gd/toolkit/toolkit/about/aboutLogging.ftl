@@ -2,21 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The following feature name must be treated as a brand.
-##
-## They cannot be:
-## - Transliterated.
-## - Translated.
-##
-## Declension should be avoided where possible, leaving the original
-## brand unaltered in prominent UI positions.
-##
-## For further details, consult:
-## https://mozilla-l10n.github.io/styleguides/mozilla_general/#brands-copyright-and-trademark
-
-##
-
 # This is the title of the page
 about-logging-title = About Logging
 about-logging-page-title = Logging manager
@@ -50,13 +35,10 @@ about-logging-preset-media-playback-label = Media playback
 about-logging-preset-media-playback-description = Log modules to diagnose media playback issues (not video-conferencing issues)
 about-logging-preset-custom-label = Gnàthaichte
 about-logging-preset-custom-description = Log modules manually selected
-
 # Error handling
 about-logging-error = Error:
 
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
+##
 
 about-logging-invalid-output = Invalid value “{ $v }“ for key “{ $k }“
 about-logging-unknown-logging-preset = Unknown logging preset “{ $v }“
@@ -64,5 +46,4 @@ about-logging-unknown-profiler-preset = Unknown profiler preset “{ $v }“
 about-logging-unknown-option = Unknown about:logging option “{ $k }“
 about-logging-configuration-url-ignored = Configuration URL ignored
 about-logging-file-and-profiler-override = Can’t force file output and override profiler options at the same time
-
 about-logging-configured-via-url = Option configured via URL

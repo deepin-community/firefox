@@ -28,6 +28,11 @@ import org.mozilla.gecko.util.ThreadUtils;
 public class GeckoDisplay {
   private final GeckoSession mSession;
 
+  /**
+   * Protected constructor for GeckoDisplay.
+   *
+   * @param session The GeckoSession this display is associated with
+   */
   protected GeckoDisplay(final GeckoSession session) {
     mSession = session;
   }
@@ -547,11 +552,7 @@ public class GeckoDisplay {
     }
 
     if (Build.VERSION.SDK_INT >= 29) {
-      final int imeHeight = insetsCompat.getInsets(WindowInsetsCompat.Type.ime()).bottom;
-      if (imeHeight == 0) {
-        return 0;
-      }
-      return imeHeight - insetsCompat.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom;
+      return insetsCompat.getInsets(WindowInsetsCompat.Type.ime()).bottom;
     }
 
     return insetsCompat.getSystemWindowInsets().bottom;

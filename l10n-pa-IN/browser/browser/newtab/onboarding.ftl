@@ -25,11 +25,13 @@ return-to-amo-subtitle = ਬੱਲੇ, ਤੁਸੀਂ { -brand-short-name } ਪ
 return-to-amo-addon-title = ਆਓ ਫਿਰ ਹੁਣ <img data-l10n-name="icon"/> <b>{ $addon-name }</b> ਵੇਖੀਏ।
 return-to-amo-add-extension-label = ਇਕਸਟੈਨਸ਼ਨ ਜੋੜੋ
 return-to-amo-add-theme-label = ਥੀਮ ਜੋੜੋ
+return-to-amo-theme-install-complete-label = ਥੀਮ ਇੰਸਟਾਲ ਕੀਤਾ
+return-to-amo-extension-install-complete-label = ਇਕਸਟੈਨਸ਼ਨ ਇੰਸਟਾਲ ਕੀਤੀ
 
 ##  Variables: $addon-name (String) - Name of the add-on to be installed
 
 mr1-return-to-amo-subtitle = { -brand-short-name } ਨੂੰ ਮਿਲੋ
-mr1-return-to-amo-addon-title = ਤੇਜ਼, ਨਿੱਜੀ ਬਰਾਊਜ਼ਰ ਤੁਹਾਡੇ ਹੱਥਾਂ ਵਿੱਚ ਹੈ। ਹੁਣ ਤੁਸੀਂ <b>{ $addon-name }</b> ਜੋੜ ਸਕਦੇ ਹੋ ਅਤੇ { -brand-short-name } ਨਾਲ ਵੱਧ ਕੰਮ ਕਰ ਸਕਦੇ ਹੋ।
+mr1-return-to-amo-addon-title = ਤੇਜ਼, ਪ੍ਰਾਈਵੇਟ ਬਰਾਊਜ਼ਰ ਤੁਹਾਡੇ ਹੱਥਾਂ ਵਿੱਚ ਹੈ। ਹੁਣ ਤੁਸੀਂ <b>{ $addon-name }</b> ਜੋੜ ਸਕਦੇ ਹੋ ਅਤੇ { -brand-short-name } ਨਾਲ ਵੱਧ ਕੰਮ ਕਰ ਸਕਦੇ ਹੋ।
 mr1-return-to-amo-add-extension-label = { $addon-name } ਜੋੜੋ
 
 ## Multistage onboarding strings (about:welcome pages)
@@ -53,9 +55,6 @@ mr1-onboarding-import-primary-button-label-attribution = { $previous } ਤੋਂ
 mr1-onboarding-theme-header = ਇਸ ਨੂੰ ਆਪਣਾ ਬਣਾਓ
 mr1-onboarding-theme-subtitle = ਥੀਮ ਨਾਲ { -brand-short-name } ਨੂੰ ਸ਼ਿੰਗਾਰੋ
 mr1-onboarding-theme-secondary-button-label = ਹੁਣੇ ਨਹੀਂ
-newtab-wallpaper-onboarding-title = ਰੰਗ ਪਾ ਕੇ ਵੇਖੋ
-newtab-wallpaper-onboarding-subtitle = ਆਪਣੀ ਟੈਬ ਨੂੰ ਤਾਜ਼ਾ ਦਿੱਖ ਦੇਣ ਲਈ ਵਾਲਪੇਪਰ ਦੀ ਚੋਣ ਕਰੋ।
-newtab-wallpaper-onboarding-primary-button-label = ਵਾਲਪੇਪਰ ਲਾਓ
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = ਸਿਸਟਮ ਥੀਮ
 mr1-onboarding-theme-label-light = ਹਲਕਾ
@@ -115,7 +114,7 @@ mr2-onboarding-default-theme-label = ਮੂਲ ਥੀਮਾਂ ਬਾਰੇ ਜ�
 ## Strings for Thank You page
 
 mr2-onboarding-thank-you-header = ਸਾਨੂੰ ਚੁਣਨ ਲਈ ਤੁਹਾਡਾ ਧੰਨਵਾਦ ਹੈ
-mr2-onboarding-thank-you-text = { -brand-short-name } ਗ਼ੈਰ-ਫਾਇਦਾ ਸੰਗਠਨ ਵਲੋਂ ਤਿਆਰ ਕੀਤਾ ਆਜ਼ਾਦ ਬਰਾਊਜ਼ਰ ਹੈ। ਮਿਲ ਕੇ ਅਸੀਂ ਵੈੱਬ ਨੂੰ ਵੱਧ ਸੁਰੱਖਿਅਤ, ਮਜ਼ਬੂਤ ਅਤੇ ਵੱਧ ਨਿੱਜੀ ਬਣਾ ਰਹੇ ਹਾਂ।
+mr2-onboarding-thank-you-text = { -brand-short-name } ਗ਼ੈਰ-ਫਾਇਦਾ ਸੰਗਠਨ ਵਲੋਂ ਤਿਆਰ ਕੀਤਾ ਆਜ਼ਾਦ ਬਰਾਊਜ਼ਰ ਹੈ। ਮਿਲ ਕੇ ਅਸੀਂ ਵੈੱਬ ਨੂੰ ਵੱਧ ਸੁਰੱਖਿਅਤ, ਮਜ਼ਬੂਤ ਅਤੇ ਵੱਧ ਪ੍ਰਾਈਵੇਟ ਬਣਾ ਰਹੇ ਹਾਂ।
 mr2-onboarding-start-browsing-button-label = ਬਰਾਊਜ਼ ਕਰਨਾ ਸ਼ੁਰੂ ਕਰੋ
 
 ## Multistage live language reloading onboarding strings (about:welcome pages)
@@ -226,7 +225,9 @@ mr2022-onboarding-set-default-subtitle = ਗ਼ੈਰ-ਫਾਇਦੇ ਵਲੋ�
 mr2022-onboarding-get-started-primary-subtitle = ਸਾਡਾ ਨਵਾਂ ਵਰਜ਼ਨ ਤੁਹਾਡੇ ਵਾਸਤੇ ਬਣਾਇਆ ਹੈ, ਜਿਸ ਨਾਲ ਤੁਹਾਨੂੰ ਵੈੱਬ ਉੱਤੇ ਭੌਣਾ ਪਹਿਲਾਂ ਤੋਂ ਸੁਖਾਲਾ ਹੋਇਆ ਹੈ। ਇਸ ਵਿੱਚ ਫ਼ੀਚਰ ਭਰੇ ਹਨ, ਸਾਨੂੰ ਆਸ ਹੈ ਕਿ ਜਿਹਨਾਂ ਦੀ ਤੁਸੀਂ ਪ੍ਰਸੰਸਾ ਕਰੋਗੇ।
 mr2022-onboarding-get-started-primary-button-label = ਸਕਿੰਟਾਂ ਵਿੱਚ ਸੈਟਅੱਪ ਕਰੋ
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = ਹਨ੍ਹੇਰੀ ਵਰਗਾ ਤੇਜ਼ ਸੈਟਅੱਪ
 mr2022-onboarding-import-subtitle = { -brand-short-name } ਨੂੰ ਜਿਵੇਂ ਤੁਸੀਂ ਚਾਹੋ, ਉਵੇਂ ਸੈਟਅੱਪ ਕਰੋ। ਆਪਣੇ ਪੁਰਾਣੇ ਬਰਾਊਜ਼ਰ ਤੋਂ ਆਪਣੇ ਬੁੱਕਮਾਰਕ, ਪਾਸਵਰਡ ਅਤੇ ਕਈ ਕੁਝ ਜੋੜੋ।
@@ -357,6 +358,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = ਜਦੋਂ ਤੱ�
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } ਤੁਹਾਡੇ ਨਾਲ ਖੜ੍ਹਾ ਹੈ
 onboarding-gratitude-security-and-privacy-subtitle = { -brand-short-name }, ਜਿਸ ਨੂੰ Mozilla Foundation ਵਲੋਂ ਸਹਿਯੋਗ ਮਿਲਦਾ ਹੈ, ਵਰਤਣ ਲਈ ਤੁਹਾਡਾ ਧੰਨਵਾਦ ਹੈ। ਤੁਹਾਡੀ ਮਦਦ ਨਾਲ ਅਸੀਂ ਇੰਟਰਨੈੱਟ ਨੂੰ ਹਰ ਕਿਸੇ ਲਈ ਵੱਧ ਸੁਰੱਖਿਅਤ ਅਤੇ ਵੱਧ ਪਹੁੰਚ ਵਿੱਚ ਲਿਆਉਣ ਲਈ ਕੰਮ ਕਰ ਰਹੇ ਹਾਂ।
+# Sign up or Sign in screen
+onboarding-sign-up-title = ਡਿਵਾਈਸਾਂ ਵਿਚਾਲੇ ਆਪਣੇ ਡਾਟੇ ਨੂੰ ਸਿੰਕ ਕਰੋ
+onboarding-sign-up-description = ਇੱਕ ਖਾਤਾ ਬਣਾਓ ਅਤੇ ਤੁਹਾਡੀ ਸਾਰੀ ਜ਼ਰੂਰੀ ਜਾਣਕਾਰੀ — ਪਾਸਵਰਡ, ਬੁੱਕਮਾਰਕ, ਅਤੇ ਹੋਰ ਕਈ ਕੁਝ — ਨੂੰ ਸੁਰੱਖਿਅਤ ਢੰਗ ਵਿੱਚ ਸੰਭਾਲਿਆ ਜਾਵੇਗਾ ਅਤੇ ਇਹ ਸਭ ਤੁਹਾਡੇ ਵਲੋਂ ਸਾਈਨ ਇਨ ਕੀਤੇ ਕਿਸੇ ਵੀ ਡਿਵਾਈਸ ਉੱਤੇ ਮੌਜੂਦ ਹੋਵੇਗਾ।
+onboarding-sign-up-button = ਸਾਈਨ ਅੱਪ ਜਾਂ ਸਾਈਨ ਇਨ ਕਰੋ
+onboarding-sign-up-secondary-button = ਬਰਾਊਜ਼ ਕਰਨਾ ਸ਼ੁਰੂ ਕਰੋ
 
 ## New user time and familiarity survey strings
 
@@ -376,3 +382,206 @@ onboarding-new-user-survey-familiarity-based-option-1 = ਮੈਂ ਬਿਲਕ�
 onboarding-new-user-survey-familiarity-based-option-2 = ਮੈਂ ਇਸ ਨੂੰ ਵਰਤਦਾ/ਵਰਤਦੀ ਹਾਂ ਕੁਝ
 onboarding-new-user-survey-familiarity-based-option-3 = ਮੈਂ ਇਸ ਨਾਲ ਚੰਗੀ ਤਰ੍ਹਾਂ ਜਾਣੂ ਹਾਂ
 onboarding-new-user-survey-familiarity-based-option-4 = ਮੈ ਪਹਿਲਾਂ ਵਰਤਿਆ ਸੀ, ਪਰ ਇਸ ਨੂੰ ਚਿਰ ਹੋ ਗਿਆ ਹੈ
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = ਸਾਨੂੰ ਦੱਸੋ ਕਿ ਤੁਸੀਂ ਆਪਣੀਆਂ ਟੈਬਾਂ ਕਿੱਥੇ ਚਾਹੁੰਦੇ ਹੋ
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = ਜਦੋਂ ਵੀ ਤੁਸੀਂ ਚਾਹੋ, ਬਾਹੀ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਇਸ ਨੂੰ ਬਦਲ ਸਕਦੇ ਹੋ।
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = ਤੁਹਾਡੀਆਂ ਟੈਬਾਂ ਤੁਹਾਡੇ ਮੁਤਾਬਕ
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = ਕੀ ਬਹੁਤ ਸਾਰੀਆਂ ਟੈਬਾਂ ਨੂੰ ਖੁੱਲ੍ਹੀਆਂ ਰੱਖਦੇ ਹੋ? ਆਪਣੀਆਂ ਟੈਬਾਂ ਨੂੰ ਵੱਧ ਸੁਚੱਜੇ ਢੰਗ ਲਈ ਬਾਹੀ ਵਿੱਚ ਸਜਾਓ। ਜਾਂ ਆਮ ਦੀ ਤਰ੍ਹਾਂ ਟੈਬਾਂ ਨੂੰ ਸਿਖਰ ਉੱਤੇ ਰੱਖੋ। ਜਦ ਵੀ ਚਾਹੋ ਬਦਲ ਲਵੋ।
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = ਆਪਣੇ ਟੈਬ ਖਾਕੇ ਨੂੰ ਚੁਣੋ
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = ਸੁਚੱਜੀ ਝਲਕ, ਜੋ ਤੁਹਾਨੂੰ ਫੋਕਸ ਰਹਿਣ ਲਈ ਮਦਦ ਕਰ ਸਕਦੀ ਹੈ, ਲਈ ਬਾਹੀ ਵਿੱਚ ਆਪਣੀਆਂ ਟੈਬਾਂ ਨੂੰ ਸਜਾ ਕੇ ਵੇਖੋ। ਜਾਂ ਆਮ ਦੀ ਤਰ੍ਹਾਂ ਟੈਬਾਂ ਨੂੰ ਸਿਖਰ ਉੱਤੇ ਰੱਖੋ। ਜਦ ਵੀ ਚਾਹੋ ਬਦਲ ਲਵੋ।
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = ਬਾਹੀ ਉੱਤੇ ਟੈਬ
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = ਟੈਬਾਂ ਉੱਤੇ
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = ਖੜ੍ਹਵੀਆਂ ਟੈਬਾਂ ਇੱਥੇ
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = ਖੜ੍ਹਵੀਆਂ ਟੈਬਾਂ ਪੇਸ਼ ਹਨ
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = ਆਪਣੀਆਂ ਟੈਬਾਂ ਨੂੰ ਪਾਸੇ ਉੱਤੇ ਰੱਖੋ। ਜਦੋਂ ਵੀ ਤੁਸੀਂ ਚਾਹੋ, ਬਾਹੀ ਸੈਟਿੰਗਾਂ ਨੂੰ ਬਦਲ ਸਕਦੇ ਹੋ।
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = ਖੜ੍ਹਵੀਆਂ ਟੈਬਾਂ ਨੂੰ ਅਜ਼ਮਾਓ
+onboarding-flair-text = ਨਵਾਂ!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = ਲੇਟਵੀਆਂ ਟੈਬਾਂ ਰੱਖੋ
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = ਬਰਾਊਜ਼ਰ ਵਿੰਡੋ { -brand-shorter-name } ਬਾਹੀ ਦੇ ਨਾਲ ਸਕਰੀਨ ਦੇ ਪਾਸੇ ਟੈਬਾਂ ਨੂੰ ਦਿਖਾਉਂਦੀ ਹੈ।
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = ਬਰਾਊਜ਼ਰ ਵਿੰਡੋ { -brand-shorter-name } ਬਾਹੀ ਦੇ ਨਾਲ ਸਕਰੀਨ ਦੇ ਪਾਸੇ ਟੈਬਾਂ ਨੂੰ ਦਿਖਾਉਂਦੀ ਹੈ।
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = ਬਰਾਊਜ਼ਰ ਵਿੰਡੋ ਸਿਖਰ ਦੇ ਨਾਲ ਟੈਬਾਂ ਨੂੰ ਦਿਖਾਉਂਦੀ ਹੈ।
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = ਬਰਾਊਜ਼ਰ ਵਿੰਡੋ ਸਿਖਰ ਦੇ ਨਾਲ ਟੈਬਾਂ ਨੂੰ ਦਿਖਾਉਂਦੀ ਹੈ।
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = ਬਾਹੀ ਵਿੱਚ AI ਚੈਟ-ਬੋਟ ਅਜ਼ਮਾਓ
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = ਵੈੱਬ ਸਮੱਗਰੀ ਦਾ ਸਾਰ ਵੇਖੋ, ਦਿਮਾਗ ਲੜਾਓ, ਸੁਨੇਹਿਆਂ ਦਾ ਖਰੜਾ ਤਿਆਰ ਕਰੋ — ਸਭ ਬਰਾਊਜ਼ਰ ਵਿੱਚ ਹੀ। ਕਈ ਪੂਰਕਾਂ ਤੋਂ ਚੁਣੋ। ਕਿਸੇ ਵੇਲੇ ਵੀ ਬਦਲੋ। <a data-l10n-name="learn-more">ਹੋਰ ਜਾਣੋ</a>
+onboarding-genai-sidebar-primary-button = ਕੋਈ ਚੈਟ-ਬੋਟ ਚੁਣੋ
+onboarding-genai-sidebar-secondary-button = ਬਰਾਊਜ਼ ਕਰਨਾ ਸ਼ੁਰੂ ਕਰੋ
+
+## New user onboarding checklist
+
+onboarding-checklist-title = { -brand-short-name } ਦੇ ਸੈਟਅੱਪ ਨੂੰ ਮੁਕੰਮਲ ਕਰੋ
+onboarding-checklist-subtitle = ਆਪਣੇ ਬਰਾਊਜ਼ਰ ਤਜਰਬੇ ਦਾ ਪੂਰਾ ਆਨੰਦ ਮਾਣਨ ਲਈ ਇਹ ਪੜਾਆਵਾਂ ਨੂੰ ਪੂਰਾ ਕਰਨਾ ਕਰੋ।
+onboarding-checklist-set-default = { -brand-short-name } ਨੂੰ ਮੂਲ ਬਰਾਊਜ਼ਰ ਬਣਾਓ
+onboarding-checklist-pin = { -brand-short-name } ਨੂੰ ਟਾਸਕਬਾਰ ਵਿੱਚ ਟੰਗੋ
+onboarding-checklist-import = ਪਿਛਲੇ ਬਰਾਊਜ਼ਰ ਤੋਂ ਦਰਾਮਦ ਕਰੋ
+onboarding-checklist-extension = ਇਕਸਟੈਨਸ਼ਨ ਨੂੰ ਜੋੜੋ
+onboarding-checklist-sign-up = ਸਾਈਨ ਅੱਪ ਕਰੋ ਜਾਂ ਆਪਣੇ ਖਾਤੇ ਵਿੱਚ ਸਾਈਨ ਇਨ ਕਰੋ
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = ਘੱਟ ਗਾਹ ਅਤੇ ਵੱਧ ਫੋਕਸ ਵਾਸਤੇ ਟੈਬ ਗਰੁੱਪਾਂ ਨੂੰ ਅਜ਼ਮਾ ਕੇ ਵੇਖੋ
+tab-groups-onboarding-feature-callout-subtitle = ਸੁਚੱਜੇ ਢੰਗ ਨਾਲ ਇੰਤਜ਼ਾਮ ਵਾਸਤੇ ਇੱਕ ਟੈਬ ਨੂੰ ਦੂਜੀ ਟੈਬ ਉੱਤੇ ਰੱਖ ਕੇ ਆਪਣਾ ਪਹਿਲਾਂ ਗਰੁੱਪ ਬਣਾਓ।
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-create-group-title-3 = ਸਭ ਟੈਬਾਂ ਦੀ ਸੂਚੀ ਵਿੱਚੋਂ ਕਿਸੇ ਵੀ ਵੇਲੇ ਆਪਣੇ ਟੈਬ ਗਰੁੱਪਾਂ ਨੂੰ ਲੱਭੋ।
+tab-groups-onboarding-create-group-title-2 = ਕਿਸੇ ਵੀ ਸਮੇਂ ਆਪਣੇ ਟੈਬਾਂ ਦੇ ਗਰੁੱਪ ਨੂੰ ਲੱਭੋ।
+tab-groups-onboarding-create-group-no-alltabs-button-title = ਸਿਰਨਾਵਾਂ ਪੱਟੀ ਵਿੱਚ ਆਪਣੇ ਗਰੁੱਪਾਂ ਨੂੰ ਖੋਜ ਕੇ ਲੱਭੋ।
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-saved-groups-title-3 = ਜਦੋਂ ਤੁਸੀਂ ਕਿਸੇ ਟੈਬ ਗਰੁੱਪ ਨੂੰ ਬੰਦ ਕਰਦੇ ਹੋ ਤਾਂ ਸਭ ਟੈਬਾਂ ਦੀ ਸੂਚੀ ਵਿੱਚੋਂ ਕਿਸੇ ਵੀ ਵੇਲੇ ਇਸ ਨੂੰ ਫੇਰ ਖੋਲ੍ਹੋ।
+tab-groups-onboarding-saved-groups-title-2 = ਜਦੋਂ ਤੁਸੀਂ ਟੈਬ ਗਰੁੱਪ ਨੂੰ ਬੰਦ ਕਰਦੇ ਹੋ ਤਾਂ ਤੁਸੀਂ ਇਸ ਨੂੰ ਕਿਵੇਂ ਵੀ ਵੇਲੇ ਇੱਥੋਂ ਖੋਲ੍ਹ ਸਕਦੇ ਹੋ।
+tab-groups-onboarding-saved-groups-no-alltabs-button-title-2 = ਸਿਰਨਾਵਾਂ ਪੱਟੀ ਵਿੱਚ ਆਪਣੇ ਬੰਦ ਕੀਤੇ ਗਰੁੱਪਾਂ ਨੂੰ ਖੋਜ ਕੇ ਲੱਭੋ।
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-session-restore-title-2 = ਸਭ ਟੈਬਾਂ ਦੀ ਸੂਚੀ ਵਿੱਚੋਂ ਕਿਸੇ ਵੀ ਵੇਲੇ ਆਪਣੇ ਟੈਬ ਗਰੁੱਪਾਂ ਨੂੰ ਫੇਰ ਖੋਲ੍ਹੋ।
+tab-groups-onboarding-session-restore-title = ਕਿਸੇ ਵੀ ਸਮੇਂ ਆਪਣੇ ਟੈਬਾਂ ਦੇ ਗਰੁੱਪ ਨੂੰ ਵਾਪਸ ਖੋਲ੍ਹੋ।
+tab-groups-onboarding-dismiss = ਠੀਕ ਹੈ
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = { -brand-product-name } ਪਰੋਫ਼ਾਈਲਾਂ ਨੂੰ ਮਿਲੋ
+multi-profile-spotlight-body = ਕੰਮ ਅਤੇ ਮੌਜ ਮਸਤੀ ਲਈ ਬਰਾਊਜ਼ ਕਰਨ ਨੂੰ ਬਦਲਣਾ ਹੋਇਆ ਸੌਖਾ। ਪਰੋਫ਼ਾਈਲ ਤੁਹਾਡੀ ਬਰਾਊਜ਼ਰ ਜਾਣਕਾਰੀ, ਜਿਸ ਵਿੱਚ ਖੋਜ ਅਤੀਤ ਅਤੇ ਪਾਸਵਰਡ ਹੁੰਦੇ ਹਨ, ਨੂੰ ਬਿਲਕੁਲ ਅਲਹਿਦਾ ਰੱਖੋ ਤਾਂ ਕਿ ਤੁਸੀਂ ਸੁਚੱਜੇ ਢੰਗ ਨਾਲ ਪਰਬੰਧ ਕਰ ਸਕੋ।
+multi-profile-spotlight-cta = ਪਰੋਫਾਈਲ ਬਣਾਓ
+multi-profile-callout-title = ਕੰਮ ਅਤੇ ਮੌਜ ਮਸਤੀ ਲਈ ਅਲਹਿਦਾ ਪਰੋਫ਼ਾਈਲ ਬਣਾਓ
+multi-profile-callout-subtitle = ਪਰੋਫ਼ਾਈਲ ਤੁਹਾਡੀ ਬਰਾਊਜ਼ਰ ਜਾਣਕਾਰੀ, ਜਿਸ ਵਿੱਚ ਖੋਜ ਅਤੀਤ ਅਤੇ ਪਾਸਵਰਡ ਹੁੰਦੇ ਹਨ, ਨੂੰ ਬਿਲਕੁਲ ਵੱਖੋ-ਵੱਖਰਾ ਰੱਖਦੇ ਹਨ।
+multi-profile-callout-cta = ਪਰੋਫਾਈਲ ਬਣਾਓ
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = ਡਾਊਨਲੋਡ, ਸਿੰਕ ਕਰੋ ਅਤੇ ਤਿਆਰ!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = ਮੋਬਾਈਲ ਉੱਤੇ { -brand-product-name } ਨੂੰ ਡਾਊਨਲੋਡ ਕਰਨ ਲਈ QR ਕੋਡ ਨੂੰ ਸਕੈਨ ਕਰੋ। ਇੱਕ ਵਾਰ ਇੰਸਟਾਲ ਹੋਣ ਦੇ ਬਾਅਦ ਆਪਣੇ ਪਾਸਵਰਡਾਂ, ਬੁੱਕਮਾਰਕਾਂ ਤੇ ਹੋਰ ਚੀਜ਼ਾਂ ਨੂੰ ਲੈਣ ਲਈ “ਮੋਬਾਈਲ ਨਾਲ ਸਿੰਕ ਕਰੋ” ਨੂੰ ਚੁਣੋ।
+dismiss-button-label = ਖ਼ਾਰਜ ਕਰੋ
+sync-to-mobile-button-label = ਮੋਬਾਈਲ ਨਾਲ ਸਿੰਕ ਕਰੋ
+desktop-to-mobile-qr-code-alt =
+    .aria-label = ਮੋਬਾਈਲ ਵਾਸਤੇ { -brand-product-name } ਡਾਊਨਲੋਡ ਕਰਨ ਲਈ QR ਕੋਡ
+
+## Fx Backup onboarding: Create Backup spotlight
+
+create-backup-screen-1-title = Windows 11 ਲਈ ਅੱਪਗਰੇਡ ਕਰ ਰਹੇ ਹੋ? ਆਓ ਫੇਰ ਤੁਹਾਡੇ { -brand-product-name } ਡਾਟੇ ਦਾ ਬੈਕਅੱਪ ਲੈ ਲਈਏ।
+create-backup-screen-1-subtitle = ਤੁਹਾਡੇ ਪਾਸਵਰਡਾਂ, ਬੁੱਕਮਾਰਕਾਂ ਅਤੇ ਹੋਰ ਚੀਜ਼ਾਂ ਨੂੰ 1–2 ਮਿੰਟ ਵਿੱਚ ਆਪਣੇ-ਆਪ ਸੁਰੱਖਿਤ ਕਰਦਾ ਹੈ।
+create-backup-screen-1-flair = ਸਿਫ਼ਾਰਸ਼ੀ
+create-backup-learn-more-link = <a data-l10n-name="learn-more-label">ਹੋਰ ਜਾਣੋ</a>
+create-backup-screen-1-sync-label = { -brand-product-name } ਨਾਲ ਸਿੰਕ ਕਰੋ
+create-backup-screen-1-sync-body = ਸਾਰੇ ਸਾਈਨ ਇਨ ਕੀਤੇ ਡਿਵਾਈਸਾਂ ਦਾ ਬੈਕਅੱਪ
+create-backup-screen-1-backup-label = ਪੀਸੀ ਉੱਤੇ ਬੈਕਅੱਪ
+create-backup-screen-1-backup-body = ਆਪਣੇ ਡਿਵਾਈਸ ਜਾਂ OneDrive ਉੱਤੇ ਸੰਭਾਲਦਾ ਹੈ
+create-backup-select-tile-button-label = ਚੁਣੋ
+create-backup-back-button-label = ਪਿੱਛੇ
+create-backup-show-fewer =
+    .label = ਇਸ ਵਾਂਗ ਘੱਟ ਵੇਖਾਓ
+create-backup-screen-2-title = ਬੈਕਅੱਪ ਲਈ { -brand-product-name } ਡਾਟੇ ਨੂੰ ਚੁਣੋ
+create-backup-screen-2-subtitle = ਮਿੰਟ ਕੁ ਹੀ ਲੱਗੇਗਾ। ਦਿਨ ਵਿੱਚ ਇੱਕ ਵਾਰ ਤੁਹਾਡੇ ਡਾਟੇ ਦਾ ਬੈਕਅੱਪ ਲਿਆ ਜਾਂਦਾ ਹੈ।
+# Label for the "Easy setup" backup option
+create-backup-screen-2-easy-label = ਸੌਖਾ ਸੈਟਅੱਪ
+# Preceded by a green check mark indicating that these are included in "Easy setup" backup
+create-backup-screen-2-easy-list-1 = ਬੁੱਕਮਾਰਕ, ਅਤੀਤ, ਸੈਟਿੰਗਾਂ ਅਤੇ ਹੋਰ ਚੀਜ਼ਾਂ
+# Preceded by a red X indicating that these are not included in the "Easy setup" backup
+create-backup-screen-2-easy-list-2 = ਪਾਸਵਰਡ ਅਤੇ ਭੁਗਤਾਨ ਨੂੰ ਸ਼ਾਮਲ ਨਾ ਕਰੋ
+# Preceded by a red X indicating that "Easy setup" backups are not encrypted
+create-backup-screen-2-easy-list-3 = ਇੰਕ੍ਰਿਪਟ ਨਹੀਂ ਹੈ
+# Label for the "All data" backup option
+create-backup-screen-2-all-label = ਸਾਰਾ ਡਾਟਾ
+# Preceded by a green check mark indicating that these are included in the "All data" backup
+create-backup-screen-2-all-list-2 = ਪਾਸਵਰਡ ਅਤੇ ਭੁਗਤਾਨ ਜਾਣਕਾਰੀ ਦੇ ਸਮੇਤ
+# Preceded by a green check mark and shield indicating "All data" backups are encrypted
+create-backup-screen-2-all-list-3 = ਪਾਸਵਰਡ ਨਾਲ ਇੰਕ੍ਰਿਪਟ ਕੀਤਾ
+# Title for a screen asking users to choose a file location
+create-backup-screen-3-location = ਆਪਣੇ ਬੈਕਅੱਪ ਨੂੰ ਤੁਸੀਂ ਕਿੱਥੇ ਸੰਭਾਲਣਾ ਚਾਹੁੰਦੇ ਹੋ?
+# Title for a screen asking users to create a password that will encrypt the backup
+create-backup-screen-3-title = ਕੋਈ ਬੈਕਅੱਪ ਫ਼ਾਇਲ ਪਾਸਵਰਡ ਬਣਾਓ
+create-backup-screen-3-subtitle = ਤੁਹਾਡੇ ਡਾਟੇ ਨੂੰ ਇੰਕ੍ਰਿਪਟ ਕਰਨ ਲਈ ਚਾਹੀਦਾ ਹੈ। ਇਸ ਨੂੰ ਅਜਿਹੀ ਥਾਂ ਉੱਤੇ ਰੱਖੋ, ਜੋ ਤੁਹਾਨੂੰ ਯਾਦ ਰਹੇ।
+fx-backup-opt-in-header = ਫ਼ਾਇਲ ਦਾ ਟਿਕਾਣਾ ਚੁਣੋ
+fx-backup-opt-in-filepath-label = ਨਵੇਂ ਡਿਵਾਈਸ ਉੱਤੇ ਥਾਂ ਚੁਣੋ, ਜਿਵੇਂ ਕਿ OneDrive, ਜਿੱਥੇ ਤੁਸੀਂ ਟਰਾਂਸਫਰ ਕਰਨ ਲਈ ਸਕੀਮ ਬਣਾਈ ਹੈ।
+fx-backup-opt-in-create-password-label = ਪਾਸਵਰਡ ਦਿਓ
+fx-backup-opt-in-confirm-btn-label = ਜਾਰੀ ਰੱਖੋ
+fx-backup-opt-in-cancel-btn-label = ਪਿੱਛੇ
+
+## Fx Backup confirmation screen strings
+
+fx-backup-confirmation-screen-title = ਤੁਹਾਡੇ ਬੈਕਅੱਪ ਲਈ ਸਮਾਂ ਤੈਅ ਕੀਤਾ ਗਿਆ ਹੈ
+fx-backup-confirmation-screen-close-button = ਬੰਦ ਕਰੋ
+
+## These strings appear as a confirmation of which items will or won't be included as part of the selected backup method.
+
+fx-backup-confirmation-screen-all-data-item-text-1 = ਸਾਰੇ ਬਰਾਊਜ਼ਿੰਗ ਡਾਟੇ ਵਿੱਚ ਸ਼ਾਮਲ ਹਨ
+fx-backup-confirmation-screen-all-data-item-text-2 = ਤੁਹਾਡੇ ਡਿਵਾਈਸ ਉੱਤੇ ਸੰਭਾਲਿਆ
+fx-backup-confirmation-screen-all-data-item-text-3 = ਇੰਕ੍ਰਿਪਟ ਕੀਤਾ ਅਤੇ ਪਾਸਵਰਡ ਨਾਲ ਸੁਰੱਖਿਅਤ ਬਣਾਇਆ
+fx-backup-confirmation-screen-easy-setup-item-text-1 = ਬੁੱਕਮਾਰਕ, ਅਤੀਤ, ਸੈਟਿੰਗਾਂ ਅਤੇ ਹੋਰ ਡਾਟੇ ਦੇ ਸਮੇਤ
+fx-backup-confirmation-screen-easy-setup-item-text-2 = ਤੁਹਾਡੇ ਡਿਵਾਈਸ ਉੱਤੇ ਸੰਭਾਲਿਆ
+fx-backup-confirmation-screen-easy-setup-item-text-3 = ਪਾਸਵਰਡ ਅਤੇ ਭੁਗਤਾਨ ਦੀ ਜਾਣਕਾਰੀ ਸ਼ਾਮਲ ਨਹੀਂ ਹੈ
+fx-backup-confirmation-screen-easy-setup-item-subtext-3 = ਸੰਵੇਦਨਸ਼ੀਲ ਡਾਟੇ ਨੂੰ ਸ਼ਾਮਲ ਕਰਨ ਵਾਸਤੇ <a data-l10n-name="settings">ਸੈਟਿੰਗਾਂ</a> ਉੱਤੇ ਜਾਓ।
+fx-backup-confirmation-screen-item-subtext-1 = ਤੁਹਾਡਾ ਬੈਕਅੱਪ ਕੁਝ ਕੁ ਮਿੰਟਾਂ ਵਿੱਚ ਸ਼ੁਰੂ ਹੋਵੇਗਾ ਅਤੇ ਇੱਕ ਦਿਨ ਵਿੱਚ ਇਕੇਰਾਂ ਹੋਇਆ ਕਰੇਗਾ। ਤੁਸੀਂ <a data-l10n-name="settings">ਸੈਟਿੰਗਾਂ</a> ਵਿੱਚ ਇਸ ਦੀ ਸਥਿਤੀ ਵੇਖ ਸਕਦੇ ਹੋ।
+fx-backup-confirmation-screen-item-subtext-2 = ਜੇ ਤੁਹਾਨੂੰ ਮੁੜ-ਇੰਸਟਾਲ ਕਰਨ ਦੀ ਲੋੜ ਹੋਈ ਤਾਂ { -brand-short-name } ਤੁਹਾਡੇ ਬੈਕਅੱਪ ਨੂੰ ਲੱਭੇਗਾ।
+
+## Restore from Backup Flow about:welcome screens
+
+restore-from-backup-secondary-top-button = ਬੈਕਅੱਪ ਤੋਂ ਬਹਾਲ ਕਰੋ
+restore-from-backup-title = { -brand-short-name } ਦਾ ਬੈਕਅੱਪ ਜਿਵੇਂ ਤੁਸੀਂ ਚਾਹੁੰਦੇ ਹੋ, ਉਵੇਂ ਲੈ ਲਈਏ
+restore-from-backup-subtitle = ਵਾਪਸ ਬਰਾਊਜ਼ ਕਰਨ ਲਈ ਆਪਣੇ ਸਾਰੇ ਬੁੱਕਮਾਰਕਾਂ, ਅਤੀਤ ਅਤੇ ਹੋਰ ਡਾਟੇ ਨੂੰ ਬਹਾਲ ਕਰੋ।
+restore-from-backup-secondary-button = ਬਹਾਲ ਨਾ ਕਰੋ
+
+## Restored from Backup spotlight
+
+restored-from-backup-success-title = ਅਸੀਂ ਆ ਗਏ ਹਾਂ! ਤੁਹਾਡੇ { -brand-short-name } ਡਾਟੇ ਨੂੰ ਬਹਾਲ ਕੀਤਾ ਜਾ ਚੁੱਕਾ ਹੈ।
+restored-from-backup-success-with-checklist-subtitle = ਆਪਣੇ ਮਨਪਸੰਦ ਪਰਦੇਦਾਰੀ ਨੂੰ ਪਹਿਲ ਦੇਣ ਵਾਲੇ ਬਰਾਊਜ਼ਰ ਨੂੰ ਆਪਣੇ ਹੱਥ ਹੇਠ ਰੱਖਣਾ ਚਾਹੁੰਦੇ ਹੋ?
+restored-from-backup-success-no-checklist-subtitle = ਤੁਸੀਂ <a data-l10n-name="settings">ਸੈਟਿੰਗਾਂ</a> ਵਿੱਚ ਇਸ ਡਿਵਾਈਸ ਲਈ ਬੈਕਅੱਪ ਚਾਲੂ ਕਰ ਸਕਦੇ ਹੋ।
+restored-from-backup-success-with-checklist-primary-button = ਸੰਭਾਲੋ ਅਤੇ ਜਾਰੀ ਰੱਖੋ
+restored-from-backup-success-with-checklist-secondary-button = ਇਹ ਪੜਾਅ ਛੱਡੋ
+restored-from-backup-success-no-checklist-primary-button = ਜਾਰੀ ਰੱਖੋ
+restored-from-backup-error-title = ਓਹ ਹੋ, ਤੁਹਾਡੀ ਬੈਕਅੱਪ ਫ਼ਾਇਲ ਨਾਲ ਸਮੱਸਿਆ ਆਈ ਸੀ।
+restored-from-backup-error-subtitle = ਜੇ ਤੁਹਾਡੇ ਕੋਲ ਕੋਈ ਹੋਰ { -brand-short-name } ਬੈਕਅੱਪ ਫ਼ਾਈਲ ਹੈ ਤਾਂ ਉਸ ਤੋਂ ਬਹਾਲ ਕਰਨ ਦੀ ਕੋਸ਼ਿਸ਼ ਕਰੋ। <a data-l10n-name="restore-problems">ਹਾਲੇ ਵੀ ਸਮੱਸਿਆਵਾਂ ਹਨ?</a>
+restored-from-backup-error-primary-button = ਬੰਦ ਕਰੋ
+
+## Onboarding Personalization Screen
+## A screen shown to users during the onboarding process that asks them two qualifying questions about their use of the browser
+
+onboarding-personalization-title = ਆਪਣੇ { -brand-short-name } ਤਜਰਬੇ ਨੂੰ ਪਸੰਦ ਮੁਤਾਬਕ ਢਾਲੋ
+onboarding-personalization-subtitle = ਕੁਝ ਕੁ ਸਵਾਲਾਂ ਦੇ ਜਵਾਬ ਦਿਓ ਅਤੇ ਅਸੀਂ { -brand-short-name } ਦੀ ਤੁਹਾਡੇ ਵਰਤੋਂ ਨੂੰ ਵਧੀਆ ਬਣਾਉਣ ਲਈ ਫ਼ੀਚਰਾਂ ਅਤੇ ਇਕਸਟੈਨਸ਼ਨਾਂ ਦੀ ਸਿਫਾਰਸ਼ ਦੇਵਾਂਗੇ।
+onboarding-personalization-use-case-title = { -brand-short-name } ਨੂੰ ਤੁਸੀਂ ਕੰਮ ਲਈ ਵਰਤੋਗੇ?
+onboarding-personalization-use-case-personal-option = ਨਿੱਜੀ
+onboarding-personalization-use-case-school-option = ਸਕੂਲ
+onboarding-personalization-use-case-work-option = ਕੰਮ
+onboarding-personalization-motivation-title = { -brand-short-name } ਦਾ ਕਿਹੜਾ ਫ਼ੀਚਰ ਤੁਹਾਡੇ ਲਈ ਸਭ ਤੋਂ ਜ਼ਰੂਰੀ ਹੈ?
+onboarding-personalization-motivation-privacy-option = ਪਰਦੇਦਾਰੀ ਅਤੇ ਸੁਰੱਖਿਆ
+onboarding-personalization-motivation-productivity-option = ਉਤਪਾਦਨ
+onboarding-personalization-motivation-other-option = ਹੋਰ
+
+## Onboarding 2026 brand refresh
+
+onboarding-refresh-pin-set-default-subtitle = ਅਸੀਂ ਤੁਹਾਡੇ ਡਾਟੇ ਨੂੰ ਸੁਰੱਖਿਅਤ ਰੱਖਦੇ ਹਾਂ ਅਤੇ ਜਦੋਂ ਵੀ ਤੁਸੀਂ ਕਲਿੱਕ ਕਰਦੇ ਹੋ ਤਾਂ ਆਪਣੇ-ਆਪ ਹੀ ਕੰਪਨੀਆਂ ਨੂੰ ਤੁਹਾਡੇ ਉੱਤੇ ਜਾਸੂਸੀ ਕਰਨ ਤੋਂ ਰੋਕਦੇ ਹਾਂ — ਆਪਣੇ-ਆਪ।
+# "safe paws" is a play on "safe hands", meaning you're being well taken care of or protected
+# If it doesn’t translate well, you can use the alternative: “You’re safe with Firefox.”
+onboarding-refresh-pin-set-default-title = ਤੁਸੀਂ ਸੁਰੱਖਿਆ ਹੱਥਾਂ ਵਿੱਚ ਹੋ
+onboarding-refresh-import-subtitle = ਆਪਣੇ ਪਾਸਵਰਡ, ਬੁੱਕਮਾਰਕ, ਅਤੀਤ ਅਤੇ ਹੋਰਾਂ ਚੀਜ਼ਾਂ ਨੂੰ ਲਿਆਓ।
+onboarding-refresh-import-title = { -brand-short-name } ਨੂੰ ਆਪਣਾ ਬਣਾਓ
+onboarding-refresh-onboarding-addons-subtitle = ਇਕਸਟੈਨਸ਼ਨਾਂ ਛੋਟੀ ਛੋਟੀਆਂ ਐਪਾਂ ਹਨ, ਜੋ ਕਿ ਤੁਹਾਨੂੰ { -brand-short-name } ਪਸੰਦੀਦਾ ਬਣਾਉਣ ਲਈ ਮਦਦ ਕਰਦੀਆਂ ਹਨ। ਤੁਸੀਂ ਆਪਣੀ ਪਰਦੇਦਾਰੀ, ਸੁਧਾਰ ਕੀਤੇ ਉਤਪਾਦਨ ਨੂੰੰ ਚਾਲੂ ਕਰ ਸਕਦੇ ਹੋ, { -brand-short-name } ਦੀ ਦਿੱਖ ਨੂੰ ਬਦਲ ਅਤੇ ਕਈ ਕੁਝ ਹੋਰ ਕਰ ਸਕਦੇ ਹੋ।
+# "Give your browsing a boost" means to enhance or improve the browsing experience
+onboarding-refresh-onboarding-addons-title = ਆਪਣੇ ਬਰਾਊਜ਼ਰ ਨੂੰ ਤੇਜ਼ ਬਣਾਓ
+onboarding-refresh-sync-subtitle = ਜਿੱਥੇ ਵੀ ਤੁਸੀਂ { -brand-short-name } ਵਿੱਚ ਸਾਈਨ ਇਨ ਕਰੋ, ਓਥੇ ਆਪਣੇ ਬੁੱਕਮਾਰਕ, ਪਾਸਵਰਡ ਅਤੇ ਹਰ ਚੀਜ਼ ਪ੍ਰਾਪਤ ਕਰੋ। ਇਸ ਤੋਂ ਬਿਨਾਂ ਤੁਹਾਡੇ ਡਾਟੇ ਨੂੰ ਇੰਕ੍ਰਿਪਟ ਕੀਤਾ ਜਾਂਦਾ ਹੈ, ਜਿਸ ਨੂੰ ਸਿਰਫ਼ ਤੁਸੀਂ ਹੀ ਵੇਖ ਸਕਦੇ ਹੋ।
+onboarding-refresh-sync-title = ਕਿਤੇ ਵੀ ਜਾਓ। ਹਰ ਚੀਜ਼ ਨੂੰ ਸਿੰਕ ਕਰੋ।
+onboarding-refresh-gratitude-subtitle = { -brand-short-name }, ਸਿਰਫ਼ ਵੱਡਾ ਬਰਾਊਜ਼ਰ ਹੈ,ਜੋ ਗ਼ੈਰ-ਮੁਨਾਫ਼ਾ ਸੰਗਠਨ ਵਲੋਂ ਸਹਿਯੋਗ ਪ੍ਰਾਪਤ ਹੈ। ਤੁਹਾਡੀ ਮਦਦ ਨਾਲ ਅਸੀਂ ਇੰਟਰਨੈੱਟ ਨੂੰ ਹਰ ਕਿਸੇ ਲਈ ਵੱਧ ਸੁਰੱਖਿਅਤ ਅਤੇ ਵੱਧ ਪਹੁੰਚ ਵਿੱਚ ਲਿਆਉਣ ਲਈ ਕੰਮ ਕਰ ਰਹੇ ਹਾਂ।
+# "has your back" is an idiom suggesting support and protection
+onboarding-refresh-gratitude-title = { -brand-short-name } ਤੁਹਾਡੇ ਨਾਲ ਖੜ੍ਹਾ ਹੈ

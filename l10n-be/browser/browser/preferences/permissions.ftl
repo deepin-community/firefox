@@ -21,6 +21,9 @@ permissions-session =
 permissions-allow =
     .label = Дазволіць
     .accesskey = Д
+permissions-add =
+    .label = Дадаць
+    .accesskey = Д
 permissions-button-off =
     .label = Выключыць
     .accesskey = В
@@ -93,10 +96,17 @@ permissions-exceptions-https-only-window2 =
 permissions-exceptions-https-only-desc = Вы можаце выключыць рэжым толькі HTTPS для пэўных вэб-сайтаў. { -brand-short-name } не будзе спрабаваць пераключыць злучэнне на бяспечны HTTPS для гэтых сайтаў. Выключэнні не распаўсюджваюцца на прыватныя вокны.
 permissions-exceptions-https-only-desc2 = Вы можаце выключыць рэжым толькі HTTPS для пэўных вэб-сайтаў. { -brand-short-name } не будзе спрабаваць пераключыць злучэнне на бяспечны HTTPS для гэтых сайтаў.
 
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-window3 =
+    .title = Дазволеныя сайты - Выплыўныя вокны і староннія перанакіраванні
+    .style = { permissions-window2.style }
+permissions-exceptions-popup-desc2 = Вы можаце ўказаць, якім сайтам дазволена адкрываць выплыўныя вокны і перанакіроўвацца староннімі рамкамі.
+
 ## Exceptions - Pop-ups
 
 permissions-exceptions-popup-window2 =
-    .title = Дазволеныя вэб-сайты - Выплыўныя вокны
+    .title = Дазволеныя сайты - Выплыўныя вокны
     .style = { permissions-window2.style }
 permissions-exceptions-popup-desc = Вы можаце вызначыць, якім вэб-сайтам дазволена адкрываць выплыўныя вокны. Набярыце дакладны адрас сайта, якому вы хочаце дазволіць гэта, і пстрыкніце Дазволіць.
 
@@ -110,14 +120,14 @@ permissions-exceptions-saved-logins-desc = Лагіны для наступны�
 ## Exceptions - Saved Passwords
 
 permissions-exceptions-saved-passwords-window =
-    .title = Выключэнні – захаваныя паролі
+    .title = Выключэнні – Захаваныя паролі
     .style = { permissions-window2.style }
 permissions-exceptions-saved-passwords-desc = { -brand-short-name } не будзе захоўваць паролі для сайтаў, пералічаных тут.
 
 ## Exceptions - Add-ons
 
 permissions-exceptions-addons-window2 =
-    .title = Дазволеныя вэб-сайты - Усталяванне дадаткаў
+    .title = Дазволеныя сайты - Усталяванне дадаткаў
     .style = { permissions-window2.style }
 permissions-exceptions-addons-desc = Вы можаце вызначыць, якім вэб-сайтам дазволена ўсталёўваць дадаткі. Набярыце дакладны адрас сайта, якому вы хочаце гэта дазволіць, і націсніце Дазволіць.
 
@@ -167,6 +177,26 @@ permissions-site-camera-desc = Наступныя вэб-сайты запыта
 permissions-site-camera-disable-label =
     .label = Блакаваць новыя запыты на доступ да вашай камеры
 permissions-site-camera-disable-desc = Гэта не дазволіць вэб-сайтам, акрамя пералічаных вышэй, запытваць дазвол на доступ да вашай камеры. Блакаванне доступу да вашай камеры можа парушыць некаторыя функцыі сайта.
+
+## Site Permissions - Local host
+
+permissions-site-localhost-window =
+    .title = Налады - Праграмы і службы прылады
+    .style = { permissions-window2.style }
+permissions-site-localhost-desc = Гэтыя сайты запыталі доступ да праграм і службаў на гэтай прыладзе. Вы можаце дазволіць або забараніць сайтам рабіць гэта.
+permissions-site-localhost-disable-label =
+    .label = Блакаваць новыя запыты на доступ да праграм і службаў на гэтай прыладзе
+permissions-site-localhost-disable-desc = Гэта перашкодзіць любым сайтам, не пералічаным вышэй, запытваць доступ да праграм і службаў на гэтай прыладзе. Гэта можа парушыць некаторыя функцыі сайтаў.
+
+## Site Permissions - Local network
+
+permissions-site-local-network-window =
+    .title = Налады - Прылады лакальнай сеткі
+    .style = { permissions-window2.style }
+permissions-site-local-network-desc = Гэтыя сайты запыталі доступ да праграм і службаў на прыладах, падлучаных да вашай лакальнай сеткі ці Wi-Fi. Вы можаце дазволіць або забараніць сайтам рабіць гэта.
+permissions-site-local-network-disable-label =
+    .label = Блакаваць новыя запыты на доступ да праграм і службаў на прыладах, падлучаных да вашай лакальнай сеткі або Wi-Fi.
+permissions-site-local-network-disable-desc = Гэта перашкодзіць любым сайтам, не пералічаным вышэй, запытваць доступ да праграм і службаў на прыладах, падлучаных да вашай сеткі Wi-Fi ці лакальнай сеткі. Гэта можа парушыць некаторыя функцыі сайтаў.
 
 ## Site Permissions - Microphone
 

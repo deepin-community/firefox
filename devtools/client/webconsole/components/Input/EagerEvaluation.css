@@ -9,14 +9,6 @@
   line-height: var(--console-output-line-height);
 }
 
-.theme-light .eager-evaluation-result {
-  --log-icon-color: var(--grey-35);
-}
-
-.theme-dark .eager-evaluation-result {
-  --log-icon-color: var(--grey-55);
-}
-
 .eager-evaluation-result__row {
   direction: ltr;
   display: flex;
@@ -31,11 +23,10 @@
   width: 14px;
   height: 14px;
   margin: 0 8px;
-  background: url(chrome://devtools/skin/images/webconsole/return.svg) no-repeat
-    center;
+  background: url(chrome://devtools/skin/images/webconsole/return.svg) no-repeat center;
   background-size: 12px;
   -moz-context-properties: fill;
-  fill: var(--log-icon-color);
+  fill: var(--theme-icon-dimmed-color);
 }
 
 .eager-evaluation-result__text {
@@ -75,9 +66,7 @@
   flex-grow: 1;
   background-color: var(--console-input-background);
   /* Reserve a bit of whitespace after the content. */
-  min-height: calc(
-    var(--console-row-height) + var(--console-input-extra-padding)
-  );
+  min-height: calc(var(--console-row-height) + var(--console-input-extra-padding));
 }
 
 /*

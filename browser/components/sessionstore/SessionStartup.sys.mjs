@@ -33,6 +33,7 @@ const lazy = {};
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 
 ChromeUtils.defineESModuleGetters(lazy, {
+  BrowserUsageTelemetry: "resource:///modules/BrowserUsageTelemetry.sys.mjs",
   CrashMonitor: "resource://gre/modules/CrashMonitor.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
   SessionFile: "resource:///modules/sessionstore/SessionFile.sys.mjs",
@@ -200,10 +201,8 @@ export var SessionStartup = {
       lazy.sessionStoreLogger.debug(
         `initialState contains ${pinnedTabCount} pinned tabs`
       );
-      Services.telemetry.scalarSetMaximum(
-        "browser.engagement.max_concurrent_tab_pinned_count",
-        pinnedTabCount
-      );
+
+      lazy.BrowserUsageTelemetry.updateMaxTabPinnedCount(pinnedTabCount);
     }, 60000);
 
     let isAutomaticRestoreEnabled = this.isAutomaticRestoreEnabled();
@@ -266,19 +265,13 @@ export var SessionStartup = {
       // Report shutdown success via telemetry. Shortcoming here are
       // being-killed-by-OS-shutdown-logic, shutdown freezing after
       // session restore was written, etc.
-      Services.telemetry
-        .getHistogramById("SHUTDOWN_OK")
-        .add(!this._previousSessionCrashed);
-      Services.telemetry.recordEvent(
-        "session_restore",
-        "shutdown_success",
-        "session_startup",
-        null,
-        {
-          shutdown_ok: this._previousSessionCrashed.toString(),
-          shutdown_reason: previousSessionCrashedReason,
-        }
-      );
+      Glean.sessionRestore.shutdownOk[
+        this._previousSessionCrashed ? "false" : "true"
+      ].add();
+      Glean.sessionRestore.shutdownSuccessSessionStartup.record({
+        shutdown_ok: this._previousSessionCrashed.toString(),
+        shutdown_reason: previousSessionCrashedReason,
+      });
       lazy.sessionStoreLogger.debug(
         `Previous shutdown ok? ${this._previousSessionCrashed}, reason: ${previousSessionCrashedReason}`
       );
@@ -337,6 +330,7 @@ export var SessionStartup = {
    * launch of the browser. This does not include crash restoration. In
    * particular, if session restore is configured to restore only in case of
    * crash, this method returns false.
+   *
    * @returns bool
    */
   isAutomaticRestoreEnabled() {
@@ -355,6 +349,7 @@ export var SessionStartup = {
 
   /**
    * Determines whether there is a pending session restore.
+   *
    * @returns bool
    */
   willRestore() {
@@ -367,6 +362,7 @@ export var SessionStartup = {
   /**
    * Determines whether there is a pending session restore and if that will refer
    * back to a crash.
+   *
    * @returns bool
    */
   willRestoreAsCrashed() {

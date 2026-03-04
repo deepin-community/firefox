@@ -2,21 +2,17 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-do-not-track-description = Send websites a “Do Not Track” signal that you don’t want to be tracked
-do-not-track-description2 =
-    .label = Send websites a “Do Not Track” request
-    .accesskey = d
-do-not-track-learn-more = Learn more
-do-not-track-option-default-content-blocking-known =
-    .label = Only when { -brand-short-name } is set to block known trackers
-do-not-track-option-always =
-    .label = Always
+do-not-track-removal2 =
+    .label = We no longer support the “Do Not Track” signal
 
 global-privacy-control-description =
     .label = Tell websites not to sell or share my data
     .accesskey = s
 
 non-technical-privacy-header = Website Privacy Preferences
+
+non-technical-privacy-label =
+     .aria-label = { non-technical-privacy-header }
 
 # Do not translate.
 # "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
@@ -64,10 +60,14 @@ pane-sync-title3 = Sync
 category-sync3 =
     .tooltiptext = { pane-sync-title3 }
 
+pane-ai-controls-title = AI Controls
+category-ai-controls =
+    .tooltiptext = { pane-ai-controls-title }
+
 settings-pane-labs-title = { -firefoxlabs-brand-name }
 settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
-pane-experimental-description3 = Give our experimental features a try! They’re in development and evolving, which could impact how { -brand-short-name } works.
+pane-experimental-description4 = Give our experimental features a try! They’re in development and evolving, which could impact how { -brand-short-name } works. We only receive data about your use of these features if you have <a data-l10n-name="data-collection">technical and interaction data</a> turned on.
 
 pane-experimental-reset =
   .label = Restore Defaults
@@ -128,6 +128,11 @@ extension-controlling-proxy-config = <img data-l10n-name ="icon"/> <strong>{ $na
 # <img data-l10n-name="menu-icon"/> will be replaced with Menu icon
 extension-controlled-enable = To enable the extension go to <img data-l10n-name="addons-icon"/> Add-ons in the <img data-l10n-name="menu-icon"/> menu.
 
+extension-controlled-enable-2 = To re-enable this extension visit <a data-l10n-name="addons-link">Extensions and themes</a>.
+# This string is shown to notify the user that their home page or new tab preferences
+# are being controlled by an extension.
+extension-controlling-homepage = { $name } controls some of your homepage settings.
+
 ## Preferences UI Search Results
 
 search-results-header = Search Results
@@ -146,8 +151,11 @@ always-check-default =
     .label = Always check if { -brand-short-name } is your default browser
     .accesskey = y
 
-is-default = { -brand-short-name } is currently your default browser
-is-not-default = { -brand-short-name } is not your default browser
+is-default-browser =
+    .message = { -brand-short-name } is currently your default browser
+
+is-not-default-browser =
+    .message = { -brand-short-name } is not your default browser
 
 set-as-my-default-browser =
     .label = Make Default…
@@ -156,25 +164,64 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Open previous windows and tabs
     .accesskey = s
+startup-windows-launch-on-login-profile-disabled =
+    .message = Enable this preference by checking “{ profile-manager-use-selected.label }” in the “Choose User Profile” window.
 
 windows-launch-on-login =
     .label = Open { -brand-short-name } automatically when your computer starts up
     .accesskey = O
 windows-launch-on-login-disabled = This preference has been disabled in Windows. To change, visit <a data-l10n-name="startup-link">Startup Apps</a> in System settings.
 
-startup-restore-warn-on-quit =
-    .label = Warn you when quitting the browser
-
 disable-extension =
     .label = Disable Extension
 
-preferences-data-migration-header = Import Browser Data
-preferences-data-migration-description = Import bookmarks, passwords, history, and autofill data into { -brand-short-name }.
+preferences-data-migration-group =
+    .label = Import browser data
+    .description = Bring your bookmarks, passwords, history, extensions, and autofill data from another browser.
 preferences-data-migration-button =
-    .label = Import Data
+    .label = Import data
     .accesskey = m
 
-tabs-group-header = Tabs
+preferences-profiles-group-header =
+    .heading = Profiles
+preferences-profiles-subpane-description =
+    .description = Each profile has separate browsing data and settings, including history, passwords, and more.
+preferences-profiles-section-header =
+    .label = Profiles
+    .description = Each profile has separate browsing data and settings, including history, passwords, and more.
+preferences-manage-profiles-button =
+  .label = Manage Profiles
+preferences-profiles-settings-button =
+  .label = Settings
+# This string labels the entire copy profile section in the profiles sub-pane.
+preferences-copy-profile-header =
+    .label = Copy an existing profile
+    .description = The new profile will copy your settings, add-ons, history, and saved data like bookmarks and passwords — but not your account or sync info.
+# This string sits next to the copy controls, both the copy-profile-select
+# drop-down and the copy-profile-button, so that the user understands they
+# need to first pick a profile to copy, and then click the copy button.
+preferences-profile-to-copy =
+  .label = Profile to copy
+# This string is a placeholder that will be shown in a drop-down list of
+# profiles. The user will select a profile, then click the copy button
+# to make a copy of that profile.
+preferences-copy-profile-select = Select profile
+preferences-copy-profile-button = Copy
+
+tabs-group-header2 =
+  .label = Tabs
+
+tabs-opening-heading =
+  .label = Opening
+
+tabs-interaction-heading =
+  .label = Interaction
+
+tabs-containers-heading =
+  .label = Containers
+
+tabs-closing-heading =
+  .label = Closing
 
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab cycles through tabs in recently used order
@@ -184,8 +231,11 @@ open-new-link-as-tabs =
     .label = Open links in tabs instead of new windows
     .accesskey = w
 
-confirm-on-close-multiple-tabs =
-    .label = Confirm before closing multiple tabs
+open-external-link-next-to-active-tab =
+    .label = Open links from apps next to your active tab
+
+ask-on-close-multiple-tabs =
+    .label = Ask before closing multiple tabs
     .accesskey = m
 
 # This string is used for the confirm before quitting preference.
@@ -193,8 +243,8 @@ confirm-on-close-multiple-tabs =
 #   $quitKey (string) - the quit keyboard shortcut, and formatted
 #                       in the same manner as it would appear,
 #                       for example, in the File menu.
-confirm-on-quit-with-key =
-    .label = Confirm before quitting with { $quitKey }
+ask-on-quit-with-key =
+    .label = Ask before quitting with { $quitKey }
     .accesskey = b
 
 warn-on-open-many-tabs =
@@ -257,6 +307,21 @@ settings-tabs-show-image-in-preview =
     .label = Show an image preview when you hover on a tab
     .accessKey = h
 
+
+browser-layout-header = Browser Layout
+
+browser-layout-horizontal-tabs =
+    .label = Horizontal tabs
+browser-layout-horizontal-tabs-desc = Display at top of browser
+
+browser-layout-vertical-tabs =
+    .label = Vertical tabs
+browser-layout-vertical-tabs-desc = Display on the side, in the sidebar
+
+browser-layout-show-sidebar =
+    .label = Show sidebar
+browser-layout-show-sidebar-desc = Quickly access bookmarks, tabs from your phone, AI chatbots, and more without leaving your main view.
+
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Language and Appearance
@@ -265,38 +330,44 @@ preferences-web-appearance-header = Website appearance
 
 preferences-web-appearance-description = Some websites adapt their color scheme based on your preferences. Choose which color scheme you’d like to use for those sites.
 
-preferences-web-appearance-choice-auto = Automatic
-preferences-web-appearance-choice-light = Light
-preferences-web-appearance-choice-dark = Dark
-
-preferences-web-appearance-choice-tooltip-auto =
+preferences-web-appearance-choice-auto2 =
+  .label = Automatic
   .title = Automatically change website backgrounds and content based on your system settings and { -brand-short-name } theme.
-preferences-web-appearance-choice-tooltip-light =
+preferences-web-appearance-choice-light2 =
+  .label = Light
   .title = Use a light appearance for website backgrounds and content.
-preferences-web-appearance-choice-tooltip-dark =
+preferences-web-appearance-choice-dark2 =
+  .label = Dark
   .title = Use a dark appearance for website backgrounds and content.
 
-preferences-web-appearance-choice-input-auto =
-  .aria-description = { preferences-web-appearance-choice-tooltip-auto.title }
-
-preferences-web-appearance-choice-input-light =
-  .aria-description = { preferences-web-appearance-choice-tooltip-light.title }
-
-preferences-web-appearance-choice-input-dark =
-  .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
+web-appearance-group =
+  .aria-label = Website appearance
 
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
-preferences-web-appearance-override-warning2 =
-    .message = Your color selections are overriding website appearance.
+preferences-web-appearance-override-warning3 =
+    .message = Your contrast control settings are overriding website appearance.
 
-# This message contains one link. It can be moved within the sentence as needed
-# to adapt to your language, but should not be changed.
-preferences-web-appearance-footer = Manage { -brand-short-name } themes in <a data-l10n-name="themes-link">Extensions & Themes</a>
+preferences-web-appearance-link =
+    .label = Manage { -brand-short-name } themes in Extensions & Themes
 
-preferences-colors-header = Colors
+preferences-contrast-control-group =
+    .label = Website contrast
+    .description = Websites use a variety of foreground and background colors. For consistent contrast, you can use the same colors across websites.
+preferences-contrast-control-radio-group =
+    .label = Override colors
 
-preferences-colors-description = Override { -brand-short-name }’s default colors for text, website backgrounds, and links.
+preferences-contrast-control-use-platform-settings =
+    .label = Automatic (use system settings)
+    .accesskey = A
+
+preferences-contrast-control-off =
+    .label = Off
+    .accesskey = O
+
+preferences-contrast-control-custom =
+    .label = Custom
+    .accesskey = C
 
 preferences-colors-manage-button =
     .label = Manage Colors…
@@ -314,9 +385,11 @@ advanced-fonts =
     .accesskey = A
 
 # Zoom is a noun, and the message is used as header for a group of options
-preferences-zoom-header = Zoom
+preferences-zoom-header2 =
+  .label = Zoom
 
-preferences-default-zoom = Default zoom
+preferences-default-zoom-label =
+    .label = Default zoom
     .accesskey = z
 
 # Variables:
@@ -352,6 +425,94 @@ translate-exceptions =
     .label = Exceptions…
     .accesskey = x
 
+settings-translations-header =
+    .label = Translations
+    .aria-label = Translations
+    .description = Translate pages or selected text. To protect your privacy, translations stay on your device.
+
+settings-translations-offer-to-translate-label =
+    .label = Offer full page translation
+
+settings-translations-more-settings-button =
+    .label = More translation settings
+    .description = Set preferences for languages, websites, and offline translation.
+
+settings-translations-subpage-header =
+    .heading = More translation settings
+
+settings-translations-subpage-speed-up-translation-header =
+    .label = Speed up translation
+    .description = Download complete languages for faster translations and to translate offline.
+
+settings-translations-subpage-automatic-translation-header =
+    .label = Automatic translation
+
+settings-translations-subpage-always-translate-header =
+    .label = Always translate these languages
+
+settings-translations-subpage-never-translate-header =
+    .label = Never translate these languages
+
+settings-translations-subpage-never-translate-sites-header =
+    .label = Never translate these sites
+
+# The icon placeholders show the translations button and the settings gear in the urlbar panel.
+settings-translations-subpage-never-translate-sites-description =
+    To add a site, open the <img data-l10n-name="translations-icon"/> translation panel, select <img data-l10n-name="settings-icon"/> translation settings, then choose “Never translate this site”
+
+settings-translations-subpage-language-select-option =
+    .label = Add language
+
+settings-translations-subpage-language-add-button =
+    .aria-label = Add language
+    .title = Add language
+
+settings-translations-subpage-download-languages-header =
+    .label = Download languages
+
+settings-translations-subpage-download-languages-select-option =
+    .label = Select language
+
+settings-translations-subpage-download-languages-button =
+    .aria-label = Download language
+    .title = Download language
+
+# Variables:
+#   $language (string) - Localized name of the language to download.
+#   $size (string) - Download size in megabytes, formatted for the locale.
+settings-translations-subpage-download-language-option = { $language } ({ $size }MB)
+    .label = { $language } ({ $size }MB)
+
+settings-translations-subpage-no-languages-downloaded =
+    .label = No languages downloaded
+
+settings-translations-subpage-no-languages-added =
+    .label = No languages added
+
+settings-translations-subpage-download-progress = Download in progress…
+
+# Variables:
+#   $language (string) - The localized display name of the language.
+#   $size (string) - The download size of the language in megabytes.
+settings-translations-subpage-download-error = Couldn’t download { $language } ({ $size }MB)
+
+settings-translations-subpage-download-retry-button =
+    .label = Try again
+
+# Variables:
+#   $language (string) - The localized display name of the language.
+#   $size (string) - The download size of the language in megabytes.
+settings-translations-subpage-download-delete-confirm = Delete { $language } ({ $size }MB)?
+
+settings-translations-subpage-download-delete-button =
+    .label = Delete
+
+settings-translations-subpage-download-cancel-button =
+    .label = Cancel
+
+settings-translations-subpage-no-sites-added =
+    .label = No sites added
+
 # Variables:
 #    $localeName (string) - Localized name of the locale to be used.
 use-system-locale =
@@ -365,26 +526,19 @@ check-user-spelling =
 
 files-and-applications-title = Files and Applications
 
-download-header = Downloads
+downloads-header-2 =
+    .label = Downloads
 
-download-save-where = Save files to
+download-save-where-2 =
+    .label = Save files to
     .accesskey = v
-
-download-choose-folder =
-    .label =
-        { PLATFORM() ->
-            [macos] Choose…
-           *[other] Browse…
-        }
-    .accesskey =
-        { PLATFORM() ->
-            [macos] e
-           *[other] o
-        }
 
 download-always-ask-where =
     .label = Always ask you where to save files
     .accesskey = A
+download-private-browsing-delete =
+    .label = Delete files downloaded in private browsing when all private windows are closed
+    .accesskey = D
 
 applications-header = Applications
 
@@ -444,19 +598,12 @@ applications-type-description-with-type = { $type-description } ({ $type })
 #   $type (string) - The MIME type (e.g application/binary)
 applications-file-ending-with-type = { applications-file-ending } ({ $type })
 
-# Variables:
-#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
-applications-use-plugin-in =
-    .label = Use { $plugin-name } (in { -brand-short-name })
 applications-open-inapp =
     .label = Open in { -brand-short-name }
 
 ## The strings in this group are used to populate
 ## selected label element based on the string from
 ## the selected menu item.
-
-applications-use-plugin-in-label =
-    .value = { applications-use-plugin-in.label }
 
 applications-action-save-label =
     .value = { applications-action-save.label }
@@ -521,10 +668,6 @@ update-application-check-choose =
     .label = Check for updates but let you choose to install them
     .accesskey = C
 
-update-application-manual =
-    .label = Never check for updates (not recommended)
-    .accesskey = N
-
 update-application-background-enabled =
     .label = When { -brand-short-name } is not running
     .accesskey = W
@@ -554,6 +697,18 @@ update-in-progress-ok-button = &Discard
 # Continue is the cancel button so pressing escape or using a platform standard
 # method of closing the UI will not discard the update.
 update-in-progress-cancel-button = &Continue
+
+## Firefox support
+
+support-application-heading =
+    .label = { -brand-short-name } support
+    .description = Troubleshoot issues or share ideas with the community.
+
+support-get-help =
+    .label = Get help
+
+support-share-ideas =
+    .label = Share ideas and feedback
 
 ## General Section - Performance
 
@@ -585,6 +740,8 @@ performance-default-content-process-count =
 ## General Section - Browsing
 
 browsing-title = Browsing
+browsing-group-label =
+    .aria-label = Browsing
 
 browsing-use-autoscroll =
     .label = Use autoscrolling
@@ -622,13 +779,13 @@ browsing-picture-in-picture-toggle-enabled =
     .label = Enable Picture-in-Picture video controls
     .accesskey = E
 
-browsing-picture-in-picture-learn-more = Learn more
+browsing-picture-in-picture-enable-when-switching-tabs =
+    .label = Keep playing videos in Picture-in-Picture when switching tabs
+    .accesskey = s
 
 browsing-media-control =
     .label = Control media via keyboard, headset, or virtual interface
     .accesskey = v
-
-browsing-media-control-learn-more = Learn more
 
 browsing-cfr-recommendations =
     .label = Recommend extensions as you browse
@@ -636,8 +793,6 @@ browsing-cfr-recommendations =
 browsing-cfr-features =
     .label = Recommend features as you browse
     .accesskey = f
-
-browsing-cfr-recommendations-learn-more = Learn more
 
 ## General Section - Proxy
 
@@ -659,9 +814,18 @@ home-new-windows-tabs-description2 = Choose what you see when you open your home
 
 ## Home Section - Home Page Customization
 
+home-homepage-title =
+    .label = Homepage
+
 home-homepage-mode-label = Homepage and new windows
 
+home-homepage-new-windows =
+    .label = New windows
+
 home-newtabs-mode-label = New tabs
+
+home-homepage-new-tabs =
+    .label = New tabs
 
 home-restore-defaults =
     .label = Restore Defaults
@@ -678,6 +842,41 @@ home-mode-choice-blank =
 
 home-homepage-custom-url =
     .placeholder = Paste a URL…
+
+# This button is shown when the homepage is managed by an extension and is placed below extension-controlling-homepage.
+home-homepage-manage-extension-button =
+    .label = Manage extension
+
+# This option leads to the "Custom Homepage" subpage
+home-homepage-custom-homepage-button =
+    .label = Choose a specific site
+
+## Custom Homepage subpage
+
+home-custom-homepage-header = Custom Homepage
+
+# Subheader on the Custom Homepage subpage. Followed by a form to enter URLs and a list of URLs already saved, if any.
+home-custom-homepage-subheader = Website address(es)
+
+home-custom-homepage-address =
+    .placeholder = Enter address
+home-custom-homepage-address-button =
+    .label = Add address
+
+# Shown when no custom websites/URLs to use as a homepage have been added yet
+home-custom-homepage-no-websites-yet = No websites added yet.
+
+# Further options to use when setting the home page. Two action buttons are placed in line with this prompt
+# to replace the current home page with a currently open page or bookmark.
+home-custom-homepage-replace-with = Replace with
+
+# Button that appears in-line after text "Replace with" (home-custom-homepage-replace-with)
+home-custom-homepage-current-pages-button =
+    .label = Current opened pages
+
+# Button that appears in-line after text "Replace with" (home-custom-homepage-replace-with)
+home-custom-homepage-bookmarks-button =
+    .label = Bookmarks…
 
 # This string has a special case for '1' and [other] (default). If necessary for
 # your language, you can add {$tabCount} to your translations and use the
@@ -697,11 +896,15 @@ choose-bookmark =
 
 ## Home Section - Firefox Home Content Customization
 
+home-prefs-content-header =
+    .label = { -firefox-home-brand-name }
 home-prefs-content-header2 = { -firefox-home-brand-name } Content
 home-prefs-content-description2 = Choose what content you want on your { -firefox-home-brand-name } screen.
 
 home-prefs-search-header =
     .label = Web Search
+home-prefs-search-header2 =
+    .label = Search
 home-prefs-shortcuts-header =
     .label = Shortcuts
 home-prefs-shortcuts-description = Sites you save or visit
@@ -712,13 +915,19 @@ home-prefs-recommended-by-header-generic =
     .label = Recommended stories
 home-prefs-recommended-by-description-generic = Exceptional content curated by the { -brand-product-name } family
 
+home-prefs-stories-header =
+    .label = Stories
+home-prefs-stories-description = Personalized stories based on your activity
+
+home-prefs-stories-header2 =
+    .label = Stories
+    .description = Exceptional content curated by the { -brand-product-name } family
+
 ##
 
 home-prefs-recommended-by-learn-more = How it works
 home-prefs-recommended-by-option-sponsored-stories =
     .label = Sponsored stories
-home-prefs-recommended-by-option-recent-saves =
-    .label = Show Recent Saves
 
 home-prefs-highlights-option-visited-pages =
     .label = Visited pages
@@ -726,8 +935,6 @@ home-prefs-highlights-options-bookmarks =
     .label = Bookmarks
 home-prefs-highlights-option-most-recent-download =
     .label = Most recent download
-home-prefs-highlights-option-saved-to-pocket =
-    .label = Pages saved to { -pocket-brand-name }
 
 home-prefs-recent-activity-header =
     .label = Recent activity
@@ -736,6 +943,37 @@ home-prefs-weather-header =
   .label = Weather
 home-prefs-weather-description = Today’s forecast at a glance
 home-prefs-weather-learn-more-link = Learn more
+
+home-prefs-widgets-header =
+    .label = Widgets
+
+# Lists is a widget on New Tab, similar to a to-do widget
+home-prefs-lists-header =
+    .label = Lists
+
+# Timer is a widget on New Tab, similar to the Pomodoro timer.
+home-prefs-timer-header =
+    .label = Timer
+
+# "Support" here means to help sustain or contribute to something, especially through funding or sponsorship.
+home-prefs-support-firefox-header =
+    .label = Support { -brand-product-name }
+
+home-prefs-mission-message = Our sponsors support our mission to build a better web
+home-prefs-mission-message-learn-more-link = Find out how
+
+home-prefs-mission-message2 =
+    .message = Our sponsors support our mission to build a better web.
+
+home-prefs-manage-topics-link = Manage topics
+
+home-prefs-manage-topics-link2 =
+    .label = Manage topics
+
+home-prefs-choose-wallpaper-link = Choose a wallpaper
+
+home-prefs-choose-wallpaper-link2 =
+    .label = Choose a wallpaper
 
 # Variables:
 #   $num (number) - Number of rows displayed
@@ -748,15 +986,25 @@ home-prefs-sections-rows-option =
 
 ## Search Section
 
-search-engine-default-header = Default Search Engine
-search-engine-default-desc-2 = This is your default search engine in the address bar and search bar. You can switch it at any time.
-search-engine-default-private-desc-2 = Choose a different default search engine for Private Windows only
-search-separate-default-engine =
-    .label = Use this search engine in Private Windows
+search-engine-group =
+    .label = Default search engine
+search-default-engine =
+    .aria-label = Default search engine
+
+# With this option enabled, while on a SERP, the URL normally displayed in the
+# address bar will be replaced with the search term used to generate that SERP.
+search-show-search-term-option-2 =
+    .label = Show search terms in the address bar on results pages
+
+search-separate-default-engine-2 =
+    .label = Use a different default search engine in private windows
     .accesskey = U
 
-search-suggestions-header = Search Suggestions
-search-suggestions-desc = Choose how suggestions from search engines appear.
+search-separate-default-engine-dropdown =
+    .aria-label = Default search engine in private windows
+
+search-suggestions-header-2 =
+    .label = Search engine suggestions
 
 search-show-suggestions-option =
     .label = Show search suggestions
@@ -766,26 +1014,85 @@ search-show-suggestions-url-bar-option =
     .label = Show search suggestions in address bar results
     .accesskey = l
 
-
-# With this option enabled, on the search results page
-# the URL will be replaced by the search terms in the address bar
-# when using the current default search engine.
-search-show-search-term-option =
-    .label = Show search terms instead of URL on default search engine results page
-
-
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
-# "ahead" refers to location (appearing most proximate to), not time
+# "before" refers to location (appearing most proximate to), not time
 # (appearing before).
-search-show-suggestions-above-history-option =
-    .label = Show search suggestions ahead of browsing history in address bar results
+search-show-suggestions-above-history-option-2 =
+    .label = Show search suggestions before browsing history in address bar results
 
-search-show-suggestions-private-windows =
-    .label = Show search suggestions in Private Windows
+search-show-suggestions-private-windows-2 =
+    .label = Search suggestions in private windows
 
-search-suggestions-cant-show = Search suggestions will not be shown in location bar results because you have configured { -brand-short-name } to never remember history.
+search-suggestions-cant-show-2 =
+    .message = Search suggestions will not be shown in location bar results because you have configured { -brand-short-name } to never remember history.
+
+
+addressbar-header-1 =
+    .label = Address Bar
+    .description = Choose which suggestions display in your address bar
+
+# When Firefox Suggest is enabled, this replaces `addressbar-header-1`.
+addressbar-header-firefox-suggest-2 =
+    .label = { -firefox-suggest-brand-name }
+    .description = Suggestions from { -brand-short-name } and our partners in your address bar.
+
+addressbar-locbar-history-option =
+    .label = Browsing history
+    .accesskey = h
+addressbar-locbar-bookmarks-option =
+    .label = Bookmarks
+    .accesskey = k
+addressbar-locbar-clipboard-option =
+    .label = Clipboard
+    .accesskey = C
+addressbar-locbar-openpage-option =
+    .label = Open tabs
+    .accesskey = O
+# Shortcuts refers to the shortcut tiles on the new tab page, previously known as top sites. Translation should be consistent.
+addressbar-locbar-shortcuts-option =
+    .label = Shortcuts
+    .accesskey = S
+addressbar-locbar-topsites-option =
+    .label = Top sites
+    .accesskey = T
+addressbar-locbar-showrecentsearches-option-2 =
+    .label = Recent searches
+    .accesskey = r
+addressbar-locbar-engines-option-1 =
+    .label = Suggest search engines to use
+    .accesskey = a
+addressbar-locbar-quickactions-option =
+    .label = Quick actions
+    .accesskey = Q
+addressbar-locbar-showtrendingsuggestions-option-2 =
+    .label = Trending search suggestions
+    .accesskey = t
+
+# Toggles whether suggestions are obtained from Firefox Suggest or not (local or online).
+addressbar-locbar-suggest-all-option-2 =
+    .label = Suggestions from { -brand-short-name }
+    .description = Get suggestions from the web related to your search.
+
+addressbar-locbar-suggest-sponsored-option-2 =
+    .label = Suggestions from sponsors
+    .description = Support { -brand-short-name } with occasional sponsored suggestions.
+
+# This string is used for a checkbox in the settings UI that opts the
+# user into "online" Firefox Suggest, allowing them to receive suggestions from
+# Mozilla's Merino server.
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since the online suggest is created and maintained
+# by Mozilla.
+addressbar-firefox-suggest-online =
+    .label = Retrieve suggestions from Mozilla as you type
+
+addressbar-dismissed-suggestions-label-2 =
+    .label = Dismissed suggestions
+    .description = Restore dismissed suggestions from sponsors and { -brand-short-name }.
+addressbar-restore-dismissed-suggestions-button-2 =
+    .label = Restore suggestions
 
 search-one-click-header2 = Search Shortcuts
 
@@ -806,6 +1113,9 @@ search-remove-engine =
 search-add-engine =
     .label = Add
     .accesskey = A
+search-edit-engine =
+    .label = Edit
+    .accesskey = E
 
 search-find-more-link = Find more search engines
 
@@ -817,11 +1127,22 @@ search-keyword-warning-title = Duplicate Keyword
 search-keyword-warning-engine = You have chosen a keyword that is currently in use by “{ $name }”. Please select another.
 search-keyword-warning-bookmark = You have chosen a keyword that is currently in use by a bookmark. Please select another.
 
+# This warning is displayed when the chosen name is already in use.
+# Variables:
+#   $name (string) - Name of a search engine.
+edit-engine-name-warning-duplicate = There already is a search engine with the name “{ $name }”. Please choose another name.
+
+remove-engine-confirmation = Are you sure you want to remove this search engine?
+remove-engine-remove = Remove
+remove-addon-engine-alert = To remove this search engine, remove the associated add-on.
+
 ## Containers Section
 
 containers-back-button2 =
     .aria-label = Back to Settings
 containers-header = Container Tabs
+containers-section-header =
+    .heading = Container Tabs
 containers-add-button =
     .label = Add New Container
     .accesskey = A
@@ -835,6 +1156,18 @@ containers-settings-button =
 containers-remove-button =
     .label = Remove
 
+## Account and sync
+
+sync-group-label =
+    .label = Sync
+
+account-group-label =
+    .label = { -vendor-short-name } account
+
+account-placeholder =
+    .label = You’re not signed in
+    .description = Sign in to keep your data private, encrypted, and synced across devices.
+
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
@@ -843,6 +1176,14 @@ sync-signedout-description2 = Synchronize your bookmarks, history, tabs, passwor
 
 sync-signedout-account-signin3 =
     .label = Sign in to sync…
+    .accesskey = i
+
+sync-signedout-account-signin-4 =
+    .label = Sign in to your account to start syncing
+    .accesskey = i
+
+sync-signedout-account-short =
+    .label = Sign in
     .accesskey = i
 
 # This message contains two links and two icon images.
@@ -871,14 +1212,39 @@ sync-sign-out =
     .label = Sign Out…
     .accesskey = g
 
+sync-sign-out2 =
+    .label = Sign out
+    .accesskey = g
+
 sync-manage-account = Manage account
+    .accesskey = o
+
+sync-manage-account2 =
+    .label = Manage account
     .accesskey = o
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
+
+sync-account-signed-in =
+    .label = { $email }
+
+sync-account-signed-in-display-name =
+    .label = { $name }
+    .description = { $email }
 
 sync-signedin-unverified = { $email } is not verified.
+
+sync-signedin-unverified2 =
+    .label = { $email } isn’t confirmed yet
+    .description = Check your inbox to confirm your account and make it official.
+
 sync-signedin-login-failure = Please sign in to reconnect { $email }
+
+sync-signedin-login-failure2 =
+    .label = You’re signed out of { $email }
+    .description = Sign back in to reconnect and start syncing your data.
 
 ##
 
@@ -898,10 +1264,21 @@ sync-sign-in =
 
 prefs-syncing-on = Syncing: ON
 
+prefs-syncing-on-2 =
+    .label = Syncing is ON
+
 prefs-syncing-off = Syncing: OFF
+
+prefs-syncing-off-2 =
+    .label = Syncing is OFF
+    .description = Turn on sync to get your bookmarks, passwords, history, and more on any device.
 
 prefs-sync-turn-on-syncing =
     .label = Turn on syncing…
+    .accesskey = s
+
+prefs-sync-turn-on-syncing-2 =
+    .label = Turn on syncing
     .accesskey = s
 
 prefs-sync-offer-setup-label2 = Synchronize your bookmarks, history, tabs, passwords, add-ons, and settings across all your devices.
@@ -910,12 +1287,26 @@ prefs-sync-now-button =
     .label = Sync Now
     .accesskey = N
 
+prefs-sync-now-button-2 =
+    .label = Sync now
+    .accesskey = N
+
 prefs-syncing-button =
     .label = Syncing…
+
+prefs-syncing-button-2 =
+    .label = Syncing…
+    .title = Sync now
 
 ## The list of things currently syncing.
 
 sync-syncing-across-devices-heading = You are syncing these items across all your connected devices:
+
+sync-syncing-across-devices-heading-2 = Data synced across devices
+
+sync-syncing-across-devices-empty-state =
+    .label = You aren’t syncing anything… yet.
+    .description = Start syncing to get all of your data on all your devices.
 
 sync-currently-syncing-bookmarks = Bookmarks
 sync-currently-syncing-history = History
@@ -926,21 +1317,23 @@ sync-currently-syncing-payment-methods = Payment methods
 sync-currently-syncing-addons = Add-ons
 sync-currently-syncing-settings = Settings
 
-sync-change-options =
-    .label = Change…
-    .accesskey = C
+sync-manage-options =
+    .label = Manage sync…
+    .accesskey = M
+
+sync-manage-options-2 =
+    .label = Manage synced data
+    .accesskey = M
 
 ## The "Choose what to sync" dialog.
 
-sync-choose-what-to-sync-dialog3 =
-    .title = Choose What To Sync
+sync-choose-what-to-sync-dialog4 =
+    .title = Manage what syncs on all your connected devices
     .style = min-width: 36em;
-    .buttonlabelaccept = Save Changes
+    .buttonlabelaccept = Save
     .buttonaccesskeyaccept = S
     .buttonlabelextra2 = Disconnect…
     .buttonaccesskeyextra2 = D
-
-sync-choose-dialog-subtitle = Changes to the list of items to sync will be reflected across all your connected devices.
 
 sync-engine-bookmarks =
     .label = Bookmarks
@@ -984,6 +1377,19 @@ sync-engine-settings =
 
 sync-device-name-header = Device Name
 
+sync-device-name-header-2 =
+    .label = Device Name
+
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Device Name
+    .placeholder = { $placeholder }
+
+sync-device-name-change-2 =
+    .label = Change Device Name
+    .accesskey = h
+
 sync-device-name-change =
     .label = Change Device Name…
     .accesskey = h
@@ -998,6 +1404,9 @@ sync-device-name-save =
 
 sync-connect-another-device = Connect another device
 
+sync-connect-another-device-2 =
+    .label = Connect another device
+
 ## Privacy Section
 
 privacy-header = Browser Privacy
@@ -1009,10 +1418,17 @@ privacy-header = Browser Privacy
 pane-privacy-passwords-header = Passwords
     .searchkeywords = logins
 
+forms-passwords-header =
+    .label = Passwords
+    .aria-label = Passwords
+
 # Checkbox to control whether UI is shown to users to save or fill logins/passwords.
 forms-ask-to-save-passwords =
     .label = Ask to save passwords
     .accesskey = A
+forms-manage-password-exceptions =
+    .label = Manage password exceptions
+    .accesskey = M
 forms-exceptions =
     .label = Exceptions…
     .accesskey = x
@@ -1032,15 +1448,41 @@ relay-integration-learn-more-link = Learn more
 forms-fill-usernames-and-passwords =
     .label = Fill usernames and passwords automatically
     .accesskey = F
+forms-fill-usernames-and-passwords-2 =
+    .label = Save and autofill usernames and passwords
+    .accesskey = f
 forms-saved-passwords =
     .label = Saved passwords
     .accesskey = d
+forms-saved-passwords-2 =
+    .label = Manage saved passwords
+    .accesskey = d
+forms-saved-passwords-searchkeywords = Logins for the following sites are stored on your computer
+
+# Header for additional protections when managing password settings.
+forms-additional-protections-header =
+    .label = Additional protections
 forms-primary-pw-use =
-    .label = Use a Primary Password
+    .label = Use a primary password
     .accesskey = U
+forms-primary-pw-use-2 =
+    .label = Use a primary password
+    .description = Adds an extra layer of security to protect your saved passwords.
+    .accesskey = U
+forms-primary-pw-set =
+    .label = Set primary password
+forms-primary-pw-on =
+    .label = Primary password is ON
+forms-primary-pw-change-2 =
+    .label = Change primary password
+# Label for button to disable primary password.
+forms-primary-pw-turn-off =
+    .label = Turn it off
 # This operation requires the user to authenticate with the operating system (device sign-in)
 forms-os-reauth =
     .label = Require device sign in to fill and manage passwords
+forms-os-reauth-2 =
+    .label = Require device sign in to manage passwords
 forms-primary-pw-learn-more-link = Learn more
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -1086,21 +1528,79 @@ autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
-pane-privacy-autofill-header = Autofill
-autofill-addresses-checkbox = Save and fill addresses
-    .accesskey = a
-autofill-saved-addresses-button = Saved addresses
-    .accesskey = S
-autofill-payment-methods-checkbox-message = Save and fill payment methods
+autofill-payment-methods-title = Payment methods
+autofill-payment-methods-header =
+    .aria-label = Payment methods
+autofill-payment-methods-checkbox-message-2 =
+    .label = Save and autofill payment info
+    .accesskey = p
+autofill-payment-methods-manage-payments-title =
+    .heading = Manage payment methods
+autofill-payment-methods-manage-payments-button =
+    .label = Manage payment methods
     .accesskey = m
-autofill-payment-methods-checkbox-submessage = Includes credit and debit cards
-    .accesskey = I
-autofill-saved-payment-methods-button = Saved payment methods
-    .accesskey = v
-
 # This operation requires the user to authenticate with the operating system (device sign-in)
-autofill-reauth-payment-methods-checkbox = Require device sign in to fill and manage payment methods
+autofill-reauth-payment-methods-checkbox-2 =
+    .label = Require device sign in to autofill and manage payments methods
     .accesskey = o
+
+autofill-payment-methods-add-button = Add new payment method
+payments-list-header =
+  .label = Payment methods
+payments-delete-payment-prompt-title = Delete this payment method?
+payments-delete-payment-prompt-confirm-button = Delete
+payments-delete-payment-prompt-cancel-button = Cancel
+payments-delete-payment-button-label =
+    .aria-label = Delete
+payments-edit-payment-button-label =
+    .aria-label = Edit
+
+# This message is displayed when no payment methods such as credit card are stored in Firefox
+payments-no-payments-stored-message =
+    .label = No payment methods added
+
+# These values are displayed for each credit card record listed on the Manage Payment methods
+# settings page.
+# Variables:
+#   $cardNumber (string) - The obscured credit card number (for example: ********* 2423)
+#   $expDate (string) - The obscured expiry date of the credit card (for example: XX/2027)
+payment-moz-box-item =
+  .label = { $cardNumber }
+  .description = { $expDate }
+
+autofill-addresses-title = Addresses and more
+autofill-addresses-header =
+    .aria-label = Addresses and more
+autofill-addresses-checkbox-message =
+    .label = Save and autofill addresses
+    .accesskey = S
+autofill-addresses-manage-addresses-button =
+    .label = Manage addresses and more
+    .accesskey = M
+addresses-list-header =
+    .label = Addresses
+addreses-delete-address-button-label =
+    .aria-label = Delete
+addreses-edit-address-button-label =
+    .aria-label = Edit
+addresses-delete-address-prompt-title = Delete this address?
+addresses-delete-address-prompt-confirm-button = Delete
+addresses-delete-address-prompt-cancel-button = Cancel
+autofill-addresses-add-button = Add new address
+autofill-addresses-manage-addresses-title =
+    .heading = Manage addresses and more
+
+# This message is displayed when no addresses are stored in Firefox
+addresses-no-addresses-stored-message =
+    .label = No addresses added
+
+# These values are displayed for each address record listed on the "Manage addresses and more" subpage.
+# Variables:
+#   $name (string) - The name associated with the address
+#   $address (string) - The address
+address-moz-box-item =
+  .label = { $name }
+  .description = { $address }
 
 ## Privacy Section - History
 
@@ -1115,8 +1615,7 @@ history-header = History
 #   - Simply as "Firefox", moving the verb into each option.
 #     This will result in "Firefox" + "Will remember history", etc.
 #   - As a stand-alone message, for example "Firefox history settings:".
-history-remember-label = { -brand-short-name } will
-    .accesskey = w
+history-remember-label2 = { -brand-short-name } will
 
 history-remember-option-all =
     .label = Remember history
@@ -1125,8 +1624,17 @@ history-remember-option-never =
 history-remember-option-custom =
     .label = Use custom settings for history
 
-history-remember-description = { -brand-short-name } will remember your browsing, download, form, and search history.
-history-dontremember-description = { -brand-short-name } will use the same settings as private browsing, and will not remember any history as you browse the Web.
+history-remember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } will remember your browsing, download, form, and search history.
+
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } will use the same settings as private browsing, and will not remember any history as you browse the Web.
+
+history-custom-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } will use custom settings for your browsing, download, form and search history.
 
 history-private-browsing-permanent =
     .label = Always use private browsing mode
@@ -1156,12 +1664,15 @@ history-clear-button =
 
 sitedata-header = Cookies and Site Data
 
+sitedata-label =
+     .aria-label = { sitedata-header }
+
 sitedata-total-size-calculating = Calculating site data and cache size…
 
 # Variables:
 #   $value (number) - Value of the unit (for example: 4.6, 500)
 #   $unit (string) - Name of the unit (for example: "bytes", "KB")
-sitedata-total-size = Your stored cookies, site data, and cache are currently using { $value } { $unit } of disk space.
+sitedata-total-size2 = Your stored cookies, history, site data, and cache are currently using <strong>{ $value } { $unit }</strong> of disk space.
 
 sitedata-learn-more = Learn more
 
@@ -1169,27 +1680,15 @@ sitedata-delete-on-close =
     .label = Delete cookies and site data when { -brand-short-name } is closed
     .accesskey = c
 
-sitedata-delete-on-close-private-browsing2 = Based on your history settings, { -brand-short-name } deletes cookies and site data from your session when you close the browser.
-
-sitedata-allow-cookies-option =
-    .label = Accept cookies and site data
-    .accesskey = A
-
-sitedata-disallow-cookies-option =
-    .label = Block cookies and site data
-    .accesskey = B
-
-# This label means 'type of content that is blocked', and is followed by a drop-down list with content types below.
-# The list items are the strings named sitedata-block-*-option*.
-sitedata-block-desc = Type blocked
-    .accesskey = T
+sitedata-delete-on-close-private-browsing3 =
+    .message = Based on your history settings, { -brand-short-name } deletes cookies and site data from your session when you close the browser.
 
 sitedata-option-block-cross-site-trackers =
     .label = Cross-site trackers
 sitedata-option-block-cross-site-tracking-cookies =
     .label = Cross-site tracking cookies
-sitedata-option-block-cross-site-cookies =
-    .label = Cross-site tracking cookies, and isolate other cross-site cookies
+sitedata-option-block-cross-site-cookies2 =
+    .label = Isolate cross-site cookies
 sitedata-option-block-unvisited =
     .label = Cookies from unvisited websites
 sitedata-option-block-all-cross-site-cookies =
@@ -1197,65 +1696,30 @@ sitedata-option-block-all-cross-site-cookies =
 sitedata-option-block-all =
     .label = All cookies (will cause websites to break)
 
-sitedata-clear =
-    .label = Clear Data…
+sitedata-clear2 =
+    .label = Clear browsing data
     .accesskey = l
 
-sitedata-settings =
-    .label = Manage Data…
+sitedata-settings2 =
+    .label = Manage browsing data
     .accesskey = M
 
 sitedata-cookies-exceptions =
     .label = Manage Exceptions…
     .accesskey = x
 
+sitedata-cookies-exceptions2 =
+    .label = Manage exceptions
+    .accesskey = x
+    .description = You can specify which websites are always or never allowed to use cookies and site data.
+
 ## Privacy Section - Cookie Banner Blocking
 
 cookie-banner-blocker-header = Cookie Banner Blocker
 cookie-banner-blocker-description = When a site asks if they can use cookies in private browsing mode, { -brand-short-name } automatically refuses for you. Only on supported sites.
-cookie-banner-learn-more = Learn More
+cookie-banner-learn-more = Learn more
 cookie-banner-blocker-checkbox-label =
     .label = Automatically refuse cookie banners
-
-## Privacy Section - Address Bar
-
-addressbar-header = Address Bar
-
-addressbar-suggest = When using the address bar, suggest
-
-addressbar-locbar-history-option =
-    .label = Browsing history
-    .accesskey = h
-addressbar-locbar-bookmarks-option =
-    .label = Bookmarks
-    .accesskey = k
-addressbar-locbar-clipboard-option =
-    .label = Clipboard
-    .accesskey = C
-addressbar-locbar-openpage-option =
-    .label = Open tabs
-    .accesskey = O
-# Shortcuts refers to the shortcut tiles on the new tab page, previously known as top sites. Translation should be consistent.
-addressbar-locbar-shortcuts-option =
-    .label = Shortcuts
-    .accesskey = S
-addressbar-locbar-topsites-option =
-    .label = Top sites
-    .accesskey = T
-addressbar-locbar-engines-option =
-    .label = Search engines
-    .accesskey = a
-addressbar-locbar-quickactions-option =
-    .label = Quick actions
-    .accesskey = Q
-addressbar-locbar-showrecentsearches-option =
-    .label = Show recent searches
-    .accesskey = r
-addressbar-locbar-showtrendingsuggestions-option =
-    .label = Show trending search suggestions
-    .accesskey = t
-
-addressbar-quickactions-learn-more = Learn more
 
 ## Privacy Section - Content Blocking
 
@@ -1297,7 +1761,7 @@ content-blocking-private-windows = Tracking content in Private Windows
 content-blocking-cross-site-cookies-in-all-windows2 = Cross-site cookies in all windows
 content-blocking-cross-site-tracking-cookies = Cross-site tracking cookies
 content-blocking-all-cross-site-cookies-private-windows = Cross-site cookies in Private Windows
-content-blocking-cross-site-tracking-cookies-plus-isolate = Cross-site tracking cookies, and isolate remaining cookies
+content-blocking-isolate-cross-site-cookies = Isolate cross-site cookies
 content-blocking-social-media-trackers = Social media trackers
 content-blocking-all-cookies = All cookies
 content-blocking-unvisited-cookies = Cookies from unvisited sites
@@ -1318,9 +1782,25 @@ content-blocking-etp-standard-tcp-rollout-learn-more = Learn more
 
 content-blocking-etp-standard-tcp-title = Includes Total Cookie Protection, our most powerful privacy feature ever
 
-content-blocking-warning-title = Heads up!
-content-blocking-and-isolating-etp-warning-description-2 = This setting may cause some websites to not display content or work correctly. If a site seems broken, you may want to turn off tracking protection for that site to load all content.
+content-blocking-warning-title-2 = Some sites may break with strict tracking protection
+content-blocking-warning-title-custom = Some sites may break with custom tracking protection
+# “Fix site issues” references the string content-blocking-exceptions-subheader
+content-blocking-and-isolating-etp-warning-description-4 = { -brand-short-name } recommends using the “Fix site issues” settings to reduce broken site features and content. If a site seems broken, try turning off tracking protection for that site to load all content.
 content-blocking-warning-learn-how = Learn how
+
+content-blocking-baseline-exceptions-3 =
+    .label = Fix major site issues (recommended)
+    .description = Helps load sites and features by unblocking only essential elements that may contain trackers. Covers most common problems.
+
+# This option to fix minor site issues must be used with the option to fix major site issues (string content-blocking-baseline-exceptions-3)
+content-blocking-convenience-exceptions-3 =
+    .label = Fix minor site issues
+    .description = Restores things like videos in an article or comment sections by unblocking elements that may contain trackers. This can reduce site issues but offers less protection. Must be used with fixes for major issues.
+
+content-blocking-baseline-uncheck-warning-dialog-title = Are you sure you want to turn off fixes?
+content-blocking-baseline-uncheck-warning-dialog-body = This setting helps fix the most common site problems. If you turn it off, some sites may not work, and { -brand-short-name } won’t be able to help troubleshoot those issues.
+content-blocking-baseline-uncheck-warning-dialog-ok-button = Turn fixes off
+content-blocking-baseline-uncheck-warning-dialog-cancel-button = Keep fixes on
 
 content-blocking-reload-description = You will need to reload your tabs to apply these changes.
 content-blocking-reload-tabs-button =
@@ -1336,7 +1816,6 @@ content-blocking-tracking-protection-option-all-windows =
 content-blocking-option-private =
   .label = Only in private windows
   .accesskey = p
-content-blocking-tracking-protection-change-block-list = Change block list
 
 content-blocking-cookies-label =
   .label = Cookies
@@ -1372,67 +1851,59 @@ tracking-manage-exceptions =
 
 ## Privacy Section - Permissions
 
-permissions-header = Permissions
+permissions-header2 =
+    .label = Permissions
+    .description = Permissions you give to websites you browse.
 
-permissions-location = Location
-permissions-location-settings =
-    .label = Settings…
-    .accesskey = t
+permissions-location2 =
+    .label = Location
 
-permissions-xr = Virtual Reality
-permissions-xr-settings =
-    .label = Settings…
-    .accesskey = t
+permissions-localhost2 =
+    .label = Device apps and services
 
-permissions-camera = Camera
-permissions-camera-settings =
-    .label = Settings…
-    .accesskey = t
+permissions-local-network2 =
+    .label = Local network devices
 
-permissions-microphone = Microphone
-permissions-microphone-settings =
-    .label = Settings…
-    .accesskey = t
+permissions-xr2 =
+    .label = Virtual reality
 
-# Short form for "the act of choosing sound output devices and redirecting audio to the chosen devices".
-permissions-speaker = Speaker Selection
-permissions-speaker-settings =
-    .label = Settings…
-    .accesskey = t
+permissions-camera2 =
+    .label = Camera
 
-permissions-notification = Notifications
-permissions-notification-settings =
-    .label = Settings…
-    .accesskey = t
-permissions-notification-link = Learn more
+permissions-microphone2 =
+    .label = Microphone
+
+# Privacy permission for sound output devices.
+permissions-speaker2 =
+    .label = Speaker
+
+permissions-notification2 =
+    .label = Notifications
 
 permissions-notification-pause =
     .label = Pause notifications until { -brand-short-name } restarts
     .accesskey = n
 
-permissions-autoplay = Autoplay
+permissions-autoplay2 =
+    .label = Autoplay
 
-permissions-autoplay-settings =
-    .label = Settings…
-    .accesskey = t
-
-permissions-block-popups =
-    .label = Block pop-up windows
+permissions-block-popups2 =
+    .label = Block pop-ups and third-party redirects
     .accesskey = B
 
 # "popup" is a misspelling that is more popular than the correct spelling of
 # "pop-up" so it's included as a search keyword, not displayed in the UI.
-permissions-block-popups-exceptions-button =
-    .label = Exceptions…
+permissions-block-popups-exceptions-button2 =
+    .label = Manage pop-up and third-party redirect exceptions
     .accesskey = E
     .searchkeywords = popups
 
-permissions-addon-install-warning =
-    .label = Warn you when websites try to install add-ons
+permissions-addon-install-warning2 =
+    .label = Warn when websites try to install extensions
     .accesskey = W
 
-permissions-addon-exceptions =
-    .label = Exceptions…
+permissions-addon-exceptions2 =
+    .label = Choose which websites can install extensions
     .accesskey = E
 
 ## Privacy Section - Data Collection
@@ -1440,31 +1911,46 @@ permissions-addon-exceptions =
 collection-header2 = { -brand-short-name } Data Collection and Use
     .searchkeywords = telemetry
 
-collection-description = We strive to provide you with choices and collect only what we need to provide and improve { -brand-short-name } for everyone. We always ask permission before receiving personal information.
-collection-privacy-notice = Privacy Notice
+preferences-collection-description = We strive to provide you with choices and collect only the minimal data necessary to improve { -brand-product-name } for everyone.
+preferences-collection-privacy-notice = View Privacy Notice
+preferences-across-profiles = These settings apply to every { -brand-product-name } profile on this device.
+preferences-view-profiles = View all profiles
 
 collection-health-report-telemetry-disabled = You’re no longer allowing { -vendor-short-name } to capture technical and interaction data. All past data will be deleted within 30 days.
 collection-health-report-telemetry-disabled-link = Learn more
 
-collection-health-report =
-    .label = Allow { -brand-short-name } to send technical and interaction data to { -vendor-short-name }
+collection-usage-ping =
+    .label = Send daily usage ping to { -vendor-short-name }
+    .accesskey = u
+collection-usage-ping-description = This helps { -vendor-short-name } to estimate active users.
+
+collection-health-report2 =
+    .label = Send technical and interaction data to { -vendor-short-name }
     .accesskey = r
 collection-health-report-link = Learn more
+collection-health-report-description = This helps us improve { -brand-product-name } features, performance, and stability.
 
-collection-studies =
-    .label = Allow { -brand-short-name } to install and run studies
+collection-studies2 =
+    .label = Install and run studies
+collection-studies-description = Try out features and ideas before they’re released to everyone.
 collection-studies-link = View { -brand-short-name } studies
 
-addon-recommendations =
-    .label = Allow { -brand-short-name } to make personalized extension recommendations
-addon-recommendations-link = Learn more
+nimbus-rollouts-enabled =
+    .label = Allow { -brand-short-name } to improve features, performance, and stability between updates
+nimbus-rollouts-enabled-description = Changes will be applied remotely.
+
+addon-recommendations2 =
+    .label = Allow personalized extension recommendations
+addon-recommendations-description = Get extension recommendations to improve your browsing experience.
 
 # This message is displayed above disabled data sharing options in developer builds
 # or builds with no Telemetry support available.
-collection-health-report-disabled = Data reporting is disabled for this build configuration
+collection-health-report-disabled2 = Data reporting is disabled for this build configuration.
 
-collection-backlogged-crash-reports = Allow { -brand-short-name } to send backlogged crash reports on your behalf
+collection-backlogged-crash-reports2 =
+    .label = Automatically send crash reports
     .accesskey = c
+collection-backlogged-crash-reports-description = This helps { -vendor-short-name } diagnose and fix issues with the browser. Reports may include personal or sensitive data.
 
 privacy-segmentation-section-header = New features that enhance your browsing
 
@@ -1475,16 +1961,6 @@ privacy-segmentation-radio-off =
 
 privacy-segmentation-radio-on =
     .label = Show detailed information
-
-## Privacy Section - Website Advertising Preferences
-
-website-advertising-header = Website Advertising Preferences
-
-website-advertising-private-attribution =
-    .label = Allow websites to perform privacy-preserving ad measurement
-    .accesskey = a
-
-website-advertising-private-attribution-description = This helps sites understand how their ads perform without collecting data about you.
 
 ## Privacy Section - Security
 ##
@@ -1510,11 +1986,9 @@ security-block-uncommon-software =
 
 ## Privacy Section - Certificates
 
-certs-header = Certificates
-
-certs-enable-ocsp =
-    .label = Query OCSP responder servers to confirm the current validity of certificates
-    .accesskey = Q
+certs-description2 =
+    .label = Certificates
+    .description = Configure the certificates that { -brand-short-name } uses for authentication.
 
 certs-view =
     .label = View Certificates…
@@ -1528,6 +2002,8 @@ certs-thirdparty-toggle =
     .label = Allow { -brand-short-name } to automatically trust third-party root certificates you install
     .accesskey = t
 
+certs-devices-enable-fips = Enable FIPS
+
 space-alert-over-5gb-settings-button =
     .label = Open Settings
     .accesskey = O
@@ -1540,24 +2016,21 @@ space-alert-under-5gb-message2 = <strong>{ -brand-short-name } is running out of
 
 httpsonly-header = HTTPS-Only Mode
 
-httpsonly-description2 = { -brand-short-name } creates secure and encrypted connections to sites you visit. { -brand-short-name } will warn you if a connection isn’t secure when HTTPS-Only is on.
+httpsonly-label =
+    .aria-label = { httpsonly-header }
+    .description = Only allows secure connections to websites. { -brand-short-name } will ask before connecting insecurely.
 
-httpsonly-learn-more = Learn more
+httpsonly-learn-more2 = How HTTPS-Only works
 
 httpsonly-radio-enabled =
     .label = Enable HTTPS-Only Mode in all windows
-httpsonly-radio-enabled2 =
-    .label = Only use HTTPS in all windows
 
 httpsonly-radio-enabled-pbm =
     .label = Enable HTTPS-Only Mode in private windows only
-httpsonly-radio-enabled-pbm2 =
-    .label = Only use HTTPS in private windows
 
-httpsonly-radio-disabled =
+httpsonly-radio-disabled3 =
     .label = Don’t enable HTTPS-Only Mode
-httpsonly-radio-disabled2 =
-    .label = Try HTTPS first, but allow connections that are not secure
+    .description = { -brand-short-name } may still upgrade some connections
 
 ## DoH Section
 
@@ -1617,10 +2090,6 @@ preferences-doh-setting-off =
   .accesskey = O
 preferences-doh-off-desc = Use your default DNS resolver
 
-preferences-doh-checkbox-warn =
-    .label = Warn if a third party actively prevents secure DNS
-    .accesskey = W
-
 preferences-doh-select-resolver = Choose provider:
 
 preferences-doh-manage-exceptions =
@@ -1631,4 +2100,77 @@ preferences-doh-manage-exceptions =
 
 desktop-folder-name = Desktop
 downloads-folder-name = Downloads
-choose-download-folder-title = Choose Download Folder:
+
+## AI controls page
+
+preferences-ai-controls-header =
+    .heading = { pane-ai-controls-title }
+
+preferences-ai-controls-description = You always have a choice in { -brand-short-name }, including whether to use features enhanced with AI. More controls coming soon.
+
+preferences-ai-controls-block-ai-label = Block AI enhancements
+preferences-ai-controls-block-ai =
+    .label = { preferences-ai-controls-block-ai-label }
+preferences-ai-controls-block-ai-description = Blocking means you won’t see new or current AI enhancements in { -brand-short-name }, or pop-ups about them. <a data-l10n-name="link">Get more details</a> about what’s included and how to control traditional machine learning features, like search suggestions and recommendations.
+
+preferences-ai-controls-blocked-message =
+    .message = New and current AI enhancements are blocked by default. To unblock a specific feature, use the controls below.
+
+preferences-ai-controls-on-device-group =
+    .label = On-device AI
+    .description = These use small AI models that download to your device if you use the feature. This approach helps protect your privacy.
+
+preferences-ai-controls-translations-control =
+    .label = Translations
+    .description = Seamlessly browse the web in your preferred language.
+preferences-ai-controls-translations-more-link = More translations settings
+
+preferences-ai-controls-pdfjs-control =
+    .label = Image alt text in { -brand-short-name } PDF viewer
+    .description = When you add images to PDFs, this adds descriptions to make them accessible.
+
+preferences-ai-controls-tab-group-suggestions-control =
+    .label = Tab group suggestions
+    .description = Get suggestions to name and organize your tabs.
+
+preferences-ai-controls-key-points-control =
+    .label = Key points in link previews
+    .description = See a quick summary before opening a link.
+
+preferences-ai-controls-sidebar-chatbot-group =
+    .label = AI chatbot providers in sidebar
+    .description = Keep a chatbot in view as you browse. Choose from Anthropic Claude, ChatGPT, Copilot, Google Gemini, and Le Chat Mistral.
+
+preferences-ai-controls-sidebar-chatbot-control =
+    .label = Chatbot in sidebar
+
+# This option means that a user will see the feature and can use it.
+preferences-ai-controls-state-available =
+    .label = Available
+# This option means a user has opted in to use the feature.
+preferences-ai-controls-state-enabled =
+    .label = Enabled
+# This option means the user won't see and can't use the feature. For on-device AI, any models already downloaded are removed.
+preferences-ai-controls-state-blocked =
+    .label = Blocked
+
+preferences-ai-controls-state-description-before = What the options mean:
+preferences-ai-controls-state-description-available = <strong>Available:</strong> You’ll see the feature and can use it.
+preferences-ai-controls-state-description-enabled = <strong>Enabled:</strong> You’ve opted in to use the feature.
+preferences-ai-controls-state-description-blocked = <strong>Blocked:</strong> You won’t see and can’t use the feature. For on-device AI, any models already downloaded are removed.
+
+preferences-ai-controls-block-confirmation-heading = Block AI enhancements?
+preferences-ai-controls-block-confirmation-description = You won’t see new or current AI enhancements in { -brand-short-name }, or pop-ups about them. Afterwards, you can unblock anything you want to keep using.
+
+preferences-ai-controls-block-confirmation-features-start = What will be blocked:
+preferences-ai-controls-block-confirmation-translations = Translations
+preferences-ai-controls-block-confirmation-pdfjs = Image alt text in { -brand-short-name } PDF viewer
+preferences-ai-controls-block-confirmation-tab-group-suggestions = Tab group suggestions
+preferences-ai-controls-block-confirmation-key-points = Key points in link previews
+preferences-ai-controls-block-confirmation-sidebar-chatbot = Chatbot providers in sidebar
+preferences-ai-controls-block-confirmation-features-after = Blocking also affects extensions that use AI provided by { -brand-short-name }.
+
+preferences-ai-controls-block-confirmation-cancel =
+    .label = Cancel
+preferences-ai-controls-block-confirmation-confirm =
+    .label = Block

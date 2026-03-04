@@ -3,9 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Сайттарға "Мені бақыламау" сигналын жіберу арқылы сіз өзіңізді бақыламауды қалайтыныңыз туралы хабарлау
-do-not-track-description2 =
-    .label = Веб-сайттарға "Мені бақыламау" сұранымын жіберу
-    .accesskey = л
+do-not-track-removal = Біз енді «Мені бақыламау» сигналын қолдамаймыз
 do-not-track-learn-more = Көбірек білу
 do-not-track-option-default-content-blocking-known =
     .label = Тек { -brand-short-name } белгілі трекерлерді бұғаттауға бапталғанда
@@ -14,7 +12,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Веб-сайттарға менің деректерімді сатпауды немесе олармен бөліспеуді айту
     .accesskey = с
+non-technical-privacy-group =
+    .label = Веб-сайттың жекелік баптаулары
 non-technical-privacy-header = Веб-сайттың жекелік баптаулары
+non-technical-privacy-label =
+    .aria-label = { non-technical-privacy-header }
 # Do not translate.
 # "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
 # included to facilitate power-user search of the about:preferences page.
@@ -51,6 +53,9 @@ category-privacy =
 pane-sync-title3 = Синхрондау
 category-sync3 =
     .tooltiptext = { pane-sync-title3 }
+pane-ai-controls-title = ЖИ басқару элементтері
+category-ai-controls =
+    .tooltiptext = { pane-ai-controls-title }
 pane-experimental-title = { -brand-short-name } Тәжірибелері
 category-experimental =
     .tooltiptext = { -brand-short-name } Тәжірибелері
@@ -60,6 +65,7 @@ pane-experimental-description2 = Кеңейтілген баптауларды �
 settings-pane-labs-title = { -firefoxlabs-brand-name }
 settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description4 = Біздің эксперименттік функцияларымызды байқап көріңіз! Олар әзірлену және жетілдірілу үстінде, бұл { -brand-short-name } жұмысына әсер етуі мүмкін. Егер сізде <a data-l10n-name="data-collection">техникалық және өзара әрекеттесу деректері</a> қосулы болса ғана, біз бұл функцияларды пайдалануыңыз туралы деректерді аламыз.
 pane-experimental-description3 = Эксперименттік мүмкіндіктерімізді қолданып көріңіз! Олар өңделуде және даму үстінде, бұл { -brand-short-name } жұмысына әсер етуі мүмкін.
 pane-experimental-reset =
     .label = Бастапқы мәндерін қайтару
@@ -70,6 +76,8 @@ focus-search =
     .key = f
 close-button =
     .aria-label = Жабу
+do-not-track-removal2 =
+    .label = Біз енді «Мені бақыламау» сигналын қолдамаймыз
 
 ## Browser Restart Dialog
 
@@ -111,6 +119,10 @@ extension-controlling-proxy-config = <img data-l10n-name ="icon"/> <strong>{ $na
 # <img data-l10n-name="addons-icon"/> will be replaced with Add-ons icon
 # <img data-l10n-name="menu-icon"/> will be replaced with Menu icon
 extension-controlled-enable = Кеңейтуді іске қосу үшін, <img data-l10n-name="menu-icon"/> мәзіріндегі <img data-l10n-name="addons-icon"/> қосымшаларына өтіңіз.
+extension-controlled-enable-2 = Осы кеңейтуді қайта қосу үшін <a data-l10n-name="addons-link">Кеңейтулер мен темалар</a> бетіне кіріңіз.
+# This string is shown to notify the user that their home page or new tab preferences
+# are being controlled by an extension.
+extension-controlling-homepage = { $name } басты бет баптауларының кейбірін бақылайды.
 
 ## Preferences UI Search Results
 
@@ -125,6 +137,10 @@ startup-header = Іске қосылу
 always-check-default =
     .label = Әр қосылған кезде { -brand-short-name } жүйедегі негізгі браузер екенін тексеру
     .accesskey = н
+is-default-browser =
+    .message = { -brand-short-name } сіздің ағымдағы негізгі браузеріңіз
+is-not-default-browser =
+    .message = { -brand-short-name } негізгі браузер емес
 is-default = { -brand-short-name } сіздің ағымдағы негізгі браузеріңіз
 is-not-default = { -brand-short-name } негізгі браузер емес
 set-as-my-default-browser =
@@ -133,19 +149,63 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Алдыңғы терезелер мен беттерді ашу
     .accesskey = д
+startup-windows-launch-on-login-profile-disabled =
+    .message = "Пайдаланушы профилін таңдау" терезесіндегі "{ profile-manager-use-selected.label }" жалаушасын орнату арқылы бұл баптауды іске қосыңыз.
 windows-launch-on-login =
     .label = Компьютеріңіз іске қосылғанда { -brand-short-name } қолданбасын автоматты түрде іске қосу
     .accesskey = о
 windows-launch-on-login-disabled = Бұл баптау Windows жүйесінде сөндірілген. Оны өзгерту үшін, Жүйе баптауларынан <a data-l10n-name="startup-link">Қолданбалардың автоматты іске қосылуы</a> қараңыз.
+windows-launch-on-login-profile-disabled = "Пайдаланушы профилін таңдау" терезесіндегі "{ profile-manager-use-selected.label }" жалаушасын орнату арқылы бұл баптауды іске қосыңыз.
 startup-restore-warn-on-quit =
     .label = Браузерден шыққан кезде ескерту
 disable-extension =
     .label = Кеңейтуді сөндіру
+preferences-data-migration-group =
+    .label = Браузер деректерін импорттау
+    .description = Бетбелгілер, парольдер, шолу тарихы, кеңейтулер және автотолтыру деректерін басқа браузерден көшіріп алыңыз.
 preferences-data-migration-header = Браузер деректерін импорттау
 preferences-data-migration-description = Бетбелгілер, парольдер, тарих және автотолтыру деректерін { -brand-short-name }ішіне импорттаңыз.
 preferences-data-migration-button =
     .label = Деректерді импорттау
     .accesskey = м
+preferences-profiles-group-header =
+    .heading = Профильдер
+preferences-profiles-subpane-description =
+    .description = Әрбір профильде бөлек шолу деректері мен параметрлері, соның ішінде тарих, парольдер және т.б. бар.
+preferences-profiles-section-header =
+    .label = Профильдер
+    .description = Әрбір профильде бөлек шолу деректері мен параметрлері, соның ішінде тарих, парольдер және т.б. бар.
+preferences-profiles-header = Профильдер
+preferences-manage-profiles-description = Әрбір профильде бөлек шолу деректері мен параметрлері, соның ішінде тарих, парольдер және т.б. бар.
+preferences-manage-profiles-learn-more = Көбірек білу
+preferences-manage-profiles-button =
+    .label = Профильдерді басқару
+preferences-profiles-settings-button =
+    .label = Баптаулар
+# This string labels the entire copy profile section in the profiles sub-pane.
+preferences-copy-profile-header =
+    .label = Бар болып тұрған профильді көшіру
+    .description = Жаңа профильге баптауларыңыз, қосымшаларыңыз, тарихыңыз бен бетбелгілер мен парольдер сияқты сақталған деректеріңіз көшіріледі — бірақ тіркелгіңіз бен синхрондау мәліметтері көшірілмейді.
+# This string sits next to the copy controls, both the copy-profile-select
+# drop-down and the copy-profile-button, so that the user understands they
+# need to first pick a profile to copy, and then click the copy button.
+preferences-profile-to-copy =
+    .label = Көшірілетін профиль
+# This string is a placeholder that will be shown in a drop-down list of
+# profiles. The user will select a profile, then click the copy button
+# to make a copy of that profile.
+preferences-copy-profile-select = Профильді таңдау
+preferences-copy-profile-button = Көшіріп алу
+tabs-group-header2 =
+    .label = Беттер
+tabs-opening-heading =
+    .label = Ашылу
+tabs-interaction-heading =
+    .label = Әрекеттесу
+tabs-containers-heading =
+    .label = Контейнерлер
+tabs-closing-heading =
+    .label = Жабылу
 tabs-group-header = Беттер
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab беттер арасында соңғы қолданылу реті бойынша ауысады
@@ -153,6 +213,19 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Сілтемелерді жаңа терезелер орнына жаңа беттерде ашу
     .accesskey = р
+open-external-link-next-to-active-tab =
+    .label = Қолданбалар сілтемелерін ағымдағы беттің жанынан ашу
+ask-on-close-multiple-tabs =
+    .label = Бірнеше бетті жабу бұрын сұрау
+    .accesskey = ш
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = { $quitKey } көмегімен шығу алдында сұрау
+    .accesskey = л
 confirm-on-close-multiple-tabs =
     .label = Бірнеше бетті жаппас бұрын растау
     .accesskey = с
@@ -181,6 +254,8 @@ browser-containers-settings =
     .label = Баптаулар…
     .accesskey = п
 containers-disable-alert-title = Барлық контейнерлік беттерді жабу керек пе?
+startup-group =
+    .label = Іске қосылу
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -212,12 +287,49 @@ containers-remove-cancel-button = Бұл контейнерді өшірмеу
 settings-tabs-show-image-in-preview =
     .label = Бетке курсорды апарған кезде суреттің алдын ала қарауын көрсету
     .accessKey = с
+browser-layout-header2 =
+    .label = Браузер жаймасы
+browser-layout-horizontal-tabs2 =
+    .label = Горизонталды беттер
+    .title = Беттер жоғарыда
+    .description = Беттер жоғарыда
+browser-layout-vertical-tabs2 =
+    .label = Вертикалды беттер
+    .title = Беттер жанында, бүйірлік панельде
+    .description = Беттер жанында, бүйірлік панельде
+browser-layout-show-sidebar2 =
+    .label = Бүйір панелін көрсету
+    .description = Бетбелгілерге, телефоннан беттерге, ЖИ чат-боттарына және т.б. негізгі көріністен шықпай-ақ жылдам қол жеткізіңіз.
+browser-layout-header = Браузер жаймасы
+browser-layout-horizontal-tabs =
+    .label = Горизонталды беттер
+browser-layout-horizontal-tabs-desc = Браузердің жоғарғы жағында көрсету
+browser-layout-vertical-tabs =
+    .label = Вертикалды беттер
+browser-layout-vertical-tabs-desc = Жанында, бүйірлік панельде көрсету
+browser-layout-show-sidebar =
+    .label = Бүйір панелін көрсету
+browser-layout-show-sidebar-desc = Бетбелгілерге, телефоннан беттерге, ЖИ чат-боттарына және т.б. негізгі көріністен шықпай-ақ жылдам қол жеткізіңіз.
 
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Тіл және сыртқы түрі
+appearance-group =
+    .label = Веб-сайттың сыртқы түрі
+    .description = Кейбір веб-сайттар түс схемасын сіздің қалауыңызға қарай бейімдейді. Сол сайттар үшін қандай түс схемасын пайдаланғыңыз келетінін таңдаңыз.
 preferences-web-appearance-header = Веб-сайттың сыртқы түрі
 preferences-web-appearance-description = Кейбір веб-сайттар түс схемасын сіздің қалауыңызға қарай бейімдейді. Сол сайттар үшін қандай түс схемасын пайдаланғыңыз келетінін таңдаңыз.
+preferences-web-appearance-choice-auto2 =
+    .label = Автоматты түрде
+    .title = Жүйе баптаулары мен { -brand-short-name } темасы негізінде веб-сайттың фоны мен мазмұнын автоматты түрде өзгертіңіз.
+preferences-web-appearance-choice-light2 =
+    .label = Ашық түсті
+    .title = Веб-сайттар фоны мен мазмұны үшін ашық түсті көріністі пайдалану.
+preferences-web-appearance-choice-dark2 =
+    .label = Күңгірт түсті
+    .title = Веб-сайттар фоны мен мазмұны үшін күңгірт түсті көріністі пайдалану.
+web-appearance-group =
+    .aria-label = Веб-сайттың сыртқы түрі
 preferences-web-appearance-choice-auto = Автоматты түрде
 preferences-web-appearance-choice-light = Ашық түсті
 preferences-web-appearance-choice-dark = Күңгірт түсті
@@ -235,19 +347,45 @@ preferences-web-appearance-choice-input-dark =
     .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
-preferences-web-appearance-override-warning = Сіздің түс таңдауларыңыз веб-сайттың сыртқы көрінісін үстінен басады. <a data-l10n-name="colors-link">Түстерді басқару</a>
+preferences-web-appearance-override-warning3 =
+    .message = Сіздің контрастты басқару параметрлері веб-сайттың сыртқы көрінісін үстінен басады.
+preferences-web-appearance-link =
+    .label = { -brand-short-name } темаларын Кеңейтулер және темалар ішінен басқарыңыз
+preferences-contrast-control-group =
+    .label = Веб-сайт контрасты
+    .description = Веб-сайттардың алдыңғы көрініс пен фон түстері әртүрлі болады. Тұрақты контрастты сақтау үшін барлық веб-сайттарда бірдей түстерді пайдалануыңызға болады.
+preferences-contrast-control-radio-group =
+    .label = Түстерді қайта анықтау
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
-preferences-web-appearance-override-warning2 =
-    .message = Сіздің түс таңдауларыңыз веб-сайттың сыртқы көрінісін үстінен басады.
+preferences-web-appearance-override-warning = Сіздің түс таңдауларыңыз веб-сайттың сыртқы көрінісін үстінен басады. <a data-l10n-name="colors-link">Түстерді басқару</a>
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = { -brand-short-name } темаларын <a data-l10n-name="themes-link">Кеңейтулер және темалар</a> ішінен басқарыңыз
+preferences-contrast-control-header = Контрастты басқару
+preferences-contrast-control-description = Веб-сайттардың алдыңғы көрініс пен фон түстері әртүрлі болады. Оқылуды жақсарту үшін барлық веб-сайттарда бірдей түстерді пайдалану мақсатында { -brand-short-name } бағдарламасын баптаңыз.
+preferences-contrast-control-use-platform-settings =
+    .label = Автоматты (жүйе параметрлерін пайдалану)
+    .accesskey = А
+preferences-contrast-control-off =
+    .label = Сөндірулі
+    .accesskey = С
+preferences-contrast-control-custom =
+    .label = Таңдауыңызша
+    .accesskey = Т
 preferences-colors-header = Түстер
 preferences-colors-description = Мәтін, веб-сайттар фоны және сілтемелер үшін { -brand-short-name } үнсіз келісім бойынша түстерін үстінен басу.
 preferences-colors-manage-button =
     .label = Түстерді басқару…
     .accesskey = с
+preferences-fonts-header2 =
+    .label = Қаріптер
+default-font-2 =
+    .label = Негізгі қаріп
+    .accesskey = Н
+default-font-size-2 =
+    .label = Өлшемі
+    .accesskey = л
 preferences-fonts-header = Қаріптер
 default-font = Негізгі қаріп
     .accesskey = Н
@@ -255,6 +393,12 @@ default-font-size = Өлшемі
     .accesskey = л
 advanced-fonts =
     .label = Қосымша…
+    .accesskey = ш
+# Zoom is a noun, and the message is used as header for a group of options
+preferences-zoom-header2 =
+    .label = Масштаб
+preferences-default-zoom-label =
+    .label = Бастапқы масштаб
     .accesskey = ш
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Масштаб
@@ -271,6 +415,28 @@ preferences-text-zoom-override-warning =
     .message = Ескерту: «Тек мәтінді масштабтау» опциясын таңдасаңыз және үнсіз келісім бойынша масштабтау 100%-ға орнатылмаса, бұл кейбір сайттардың немесе мазмұнның бұзылуына әкелуі мүмкін.
 language-header = Тіл
 choose-language-description = Интернет-беттерді көрсету үшін тілді таңдаңыз
+website-language-heading =
+    .label = Веб-сайт тілі
+    .description = Кейбір веб-беттер бірнеше тілде көрсетіледі. Тілдерді қалаған ретіңіз бойынша таңдаңыз.
+website-preferred-language =
+    .label = Таңдамалы тілдер
+website-add-language =
+    .label = Тілді қосу
+website-add-language-button =
+    .aria-label = Таңдамалы тілді қосу
+    .title = Таңдамалы тілді қосу
+# The pattern used to generate strings presented to the user in the
+# website languages selection list.
+#
+# Example:
+#   Icelandic
+#   Spanish (Chile)
+#
+# Variables:
+#   $locale (String) - A name of the locale (for example: "Icelandic", "Spanish (Chile)")
+website-remove-language-button =
+    .aria-label = { $locale } өшіру
+    .title = { $locale } өшіру
 choose-button =
     .label = Таңдау…
     .accesskey = у
@@ -290,6 +456,68 @@ translate-attribution = Аударманы ұсынған <img data-l10n-name="l
 translate-exceptions =
     .label = Осыдан бөлек…
     .accesskey = О
+settings-translations-header =
+    .label = Аудармалар
+    .aria-label = Аудармалар
+    .description = Беттерді немесе таңдалған мәтінді аудару. Жекелігіңізді қорғау үшін аудармалар құрылғыңызда қалады.
+settings-translations-offer-to-translate-label =
+    .label = Толық бетті аударуды ұсыну
+settings-translations-more-settings-button =
+    .label = Көбірек аударма баптаулары
+    .description = Тілдер, веб-сайттар және желіден тыс аударма үшін баптауларды орнатыңыз.
+settings-translations-subpage-header =
+    .heading = Көбірек аударма баптаулары
+settings-translations-subpage-speed-up-translation-header =
+    .label = Аударманы жылдамдату
+    .description = Аударма жылдамдығын арттыру және желіден тыс режимде аудару үшін толық тіл пакеттерін жүктеңіз.
+settings-translations-subpage-automatic-translation-header =
+    .label = Автоматты аударма
+settings-translations-subpage-always-translate-header =
+    .label = Бұл тілдерді әрқашан аудару
+settings-translations-subpage-never-translate-header =
+    .label = Бұл тілдерді ешқашан аудармау
+settings-translations-subpage-never-translate-sites-header =
+    .label = Бұл сайттарды ешқашан аудармау
+# The icon placeholders show the translations button and the settings gear in the urlbar panel.
+settings-translations-subpage-never-translate-sites-description = Сайтты қосу үшін <img data-l10n-name="translations-icon"/> аударма панелін ашып, <img data-l10n-name="settings-icon"/> аударма баптауларын таңдап, «Бұл сайтты ешқашан аудармау» опциясын белгілеңіз.
+settings-translations-subpage-language-select-option =
+    .label = Тілді қосу
+settings-translations-subpage-language-add-button =
+    .aria-label = Тілді қосу
+    .title = Тілді қосу
+settings-translations-subpage-download-languages-header =
+    .label = Тілдерді жүктеп алу
+settings-translations-subpage-download-languages-select-option =
+    .label = Тілді таңдау
+settings-translations-subpage-download-languages-button =
+    .aria-label = Тілді жүктеп алу
+    .title = Тілді жүктеп алу
+# Variables:
+#   $language (string) - Localized name of the language to download.
+#   $size (string) - Download size in megabytes, formatted for the locale.
+settings-translations-subpage-download-language-option = { $language } ({ $size }MB)
+    .label = { $language } ({ $size }MB)
+settings-translations-subpage-no-languages-downloaded =
+    .label = Жүктеп алынған тілдер жоқ
+settings-translations-subpage-no-languages-added =
+    .label = Тілдер қосылмады
+settings-translations-subpage-download-progress = Жүктеп алу орындалуда…
+# Variables:
+#   $language (string) - The localized display name of the language.
+#   $size (string) - The download size of the language in megabytes.
+settings-translations-subpage-download-error = { $language } жүктеп алу мүмкін болмады ({ $size }МБ)
+settings-translations-subpage-download-retry-button =
+    .label = Қайтадан көру
+# Variables:
+#   $language (string) - The localized display name of the language.
+#   $size (string) - The download size of the language in megabytes.
+settings-translations-subpage-download-delete-confirm = { $language } өшіру керек пе ({ $size }МБ)?
+settings-translations-subpage-download-delete-button =
+    .label = Өшіру
+settings-translations-subpage-download-cancel-button =
+    .label = Бас тарту
+settings-translations-subpage-no-sites-added =
+    .label = Ешқандай сайт қосылмады
 # Variables:
 #    $localeName (string) - Localized name of the locale to be used.
 use-system-locale =
@@ -301,6 +529,11 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = Файлдар және қолданбалар
+downloads-header-2 =
+    .label = Жүктемелер
+download-save-where-2 =
+    .label = Файлдарды келесі жерге сақтау
+    .accesskey = д
 download-header = Жүктемелер
 download-save-where = Файлдарды келесі жерге сақтау
     .accesskey = д
@@ -318,6 +551,9 @@ download-choose-folder =
 download-always-ask-where =
     .label = Файлдар сақталатын жері туралы әрқашан сұрау
     .accesskey = ж
+download-private-browsing-delete =
+    .label = Барлық жеке терезелер жабылған кезде жеке шолу кезінде жүктелген файлдарды өшіру
+    .accesskey = ш
 applications-header = Қолданбалар
 applications-description = { -brand-short-name } сіз интернеттен жүктеп алған файлдарды немесе шолу кезінде қолданатын қолданбаларды қалай өңдейтінін таңдаңыз.
 applications-filter =
@@ -400,6 +636,8 @@ applications-save-for-new-types =
 applications-ask-before-handling =
     .label = Файлдарды ашу немесе сақтауды сұрау
     .accesskey = а
+drm-group =
+    .label = Цифрлық құқықтарды басқару (DRM) құрамасы
 drm-content-header = Цифрлық құқықтарды басқару (DRM) құрамасы
 play-drm-content =
     .label = DRM-басқарылатын құрамасын ойнау
@@ -449,6 +687,16 @@ update-in-progress-ok-button = Тай&дыру
 # method of closing the UI will not discard the update.
 update-in-progress-cancel-button = Жалға&стыру
 
+## Firefox support
+
+support-application-heading =
+    .label = { -brand-short-name } қолдауы
+    .description = Мәселелерді шешу немесе қауымдастықпен идеялармен бөлісу.
+support-get-help =
+    .label = Көмек алу
+support-share-ideas =
+    .label = Идеялар мен кері байланыспен бөлісіңіз
+
 ## General Section - Performance
 
 performance-title = Өнімділік
@@ -468,10 +716,14 @@ performance-limit-content-process-blocked-desc = Процесстер санын
 #   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (негізгі)
+performance-group =
+    .label = Өнімділік
 
 ## General Section - Browsing
 
 browsing-title = Сайттарды қарау
+browsing-group-label =
+    .aria-label = Сайттарды қарау
 browsing-use-autoscroll =
     .label = Автоматты айналдыруды қолдану
     .accesskey = в
@@ -499,6 +751,9 @@ browsing-search-on-start-typing =
 browsing-picture-in-picture-toggle-enabled =
     .label = Суреттегі сурет видеоның басқару пернелерін іске қосу
     .accesskey = е
+browsing-picture-in-picture-enable-when-switching-tabs =
+    .label = Беттер арасында ауысқанда да видеоларды "Суреттегі сурет" режимінде ойнауды жалғастыру
+    .accesskey = С
 browsing-picture-in-picture-learn-more = Көбірек білу
 browsing-media-control =
     .label = Медианы пернетақта, гарнитура немесе виртуалды интерфейс арқылы басқару
@@ -511,6 +766,8 @@ browsing-cfr-features =
     .label = Шолу кезінде мүмкіндіктерді ұсыну
     .accesskey = м
 browsing-cfr-recommendations-learn-more = Көбірек білу
+browsing-group =
+    .label = Сайттарды қарау
 
 ## General Section - Proxy
 
@@ -520,16 +777,36 @@ network-proxy-connection-learn-more = Көбірек білу
 network-proxy-connection-settings =
     .label = Баптау…
     .accesskey = а
+network-proxy-group =
+    .label = Желі баптаулары
+    .description = { -brand-short-name } интернетпен қалай байланысатынын баптау
 
 ## Home Section
 
 home-new-windows-tabs-header = Жаңа терезелер мен беттер
 home-new-windows-tabs-description2 = Үй парағын, жаңа терезелер және беттерді ашқан кезде көретін нәрселерді таңдаңыз.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+home-default-browser-title =
+    .label = Негізгі браузері
+is-default-browser-2 =
+    .message = { -brand-short-name } жүйеңіздің негізгі браузер болып тұр. Жақсы таңдау.
+is-not-default-browser-2 =
+    .message = Айтпақшы, { -brand-short-name } сіздің негізгі браузеріңіз емес.
+set-as-my-default-browser-2 =
+    .label = Негізгі браузер қылу
+    .accesskey = Н
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = Үй парағы және жаңа терезелер
+home-homepage-new-windows =
+    .label = Жаңа терезелер
+home-homepage-mode-label2 = Жаңа терезелер
 home-newtabs-mode-label = Жаңа беттер
+home-homepage-new-tabs =
+    .label = Жаңа беттер
 home-restore-defaults =
     .label = Бастапқы мәндерін қайтару
     .accesskey = ы
@@ -541,6 +818,14 @@ home-mode-choice-blank =
     .label = Бос бет
 home-homepage-custom-url =
     .placeholder = URL кірістіру…
+# This button is shown when the homepage is managed by an extension and is placed below extension-controlling-homepage.
+home-homepage-manage-extension-button =
+    .label = Кеңейтуді басқару
+# This option leads to the "Custom Homepage" subpage
+home-homepage-custom-homepage-button =
+    .label = Белгілі бір сайтты таңдау
+# This option leads to the "Custom Homepage" subpage
+home-homepage-custom-homepage-url = Белгілі бір сайтты таңдау
 # This string has a special case for '1' and [other] (default). If necessary for
 # your language, you can add {$tabCount} to your translations and use the
 # standard CLDR forms, or only use the form for [other] if both strings should
@@ -555,6 +840,44 @@ use-current-pages =
 choose-bookmark =
     .label = Бетбелгіні қолдану…
     .accesskey = Б
+home-homepage-header = Үй парағы
+
+## Home Section - Home Page Customization
+
+home-homepage-title =
+    .label = Үй парағы
+
+## Custom Homepage subpage
+
+home-custom-homepage-header = Арнайы басты бет
+home-custom-homepage-subpage =
+    .heading = Арнайы басты бет
+# Subheader on the Custom Homepage subpage. Followed by a form to enter URLs and a list of URLs already saved, if any.
+home-custom-homepage-card-header =
+    .label = Веб-сайт адрес(тер)і
+# Subheader on the Custom Homepage subpage. Followed by a form to enter URLs and a list of URLs already saved, if any.
+home-custom-homepage-subheader = Веб-сайт адрес(тер)і
+home-custom-homepage-address =
+    .placeholder = Адресті енгізу
+home-custom-homepage-address-button =
+    .label = Адресті қосу
+# Shown when no custom websites/URLs to use as a homepage have been added yet
+home-custom-homepage-no-results =
+    .label = Әлі ешқандай веб-сайт қосылмаған.
+home-custom-homepage-delete-address-button =
+    .aria-label = Адресті өшіру
+    .title = Адресті өшіру
+# Shown when no custom websites/URLs to use as a homepage have been added yet
+home-custom-homepage-no-websites-yet = Әлі ешқандай веб-сайт қосылмаған.
+# Further options to use when setting the home page. Two action buttons are placed in line with this prompt
+# to replace the current home page with a currently open page or bookmark.
+home-custom-homepage-replace-with = Немен алмастыру
+# Button that appears in-line after text "Replace with" (home-custom-homepage-replace-with)
+home-custom-homepage-current-pages-button =
+    .label = Ағымдағы ашық беттер
+# Button that appears in-line after text "Replace with" (home-custom-homepage-replace-with)
+home-custom-homepage-bookmarks-button =
+    .label = Бетбелгілер…
 
 ## Home Section - Firefox Home Content Customization
 
@@ -562,14 +885,17 @@ home-prefs-content-header2 = { -firefox-home-brand-name } мазмұны
 home-prefs-content-description2 = { -firefox-home-brand-name } үй парағында қандай құраманы көргіңіз келетінді таңдаңыз.
 home-prefs-search-header =
     .label = Интернеттен іздеу
+home-prefs-search-header2 =
+    .label = Іздеу
 home-prefs-shortcuts-header =
     .label = Жарлықтар
 home-prefs-shortcuts-description = Сіз сақтайтын немесе шолатын сайттар
 home-prefs-shortcuts-by-option-sponsored =
     .label = Демеушілік жарлықтары
+home-prefs-content-header =
+    .label = { -firefox-home-brand-name }
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Ұсынушы { $provider }
@@ -577,6 +903,12 @@ home-prefs-recommended-by-description-new = { -brand-product-name } отбасы
 home-prefs-recommended-by-header-generic =
     .label = Ұсынылатын оқиғалар
 home-prefs-recommended-by-description-generic = { -brand-product-name } отбасымен қадағаланатын ерекше мазмұн
+home-prefs-stories-header =
+    .label = Хикаялар
+home-prefs-stories-description = Әрекетіңізге негізделген жекелендірілген хикаялар
+home-prefs-stories-header2 =
+    .label = Хикаялар
+    .description = { -brand-product-name } отбасының таңдауы бойынша ұсынылған ерекше мазмұн
 
 ##
 
@@ -607,6 +939,27 @@ home-prefs-weather-header =
     .label = Ауа райы
 home-prefs-weather-description = Бүгінгі қысқаша болжам
 home-prefs-weather-learn-more-link = Көбірек білу
+home-prefs-widgets-header =
+    .label = Виджеттер
+# Lists is a widget on New Tab, similar to a to-do widget
+home-prefs-lists-header =
+    .label = Тізімдер
+# Timer is a widget on New Tab, similar to the Pomodoro timer.
+home-prefs-timer-header =
+    .label = Таймер
+# "Support" here means to help sustain or contribute to something, especially through funding or sponsorship.
+home-prefs-support-firefox-header =
+    .label = { -brand-product-name } қолдау
+home-prefs-mission-message = Біздің демеушілеріміз жақсырақ интернет құру миссиямызға қолдау көрсетеді
+home-prefs-mission-message-learn-more-link = Қалай екенін білу
+home-prefs-mission-message2 =
+    .message = Біздің демеушілеріміз жақсырақ интернет құру миссиямызға қолдау көрсетеді.
+home-prefs-manage-topics-link = Темаларды басқару
+home-prefs-manage-topics-link2 =
+    .label = Темаларды басқару
+home-prefs-choose-wallpaper-link = Тұсқағазды таңдау
+home-prefs-choose-wallpaper-link2 =
+    .label = Тұсқағазды таңдау
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -640,6 +993,35 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Адрестер жолағы нәтижелерінде іздеу ұсыныстарын көрсету
     .accesskey = р
+# This string describes what the user will observe when the system
+# prioritizes search suggestions over browsing history in the results
+# that extend down from the address bar. In the original English string,
+# "before" refers to location (appearing most proximate to), not time
+# (appearing before).
+search-show-suggestions-above-history-option-2 =
+    .label = Адрестік жолақ нәтижелерінде іздеу ұсыныстарын шолу тарихынан кейін көрсету
+search-show-suggestions-private-windows-2 =
+    .label = Жекелік терезелердегі іздеу ұсыныстары
+search-suggestions-cant-show-2 =
+    .message = Орналасу жолағынан іздеу нәтижелерінде іздеу ұсыныстары көрсетілмейді, өйткені сіз { -brand-short-name } өнімін тарихты есте сақтамайтындай етіп баптадыңыз.
+addressbar-header-1 =
+    .label = Адрес жолағы
+    .description = Адрестік жолағында көрсетілетін ұсыныстарды таңдаңыз
+# When Firefox Suggest is enabled, this replaces `addressbar-header-1`.
+addressbar-header-firefox-suggest-2 =
+    .label = { -firefox-suggest-brand-name }
+    .description = Адрес жолағындағы { -brand-short-name } және біздің серіктестеріміздің ұсыныстары.
+# With this option enabled, while on a SERP, the URL normally displayed in the
+# address bar will be replaced with the search term used to generate that SERP.
+search-show-search-term-option-2 =
+    .label = Нәтижелер беттеріндегі адрес жолағында іздеу ұғымдарын көрсету
+search-separate-default-engine-2 =
+    .label = Жекелік терезелері үшін басқа іздеу жүйесін қолдану
+    .accesskey = о
+search-separate-default-engine-dropdown =
+    .aria-label = Жекелік терезелердегі негізгі іздеу жүйесі
+search-suggestions-header-2 =
+    .label = Іздеу жүйесінің ұсыныстары
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -658,6 +1040,9 @@ suggestions-addressbar-settings-generic2 = Басқа адрестік жола�
 search-suggestions-cant-show = Орналасу жолағынан іздеу нәтижелерінде іздеу ұсыныстары көрсетілмейді, өйткені сіз { -brand-short-name } өнімін тарихты есте сақтамайтындай етіп баптадыңыз.
 search-one-click-header2 = Жарлықтардан іздеу
 search-one-click-desc = Сіз кілттік сөзді енгізген кезде адрестік жолағы және іздеу өрістерінің астында көрсетілетін қосымша іздеу жүйелерін таңдаңыз.
+search-one-click-header-3 =
+    .label = Қосымша іздеу жүйелері
+    .description = Адрес жолағында қай іздеу жүйелері мен жарлықтар көрінетінін таңдаңыз.
 search-choose-engine-column =
     .label = Іздеу жүйесі
 search-choose-keyword-column =
@@ -671,6 +1056,12 @@ search-remove-engine =
 search-add-engine =
     .label = Қосу
     .accesskey = о
+search-add-engine-2 =
+    .label = Іздеу жүйесін қосу
+    .accesskey = о
+search-edit-engine =
+    .label = Түзету
+    .accesskey = е
 search-find-more-link = Көбірек іздеу қызметтерін қосу
 # This warning is displayed when the chosen keyword is already in use
 # ('Duplicate' is an adjective)
@@ -679,12 +1070,25 @@ search-keyword-warning-title = Қысқаша атау қазір қолдану
 #   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Сіз таңдаған қысқаша атау қазір "{ $name }" қолдануда. Басқасын таңдаңыз.
 search-keyword-warning-bookmark = Сіз таңдаған қысқаша атауды қазір бетбелгілердің біреуі қолданады. Басқасын таңдаңыз.
+# This warning is displayed when the chosen name is already in use.
+# Variables:
+#   $name (string) - Name of a search engine.
+edit-engine-name-warning-duplicate = “{ $name }” деп аталатын іздеу жүйесі қолданыста бар. Басқа атауды таңдаңыз.
+remove-engine-confirmation = Бұл іздеу жүйесін өшіруді шынымен қалайсыз ба?
+remove-engine-remove = Өшіру
+remove-addon-engine-alert = Бұл іздеу жүйесін өшіру үшін онымен байланысты қосымшаны өшіріңіз.
+search-engine-group =
+    .label = Негізгі іздеу жүйесі
+search-default-engine =
+    .aria-label = Негізгі іздеу жүйесі
 
 ## Containers Section
 
 containers-back-button2 =
     .aria-label = Баптауларға оралу
 containers-header = Контейнер беттері
+containers-section-header =
+    .heading = Контейнер беттері
 containers-add-button =
     .label = Жаңа контейнерді қосу
     .accesskey = а
@@ -696,6 +1100,16 @@ containers-settings-button =
 containers-remove-button =
     .label = Өшіру
 
+## Account and sync
+
+sync-group-label =
+    .label = Синхрондау
+account-group-label =
+    .label = { -vendor-short-name } тіркелгісі
+account-placeholder =
+    .label = Сіз кірген жоқсыз
+    .description = Деректеріңіздің құпиялығын, шифрленуін және құрылғылар арасында синхрондалуын қамтамасыз ету үшін жүйеге кіріңіз.
+
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
 
@@ -704,6 +1118,12 @@ sync-signedout-description2 = Бетбелгілер, шолу тарихы, б�
 sync-signedout-account-signin3 =
     .label = Синхрондау ішіне кіру…
     .accesskey = и
+sync-signedout-account-signin-4 =
+    .label = Синхрондауды бастау үшін тіркелгіңізге кіріңіз
+    .accesskey = к
+sync-signedout-account-short =
+    .label = Кіру
+    .accesskey = р
 # This message contains two links and two icon images.
 #   `<img data-l10n-name="android-icon"/>` - Android logo icon
 #   `<a data-l10n-name="android-link">` - Link to Android Download
@@ -728,14 +1148,37 @@ fxa-login-rejected-warning =
 sync-sign-out =
     .label = Шығу…
     .accesskey = Ш
+sync-sign-out2 =
+    .label = Шығу
+    .accesskey = Ш
 sync-manage-account = Тіркелгіні басқару
+    .accesskey = к
+sync-manage-account2 =
+    .label = Тіркелгіні басқару
     .accesskey = к
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } расталған жоқ
+sync-signedin-unverified2 =
+    .label = { $email } әлі расталған жоқ
+    .description = Тіркелгіңізді растау және оны ресми ету үшін кіріс жәшігіңізді тексеріңіз.
 sync-signedin-login-failure = Байланысты қайта орнатуға үшін кіріңіз { $email }
+sync-signedin-login-failure2 =
+    .label = Сіз { $email } ішінен шықтыңыз
+    .description = Байланысты қалпына келтіріп, деректерді синхрондау үшін қайта кіріңіз.
+
+## Variables
+## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
+
+sync-account-signed-in =
+    .label = { $email }
+sync-account-signed-in-display-name =
+    .label = { $name }
+    .description = { $email }
 
 ##
 
@@ -755,9 +1198,17 @@ sync-sign-in =
 ## Sync section - enabling or disabling sync.
 
 prefs-syncing-on = Синхрондау: ІСКЕ ҚОСЫЛҒАН
+prefs-syncing-on-2 =
+    .label = Синхрондау: ІСКЕ ҚОСЫЛҒАН
 prefs-syncing-off = Синхрондау: СӨНДІРІЛГЕН
+prefs-syncing-off-2 =
+    .label = Синхрондау: СӨНДІРІЛГЕН
+    .description = Кез келген құрылғыда сіздің бетбелгілер, парольдер, тарих және т.б. деректерді алу үшін синхрондауды іске қосыңыз.
 prefs-sync-turn-on-syncing =
     .label = Синхрондауды іске қосу…
+    .accesskey = С
+prefs-sync-turn-on-syncing-2 =
+    .label = Синхрондауды іске қосу
     .accesskey = С
 prefs-sync-offer-setup-label2 = Бетбелгілер, шолу тарихы, беттер, парольдер, қосымшалар және баптауларды барлық құрылғыларыңыз арасында синхрондаңыз.
 prefs-sync-now =
@@ -767,12 +1218,22 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = Қазір синхрондау
     .accesskey = н
+prefs-sync-now-button-2 =
+    .label = Қазір синхрондау
+    .accesskey = н
 prefs-syncing-button =
     .label = Синхрондау…
+prefs-syncing-button-2 =
+    .label = Синхрондау…
+    .title = Қазір синхрондау
 
 ## The list of things currently syncing.
 
 sync-syncing-across-devices-heading = Сіз бұл элементтерді барлық қосылған құрылғыларға синхрондаудасыз:
+sync-syncing-across-devices-heading-2 = Деректер құрылғылар арасында синхрондалған
+sync-syncing-across-devices-empty-state =
+    .label = Сіз ештеңені синхрондаған жоқсыз… әлі.
+    .description = Барлық құрылғыларыңызда барлық деректерді алу үшін синхрондауды бастаңыз.
 sync-currently-syncing-bookmarks = Бетбелгілер
 sync-currently-syncing-history = Тарих
 sync-currently-syncing-tabs = Ашық беттер
@@ -783,6 +1244,12 @@ sync-currently-syncing-creditcards = Несиелік карталар
 sync-currently-syncing-payment-methods = Төлем әдістері
 sync-currently-syncing-addons = Қосымшалар
 sync-currently-syncing-settings = Баптаулар
+sync-manage-options =
+    .label = Синхрондауды басқару…
+    .accesskey = б
+sync-manage-options-2 =
+    .label = Синхрондалған деректерді басқару
+    .accesskey = у
 sync-change-options =
     .label = Өзгерту…
     .accesskey = з
@@ -835,10 +1302,27 @@ sync-engine-settings =
     .label = Баптаулар
     .tooltiptext = Сіз өзгерткен Жалпы, Жекелік және Қауіпсіздік баптаулары
     .accesskey = п
+sync-choose-what-to-sync-dialog4 =
+    .title = Барлық қосылған құрылғыларда синхрондалатын деректерді басқарыңыз
+    .style = min-width: 36em;
+    .buttonlabelaccept = Сақтау
+    .buttonaccesskeyaccept = С
+    .buttonlabelextra2 = Байланысты үзу…
+    .buttonaccesskeyextra2 = з
 
 ## The device name controls.
 
 sync-device-name-header = Құрылғы аты
+sync-device-name-header-2 =
+    .label = Құрылғы аты
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Құрылғы аты
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Құрылғы атын өзгерту
+    .accesskey = з
 sync-device-name-change =
     .label = Құрылғы атын өзгерту…
     .accesskey = з
@@ -849,6 +1333,8 @@ sync-device-name-save =
     .label = Сақтау
     .accesskey = а
 sync-connect-another-device = Басқа құрылғыны байланыстыру
+sync-connect-another-device-2 =
+    .label = Басқа құрылғыны байланыстыру
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -880,10 +1366,16 @@ forms-ask-to-save-logins =
 # by searching for the former term "logins". It's not displayed in the UI.
 pane-privacy-passwords-header = Парольдер
     .searchkeywords = логиндер
+forms-passwords-header =
+    .label = Парольдер
+    .aria-label = Парольдер
 # Checkbox to control whether UI is shown to users to save or fill logins/passwords.
 forms-ask-to-save-passwords =
     .label = Парольдерді сақтауды сұрау
     .accesskey = а
+forms-manage-password-exceptions =
+    .label = Парольдер үшін ережеден тыс жағдайларды басқару
+    .accesskey = у
 forms-exceptions =
     .label = Ережелерден бөлек…
     .accesskey = р
@@ -914,15 +1406,40 @@ forms-saved-logins =
 forms-fill-usernames-and-passwords =
     .label = Пайдаланушы аттары мен парольдерді автоматты түрде толтыру
     .accesskey = т
+forms-fill-usernames-and-passwords-2 =
+    .label = Пайдаланушы аттары мен парольдерді сақтау және автотолтыру
+    .accesskey = т
 forms-saved-passwords =
     .label = Сақталған парольдер
     .accesskey = д
+forms-saved-passwords-2 =
+    .label = Сақталған парольдерді басқару
+    .accesskey = д
+forms-saved-passwords-searchkeywords = Компьютеріңізде келесі сайттар үшін логиндер сақталып тұр
+# Header for additional protections when managing password settings.
+forms-additional-protections-header =
+    .label = Қосымша қорғаныс шаралары
 forms-primary-pw-use =
     .label = Басты парольді қолдану
     .accesskey = ы
+forms-primary-pw-use-2 =
+    .label = Басты парольді қолдану
+    .description = Сақталған парольдеріңізді сақтау үшін қосымша қауіпсіздік қабатын қосады
+    .accesskey = о
+forms-primary-pw-set =
+    .label = Басты парольді орнату
+forms-primary-pw-on =
+    .label = Басты пароль ІСКЕ ҚОСЫЛҒАН
+forms-primary-pw-change-2 =
+    .label = Басты парольді өзгерту
+# Label for button to disable primary password.
+forms-primary-pw-turn-off =
+    .label = Сөндіру
 # This operation requires the user to authenticate with the operating system (device sign-in)
 forms-os-reauth =
     .label = Парольдерді толтыру және басқару үшін құрылғыға кіруді талап ету
+forms-os-reauth-2 =
+    .label = Парольдерді басқару үшін құрылғыға кіруді талап ету
 forms-primary-pw-learn-more-link = Көбірек білу
 # This string uses the former name of the Primary Password feature
 # ("Master Password" in English) so that the preferences can be found
@@ -979,10 +1496,95 @@ autofill-saved-payment-methods-button = Сақталған төлем әдіст
 # This operation requires the user to authenticate with the operating system (device sign-in)
 autofill-reauth-payment-methods-checkbox = Төлем әдістерін толтыру және басқару үшін құрылғыға кіруді талап ету
     .accesskey = д
+autofill-payment-methods-title = Төлем әдістері
+autofill-payment-methods-header =
+    .aria-label = Төлем әдістері
+autofill-payment-methods-checkbox-message-2 =
+    .label = Төлем әдістерін сақтау және автотолтыру
+    .accesskey = Т
+autofill-payment-methods-manage-payments-title =
+    .heading = Төлем әдістерін басқару
+autofill-payment-methods-manage-payments-button =
+    .label = Төлем әдістерін басқару
+    .accesskey = б
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox-2 =
+    .label = Төлем әдістерін автотолтыру және басқару үшін құрылғыға кіруді талап ету
+    .accesskey = о
+autofill-payment-methods-add-button = Жаңа төлем әдісін қосу
+payments-list-header =
+    .label = Төлем әдістері
+payments-list-item-label = <strong>Төлем әдістері</strong>
+payments-delete-payment-prompt-title = Бұл төлем әдісін өшіру керек пе?
+payments-delete-payment-prompt-confirm-button = Өшіру
+payments-delete-payment-prompt-cancel-button = Бас тарту
+payments-delete-payment-button-label =
+    .aria-label = Өшіру
+payments-edit-payment-button-label =
+    .aria-label = Түзету
+# This message is displayed when no payment methods such as credit card are stored in Firefox
+payments-no-payments-stored-message =
+    .label = Төлем әдістері қосылмаған
+payments-remove-payment-prompt-title = Бұл төлем әдісін өшіру керек пе?
+payments-remove-payment-prompt-confirm-button = Өшіру
+payments-remove-payment-prompt-cancel-button = Бас тарту
+autofill-addresses-title = Адрестер және т.б
+autofill-addresses-header =
+    .aria-label = Адрестер және т.б
+autofill-addresses-checkbox-message =
+    .label = Адрестерді сақтау және автотолтыру
+    .accesskey = с
+autofill-addresses-manage-addresses-button =
+    .label = Адрестерді және т.б. басқару
+    .accesskey = у
+addresses-list-header =
+    .label = Адрестер
+addreses-delete-address-button-label =
+    .aria-label = Өшіру
+addreses-edit-address-button-label =
+    .aria-label = Түзету
+addresses-delete-address-prompt-title = Бұл адресті өшіру керек пе?
+addresses-delete-address-prompt-confirm-button = Өшіру
+addresses-delete-address-prompt-cancel-button = Бас тарту
+autofill-addresses-add-button = Жаңа адресті қосу
+autofill-addresses-manage-addresses-title =
+    .heading = Адрестерді басқару және т.б.
+# This message is displayed when no addresses are stored in Firefox
+addresses-no-addresses-stored-message =
+    .label = Ешқандай адрес қосылмады
+# These values are displayed for each address record listed on the "Manage addresses and more" subpage.
+# Variables:
+#   $name (string) - The name associated with the address
+#   $address (string) - The address
+address-moz-box-item =
+    .label = { $name }
+    .description = { $address }
+# These values are displayed for each credit card record listed on the Manage Payment methods
+# settings page.
+# Variables:
+#   $cardNumber (string) - The obscured credit card number (for example: ********* 2423)
+#   $expDate (string) - The obscured expiry date of the credit card (for example: XX/2027)
+payment-moz-box-item =
+    .label = { $cardNumber }
+    .description = { $expDate }
+addresses-group =
+    .label = Адрестер және т.б
+payments-group =
+    .label = Төлем әдістері
 
 ## Privacy Section - History
 
 history-header = Тарих
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label2 = { -brand-short-name }
 # This label is followed, on the same line, by a dropdown list of options
 # (Remember history, etc.).
 # In English it visually creates a full sentence, e.g.
@@ -1000,6 +1602,24 @@ history-remember-option-never =
     .label = тарихты ешқашан сақтамайды
 history-remember-option-custom =
     .label = қолдан көрсетілген тарих баптауын қолданады
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } сіздің шолу, жүктемелер, формалар және іздеулер тарихын сақтайтын болады.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } жекелік шолу режимінің баптауын пайдаланады, яғни браузер тарихына ешқандай мәлімет сақталмайды.
+history-custom-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } сіздің шолу, жүктеу, формалар және іздеу тарихыңызға арналған жеке баптауларды қолданады.
+history-remember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } сіздің шолу, жүктемелер, формалар және іздеулер тарихын сақтайтын болады.
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } жекелік шолу режимінің баптауын пайдаланады, яғни браузер тарихына ешқандай мәлімет сақталмайды.
+history-custom-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } сіздің шолу, жүктеу, формалар және іздеу тарихыңызға арналған жеке баптауларды қолданады.
 history-remember-description = { -brand-short-name } сіздің шолу, жүктемелер, формалар және іздеулер тарихын сақтайтын болады.
 history-dontremember-description = { -brand-short-name } жекелік шолу режимінің баптауын пайдаланады, яғни браузер тарихына ешқандай мәлімет сақталмайды.
 history-private-browsing-permanent =
@@ -1020,11 +1640,19 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = Тарихты тазарту…
     .accesskey = з
+history-group =
+    .label = Тарих
 
 ## Privacy Section - Site Data
 
 sitedata-header = Cookies файлдары және сайт деректері
+sitedata-label =
+    .aria-label = { sitedata-header }
 sitedata-total-size-calculating = Сайттар деректері және кэш өлшемін есептеу…
+# Variables:
+#   $value (number) - Value of the unit (for example: 4.6, 500)
+#   $unit (string) - Name of the unit (for example: "bytes", "KB")
+sitedata-total-size2 = Сізде сақталған cookies файлдары, тарих, сайт деректері және кэш қазір <strong>{ $value } { $unit }</strong> диск орнын қолдануда.
 # Variables:
 #   $value (number) - Value of the unit (for example: 4.6, 500)
 #   $unit (string) - Name of the unit (for example: "bytes", "KB")
@@ -1033,8 +1661,10 @@ sitedata-learn-more = Көбірек білу
 sitedata-delete-on-close =
     .label = { -brand-short-name } жабылған кезде cookies және сайттар деректерін өшіру
     .accesskey = ш
+sitedata-delete-on-close-private-browsing3 =
+    .message = Сіздің тарих баптаулары негізінде { -brand-short-name } браузерді жапқан кезде сессияңыздан cookie файлдары мен сайт деректерін өшіреді.
 sitedata-delete-on-close-private-browsing = Тұрақты жекелік шолу режимінде { -brand-short-name } жабылған кезде cookie файлдары және сайт деректері әрқашан өшірілетін болады.
-sitedata-delete-on-close-private-browsing2 = Сіздің тарих баптаулары негізінде { -brand-short-name } браузерді жапқан кезде сеансыңыздан cookie файлдары мен сайт деректерін өшіреді.
+sitedata-delete-on-close-private-browsing2 = Сіздің тарих баптаулары негізінде { -brand-short-name } браузерді жапқан кезде сессияңыздан cookie файлдары мен сайт деректерін өшіреді.
 sitedata-allow-cookies-option =
     .label = Cookies және сайт деректерін қабылдау
     .accesskey = а
@@ -1049,6 +1679,8 @@ sitedata-option-block-cross-site-trackers =
     .label = Сайтаралық трекерлер
 sitedata-option-block-cross-site-tracking-cookies =
     .label = Сайтаралық бақылайтын cookie файлдары
+sitedata-option-block-cross-site-cookies2 =
+    .label = Сайтаралық cookie файлдарын оқшаулау
 sitedata-option-block-cross-site-cookies =
     .label = Сайтаралық бақылау трекерлері, және қалған сайтаралық cookie файлдарын оқшаулау
 sitedata-option-block-unvisited =
@@ -1057,6 +1689,12 @@ sitedata-option-block-all-cross-site-cookies =
     .label = Барлық сайтаралық cookies файлдары (веб-сайттар сынуына әкеп соғуы мүмкін)
 sitedata-option-block-all =
     .label = Барлық cookies файлдары (веб-сайттар жұмысының бұзылуына себеп болады)
+sitedata-clear2 =
+    .label = Шолу деректерін тазарту
+    .accesskey = з
+sitedata-settings2 =
+    .label = Шолу деректерін басқару
+    .accesskey = б
 sitedata-clear =
     .label = Деректерді өшіру…
     .accesskey = ш
@@ -1066,6 +1704,12 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = Ережеден тыс жағдайларды басқару…
     .accesskey = ж
+sitedata-cookies-exceptions2 =
+    .label = Ережеден тыс жағдайларды басқару
+    .accesskey = ы
+    .description = Қай веб-сайттарға cookie файлдары мен сайт деректерін әрқашан немесе ешқашан қолдануға рұқсат етілетінін көрсете аласыз.
+cookies-site-data-group =
+    .label = Cookies файлдары және сайт деректері
 
 ## Privacy Section - Cookie Banner Handling
 
@@ -1082,10 +1726,22 @@ forms-handle-cookie-banners =
 cookie-banner-blocker-checkbox-label =
     .label = Cookie баннерлерінен автоматты түрде бас тарту
 
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = Адрес жолағы
+addressbar-suggest-1 = Адрестік жолағында көрсетілетін ұсыныстарды таңдаңыз
+# When Firefox Suggest is enabled, this replaces `addressbar-header`.
+addressbar-header-firefox-suggest-1 = { -firefox-suggest-brand-name }
+# When Firefox Suggest is enabled, this replaces `addressbar-suggest`.
+addressbar-suggest-firefox-suggest-1 = Адрес жолағындағы { -brand-short-name } және біздің серіктестеріміздің ұсыныстары.
 addressbar-suggest = Адрес жолағын қолдану кезінде, ұсыну
+# When Firefox Suggest is enabled, this replaces `addressbar-header`.
+addressbar-header-firefox-suggest = Адрестік жолақ — { -firefox-suggest-brand-name }
+# When Firefox Suggest is enabled, this replaces `addressbar-suggest`.
+addressbar-suggest-firefox-suggest = Адрес жолағында көрсетілетін ұсыныстар түрін таңдаңыз.
+# When Firefox Suggest is enabled, a "Learn more" link appears at the end of
+# `addressbar-suggest-firefox-suggest`.
+addressbar-locbar-firefox-suggest-learn-more = Көбірек білу
 addressbar-locbar-history-option =
     .label = Шолулар тарихы
     .accesskey = Ш
@@ -1105,12 +1761,28 @@ addressbar-locbar-shortcuts-option =
 addressbar-locbar-topsites-option =
     .label = Үздік сайттар
     .accesskey = з
+addressbar-locbar-engines-option-1 =
+    .label = Қолдану үшін іздеу жүйелерін ұсыну
+    .accesskey = а
 addressbar-locbar-engines-option =
     .label = Іздеу жүйелері
     .accesskey = д
 addressbar-locbar-quickactions-option =
     .label = Жылдам әрекеттер
     .accesskey = к
+addressbar-locbar-showrecentsearches-option-2 =
+    .label = Жуырдағы іздеулер
+    .accesskey = р
+addressbar-locbar-showtrendingsuggestions-option-2 =
+    .label = Трендтегі іздеу ұсыныстары
+    .accesskey = т
+# Toggles whether suggestions are obtained from Firefox Suggest or not (local or online).
+addressbar-locbar-suggest-all-option-2 =
+    .label = { -brand-short-name } ұсыныстары
+    .description = Сіздің іздеуіңізге қатысты интернеттен ұсыныстар алыңыз.
+addressbar-locbar-suggest-sponsored-option-2 =
+    .label = Демеушілердің ұсыныстары
+    .description = Кездейсоқ демеушілік ұсыныстармен { -brand-short-name } өніміне қолдау көрсету.
 addressbar-suggestions-settings = Іздеу жүйесінің ұсыныстары үшін қалауларды өзгерту
 addressbar-locbar-showrecentsearches-option =
     .label = Жуырдағы іздеулерді көрсету
@@ -1118,7 +1790,35 @@ addressbar-locbar-showrecentsearches-option =
 addressbar-locbar-showtrendingsuggestions-option =
     .label = Танымал іздеу ұсыныстарын көрсету
     .accesskey = т
+# Toggles whether suggestions are obtained from Firefox Suggest or not (local or online).
+addressbar-locbar-suggest-all-option =
+    .label = { -brand-short-name } ұсыныстары
+addressbar-locbar-suggest-all-option-desc = Сіздің іздеуіңізге қатысты интернеттен ұсыныстар алыңыз.
+# Nonsponsored suggestions refers to Firefox Suggest suggestions like Wikipedia.
+addressbar-locbar-suggest-nonsponsored-option =
+    .label = { -brand-short-name } ұсыныстары
+addressbar-locbar-suggest-nonsponsored-desc = Сіздің іздеуіңізге қатысты интернеттен ұсыныстар алыңыз.
+addressbar-locbar-suggest-sponsored-option =
+    .label = Демеушілердің ұсыныстары
+addressbar-locbar-suggest-sponsored-desc = Кездейсоқ демеушілік ұсыныстармен { -brand-short-name } өніміне қолдау көрсету.
+# This string is used for a checkbox in the settings UI that opts the
+# user into "online" Firefox Suggest, allowing them to receive suggestions from
+# Mozilla's Merino server.
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since the online suggest is created and maintained
+# by Mozilla.
+addressbar-firefox-suggest-online =
+    .label = Теру кезінде Mozilla-дан ұсыныстарды алыңыз
+addressbar-dismissed-suggestions-label-2 =
+    .label = Қабылданбаған ұсыныстар
+    .description = Демеушілер мен { -brand-short-name } жіберген қабылданбаған ұсыныстарды қалпына келтіру.
+addressbar-restore-dismissed-suggestions-button-2 =
+    .label = Ұсыныстарды қалпына келтіру
 addressbar-quickactions-learn-more = Көбірек білу
+addressbar-dismissed-suggestions-label = Қабылданбаған ұсыныстар
+addressbar-restore-dismissed-suggestions-description = Демеушілер мен { -brand-short-name } жіберген қабылданбаған ұсыныстарды қалпына келтіру.
+addressbar-restore-dismissed-suggestions-button =
+    .label = Қалпына келтіру
 
 ## Privacy Section - Content Blocking
 
@@ -1155,6 +1855,7 @@ content-blocking-private-windows = Жекелік шолу терезелері�
 content-blocking-cross-site-cookies-in-all-windows2 = Барлық терезелердегі сайтаралық cookie файлдары
 content-blocking-cross-site-tracking-cookies = Сайтаралық бақылайтын cookie файлдары
 content-blocking-all-cross-site-cookies-private-windows = Жекелік шолу терезелеріндегі сайтаралық cookie файлдары
+content-blocking-isolate-cross-site-cookies = Сайтаралық cookie файлдарын оқшаулау
 content-blocking-cross-site-tracking-cookies-plus-isolate = Сайтаралық бақылау трекерлері, және қалған cookie файлдарын оқшаулау
 content-blocking-social-media-trackers = Әлеуметтік желілер трекерлері
 content-blocking-all-cookies = Барлық cookie файлдары
@@ -1175,8 +1876,23 @@ content-blocking-etp-standard-tcp-rollout-description = Cookie файлдары�
 content-blocking-etp-standard-tcp-rollout-learn-more = Көбірек білу
 content-blocking-etp-standard-tcp-title = Құрамында енді cookie файлдарынан Толық қорғаныс бар, біздің ең мықты жекелік мүмкіндігіміз
 content-blocking-warning-title = Ескерту!
+content-blocking-warning-title-2 = Қатаң трекинг қорғанысы кейбір веб-сайттардың дұрыс жұмыс істемеуіне себеп болуы мүмкін
+content-blocking-warning-title-custom = Таңдауңызша трекинг қорғанысы кейбір веб-сайттардың дұрыс жұмыс істемеуіне себеп болуы мүмкін
+# “Fix site issues” references the string content-blocking-exceptions-subheader
+content-blocking-and-isolating-etp-warning-description-4 = { -brand-short-name } сайттың бұзылған мүмкіндіктері мен мазмұнын азайту үшін «Сайт мәселелерін түзету» параметрлерін пайдалануды ұсынады. Егер сайт дұрыс жұмыс істемей тұрса, барлық мазмұнды жүктеу үшін сол сайт үшін бақылаудан қорғау функциясын сөндіріп көріңіз.
 content-blocking-and-isolating-etp-warning-description-2 = Бұл баптау кейбір веб-сайттардың мазмұнын көрсетілмеуіне немесе дұрыс жұмыс жасамауына әкелуі мүмкін. Егер сайт сынған болып көрінсе, сайттың барлық мазмұның жүктеу үшін сол сайт үшін бақылаудан қорғанысты сөндіру керек болуы мүмкін.
 content-blocking-warning-learn-how = Көбірек білу
+content-blocking-baseline-exceptions-3 =
+    .label = Сайттардың негізгі мәселелерін түзету (ұсынылады)
+    .description = Тек трекерлерді қамтуы мүмкін ең маңызды элементтердің бұғаттауын шешу сайттар мен мүмкіндіктерді жүктеуге көмектеседі. Ең жиі кездесетін мәселелерді қамтиды.
+# This option to fix minor site issues must be used with the option to fix major site issues (string content-blocking-baseline-exceptions-3)
+content-blocking-convenience-exceptions-3 =
+    .label = Сайттардың шамалы мәселелерін түзету
+    .description = Мақаладағы видеолар немесе пікірлер бөлімдері сияқты элементтердің бұғаттауын алып тастап, трекерлер болуы мүмкін элементтерді қайта ашады. Бұл сайттағы кейбір мәселелерді азайтады, бірақ қорғаныс деңгейін төмендетеді. Негізгі мәселелерді түзетумен бірге қолданылуы тиіс.
+content-blocking-baseline-uncheck-warning-dialog-title = Түзетулерді шынымен сөндіргіңіз келе ме?
+content-blocking-baseline-uncheck-warning-dialog-body = Бұл параметр ең көп таралған сайт мәселелерін шешуге көмектеседі. Оны сөндірсеңіз, кейбір сайттар жұмыс істемеуі мүмкін және { -brand-short-name } бұл мәселелерді шешуге көмектесе алмайтын болады.
+content-blocking-baseline-uncheck-warning-dialog-ok-button = Түзетулерді сөндіру
+content-blocking-baseline-uncheck-warning-dialog-cancel-button = Түзетулерді іске қосулы қалдыру
 content-blocking-reload-description = Бұл өзгерістер іске асуы үшін беттерді қайта жүктеу керек болады.
 content-blocking-reload-tabs-button =
     .label = Барлық беттерді қайта жүктеу
@@ -1256,10 +1972,27 @@ permissions-notification-link = Көбірек білу
 permissions-notification-pause =
     .label = Хабарламаларды { -brand-short-name } қайта іске қосылғанша дейін аялдату
     .accesskey = д
+permissions-autoplay2 =
+    .label = Автоойнату
 permissions-autoplay = Автоойнату
 permissions-autoplay-settings =
     .label = Баптаулар…
     .accesskey = т
+permissions-block-popups2 =
+    .label = Қалқымалы терезелер және үшінші тарап қайта бағыттауларын бұғаттау
+    .accesskey = б
+# "popup" is a misspelling that is more popular than the correct spelling of
+# "pop-up" so it's included as a search keyword, not displayed in the UI.
+permissions-block-popups-exceptions-button2 =
+    .label = Қалқымалы терезе мен үшінші тарапқа қайта бағыттаудың ережеден тыс жағдайларын басқару
+    .accesskey = е
+    .searchkeywords = қалқымалы
+permissions-addon-install-warning2 =
+    .label = Вебсайттар кеңейтулерді орнатқысы келсе, ескерту
+    .accesskey = В
+permissions-addon-exceptions2 =
+    .label = Кеңейтулерді орната алатын веб-сайттарды таңдау
+    .accesskey = е
 permissions-block-popups =
     .label = "Атып шығатын" терезелерді болдырмау
     .accesskey = б
@@ -1275,23 +2008,71 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = Ережелерден бөлек…
     .accesskey = Е
+permissions-header2 =
+    .label = Рұқсаттар
+    .description = Сіз шолатын веб-сайттарға беретін рұқсаттарыңыз.
+permissions-location2 =
+    .label = Орналасу
+permissions-localhost2 =
+    .label = Құрылғы қолданбалары мен қызметтері
+permissions-local-network2 =
+    .label = Жергілікті желі құрылғылары
+permissions-xr2 =
+    .label = Виртуалды шынайылық
+permissions-camera2 =
+    .label = Камера
+permissions-microphone2 =
+    .label = Микрофон
+# Privacy permission for sound output devices.
+permissions-speaker2 =
+    .label = Динамик
+permissions-notification2 =
+    .label = Хабарламалар
 
 ## Privacy Section - Data Collection
 
 collection-header = { -brand-short-name } деректер жинауы және қолдануы
 collection-header2 = { -brand-short-name } деректер жинауы және қолдануы
     .searchkeywords = телеметрия
+preferences-collection-description = Біз сізге таңдау беруге және { -brand-product-name } өнімін барлығы үшін жақсарту мақсатында қажетті минималды деректерді ғана жинауға тырысамыз.
+preferences-collection-privacy-notice = Жекелік ескертуін қарау
+preferences-across-profiles = Бұл параметрлер осы құрылғыдағы әрбір { -brand-product-name } профиліне іске асырылады.
+preferences-view-profiles = Барлық профильдерді қарау
 collection-description = Біз сізге таңдауды қолыңызға беріп, тек әркім үшін { -brand-short-name } өнімін ұсыну және жақсарту мақсатында керек деректерді жинаймыз. Жеке ақпаратты алу алдында біз әрқашан рұқсатты сұраймыз.
 collection-privacy-notice = Жекелік ескертуі
 collection-health-report-telemetry-disabled = Сіз { -vendor-short-name } үшін ешбір техникалық және әрекеттесу мәліметтерін жинауға енді рұқсат етпейсіз. Барлық бұрыңғы деректер 30 күннің ішінде өшірілетін болады.
 collection-health-report-telemetry-disabled-link = Көбірек білу
+collection-usage-ping =
+    .label = Күнделікті пайдалану ақпаратын { -vendor-short-name } адресіне жіберіп отыру
+    .accesskey = й
+collection-usage-ping-description = Бұл { -vendor-short-name } үшін белсенді пайдаланушылар санын бағалауға көмектеседі.
+collection-health-report2 =
+    .label = Техникалық және өзара әрекеттесу деректерін { -vendor-short-name } адресіне жіберу
+    .accesskey = р
 collection-health-report =
     .label = { -brand-short-name } үшін { -vendor-short-name } адресіне техникалық және әрекеттесу деректерін жіберуді рұқсат ету
     .accesskey = р
 collection-health-report-link = Көбірек білу
+collection-health-report-description = Бұл { -brand-product-name } мүмкіндіктерін, өнімділігін және тұрақтылығын жақсартуға көмектеседі.
+collection-studies2 =
+    .label = Зерттеулерді орнату және жөнелту
+collection-studies-description = Мүмкіндіктер мен идеяларды барлығына шығарар алдында қолданып көріңіз.
 collection-studies =
     .label = { -brand-short-name } үшін зерттеулерді орнатып, орындауды рұқсат ету
 collection-studies-link = { -brand-short-name } зерттеулерін қарау
+nimbus-rollouts-enabled =
+    .label = { -brand-short-name } браузеріне жаңартулар арасында функцияларды, өнімділікті және тұрақтылықты жақсартуға рұқсат беру
+nimbus-rollouts-enabled-description = Өзгерістер қашықтан іске асырылатын болады.
+addon-recommendations2 =
+    .label = Жекелендірілген кеңейу ұсыныстарына рұқсат ету
+addon-recommendations-description = Шолу тәжірибесін жақсарту үшін кеңейтулер ұсыныстарын алыңыз.
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = Деректер есептемесін беру бұл жинақта сөндірілген.
+collection-backlogged-crash-reports2 =
+    .label = Құлау хабарламаларын автоматты түрде жіберу
+    .accesskey = л
+collection-backlogged-crash-reports-description = Бұл { -vendor-short-name } үшін браузердегі ақауларды диагностикалауға және түзетуге мүмкіндік береді. Есептемелер жеке немесе сезімтал деректерді қамтуы мүмкін.
 addon-recommendations =
     .label = { -brand-short-name } үшін жекеленген кеңейтулер ұсыныстарын жасауға рұқсат ету
 addon-recommendations-link = Көбірек білу
@@ -1299,8 +2080,6 @@ addon-recommendations-link = Көбірек білу
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Деректер есептемесін беру бұл жинақта сөндірілген
 collection-backlogged-crash-reports-with-link = { -brand-short-name } үшін сіздің атыңыздан жиналған құлаулар хабарламаларын жіберуді рұқсат ету <a data-l10n-name="crash-reports-link">Көбірек білу</a>
-    .accesskey = с
-collection-backlogged-crash-reports = { -brand-short-name } үшін сіздің атыңыздан жиналған құлаулар хабарламаларын жіберуді рұқсат ету
     .accesskey = с
 privacy-segmentation-section-header = Шолуыңызды жақсартатын жаңа мүмкіндіктер
 privacy-segmentation-section-description = Сізге жеке тәжірибе беру үшін деректеріңізді пайдаланатын мүмкіндіктерді ұсынғанда:
@@ -1323,6 +2102,8 @@ website-advertising-private-attribution-description = Бұл сайттарға 
 ## https://developers.google.com/safe-browsing/developers_guide_v2#AcceptableUsage
 
 security-header = Қауіпсіздік
+browsing-protection-group =
+    .label = Жалған істелген мазмұн және қауіпті бағдарламалық қамтамадан қорғаныс
 security-browsing-protection = Жалған істелген мазмұн және қауіпті бағдарламалық қамтамадан қорғаныс
 security-enable-safe-browsing =
     .label = Қауіпті және алдамшы құраманы блоктау
@@ -1350,34 +2131,46 @@ certs-devices =
 certs-thirdparty-toggle =
     .label = { -brand-short-name } қолданбасына сіз орнатқан үшінші жақты түбірлік сертификаттарына автоматты түрде сенуге рұқсат беру
     .accesskey = т
+certs-devices-enable-fips = FIPS қолдану
 space-alert-over-5gb-settings-button =
     .label = Баптауларды ашу
     .accesskey = Б
 space-alert-over-5gb-message2 = <strong>{ -brand-short-name } үшін бос орын аяқталуда</strong>. Вебсайттар құрамасы дұрыс көрсетілмеуі мүмкін. Сіз сайттардың сақталған деректерін Баптаулар > Жекелік және қауіпсіздік > Cookies файлдары және сайттар деректері ішінде өшіре аласыз.
 space-alert-under-5gb-message2 = <strong>{ -brand-short-name } үшін бос орын аяқталуда</strong>. Вебсайттар құрамасы дұрыс көрсетілмеуі мүмкін. "Көбірек білу" сілтемесін ашып, интернетті ыңғайлы шолу үшін диск қолданылуын қалай баптау керек екенін білуіңізге болады.
+certs-description2 =
+    .label = Сертификаттар
+    .description = { -brand-short-name } аутентификация үшін пайдаланатын сертификаттарды баптаңыз.
 
 ## Privacy Section - HTTPS-Only
 
 httpsonly-header = Тек-HTTPS режимі
+httpsonly-label =
+    .aria-label = { httpsonly-header }
+    .description = Веб-сайттарға так қауіпсіз қосылуға рұқсат береді. Қауіпсіз емес қосылым орнатылмас бұрын { -brand-short-name } сізден сұрайды.
+httpsonly-description3 = Веб-сайттарға тек қауіпсіз қосылымдарға мүмкіндік береді. { -brand-short-name } қауіпсіз емес қосылулар алдында растауды сұрайды.
+httpsonly-learn-more2 = Тек-HTTPS режимі қалай жұмыс істейді
 httpsonly-description = HTTPS { -brand-short-name } және сіз кіретін веб-сайттар арасында қауіпсіз, шифрленген байланысты ұсынады. Веб-сайттардың көбі HTTPS қолдайды, тек-HTTPS режимі іске қосылған болса, { -brand-short-name } барлық байланыстарды HTTPS-ке дейін жаңартады.
-httpsonly-description2 = { -brand-short-name } сіз кіретін сайттарға қауіпсіз және шифрленген байланыстарды жасайды. { -brand-short-name } "Тек-HTTPS" режимі іске қосулы кезде байланыс қауіпсіз болмаса, ескертеді.
 httpsonly-learn-more = Көбірек білу
 httpsonly-radio-enabled =
     .label = Барлық терезелерде тек-HTTPS режимін іске қосу
-httpsonly-radio-enabled2 =
-    .label = Барлық терезелерде тек HTTPS пайдалану
 httpsonly-radio-enabled-pbm =
     .label = Тек-HTTPS режимін тек жекелік терезелерде іске қосу
-httpsonly-radio-enabled-pbm2 =
-    .label = Барлық жекелік терезелерде тек HTTPS пайдалану
+httpsonly-radio-disabled3 =
+    .label = Тек-HTTPS режимін іске қоспау
+    .description = { -brand-short-name } кейбір қосылымдарды жаңарта алады
 httpsonly-radio-disabled =
     .label = Тек-HTTPS режимін іске қоспау
-httpsonly-radio-disabled2 =
-    .label = Алдымен HTTPS қолданып көру, бірақ қауіпсіз емес байланыстарға рұқсат беру
+httpsonly-group =
+    .label = Тек-HTTPS режимі
+    .description = Веб-сайттарға так қауіпсіз қосылуға рұқсат береді. Қауіпсіз емес қосылым орнатылмас бұрын { -brand-short-name } сізден сұрайды.
+httpsonly-label2 =
+    .aria-label = { httpsonly-group.label }
 
 ## DoH Section
 
 preferences-doh-header = HTTPS арқылы DNS
+dns-over-https-group =
+    .label = HTTPS арқылы DNS
 preferences-doh-description = HTTPS арқылы домендік атаулар жүйесі (DNS) шифрленген байланыс арқылы домендік атқа сұрауыңызды жібереді, осылай ол қауіпсіз DNS жасайды және басқаларға қай веб-сайтқа кіргіңіз келетінін көруді қиындатады.
 preferences-doh-description2 = HTTPS арқылы домендік атаулар жүйесі (DNS) шифрленген байланыс арқылы домендік атқа сұрауыңызды жібереді, осылай ол қауіпсіз DNS ұсынады және басқаларға қай веб-сайтқа кіргіңіз келетінін көруді қиындатады.
 # Variables:
@@ -1439,3 +2232,62 @@ preferences-doh-manage-exceptions =
 desktop-folder-name = Жұмыс үстелі
 downloads-folder-name = Жүктемелер
 choose-download-folder-title = Жүктемелер сақталатын буманы таңдаңыз:
+
+## AI controls page
+
+preferences-ai-controls-header =
+    .heading = { pane-ai-controls-title }
+preferences-ai-controls-description = { -brand-short-name } бағдарламасында сізде әрдайым таңдау мүмкіндігі болады, соның ішінде ЖИ жетілдірілген функцияларды пайдалану керектігін да өзіңіз шешесіз. Қосымша басқару элементтері жақын арада қосылады.
+preferences-ai-controls-block-ai-label = ЖИ жақсартуларын бұғаттау
+preferences-ai-controls-block-ai =
+    .label = { preferences-ai-controls-block-ai-label }
+preferences-ai-controls-block-ai-description = Бұғаттау дегеніміз сіз { -brand-short-name } ішіндегі жаңа немесе қазіргі ЖИ жетілдірулерін, сондай-ақ олар туралы қалқымалы терезелерді көрмейтініңізді білдіреді. Ішінде не бар екені және іздеу нұсқаулары мен ұсыныстар сияқты дәстүрлі машиналық оқыту функцияларын қалай басқаруға болатыны туралы <a data-l10n-name="link">толығырақ мәлімет алыңыз</a>.
+preferences-ai-controls-blocked-message =
+    .message = Жаңа және ағымдағы ЖИ жақсартулары үнсіз келісім бойынша бұғатталады. Белгілі бір мүмкіндікті бұғаттан шығару үшін төмендегі басқару элементтерін пайдаланыңыз.
+preferences-ai-controls-on-device-group =
+    .label = Құрылғыдағы ЖИ
+    .description = Бұл мүмкіндіктерді пайдаланған кезде құрылғыңызға жүктелетін шағын AI модельдері қолданылады. Бұл тәсіл жеке деректеріңіздің жекелігін қорғауға көмектеседі.
+preferences-ai-controls-translations-control =
+    .label = Аудармалар
+    .description = Интернетті өзіңізге ыңғайлы тілде кедергісіз шолыңыз.
+preferences-ai-controls-translations-more-link = Көбірек аударма баптаулары
+preferences-ai-controls-pdfjs-control =
+    .label = { -brand-short-name } PDF қарау құралындағы суреттің балама мәтіні
+    .description = PDF құжаттарына суреттер қосқан кезде, бұл оларды қолжетімді ету үшін сипаттамалар қосады.
+preferences-ai-controls-tab-group-suggestions-control =
+    .label = Беттер тобының ұсыныстары
+    .description = Беттерді атау және реттеу бойынша ұсыныстар алыңыз.
+preferences-ai-controls-key-points-control =
+    .label = Сілтемелерді алдын ала қарау кезіндегі негізгі тұстар.
+    .description = Сілтемені ашпас бұрын оның қысқаша мазмұнымен танысыңыз.
+preferences-ai-controls-sidebar-chatbot-group =
+    .label = Бүйірлік панельдегі ЖИ чатбот провайдерлері
+    .description = Веб-беттерді шолу барысында чат-ботты әрдайым көз алдыңызда ұстаңыз. Anthropic Claude, ChatGPT, Copilot, Google Gemini және Le Chat Mistral ішінен қалауыңызды таңдаңыз.
+preferences-ai-controls-sidebar-chatbot-control =
+    .label = Бүйірлік панельдегі чатбот
+# This option means that a user will see the feature and can use it.
+preferences-ai-controls-state-available =
+    .label = Қолжетімді
+# This option means a user has opted in to use the feature.
+preferences-ai-controls-state-enabled =
+    .label = Іске қосылған
+# This option means the user won't see and can't use the feature. For on-device AI, any models already downloaded are removed.
+preferences-ai-controls-state-blocked =
+    .label = Бұғатталған
+preferences-ai-controls-state-description-before = Бұл опциялар нені білдіреді:
+preferences-ai-controls-state-description-available = <strong>Қолжетімді:<</strong> Сіз бұл мүмкіндікті көресіз және оны пайдалана аласыз.
+preferences-ai-controls-state-description-enabled = <strong>Іске қосылған:</strong> Сіз бұл мүмкіндікті пайдалануға келісім бердіңіз.
+preferences-ai-controls-state-description-blocked = <strong>Бұғатталған:</strong> Сіз бұл мүмкіндікті көре алмайсыз және пайдалана алмайсыз. Құрылғыдағы ЖИ үшін жүктеп алынған кез келген модельдер өшіріледі.
+preferences-ai-controls-block-confirmation-heading = ЖИ жақсартуларын бұғаттау керек пе?
+preferences-ai-controls-block-confirmation-description = { -brand-short-name } ішінде жаңа немесе ағымдағы ЖИ жақсартуларын немесе олар туралы қалқымалы терезелерді көрмейсіз. Содан кейін, пайдалануды жалғастырғыңыз келетін кез келген нәрсені бұғаттан босата аласыз.
+preferences-ai-controls-block-confirmation-features-start = Не бұғатталады:
+preferences-ai-controls-block-confirmation-translations = Аудармалар
+preferences-ai-controls-block-confirmation-pdfjs = { -brand-short-name } PDF қарау құралындағы суреттің балама мәтіні
+preferences-ai-controls-block-confirmation-tab-group-suggestions = Беттер тобының ұсыныстары
+preferences-ai-controls-block-confirmation-key-points = Сілтемелерді алдын ала қарау кезіндегі негізгі тұстар
+preferences-ai-controls-block-confirmation-sidebar-chatbot = Бүйірлік панельдегі чатбот провайдерлері
+preferences-ai-controls-block-confirmation-features-after = Бұғаттау { -brand-short-name } ұсынған ЖИ пайдаланатын кеңейтулерге де әсер етеді.
+preferences-ai-controls-block-confirmation-cancel =
+    .label = Бас тарту
+preferences-ai-controls-block-confirmation-confirm =
+    .label = Блоктау

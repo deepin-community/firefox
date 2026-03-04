@@ -5,6 +5,7 @@
 /**
  * A helper to await on while waiting for an asynchronous rendering of a Custom
  * Element.
+ *
  * @returns {Promise}
  */
 function asyncElementRendered() {
@@ -13,6 +14,7 @@ function asyncElementRendered() {
 
 /**
  * Import the templates from the real page to avoid duplication in the tests.
+ *
  * @param {HTMLIFrameElement} templateFrame - Frame to copy the resources from
  * @param {HTMLElement} destinationEl - Where to append the copied resources
  */
@@ -80,7 +82,7 @@ Object.defineProperty(window, "AboutLoginsUtils", {
     setFocus(element) {
       return element.focus();
     },
-    async promptForPrimaryPassword(resolve, _messageId) {
+    async promptForPrimaryPassword(resolve, _messageId, _reason) {
       resolve(true);
     },
     doLoginsMatch(login1, login2) {
@@ -90,9 +92,6 @@ Object.defineProperty(window, "AboutLoginsUtils", {
         login1.password == login2.password
       );
     },
-    fileImportEnabled: SpecialPowers.getBoolPref(
-      "signon.management.page.fileImport.enabled"
-    ),
     primaryPasswordEnabled: false,
   },
 });

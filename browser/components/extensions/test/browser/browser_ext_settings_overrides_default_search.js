@@ -7,7 +7,6 @@ ChromeUtils.defineESModuleGetters(this, {
   AddonManager: "resource://gre/modules/AddonManager.sys.mjs",
   AddonTestUtils: "resource://testing-common/AddonTestUtils.sys.mjs",
   SearchTestUtils: "resource://testing-common/SearchTestUtils.sys.mjs",
-  TelemetryTestUtils: "resource://testing-common/TelemetryTestUtils.sys.mjs",
 });
 
 const EXTENSION1_ID = "extension1@mozilla.com";
@@ -91,26 +90,8 @@ function clearTelemetry() {
   Services.fog.testResetFOG();
 }
 
-async function checkTelemetry(source, prevEngine, newEngine) {
-  TelemetryTestUtils.assertEvents(
-    [
-      {
-        object: "change_default",
-        value: source,
-        extra: {
-          prev_id: prevEngine.id,
-          new_id: newEngine.id,
-          new_name: newEngine.name,
-          new_load_path: newEngine.loadPath,
-          // Telemetry has a limit of 80 characters.
-          new_sub_url: newEngine.submissionUrl.slice(0, 80),
-        },
-      },
-    ],
-    { category: "search", method: "engine" }
-  );
-
-  let snapshot = await Glean.searchEngineDefault.changed.testGetValue();
+function checkTelemetry(source, prevEngine, newEngine) {
+  let snapshot = Glean.searchEngineDefault.changed.testGetValue();
   delete snapshot[0].timestamp;
   Assert.deepEqual(
     snapshot[0],
@@ -118,7 +99,7 @@ async function checkTelemetry(source, prevEngine, newEngine) {
       category: "search.engine.default",
       name: "changed",
       extra: {
-        change_source: source,
+        change_reason: source,
         previous_engine_id: prevEngine.id,
         new_engine_id: newEngine.id,
         new_display_name: newEngine.name,
@@ -160,7 +141,7 @@ add_task(async function test_extension_setting_default_engine() {
     `Default engine is ${ALTERNATE_ENGINE.name}`
   );
 
-  await checkTelemetry("addon-install", DEFAULT_ENGINE, ALTERNATE_ENGINE);
+  checkTelemetry("addon-install", DEFAULT_ENGINE, ALTERNATE_ENGINE);
 
   clearTelemetry();
 
@@ -172,7 +153,7 @@ add_task(async function test_extension_setting_default_engine() {
     `Default engine is ${DEFAULT_ENGINE.name}`
   );
 
-  await checkTelemetry("addon-uninstall", ALTERNATE_ENGINE, DEFAULT_ENGINE);
+  checkTelemetry("addon-uninstall", ALTERNATE_ENGINE, DEFAULT_ENGINE);
 });
 
 /* This tests what happens when the engine you're setting it to is hidden. */
@@ -298,7 +279,7 @@ add_task(async function test_extension_setting_default_engine_external() {
     "Default engine was changed after accepting prompt"
   );
 
-  await checkTelemetry("addon-install", DEFAULT_ENGINE, {
+  checkTelemetry("addon-install", DEFAULT_ENGINE, {
     id: "other-Example Engine",
     name: "Example Engine",
     loadPath: "[addon]extension1@mozilla.com",
@@ -321,7 +302,7 @@ add_task(async function test_extension_setting_default_engine_external() {
     `Default engine is ${DEFAULT_ENGINE.name} after disabling`
   );
 
-  await checkTelemetry(
+  checkTelemetry(
     "addon-uninstall",
     {
       id: "other-Example Engine",
@@ -348,7 +329,7 @@ add_task(async function test_extension_setting_default_engine_external() {
     `Default engine is ${NAME} after enabling`
   );
 
-  await checkTelemetry("addon-install", DEFAULT_ENGINE, {
+  checkTelemetry("addon-install", DEFAULT_ENGINE, {
     id: "other-Example Engine",
     name: "Example Engine",
     loadPath: "[addon]extension1@mozilla.com",
@@ -879,7 +860,7 @@ add_task(async function test_two_addons_with_second_disabled() {
     "engine-default",
     "browser-search-engine-modified"
   );
-  // No prompt, because this is switching to an app-provided engine.
+  // No prompt, because this is switching to a config engine.
   await addon2.enable();
   await defaultPromise;
 

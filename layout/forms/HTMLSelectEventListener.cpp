@@ -5,17 +5,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "HTMLSelectEventListener.h"
 
-#include "nsListControlFrame.h"
-#include "mozilla/dom/Event.h"
-#include "mozilla/dom/MouseEvent.h"
 #include "mozilla/Casting.h"
-#include "mozilla/MouseEvents.h"
-#include "mozilla/TextEvents.h"
-#include "mozilla/PresShell.h"
-#include "mozilla/dom/HTMLSelectElement.h"
-#include "mozilla/dom/HTMLOptionElement.h"
-#include "mozilla/StaticPrefs_ui.h"
 #include "mozilla/ClearOnShutdown.h"
+#include "mozilla/MouseEvents.h"
+#include "mozilla/PresShell.h"
+#include "mozilla/StaticPrefs_ui.h"
+#include "mozilla/TextEvents.h"
+#include "mozilla/dom/Event.h"
+#include "mozilla/dom/HTMLOptionElement.h"
+#include "mozilla/dom/HTMLSelectElement.h"
+#include "mozilla/dom/MouseEvent.h"
+#include "nsComboboxControlFrame.h"
+#include "nsListControlFrame.h"
 
 using namespace mozilla;
 using namespace mozilla::dom;
@@ -319,8 +320,7 @@ void HTMLSelectEventListener::OptionValueMightHaveChanged(
 
 void HTMLSelectEventListener::AttributeChanged(dom::Element* aElement,
                                                int32_t aNameSpaceID,
-                                               nsAtom* aAttribute,
-                                               int32_t aModType,
+                                               nsAtom* aAttribute, AttrModType,
                                                const nsAttrValue* aOldValue) {
   if (aElement->IsHTMLElement(nsGkAtoms::option) &&
       aNameSpaceID == kNameSpaceID_None && aAttribute == nsGkAtoms::label) {
@@ -338,22 +338,24 @@ void HTMLSelectEventListener::CharacterDataChanged(
   }
 }
 
-void HTMLSelectEventListener::ContentRemoved(nsIContent* aChild,
-                                             nsIContent* aPreviousSibling) {
+void HTMLSelectEventListener::ContentWillBeRemoved(nsIContent* aChild,
+                                                   const ContentRemoveInfo&) {
   if (nsContentUtils::IsInSameAnonymousTree(mElement, aChild)) {
     OptionValueMightHaveChanged(aChild);
     ComboboxMightHaveChanged();
   }
 }
 
-void HTMLSelectEventListener::ContentAppended(nsIContent* aFirstNewContent) {
+void HTMLSelectEventListener::ContentAppended(nsIContent* aFirstNewContent,
+                                              const ContentAppendInfo&) {
   if (nsContentUtils::IsInSameAnonymousTree(mElement, aFirstNewContent)) {
     OptionValueMightHaveChanged(aFirstNewContent);
     ComboboxMightHaveChanged();
   }
 }
 
-void HTMLSelectEventListener::ContentInserted(nsIContent* aChild) {
+void HTMLSelectEventListener::ContentInserted(nsIContent* aChild,
+                                              const ContentInsertInfo&) {
   if (nsContentUtils::IsInSameAnonymousTree(mElement, aChild)) {
     OptionValueMightHaveChanged(aChild);
     ComboboxMightHaveChanged();
@@ -361,17 +363,18 @@ void HTMLSelectEventListener::ContentInserted(nsIContent* aChild) {
 }
 
 void HTMLSelectEventListener::ComboboxMightHaveChanged() {
-  if (nsIFrame* f = mElement->GetPrimaryFrame()) {
-    PresShell* ps = f->PresShell();
-    // nsComoboxControlFrame::Reflow updates the selected text. AddOption /
-    // RemoveOption / etc takes care of keeping the displayed index up to date.
-    ps->FrameNeedsReflow(f, IntrinsicDirty::FrameAncestorsAndDescendants,
-                         NS_FRAME_IS_DIRTY);
+  nsIFrame* f = mElement->GetPrimaryFrame();
+  if (!f) {
+    return;
+  }
+  PresShell* ps = f->PresShell();
 #ifdef ACCESSIBILITY
-    if (nsAccessibilityService* acc = GetAccService()) {
-      acc->ScheduleAccessibilitySubtreeUpdate(ps, mElement);
-    }
+  if (nsAccessibilityService* acc = GetAccService()) {
+    acc->ScheduleAccessibilitySubtreeUpdate(ps, mElement);
+  }
 #endif
+  if (nsComboboxControlFrame* combobox = do_QueryFrame(f)) {
+    combobox->RedisplaySelectedText();
   }
 }
 
@@ -732,19 +735,38 @@ nsresult HTMLSelectEventListener::KeyDown(dom::Event* aKeyEvent) {
     mControlSelectMode = false;
   }
 
+  auto isVerticalRL = [=]() -> bool {
+    if (nsIFrame* f = mElement->GetPrimaryFrame()) {
+      return f->GetWritingMode().IsVerticalRL();
+    }
+    return false;
+  };
+
   switch (keyEvent->mKeyCode) {
     case NS_VK_UP:
-    case NS_VK_LEFT:
       if (shouldSelect) {
         AdjustIndexForDisabledOpt(GetEndSelectionIndex(), newIndex,
                                   int32_t(numOptions), -1, -1);
       }
       break;
+    case NS_VK_LEFT:
+      if (shouldSelect) {
+        int dir = isVerticalRL() ? 1 : -1;
+        AdjustIndexForDisabledOpt(GetEndSelectionIndex(), newIndex,
+                                  int32_t(numOptions), dir, dir);
+      }
+      break;
     case NS_VK_DOWN:
-    case NS_VK_RIGHT:
       if (shouldSelect) {
         AdjustIndexForDisabledOpt(GetEndSelectionIndex(), newIndex,
                                   int32_t(numOptions), 1, 1);
+      }
+      break;
+    case NS_VK_RIGHT:
+      if (shouldSelect) {
+        int dir = isVerticalRL() ? -1 : 1;
+        AdjustIndexForDisabledOpt(GetEndSelectionIndex(), newIndex,
+                                  int32_t(numOptions), dir, dir);
       }
       break;
     case NS_VK_RETURN:

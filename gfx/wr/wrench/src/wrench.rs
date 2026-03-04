@@ -14,11 +14,28 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::sync::mpsc::Receiver;
-use webrender::api::*;
+use std::time::Instant;
+use webrender::{api::*, CompositorConfig};
 use webrender::render_api::*;
 use webrender::api::units::*;
-use webrender::{DebugFlags, RenderResults, ShaderPrecacheFlags};
+use webrender::{DebugFlags, RenderResults, ShaderPrecacheFlags, LayerCompositor};
 use crate::{WindowWrapper, NotifierEvent};
+
+#[derive(Clone)]
+pub struct DisplayList {
+    pub pipeline: PipelineId,
+    pub payload: BuiltDisplayList,
+    /// Whether to request that the transaction is presented to the window.
+    ///
+    /// The transaction will be presented if it contains at least one display list
+    /// with present set to true.
+    pub present: bool,
+    /// If set to true, send the transaction after adding this display list to it.
+    pub send_transaction: bool,
+    /// If set to true, the pipeline will be rendered off-screen. Only snapshotted
+    /// stacking contexts will be kept.
+    pub render_offscreen: bool,
+}
 
 // TODO(gw): This descriptor matches what we currently support for fonts
 //           but is quite a mess. We should at least document and
@@ -38,14 +55,14 @@ pub enum FontDescriptor {
 struct NotifierData {
     events_loop_proxy: Option<EventLoopProxy<()>>,
     frames_notified: u32,
-    timing_receiver: chase_lev::Stealer<time::SteadyTime>,
+    timing_receiver: chase_lev::Stealer<std::time::Instant>,
     verbose: bool,
 }
 
 impl NotifierData {
     fn new(
         events_loop_proxy: Option<EventLoopProxy<()>>,
-        timing_receiver: chase_lev::Stealer<time::SteadyTime>,
+        timing_receiver: chase_lev::Stealer<std::time::Instant>,
         verbose: bool,
     ) -> Self {
         NotifierData {
@@ -68,10 +85,10 @@ impl Notifier {
                 chase_lev::Steal::Data(last_timing) => {
                     data.frames_notified += 1;
                     if data.verbose && data.frames_notified == 600 {
-                        let elapsed = time::SteadyTime::now() - last_timing;
+                        let elapsed = Instant::now() - last_timing;
                         println!(
                             "frame latency (consider queue depth here): {:3.6} ms",
-                            elapsed.num_microseconds().unwrap() as f64 / 1000.
+                            elapsed.as_secs_f64() * 1000.
                         );
                         data.frames_notified = 0;
                     }
@@ -98,11 +115,8 @@ impl RenderNotifier for Notifier {
         self.update(false);
     }
 
-    fn new_frame_ready(&self, _: DocumentId,
-                       scrolled: bool,
-                       _composite_needed: bool,
-                       _: FramePublishId) {
-        self.update(!scrolled);
+    fn new_frame_ready(&self, _: DocumentId, _: FramePublishId, params: &FrameReadyParams) {
+        self.update(!params.scrolled);
     }
 }
 
@@ -207,7 +221,7 @@ pub struct Wrench {
 
     pub rebuild_display_lists: bool,
 
-    pub frame_start_sender: chase_lev::Worker<time::SteadyTime>,
+    pub frame_start_sender: chase_lev::Worker<Instant>,
 
     pub callbacks: Arc<Mutex<blob::BlobCallbacks>>,
 }
@@ -228,17 +242,24 @@ impl Wrench {
         precache_shaders: bool,
         dump_shader_source: Option<String>,
         notifier: Option<Box<dyn RenderNotifier>>,
+        layer_compositor: Option<Box<dyn LayerCompositor>>,
     ) -> Self {
         println!("Shader override path: {:?}", shader_override_path);
 
         let mut debug_flags = DebugFlags::ECHO_DRIVER_MESSAGES;
         debug_flags.set(DebugFlags::DISABLE_BATCHING, no_batch);
+        debug_flags.set(DebugFlags::MISSING_SNAPSHOT_PINK, true);
         let callbacks = Arc::new(Mutex::new(blob::BlobCallbacks::new()));
 
         let precache_flags = if precache_shaders {
             ShaderPrecacheFlags::FULL_COMPILE
         } else {
             ShaderPrecacheFlags::empty()
+        };
+
+        let compositor_config = match layer_compositor {
+            Some(compositor) => CompositorConfig::Layer { compositor },
+            None => CompositorConfig::default(),
         };
 
         let opts = webrender::WebRenderOptions {
@@ -257,6 +278,11 @@ impl Wrench {
             // SWGL doesn't support the GL_ALWAYS depth comparison function used by
             // `clear_caches_with_quads`, but scissored clears work well.
             clear_caches_with_quads: !window.is_software(),
+            compositor_config,
+            enable_debugger: true,
+            precise_radial_gradients: true,
+            precise_conic_gradients: true,
+            precise_linear_gradients: window.is_software(),
             ..Default::default()
         };
 
@@ -441,10 +467,13 @@ impl Wrench {
             stretch,
         };
         let system_fc = dwrote::FontCollection::system();
+        #[allow(deprecated)]
         if let Some(font) = system_fc.get_font_from_descriptor(&desc) {
             let face = font.create_font_face();
+            #[allow(deprecated)]
             let files = face.get_files();
             if files.len() == 1 {
+                #[allow(deprecated)]
                 if let Some(path) = files[0].get_font_file_path() {
                     return self.font_key_from_native_handle(&NativeFontHandle {
                         path,
@@ -538,29 +567,46 @@ impl Wrench {
     }
 
     pub fn begin_frame(&mut self) {
-        self.frame_start_sender.push(time::SteadyTime::now());
+        self.frame_start_sender.push(Instant::now());
     }
 
     pub fn send_lists(
         &mut self,
-        frame_number: u32,
-        display_lists: Vec<(PipelineId, BuiltDisplayList)>,
+        frame_number: &mut u32,
+        display_lists: Vec<DisplayList>,
         scroll_offsets: &HashMap<ExternalScrollId, Vec<SampledScrollOffset>>,
     ) {
         let mut txn = Transaction::new();
+        let mut present = false;
         for display_list in display_lists {
+            present |= display_list.present;
+
             txn.set_display_list(
-                Epoch(frame_number),
-                display_list,
+                Epoch(*frame_number),
+                (display_list.pipeline, display_list.payload),
             );
+
+            if display_list.render_offscreen {
+                txn.render_offscreen(display_list.pipeline);
+            }
+
+            if display_list.send_transaction {
+                for (id, offsets) in scroll_offsets {
+                    txn.set_scroll_offsets(*id, offsets.clone());
+                }
+
+                let tracked = false;
+                txn.generate_frame(0, present, tracked, RenderReasons::TESTING);
+                self.api.send_transaction(self.document_id, txn);
+                txn = Transaction::new();
+
+                present = false;
+                *frame_number += 1;
+            }
         }
 
-        for (id, offsets) in scroll_offsets {
-            txn.set_scroll_offsets(*id, offsets.clone());
-        }
-
-        txn.generate_frame(0, RenderReasons::TESTING);
-        self.api.send_transaction(self.document_id, txn);
+        // The last display lists should be have send_transaction set to true.
+        assert!(txn.is_empty());
     }
 
     pub fn get_frame_profiles(
@@ -580,7 +626,9 @@ impl Wrench {
     pub fn refresh(&mut self) {
         self.begin_frame();
         let mut txn = Transaction::new();
-        txn.generate_frame(0, RenderReasons::TESTING);
+        let present = true;
+        let tracked = false;
+        txn.generate_frame(0, present, tracked, RenderReasons::TESTING);
         self.api.send_transaction(self.document_id, txn);
     }
 

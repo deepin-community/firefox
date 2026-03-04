@@ -27,7 +27,7 @@ printpreview-shrink-to-fit =
 printpreview-custom =
     .label = Personalizat…
 printpreview-print =
-    .label = Tipărește…
+    .label = Printează…
     .accesskey = p
 printpreview-of =
     .value = din
@@ -38,6 +38,10 @@ printpreview-page-setup =
 printpreview-page =
     .value = Pagina:
     .accesskey = a
+# Variables
+# $sheetNum (integer) - The current sheet number
+# $sheetCount (integer) - The total number of sheets to print
+printpreview-sheet-of-sheets = { $sheetNum } din { $sheetCount }
 
 ## Variables
 ## $percent (integer) - menuitem percent label
@@ -57,4 +61,11 @@ printpreview-nextarrow =
 printpreview-endarrow =
     .label = { $arrow }
     .tooltiptext = Ultima pagină
-
+printpreview-homearrow-button =
+    .title = Prima pagină
+printpreview-previousarrow-button =
+    .title = Pagina anterioară
+printpreview-nextarrow-button =
+    .title = Pagina următoare
+printpreview-endarrow-button =
+    .title = Ultima pagină

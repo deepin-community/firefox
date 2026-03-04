@@ -2,16 +2,15 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
-# These are the default window titles everywhere except macOS. The first two
-# attributes are used when the web content opened has no title:
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
 #
 # default - "Mozilla Firefox"
 # private - "Mozilla Firefox (Private Browsing)"
 #
-# The last two are for use when there *is* a content title.
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
 # Variables:
 #  $content-title (String): the title of the web content.
 browser-main-window-window-titles =
@@ -19,14 +18,17 @@ browser-main-window-window-titles =
     .data-title-private = { -brand-full-name } Navegaçion privâ
     .data-content-title-default = { $content-title } — { -brand-full-name }
     .data-content-title-private = { $content-title } — { -brand-full-name } Navegaçion privâ
-# These are the default window titles on macOS. The first two are for use when
-# there is no content title:
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
 #
 # "default" - "Mozilla Firefox"
 # "private" - "Mozilla Firefox — (Private Browsing)"
 #
-# The last two are for use when there *is* a content title.
-# Do not use the brand name in the last two attributes, as we do on non-macOS.
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
 #
 # Also note the other subtle difference here: we use a `-` to separate the
 # brand name from `(Private Browsing)`, which does not happen on other OSes.
@@ -333,17 +335,6 @@ browser-window-restore-down-button =
 browser-window-close-button =
     .tooltiptext = Særa
 
-## Tab actions
-
-
-## These labels should be written in all capital letters if your locale supports them.
-## Variables:
-##  $count (number): number of affected tabs
-
-
-## Bookmarks toolbar items
-
-
 ## WebRTC Pop-up notifications
 
 popup-select-camera-device =
@@ -367,9 +358,6 @@ popup-all-windows-shared = Tutti i barcoin vixibili into schermo saian condivizi
 
 sharing-warning-proceed-to-tab =
     .label = Vanni a-o feuggio
-
-## DevTools F12 popup
-
 
 ## URL Bar
 
@@ -410,6 +398,13 @@ urlbar-result-action-visit = Vixita
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## Strings used for buttons in the urlbar
+
+urlbar-searchmode-history =
+    .label = Stöia
+urlbar-searchmode-actions =
+    .label = Açioin
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -417,9 +412,6 @@ urlbar-result-action-calculator-result = = { $result }
 urlbar-result-action-search-bookmarks = Çerca Segnalibbri
 urlbar-result-action-search-history = Çerca Stöia
 urlbar-result-action-search-tabs = Çerca inte schede.
-
-## Labels shown above groups of urlbar results
-
 
 ## Reader View toolbar buttons
 
@@ -429,11 +421,6 @@ reader-view-enter-button =
 # This should match menu-view-close-readerview in menubar.ftl
 reader-view-close-button =
     .aria-label = Særa Modalitæ letua
-
-## Picture-in-Picture urlbar button
-## Variables:
-##   $shortcut (String) - Keyboard shortcut to execute the command.
-
 
 ## Full Screen and Pointer Lock UI
 
@@ -511,9 +498,6 @@ save-to-pocket-button =
     .label = Sarva in { -pocket-brand-name }
     .tooltiptext = Sarva in { -pocket-brand-name }
 
-## Repair text encoding toolbar button
-
-
 ## Customize Toolbar Buttons
 
 toolbar-overflow-customize-button =
@@ -545,9 +529,6 @@ toolbar-button-new-private-window =
 
 eme-notifications-drm-content-playing = Quarche contegnuo aodio ò video in sto scito deuvia software DRM. Porieivan esighe de limitaçioin a-e açioin pe l’utente in { -brand-short-name }.
 
-## Password save/update panel
-
-
 ##
 
 # "More" item in macOS share menu
@@ -571,10 +552,6 @@ popups-infobar-block =
 popups-infobar-dont-show-message =
     .label = No fâ vedde sta notiçia quande i pop-up son blocæ
     .accesskey = N
-
-## Since the default position for PiP controls does not change for RTL layout,
-## right-to-left languages should use "Left" and "Right" as in the English strings,
-
 
 ##
 
@@ -609,29 +586,12 @@ tabs-toolbar-list-all-tabs =
     .label = Lista de tutti i feuggi
     .tooltiptext = Lista de tutti i feuggi
 
-## Infobar shown at startup to suggest session-restore
-
-
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = Çerte informaçioin se mandan aotomaticamente a { -vendor-short-name } da { -brand-short-name } pe megioane l'uzo.
 data-reporting-notification-button =
     .label = Çerni cöse condividde
     .accesskey = s
-
-## Unified extensions (toolbar) button
-
-
-## Unified extensions button when permission(s) are needed.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Unified extensions button when some extensions are quarantined.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Private browsing reset button
-
 
 ## Autorefresh blocker
 
@@ -640,9 +600,6 @@ refresh-blocked-redirect-label = { -brand-short-name } o l'inpedisce l'indirisam
 refresh-blocked-allow =
     .label = Permetti
     .accesskey = P
-
-## Firefox Relay integration
-
 
 ## Add-on Pop-up Notifications
 

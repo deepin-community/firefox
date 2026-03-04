@@ -7,12 +7,11 @@
 #ifndef _SDPPARSER_H_
 #define _SDPPARSER_H_
 
-#include <vector>
 #include <string>
+#include <vector>
+
 #include "sdp/Sdp.h"
 #include "sdp/SdpLog.h"
-
-#include "mozilla/Telemetry.h"
 
 namespace mozilla {
 

@@ -37,6 +37,7 @@ aboutdialog-update-manual-with-link = తాజాకరణలు ఇక్క�
 settings-update-manual-with-link = తాజాకరణలు ఇక్కడ అందుబాటులోవున్నాయి <a data-l10n-name="manual-link">{ $displayUrl }</a>
 update-unsupported = ఈ వ్యవస్థపై మీరు ఇంకేమీ తాజాకరణలు చెయ్యలేరు. <label data-l10n-name="unsupported-link">ఇంకా తెలుసుకోండి</label>
 update-restarting = పునఃప్రారంభమవుతోంది…
+update-internal-error2 = అంతర్గత లోపం వల్ల తాజాకరణ కోసం చూడలేకపోయాం.తాజాకరణలు <label data-l10n-name="manual-link">{ $displayUrl }</label> వద్ద అందుబాటులో ఉన్నాయి
 
 ##
 
@@ -50,6 +51,8 @@ community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-shor
 community-2 = { -brand-short-name }ను రూపొందించినది <label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label>, వీరు జాలాన్ని స్వేచ్ఛగా, బహిరంగంగా, అందరికీ అందుబాటులో ఉంచేందుకు కలిసి కృషి చేస్తున్న <label data-l10n-name="community-creditsLink">ప్రపంచవ్యాప్త సముదాయం</label> వీరు జాలాన్ని స్వేచ్ఛగా, బహిరంగంగా, అందరికీ అందుబాటులో ఉంచేందుకు కలిసి కృషి చేస్తున్నారు.
 helpus = తోడ్పడాలని అనుకుంటున్నారా? <label data-l10n-name="helpus-donateLink">విరాళమివ్వండి</label> లేక <label data-l10n-name="helpus-getInvolvedLink">పాలుపంచుకోండి!</label>
 bottomLinks-license = లైసెన్సింగ్ సమాచారం
+bottom-links-terms = వాడుక నియమాలు
+bottom-links-privacy = గోప్యతా విధానం
 bottomLinks-rights = అంతిమ-వాడుకరి హక్కులు
 bottomLinks-privacy = గోప్యతా విధానం
 # Example of resulting string: 66.0.1 (64-bit)
@@ -63,3 +66,14 @@ aboutDialog-version = { $version } ({ $bits }-బిట్)
 #   $isodate (String): date in ISO format, e.g. 2019-01-16
 #   $bits (Number): bits of the architecture (32 or 64)
 aboutDialog-version-nightly = { $version }({ $isodate })({ $bits }-బిట్)
+# Example of resulting string: 131.0a1 (aarch64)
+# Variables:
+#   $version (String): version of Firefox, e.g. 66.0.1
+#   $arch (String): name of the architecture (arm, aarch64, etc.)
+aboutdialog-version-arch = { $version } ({ $arch })
+# Example of resulting string: 131.0a1 (2024-08-27) (aarch64)
+# Variables:
+#   $version (String): version of Firefox for Nightly builds, e.g. 66.0a1
+#   $isodate (String): date in ISO format, e.g. 2019-01-16
+#   $arch (String): name of the architecture (arm, aarch64, etc.)
+aboutdialog-version-arch-nightly = { $version } ({ $isodate }) ({ $arch })

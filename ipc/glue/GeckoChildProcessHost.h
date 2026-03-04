@@ -13,13 +13,13 @@
 #include "chrome/common/ipc_message.h"
 #include "mojo/core/ports/port_ref.h"
 
+#include "mozilla/GeckoArgs.h"
 #include "mozilla/ipc/Endpoint.h"
 #include "mozilla/ipc/FileDescriptor.h"
 #include "mozilla/ipc/NodeChannel.h"
 #include "mozilla/ipc/LaunchError.h"
 #include "mozilla/ipc/ScopedPort.h"
 #include "mozilla/Atomics.h"
-#include "mozilla/Buffer.h"
 #include "mozilla/LinkedList.h"
 #include "mozilla/Monitor.h"
 #include "mozilla/MozPromise.h"
@@ -95,7 +95,8 @@ class GeckoChildProcessHost : public SupportsWeakPtr,
   // Does not block.  The IPC channel may not be initialized yet, and
   // the child process may or may not have been created when this
   // method returns.
-  bool AsyncLaunch(StringVector aExtraOpts = StringVector());
+  bool AsyncLaunch(
+      geckoargs::ChildProcessArgs aExtraOpts = geckoargs::ChildProcessArgs{});
 
   virtual bool WaitUntilConnected(int32_t aTimeoutMs = 0);
 
@@ -111,14 +112,16 @@ class GeckoChildProcessHost : public SupportsWeakPtr,
   // executable image can be loaded.  On win32, we do know that when
   // we return.  But we don't know if dynamic linking succeeded on
   // either platform.
-  bool LaunchAndWaitForProcessHandle(StringVector aExtraOpts = StringVector());
+  bool LaunchAndWaitForProcessHandle(
+      geckoargs::ChildProcessArgs aExtraOpts = geckoargs::ChildProcessArgs());
   bool WaitForProcessHandle();
 
   // Block until the child process has been created and it connects to
   // the IPC channel, meaning it's fully initialized.  (Or until an
   // error occurs.)
-  bool SyncLaunch(StringVector aExtraOpts = StringVector(),
-                  int32_t timeoutMs = 0);
+  bool SyncLaunch(
+      geckoargs::ChildProcessArgs aExtraOpts = geckoargs::ChildProcessArgs(),
+      int32_t timeoutMs = 0);
 
   virtual void OnChannelConnected(base::ProcessId peer_pid);
 
@@ -126,7 +129,7 @@ class GeckoChildProcessHost : public SupportsWeakPtr,
   // LaunchAndWaitForProcessHandle); use with AsyncLaunch.
   RefPtr<ProcessHandlePromise> WhenProcessHandleReady();
 
-  void InitializeChannel(IPC::Channel::ChannelHandle&& aServerHandle);
+  bool InitializeChannel(IPC::Channel::ChannelHandle* aClientHandle);
 
   virtual bool CanShutdown() { return true; }
 
@@ -161,19 +164,8 @@ class GeckoChildProcessHost : public SupportsWeakPtr,
 
   GeckoProcessType GetProcessType() { return mProcessType; }
 
-#ifdef XP_DARWIN
+#ifdef XP_MACOSX
   task_t GetChildTask();
-#endif
-
-#ifdef XP_WIN
-
-  void AddHandleToShare(HANDLE aHandle) {
-    mLaunchOptions->handles_to_inherit.push_back(aHandle);
-  }
-#else
-  void AddFdToRemap(int aSrcFd, int aDstFd) {
-    mLaunchOptions->fds_to_remap.push_back(std::make_pair(aSrcFd, aDstFd));
-  }
 #endif
 
 #ifdef ALLOW_GECKO_CHILD_PROCESS_ARCH
@@ -255,13 +247,13 @@ class GeckoChildProcessHost : public SupportsWeakPtr,
     PROCESS_ERROR
   } mProcessState MOZ_GUARDED_BY(mMonitor);
 
-  void PrepareLaunch();
+  bool PrepareLaunch(geckoargs::ChildProcessArgs& aExtraOpts);
 
 #ifdef XP_WIN
   void InitWindowsGroupID();
   nsString mGroupId;
 #  ifdef MOZ_SANDBOX
-  RefPtr<AbstractSandboxBroker> mSandboxBroker;
+  UniquePtr<SandboxBroker> mSandboxBroker;
   std::vector<std::wstring> mAllowedFilesRead;
   bool mEnableSandboxLogging;
   int32_t mSandboxLevel;
@@ -274,7 +266,7 @@ class GeckoChildProcessHost : public SupportsWeakPtr,
 
   mozilla::RWLock mHandleLock;
   ProcessHandle mChildProcessHandle MOZ_GUARDED_BY(mHandleLock);
-#if defined(XP_DARWIN)
+#if defined(XP_MACOSX)
   task_t mChildTask MOZ_GUARDED_BY(mHandleLock);
 #endif
 #if defined(MOZ_WIDGET_UIKIT)
@@ -312,8 +304,6 @@ class GeckoChildProcessHost : public SupportsWeakPtr,
   // Removes the instance from sGeckoChildProcessHosts
   void RemoveFromProcessList();
 
-  // Linux-Only. Set this up before we're called from a different thread.
-  nsCString mTmpDirName;
   // Mac and Windows. Set this up before we're called from a different thread.
   nsCOMPtr<nsIFile> mProfileDir;
 
@@ -325,7 +315,7 @@ class GeckoChildProcessHost : public SupportsWeakPtr,
   static StaticMutex sMutex;
 };
 
-nsCOMPtr<nsIEventTarget> GetIPCLauncher();
+nsCOMPtr<nsISerialEventTarget> GetIPCLauncher();
 
 } /* namespace ipc */
 } /* namespace mozilla */

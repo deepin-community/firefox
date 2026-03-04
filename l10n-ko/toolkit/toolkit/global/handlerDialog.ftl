@@ -20,6 +20,17 @@ permission-dialog-description-file-app = 이 파일이 { $appName } 애플리케
 permission-dialog-description-extension-app = { $extension } 확장 기능이 { $appName }에서 { $scheme } 링크를 열도록 허용하시겠습니까?
 permission-dialog-description-system-app = { $appName } 애플리케이션으로 { $scheme } 링크를 여시겠습니까?
 permission-dialog-description-system-noapp = { $scheme } 링크를 여시겠습니까?
+# Header on a permission prompt, asking the user if they should allow the website to continue.
+wallet-custom-scheme-warning-heading =
+    .heading = 이 사이트에서 디지털 지갑을 열도록 허용하시겠습니까?
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning-host-app = <strong>{ $scheme }</strong> 링크를 열면 <strong>{ $host }</strong> 사이트가 <strong>{ $appName }</strong>를 통해 사용자의 실제 신원을 요청할 수 있습니다. 이 사이트를 신뢰하는 경우에만 계속하세요.
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning-app = <strong>{ $scheme }</strong> 링크를 열면 이 사이트가 <strong>{ $appName }</strong>를 통해 사용자의 실제 신원을 요청할 수 있습니다. 이 사이트를 신뢰하는 경우에만 계속하세요.
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning-host = <strong>{ $scheme }</strong> 링크를 열면 <strong>{ $host }</strong> 사이트가 사용자의 디지털 지갑으로부터 사용자의 실제 신원을 요청할 수 있습니다. 이 사이트를 신뢰하는 경우에만 계속하세요.
+# Warning given to the user that the current page is trying to open their digital wallet app
+wallet-custom-scheme-warning = <strong>{ $scheme }</strong> 링크를 열면 이 사이트가 사용자의 디지털 지갑으로부터 사용자의 실제 신원을 요청할 수 있습니다. 이 사이트를 신뢰하는 경우에만 계속하세요.
 
 ## Please keep the emphasis around the hostname and scheme (ie the
 ## `<strong>` HTML tags). Please also keep the hostname as close to the start
@@ -55,7 +66,7 @@ chooser-dialog =
     .buttonaccesskeyaccept = O
 chooser-dialog-description = { $scheme } 링크를 열 애플리케이션을 선택하세요.
 # Please keep the emphasis around the scheme (ie the `<strong>` HTML tags).
-chooser-dialog-remember = 항상 <strong>{ $scheme }</strong> 링크를 여는데 이 애플리케이션 사용
+chooser-dialog-remember = 항상 <strong>{ $scheme }</strong> 링크를 여는 데 이 애플리케이션 사용
 chooser-dialog-remember-extra =
     { PLATFORM() ->
         [windows] { -brand-short-name } 설정에서 바꿀 수 있습니다.

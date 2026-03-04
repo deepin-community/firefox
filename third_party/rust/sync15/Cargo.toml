@@ -14,23 +14,47 @@ edition = "2021"
 name = "sync15"
 version = "0.1.0"
 authors = ["Sync Team <sync-team@mozilla.com>"]
+build = "build.rs"
 exclude = [
     "/android",
     "/ios",
 ]
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 readme = "README.md"
 license = "MPL-2.0"
 
+[features]
+crypto = [
+    "rc_crypto",
+    "base16",
+    "base64",
+]
+default = ["sync-engine"]
+random-guid = ["sync-guid/random"]
+standalone-sync = ["sync-client"]
+sync-client = [
+    "sync-engine",
+    "crypto",
+    "viaduct",
+    "url",
+]
+sync-engine = ["random-guid"]
+
+[lib]
+name = "sync15"
+path = "src/lib.rs"
+
 [dependencies]
 anyhow = "1.0"
-ffi-support = "0.4"
 lazy_static = "1.4"
-log = "0.4"
 serde_derive = "1"
 serde_json = "1"
 serde_path_to_error = "0.1"
-thiserror = "1.0"
-uniffi = "0.27.1"
+thiserror = "2"
 
 [dependencies.base16]
 version = "0.2"
@@ -62,35 +86,24 @@ features = ["derive"]
 path = "../support/guid"
 features = ["random"]
 
+[dependencies.uniffi]
+version = "0.29.0"
+
 [dependencies.url]
-version = "2.1"
+version = "2"
 optional = true
 
 [dependencies.viaduct]
 path = "../viaduct"
 optional = true
 
-[dev-dependencies.env_logger]
-version = "0.10"
-default-features = false
+[dev-dependencies.error-support]
+path = "../support/error"
+features = ["testing"]
+
+[dev-dependencies.nss]
+path = "../support/rc_crypto/nss"
 
 [build-dependencies.uniffi]
-version = "0.27.1"
+version = "0.29.0"
 features = ["build"]
-
-[features]
-crypto = [
-    "rc_crypto",
-    "base16",
-    "base64",
-]
-default = ["sync-engine"]
-random-guid = ["sync-guid/random"]
-standalone-sync = ["sync-client"]
-sync-client = [
-    "sync-engine",
-    "crypto",
-    "viaduct",
-    "url",
-]
-sync-engine = ["random-guid"]

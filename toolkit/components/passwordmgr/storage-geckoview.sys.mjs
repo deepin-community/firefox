@@ -44,10 +44,10 @@ export class LoginManagerStorage extends LoginManagerStorage_json {
   }
 
   /**
-   * Internal method used by regression tests only.  It is called before
-   * replacing this storage module with a new instance.
+   * Internal method used by tests only. It is called before replacing
+   * this storage module with a new instance.
    */
-  terminate() {}
+  testSaveForReplace() {}
 
   async addLoginsAsync(_logins, _continueOnDuplicates = false) {
     throw Components.Exception("", Cr.NS_ERROR_NOT_IMPLEMENTED);
@@ -61,6 +61,10 @@ export class LoginManagerStorage extends LoginManagerStorage_json {
     throw Components.Exception("", Cr.NS_ERROR_NOT_IMPLEMENTED);
   }
 
+  async modifyLoginAsync(_oldLogin, _newLoginData) {
+    throw Components.Exception("", Cr.NS_ERROR_NOT_IMPLEMENTED);
+  }
+
   recordPasswordUse(login) {
     lazy.GeckoViewAutocomplete.onLoginPasswordUsed(
       lazy.LoginEntry.fromLoginInfo(login)
@@ -70,7 +74,7 @@ export class LoginManagerStorage extends LoginManagerStorage_json {
   /**
    * Returns a promise resolving to an array of all saved logins that can be decrypted.
    *
-   * @resolve {nsILoginInfo[]}
+   * @returns {Promise<nsILoginInfo[]>}
    */
   getAllLogins(includeDeleted) {
     return this._getLoginsAsync({}, includeDeleted);
@@ -213,6 +217,7 @@ export class LoginManagerStorage extends LoginManagerStorage_json {
   /**
    * GeckoView logins are already decrypted before this component receives them
    * so this method is a no-op for this backend.
+   *
    * @see _vanillaLoginToStorageLogin
    */
   _decryptLogins(logins) {

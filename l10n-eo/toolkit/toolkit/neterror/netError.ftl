@@ -12,6 +12,8 @@ neterror-blocked-by-policy-page-title = Blokita paĝo
 neterror-captive-portal-page-title = Komenci seancon en tiu ĉi reto
 neterror-dns-not-found-title = Servilo ne trovita
 neterror-malformed-uri-page-title = Nevalida retadreso
+general-body-title = Estu singarda. Io ne ĝustas.
+problem-with-this-site-title = Ŝajne estas problemo kun tiu ĉi retejo
 
 ## Error page actions
 
@@ -41,6 +43,13 @@ neterror-generic-error = Pro iu kialo { -brand-short-name } ne povas ŝargi tiun
 neterror-load-error-try-again = La retejo povas esti tempe ne atingebla aŭ troe okupata. Klopodu denove post kelkaj momentoj.
 neterror-load-error-connection = Se vi ne sukcesas ŝargi iun ajn paĝon, kontrolu la komputilan retan konekton.
 neterror-load-error-firewall = Se via komputilo aŭ reto estas protektataj de retbarilo aŭ retperanto, certiĝu ke { -brand-short-name } rajtas aliri la TTT-n.
+# This warning is only shown on macOS Sequoia and later (see bug 1929377)
+neterror-load-osx-permission = Se vi klopodas ŝargi paĝon el la loka reto, bonvolu kontroli ĉu { -brand-short-name } ricevis la permesojn por la loka reto en la agordoj de privateco kaj sekureco de de macOS.
+neterror-http-error-page = Certiĝu esti ĝuste tajpinta la adreson de la retejo.
+neterror-http-empty-response = Kontrolu por certi ke vi tajpis la ĝustan adreson por la retejo kaj provu denove post momento.
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-http-empty-response-description = { $hostname } sendis malplenan paĝon.
 neterror-captive-portal = Vi devas komenci seancon en tiu ĉi reto antaŭ ol vi povos aliri la Interreton.
 # Variables:
 # $hostAndPath (String) - a suggested site (e.g. "www.example.com") that the user may have meant instead.
@@ -49,6 +58,10 @@ neterror-dns-not-found-hint-header = <strong>Se vi tajpis la ĝustan adreson, vi
 neterror-dns-not-found-hint-try-again = klopodi denove poste
 neterror-dns-not-found-hint-check-network = kontroli vian retaliron
 neterror-dns-not-found-hint-firewall = kontroli ĉu { -brand-short-name } rajtas aliri la reton (vi eble estas konektita, sed malantaŭ retbarilo).
+neterror-dns-not-found-offline-hint-header = <strong>Kion vi povus fari tio tio?</strong>
+neterror-dns-not-found-offline-hint-different-device = Provu konektiĝi el alia aparato.
+neterror-dns-not-found-offline-hint-modem = Kontrolu vian modemon aŭ retalirilon.
+neterror-dns-not-found-offline-hint-reconnect = Malkonektu kaj rekonektu la sendratan reton (Wi-Fi).
 
 ## TRR-only specific messages
 ## Variables:
@@ -72,7 +85,6 @@ neterror-dns-not-found-trr-unknown-problem = Neatendita problemo.
 ##   $trrDomain (String) - Hostname of the DNS over HTTPS server that is currently in use.
 
 neterror-dns-not-found-native-fallback-reason = { -brand-short-name } ne povas protekti vian peton pri la adreso de tiu ĉi retejo uzante niajn fidatajn serĉilojn DNS. Jen la kialo:
-neterror-dns-not-found-native-fallback-reason2 = { -brand-short-name } ne povas protekti vian peton pri la adreso de tiu ĉi retejo per nia sekura provizanto de DNS. Jen la kialo:
 neterror-dns-not-found-native-fallback-heuristic = DNS per HTTPS estis malaktivigita en via reto.
 neterror-dns-not-found-native-fallback-not-confirmed2 = { -brand-short-name } ne povis konektiĝi al { $trrDomain }.
 
@@ -83,9 +95,10 @@ neterror-file-not-found-moved = Kontrolu ĉu la dosiero estis movita, renomita a
 neterror-access-denied = Eble ĝi estis forigita, aŭ movita, aŭ la permesoj dosieraj evitas aliron al ĝi.
 neterror-unknown-protocol = Vi eble bezonos instali alian programon por malfermi ĉi tiun adreson.
 neterror-redirect-loop = Tiu ĉi problemo povas okazi pro malaktivigo aŭ rifuzo de kuketoj.
+neterror-unknown-socket-type-client-config = Tio ĉi povus okazi pro agorda eraro en via kliento.
 neterror-unknown-socket-type-psm-installed = Kontrolu kaj certiĝu ke via sistemo havas la Administranton de persona sekureco instalita.
 neterror-unknown-socket-type-server-config = Tiu povus okazi pro nenorma agordado de la servilo.
-neterror-not-cached-intro = La petita dokumento ne ekzistas en la staplo de { -brand-short-name }.
+neterror-not-cached-intro = La petita dokumento ne ekzistas en la stokejo de { -brand-short-name }.
 neterror-not-cached-sensitive = Pro sekureca singardo, { -brand-short-name } aŭtomate ne repetas delikatajn dokumentojn.
 neterror-not-cached-try-again = Alklaku 'Klopodi denove' por peti denove la dokumenton al la retejo.
 neterror-net-offline = Premu “Klopodi denove” por baskuli al la konektita reĝimo kaj reŝargi la paĝon.
@@ -96,6 +109,9 @@ neterror-proxy-connect-failure-settings = Kontrolu la agordojn de la retperanto 
 neterror-proxy-connect-failure-contact-admin = Kontaktu vian retan administranton por certiĝi ke la retperanto nuntempe funkcias.
 neterror-content-encoding-error = Bonvolu kontakti la retejajn posedantojn por raporti al ili tiun ĉi problemon.
 neterror-unsafe-content-type = Bonvolu kontakti la retejajn posedantojn por raporti al ili tiun ĉi problemon.
+# Variables:
+# $hostname (String) - Hostname of the website to which the user was trying to connect.
+neterror-basic-http-auth = { -brand-short-name } ne fidas { $hostname } ĉar la konekto ne estas sekura. Provu ŝanĝi la retadreson al HTTPS.
 neterror-nss-failure-not-verified = La paĝo, kiun vi klopodas vidi, ne povas esti montrita ĉar la aŭtentikeco de la ricevitaj datumoj ne povis esti kontrolita.
 neterror-nss-failure-contact-website = Bonvolu kontakti la posedantojn de la retejo por raporti al ili tiun ĉi problemon.
 # Variables:
@@ -148,3 +164,35 @@ certerror-mitm-what-can-you-do-about-it-attack-sts = Se vi ne rekonas la nomon <
 # Variables:
 # $hostname (String) - Hostname of the website to which the user was trying to connect.
 certerror-what-should-i-do-bad-sts-cert-explanation = <b>{ $hostname }</b> uzas sekurecan politikon, kiun oni nomas HTTP Strict Transport Security (HSTS), kiu devigas { -brand-short-name } konektiĝi sekure. Vi ne povas aldoni escepton por viziti tiun ĉi retejon.
+cert-error-trust-certificate-transparency-what-can-you-do-about-it = Verŝajne temas pri nenio grava, sed eble estas problemo en la retejo.
+certerror-blocked-by-corp-headers-description = Kelkefoje retejoj agordas, por si mem kaj por personoj kiel vi, protektojn kontraŭ nedezirataj interagoj kun aliaj retejoj.
+certerror-coop-learn-more = Pli da informo pri la politikoj de malfermo el malsamaj originoj (Cross Origin Opener Policies, COOP)
+certerror-coep-learn-more = Pli da informo pri la politikoj de inkrusto el malsamaj originoj (Cross Origin Embedder Policies, COEP)
+# Variables:
+#   $responsestatus (string) - HTTP response status code (e.g., 500).
+#   $responsestatustext (string) - HTTP response status text (e.g., "Internal Server Error").
+neterror-response-status-code = Erarkodo: { $responsestatus } { $responsestatustext }
+
+## Felt Privacy V1 Strings
+
+fp-neterror-offline-body-title = Ŝajne estas problemo kun via retaliro
+
+## Variables:
+##   $hostname (String) - Hostname of the website to which the user was trying to connect.
+
+fp-neterror-connection-intro = { -brand-short-name } ne povas krei sekuran konekton al la servilo ĉe { $hostname }.
+fp-neterror-offline-intro = { -brand-short-name } ne povas konektiĝi al la servilo ĉe <strong>{ $hostname }</strong>
+fp-neterror-coop-coep-intro = { -brand-short-name } ne ŝargis tiun ĉi paĝon ĉar ŝajne la sekurecaj agordoj ne kongruas kun tiuj de la antaŭa paĝo.
+fp-neterror-http-auth-disabled-intro = Iu, kiu pretendas esti la retejo, povus klopodi ŝteli aferojn, kiel vian nomon de uzanto, pasvorton aŭ retpoŝtan adreson.
+fp-neterror-http-auth-disabled-secure-connection = Tiu ĉi retejo postulas sekuran konekton kaj pro tio vi ne povas aldoni escepton por viziti ĝin.
+fp-neterror-why-did-this-happen = Kial okazis tio ĉi?
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-neterror-cypher-overlap-why-dangerous-body = Tiu retejo ŝajne uzas malnovan programaron kun konataj sekurecaj problemoj.
+fp-neterror-http-auth-disabled-why-dangerous-body = { -brand-short-name } ne fidas { $hostname } ĉar la konekto ne estas sekura.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-neterror-cypher-overlap-what-can-you-do-body = Certu havi la lastan version de { -brand-short-name }. Iru al Helpo > Pri { -brand-short-name } en la menuo. Se vi jam uzas la lastan version de { -brand-short-name }, la problemo tre verŝajne rilatas la retejon mem.
+fp-neterror-offline-what-can-you-do-body = Provu konektiĝi el alia aparato. Kontrolu vian modemon aŭ retalirilon. Malkonektiĝu kaj rekonektiĝu al sendrata reto (Wi-Fi).
+fp-neterror-http-auth-disabled-what-can-you-do-body = Provu ŝanĝi la retadreson al HTTPS. Tamen, verŝajne estas problemo en la retejo mem.
+# This string appears after the following string: "Why did this happen?" (fp-neterror-why-did-this-happen)
+fp-neterror-coop-coep-why-did-this-happen-body = Kelkefoje retejoj agordas protektojn por si mem kontraŭ nedezirataj interagoj kun aliaj retejoj.
+fp-learn-more-about-https-connections = Pli da informo pri konektoj HTTPS

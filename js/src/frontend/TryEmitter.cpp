@@ -29,18 +29,24 @@ TryEmitter::TryEmitter(BytecodeEmitter* bce, Kind kind, ControlKind controlKind)
       state_(State::Start)
 #endif
 {
-  if (controlKind_ == ControlKind::Syntactic) {
-    controlInfo_.emplace(
-        bce_, hasFinally() ? StatementKind::Finally : StatementKind::Try);
-  }
+  MOZ_ASSERT_IF(controlKind_ == ControlKind::Disposal,
+                kind_ == Kind::TryFinally);
 }
 
 #ifdef DEBUG
-bool TryEmitter::hasControlInfo() { return controlInfo_.isSome(); }
+bool TryEmitter::hasControlInfo() { return controlInfo_.get() != nullptr; }
 #endif
 
 bool TryEmitter::emitTry() {
   MOZ_ASSERT(state_ == State::Start);
+
+  if (requiresControlInfo()) {
+    controlInfo_ = bce_->fc->getAllocator()->make_unique<TryFinallyControl>(
+        bce_, hasFinally() ? StatementKind::Finally : StatementKind::Try);
+    if (!controlInfo_) {
+      return false;
+    }
+  }
 
   // Since an exception can be thrown at any place inside the try block,
   // we need to restore the stack and the scope chain before we transfer
@@ -336,5 +342,5 @@ bool TryEmitter::emitEnd() {
 }
 
 bool TryEmitter::shouldUpdateRval() const {
-  return controlKind_ == ControlKind::Syntactic && !bce_->sc->noScriptRval();
+  return requiresControlInfo() && !bce_->sc->noScriptRval();
 }

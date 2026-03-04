@@ -38,7 +38,7 @@ Notes about specific filter kinds:
 
 #define WR_FEATURE_TEXTURE_2D
 
-#include shared,prim_shared
+#include shared,prim_shared,gpu_buffer
 
 varying highp vec2 vInput1Uv;
 varying highp vec2 vInput2Uv;
@@ -172,7 +172,7 @@ PER_INSTANCE in int aFilterInput1TaskAddress;
 PER_INSTANCE in int aFilterInput2TaskAddress;
 PER_INSTANCE in int aFilterKind;
 PER_INSTANCE in int aFilterInputCount;
-PER_INSTANCE in ivec2 aFilterExtraDataAddress;
+PER_INSTANCE in int aFilterExtraDataAddress;
 
 // used for feFlood and feDropShadow colors
 // this is based on SrgbToLinear below, but that version hits SWGL compile
@@ -270,19 +270,23 @@ void main(void) {
         case FILTER_BLEND_SOFT_LIGHT_CONVERTSRGB:
             break;
         case FILTER_COLOR_MATRIX:
-        case FILTER_COLOR_MATRIX_CONVERTSRGB:
-            vec4 mat_data[4] = fetch_from_gpu_cache_4_direct(aFilterExtraDataAddress);
+        case FILTER_COLOR_MATRIX_CONVERTSRGB: {
+            ivec2 gpu_buffer_uv = get_gpu_buffer_uv(aFilterExtraDataAddress);
+            vec4 mat_data[4] = fetch_from_gpu_buffer_4f_direct(gpu_buffer_uv);
             vColorMat = mat4(mat_data[0], mat_data[1], mat_data[2], mat_data[3]);
-            vFilterData0 = fetch_from_gpu_cache_1_direct(aFilterExtraDataAddress + ivec2(4, 0));
+            vFilterData0 = fetch_from_gpu_buffer_1f_direct(gpu_buffer_uv + ivec2(4, 0));
             break;
+        }
         case FILTER_COMPONENT_TRANSFER:
-        case FILTER_COMPONENT_TRANSFER_CONVERTSRGB:
-            vData = ivec4(aFilterExtraDataAddress, 0, 0);
+        case FILTER_COMPONENT_TRANSFER_CONVERTSRGB: {
+            ivec2 gpu_buffer_uv = get_gpu_buffer_uv(aFilterExtraDataAddress);
+            vData = ivec4(gpu_buffer_uv, 0, 0);
             break;
+        }
         case FILTER_COMPOSITE_ARITHMETIC:
         case FILTER_COMPOSITE_ARITHMETIC_CONVERTSRGB:
             // arithmetic parameters
-            vFilterData0 = fetch_from_gpu_cache_1_direct(aFilterExtraDataAddress);
+            vFilterData0 = fetch_from_gpu_buffer_1f(aFilterExtraDataAddress);
             break;
         case FILTER_COMPOSITE_ATOP:
         case FILTER_COMPOSITE_ATOP_CONVERTSRGB:
@@ -326,12 +330,12 @@ void main(void) {
             // TODO
             break;
         case FILTER_DROP_SHADOW:
-            vFilterData0 = fetch_from_gpu_cache_1_direct(aFilterExtraDataAddress);
+            vFilterData0 = fetch_from_gpu_buffer_1f(aFilterExtraDataAddress);
             // premultiply the color
             vFilterData0.rgb = vFilterData0.rgb * vFilterData0.a;
             break;
         case FILTER_DROP_SHADOW_CONVERTSRGB:
-            vFilterData0 = fetch_from_gpu_cache_1_direct(aFilterExtraDataAddress);
+            vFilterData0 = fetch_from_gpu_buffer_1f(aFilterExtraDataAddress);
             // convert from sRGB to linearRGB and premultiply by alpha
             vFilterData0.rgb = vertexSrgbToLinear(vFilterData0.rgb);
             vFilterData0.rgb = vFilterData0.rgb * vFilterData0.a;
@@ -600,253 +604,161 @@ void main(void) {
 
     vec4 result = vec4(1.0, 0.0, 0.0, 1.0);
 
-    switch (vFilterKind) {
-        case FILTER_IDENTITY:
-        case FILTER_IDENTITY_CONVERTSRGB:
-            result = Rs;
-            break;
-        case FILTER_OPACITY:
-        case FILTER_OPACITY_CONVERTSRGB:
-            result = Rs * vFloat0.x;
-            break;
-        case FILTER_TO_ALPHA:
-        case FILTER_TO_ALPHA_CONVERTSRGB:
-            // Just return the alpha, we have literally nothing to do on the RGB
-            // values here, this also means CONVERTSRGB is irrelevant.
-            oFragColor = vec4(0.0, 0.0, 0.0, Rs.a);
-            return;
-        case FILTER_BLEND_COLOR:
-        case FILTER_BLEND_COLOR_CONVERTSRGB:
-            result.rgb = Color(Nb.rgb, Ns.rgb);
-            result.rgb = (1.0 - Rb.a) * Rs.rgb + (1.0 - Rs.a) * Rb.rgb + Rs.a * Rb.a * result.rgb;
-            result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
-            break;
-        case FILTER_BLEND_COLOR_BURN:
-        case FILTER_BLEND_COLOR_BURN_CONVERTSRGB:
-            result.rgb = vec3(ColorBurn(Nb.r, Ns.r), ColorBurn(Nb.g, Ns.g), ColorBurn(Nb.b, Ns.b));
-            result.rgb = (1.0 - Rb.a) * Rs.rgb + (1.0 - Rs.a) * Rb.rgb + Rs.a * Rb.a * result.rgb;
-            result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
-            break;
-        case FILTER_BLEND_COLOR_DODGE:
-        case FILTER_BLEND_COLOR_DODGE_CONVERTSRGB:
-            result.rgb = vec3(ColorDodge(Nb.r, Ns.r), ColorDodge(Nb.g, Ns.g), ColorDodge(Nb.b, Ns.b));
-            result.rgb = (1.0 - Rb.a) * Rs.rgb + (1.0 - Rs.a) * Rb.rgb + Rs.a * Rb.a * result.rgb;
-            result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
-            break;
-        case FILTER_BLEND_DARKEN:
-        case FILTER_BLEND_DARKEN_CONVERTSRGB:
-            result.rgb = Rs.rgb + Rb.rgb - max(Rs.rgb * Rb.a, Rb.rgb * Rs.a);
-            result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
-            break;
-        case FILTER_BLEND_DIFFERENCE:
-        case FILTER_BLEND_DIFFERENCE_CONVERTSRGB:
-            result.rgb = Rs.rgb + Rb.rgb - 2.0 * min(Rs.rgb * Rb.a, Rb.rgb * Rs.a);
-            result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
-            break;
-        case FILTER_BLEND_EXCLUSION:
-        case FILTER_BLEND_EXCLUSION_CONVERTSRGB:
-            result.rgb = Rs.rgb + Rb.rgb - 2.0 * (Rs.rgb * Rb.rgb);
-            result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
-            break;
-        case FILTER_BLEND_HARD_LIGHT:
-        case FILTER_BLEND_HARD_LIGHT_CONVERTSRGB:
-            result.rgb = HardLight(Nb.rgb, Ns.rgb);
-            result.rgb = (1.0 - Rb.a) * Rs.rgb + (1.0 - Rs.a) * Rb.rgb + Rs.a * Rb.a * result.rgb;
-            result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
-            break;
-        case FILTER_BLEND_HUE:
-        case FILTER_BLEND_HUE_CONVERTSRGB:
-            result.rgb = Hue(Nb.rgb, Ns.rgb);
-            result.rgb = (1.0 - Rb.a) * Rs.rgb + (1.0 - Rs.a) * Rb.rgb + Rs.a * Rb.a * result.rgb;
-            result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
-            break;
-        case FILTER_BLEND_LIGHTEN:
-        case FILTER_BLEND_LIGHTEN_CONVERTSRGB:
-            result.rgb = Rs.rgb + Rb.rgb - min(Rs.rgb * Rb.a, Rb.rgb * Rs.a);
-            result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
-            break;
-        case FILTER_BLEND_LUMINOSITY:
-        case FILTER_BLEND_LUMINOSITY_CONVERTSRGB:
-            result.rgb = Luminosity(Nb.rgb, Ns.rgb);
-            result.rgb = (1.0 - Rb.a) * Rs.rgb + (1.0 - Rs.a) * Rb.rgb + Rs.a * Rb.a * result.rgb;
-            result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
-            break;
-        case FILTER_BLEND_MULTIPLY:
-        case FILTER_BLEND_MULTIPLY_CONVERTSRGB:
-            result.rgb = Rs.rgb * (1.0 - Rb.a) + Rb.rgb * (1.0 - Rs.a) + Rs.rgb * Rb.rgb;
-            result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
-            break;
-        case FILTER_BLEND_NORMAL:
-        case FILTER_BLEND_NORMAL_CONVERTSRGB:
-            result = Rb * (1.0 - Rs.a) + Rs;
-            break;
-        case FILTER_BLEND_OVERLAY:
-        case FILTER_BLEND_OVERLAY_CONVERTSRGB:
-            // Overlay is inverse of Hardlight
-            result.rgb = HardLight(Ns.rgb, Nb.rgb);
-            result.rgb = (1.0 - Rb.a) * Rs.rgb + (1.0 - Rs.a) * Rb.rgb + Rs.a * Rb.a * result.rgb;
-            result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
-            break;
-        case FILTER_BLEND_SATURATION:
-        case FILTER_BLEND_SATURATION_CONVERTSRGB:
-            result.rgb = Saturation(Nb.rgb, Ns.rgb);
-            result.rgb = (1.0 - Rb.a) * Rs.rgb + (1.0 - Rs.a) * Rb.rgb + Rs.a * Rb.a * result.rgb;
-            result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
-            break;
-        case FILTER_BLEND_SCREEN:
-        case FILTER_BLEND_SCREEN_CONVERTSRGB:
-            result.rgb = Rs.rgb + Rb.rgb - (Rs.rgb * Rb.rgb);
-            result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
-            break;
-        case FILTER_BLEND_SOFT_LIGHT:
-        case FILTER_BLEND_SOFT_LIGHT_CONVERTSRGB:
-            result.rgb = vec3(SoftLight(Nb.r, Ns.r), SoftLight(Nb.g, Ns.g), SoftLight(Nb.b, Ns.b));
-            result.rgb = (1.0 - Rb.a) * Rs.rgb + (1.0 - Rs.a) * Rb.rgb + Rs.a * Rb.a * result.rgb;
-            result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
-            break;
-        case FILTER_COLOR_MATRIX:
-        case FILTER_COLOR_MATRIX_CONVERTSRGB:
-            result = vColorMat * Ns + vFilterData0;
-            result = clamp(result, vec4(0.0), vec4(1.0));
-            result.rgb = result.rgb * result.a;
-            break;
-        case FILTER_COMPONENT_TRANSFER:
-        case FILTER_COMPONENT_TRANSFER_CONVERTSRGB:
-            // fetch new value for each channel from the RGBA lookup table.
-            result = floor(clamp(Ns * 255.0, vec4(0.0), vec4(255.0)));
-            // SWGL doesn't have an intrinsic for ivec4(vec4)
-            k = ivec4(int(result.r), int(result.g), int(result.b), int(result.a));
-            result.r = fetch_from_gpu_cache_1_direct(vData.xy + ivec2(k.r, 0)).r;
-            result.g = fetch_from_gpu_cache_1_direct(vData.xy + ivec2(k.g, 0)).g;
-            result.b = fetch_from_gpu_cache_1_direct(vData.xy + ivec2(k.b, 0)).b;
-            result.a = fetch_from_gpu_cache_1_direct(vData.xy + ivec2(k.a, 0)).a;
-            result.rgb = result.rgb * result.a;
-            break;
-        case FILTER_COMPOSITE_ARITHMETIC:
-        case FILTER_COMPOSITE_ARITHMETIC_CONVERTSRGB:
-            result = Rs * Rb * vFilterData0.x + Rs * vFilterData0.y + Rb * vFilterData0.z + vec4(vFilterData0.w);
-            result = clamp(result, vec4(0.0), vec4(1.0));
-            break;
-        case FILTER_COMPOSITE_ATOP:
-        case FILTER_COMPOSITE_ATOP_CONVERTSRGB:
-            result = Rs * Rb.a + Rb * (1.0 - Rs.a);
-            break;
-        case FILTER_COMPOSITE_IN:
-        case FILTER_COMPOSITE_IN_CONVERTSRGB:
-            result = Rs * Rb.a;
-            break;
-        case FILTER_COMPOSITE_LIGHTER:
-        case FILTER_COMPOSITE_LIGHTER_CONVERTSRGB:
-            result = Rs + Rb;
-            result = clamp(result, vec4(0.0), vec4(1.0));
-            break;
-        case FILTER_COMPOSITE_OUT:
-        case FILTER_COMPOSITE_OUT_CONVERTSRGB:
-            result = Rs * (1.0 - Rb.a);
-            break;
-        case FILTER_COMPOSITE_OVER:
-        case FILTER_COMPOSITE_OVER_CONVERTSRGB:
-            result = Rs + Rb * (1.0 - Rs.a);
-            break;
-        case FILTER_COMPOSITE_XOR:
-        case FILTER_COMPOSITE_XOR_CONVERTSRGB:
-            result = Rs * (1.0 - Rb.a) + Rb * (1.0 - Rs.a);
-            break;
-        case FILTER_CONVOLVE_MATRIX_EDGE_MODE_DUPLICATE:
-        case FILTER_CONVOLVE_MATRIX_EDGE_MODE_DUPLICATE_CONVERTSRGB:
-            // TODO
-            break;
-        case FILTER_CONVOLVE_MATRIX_EDGE_MODE_NONE:
-        case FILTER_CONVOLVE_MATRIX_EDGE_MODE_NONE_CONVERTSRGB:
-            // TODO
-            break;
-        case FILTER_CONVOLVE_MATRIX_EDGE_MODE_WRAP:
-        case FILTER_CONVOLVE_MATRIX_EDGE_MODE_WRAP_CONVERTSRGB:
-            // TODO
-            break;
-        case FILTER_DIFFUSE_LIGHTING_DISTANT:
-        case FILTER_DIFFUSE_LIGHTING_DISTANT_CONVERTSRGB:
-            // TODO
-            break;
-        case FILTER_DIFFUSE_LIGHTING_POINT:
-        case FILTER_DIFFUSE_LIGHTING_POINT_CONVERTSRGB:
-            // TODO
-            break;
-        case FILTER_DIFFUSE_LIGHTING_SPOT:
-        case FILTER_DIFFUSE_LIGHTING_SPOT_CONVERTSRGB:
-            // TODO
-            break;
-        case FILTER_DISPLACEMENT_MAP:
-        case FILTER_DISPLACEMENT_MAP_CONVERTSRGB:
-            // TODO
-            break;
-        case FILTER_DROP_SHADOW:
-        case FILTER_DROP_SHADOW_CONVERTSRGB:
-            // First input is original image, second input is offset and blurred
-            // image, we replace color of second input with vFilterData.rgb and
-            // composite with mode OVER.
-            // This color is already premultiplied, so it's ready to use
-            result = Rs + vFilterData0 * (Rb.a * (1.0 - Rs.a));
-            break;
-        case FILTER_FLOOD:
-        case FILTER_FLOOD_CONVERTSRGB:
-            result = vFilterData0;
-            break;
-        case FILTER_GAUSSIAN_BLUR:
-        case FILTER_GAUSSIAN_BLUR_CONVERTSRGB:
-            // unused - the IDENTITY filter is used for composing this
-            break;
-        case FILTER_IMAGE:
-        case FILTER_IMAGE_CONVERTSRGB:
-            // TODO - we need to get the uvrect set up in the code before
-            // this shader case will matter, best to leave it at the fallback
-            // color for now when it is known to be broken.
-            break;
-        case FILTER_MORPHOLOGY_DILATE:
-        case FILTER_MORPHOLOGY_DILATE_CONVERTSRGB:
-            // TODO
-            break;
-        case FILTER_MORPHOLOGY_ERODE:
-        case FILTER_MORPHOLOGY_ERODE_CONVERTSRGB:
-            // TODO
-            break;
-        case FILTER_SPECULAR_LIGHTING_DISTANT:
-        case FILTER_SPECULAR_LIGHTING_DISTANT_CONVERTSRGB:
-            // TODO
-            break;
-        case FILTER_SPECULAR_LIGHTING_POINT:
-        case FILTER_SPECULAR_LIGHTING_POINT_CONVERTSRGB:
-            // TODO
-            break;
-        case FILTER_SPECULAR_LIGHTING_SPOT:
-        case FILTER_SPECULAR_LIGHTING_SPOT_CONVERTSRGB:
-            // TODO
-            break;
-        case FILTER_TILE:
-        case FILTER_TILE_CONVERTSRGB:
-            // TODO
-            // we can just return the texel without doing anything else
-            vec2 tileUv = rect_repeat(vInput1Uv, vInput1UvRect.xy, vInput1UvRect.zw);
-            oFragColor = sampleInUvRect(sColor0, tileUv, vInput1UvRect);
-            return;
-        case FILTER_TURBULENCE_WITH_FRACTAL_NOISE_WITH_NO_STITCHING:
-        case FILTER_TURBULENCE_WITH_FRACTAL_NOISE_WITH_NO_STITCHING_CONVERTSRGB:
-            // TODO
-            break;
-        case FILTER_TURBULENCE_WITH_FRACTAL_NOISE_WITH_STITCHING:
-        case FILTER_TURBULENCE_WITH_FRACTAL_NOISE_WITH_STITCHING_CONVERTSRGB:
-            // TODO
-            break;
-        case FILTER_TURBULENCE_WITH_TURBULENCE_NOISE_WITH_NO_STITCHING:
-        case FILTER_TURBULENCE_WITH_TURBULENCE_NOISE_WITH_NO_STITCHING_CONVERTSRGB:
-            // TODO
-            break;
-        case FILTER_TURBULENCE_WITH_TURBULENCE_NOISE_WITH_STITCHING:
-        case FILTER_TURBULENCE_WITH_TURBULENCE_NOISE_WITH_STITCHING_CONVERTSRGB:
-            // TODO
-            break;
-        default:
-            break;
+    // This would produce more efficient code for swgl if we used a switch statement.
+    // However, the glsl-optimizer pass produces awful code for switch statements,
+    // resulting in the optimized fragment shader taking half a minute to compile on
+    // some Adreno devices. See bug 1929209.
+    // We should fix the optimizer to produce more sensible output for switch
+    // statements, then convert this back to one.
+    // And now to appease angle_shader_validation: default: default: default:.
+    if (vFilterKind == FILTER_IDENTITY || vFilterKind == FILTER_IDENTITY_CONVERTSRGB) {
+        result = Rs;
+    } else if (vFilterKind == FILTER_OPACITY || vFilterKind == FILTER_OPACITY_CONVERTSRGB) {
+        result = Rs * vFloat0.x;
+    } else if (vFilterKind == FILTER_TO_ALPHA || vFilterKind == FILTER_TO_ALPHA_CONVERTSRGB) {
+        // Just return the alpha, we have literally nothing to do on the RGB
+        // values here, this also means CONVERTSRGB is irrelevant.
+        oFragColor = vec4(0.0, 0.0, 0.0, Rs.a);
+        return;
+    } else if (vFilterKind == FILTER_BLEND_COLOR || vFilterKind == FILTER_BLEND_COLOR_CONVERTSRGB) {
+        result.rgb = Color(Nb.rgb, Ns.rgb);
+        result.rgb = (1.0 - Rb.a) * Rs.rgb + (1.0 - Rs.a) * Rb.rgb + Rs.a * Rb.a * result.rgb;
+        result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
+    } else if (vFilterKind == FILTER_BLEND_COLOR_BURN || vFilterKind == FILTER_BLEND_COLOR_BURN_CONVERTSRGB) {
+        result.rgb = vec3(ColorBurn(Nb.r, Ns.r), ColorBurn(Nb.g, Ns.g), ColorBurn(Nb.b, Ns.b));
+        result.rgb = (1.0 - Rb.a) * Rs.rgb + (1.0 - Rs.a) * Rb.rgb + Rs.a * Rb.a * result.rgb;
+        result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
+    } else if (vFilterKind == FILTER_BLEND_COLOR_DODGE || vFilterKind == FILTER_BLEND_COLOR_DODGE_CONVERTSRGB) {
+        result.rgb = vec3(ColorDodge(Nb.r, Ns.r), ColorDodge(Nb.g, Ns.g), ColorDodge(Nb.b, Ns.b));
+        result.rgb = (1.0 - Rb.a) * Rs.rgb + (1.0 - Rs.a) * Rb.rgb + Rs.a * Rb.a * result.rgb;
+        result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
+    } else if (vFilterKind == FILTER_BLEND_DARKEN || vFilterKind == FILTER_BLEND_DARKEN_CONVERTSRGB) {
+        result.rgb = Rs.rgb + Rb.rgb - max(Rs.rgb * Rb.a, Rb.rgb * Rs.a);
+        result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
+    } else if (vFilterKind == FILTER_BLEND_DIFFERENCE || vFilterKind == FILTER_BLEND_DIFFERENCE_CONVERTSRGB) {
+        result.rgb = Rs.rgb + Rb.rgb - 2.0 * min(Rs.rgb * Rb.a, Rb.rgb * Rs.a);
+        result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
+    } else if (vFilterKind == FILTER_BLEND_EXCLUSION || vFilterKind == FILTER_BLEND_EXCLUSION_CONVERTSRGB) {
+        result.rgb = Rs.rgb + Rb.rgb - 2.0 * (Rs.rgb * Rb.rgb);
+        result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
+    } else if (vFilterKind == FILTER_BLEND_HARD_LIGHT || vFilterKind == FILTER_BLEND_HARD_LIGHT_CONVERTSRGB) {
+        result.rgb = HardLight(Nb.rgb, Ns.rgb);
+        result.rgb = (1.0 - Rb.a) * Rs.rgb + (1.0 - Rs.a) * Rb.rgb + Rs.a * Rb.a * result.rgb;
+        result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
+    } else if (vFilterKind == FILTER_BLEND_HUE || vFilterKind == FILTER_BLEND_HUE_CONVERTSRGB) {
+        result.rgb = Hue(Nb.rgb, Ns.rgb);
+        result.rgb = (1.0 - Rb.a) * Rs.rgb + (1.0 - Rs.a) * Rb.rgb + Rs.a * Rb.a * result.rgb;
+        result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
+    } else if (vFilterKind == FILTER_BLEND_LIGHTEN || vFilterKind == FILTER_BLEND_LIGHTEN_CONVERTSRGB) {
+        result.rgb = Rs.rgb + Rb.rgb - min(Rs.rgb * Rb.a, Rb.rgb * Rs.a);
+        result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
+    } else if (vFilterKind == FILTER_BLEND_LUMINOSITY || vFilterKind == FILTER_BLEND_LUMINOSITY_CONVERTSRGB) {
+        result.rgb = Luminosity(Nb.rgb, Ns.rgb);
+        result.rgb = (1.0 - Rb.a) * Rs.rgb + (1.0 - Rs.a) * Rb.rgb + Rs.a * Rb.a * result.rgb;
+        result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
+    } else if (vFilterKind == FILTER_BLEND_MULTIPLY || vFilterKind == FILTER_BLEND_MULTIPLY_CONVERTSRGB) {
+        result.rgb = Rs.rgb * (1.0 - Rb.a) + Rb.rgb * (1.0 - Rs.a) + Rs.rgb * Rb.rgb;
+        result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
+    } else if (vFilterKind == FILTER_BLEND_NORMAL || vFilterKind == FILTER_BLEND_NORMAL_CONVERTSRGB) {
+        result = Rb * (1.0 - Rs.a) + Rs;
+    } else if (vFilterKind == FILTER_BLEND_OVERLAY || vFilterKind == FILTER_BLEND_OVERLAY_CONVERTSRGB) {
+        // Overlay is inverse of Hardlight
+        result.rgb = HardLight(Ns.rgb, Nb.rgb);
+        result.rgb = (1.0 - Rb.a) * Rs.rgb + (1.0 - Rs.a) * Rb.rgb + Rs.a * Rb.a * result.rgb;
+        result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
+    } else if (vFilterKind == FILTER_BLEND_SATURATION || vFilterKind == FILTER_BLEND_SATURATION_CONVERTSRGB) {
+        result.rgb = Saturation(Nb.rgb, Ns.rgb);
+        result.rgb = (1.0 - Rb.a) * Rs.rgb + (1.0 - Rs.a) * Rb.rgb + Rs.a * Rb.a * result.rgb;
+        result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
+    } else if (vFilterKind == FILTER_BLEND_SCREEN || vFilterKind == FILTER_BLEND_SCREEN_CONVERTSRGB) {
+        result.rgb = Rs.rgb + Rb.rgb - (Rs.rgb * Rb.rgb);
+        result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
+    } else if (vFilterKind == FILTER_BLEND_SOFT_LIGHT || vFilterKind == FILTER_BLEND_SOFT_LIGHT_CONVERTSRGB) {
+        result.rgb = vec3(SoftLight(Nb.r, Ns.r), SoftLight(Nb.g, Ns.g), SoftLight(Nb.b, Ns.b));
+        result.rgb = (1.0 - Rb.a) * Rs.rgb + (1.0 - Rs.a) * Rb.rgb + Rs.a * Rb.a * result.rgb;
+        result.a = Rb.a * (1.0 - Rs.a) + Rs.a;
+    } else if (vFilterKind == FILTER_COLOR_MATRIX || vFilterKind == FILTER_COLOR_MATRIX_CONVERTSRGB) {
+        result = vColorMat * Ns + vFilterData0;
+        result = clamp(result, vec4(0.0), vec4(1.0));
+        result.rgb = result.rgb * result.a;
+    } else if (vFilterKind == FILTER_COMPONENT_TRANSFER || vFilterKind == FILTER_COMPONENT_TRANSFER_CONVERTSRGB) {
+        // fetch new value for each channel from the RGBA lookup table.
+        result = floor(clamp(Ns * 255.0, vec4(0.0), vec4(255.0)));
+        // SWGL doesn't have an intrinsic for ivec4(vec4)
+        k = ivec4(int(result.r), int(result.g), int(result.b), int(result.a));
+        result.r = fetch_from_gpu_buffer_1f_direct(vData.xy + ivec2(k.r, 0)).r;
+        result.g = fetch_from_gpu_buffer_1f_direct(vData.xy + ivec2(k.g, 0)).g;
+        result.b = fetch_from_gpu_buffer_1f_direct(vData.xy + ivec2(k.b, 0)).b;
+        result.a = fetch_from_gpu_buffer_1f_direct(vData.xy + ivec2(k.a, 0)).a;
+        result.rgb = result.rgb * result.a;
+    } else if (vFilterKind == FILTER_COMPOSITE_ARITHMETIC || vFilterKind == FILTER_COMPOSITE_ARITHMETIC_CONVERTSRGB) {
+        result = Rs * Rb * vFilterData0.x + Rs * vFilterData0.y + Rb * vFilterData0.z + vec4(vFilterData0.w);
+        result = clamp(result, vec4(0.0), vec4(1.0));
+    } else if (vFilterKind == FILTER_COMPOSITE_ATOP || vFilterKind == FILTER_COMPOSITE_ATOP_CONVERTSRGB) {
+        result = Rs * Rb.a + Rb * (1.0 - Rs.a);
+    } else if (vFilterKind == FILTER_COMPOSITE_IN || vFilterKind == FILTER_COMPOSITE_IN_CONVERTSRGB) {
+        result = Rs * Rb.a;
+    } else if (vFilterKind == FILTER_COMPOSITE_LIGHTER || vFilterKind == FILTER_COMPOSITE_LIGHTER_CONVERTSRGB) {
+        result = Rs + Rb;
+        result = clamp(result, vec4(0.0), vec4(1.0));
+    } else if (vFilterKind == FILTER_COMPOSITE_OUT || vFilterKind == FILTER_COMPOSITE_OUT_CONVERTSRGB) {
+        result = Rs * (1.0 - Rb.a);
+    } else if (vFilterKind == FILTER_COMPOSITE_OVER || vFilterKind == FILTER_COMPOSITE_OVER_CONVERTSRGB) {
+        result = Rs + Rb * (1.0 - Rs.a);
+    } else if (vFilterKind == FILTER_COMPOSITE_XOR || vFilterKind == FILTER_COMPOSITE_XOR_CONVERTSRGB) {
+        result = Rs * (1.0 - Rb.a) + Rb * (1.0 - Rs.a);
+    } else if (vFilterKind == FILTER_CONVOLVE_MATRIX_EDGE_MODE_DUPLICATE || vFilterKind == FILTER_CONVOLVE_MATRIX_EDGE_MODE_DUPLICATE_CONVERTSRGB) {
+        // TODO
+    } else if (vFilterKind == FILTER_CONVOLVE_MATRIX_EDGE_MODE_NONE || vFilterKind == FILTER_CONVOLVE_MATRIX_EDGE_MODE_NONE_CONVERTSRGB) {
+        // TODO
+    } else if (vFilterKind == FILTER_CONVOLVE_MATRIX_EDGE_MODE_WRAP || vFilterKind == FILTER_CONVOLVE_MATRIX_EDGE_MODE_WRAP_CONVERTSRGB) {
+        // TODO
+    } else if (vFilterKind == FILTER_DIFFUSE_LIGHTING_DISTANT || vFilterKind == FILTER_DIFFUSE_LIGHTING_DISTANT_CONVERTSRGB) {
+        // TODO
+    } else if (vFilterKind == FILTER_DIFFUSE_LIGHTING_POINT || vFilterKind == FILTER_DIFFUSE_LIGHTING_POINT_CONVERTSRGB) {
+        // TODO
+    } else if (vFilterKind == FILTER_DIFFUSE_LIGHTING_SPOT || vFilterKind == FILTER_DIFFUSE_LIGHTING_SPOT_CONVERTSRGB) {
+        // TODO
+    } else if (vFilterKind == FILTER_DISPLACEMENT_MAP || vFilterKind == FILTER_DISPLACEMENT_MAP_CONVERTSRGB) {
+        // TODO
+    } else if (vFilterKind == FILTER_DROP_SHADOW || vFilterKind == FILTER_DROP_SHADOW_CONVERTSRGB) {
+        // First input is original image, second input is offset and blurred
+        // image, we replace color of second input with vFilterData.rgb and
+        // composite with mode OVER.
+        // This color is already premultiplied, so it's ready to use
+        result = Rs + vFilterData0 * (Rb.a * (1.0 - Rs.a));
+    } else if (vFilterKind == FILTER_FLOOD || vFilterKind == FILTER_FLOOD_CONVERTSRGB) {
+        result = vFilterData0;
+    } else if (vFilterKind == FILTER_GAUSSIAN_BLUR || vFilterKind == FILTER_GAUSSIAN_BLUR_CONVERTSRGB) {
+        // unused - the IDENTITY filter is used for composing this
+    } else if (vFilterKind == FILTER_IMAGE || vFilterKind == FILTER_IMAGE_CONVERTSRGB) {
+        // TODO - we need to get the uvrect set up in the code before
+        // this shader case will matter, best to leave it at the fallback
+        // color for now when it is known to be broken.
+    } else if (vFilterKind == FILTER_MORPHOLOGY_DILATE || vFilterKind == FILTER_MORPHOLOGY_DILATE_CONVERTSRGB) {
+        // TODO
+    } else if (vFilterKind == FILTER_MORPHOLOGY_ERODE || vFilterKind == FILTER_MORPHOLOGY_ERODE_CONVERTSRGB) {
+        // TODO
+    } else if (vFilterKind == FILTER_SPECULAR_LIGHTING_DISTANT || vFilterKind == FILTER_SPECULAR_LIGHTING_DISTANT_CONVERTSRGB) {
+        // TODO
+    } else if (vFilterKind == FILTER_SPECULAR_LIGHTING_POINT || vFilterKind == FILTER_SPECULAR_LIGHTING_POINT_CONVERTSRGB) {
+        // TODO
+    } else if (vFilterKind == FILTER_SPECULAR_LIGHTING_SPOT || vFilterKind == FILTER_SPECULAR_LIGHTING_SPOT_CONVERTSRGB) {
+        // TODO
+    } else if (vFilterKind == FILTER_TILE || vFilterKind == FILTER_TILE_CONVERTSRGB) {
+        // TODO
+        // we can just return the texel without doing anything else
+        vec2 tileUv = rect_repeat(vInput1Uv, vInput1UvRect.xy, vInput1UvRect.zw);
+        oFragColor = sampleInUvRect(sColor0, tileUv, vInput1UvRect);
+        return;
+    } else if (vFilterKind == FILTER_TURBULENCE_WITH_FRACTAL_NOISE_WITH_NO_STITCHING || vFilterKind == FILTER_TURBULENCE_WITH_FRACTAL_NOISE_WITH_NO_STITCHING_CONVERTSRGB) {
+        // TODO
+    } else if (vFilterKind == FILTER_TURBULENCE_WITH_FRACTAL_NOISE_WITH_STITCHING || vFilterKind == FILTER_TURBULENCE_WITH_FRACTAL_NOISE_WITH_STITCHING_CONVERTSRGB) {
+        // TODO
+    } else if (vFilterKind == FILTER_TURBULENCE_WITH_TURBULENCE_NOISE_WITH_NO_STITCHING || vFilterKind == FILTER_TURBULENCE_WITH_TURBULENCE_NOISE_WITH_NO_STITCHING_CONVERTSRGB) {
+        // TODO
+    } else if (vFilterKind == FILTER_TURBULENCE_WITH_TURBULENCE_NOISE_WITH_STITCHING || vFilterKind == FILTER_TURBULENCE_WITH_TURBULENCE_NOISE_WITH_STITCHING_CONVERTSRGB) {
+        // TODO
     }
 
     if ((vFilterKind & FILTER_BITFLAGS_CONVERTSRGB) != 0) {

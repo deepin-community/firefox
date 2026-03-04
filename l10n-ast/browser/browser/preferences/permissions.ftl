@@ -5,62 +5,47 @@
 permissions-window2 =
     .title = Esceiciones
     .style = min-width: 36em
-
 permissions-close-key =
     .key = w
-
 permissions-address = Direición del sitiu web
     .accesskey = D
-
 permissions-block =
     .label = Bloquiar
     .accesskey = B
-
 permissions-session =
     .label = Permitir na sesión
     .accesskey = s
-
 permissions-allow =
     .label = Permitir
     .accesskey = P
-
 permissions-site-name =
     .label = Sitiu web
-
 permissions-status =
     .label = Estáu
-
 permissions-remove =
     .label = Quitar el sitiu web
     .accesskey = Q
-
 permissions-remove-all =
     .label = Quitar tolos sitios web
     .accesskey = u
-
 permission-dialog =
     .buttonlabelaccept = Guardar los cambeos
     .buttonaccesskeyaccept = G
-
 permissions-autoplay-menu = Lo predeterminao pa tolos sitios web:
-
 permissions-searchbox =
     .placeholder = Buscar un sitiu web
-
 permissions-capabilities-autoplay-allow =
     .label = Permitir l'audiu y videu
 permissions-capabilities-autoplay-block =
     .label = Bloquiar l'audiu
 permissions-capabilities-autoplay-blockall =
     .label = Bloquiar l'audiu y videu
-
 permissions-capabilities-allow =
     .label = Permitir
 permissions-capabilities-block =
     .label = Bloquiar
 permissions-capabilities-prompt =
     .label = Entrugar siempres
-
 permissions-capabilities-listitem-allow =
     .value = Permitir
 permissions-capabilities-listitem-block =
@@ -85,9 +70,6 @@ permissions-exceptions-cookie-window2 =
     .title = Esceiciones - Cookies y datos de los sitios
     .style = { permissions-window2.style }
 permissions-exceptions-cookie-desc = Pues especificar los sitios web que siempres o enxamás van tener permisu pa usar cookies y datos de los sitios. Teclexa la direición exauta del sitiu que quies xestionar y dempués calca «Bloquiar», «Permitir na sesión» o «Permitir»
-
-## Exceptions - HTTPS-Only Mode
-
 
 ## Exceptions - Pop-ups
 
@@ -166,8 +148,3 @@ permissions-site-microphone-desc = Los sitios web de darréu solicitaron l'acces
 permissions-site-microphone-disable-label =
     .label = Bloquiar les solicitúes nueves p'acceder al micrófonu
 permissions-site-microphone-disable-desc = Esto va evitar que los sitios web que nun tean na llista d'enriba soliciten permisu p'acceder al micrófonu. Bloquiar l'accesu al micrófonu pue estropiar les carauterístiques de dalgunos sitios web.
-
-## Site Permissions - Speaker
-##
-## "Speaker" refers to an audio output device.
-

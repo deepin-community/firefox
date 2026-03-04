@@ -4,6 +4,7 @@
 
 about-networking-title = Informacions ret
 about-networking-http = HTTP
+about-networking-http-clear-cache-button = Escafar lo cache HTTP
 about-networking-sockets = Sockets
 about-networking-dns = DNS
 about-networking-dns-clear-cache-button = Escafar escondedor DNS
@@ -63,6 +64,3 @@ about-networking-moved-about-logging = Aquesta pagina fogut desplaçada dins <a 
 
 about-networking-networkid-is-up = Ligason establida
 about-networking-networkid-status-known = L’estat de la ligason es conegut
-
-##
-

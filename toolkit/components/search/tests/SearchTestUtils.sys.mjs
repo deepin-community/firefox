@@ -4,14 +4,18 @@ const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   AddonTestUtils: "resource://testing-common/AddonTestUtils.sys.mjs",
-  AppProvidedSearchEngine:
-    "resource://gre/modules/AppProvidedSearchEngine.sys.mjs",
+  AppProvidedConfigEngine:
+    "moz-src:///toolkit/components/search/ConfigSearchEngine.sys.mjs",
   ExtensionTestUtils:
     "resource://testing-common/ExtensionXPCShellUtils.sys.mjs",
   RemoteSettings: "resource://services-settings/remote-settings.sys.mjs",
-  SearchUtils: "resource://gre/modules/SearchUtils.sys.mjs",
+  SearchUtils: "moz-src:///toolkit/components/search/SearchUtils.sys.mjs",
   sinon: "resource://testing-common/Sinon.sys.mjs",
 });
+
+/**
+ * @import {AppProvidedConfigEngine} from "ConfigSearchEngine.sys.mjs"
+ */
 
 /**
  * A class containing useful testing functions for Search based tests.
@@ -64,6 +68,7 @@ class _SearchTestUtils {
         if (this.#stubs.size) {
           this.#stubs = new Map();
 
+          Services.search.wrappedJSObject._settings._testResetSettings();
           let settingsWritten = SearchTestUtils.promiseSearchNotification(
             "write-settings-to-disk-complete"
           );
@@ -87,6 +92,9 @@ class _SearchTestUtils {
    *   The options for the new search engine.
    * @param {string} options.url
    *   The URL of the engine to add.
+   * @param {string} [options.faviconURL]
+   *   The icon to be used for the open search engine, if not specified in the
+   *   OpenSearch engine data.
    * @param {boolean} [options.setAsDefault]
    *   Whether or not to set the engine as default automatically. If this is
    *   true, the engine will be set as default, and the previous default engine
@@ -102,13 +110,14 @@ class _SearchTestUtils {
    */
   async installOpenSearchEngine({
     url,
+    faviconURL,
     setAsDefault = false,
     setAsDefaultPrivate = false,
     skipReset = false,
   }) {
     // OpenSearch engines can only be added via http protocols.
     url = url.replace("chrome://mochitests/content", "https://example.com");
-    let engine = await Services.search.addOpenSearchEngine(url, "");
+    let engine = await Services.search.addOpenSearchEngine(url, faviconURL);
     let previousEngine = Services.search.defaultEngine;
     let previousPrivateEngine = Services.search.defaultPrivateEngine;
     if (setAsDefault) {
@@ -141,6 +150,9 @@ class _SearchTestUtils {
       } catch (ex) {
         // Don't throw if the test has already removed it.
       }
+      if (setAsDefault) {
+        this.clearDefaultSearchEngineCachedPrefs();
+      }
     });
     return engine;
   }
@@ -154,20 +166,28 @@ class _SearchTestUtils {
    *        the promise.
    * @param {string} topic
    *        The notification topic to observe. Defaults to 'browser-search-service'.
+   * @param {number} times
+   *        The number of notifications required to resolve the promise. Defaults to 1.
    * @returns {Promise}
    *        Returns a promise that is resolved with the subject of the
    *        topic once the topic with the data has been observed.
    */
-  promiseSearchNotification(expectedData, topic = "browser-search-service") {
+  promiseSearchNotification(
+    expectedData,
+    topic = "browser-search-service",
+    times = 1
+  ) {
     return new Promise(resolve => {
+      let i = 0;
       Services.obs.addObserver(function observer(aSubject, aTopic, aData) {
-        if (aData != expectedData) {
-          return;
+        if (aData == expectedData) {
+          i += 1;
+          if (i == times) {
+            Services.obs.removeObserver(observer, topic);
+            // Let the stack unwind.
+            Services.tm.dispatchToMainThread(() => resolve(aSubject));
+          }
         }
-
-        Services.obs.removeObserver(observer, topic);
-        // Let the stack unwind.
-        Services.tm.dispatchToMainThread(() => resolve(aSubject));
       }, topic);
     });
   }
@@ -226,6 +246,7 @@ class _SearchTestUtils {
     let numEngines = 0;
     let defaultEngines;
     let engineOrders;
+    let availableLocales;
 
     for (let obj of fullConfig) {
       obj.recordType = this.#detectRecordType(obj);
@@ -262,6 +283,8 @@ class _SearchTestUtils {
         case "engineOrders":
           engineOrders = obj;
           break;
+        case "availableLocales":
+          availableLocales = obj;
       }
     }
 
@@ -290,7 +313,56 @@ class _SearchTestUtils {
       defaultEngines.specificDefaults = [];
     }
 
+    if (!availableLocales) {
+      availableLocales = {
+        recordType: "availableLocales",
+        locales: Array.from(this.extractAvailableLocales(fullConfig)),
+      };
+      fullConfig.push(availableLocales);
+    }
+
     return fullConfig;
+  }
+
+  /**
+   * Extracts the list of available locales from a search configuration.
+   *
+   * @param {object[]} config
+   */
+  extractAvailableLocales(config) {
+    let result = new Set();
+
+    function addLocalesFromEnvironment(environment) {
+      environment.locales?.forEach(locale => result.add(locale));
+      environment.excludedLocales?.forEach(locale => result.add(locale));
+    }
+
+    for (let entry of config) {
+      switch (entry.recordType) {
+        case "engine": {
+          for (let variant of entry.variants) {
+            addLocalesFromEnvironment(variant.environment);
+            for (let subVariant of variant.subVariants ?? []) {
+              addLocalesFromEnvironment(subVariant.environment);
+            }
+          }
+          break;
+        }
+        case "defaultEngines": {
+          for (let specificDefault of entry.specificDefaults) {
+            addLocalesFromEnvironment(specificDefault.environment);
+          }
+          break;
+        }
+        case "engineOrders": {
+          for (let order of entry.orders) {
+            addLocalesFromEnvironment(order.environment);
+          }
+          break;
+        }
+      }
+    }
+    return result;
   }
 
   /**
@@ -333,12 +405,12 @@ class _SearchTestUtils {
    *
    * @param {Array} engineConfigurations
    *   An array of engine configurations.
-   * @returns {AppProvidedSearchEngine[]}
-   *   An array of app provided search engine objects.
+   * @returns {Promise<AppProvidedConfigEngine[]>}
+   *   An array of app provided config engine objects.
    */
   async searchConfigToEngines(engineConfigurations) {
     return engineConfigurations.map(
-      config => new lazy.AppProvidedSearchEngine({ config })
+      config => new lazy.AppProvidedConfigEngine({ config })
     );
   }
 
@@ -420,12 +492,13 @@ class _SearchTestUtils {
     let previousEngine = Services.search.defaultEngine;
     let previousPrivateEngine = Services.search.defaultPrivateEngine;
 
-    async function cleanup() {
+    let cleanup = async () => {
       if (setAsDefault) {
         await Services.search.setDefault(
           previousEngine,
           Ci.nsISearchService.CHANGE_REASON_UNKNOWN
         );
+        this.clearDefaultSearchEngineCachedPrefs();
       }
       if (setAsDefaultPrivate) {
         await Services.search.setDefaultPrivate(
@@ -434,7 +507,7 @@ class _SearchTestUtils {
         );
       }
       await extension.unload();
-    }
+    };
 
     // Cleanup must be registered before loading the extension to avoid
     // failures for mochitests.
@@ -673,6 +746,87 @@ class _SearchTestUtils {
 
     this.idleService._fireObservers("idle");
     await reloadObserved;
+  }
+
+  /**
+   * Fetches a URL and converts the content to a data URL.
+   *
+   * @param {string} url
+   *   The URL of the file that should be fetched.
+   * @returns {Promise<string>}
+   *   The content of the file as a data URL.
+   */
+  async fetchAsDataUrl(url) {
+    let res = await fetch(url);
+    let blob = await res.blob();
+    let reader = new FileReader();
+    return new Promise((resolve, reject) => {
+      reader.onload = () => {
+        resolve(reader.result);
+      };
+      reader.onerror = () => {
+        reject(new Error("Failed to read blob."));
+      };
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  /**
+   * Extracts post data string from an nsISearchSubmission.
+   * If there is no post data, returns null.
+   *
+   * @param {?nsISearchSubmission} submission
+   * @returns {?string}
+   */
+  getPostDataString(submission) {
+    if (!submission.postData) {
+      return null;
+    }
+
+    let binaryStream = Cc["@mozilla.org/binaryinputstream;1"].createInstance(
+      Ci.nsIBinaryInputStream
+    );
+    binaryStream.setInputStream(submission.postData.data);
+
+    return binaryStream.readBytes(binaryStream.available());
+  }
+
+  /**
+   * Wait until a specific engine event on a specific engine.
+   *
+   * @param {string} expectedEngineName
+   *   Name of the engine to wait for.
+   * @param {string} expectedData
+   *   Data to wait for.
+   * @returns {Promise<nsISearchEngine>}
+   *   Resolves to the search engine with the expected name.
+   */
+  promiseEngine(expectedEngineName, expectedData = "engine-added") {
+    let { promise, resolve } = Promise.withResolvers();
+    Services.obs.addObserver(function obs(subject, _topic, data) {
+      let engine = subject.QueryInterface(Ci.nsISearchEngine);
+
+      if (data == expectedData && engine.name == expectedEngineName) {
+        Services.obs.removeObserver(obs, "browser-search-engine-modified");
+        resolve(engine);
+      }
+    }, "browser-search-engine-modified");
+    return promise;
+  }
+
+  /**
+   * Clears preferences which store settings relating to caching of the default
+   * search engines. This is used to avoid compare-preferences reporting that the
+   * preferences have changed.
+   */
+  clearDefaultSearchEngineCachedPrefs() {
+    const prefs = [
+      "browser.urlbar.recentsearches.lastDefaultChanged",
+      "browser.newtabpage.activity-stream.trendingSearch.defaultSearchEngine",
+    ];
+    for (let pref of prefs) {
+      Services.prefs.clearUserPref(pref);
+    }
   }
 }
 

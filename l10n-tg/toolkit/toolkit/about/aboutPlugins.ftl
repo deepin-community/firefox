@@ -6,8 +6,6 @@ title-label = Дар бораи плагинҳо
 installed-plugins-label = Плагинҳои насбшуда
 no-plugins-are-installed-label = Ягон плагини насбшуда ёфт нашуд
 deprecation-description = Чизе намерасад? Баъзе плагинҳо дигар дастгирӣ намешаванд. <a data-l10n-name="deprecation-link">Маълумоти бештар.</a>
-deprecation-description2 =
-    .message = Чизе намерасад? Баъзе плагинҳо дигар дастгирӣ намешаванд.
 
 ## The information of plugins
 ##
@@ -29,7 +27,7 @@ state-dd-enabled = <span data-l10n-name="state">Вазъият:</span> Фаъо�
 state-dd-enabled-block-list-state = <span data-l10n-name="state">Вазъият:</span> Фаъол аст ({ $blockListState })
 state-dd-Disabled = <span data-l10n-name="state">Вазъият:</span> Ғайрифаъол аст
 state-dd-Disabled-block-list-state = <span data-l10n-name="state">Вазъият:</span> Ғайрифаъол аст ({ $blockListState })
-mime-type-label = Намуди MIME
+mime-type-label = Намуди «MIME»
 description-label = Тавсиф
 suffixes-label = Пасвандҳо
 

@@ -51,6 +51,8 @@ community-exp = <label data-l10n-name="community-exp-mozillaLink">Tha { -vendor-
 community-2 = Tha { -brand-short-name } air a dhealbhadh le <label data-l10n-name="community-mozillaLink">Tha { -vendor-short-name } 'na</label>, <label data-l10n-name="community-creditsLink">choimhearsnachd an t-saoghail</label> a tha ag obair còmhla gus an lìon a chumail fosgailte, poblach is so-ruigsinneach dhan a h-uile duine.
 helpus = Bheil thu son cuideachadh? <label data-l10n-name="helpus-donateLink">Thoir tabhartas</label> no <label data-l10n-name="helpus-getInvolvedLink">gabh pàirt!</label>
 bottomLinks-license = Fiosrachadh ceadachais
+bottom-links-terms = teirmichean a’ chleachdaidh
+bottom-links-privacy = Aithris na prìobhaideachd
 bottomLinks-rights = Còraichean a' chleachdaiche dheireannaich
 bottomLinks-privacy = Poileasaidh prìobhaideachd
 # Example of resulting string: 66.0.1 (64-bit)
@@ -64,3 +66,14 @@ aboutDialog-version = { $version } ({ $bits }-bit)
 #   $isodate (String): date in ISO format, e.g. 2019-01-16
 #   $bits (Number): bits of the architecture (32 or 64)
 aboutDialog-version-nightly = { $version } ({ $isodate }) ({ $bits }-bit)
+# Example of resulting string: 131.0a1 (aarch64)
+# Variables:
+#   $version (String): version of Firefox, e.g. 66.0.1
+#   $arch (String): name of the architecture (arm, aarch64, etc.)
+aboutdialog-version-arch = { $version } ({ $arch })
+# Example of resulting string: 131.0a1 (2024-08-27) (aarch64)
+# Variables:
+#   $version (String): version of Firefox for Nightly builds, e.g. 66.0a1
+#   $isodate (String): date in ISO format, e.g. 2019-01-16
+#   $arch (String): name of the architecture (arm, aarch64, etc.)
+aboutdialog-version-arch-nightly = { $version } ({ $isodate }) ({ $arch })

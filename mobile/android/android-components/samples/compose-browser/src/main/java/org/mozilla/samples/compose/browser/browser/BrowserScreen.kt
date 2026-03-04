@@ -11,23 +11,27 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.Button
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import mozilla.components.browser.state.helper.Target
+import mozilla.components.compose.base.theme.AcornTheme
 import mozilla.components.compose.browser.awesomebar.AwesomeBar
 import mozilla.components.compose.browser.toolbar.BrowserToolbar
+import mozilla.components.compose.browser.toolbar.store.BrowserEditToolbarAction
+import mozilla.components.compose.browser.toolbar.store.BrowserToolbarAction
+import mozilla.components.compose.browser.toolbar.store.BrowserToolbarStore
+import mozilla.components.compose.browser.toolbar.ui.BrowserToolbarQuery
 import mozilla.components.compose.engine.WebContent
-import mozilla.components.compose.tabstray.TabCounterButton
 import mozilla.components.compose.tabstray.TabList
 import mozilla.components.concept.awesomebar.AwesomeBar
 import mozilla.components.feature.awesomebar.provider.ClipboardSuggestionProvider
@@ -38,91 +42,94 @@ import mozilla.components.feature.fxsuggest.FxSuggestSuggestionProvider
 import mozilla.components.lib.state.Store
 import mozilla.components.lib.state.ext.composableStore
 import mozilla.components.lib.state.ext.observeAsComposableState
-import org.mozilla.samples.compose.browser.BrowserComposeActivity.Companion.ROUTE_SETTINGS
+import mozilla.components.lib.state.ext.observeAsState
+import org.mozilla.samples.compose.browser.browser.BrowserToolbarMiddleware.Companion.Dependencies
 import org.mozilla.samples.compose.browser.components
+import mozilla.components.feature.awesomebar.R as awesomebarR
+import mozilla.components.feature.fxsuggest.R as fxsuggestR
 
 /**
  * The main browser screen.
  */
+@Suppress("LongMethod")
 @Composable
 fun BrowserScreen(navController: NavController) {
-    val target = Target.SelectedTab
+    val context = LocalContext.current
 
     val store = composableStore<BrowserScreenState, BrowserScreenAction> { restoredState ->
         BrowserScreenStore(restoredState ?: BrowserScreenState())
     }
-
-    val editState = store.observeAsComposableState { state -> state.editMode }
-    val editUrl = store.observeAsComposableState { state -> state.editText }
-    val loadUrl = components().sessionUseCases.loadUrl
-    val showTabs = store.observeAsComposableState { state -> state.showTabs }
-
-    BackHandler(enabled = editState.value == true) {
-        store.dispatch(BrowserScreenAction.ToggleEditMode(false))
+    val toolbarStore = remember {
+        BrowserToolbarStore(
+            middleware = listOf(
+                BrowserToolbarMiddleware(
+                    initialDependencies = Dependencies(
+                        context = context,
+                        navController = navController,
+                        browserScreenStore = store,
+                    ),
+                ),
+            ),
+        )
     }
 
-    Box {
-        Column {
-            BrowserToolbar(
-                components().store,
-                target,
-                editMode = editState.value!!,
-                onDisplayMenuClicked = {
-                    navController.navigate(ROUTE_SETTINGS)
-                },
-                onTextCommit = { text ->
-                    store.dispatch(BrowserScreenAction.ToggleEditMode(false))
-                    loadUrl(text)
-                },
-                onTextEdit = { text -> store.dispatch(BrowserScreenAction.UpdateEditText(text)) },
-                onDisplayToolbarClick = {
-                    store.dispatch(BrowserScreenAction.ToggleEditMode(true))
-                },
-                editText = editUrl.value,
-                hint = "Search or enter address",
-                browserActions = {
-                    TabCounterButton(
-                        components().store,
-                        onClicked = { store.dispatch(BrowserScreenAction.ShowTabs) },
-                    )
-                },
-            )
+    val toolbarState by toolbarStore.observeAsState(initialValue = toolbarStore.state) { it }
+    val showTabs = store.observeAsComposableState { state -> state.showTabs }
 
-            Box {
-                WebContent(
-                    components().engine,
-                    components().store,
-                    Target.SelectedTab,
+    BackHandler(enabled = toolbarState.isEditMode()) {
+        toolbarStore.dispatch(BrowserToolbarAction.ExitEditMode)
+    }
+    AcornTheme {
+        Box {
+            Column {
+                BrowserToolbar(
+                    store = toolbarStore,
                 )
 
-                val url = editUrl.value
-                if (editState.value == true && url != null) {
-                    Suggestions(
-                        url,
-                        onSuggestionClicked = { suggestion ->
-                            store.dispatch(BrowserScreenAction.ToggleEditMode(false))
-                            suggestion.onSuggestionClicked?.invoke()
-                        },
-                        onAutoComplete = { suggestion ->
-                            store.dispatch(BrowserScreenAction.UpdateEditText(suggestion.editSuggestion!!))
-                        },
+                Box {
+                    WebContent(
+                        components().engine,
+                        components().store,
+                        Target.SelectedTab,
                     )
+
+                    val query = toolbarState.editState.query
+                    if (toolbarState.isEditMode() && query.current.isNotEmpty()) {
+                        Suggestions(
+                            query.current,
+                            onSuggestionClicked = { suggestion ->
+                                toolbarStore.dispatch(BrowserToolbarAction.ExitEditMode)
+                                suggestion.onSuggestionClicked?.invoke()
+                            },
+                            onAutoComplete = { suggestion ->
+                                toolbarStore.dispatch(
+                                    BrowserEditToolbarAction.SearchQueryUpdated(
+                                        BrowserToolbarQuery(suggestion.editSuggestion!!),
+                                    ),
+                                )
+                            },
+                        )
+                    }
                 }
             }
-        }
 
-        if (showTabs.value == true) {
-            TabsTray(store)
+            if (showTabs.value == true) {
+                TabsTray(
+                    store = store,
+                    toolbarStore = toolbarStore,
+                )
+            }
         }
     }
 }
 
 /**
- * Shows the lit of tabs.
+ * Shows the list of tabs.
  */
 @Composable
 fun TabsTray(
     store: Store<BrowserScreenState, BrowserScreenAction>,
+    toolbarStore: BrowserToolbarStore,
 ) {
     val components = components()
 
@@ -132,7 +139,7 @@ fun TabsTray(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight()
-            .background(Color.Black.copy(alpha = ContentAlpha.medium))
+            .background(color = MaterialTheme.colorScheme.onSurfaceVariant)
             .clickable {
                 store.dispatch(BrowserScreenAction.HideTabs)
             },
@@ -160,7 +167,7 @@ fun TabsTray(
                         selectTab = true,
                     )
                     store.dispatch(BrowserScreenAction.HideTabs)
-                    store.dispatch(BrowserScreenAction.ToggleEditMode(true))
+                    toolbarStore.dispatch(BrowserToolbarAction.EnterEditMode(false))
                 },
             ) {
                 Text("+")
@@ -169,7 +176,6 @@ fun TabsTray(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun Suggestions(
     url: String,
@@ -178,31 +184,42 @@ private fun Suggestions(
 ) {
     val context = LocalContext.current
     val components = components()
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val switchToTabDescription = stringResource(awesomebarR.string.switch_to_tab_description)
+    val sponsoredSuggestionDescription = stringResource(fxsuggestR.string.sponsored_suggestion_description)
 
-    val sessionSuggestionProvider = remember(context) {
+    val sessionSuggestionProvider = remember(
+        components.store,
+        components.tabsUseCases.selectTab,
+        switchToTabDescription,
+    ) {
         SessionSuggestionProvider(
-            context.resources,
             components.store,
             components.tabsUseCases.selectTab,
+            switchToTabDescription = switchToTabDescription,
         )
     }
 
-    val searchActionProvider = remember {
+    val searchActionProvider = remember(components.store, components.searchUseCases.defaultSearch) {
         SearchActionProvider(components.store, components.searchUseCases.defaultSearch)
     }
 
-    val fxSuggestSuggestionProvider = remember(context) {
+    val fxSuggestSuggestionProvider = remember(components.sessionUseCases.loadUrl, sponsoredSuggestionDescription) {
         FxSuggestSuggestionProvider(
-            context.resources,
             loadUrlUseCase = components.sessionUseCases.loadUrl,
             includeSponsoredSuggestions = false,
             includeNonSponsoredSuggestions = true,
+            sponsoredSuggestionDescription = sponsoredSuggestionDescription,
         )
     }
 
-    val searchSuggestionProvider = remember(context) {
+    val searchSuggestionProvider = remember(
+        components.store,
+        components.searchUseCases.defaultSearch,
+        components.client,
+        components.engine,
+    ) {
         SearchSuggestionProvider(
-            context,
             components.store,
             components.searchUseCases.defaultSearch,
             components.client,
@@ -212,14 +229,12 @@ private fun Suggestions(
         )
     }
 
-    val clipboardSuggestionProvider = remember(context) {
+    val clipboardSuggestionProvider = remember(context, components.sessionUseCases.loadUrl) {
         ClipboardSuggestionProvider(
             context,
             components.sessionUseCases.loadUrl,
         )
     }
-
-    val keyboardController = LocalSoftwareKeyboardController.current
 
     AwesomeBar(
         url,

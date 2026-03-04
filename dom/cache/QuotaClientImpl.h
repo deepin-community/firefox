@@ -10,8 +10,8 @@
 #include "CacheCipherKeyManager.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/dom/QMResult.h"
-#include "mozilla/dom/cache/QuotaClient.h"
 #include "mozilla/dom/cache/FileUtils.h"
+#include "mozilla/dom/cache/QuotaClient.h"
 #include "mozilla/dom/cache/Types.h"
 #include "mozilla/dom/quota/ResultExtensions.h"
 
@@ -43,8 +43,8 @@ class CacheQuotaClient final : public quota::Client {
       PersistenceType aPersistenceType, const OriginMetadata& aOriginMetadata,
       const AtomicBool& aCanceled) override;
 
-  virtual void OnOriginClearCompleted(PersistenceType aPersistenceType,
-                                      const nsACString& aOrigin) override;
+  virtual void OnOriginClearCompleted(
+      const OriginMetadata& aOriginMetadata) override;
 
   void OnRepositoryClearCompleted(PersistenceType aPersistenceType) override;
 

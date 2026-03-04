@@ -3,7 +3,6 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
-/* eslint-env mozilla/browser-window */
 
 /**
  * ResetPBMPanel contains the logic for the restart private browsing action.
@@ -22,7 +21,8 @@ const SHOW_CONFIRM_DIALOG_PREF =
 
 const lazy = {};
 ChromeUtils.defineESModuleGetters(lazy, {
-  CustomizableUI: "resource:///modules/CustomizableUI.sys.mjs",
+  CustomizableUI:
+    "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs",
   PrivateBrowsingUtils: "resource://gre/modules/PrivateBrowsingUtils.sys.mjs",
   SessionStore: "resource:///modules/sessionstore/SessionStore.sys.mjs",
 });
@@ -112,6 +112,7 @@ export const ResetPBMPanel = {
 
   /**
    * Handles the confirmation panel cancel button.
+   *
    * @param {MozButton} button - Cancel button that triggered the action.
    */
   onCancel(button) {
@@ -129,6 +130,7 @@ export const ResetPBMPanel = {
   /**
    * Handles the confirmation panel confirm button which triggers the clear
    * action.
+   *
    * @param {MozButton} button - Confirm button that triggered the action.
    */
   async onConfirm(button) {

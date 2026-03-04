@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 UV_CACHE_PATH = os.getenv(
     "UV_CACHE_PATH", os.path.join(path.dirname(__file__), "../release/updates/cache/")
 )
-UV_PARALLEL_DOWNLOADS = os.getenv("UV_PARALLEL_DOWNLOADS", 20)
+UV_PARALLEL_DOWNLOADS = int(os.getenv("UV_PARALLEL_DOWNLOADS", "20"))
 
 FTP_SERVER_TO = os.getenv("ftp_server_to", "http://stage.mozilla.org/pub/mozilla.org")
 FTP_SERVER_FROM = os.getenv(
@@ -105,7 +105,7 @@ async def fetch_url(url, path, connector):
                             break
                         fd.write(chunk)
                 result = _result(response)
-                log.info(f'Finished downloading {url}\n{result["headers"]}')
+                log.info(f"Finished downloading {url}\n{result['headers']}")
                 return result
 
     except (
@@ -209,7 +209,8 @@ async def download_builds(verifyConfig):
                     continue
                 uri = uri.replace("%locale%", locale)
                 # /ja-JP-mac/ locale is replaced with /ja/ for updater packages
-                uri = uri.replace("ja-JP-mac", "ja")
+                if reference == "updater_package":
+                    uri = uri.replace("ja-JP-mac", "ja")
                 updaterUrls.add(f"{ftpServerFrom}{uri}")
 
     log.info(f"About to download {len(updaterUrls)} updater packages")
@@ -341,12 +342,10 @@ async def _download_from_config(verifyConfig):
 
     # Log cache
     log.info("Cache index urls.list contents:")
-    with open(cacheIndexPath, "r") as cache:
+    with open(cacheIndexPath) as cache:
         for ln, url in enumerate(cache.readlines()):
             line = url.replace("\n", "")
-            log.info(f"Line {ln+1}: {line}")
-
-    return None
+            log.info(f"Line {ln + 1}: {line}")
 
 
 def download_from_config(verifyConfig):

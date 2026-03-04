@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # This gets set as the initial title, and is overridden as soon as we start
 # updating the titlebar based on loaded tabs or private browsing state.
 # This should match the `data-title-default` attribute in both
@@ -43,15 +40,6 @@ urlbar-web-rtc-share-devices-notification-anchor =
 urlbar-addons-notification-anchor =
     .tooltiptext = Open paneel met boodskappe oor byvoeginginstallasie
 
-## Prompts users to use the Urlbar when they open a new tab or visit the
-## homepage of their default search engine.
-## Variables:
-##  $engineName (String): The name of the user's default search engine. e.g. "Google" or "DuckDuckGo".
-
-
-## Local search mode indicator labels in the urlbar
-
-
 ##
 
 urlbar-geolocation-blocked =
@@ -72,9 +60,6 @@ urlbar-star-edit-bookmark =
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
 urlbar-star-add-bookmark =
     .tooltiptext = Boekmerk hierdie bladsy ({ $shortcut })
-
-## Page Action Context Menu
-
 
 ## Auto-hide Context Menu
 
@@ -99,22 +84,6 @@ search-one-offs-context-set-as-default =
 # submenu using this as its label.
 search-one-offs-add-engine-menu =
     .label = Voeg soekenjin by
-
-## Local search mode one-off buttons
-## Variables:
-##  $restrict (String): The restriction token corresponding to the search mode.
-##    Restriction tokens are special characters users can type in the urlbar to
-##    restrict their searches to certain sources (e.g., "*" to search only
-##    bookmarks).
-
-
-## QuickActions are shown in the urlbar as the user types a matching string
-## The -cmd- strings are comma separated list of keywords that will match
-## the action.
-
-
-## Bookmark Panel
-
 
 ## Identity Panel
 
@@ -156,32 +125,17 @@ browser-window-minimize-button =
 browser-window-close-button =
     .tooltiptext = Sluit
 
-## Tab actions
-
-
-## These labels should be written in all capital letters if your locale supports them.
-## Variables:
-##  $count (number): number of affected tabs
-
-
-## Bookmarks toolbar items
-
-
 ## WebRTC Pop-up notifications
 
 popup-all-windows-shared = Alle sigbare vensters op die skerm sal gedeel word.
-
-## WebRTC window or screen share tab switch warning
-
-
-## DevTools F12 popup
-
 
 ## URL Bar
 
 # This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
 urlbar-search-mode-indicator-close =
     .aria-label = Sluit
+# This placeholder is used when not in search mode and the user's default search
+# engine is unknown.
 urlbar-placeholder =
     .placeholder = Soek of tik adres in
 urlbar-switch-to-tab =
@@ -203,14 +157,6 @@ urlbar-result-action-search-w-engine = Soek met { $engine }
 urlbar-result-action-switch-tab = Verwissel na oortjie
 urlbar-result-action-visit = Besoek
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
-## In these actions "Search" is a verb, followed by where the search is performed.
-
-
-## Labels shown above groups of urlbar results
-
-
 ## Reader View toolbar buttons
 
 # This should match menu-view-enter-readerview in menubar.ftl
@@ -219,11 +165,6 @@ reader-view-enter-button =
 # This should match menu-view-close-readerview in menubar.ftl
 reader-view-close-button =
     .aria-label = Sluit leesaansig
-
-## Picture-in-Picture urlbar button
-## Variables:
-##   $shortcut (String) - Keyboard shortcut to execute the command.
-
 
 ## Full Screen and Pointer Lock UI
 
@@ -250,11 +191,6 @@ bookmarks-sidebar-content =
 bookmarks-other-bookmarks-menu =
     .label = Ander boekmerke
 
-## Variables:
-##   $isVisible (boolean): if the specific element (e.g. bookmarks sidebar,
-##                         bookmarks toolbar, etc.) is visible or not.
-
-
 ##
 
 bookmarks-search =
@@ -265,15 +201,6 @@ bookmarks-toolbar-placeholder =
     .title = Boekmerknutsbalk-items
 bookmarks-toolbar-placeholder-button =
     .label = Boekmerknutsbalk-items
-
-## Library Panel items
-
-
-## Pocket toolbar button
-
-
-## Repair text encoding toolbar button
-
 
 ## Customize Toolbar Buttons
 
@@ -303,9 +230,6 @@ toolbar-button-new-private-window =
 
 eme-notifications-drm-content-playing = Sommige klank of video op dié werf gebruik DRM-sagteware, wat moontlik beperk wat { -brand-short-name } mens toelaat.
 
-## Password save/update panel
-
-
 ##
 
 ui-tour-info-panel-close =
@@ -326,10 +250,6 @@ popups-infobar-block =
 popups-infobar-dont-show-message =
     .label = Moenie weer wys wanneer opspringers geblokkeer word nie
     .accesskey = D
-
-## Since the default position for PiP controls does not change for RTL layout,
-## right-to-left languages should use "Left" and "Right" as in the English strings,
-
 
 ##
 
@@ -356,29 +276,12 @@ tabs-toolbar-list-all-tabs =
     .label = Lys alle oortjies
     .tooltiptext = Lys alle oortjies
 
-## Infobar shown at startup to suggest session-restore
-
-
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name } stuur outomaties sekere data na { -vendor-short-name } om die gebruikerervaring te verbeter.
 data-reporting-notification-button =
     .label = Kies wat ek deel
     .accesskey = K
-
-## Unified extensions (toolbar) button
-
-
-## Unified extensions button when permission(s) are needed.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Unified extensions button when some extensions are quarantined.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Private browsing reset button
-
 
 ## Autorefresh blocker
 
@@ -387,9 +290,6 @@ refresh-blocked-redirect-label = { -brand-short-name } het hierdie bladsy verhoe
 refresh-blocked-allow =
     .label = Laat toe
     .accesskey = L
-
-## Firefox Relay integration
-
 
 ## Add-on Pop-up Notifications
 

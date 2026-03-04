@@ -13,7 +13,6 @@
 
 #include "FrameMetrics.h"
 #include "SynchronousTask.h"
-#include "mozilla/Unused.h"
 #include "mozilla/gfx/Types.h"
 #include "mozilla/ipc/Endpoint.h"
 #include "mozilla/layers/Compositor.h"
@@ -184,7 +183,7 @@ void UiCompositorControllerParent::ToolbarAnimatorMessageFromCompositor(
     return;
   }
 
-  Unused << SendToolbarAnimatorMessageFromCompositor(aMessage);
+  (void)SendToolbarAnimatorMessageFromCompositor(aMessage);
 }
 
 bool UiCompositorControllerParent::AllocPixelBuffer(const int32_t aSize,
@@ -205,18 +204,12 @@ void UiCompositorControllerParent::NotifyFirstPaint() {
   ToolbarAnimatorMessageFromCompositor(FIRST_PAINT);
 }
 
-void UiCompositorControllerParent::NotifyUpdateScreenMetrics(
-    const GeckoViewMetrics& aMetrics) {
-#if defined(MOZ_WIDGET_ANDROID)
-  // TODO: Need to handle different x-and y-scales.
-  CSSToScreenScale scale = ViewTargetAs<ScreenPixel>(
-      aMetrics.mZoom, PixelCastJustification::ScreenIsParentLayerForRoot);
-  ScreenPoint scrollOffset = aMetrics.mVisualScrollOffset * scale;
-  CompositorThread()->Dispatch(NewRunnableMethod<ScreenPoint, CSSToScreenScale>(
-      "UiCompositorControllerParent::SendRootFrameMetrics", this,
-      &UiCompositorControllerParent::SendRootFrameMetrics, scrollOffset,
-      scale));
-#endif
+void UiCompositorControllerParent::NotifyCompositorScrollUpdate(
+    const CompositorScrollUpdate& aUpdate) {
+  CompositorThread()->Dispatch(NewRunnableMethod<CompositorScrollUpdate>(
+      "UiCompositorControllerParent::SendNotifyCompositorScrollUpdate", this,
+      &UiCompositorControllerParent::SendNotifyCompositorScrollUpdate,
+      aUpdate));
 }
 
 UiCompositorControllerParent::UiCompositorControllerParent(

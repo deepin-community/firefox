@@ -225,7 +225,6 @@ newtab-pocket-learn-more = Tetamäx ch'aqa' chik
 newtab-pocket-cta-button = Tik'ul { -pocket-brand-name }
 newtab-pocket-cta-text = Ke'ayaka' ri taq b'anob'äl ye'awajo' pa { -pocket-brand-name }, chuqa' taya' ruchuq'a' ajolom kik'in jeb'ël taq sik'inïk.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } jun { -brand-product-name } qach'alal
-# A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Tiyak
 newtab-pocket-saved = Xyak
 
@@ -256,15 +255,9 @@ newtab-custom-row-selector =
 newtab-custom-sponsored-sites = Xto' chojmin okem
 newtab-custom-pocket-title = Chilab'en ruma { -pocket-brand-name }
 newtab-custom-pocket-subtitle = Cha'on rupam cha'on ruma { -pocket-brand-name }, rach'ala'ïl { -brand-product-name }
-newtab-custom-pocket-toggle =
-    .label = Chilab'en ruma { -pocket-brand-name }
-    .description = Cha'on rupam cha'on ruma { -pocket-brand-name }, rach'ala'ïl { -brand-product-name }
 newtab-custom-pocket-sponsored = To'on taq b'anob'äl
 newtab-custom-pocket-show-recent-saves = Kek'ut k'ab'a' eyakon
 newtab-custom-recent-title = K'ak'a' samaj
 newtab-custom-recent-subtitle = Jun cha'on taq ruxaq chuqa' k'ak'a' rupam
-newtab-custom-recent-toggle =
-    .label = K'ak'a' samaj
-    .description = Jun cha'on taq ruxaq chuqa' k'ak'a' rupam
 newtab-custom-close-button = Titz'apïx
 newtab-custom-settings = Tinuk'samajïx ch'aqa' runuk'ulem

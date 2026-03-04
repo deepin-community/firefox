@@ -7,26 +7,25 @@
 #include "nsRangeFrame.h"
 
 #include "ListMutationObserver.h"
+#include "gfxContext.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/PresShell.h"
+#include "mozilla/ServoStyleSet.h"
 #include "mozilla/TouchEvents.h"
-
-#include "gfxContext.h"
-#include "nsContentCreatorFunctions.h"
-#include "nsCSSRendering.h"
-#include "nsDisplayList.h"
-#include "nsIContent.h"
-#include "nsLayoutUtils.h"
 #include "mozilla/dom/Document.h"
-#include "nsGkAtoms.h"
+#include "mozilla/dom/Element.h"
 #include "mozilla/dom/HTMLDataListElement.h"
 #include "mozilla/dom/HTMLInputElement.h"
 #include "mozilla/dom/HTMLOptionElement.h"
-#include "mozilla/dom/MutationEventBinding.h"
-#include "nsPresContext.h"
+#include "nsCSSRendering.h"
+#include "nsContentCreatorFunctions.h"
+#include "nsDisplayList.h"
+#include "nsGkAtoms.h"
+#include "nsIContent.h"
+#include "nsIMutationObserver.h"
+#include "nsLayoutUtils.h"
 #include "nsNodeInfoManager.h"
-#include "mozilla/dom/Element.h"
-#include "mozilla/ServoStyleSet.h"
+#include "nsPresContext.h"
 #include "nsTArray.h"
 
 #ifdef ACCESSIBILITY
@@ -51,7 +50,7 @@ nsRangeFrame::nsRangeFrame(ComputedStyle* aStyle, nsPresContext* aPresContext)
 void nsRangeFrame::Init(nsIContent* aContent, nsContainerFrame* aParent,
                         nsIFrame* aPrevInFlow) {
   nsContainerFrame::Init(aContent, aParent, aPrevInFlow);
-  if (InputElement().HasAttr(nsGkAtoms::list_)) {
+  if (InputElement().HasAttr(nsGkAtoms::list)) {
     mListMutationObserver = new ListMutationObserver(*this);
   }
 }
@@ -134,13 +133,9 @@ void nsRangeFrame::BuildDisplayList(nsDisplayListBuilder* aBuilder,
   const nsStyleDisplay* disp = StyleDisplay();
   if (IsThemed(disp)) {
     DisplayBorderBackgroundOutline(aBuilder, aLists);
-    // Only create items for the thumb. Specifically, we do not want the track
-    // to paint, since *our* background is used to paint the track, and we don't
-    // want the unthemed track painting over the top of the themed track.
-    // This logic is copied from
-    // nsContainerFrame::BuildDisplayListForNonBlockChildren as
-    // called by BuildDisplayListForInline.
-    if (nsIFrame* thumb = mThumbDiv->GetPrimaryFrame()) {
+    // Don't paint our children, but let the thumb be hittable for events.
+    if (auto* thumb = mThumbDiv->GetPrimaryFrame();
+        thumb && aBuilder->IsForEventDelivery() && !HidesContent()) {
       nsDisplayListSet set(aLists, aLists.Content());
       BuildDisplayListForChild(aBuilder, thumb, set, DisplayChildFlag::Inline);
     }
@@ -329,25 +324,18 @@ Decimal nsRangeFrame::GetValueAtEventPoint(WidgetGUIEvent* aEvent) {
         ->GetValueAsDecimal();
   }
 
-  const nsRect rangeContentRect = GetContentRectRelativeToSelf();
+  nsRect rangeRect;
   nsSize thumbSize;
-
   if (IsThemed()) {
+    // Themed ranges draw on the border-box rect.
+    rangeRect = GetRectRelativeToSelf();
     // We need to get the size of the thumb from the theme.
-    nsPresContext* pc = PresContext();
-    LayoutDeviceIntSize size = pc->Theme()->GetMinimumWidgetSize(
-        pc, this, StyleAppearance::RangeThumb);
-    thumbSize =
-        LayoutDeviceIntSize::ToAppUnits(size, pc->AppUnitsPerDevPixel());
-    // For GTK, GetMinimumWidgetSize returns zero for the thumb dimension
-    // perpendicular to the orientation of the slider.  That's okay since we
-    // only care about the dimension in the direction of the slider when using
-    // |thumbSize| below, but it means this assertion need to check
-    // IsHorizontal().
-    MOZ_ASSERT((IsHorizontal() && thumbSize.width > 0) ||
-                   (!IsHorizontal() && thumbSize.height > 0),
-               "The thumb is expected to take up some slider space");
+    nscoord min = CSSPixel::ToAppUnits(
+        PresContext()->Theme()->GetMinimumRangeThumbSize());
+    MOZ_ASSERT(min, "The thumb is expected to take up some slider space");
+    thumbSize = nsSize(min, min);
   } else {
+    rangeRect = GetContentRectRelativeToSelf();
     nsIFrame* thumbFrame = mThumbDiv->GetPrimaryFrame();
     if (thumbFrame) {  // diplay:none?
       thumbSize = thumbFrame->GetSize();
@@ -356,25 +344,25 @@ Decimal nsRangeFrame::GetValueAtEventPoint(WidgetGUIEvent* aEvent) {
 
   Decimal fraction;
   if (IsHorizontal()) {
-    nscoord traversableDistance = rangeContentRect.width - thumbSize.width;
+    nscoord traversableDistance = rangeRect.width - thumbSize.width;
     if (traversableDistance <= 0) {
       return minimum;
     }
-    nscoord posAtStart = rangeContentRect.x + thumbSize.width / 2;
+    nscoord posAtStart = rangeRect.x + thumbSize.width / 2;
     nscoord posAtEnd = posAtStart + traversableDistance;
-    nscoord posOfPoint = mozilla::clamped(point.x, posAtStart, posAtEnd);
+    nscoord posOfPoint = std::clamp(point.x, posAtStart, posAtEnd);
     fraction = Decimal(posOfPoint - posAtStart) / Decimal(traversableDistance);
     if (IsRightToLeft()) {
       fraction = Decimal(1) - fraction;
     }
   } else {
-    nscoord traversableDistance = rangeContentRect.height - thumbSize.height;
+    nscoord traversableDistance = rangeRect.height - thumbSize.height;
     if (traversableDistance <= 0) {
       return minimum;
     }
-    nscoord posAtStart = rangeContentRect.y + thumbSize.height / 2;
+    nscoord posAtStart = rangeRect.y + thumbSize.height / 2;
     nscoord posAtEnd = posAtStart + traversableDistance;
-    nscoord posOfPoint = mozilla::clamped(point.y, posAtStart, posAtEnd);
+    nscoord posOfPoint = std::clamp(point.y, posAtStart, posAtEnd);
     // For a vertical range, the top (posAtStart) is the highest value, so we
     // subtract the fraction from 1.0 to get that polarity correct.
     fraction = Decimal(posOfPoint - posAtStart) / Decimal(traversableDistance);
@@ -564,7 +552,8 @@ void nsRangeFrame::DoUpdateRangeProgressFrame(
 }
 
 nsresult nsRangeFrame::AttributeChanged(int32_t aNameSpaceID,
-                                        nsAtom* aAttribute, int32_t aModType) {
+                                        nsAtom* aAttribute,
+                                        AttrModType aModType) {
   NS_ASSERTION(mTrackDiv, "The track div must exist!");
   NS_ASSERTION(mThumbDiv, "The thumb div must exist!");
 
@@ -593,8 +582,8 @@ nsresult nsRangeFrame::AttributeChanged(int32_t aNameSpaceID,
     } else if (aAttribute == nsGkAtoms::orient) {
       PresShell()->FrameNeedsReflow(this, IntrinsicDirty::None,
                                     NS_FRAME_IS_DIRTY);
-    } else if (aAttribute == nsGkAtoms::list_) {
-      const bool isRemoval = aModType == MutationEvent_Binding::REMOVAL;
+    } else if (aAttribute == nsGkAtoms::list) {
+      const bool isRemoval = aModType == AttrModType::Removal;
       if (mListMutationObserver) {
         mListMutationObserver->Detach();
         if (isRemoval) {
@@ -612,28 +601,25 @@ nsresult nsRangeFrame::AttributeChanged(int32_t aNameSpaceID,
 }
 
 nscoord nsRangeFrame::AutoCrossSize() {
-  nscoord minCrossSize(0);
-  if (IsThemed()) {
-    nsPresContext* pc = PresContext();
-    LayoutDeviceIntSize size = pc->Theme()->GetMinimumWidgetSize(
-        pc, this, StyleAppearance::RangeThumb);
-    minCrossSize =
-        pc->DevPixelsToAppUnits(IsHorizontal() ? size.height : size.width);
-  }
+  nscoord minCrossSize =
+      IsThemed() ? CSSPixel::ToAppUnits(
+                       PresContext()->Theme()->GetMinimumRangeThumbSize())
+                 : 0;
   return std::max(minCrossSize,
                   NSToCoordRound(OneEmInAppUnits() * CROSS_AXIS_EM_SIZE));
 }
 
-nscoord nsRangeFrame::IntrinsicISize(gfxContext* aContext,
+nscoord nsRangeFrame::IntrinsicISize(const IntrinsicSizeInput& aInput,
                                      IntrinsicISizeType aType) {
   if (aType == IntrinsicISizeType::MinISize) {
     const auto* pos = StylePosition();
     auto wm = GetWritingMode();
-    if (pos->ISize(wm).HasPercent()) {
+    const auto iSize = pos->ISize(wm, AnchorPosResolutionParams::From(this));
+    if (iSize->HasPercent()) {
       // https://drafts.csswg.org/css-sizing-3/#percentage-sizing
       // https://drafts.csswg.org/css-sizing-3/#min-content-zero
-      return nsLayoutUtils::ResolveToLength<true>(
-          pos->ISize(wm).AsLengthPercentage(), nscoord(0));
+      return nsLayoutUtils::ResolveToLength<true>(iSize->AsLengthPercentage(),
+                                                  nscoord(0));
     }
   }
   if (IsInlineOriented()) {

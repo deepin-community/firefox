@@ -1,6 +1,8 @@
 [DEFAULT]
 head = ""
-skip-if = ["os == 'android'"]
+skip-if = [
+  "os == 'android'",
+]
 support-files = [
   "data/bug1079747.mp4",
   "data/bug1725190.cr3",
@@ -15,6 +17,8 @@ support-files = [
   "data/notags-bad.mp3",
   "data/notags-scan.mp3",
   "data/notags.mp3",
+  # Intentionaly empty, used to verify what type is deduced from the extension
+  "data/audio.ogg",
 ]
 
 ["test_mediasniffer.js"]

@@ -66,12 +66,22 @@ const INVALID_COUNTERS = 7;
 const IRATE_NUMERATOR = 44;
 const IRATE_DENOMINATOR = 14;
 const LABELED_MEMORY_BUCKETS = ["13509772", "32131834"];
+const KEYED_CATEGORIES = [
+  ["turn", "CommonLabel"],
+  ["mon", "Label1"],
+  ["mon", "Label2"],
+];
+const KEYED_BOOLS = [
+  ["tur", "true"],
+  ["chun", "false"],
+];
 
 add_task({ skip_if: () => runningInParent }, async function run_child_stuff() {
   let oldCanRecordBase = Telemetry.canRecordBase;
   Telemetry.canRecordBase = true; // Ensure we're able to record things.
 
   Glean.testOnlyIpc.aCounter.add(COUNT);
+  Glean.testOnlyIpc.aCounterForHgram.add(COUNT);
   Glean.testOnlyIpc.aStringList.add(CHEESY_STRING);
   Glean.testOnlyIpc.aStringList.add(CHEESIER_STRING);
 
@@ -102,7 +112,24 @@ add_task({ skip_if: () => runningInParent }, async function run_child_stuff() {
 
   // Has to be different from aLabeledCounter so the error we record doesn't
   // get in the way.
-  Glean.testOnlyIpc.anotherLabeledCounter["1".repeat(72)].add(INVALID_COUNTERS);
+  Glean.testOnlyIpc.anotherLabeledCounter["1".repeat(112)].add(
+    INVALID_COUNTERS
+  );
+
+  Glean.testOnlyIpc.aLabeledCounterForHgram.true.add(1);
+  Glean.testOnlyIpc.aLabeledCounterForHgram.false.add(1);
+  Glean.testOnlyIpc.aLabeledCounterForHgram.false.add(1);
+
+  Glean.testOnlyIpc.aLabeledCounterForKeyedCountHgram.a_label.add(
+    A_LABEL_COUNT
+  );
+  Glean.testOnlyIpc.aLabeledCounterForKeyedCountHgram.another_label.add(
+    ANOTHER_LABEL_COUNT
+  );
+
+  Glean.testOnlyIpc.aLabeledCounterForCategorical.CommonLabel.add(1);
+  Glean.testOnlyIpc.aLabeledCounterForCategorical.Label6.add(1);
+  Glean.testOnlyIpc.aLabeledCounterForCategorical.Label6.add(1);
 
   Glean.testOnlyIpc.irate.addToNumerator(IRATE_NUMERATOR);
   Glean.testOnlyIpc.irate.addToDenominator(IRATE_DENOMINATOR);
@@ -128,14 +155,24 @@ add_task({ skip_if: () => runningInParent }, async function run_child_stuff() {
   Glean.testOnly.whereHasTheTimeGone["long time passing"].stopAndAccumulate(l2); // 10ms
   Glean.testOnly.whereHasTheTimeGone["long time passing"].stopAndAccumulate(l3); // 5ms
 
+  Glean.testOnlyIpc.anUnorderedBool.set(true);
+
+  Glean.testOnlyIpc.anUnorderedLabeledBoolean.aLabel.set(true);
+
+  for (let [key, category] of KEYED_CATEGORIES) {
+    Glean.testOnlyIpc.aDualLabeledCounter.get(key, category).add(1);
+  }
+
+  for (let [key, buul] of KEYED_BOOLS) {
+    Glean.testOnlyIpc.anotherDualLabeledCounter.get(key, buul).add(1);
+  }
+
   Telemetry.canRecordBase = oldCanRecordBase;
 });
 
 add_task(
   { skip_if: () => !runningInParent },
   async function test_child_metrics() {
-    Telemetry.setEventRecordingEnabled("telemetry.test", true);
-
     // Clear any stray Telemetry data
     Telemetry.clearScalars();
     Telemetry.getSnapshotForHistograms("main", true);
@@ -149,12 +186,18 @@ add_task(
       let snapshot = Telemetry.getSnapshotForKeyedScalars();
       return (
         "content" in snapshot &&
-        "telemetry.test.mirror_for_rate" in snapshot.content
+        // Update this to be the mirrored-to probe of the bottom-most call in
+        // run_child_stuff().
+        "telemetry.test.mirror_for_unordered_labeled_bool" in snapshot.content
       );
     }, "failed to find content telemetry in parent");
 
     // boolean
-    // Doesn't work over IPC
+    Assert.ok(Glean.testOnlyIpc.anUnorderedBool.testGetValue());
+    Assert.ok(
+      scalarValue("telemetry.test.mirror_for_unordered_bool", "content"),
+      "content-process Scalar has expected bool value"
+    );
 
     // counter
     Assert.equal(Glean.testOnlyIpc.aCounter.testGetValue(), COUNT);
@@ -164,9 +207,18 @@ add_task(
       "content-process Scalar has expected count"
     );
 
+    Assert.equal(Glean.testOnlyIpc.aCounterForHgram.testGetValue(), COUNT);
+    const histSnapshot = Telemetry.getSnapshotForHistograms(
+      "main",
+      false,
+      false
+    );
+    const countData = histSnapshot.content.TELEMETRY_TEST_COUNT;
+    Assert.equal(COUNT, countData.sum, "Sum in histogram's correct.");
+
     // custom_distribution
     const customSampleSum = CUSTOM_SAMPLES.reduce((acc, a) => acc + a, 0);
-    const customData = Glean.testOnlyIpc.aCustomDist.testGetValue("store1");
+    const customData = Glean.testOnlyIpc.aCustomDist.testGetValue("test-ping");
     Assert.equal(customSampleSum, customData.sum, "Sum's correct");
     for (let [bucket, count] of Object.entries(customData.values)) {
       Assert.ok(
@@ -174,11 +226,6 @@ add_task(
         `Only two buckets have a sample ${bucket} ${count}`
       );
     }
-    const histSnapshot = Telemetry.getSnapshotForHistograms(
-      "main",
-      false,
-      false
-    );
     const histData = histSnapshot.content.TELEMETRY_TEST_MIRROR_FOR_CUSTOM;
     Assert.equal(customSampleSum, histData.sum, "Sum in histogram's correct");
     Assert.equal(2, histData.values["1"], "Two samples in the first bucket");
@@ -214,7 +261,14 @@ add_task(
     );
 
     // labeled_boolean
-    // Doesn't work over IPC
+    Assert.ok(
+      Glean.testOnlyIpc.anUnorderedLabeledBoolean.aLabel.testGetValue()
+    );
+    let value = keyedScalarValue(
+      "telemetry.test.mirror_for_unordered_labeled_bool",
+      "content"
+    );
+    Assert.deepEqual({ aLabel: true }, value);
 
     // labeled_counter
     const counters = Glean.testOnlyIpc.aLabeledCounter;
@@ -227,7 +281,7 @@ add_task(
       "Invalid labels record errors, which throw"
     );
 
-    let value = keyedScalarValue(
+    value = keyedScalarValue(
       "telemetry.test.another_mirror_for_labeled_counter",
       "content"
     );
@@ -242,11 +296,66 @@ add_task(
       "telemetry.test.mirror_for_labeled_counter",
       "content"
     );
+    Assert.deepEqual(undefined, value);
+
+    const boolHgramCounters = Glean.testOnlyIpc.aLabeledCounterForHgram;
+    Assert.equal(boolHgramCounters.true.testGetValue(), 1);
+    Assert.equal(boolHgramCounters.false.testGetValue(), 2);
     Assert.deepEqual(
       {
-        ["1".repeat(72)]: INVALID_COUNTERS,
+        bucket_count: 3,
+        histogram_type: 2,
+        sum: 1,
+        range: [1, 2],
+        values: { 0: 2, 1: 1, 2: 0 },
       },
-      value
+      histSnapshot.content.TELEMETRY_TEST_BOOLEAN
+    );
+
+    const keyedHistSnapshot = Telemetry.getSnapshotForKeyedHistograms(
+      "main",
+      false,
+      false
+    );
+    const keyedCountHgramCounters =
+      Glean.testOnlyIpc.aLabeledCounterForKeyedCountHgram;
+    Assert.equal(keyedCountHgramCounters.a_label.testGetValue(), A_LABEL_COUNT);
+    Assert.equal(
+      keyedCountHgramCounters.another_label.testGetValue(),
+      ANOTHER_LABEL_COUNT
+    );
+    Assert.deepEqual(
+      {
+        a_label: {
+          bucket_count: 3,
+          histogram_type: 4,
+          sum: A_LABEL_COUNT,
+          range: [1, 2],
+          values: { 0: 1, 1: 0 },
+        },
+        another_label: {
+          bucket_count: 3,
+          histogram_type: 4,
+          sum: ANOTHER_LABEL_COUNT,
+          range: [1, 2],
+          values: { 0: 1, 1: 0 },
+        },
+      },
+      keyedHistSnapshot.content.TELEMETRY_TEST_KEYED_COUNT
+    );
+
+    const catCounters = Glean.testOnlyIpc.aLabeledCounterForCategorical;
+    Assert.equal(catCounters.CommonLabel.testGetValue(), 1);
+    Assert.equal(catCounters.Label6.testGetValue(), 2);
+    Assert.deepEqual(
+      {
+        bucket_count: 51,
+        histogram_type: 5,
+        sum: 6,
+        range: [1, 50],
+        values: { 0: 1, 3: 2, 4: 0 },
+      },
+      histSnapshot.content.TELEMETRY_TEST_CATEGORICAL_OPTOUT
     );
 
     // labeled_string
@@ -342,11 +451,6 @@ add_task(
         `Only two buckets have a sample ${bucket} ${count}`
       );
     }
-    const keyedHistSnapshot = Telemetry.getSnapshotForKeyedHistograms(
-      "main",
-      false,
-      false
-    );
     const keyedHistData = keyedHistSnapshot.content.TELEMETRY_TEST_KEYED_LINEAR;
     Assert.ok("weird_jars" in keyedHistData, "Key's present");
     Assert.equal(
@@ -416,6 +520,67 @@ add_task(
         0
       ),
       "Only two samples"
+    );
+
+    // dual_labeled_counter -> keyed categorical hgram
+    for (let [key, category] of KEYED_CATEGORIES) {
+      Assert.equal(
+        1,
+        Glean.testOnlyIpc.aDualLabeledCounter.get(key, category).testGetValue()
+      );
+    }
+    const keyedCatHist =
+      keyedHistSnapshot.content.TELEMETRY_TEST_MIRROR_FOR_DUAL_LABELED_COUNTER;
+    Assert.deepEqual(
+      {
+        turn: {
+          bucket_count: 51,
+          histogram_type: 5,
+          sum: 0,
+          range: [1, 50],
+          values: { 0: 1, 1: 0 },
+        },
+        mon: {
+          bucket_count: 51,
+          histogram_type: 5,
+          sum: 1,
+          range: [1, 50],
+          values: { 0: 0, 1: 1, 2: 0 },
+        },
+      },
+      keyedCatHist
+    );
+
+    // dual_labeled_counter -> keyed boolean hgram
+    for (let [key, buul] of KEYED_BOOLS) {
+      Assert.equal(
+        1,
+        Glean.testOnlyIpc.anotherDualLabeledCounter
+          .get(key, buul)
+          .testGetValue()
+      );
+    }
+    const keyedBoolHist =
+      keyedHistSnapshot.content
+        .TELEMETRY_TEST_ANOTHER_MIRROR_FOR_DUAL_LABELED_COUNTER;
+    Assert.deepEqual(
+      {
+        chun: {
+          bucket_count: 3,
+          histogram_type: 2,
+          sum: 0,
+          range: [1, 2],
+          values: { 0: 1, 1: 0 },
+        },
+        tur: {
+          bucket_count: 3,
+          histogram_type: 2,
+          sum: 1,
+          range: [1, 2],
+          values: { 0: 0, 1: 1, 2: 0 },
+        },
+      },
+      keyedBoolHist
     );
   }
 );

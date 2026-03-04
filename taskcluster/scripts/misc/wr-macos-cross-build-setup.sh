@@ -3,7 +3,7 @@ set -x -e -v
 
 export TARGET_TRIPLE="x86_64-apple-darwin"
 
-MACOS_SYSROOT="${MOZ_FETCHES_DIR}/MacOSX14.4.sdk"
+MACOS_SYSROOT=$(ls -d $MOZ_FETCHES_DIR/MacOSX*.sdk)
 CLANGDIR="${MOZ_FETCHES_DIR}/clang"
 
 # Deploy the wrench dependencies
@@ -44,10 +44,10 @@ export ZLIB_LIBS="-L${MACOS_SYSROOT}/usr/lib -lz"
 # Set up compiler and flags for cross-compile. Careful to only export the
 # target-specific CFLAGS/CXXFLAGS variables, to not break any host builds.
 export CC="${CLANGDIR}/bin/clang"
-TARGET_CFLAGS="-fuse-ld=lld -target ${TARGET_TRIPLE} -mmacosx-version-min=10.12 --rtlib=compiler-rt --sysroot ${MACOS_SYSROOT} -Qunused-arguments"
+TARGET_CFLAGS="-fuse-ld=lld -target ${TARGET_TRIPLE} -mmacosx-version-min=10.15 --rtlib=compiler-rt --sysroot ${MACOS_SYSROOT} -Qunused-arguments"
 export CFLAGS_${TARGET_TRIPLE//-/_}="${TARGET_CFLAGS}"
 export CXX="${CLANGDIR}/bin/clang++"
-TARGET_CXXFLAGS="-fuse-ld=lld -target ${TARGET_TRIPLE} -mmacosx-version-min=10.12 --rtlib=compiler-rt --sysroot ${MACOS_SYSROOT} -stdlib=libc++ -Qunused-arguments"
+TARGET_CXXFLAGS="-fuse-ld=lld -target ${TARGET_TRIPLE} -mmacosx-version-min=10.15 --rtlib=compiler-rt --sysroot ${MACOS_SYSROOT} -stdlib=libc++ -Qunused-arguments"
 export CXXFLAGS_${TARGET_TRIPLE//-/_}="${TARGET_CXXFLAGS}"
 export AR="${CLANGDIR}/bin/llvm-ar"
 
@@ -58,3 +58,7 @@ export MOZ_CARGO_WRAP_LD="${CC}"
 export MOZ_CARGO_WRAP_LD_CXX="${CXX}"
 export MOZ_CARGO_WRAP_LDFLAGS="${TARGET_CFLAGS}"
 export CARGO_TARGET_X86_64_APPLE_DARWIN_LINKER="${GECKO_PATH}/build/cargo-linker"
+
+# Ensure that any dependencies which use bindgen pass the correct
+# sysroot. Specificlly, this is needed to compile mozangle.
+export BINDGEN_EXTRA_CLANG_ARGS="--sysroot ${MACOS_SYSROOT}"

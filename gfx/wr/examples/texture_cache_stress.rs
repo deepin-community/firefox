@@ -68,7 +68,8 @@ impl ExternalImageHandler for ImageGenerator {
         &mut self,
         _key: ExternalImageId,
         channel_index: u8,
-    ) -> ExternalImage {
+        _is_composited: bool,
+    ) -> ExternalImage<'_> {
         self.generate_image(channel_index as i32);
         ExternalImage {
             uv: TexelRect::new(0.0, 0.0, 1.0, 1.0),
@@ -261,6 +262,7 @@ impl Example for App {
                             id: ExternalImageId(0),
                             channel_index: size as u8,
                             image_type: ExternalImageType::Buffer,
+                            normalized_uvs: false,
                         };
 
                         txn.add_image(

@@ -8,45 +8,46 @@
 #define mozilla_dom_XMLHttpRequestMainThread_h
 
 #include <bitset>
-#include "nsISupportsUtils.h"
-#include "nsIURI.h"
-#include "mozilla/dom/Document.h"
-#include "nsIStreamListener.h"
-#include "nsIChannelEventSink.h"
-#include "nsIAsyncVerifyRedirectCallback.h"
-#include "nsIDOMEventListener.h"
-#include "nsIInterfaceRequestor.h"
-#include "nsIHttpHeaderVisitor.h"
-#include "nsIProgressEventSink.h"
-#include "nsJSUtils.h"
-#include "nsTArray.h"
-#include "nsITimer.h"
-#include "nsIPrincipal.h"
-#include "nsIScriptObjectPrincipal.h"
-#include "nsISizeOfEventTarget.h"
-#include "nsIInputStream.h"
+
 #include "mozilla/Assertions.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/DOMEventTargetHelper.h"
+#include "mozilla/Encoding.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/MemoryReporting.h"
 #include "mozilla/NotNull.h"
-#include "mozilla/dom/MutableBlobStorage.h"
 #include "mozilla/dom/BodyExtractor.h"
 #include "mozilla/dom/ClientInfo.h"
-#include "mozilla/dom/TypedArray.h"
+#include "mozilla/dom/Document.h"
 #include "mozilla/dom/File.h"
 #include "mozilla/dom/FormData.h"
 #include "mozilla/dom/MimeType.h"
+#include "mozilla/dom/MutableBlobStorage.h"
 #include "mozilla/dom/PerformanceStorage.h"
 #include "mozilla/dom/ServiceWorkerDescriptor.h"
+#include "mozilla/dom/TypedArray.h"
 #include "mozilla/dom/URLSearchParams.h"
 #include "mozilla/dom/WorkerRef.h"
 #include "mozilla/dom/XMLHttpRequest.h"
 #include "mozilla/dom/XMLHttpRequestBinding.h"
 #include "mozilla/dom/XMLHttpRequestEventTarget.h"
 #include "mozilla/dom/XMLHttpRequestString.h"
-#include "mozilla/Encoding.h"
+#include "nsIAsyncVerifyRedirectCallback.h"
+#include "nsIChannelEventSink.h"
+#include "nsIDOMEventListener.h"
+#include "nsIHttpHeaderVisitor.h"
+#include "nsIInputStream.h"
+#include "nsIInterfaceRequestor.h"
+#include "nsIPrincipal.h"
+#include "nsIProgressEventSink.h"
+#include "nsIScriptObjectPrincipal.h"
+#include "nsISizeOfEventTarget.h"
+#include "nsIStreamListener.h"
+#include "nsISupportsUtils.h"
+#include "nsITimer.h"
+#include "nsIURI.h"
+#include "nsJSUtils.h"
+#include "nsTArray.h"
 
 #ifdef Status
 /* Xlib headers insist on this for some reason... Nuke it because
@@ -262,16 +263,12 @@ class XMLHttpRequestMainThread final : public XMLHttpRequest,
   nsresult InitiateFetch(already_AddRefed<nsIInputStream> aUploadStream,
                          int64_t aUploadLength, nsACString& aUploadContentType);
 
-  virtual void Open(const nsACString& aMethod, const nsAString& aUrl,
+  virtual void Open(const nsACString& aMethod, const nsACString& aUrl,
                     ErrorResult& aRv) override;
 
-  virtual void Open(const nsACString& aMethod, const nsAString& aUrl,
-                    bool aAsync, const nsAString& aUsername,
-                    const nsAString& aPassword, ErrorResult& aRv) override;
-
-  void Open(const nsACString& aMethod, const nsACString& aUrl, bool aAsync,
-            const nsAString& aUsername, const nsAString& aPassword,
-            ErrorResult& aRv);
+  virtual void Open(const nsACString& aMethod, const nsACString& aUrl,
+                    bool aAsync, const nsACString& aUsername,
+                    const nsACString& aPassword, ErrorResult& aRv) override;
 
   virtual void SetRequestHeader(const nsACString& aName,
                                 const nsACString& aValue,
@@ -332,7 +329,7 @@ class XMLHttpRequestMainThread final : public XMLHttpRequest,
   virtual void Abort(ErrorResult& aRv) override;
 
   // response
-  virtual void GetResponseURL(nsAString& aUrl) override;
+  virtual void GetResponseURL(nsACString& aUrl) override;
 
   virtual uint32_t GetStatus(ErrorResult& aRv) override;
 
@@ -341,18 +338,6 @@ class XMLHttpRequestMainThread final : public XMLHttpRequest,
 
   virtual void GetResponseHeader(const nsACString& aHeader, nsACString& aResult,
                                  ErrorResult& aRv) override;
-
-  void GetResponseHeader(const nsAString& aHeader, nsAString& aResult,
-                         ErrorResult& aRv) {
-    nsAutoCString result;
-    GetResponseHeader(NS_ConvertUTF16toUTF8(aHeader), result, aRv);
-    if (result.IsVoid()) {
-      aResult.SetIsVoid(true);
-    } else {
-      // The result value should be inflated:
-      CopyASCIItoUTF16(result, aResult);
-    }
-  }
 
   virtual void GetAllResponseHeaders(nsACString& aResponseHeaders,
                                      ErrorResult& aRv) override;
@@ -521,7 +506,6 @@ class XMLHttpRequestMainThread final : public XMLHttpRequest,
 
   nsTArray<PendingEvent> mPendingEvents;
 
-  nsCOMPtr<nsISupports> mContext;
   nsCOMPtr<nsIPrincipal> mPrincipal;
   nsCOMPtr<nsIChannel> mChannel;
   nsCString mRequestMethod;
@@ -551,7 +535,7 @@ class XMLHttpRequestMainThread final : public XMLHttpRequest,
       bool operator<(const HeaderEntry& aOther) const {
         uint32_t selfLen = mName.Length();
         uint32_t otherLen = aOther.mName.Length();
-        uint32_t min = XPCOM_MIN(selfLen, otherLen);
+        uint32_t min = std::min(selfLen, otherLen);
         for (uint32_t i = 0; i < min; ++i) {
           unsigned char self = mName[i];
           unsigned char other = aOther.mName[i];
@@ -721,6 +705,10 @@ class XMLHttpRequestMainThread final : public XMLHttpRequest,
 
   bool mIsSystem;
   bool mIsAnon;
+
+  // Prevent duplicate OnStopRequest calls due to the explicit
+  // OnStopRequest in the sync path of SendInternal
+  bool mAlreadyGotStopRequest;
 
   /**
    * Close the XMLHttpRequest's channels.

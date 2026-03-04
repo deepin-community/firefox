@@ -8,10 +8,7 @@
 
 use crate::media_queries::MediaList;
 use crate::parser::{Parse, ParserContext};
-use crate::shared_lock::{
-    DeepCloneWithLock, SharedRwLock, SharedRwLockReadGuard, ToCssWithGuard,
-};
-use crate::str::CssStringWriter;
+use crate::shared_lock::{DeepCloneWithLock, SharedRwLock, SharedRwLockReadGuard, ToCssWithGuard};
 use crate::stylesheets::{
     layer_rule::LayerName, supports_rule::SupportsCondition, CssRule, CssRuleType,
     StylesheetInDocument,
@@ -19,15 +16,19 @@ use crate::stylesheets::{
 use crate::values::CssUrl;
 use cssparser::{Parser, SourceLocation};
 use std::fmt::{self, Write};
-use style_traits::{CssWriter, ToCss};
+use style_traits::{CssStringWriter, CssWriter, ToCss};
 use to_shmem::{SharedMemoryBuilder, ToShmem};
 
-/// A sheet that is held from an import rule.
 #[cfg(feature = "gecko")]
+type StyleSheet = crate::gecko::data::GeckoStyleSheet;
+#[cfg(feature = "servo")]
+type StyleSheet = ::servo_arc::Arc<crate::stylesheets::Stylesheet>;
+
+/// A sheet that is held from an import rule.
 #[derive(Debug)]
 pub enum ImportSheet {
     /// A bonafide stylesheet.
-    Sheet(crate::gecko::data::GeckoStyleSheet),
+    Sheet(StyleSheet),
 
     /// An @import created while parsing off-main-thread, whose Gecko sheet has
     /// yet to be created and attached.
@@ -37,10 +38,9 @@ pub enum ImportSheet {
     Refused,
 }
 
-#[cfg(feature = "gecko")]
 impl ImportSheet {
-    /// Creates a new ImportSheet from a GeckoStyleSheet.
-    pub fn new(sheet: crate::gecko::data::GeckoStyleSheet) -> Self {
+    /// Creates a new ImportSheet from a stylesheet.
+    pub fn new(sheet: StyleSheet) -> Self {
         ImportSheet::Sheet(sheet)
     }
 
@@ -54,10 +54,10 @@ impl ImportSheet {
         ImportSheet::Refused
     }
 
-    /// Returns a reference to the GeckoStyleSheet in this ImportSheet, if it
-    /// exists.
-    pub fn as_sheet(&self) -> Option<&crate::gecko::data::GeckoStyleSheet> {
+    /// Returns a reference to the stylesheet in this ImportSheet, if it exists.
+    pub fn as_sheet(&self) -> Option<&StyleSheet> {
         match *self {
+            #[cfg(feature = "gecko")]
             ImportSheet::Sheet(ref s) => {
                 debug_assert!(!s.hack_is_null());
                 if s.hack_is_null() {
@@ -65,6 +65,8 @@ impl ImportSheet {
                 }
                 Some(s)
             },
+            #[cfg(feature = "servo")]
+            ImportSheet::Sheet(ref s) => Some(s),
             ImportSheet::Refused | ImportSheet::Pending => None,
         }
     }
@@ -77,61 +79,29 @@ impl ImportSheet {
     /// Returns the rule list for this import rule.
     pub fn rules<'a>(&'a self, guard: &'a SharedRwLockReadGuard) -> &'a [CssRule] {
         match self.as_sheet() {
-            Some(s) => s.rules(guard),
+            Some(s) => s.contents(guard).rules(guard),
             None => &[],
         }
     }
 }
 
-#[cfg(feature = "gecko")]
 impl DeepCloneWithLock for ImportSheet {
-    fn deep_clone_with_lock(
-        &self,
-        _lock: &SharedRwLock,
-        _guard: &SharedRwLockReadGuard,
-    ) -> Self {
-        use crate::gecko::data::GeckoStyleSheet;
-        use crate::gecko_bindings::bindings;
+    fn deep_clone_with_lock(&self, _lock: &SharedRwLock, _guard: &SharedRwLockReadGuard) -> Self {
         match *self {
+            #[cfg(feature = "gecko")]
             ImportSheet::Sheet(ref s) => {
-                let clone = unsafe {
-                    bindings::Gecko_StyleSheet_Clone(s.raw() as *const _)
-                };
-                ImportSheet::Sheet(unsafe { GeckoStyleSheet::from_addrefed(clone) })
+                use crate::gecko_bindings::bindings;
+                let clone = unsafe { bindings::Gecko_StyleSheet_Clone(s.raw() as *const _) };
+                ImportSheet::Sheet(unsafe { StyleSheet::from_addrefed(clone) })
+            },
+            #[cfg(feature = "servo")]
+            ImportSheet::Sheet(ref s) => {
+                use servo_arc::Arc;
+                ImportSheet::Sheet(Arc::new((&**s).clone()))
             },
             ImportSheet::Pending => ImportSheet::Pending,
             ImportSheet::Refused => ImportSheet::Refused,
         }
-    }
-}
-
-/// A sheet that is held from an import rule.
-#[cfg(feature = "servo")]
-#[derive(Debug)]
-pub struct ImportSheet(pub ::servo_arc::Arc<crate::stylesheets::Stylesheet>);
-
-#[cfg(feature = "servo")]
-impl ImportSheet {
-    /// Returns the media list for this import rule.
-    pub fn media<'a>(&'a self, guard: &'a SharedRwLockReadGuard) -> Option<&'a MediaList> {
-        self.0.media(guard)
-    }
-
-    /// Returns the rules for this import rule.
-    pub fn rules<'a>(&'a self, guard: &'a SharedRwLockReadGuard) -> &'a [CssRule] {
-        self.0.rules()
-    }
-}
-
-#[cfg(feature = "servo")]
-impl DeepCloneWithLock for ImportSheet {
-    fn deep_clone_with_lock(
-        &self,
-        _lock: &SharedRwLock,
-        _guard: &SharedRwLockReadGuard,
-    ) -> Self {
-        use servo_arc::Arc;
-        ImportSheet(Arc::new((&*self.0).clone()))
     }
 }
 
@@ -228,18 +198,14 @@ impl ImportRule {
                 .unwrap_or(ImportLayer::None)
         };
 
-        let supports = if !static_prefs::pref!("layout.css.import-supports.enabled") {
-            None
-        } else {
-            input
-                .try_parse(SupportsCondition::parse_for_import)
-                .map(|condition| {
-                    let enabled = context
-                        .nest_for_rule(CssRuleType::Style, |context| condition.eval(context));
-                    ImportSupportsCondition { condition, enabled }
-                })
-                .ok()
-        };
+        let supports = input
+            .try_parse(SupportsCondition::parse_for_import)
+            .map(|condition| {
+                let enabled =
+                    context.nest_for_rule(CssRuleType::Style, |context| condition.eval(context));
+                ImportSupportsCondition { condition, enabled }
+            })
+            .ok();
 
         (layer, supports)
     }
@@ -254,11 +220,7 @@ impl ToShmem for ImportRule {
 }
 
 impl DeepCloneWithLock for ImportRule {
-    fn deep_clone_with_lock(
-        &self,
-        lock: &SharedRwLock,
-        guard: &SharedRwLockReadGuard,
-    ) -> Self {
+    fn deep_clone_with_lock(&self, lock: &SharedRwLock, guard: &SharedRwLockReadGuard) -> Self {
         ImportRule {
             url: self.url.clone(),
             stylesheet: self.stylesheet.deep_clone_with_lock(lock, guard),

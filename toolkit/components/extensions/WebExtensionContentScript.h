@@ -148,6 +148,8 @@ class MozDocumentMatcher : public nsISupports, public nsWrapperCache {
   MatchPatternSet* GetExcludeMatches() { return mExcludeMatches; }
   const MatchPatternSet* GetExcludeMatches() const { return mExcludeMatches; }
 
+  bool IsUserScript() const { return mIsUserScript; }
+
   Nullable<uint64_t> GetFrameID() const { return mFrameID; }
 
   void GetOriginAttributesPatterns(JSContext* aCx,
@@ -177,6 +179,7 @@ class MozDocumentMatcher : public nsISupports, public nsWrapperCache {
 
   Nullable<MatchGlobSet> mIncludeGlobs;
   Nullable<MatchGlobSet> mExcludeGlobs;
+  bool mIsUserScript;
 
   bool mAllFrames;
   bool mCheckPermissions;
@@ -190,6 +193,7 @@ class WebExtensionContentScript final : public MozDocumentMatcher {
  public:
   using RunAtEnum = dom::ContentScriptRunAt;
   using ExecutionWorld = dom::ContentScriptExecutionWorld;
+  using CSSOrigin = dom::ContentScriptCssOrigin;
 
   static already_AddRefed<WebExtensionContentScript> Constructor(
       dom::GlobalObject& aGlobal, WebExtensionPolicy& aExtension,
@@ -197,6 +201,8 @@ class WebExtensionContentScript final : public MozDocumentMatcher {
 
   RunAtEnum RunAt() const { return mRunAt; }
   ExecutionWorld World() const { return mWorld; }
+  CSSOrigin CssOrigin() const { return mCssOrigin; }
+  void GetWorldId(nsAString& aWorldId) const;
 
   void GetCssPaths(nsTArray<nsString>& aPaths) const {
     aPaths.AppendElements(mCssPaths);
@@ -223,6 +229,8 @@ class WebExtensionContentScript final : public MozDocumentMatcher {
 
   RunAtEnum mRunAt;
   ExecutionWorld mWorld;
+  Nullable<nsString> mWorldId;
+  CSSOrigin mCssOrigin;
 };
 
 }  // namespace extensions

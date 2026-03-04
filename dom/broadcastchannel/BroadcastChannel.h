@@ -7,10 +7,9 @@
 #ifndef mozilla_dom_BroadcastChannel_h
 #define mozilla_dom_BroadcastChannel_h
 
-#include "mozilla/Attributes.h"
 #include "mozilla/DOMEventTargetHelper.h"
-#include "nsTArray.h"
 #include "mozilla/RefPtr.h"
+#include "nsTArray.h"
 
 class nsIGlobalObject;
 
@@ -41,6 +40,9 @@ class BroadcastChannel final : public DOMEventTargetHelper {
                                JS::Handle<JSObject*> aGivenProto) override;
 
   static already_AddRefed<BroadcastChannel> Constructor(
+      const GlobalObject& aGlobal, const nsAString& aChannel, ErrorResult& aRv);
+
+  static already_AddRefed<BroadcastChannel> UnpartitionedTestingChannel(
       const GlobalObject& aGlobal, const nsAString& aChannel, ErrorResult& aRv);
 
   void GetName(nsAString& aName) const { aName = mChannel; }

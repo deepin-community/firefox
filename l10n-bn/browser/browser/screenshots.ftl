@@ -31,12 +31,3 @@ screenshots-private-window-error-title = { -screenshots-brand-name } আপন�
 screenshots-private-window-error-details = অসুবিধার জন্য দুঃখিত। আমরা এই বৈশিষ্ট্যটি নিয়ে কাজ করছি, খুব শীঘ্রই রিলিজ করা হবে।
 screenshots-generic-error-title = হায় হায়!, { -screenshots-brand-name } কিছু সমস্যা হয়েছে।
 screenshots-generic-error-details = এই মাত্র কি ঘটেছে আমরা নিশ্চিত নই। আপনি কি অনুগ্রহ করে পুরনায় সট নেবেন কিংবা ভিন্ন একটি পেজে চেষ্টা করবেন?
-screenshots-component-copy-button-label = কপি
-screenshots-component-download-button-label = ডাউনলোড
-
-## The below strings are used to capture keydown events so the strings should
-## not be changed unless the keyboard layout in the locale requires it.
-
-
-##
-

@@ -10,9 +10,11 @@
 
 #include "api/transport/goog_cc_factory.h"
 
+#include <cstdint>
 #include <memory>
 #include <utility>
 
+#include "api/transport/network_control.h"
 #include "api/units/time_delta.h"
 #include "modules/congestion_controller/goog_cc/goog_cc_network_control.h"
 
@@ -25,7 +27,6 @@ GoogCcNetworkControllerFactory::GoogCcNetworkControllerFactory(
 std::unique_ptr<NetworkControllerInterface>
 GoogCcNetworkControllerFactory::Create(NetworkControllerConfig config) {
   GoogCcConfig goog_cc_config;
-  goog_cc_config.feedback_only = factory_config_.feedback_only;
   if (factory_config_.network_state_estimator_factory) {
     goog_cc_config.network_state_estimator =
         factory_config_.network_state_estimator_factory->Create(

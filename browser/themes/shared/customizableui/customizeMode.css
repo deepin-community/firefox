@@ -7,7 +7,7 @@
 /* Customization mode */
 
 :root {
-  --drag-drop-transition-duration: .3s;
+  --drag-drop-transition-duration: 0.3s;
 
   @media (prefers-reduced-motion: reduce) {
     --drag-drop-transition-duration: 0s;
@@ -28,7 +28,7 @@ toolbar[overflowable][customizing] > .customization-target {
 #customization-container {
   flex-direction: column;
   min-height: 0;
-  background-color: var(--toolbar-non-lwt-bgcolor);
+  background-color: var(--toolbar-bgcolor);
   color: var(--toolbar-color);
   color-scheme: var(--toolbar-color-scheme);
 
@@ -39,15 +39,10 @@ toolbar[overflowable][customizing] > .customization-target {
   }
 
   :root[lwtheme] & {
-    /* Ensure this displays on top of the non-lwt bgcolor, to make sure it's not
-     * semi-transparent */
+    /* Ensure toolbar color displays on top of the frame/toolbox color to
+     * guarantee full opacity */
+    background-color: var(--lwt-accent-color);
     background-image: linear-gradient(var(--toolbar-bgcolor), var(--toolbar-bgcolor));
-  }
-
-  :root[lwtheme-image] & {
-    background-image: none;
-    color: var(--toolbar-non-lwt-textcolor);
-    text-shadow: none;
   }
 }
 
@@ -58,7 +53,7 @@ toolbar[overflowable][customizing] > .customization-target {
 }
 
 #customization-header {
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--heading-font-weight);
   font-size: 1.2em;
   margin: 20px 20px 15px;
 }
@@ -83,7 +78,7 @@ toolbar[overflowable][customizing] > .customization-target {
   align-items: center;
   flex-shrink: 0;
   flex-wrap: wrap;
-  border-top: 1px solid rgba(0,0,0,.15);
+  border-top: 1px solid rgba(0, 0, 0, 0.15);
   padding: 10px;
 
   > .footer-button,
@@ -101,7 +96,7 @@ toolbar[overflowable][customizing] > .customization-target {
 
 #customization-palette {
   padding: 5px 20px 20px;
-  transition: opacity .3s ease-in-out;
+  transition: opacity 0.3s ease-in-out;
   opacity: 0;
 
   &:not([hidden]) {
@@ -131,7 +126,6 @@ toolbar[overflowable][customizing] > .customization-target {
       height: var(--panel-and-palette-icon-size);
       min-width: var(--panel-and-palette-icon-size);
       min-height: var(--panel-and-palette-icon-size);
-      margin: 0;
       padding: 0;
     }
   }
@@ -150,7 +144,11 @@ toolbarpaletteitem {
 
   > toolbarspring {
     outline: 1px solid;
-    opacity: .6;
+    opacity: 0.6;
+
+    &[removable="false"] {
+      outline: 1px dashed;
+    }
   }
 
   toolbarbutton[disabled] {
@@ -240,7 +238,7 @@ toolbarpaletteitem {
 
     &:not([mousedown]):focus-visible {
       /* Delay adding the focusring back until after the transform transition completes. */
-      transition: outline-width .01s linear var(--drag-drop-transition-duration);
+      transition: outline-width 0.01s linear var(--drag-drop-transition-duration);
       outline: var(--default-focusring);
 
       &[place="toolbar"] {
@@ -265,8 +263,7 @@ toolbarpaletteitem {
   }
 
   #PersonalToolbar & toolbarbutton[checked="true"],
-  toolbar & toolbarbutton[checked="true"]
-    > :where(.toolbarbutton-icon, .toolbarbutton-text, .toolbarbutton-badge-stack) {
+  toolbar & toolbarbutton[checked="true"] > :where(.toolbarbutton-icon, .toolbarbutton-text, .toolbarbutton-badge-stack) {
     background-color: revert !important;
   }
 
@@ -274,7 +271,7 @@ toolbarpaletteitem {
   > toolbarbutton > .toolbarbutton-badge-stack > .toolbarbutton-icon,
   > #search-container,
   > toolbaritem.toolbaritem-combined-buttons {
-    transition: transform var(--drag-drop-transition-duration) cubic-bezier(.6, 2, .75, 1.5) !important;
+    transition: transform var(--drag-drop-transition-duration) cubic-bezier(0.6, 2, 0.75, 1.5) !important;
   }
 
   &[mousedown] {
@@ -291,7 +288,7 @@ toolbarpaletteitem {
     }
 
     > #search-container > #searchbar,
-    > #urlbar-container > #urlbar > #urlbar-background {
+    .urlbar-background {
       outline: 1px solid color-mix(in srgb, currentColor 60%, transparent);
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.13);
     }
@@ -344,48 +341,50 @@ toolbarpaletteitem {
   --arrowpanel-padding: 8px;
 }
 
-.customization-uidensity-menuitem > .menu-iconic-left > .menu-iconic-icon {
-  width: 32px;
-  height: 32px;
-  margin: 5px;
-}
-
 .customization-uidensity-menuitem {
   appearance: none;
   color: inherit;
   border: 1px solid transparent;
-  border-radius: 4px;
+  border-radius: var(--border-radius-small);
   padding-block: 0;
   padding-inline: 0 5px;
   margin: 2px 0;
+
+  > .menu-icon {
+    width: 32px;
+    height: 32px;
+    margin: 5px;
+
+    &:-moz-locale-dir(rtl) {
+      transform: scaleX(-1);
+    }
+  }
+
+  > .menu-text {
+    text-align: start;
+  }
+
+  &:hover,
+  &:focus-visible {
+    background-color: var(--button-background-color-hover);
+  }
+
+  &:hover:active,
+  &[active="true"] {
+    background-color: var(--button-background-color-active);
+  }
 }
 
 #customization-uidensity-menuitem-normal {
-  list-style-image: url("chrome://browser/skin/customizableui/density-normal.svg");
+  --menuitem-icon: url("chrome://browser/skin/customizableui/density-normal.svg");
 }
 
 #customization-uidensity-menuitem-compact {
-  list-style-image: url("chrome://browser/skin/customizableui/density-compact.svg");
+  --menuitem-icon: url("chrome://browser/skin/customizableui/density-compact.svg");
 }
 
 #customization-uidensity-menuitem-touch {
-  list-style-image: url("chrome://browser/skin/customizableui/density-touch.svg");
-}
-
-.customization-uidensity-menuitem:is(:hover, :focus-visible) {
-  background-color: var(--button-hover-bgcolor);
-}
-
-.customization-uidensity-menuitem:is(:hover:active, [active="true"]) {
-  background-color: var(--button-active-bgcolor);
-}
-
-.customization-uidensity-menuitem > .menu-iconic-text {
-  text-align: start;
-}
-
-.customization-uidensity-menuitem > .menu-iconic-left > .menu-iconic-icon:-moz-locale-dir(rtl) {
-  transform: scaleX(-1);
+  --menuitem-icon: url("chrome://browser/skin/customizableui/density-touch.svg");
 }
 
 #customization-uidensity-button > .box-inherit > .box-inherit > .button-icon:-moz-locale-dir(rtl) {
@@ -414,7 +413,9 @@ toolbarpaletteitem {
     @media (-moz-platform: macos) {
       /* Native styling adds more 'oompf' to the popup box-shadow, so simulate that
        * as best as we can here: */
-      box-shadow: 0 0 1px hsla(0,0%,0%,.3), 0 4px 10px hsla(0,0%,0%,.3);
+      box-shadow:
+        0 0 1px hsla(0, 0%, 0%, 0.3),
+        0 4px 10px hsla(0, 0%, 0%, 0.3);
       appearance: none;
       border-radius: var(--arrowpanel-border-radius);
     }
@@ -422,7 +423,7 @@ toolbarpaletteitem {
     @media not (-moz-platform: macos) {
       border: 1px solid var(--arrowpanel-border-color);
       margin: 0;
-      box-shadow: 0 0 4px hsla(0,0%,0%,.2);
+      box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.2);
     }
   }
 }
@@ -463,7 +464,7 @@ toolbarpaletteitem {
 
 #customization-panelHeader {
   font-size: 1.3em;
-  font-weight: 600;
+  font-weight: var(--heading-font-weight);
   padding: 2px 12px;
   margin: 0;
 }
@@ -657,10 +658,28 @@ toolbarpaletteitem {
 }
 
 @keyframes kcode {
-  0% { border-color: rgb(195,17,206); color: rgb(195,17,206); }
-  20% { border-color: rgb(252,82,27); color: rgb(252,82,27); }
-  40% { border-color: rgb(251,179,0); color: rgb(251,179,0); }
-  60% { border-color: rgb(105,211,0); color: rgb(105,211,0); }
-  80% { border-color: rgb(20,155,249); color: rgb(20,155,249); }
-  100% { border-color: rgb(195,17,206); color: rgb(195,17,206); }
+  0% {
+    border-color: rgb(195, 17, 206);
+    color: rgb(195, 17, 206);
+  }
+  20% {
+    border-color: rgb(252, 82, 27);
+    color: rgb(252, 82, 27);
+  }
+  40% {
+    border-color: rgb(251, 179, 0);
+    color: rgb(251, 179, 0);
+  }
+  60% {
+    border-color: rgb(105, 211, 0);
+    color: rgb(105, 211, 0);
+  }
+  80% {
+    border-color: rgb(20, 155, 249);
+    color: rgb(20, 155, 249);
+  }
+  100% {
+    border-color: rgb(195, 17, 206);
+    color: rgb(195, 17, 206);
+  }
 }

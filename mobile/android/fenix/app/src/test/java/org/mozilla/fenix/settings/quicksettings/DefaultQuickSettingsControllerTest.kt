@@ -15,6 +15,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import mozilla.components.browser.state.state.BrowserState
 import mozilla.components.browser.state.state.TabSessionState
@@ -28,7 +29,6 @@ import mozilla.components.feature.session.TrackingProtectionUseCases
 import mozilla.components.support.test.robolectric.testContext
 import mozilla.components.support.test.rule.MainCoroutineRule
 import mozilla.components.support.test.rule.runTestOnMain
-import mozilla.telemetry.glean.testing.GleanTestRule
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -44,14 +44,15 @@ import org.mozilla.fenix.GleanMetrics.TrackingProtection
 import org.mozilla.fenix.components.PermissionStorage
 import org.mozilla.fenix.ext.components
 import org.mozilla.fenix.ext.directionsEq
-import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
+import org.mozilla.fenix.helpers.FenixGleanTestRule
 import org.mozilla.fenix.settings.PhoneFeature
 import org.mozilla.fenix.settings.quicksettings.ext.shouldBeEnabled
 import org.mozilla.fenix.settings.toggle
 import org.mozilla.fenix.trackingprotection.CookieBannerUIMode
 import org.mozilla.fenix.utils.Settings
+import org.robolectric.RobolectricTestRunner
 
-@RunWith(FenixRobolectricTestRunner::class)
+@RunWith(RobolectricTestRunner::class)
 class DefaultQuickSettingsControllerTest {
     private val context = spyk(testContext)
 
@@ -85,7 +86,7 @@ class DefaultQuickSettingsControllerTest {
     private lateinit var controller: DefaultQuickSettingsController
 
     @get:Rule
-    val gleanRule = GleanTestRule(testContext)
+    val gleanRule = FenixGleanTestRule(testContext)
 
     @get:Rule
     val coroutinesTestRule = MainCoroutineRule()
@@ -277,6 +278,7 @@ class DefaultQuickSettingsControllerTest {
         assertTrue(requestRuntimePermissionsInvoked)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class) // advanceUntilIdle
     @Test
     fun `handlePermissionsChange should store the updated permission and reload webpage`() =
         runTestOnMain {
@@ -291,6 +293,7 @@ class DefaultQuickSettingsControllerTest {
             }
         }
 
+    @OptIn(ExperimentalCoroutinesApi::class) // advanceUntilIdle
     @Test
     fun `handleAutoplayAdd should store the updated permission and reload webpage`() =
         runTestOnMain {
@@ -390,6 +393,7 @@ class DefaultQuickSettingsControllerTest {
         val state = WebsiteInfoState.createWebsiteInfoState(
             websiteUrl = tab.content.url,
             websiteTitle = tab.content.title,
+            isLocalPdf = false,
             isSecured = true,
             certificateName = "certificateName",
         )

@@ -7,14 +7,14 @@
 #ifndef mozilla_dom_RemoteWorkerController_h
 #define mozilla_dom_RemoteWorkerController_h
 
-#include "nsISupportsImpl.h"
-#include "nsTArray.h"
-
 #include "mozilla/RefPtr.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/dom/DOMTypes.h"
 #include "mozilla/dom/ServiceWorkerOpArgs.h"
 #include "mozilla/dom/ServiceWorkerOpPromise.h"
+#include "mozilla/dom/SharedWorkerOpArgs.h"
+#include "nsISupportsImpl.h"
+#include "nsTArray.h"
 
 namespace mozilla::dom {
 
@@ -89,6 +89,7 @@ class FetchEventOpParent;
 class RemoteWorkerControllerParent;
 class RemoteWorkerData;
 class RemoteWorkerManager;
+class RemoteWorkerNonLifeCycleOpControllerParent;
 class RemoteWorkerParent;
 
 class RemoteWorkerObserver {
@@ -124,6 +125,7 @@ class RemoteWorkerController final {
   friend class RemoteWorkerControllerParent;
   friend class RemoteWorkerManager;
   friend class RemoteWorkerParent;
+  friend class RemoteWorkerNonLifeCycleOpControllerParent;
 
  public:
   NS_INLINE_DECL_REFCOUNTING(RemoteWorkerController)
@@ -192,6 +194,7 @@ class RemoteWorkerController final {
 
   RefPtr<RemoteWorkerObserver> mObserver;
   RefPtr<RemoteWorkerParent> mActor;
+  RefPtr<RemoteWorkerNonLifeCycleOpControllerParent> mNonLifeCycleOpController;
 
   enum {
     ePending,

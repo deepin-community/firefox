@@ -1,4 +1,3 @@
-// |reftest| skip -- Intl.DurationFormat is not supported
 // Copyright 2022 Igalia, S.L. All rights reserved.
 // Copyright 2023 Apple Inc. All rights reserved.
 // This code is governed by the BSD license found in the LICENSE file.

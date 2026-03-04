@@ -6,12 +6,10 @@
 
 import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
 import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
+import { ExtensionTaskScheduler } from "resource://gre/modules/ExtensionTaskScheduler.sys.mjs";
 import { ExtensionUtils } from "resource://gre/modules/ExtensionUtils.sys.mjs";
 
-/** @type {Lazy} */
-const lazy = {};
-
-ChromeUtils.defineESModuleGetters(lazy, {
+const lazy = XPCOMUtils.declareLazy({
   AddonManager: "resource://gre/modules/AddonManager.sys.mjs",
   AddonManagerPrivate: "resource://gre/modules/AddonManager.sys.mjs",
   Extension: "resource://gre/modules/Extension.sys.mjs",
@@ -19,22 +17,12 @@ ChromeUtils.defineESModuleGetters(lazy, {
   FileUtils: "resource://gre/modules/FileUtils.sys.mjs",
   JSONFile: "resource://gre/modules/JSONFile.sys.mjs",
   KeyValueService: "resource://gre/modules/kvstore.sys.mjs",
+  StartupCache: "resource://gre/modules/ExtensionParent.sys.mjs",
+  Management: () => lazy.ExtensionParent.apiManager,
 });
 
-ChromeUtils.defineLazyGetter(
-  lazy,
-  "StartupCache",
-  () => lazy.ExtensionParent.StartupCache
-);
-
-ChromeUtils.defineLazyGetter(
-  lazy,
-  "Management",
-  () => lazy.ExtensionParent.apiManager
-);
-
 function emptyPermissions() {
-  return { permissions: [], origins: [] };
+  return { permissions: [], origins: [], data_collection: [] };
 }
 
 const DEFAULT_VALUE = JSON.stringify(emptyPermissions());
@@ -321,8 +309,11 @@ function createStore(useRkv = AppConstants.NIGHTLY_BUILD) {
 
 let store = createStore();
 
-// Map<string, Function[]> @see _synchronizeExtPermAccess.
-const extPermAccessQueues = new Map();
+// The public ExtensionPermissions.add, get, remove, removeAll methods may
+// interact with the same underlying data source. These methods are not
+// designed with concurrent modifications in mind, and therefore we
+// explicitly synchronize each operation, by processing them sequentially.
+const extPermAccessQueues = new ExtensionTaskScheduler();
 
 export var ExtensionPermissions = {
   /**
@@ -332,38 +323,6 @@ export var ExtensionPermissions = {
    * @type {Map<string, Set>}
    */
   tempOrigins: new ExtensionUtils.DefaultMap(() => new Set()),
-
-  // The public ExtensionPermissions.add, get, remove, removeAll methods may
-  // interact with the same underlying data source. These methods are not
-  // designed with concurrent modifications in mind, and therefore we
-  // explicitly synchronize each operation, by processing them sequentially.
-  async _synchronizeExtPermAccess(extensionId, asyncFunctionCallback) {
-    return new Promise((resolve, reject) => {
-      // Here we add the (wrapped) function in the queue. The first queue item
-      // is always the currently executing task. Once it completes, the next
-      // (wrapped) function in the queue will be run.
-      let queue = extPermAccessQueues.get(extensionId) ?? [];
-      queue.push(async () => {
-        try {
-          resolve(await asyncFunctionCallback());
-        } catch (e) {
-          reject(e);
-        }
-        queue.shift();
-        if (queue.length) {
-          queue[0]();
-        } else {
-          extPermAccessQueues.delete(extensionId);
-        }
-      });
-      if (queue.length === 1) {
-        // First item in the queue. Store queue (so that future calls become
-        // aware of the pending call), and call the first function in the queue.
-        extPermAccessQueues.set(extensionId, queue);
-        queue[0]();
-      }
-    });
-  },
 
   async _update(extensionId, perms) {
     await store.put(extensionId, perms);
@@ -391,8 +350,10 @@ export var ExtensionPermissions = {
    *   value should immediately be used and not be modified by callers.
    */
   get(extensionId) {
-    return this._synchronizeExtPermAccess(extensionId, () =>
-      this._getCached(extensionId)
+    return extPermAccessQueues.runReadTask(extensionId, () =>
+      this._getCached(extensionId).then(perms =>
+        this._fixupDataCollection(perms)
+      )
     );
   },
 
@@ -405,6 +366,7 @@ export var ExtensionPermissions = {
    * @typedef {object} Perms
    * @property {string[]} origins
    * @property {string[]} permissions
+   * @property {string[]} [data_collection]
    *
    * @param {Perms} perms api permissions and origins to be added/removed.
    * @param {Perms} optional permissions and origins from the manifest.
@@ -450,6 +412,13 @@ export var ExtensionPermissions = {
     }
   },
 
+  _fixupDataCollection(perms) {
+    if (!perms.data_collection) {
+      perms.data_collection = [];
+    }
+    return perms;
+  },
+
   /**
    * Add new permissions for the given extension.  `permissions` is
    * in the format that is passed to browser.permissions.request().
@@ -461,12 +430,17 @@ export var ExtensionPermissions = {
    * @param {EventEmitter} [emitter] optional object implementing emitter interfaces
    */
   async add(extensionId, perms, emitter) {
-    return this._synchronizeExtPermAccess(extensionId, async () => {
-      let { permissions, origins } = await this._get(extensionId);
+    return extPermAccessQueues.runWriteTask(extensionId, async () => {
+      let {
+        permissions,
+        origins,
+        data_collection = [],
+      } = await this._get(extensionId);
 
       let added = emptyPermissions();
 
       this._fixupAllUrlsPerms(perms);
+      this._fixupDataCollection(perms);
 
       for (let perm of perms.permissions) {
         if (!permissions.includes(perm)) {
@@ -483,8 +457,23 @@ export var ExtensionPermissions = {
         }
       }
 
-      if (added.permissions.length || added.origins.length) {
-        await this._update(extensionId, { permissions, origins });
+      for (let perm of perms.data_collection) {
+        if (!data_collection.includes(perm)) {
+          added.data_collection.push(perm);
+          data_collection.push(perm);
+        }
+      }
+
+      if (
+        added.permissions.length ||
+        added.origins.length ||
+        added.data_collection.length
+      ) {
+        await this._update(extensionId, {
+          permissions,
+          origins,
+          data_collection,
+        });
         lazy.Management.emit("change-permissions", { extensionId, added });
         if (emitter) {
           emitter.emit("add-permissions", added);
@@ -502,12 +491,17 @@ export var ExtensionPermissions = {
    * @param {EventEmitter} [emitter] optional object implementing emitter interfaces
    */
   async remove(extensionId, perms, emitter) {
-    return this._synchronizeExtPermAccess(extensionId, async () => {
-      let { permissions, origins } = await this._get(extensionId);
+    return extPermAccessQueues.runWriteTask(extensionId, async () => {
+      let {
+        permissions,
+        origins,
+        data_collection = [],
+      } = await this._get(extensionId);
 
       let removed = emptyPermissions();
 
       this._fixupAllUrlsPerms(perms);
+      this._fixupDataCollection(perms);
 
       for (let perm of perms.permissions) {
         let i = permissions.indexOf(perm);
@@ -527,8 +521,24 @@ export var ExtensionPermissions = {
         }
       }
 
-      if (removed.permissions.length || removed.origins.length) {
-        await this._update(extensionId, { permissions, origins });
+      for (let perm of perms.data_collection) {
+        let i = data_collection.indexOf(perm);
+        if (i >= 0) {
+          removed.data_collection.push(perm);
+          data_collection.splice(i, 1);
+        }
+      }
+
+      if (
+        removed.permissions.length ||
+        removed.origins.length ||
+        removed.data_collection.length
+      ) {
+        await this._update(extensionId, {
+          permissions,
+          origins,
+          data_collection,
+        });
         lazy.Management.emit("change-permissions", { extensionId, removed });
         if (emitter) {
           emitter.emit("remove-permissions", removed);
@@ -543,7 +553,7 @@ export var ExtensionPermissions = {
   },
 
   async removeAll(extensionId) {
-    return this._synchronizeExtPermAccess(extensionId, async () => {
+    return extPermAccessQueues.runWriteTask(extensionId, async () => {
       this.tempOrigins.delete(extensionId);
       lazy.StartupCache.permissions.delete(extensionId);
 
@@ -596,7 +606,7 @@ export var ExtensionPermissions = {
 export var OriginControls = {
   /**
    * @typedef {object} NativeTab
-   * @property {XULBrowserElement} linkedBrowser
+   * @property {MozBrowser} linkedBrowser
    */
 
   /**

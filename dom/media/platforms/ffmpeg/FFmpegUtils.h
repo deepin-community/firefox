@@ -8,8 +8,9 @@
 #define DOM_MEDIA_PLATFORMS_FFMPEG_FFMPEGUTILS_H_
 
 #include <cstddef>
-#include "nsStringFwd.h"
+
 #include "FFmpegLibWrapper.h"
+#include "nsStringFwd.h"
 
 // This must be the last header included
 #include "FFmpegLibs.h"
@@ -41,6 +42,7 @@ inline bool IsVideoCodec(AVCodecID aCodecID) {
 #endif
 #if LIBAVCODEC_VERSION_MAJOR >= 55
     case AV_CODEC_ID_VP9:
+    case AV_CODEC_ID_HEVC:
 #endif
 #if LIBAVCODEC_VERSION_MAJOR >= 59
     case AV_CODEC_ID_AV1:
@@ -80,6 +82,8 @@ inline const int64_t& Duration(const T* aObject) {
   return aObject->duration;
 #endif
 }
+
+const char* AVCodecToString(const AVCodecID& aCodec);
 
 }  // namespace mozilla
 

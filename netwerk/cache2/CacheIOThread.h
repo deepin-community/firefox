@@ -10,7 +10,6 @@
 #include "prthread.h"
 #include "nsTArray.h"
 #include "mozilla/Monitor.h"
-#include "mozilla/DebugOnly.h"
 #include "mozilla/Atomics.h"
 #include "mozilla/UniquePtr.h"
 
@@ -36,7 +35,8 @@ class CacheIOThread final : public nsIThreadObserver {
 
   CacheIOThread();
 
-  using EventQueue = nsTArray<nsCOMPtr<nsIRunnable>>;
+  // We have LAST_LEVEL times queues, so keep the inline storage reasonable.
+  using EventQueue = AutoTArray<nsCOMPtr<nsIRunnable>, 32>;
 
   enum ELevel : uint32_t {
     OPEN_PRIORITY,

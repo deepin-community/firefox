@@ -4,10 +4,6 @@
 
 xpinstall-prompt = { -brand-short-name } het hierdie werf daarvan verhoed om u te vra om sagteware op die rekenaar te installeer.
 
-## Variables:
-##   $host (String): The hostname of the site the add-on is being installed from.
-
-
 ##
 
 xpinstall-prompt-dont-allow =
@@ -24,7 +20,6 @@ xpinstall-disabled = Sagteware-installering is tans gedeaktiveer. Kliek Aktiveer
 xpinstall-disabled-button =
     .label = Aktiveer
     .accesskey = k
-
 # Variables:
 #   $addonName (String): the localized name of the sideloaded add-on.
 webext-perms-sideload-menu-item = { $addonName } is by { -brand-short-name } gevoeg
@@ -42,7 +37,6 @@ addon-downloading-and-verifying =
        *[other] Laai tans af en verifieer die { $addonCount } byvoegings…
     }
 addon-download-verifying = Verifiëring
-
 addon-install-cancel-button =
     .label = Kanselleer
     .accesskey = K

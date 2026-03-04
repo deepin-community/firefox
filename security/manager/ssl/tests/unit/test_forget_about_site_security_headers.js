@@ -13,7 +13,7 @@ const { ForgetAboutSite } = ChromeUtils.importESModule(
   "resource://gre/modules/ForgetAboutSite.sys.mjs"
 );
 
-do_get_profile(); // must be done before instantiating nsIX509CertDB
+do_get_profile(true); // must be done before instantiating nsIX509CertDB and calling ForgetAboutSite.
 
 registerCleanupFunction(() => {
   Services.prefs.clearUserPref("security.cert_pinning.enforcement_level");
@@ -36,7 +36,7 @@ add_task(async function () {
 
   Assert.ok(sss.isSecureURI(uri), "a.pinning.example.com should be HSTS");
 
-  await ForgetAboutSite.removeDataFromDomain("a.pinning.example.com");
+  await ForgetAboutSite.removeDataFromBaseDomain("a.pinning.example.com");
 
   Assert.ok(
     !sss.isSecureURI(uri),
@@ -61,7 +61,7 @@ add_task(async function () {
   sss.processHeader(unrelatedURI, GOOD_MAX_AGE);
   Assert.ok(sss.isSecureURI(unrelatedURI), "example.org should be HSTS");
 
-  await ForgetAboutSite.removeDataFromDomain("example.com");
+  await ForgetAboutSite.removeDataFromBaseDomain("example.com");
 
   Assert.ok(
     !sss.isSecureURI(uri),
@@ -102,7 +102,7 @@ add_task(async function () {
     );
   }
 
-  await ForgetAboutSite.removeDataFromDomain("example.com");
+  await ForgetAboutSite.removeDataFromBaseDomain("example.com");
 
   for (let originAttributes of originAttributesList) {
     Assert.ok(

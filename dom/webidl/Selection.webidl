@@ -10,6 +10,11 @@
  * liability, trademark and document use rules apply.
  */
 
+// https://www.w3.org/TR/selection-api/#dom-getcomposedrangesoptions
+dictionary GetComposedRangesOptions {
+  sequence<ShadowRoot> shadowRoots = [];
+};
+
 [Exposed=Window]
 interface Selection {
   [NeedsCallerType]
@@ -23,6 +28,10 @@ interface Selection {
   readonly attribute boolean       isCollapsed;
   [ChromeOnly]
   readonly attribute boolean       areNormalAndCrossShadowBoundaryRangesCollapsed;
+
+  [ChromeOnly]
+  readonly attribute Node?         mayCrossShadowBoundaryFocusNode;
+
   /**
    * Returns the number of ranges in the selection.
    */
@@ -54,7 +63,7 @@ interface Selection {
   undefined empty();
 
   [Pref="dom.shadowdom.selection_across_boundary_enabled"]
-  sequence<StaticRange> getComposedRanges(ShadowRoot... shadowRoots);
+  sequence<StaticRange> getComposedRanges(optional (ShadowRoot or GetComposedRangesOptions) options = {}, ShadowRoot... shadowRoots);
 
   [Throws, BinaryName="collapseJS"]
   undefined collapse(Node? node, optional unsigned long offset = 0);
@@ -73,19 +82,15 @@ interface Selection {
                              unsigned long focusOffset);
   [Throws, BinaryName="selectAllChildrenJS"]
   undefined selectAllChildren(Node node);
+  undefined modify(optional DOMString alter = "", optional DOMString direction = "",
+                   optional DOMString granularity = "");
   [CEReactions, Throws]
   undefined deleteFromDocument();
   [Throws]
   boolean   containsNode(Node node,
                          optional boolean allowPartialContainment = false);
+  [NeedsCallerType]
   stringifier DOMString ();
-};
-
-// Additional methods not currently in the spec
-partial interface Selection {
-  [Throws]
-  undefined modify(DOMString alter, DOMString direction,
-                   DOMString granularity);
 };
 
 // Additional chrome-only methods.

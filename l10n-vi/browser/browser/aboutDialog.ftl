@@ -16,12 +16,12 @@ update-checkingForUpdates = Đang kiểm tra cập nhật…
 ## Variables:
 ##   $transfer (string) - Transfer progress.
 
-settings-update-downloading = <img data-l10n-name="icon"/>Đang tải cập nhật — <label data-l10n-name="download-status">{ $transfer }</label>
+settings-update-downloading = <img data-l10n-name="icon"/>Đang tải xuống bản cập nhật — <label data-l10n-name="download-status">{ $transfer }</label>
 aboutdialog-update-downloading = Đang tải xuống bản cập nhật — <label data-l10n-name="download-status">{ $transfer }</label>
 
 ##
 
-update-applying = Đang cài đặt cập nhật…
+update-applying = Đang cài đặt bản cập nhật…
 update-failed = Cập nhật thất bại. <label data-l10n-name="failed-link">Tải phiên bản mới nhất</label>
 update-failed-main = Cập nhật thất bại. <a data-l10n-name="failed-link-main">Tải phiên bản mới nhất</a>
 update-adminDisabled = Cập nhật bị vô hiệu hóa bởi quản trị hệ thống
@@ -51,6 +51,8 @@ community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-shor
 community-2 = { -brand-short-name } được thiết kế bởi <label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label>, một <label data-l10n-name="community-creditsLink">cộng đồng toàn cầu</label> cùng chung sức bảo vệ Web mở và cho phép ai cũng truy cập được.
 helpus = Bạn muốn giúp đỡ? <label data-l10n-name="helpus-donateLink">Quyên góp tài chính</label>, hoặc <label data-l10n-name="helpus-getInvolvedLink">tham gia đóng góp!</label>
 bottomLinks-license = Thông tin giấy phép
+bottom-links-terms = Điều khoản sử dụng
+bottom-links-privacy = Thông báo về quyền riêng tư
 bottomLinks-rights = Quyền hạn người dùng cuối
 bottomLinks-privacy = Chính sách riêng tư
 # Example of resulting string: 66.0.1 (64-bit)

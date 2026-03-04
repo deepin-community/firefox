@@ -34,6 +34,7 @@ perftools-description-local-build =
     peiriant hwn,
     ychwanegwch objdir eich adeiladedd at y rhestr isod fel bod
     modd ei ddefnyddio i chwilio am fanylion symbolau.
+perftools-pick-local-build-directory = Dewis cyfeiriadur adeiladaeth
 
 ## The controls for the interval at which the profiler samples the code.
 
@@ -69,6 +70,14 @@ perftools-button-restart = Ailgychwyn
 perftools-button-add-directory = Ychwanegwch gyfeiriadur
 perftools-button-remove-directory = Tynnwch y dewis
 perftools-button-edit-settings = Golygu Gosodiadau...
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Rhagor o weithredoedd
+perftools-menu-more-actions-restart-with-profiling = Ailgychwyn { -brand-shorter-name } gyda phroffilio cychwyn wedi'i alluogi
+perftools-menu-more-actions-copy-for-startup = Copïo newidynnau amgylchedd ar gyfer proffilio cychwyn
+perftools-menu-more-actions-copy-for-perf-tests = Copïo paramedrau ar gyfer profion perfformiad
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -142,6 +151,8 @@ perftools-presets-graphics-label = Graffigau
 perftools-presets-graphics-description = Y rhagosodiad ar gyfer ymchwilio i wallau graffeg yn { -brand-shorter-name }.
 perftools-presets-media-label = Cyfrwng
 perftools-presets-media-description2 = Y rhagosodiad ar gyfer ymchwilio i wallau sain a fideo yn { -brand-shorter-name }.
+perftools-presets-ml-label = Dysgu Peirianyddol
+perftools-presets-ml-description2 = Ei ragosod ar gyfer ymchwilio i wallau dysgu peirianyddol yn { -brand-shorter-name }.
 perftools-presets-networking-label = Rhwydweithio
 perftools-presets-networking-description = Y rhagosodiad ar gyfer ymchwilio i wallau graffeg yn { -brand-shorter-name }
 # "Power" is used in the sense of energy (electricity used by the computer).
@@ -149,7 +160,6 @@ perftools-presets-power-label = Pŵer
 perftools-presets-power-description = Y rhagosodiad ar gyfer ymchwilio i wallau defnydd pŵer yn { -brand-shorter-name }, gyda gorbenion isel.
 perftools-presets-debug-label = Dadfygio
 perftools-presets-debug-description = Rhagosodiad ar gyfer dadfygio yn { -brand-shorter-name }. Gorbenion uchel, peidiwch â'i ddefnyddio ar gyfer gwaith perfformiad ond yn hytrach ei ddefnyddio ar gyfer canolbwyntio ar ddeall ymddygiad porwyr.
+perftools-presets-web-compat-label = Compat Gwe
+perftools-presets-web-compat-description = Rhagosodiad sy'n cael eu hargymell ar gyfer dadfygio materion cydweddu gwe mewn gwefannau, yn hytrach nag olrhain perfformiad.
 perftools-presets-custom-label = Cyfaddas
-
-##
-

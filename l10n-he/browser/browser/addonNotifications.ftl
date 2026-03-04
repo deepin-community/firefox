@@ -81,6 +81,8 @@ addon-removal-title = להסיר את { $name }?
 addon-removal-message = להסיר את { $name } מ־{ -brand-shorter-name }?
 addon-removal-button = הסרה
 addon-removal-abuse-report-checkbox = דיווח על הרחבה זו ל־{ -vendor-short-name }
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = אם יבוצע שימוש בתכונות או בהרחבות המשתמשות במודל זה, הוא יתווסף מחדש.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -123,14 +125,19 @@ addon-install-error-corrupt-file = לא ניתן היה להתקין את התו
 addon-install-error-file-access = לא ניתן היה להתקין את { $addonName } מכיוון של־{ -brand-short-name } אין אפשרות לשנות את הקובץ הנדרש.
 addon-install-error-not-signed = { -brand-short-name } מנע מאתר זה להתקין תוספת לא מאומתת.
 addon-install-error-invalid-domain = לא ניתן להתקין את התוספת { $addonName } ממיקום זה.
+addon-install-error-no-addon-name-file-access = לא ניתן היה להתקין את התוספת מכיוון של־{ -brand-short-name } אין אפשרות לשנות את הקובץ הנדרש.
 addon-local-install-error-network-failure = לא ניתן היה להתקין תוספת זו עקב שגיאה במערכת הקבצים.
 addon-local-install-error-incorrect-hash = לא ניתן להתקין תוספת זו כיוון שהיא אינה תואמת את התוספת המצופה { -brand-short-name }.
 addon-local-install-error-corrupt-file = לא ניתן היה להתקין תוספת זו מכיוון שהיא ככל הנראה פגומה.
 addon-local-install-error-file-access = לא ניתן היה להתקין את { $addonName } מכיוון של־{ -brand-short-name } אין אפשרות לשנות את הקובץ הנדרש.
 addon-local-install-error-not-signed = לא ניתן היה להתקין תוספת זו מכיוון שהיא לא אומתה.
+addon-local-install-no-addon-name-error-file-access = לא ניתן היה להתקין את התוספת מכיוון של־{ -brand-short-name } אין אפשרות לשנות את הקובץ הנדרש.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = לא ניתן היה להתקין את { $addonName } מכיוון שאינה תואמת ל־{ -brand-short-name } { $appVersion }.
+addon-install-error-hard-blocked = התוספת { $addonName } מפרה את המדיניות של Mozilla ולכן לא ניתן להתקין אותה ב־{ -brand-short-name }.
+addon-install-error-soft-blocked2 = התוספת { $addonName } מוגבלת ולכן לא ניתן להתקין אותה ב־{ -brand-short-name }.
 addon-install-error-blocklisted = לא ניתן היה להתקין את { $addonName } מכיוון שבתוספת זו סיכון גבוה לגרימת בעיות יציבות או אבטחה.
+addon-install-error-soft-blocked = התוספת { $addonName } מפרה את המדיניות של Mozilla ולכן לא ניתן להתקין אותה ב־{ -brand-short-name }.
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = אין באפשרותך להתקין את { $addonName } כמשתמש קצה, היא ניתנת להתקנה רק על־ידי ארגון המשתמש במדיניות ארגונית.

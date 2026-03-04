@@ -6,12 +6,12 @@ aboutDialog-title =
     .title = Om { -brand-full-name }
 releaseNotes-link = Hva er nytt
 update-checkForUpdatesButton =
-    .label = Søk etter oppdateringer
+    .label = Se etter oppdateringer
     .accesskey = S
 update-updateButton =
     .label = Start på nytt for å oppdatere { -brand-shorter-name }
     .accesskey = S
-update-checkingForUpdates = Søker etter oppdateringer …
+update-checkingForUpdates = Ser etter oppdateringer …
 
 ## Variables:
 ##   $transfer (string) - Transfer progress.
@@ -27,7 +27,7 @@ update-failed-main = Oppdatering mislykket. <a data-l10n-name="failed-link-main"
 update-adminDisabled = Oppdateringer er avslått av systemansvarlig
 update-policy-disabled = Oppdateringer er deaktivert av organisasjonen din
 update-noUpdatesFound = { -brand-short-name } er oppdatert
-aboutdialog-update-checking-failed = Kunne ikke søke etter oppdateringer
+aboutdialog-update-checking-failed = Kunne ikke se etter oppdateringer.
 update-otherInstanceHandlingUpdates = { -brand-short-name } blir oppdatert av en annen instans
 
 ## Variables:
@@ -51,8 +51,10 @@ community-exp = <label data-l10n-name="community-exp-mozillaLink">{ -vendor-shor
 community-2 = { -brand-short-name } er utviklet av <label data-l10n-name="community-mozillaLink">{ -vendor-short-name }</label>, et <label data-l10n-name="community-creditsLink">globalt samfunn</label> som arbeider sammen for å holde nettet åpent, allment og tilgjengelig for alle.
 helpus = Vil du hjelpe til? <label data-l10n-name="helpus-donateLink">Gi en donasjon</label> eller <label data-l10n-name="helpus-getInvolvedLink">involver deg!</label>
 bottomLinks-license = Lisensinfo
+bottom-links-terms = Bruksvilkår
+bottom-links-privacy = Personvernerklæring
 bottomLinks-rights = Rettigheter for sluttbrukere
-bottomLinks-privacy = Personvernbestemmelser
+bottomLinks-privacy = Personvernpraksis
 # Example of resulting string: 66.0.1 (64-bit)
 # Variables:
 #   $version (String): version of Firefox, e.g. 66.0.1

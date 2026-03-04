@@ -18,8 +18,6 @@ abuse-report-addon-authored-by = аз ҷониби <a data-l10n-name="author-nam
 abuse-report-learnmore =
     Намедонед, ки кадом мушкилиро интихоб намоед?
     <a data-l10n-name="learnmore-link">Дар бораи гузоришдиҳӣ оид ба хатоҳо дар васеъшавиҳо ва мавзуъҳо маълумоти бешар гиред</a>
-abuse-report-learnmore-intro = Намедонед, ки кадом мушкилиро интихоб намоед?
-abuse-report-learnmore-link = Дар бораи гузоришдиҳӣ оид ба хатоҳо дар васеъшавиҳо ва мавзуъҳо маълумоти бешар гиред
 abuse-report-submit-description = Мушкилиро тавзеҳ кунед (ихтиёрӣ)
 abuse-report-textarea =
     .placeholder = Агар мо тафсилоти муфассал дошта бошед, ҳалли мушкилӣ барои мо осонтар мебошад. Лутфан, он мушкилие, ки шумо мекашед, тавсиф кунед. Ташаккур барои он, ки шумо ба мо дар нигоҳдории Интернети солим кумак мекунед.
@@ -48,24 +46,6 @@ abuse-report-messagebar-removed-sitepermission = Ташаккур барои ф�
 abuse-report-messagebar-removed-theme = Ташаккур барои фиристодани гузориш. Шумо мавзуи <span data-l10n-name="addon-name">{ $addon-name }</span>-ро тоза кардед.
 abuse-report-messagebar-error = Ҳангоми фиристодани гузориш дар бораи <span data-l10n-name="addon-name">{ $addon-name }</span> хато ба миён омад.
 abuse-report-messagebar-error-recent-submit = Гузориш дар бораи <span data-l10n-name="addon-name">{ $addon-name }</span> фиристода нашуд, зеро ки гузориши дигар ба қарибӣ пешниҳод карда шуд.
-abuse-report-messagebar-aborted2 =
-    .message = Гузориш дар бораи { $addon-name } бекор карда шуд.
-abuse-report-messagebar-submitting2 =
-    .message = Фиристодани гузориш дар бораи { $addon-name }.
-abuse-report-messagebar-submitted2 =
-    .message = Ташаккур барои фиристодани гузориш. Шумо мехоҳед, ки { $addon-name }-ро тоза кунед?
-abuse-report-messagebar-submitted-noremove2 =
-    .message = Ташаккур барои фиристодани гузориш.
-abuse-report-messagebar-removed-extension2 =
-    .message = Ташаккур барои фиристодани гузориш. Шумо васеъшавии { $addon-name }-ро тоза кардед.
-abuse-report-messagebar-removed-sitepermission2 =
-    .message = Ташаккур барои фиристодани гузориш. Шумо васеъшавии { $addon-name }-ро барои иҷозатҳои сомона тоза кардед.
-abuse-report-messagebar-removed-theme2 =
-    .message = Ташаккур барои фиристодани гузориш. Шумо мавзуи { $addon-name }-ро тоза кардед.
-abuse-report-messagebar-error2 =
-    .message = Ҳангоми фиристодани гузориш дар бораи { $addon-name } хато ба миён омад.
-abuse-report-messagebar-error-recent-submit2 =
-    .message = Гузориш дар бораи { $addon-name } фиристода нашуд, зеро ки гузориши дигар ба қарибӣ пешниҳод карда шуд.
 
 ## Message bars actions.
 
@@ -93,7 +73,7 @@ abuse-report-deceptive-example = Масалан: Тавсиф ё тасвир ш
 abuse-report-broken-reason-extension-v2 = Кор намекунад, сомонаҳоро вайрон мекунад ё кори { -brand-product-name }-ро суст мекунад
 abuse-report-broken-reason-sitepermission-v2 = Кор намекунад, сомонаҳоро вайрон мекунад ё кори { -brand-product-name }-ро суст мекунад
 abuse-report-broken-reason-theme-v2 = Кор намекунад ё намоиши браузерро вайрон мекунад
-abuse-report-broken-example = Масалан: Хусусиятҳо сустанд, барои истифода душворанд ё кор намекунанд; қисмҳои сомона бор карда намешаванд ё ғайриодӣ менамоянд
+abuse-report-broken-example = Масалан: Хусусиятҳо сустанд, барои истифода душворанд ё кор намекунанд; қисмҳои сомона бор карда намешаванд ё ғайриоддӣ менамоянд
 abuse-report-broken-suggestions-extension =
     Чунин ба назар мерасад, ки шумо нуқсонро пайдо кардед. Илова ба пешниҳоди гузориши иҷоӣ,
     беҳтарин роҳ барои ислоҳ кардани мушкилии вазоифӣ дар он аст, ки шумо бояд бо барномасози

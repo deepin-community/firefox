@@ -2,10 +2,13 @@
    http://creativecommons.org/publicdomain/zero/1.0/ */
 
 ChromeUtils.defineESModuleGetters(this, {
-  BrowserSearchTelemetry: "resource:///modules/BrowserSearchTelemetry.sys.mjs",
+  BrowserSearchTelemetry:
+    "moz-src:///browser/components/search/BrowserSearchTelemetry.sys.mjs",
   NetUtil: "resource://gre/modules/NetUtil.sys.mjs",
-  SearchSERPTelemetry: "resource:///modules/SearchSERPTelemetry.sys.mjs",
-  SearchSERPTelemetryUtils: "resource:///modules/SearchSERPTelemetry.sys.mjs",
+  SearchSERPTelemetry:
+    "moz-src:///browser/components/search/SearchSERPTelemetry.sys.mjs",
+  SearchSERPTelemetryUtils:
+    "moz-src:///browser/components/search/SearchSERPTelemetry.sys.mjs",
   TelemetryTestUtils: "resource://testing-common/TelemetryTestUtils.sys.mjs",
   sinon: "resource://testing-common/Sinon.sys.mjs",
 });
@@ -24,6 +27,9 @@ const TEST_PROVIDER_INFO = [
     shoppingTab: {
       regexp: "&site=shop",
     },
+    searchMode: {
+      mode: "image_search",
+    },
     components: [
       {
         type: SearchSERPTelemetryUtils.COMPONENTS.AD_LINK,
@@ -40,6 +46,85 @@ const TEST_PROVIDER_INFO = [
     expectedOrganicCodes: ["baz"],
     organicCodes: ["foo"],
     followOnParamNames: ["a"],
+    extraAdServersRegexps: [/^https:\/\/www\.example\.com\/ad2/],
+    components: [
+      {
+        type: SearchSERPTelemetryUtils.COMPONENTS.AD_LINK,
+        default: true,
+      },
+    ],
+  },
+  {
+    telemetryId: "example3",
+    searchPageRegexp: /^https:\/\/www\.example3\.com\/search/,
+    queryParamNames: ["a", "q"],
+    codeParamName: "abc",
+    taggedCodes: ["ff", "tb"],
+    expectedOrganicCodes: ["baz"],
+    organicCodes: ["foo"],
+    followOnParamNames: ["a"],
+    followOnCookies: [
+      {
+        host: "www.example3.com",
+        name: "_dummyCookieName",
+        codeParamName: "abc",
+        extraCodePrefixes: ["xyz"],
+        extraCodeParamName: "dummyExtraCodeParamName",
+      },
+    ],
+    extraAdServersRegexps: [/^https:\/\/www\.example\.com\/ad2/],
+    components: [
+      {
+        type: SearchSERPTelemetryUtils.COMPONENTS.AD_LINK,
+        default: true,
+      },
+    ],
+  },
+  {
+    telemetryId: "example4",
+    searchPageRegexp: /^https:\/\/www\.example4\.com\/search/,
+    queryParamNames: ["a", "q"],
+    codeParamName: "abc",
+    taggedCodes: ["ff", "tb"],
+    expectedOrganicCodes: ["baz"],
+    organicCodes: ["foo"],
+    followOnParamNames: ["a"],
+    followOnCookies: [
+      {
+        host: "www.example4.com",
+        name: "_dummyCookieName",
+        codeParamName: "abc",
+        extraCodePrefixes: ["xyz"],
+        extraCodeParamName: "dummyExtraCodeParamName",
+      },
+    ],
+    extraAdServersRegexps: [/^https:\/\/www\.example\.com\/ad2/],
+    components: [
+      {
+        type: SearchSERPTelemetryUtils.COMPONENTS.AD_LINK,
+        default: true,
+      },
+    ],
+  },
+  {
+    telemetryId: "example5",
+    searchPageRegexp: /^https:\/\/www\.example5\.com\/search/,
+    queryParamNames: ["a", "q"],
+    codeParamName: "abc",
+    taggedCodes: ["ff", "tb"],
+    expectedOrganicCodes: ["baz"],
+    organicCodes: ["foo"],
+    followOnParamNames: ["a"],
+    followOnCookies: [
+      {
+        host: "www.example5.com",
+        name: "_dummyCookieName",
+        codeParamName: "abc",
+        // No required extra code param/prefixes.
+        extraCodePrefixes: [],
+        extraCodeParamName: "",
+      },
+    ],
     extraAdServersRegexps: [/^https:\/\/www\.example\.com\/ad2/],
     components: [
       {
@@ -88,6 +173,25 @@ const TESTS = [
     },
   },
   {
+    title: "Tagged image search",
+    trackingUrl: "https://www.example.com/search?q=test&abc=ff&mode=image",
+    expectedSearchCountEntry: "example:tagged:ff",
+    expectedAdKey: "example:tagged",
+    adUrls: ["https://www.example.com/ad2"],
+    nonAdUrls: ["https://www.example.com/ad3"],
+    impression: {
+      provider: "example",
+      tagged: "true",
+      partner_code: "ff",
+      search_mode: "image_search",
+      source: "unknown",
+      is_shopping_page: "false",
+      is_private: "false",
+      shopping_tab_displayed: "false",
+      is_signed_in: "false",
+    },
+  },
+  {
     title: "Tagged follow-on",
     trackingUrl: "https://www.example.com/search?q=test&abc=tb&a=next",
     expectedSearchCountEntry: "example:tagged-follow-on:tb",
@@ -96,6 +200,122 @@ const TESTS = [
     nonAdUrls: ["https://www.example.com/ad3"],
     impression: {
       provider: "example",
+      tagged: "true",
+      partner_code: "tb",
+      source: "unknown",
+      is_shopping_page: "false",
+      is_private: "false",
+      shopping_tab_displayed: "false",
+      is_signed_in: "false",
+    },
+  },
+  {
+    setUp() {
+      Services.cookies.removeAll();
+      const cv = Services.cookies.add(
+        "www.example3.com",
+        "/",
+        "_dummyCookieName",
+        "abc=tb&def=ghi",
+        false,
+        false,
+        false,
+        Date.now() + 10 * 60 * 60 * 1000,
+        {},
+        Ci.nsICookie.SAMESITE_UNSET,
+        Ci.nsICookie.SCHEME_HTTPS
+      );
+      Assert.equal(cv.result, Ci.nsICookieValidation.eOK, "Valid cookie");
+    },
+    tearDown() {
+      Services.cookies.removeAll();
+    },
+    title: "Tagged follow-on with cookie",
+    trackingUrl:
+      "https://www.example3.com/search?q=test&a=next&dummyExtraCodeParamName=xyz",
+    expectedSearchCountEntry: "example3:tagged-follow-on:tb",
+    expectedAdKey: "example3:tagged-follow-on",
+    adUrls: ["https://www.example.com/ad2"],
+    nonAdUrls: ["https://www.example.com/ad3"],
+    impression: {
+      provider: "example3",
+      tagged: "true",
+      partner_code: "tb",
+      source: "unknown",
+      is_shopping_page: "false",
+      is_private: "false",
+      shopping_tab_displayed: "false",
+      is_signed_in: "false",
+    },
+  },
+  {
+    setUp() {
+      Services.cookies.removeAll();
+      const cv = Services.cookies.add(
+        "www.example4.com",
+        "/",
+        "_dummyCookieName",
+        "abc=tb&def=ghi",
+        false,
+        false,
+        false,
+        Date.now() + 10 * 60 * 60 * 1000,
+        {},
+        Ci.nsICookie.SAMESITE_UNSET,
+        Ci.nsICookie.SCHEME_HTTPS
+      );
+      Assert.equal(cv.result, Ci.nsICookieValidation.eOK, "Valid cookie");
+    },
+    tearDown() {
+      Services.cookies.removeAll();
+    },
+    title:
+      "Tagged follow-on with cookie and unexpected extraCodeParam casing in URL",
+    trackingUrl:
+      "https://www.example4.com/search?q=test&a=next&DUMMYEXTRACODEPARAMNAME=xyz",
+    expectedSearchCountEntry: "example4:tagged-follow-on:tb",
+    expectedAdKey: "example4:tagged-follow-on",
+    adUrls: ["https://www.example.com/ad2"],
+    nonAdUrls: ["https://www.example.com/ad3"],
+    impression: {
+      provider: "example4",
+      tagged: "true",
+      partner_code: "tb",
+      source: "unknown",
+      is_shopping_page: "false",
+      is_private: "false",
+      shopping_tab_displayed: "false",
+      is_signed_in: "false",
+    },
+  },
+  {
+    setUp() {
+      Services.cookies.removeAll();
+      Services.cookies.add(
+        "www.example5.com",
+        "/",
+        "_dummyCookieName",
+        "abc=tb&def=ghi",
+        false,
+        false,
+        false,
+        Date.now() + 10 * 60 * 60 * 1000,
+        {},
+        Ci.nsICookie.SAMESITE_UNSET,
+        Ci.nsICookie.SCHEME_HTTPS
+      );
+    },
+    tearDown() {
+      Services.cookies.removeAll();
+    },
+    title: "Tagged follow-on with cookie and no required url param",
+    trackingUrl: "https://www.example5.com/search?q=test&a=next",
+    expectedSearchCountEntry: "example5:tagged-follow-on:tb",
+    expectedAdKey: "example5:tagged-follow-on",
+    adUrls: ["https://www.example.com/ad2"],
+    nonAdUrls: ["https://www.example.com/ad3"],
+    impression: {
+      provider: "example5",
       tagged: "true",
       partner_code: "tb",
       source: "unknown",
@@ -265,11 +485,15 @@ async function testAdUrlClicked(serpUrl, adUrl, expectedAdKey) {
 
 do_get_profile();
 
-add_task(async function setup() {
+add_setup(async function () {
   Services.fog.initializeFOG();
   await SearchSERPTelemetry.init();
   SearchSERPTelemetry.overrideSearchTelemetryForTests(TEST_PROVIDER_INFO);
   sinon.stub(BrowserSearchTelemetry, "shouldRecordSearchCount").returns(true);
+
+  registerCleanupFunction(async () => {
+    sinon.restore();
+  });
 });
 
 add_task(async function test_parsing_search_urls() {

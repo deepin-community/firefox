@@ -5,14 +5,13 @@
 
 #include "nsDeviceContextSpecWin.h"
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/gfx/PrintPromise.h"
 #include "mozilla/gfx/PrintTargetPDF.h"
 #include "mozilla/gfx/PrintTargetWindows.h"
 #include "mozilla/Logging.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/RefPtr.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/PrintingMetrics.h"
 #include "nsAnonymousTemporaryFile.h"
 
 #include <wchar.h>
@@ -33,17 +32,7 @@
 
 #include "nsIFileStreams.h"
 #include "nsWindowsHelpers.h"
-
 #include "mozilla/gfx/Logging.h"
-
-#ifdef MOZ_ENABLE_SKIA_PDF
-#  include "mozilla/gfx/PrintTargetSkPDF.h"
-#  include "mozilla/gfx/PrintTargetEMF.h"
-#  include "nsIUUIDGenerator.h"
-#  include "nsDirectoryServiceDefs.h"
-#  include "nsPrintfCString.h"
-#  include "nsThreadUtils.h"
-#endif
 
 extern mozilla::LazyLogModule gPrintingLog;
 #define PR_PL(_p1) MOZ_LOG(gPrintingLog, mozilla::LogLevel::Debug, _p1)
@@ -51,9 +40,7 @@ extern mozilla::LazyLogModule gPrintingLog;
 using namespace mozilla;
 using namespace mozilla::gfx;
 
-#ifdef MOZ_ENABLE_SKIA_PDF
 using namespace mozilla::widget;
-#endif
 
 static const wchar_t kDriverName[] = L"WINSPOOL";
 
@@ -132,8 +119,9 @@ NS_IMETHODIMP nsDeviceContextSpecWin::Init(nsIPrintSettings* aPrintSettings,
   // version number or other product differentiating string.  (True for doPDF,
   // novaPDF, PDF-XChange and Soda PDF, for example.)
   if (mOutputFormat == nsIPrintSettings::kOutputFormatPDF) {
-    Telemetry::ScalarAdd(Telemetry::ScalarID::PRINTING_TARGET_TYPE,
-                         u"pdf_file"_ns, 1);
+    glean::printing::target_type
+        .EnumGet(glean::printing::TargetTypeLabel::ePdfFile)
+        .Add(1);
   } else if (StringBeginsWith(printerName, u"Microsoft Print to PDF"_ns) ||
              StringBeginsWith(printerName, u"Adobe PDF"_ns) ||
              StringBeginsWith(printerName, u"Bullzip PDF Printer"_ns) ||
@@ -150,34 +138,30 @@ NS_IMETHODIMP nsDeviceContextSpecWin::Init(nsIPrintSettings* aPrintSettings,
              StringBeginsWith(printerName, u"Solid PDF Creator"_ns) ||
              StringBeginsWith(printerName,
                               u"Universal Document Converter"_ns)) {
-    Telemetry::ScalarAdd(Telemetry::ScalarID::PRINTING_TARGET_TYPE,
-                         u"pdf_file"_ns, 1);
+    glean::printing::target_type
+        .EnumGet(glean::printing::TargetTypeLabel::ePdfFile)
+        .Add(1);
   } else if (printerName.EqualsLiteral("Microsoft XPS Document Writer")) {
-    Telemetry::ScalarAdd(Telemetry::ScalarID::PRINTING_TARGET_TYPE,
-                         u"xps_file"_ns, 1);
+    glean::printing::target_type
+        .EnumGet(glean::printing::TargetTypeLabel::eXpsFile)
+        .Add(1);
   } else {
     nsAString::const_iterator start, end;
     printerName.BeginReading(start);
     printerName.EndReading(end);
     if (CaseInsensitiveFindInReadable(u"pdf"_ns, start, end)) {
-      Telemetry::ScalarAdd(Telemetry::ScalarID::PRINTING_TARGET_TYPE,
-                           u"pdf_unknown"_ns, 1);
+      glean::printing::target_type
+          .EnumGet(glean::printing::TargetTypeLabel::ePdfUnknown)
+          .Add(1);
     } else {
-      Telemetry::ScalarAdd(Telemetry::ScalarID::PRINTING_TARGET_TYPE,
-                           u"unknown"_ns, 1);
+      glean::printing::target_type
+          .EnumGet(glean::printing::TargetTypeLabel::eUnknown)
+          .Add(1);
     }
   }
 
   nsresult rv = NS_ERROR_GFX_PRINTER_NO_PRINTER_AVAILABLE;
   if (aPrintSettings) {
-#ifdef MOZ_ENABLE_SKIA_PDF
-    nsAutoString printViaPdf;
-    Preferences::GetString("print.print_via_pdf_encoder", printViaPdf);
-    if (printViaPdf.EqualsLiteral("skia-pdf")) {
-      mPrintViaSkPDF = true;
-    }
-#endif
-
     // If we're in the child or we're printing to PDF we only need information
     // from the print settings.
     if (XRE_IsContentProcess() ||
@@ -234,47 +218,6 @@ NS_IMETHODIMP nsDeviceContextSpecWin::Init(nsIPrintSettings* aPrintSettings,
 already_AddRefed<PrintTarget> nsDeviceContextSpecWin::MakePrintTarget() {
   NS_ASSERTION(mDevMode || mOutputFormat == nsIPrintSettings::kOutputFormatPDF,
                "DevMode can't be NULL here unless we're printing to PDF.");
-
-#ifdef MOZ_ENABLE_SKIA_PDF
-  if (mPrintViaSkPDF) {
-    double width, height;
-    mPrintSettings->GetEffectivePageSize(&width, &height);
-    if (width <= 0 || height <= 0) {
-      return nullptr;
-    }
-
-    // convert twips to points
-    width /= TWIPS_PER_POINT_FLOAT;
-    height /= TWIPS_PER_POINT_FLOAT;
-    IntSize size = IntSize::Ceil(width, height);
-
-    if (mOutputFormat == nsIPrintSettings::kOutputFormatPDF) {
-      nsString filename;
-      // TODO(dshin):
-      // - Does this handle bug 1659470?
-      // - Should this code path be enabled, we should use temporary files and
-      // then move the file in `EndDocument()`.
-      mPrintSettings->GetToFileName(filename);
-
-      nsAutoCString printFile(NS_ConvertUTF16toUTF8(filename).get());
-      auto skStream = MakeUnique<SkFILEWStream>(printFile.get());
-      return PrintTargetSkPDF::CreateOrNull(std::move(skStream), size);
-    }
-
-    if (mDevMode) {
-      NS_WARNING_ASSERTION(!mDriverName.IsEmpty(), "No driver!");
-      HDC dc =
-          ::CreateDCW(mDriverName.get(), mDeviceName.get(), nullptr, mDevMode);
-      if (!dc) {
-        gfxCriticalError(gfxCriticalError::DefaultOptions(false))
-            << "Failed to create device context in GetSurfaceForPrinter";
-        return nullptr;
-      }
-      return PrintTargetEMF::CreateOrNull(dc, size);
-    }
-  }
-#endif
-
   if (mOutputFormat == nsIPrintSettings::kOutputFormatPDF) {
     double width, height;
     mPrintSettings->GetEffectiveSheetSize(&width, &height);
@@ -339,12 +282,6 @@ RefPtr<PrintEndDocumentPromise> nsDeviceContextSpecWin::EndDocument() {
     return PrintEndDocumentPromise::CreateAndResolve(true, __func__);
   }
 
-#ifdef MOZ_ENABLE_SKIA_PDF
-  if (mPrintViaSkPDF) {
-    return PrintEndDocumentPromise::CreateAndResolve(true, __func__);
-  }
-#endif
-
   MOZ_ASSERT(mTempFile, "No handle to temporary PDF file.");
 
   nsAutoString targetPath;
@@ -356,7 +293,7 @@ RefPtr<PrintEndDocumentPromise> nsDeviceContextSpecWin::EndDocument() {
 
   // We still need to move the file to its actual destination.
   nsCOMPtr<nsIFile> destFile;
-  auto rv = NS_NewLocalFile(targetPath, false, getter_AddRefs(destFile));
+  auto rv = NS_NewLocalFile(targetPath, getter_AddRefs(destFile));
   if (NS_FAILED(rv)) {
     return PrintEndDocumentPromise::CreateAndReject(rv, __func__);
   }

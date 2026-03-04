@@ -324,7 +324,7 @@ this.windows = class extends ExtensionAPIPersistent {
             } else {
               let url = context.uri.resolve(createData.url);
               args.appendElement(mkstr(url));
-              isOnlyMozExtensionUrl = url.startsWith("moz-extension://");
+              isOnlyMozExtensionUrl = ExtensionUtils.isExtensionUrl(url);
               if (!context.checkLoadURL(url, { dontReportErrors: true })) {
                 if (isOnlyMozExtensionUrl) {
                   // For backwards-compatibility (also in tabs APIs), we allow
@@ -343,7 +343,7 @@ this.windows = class extends ExtensionAPIPersistent {
                 ? "about:privatebrowsing"
                 : HomePage.get().split("|", 1)[0];
             args.appendElement(mkstr(url));
-            isOnlyMozExtensionUrl = url.startsWith("moz-extension://");
+            isOnlyMozExtensionUrl = ExtensionUtils.isExtensionUrl(url);
 
             if (!context.checkLoadURL(url, { dontReportErrors: true })) {
               // The extension principal cannot directly load about:-URLs,
@@ -421,6 +421,19 @@ this.windows = class extends ExtensionAPIPersistent {
           // 10px offset is same to Chromium
           sanitizePositionParams(createData, baseWindow, 10);
 
+          if (createData.width !== null) {
+            features.push("outerWidth=" + createData.width);
+          }
+          if (createData.height !== null) {
+            features.push("outerHeight=" + createData.height);
+          }
+          if (createData.left !== null) {
+            features.push("left=" + createData.left);
+          }
+          if (createData.top !== null) {
+            features.push("top=" + createData.top);
+          }
+
           let window = Services.ww.openWindow(
             null,
             AppConstants.BROWSER_CHROME_URL,
@@ -430,7 +443,6 @@ this.windows = class extends ExtensionAPIPersistent {
           );
 
           let win = windowManager.getWrapper(window);
-          win.updateGeometry(createData);
 
           // TODO: focused, type
 

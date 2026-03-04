@@ -25,6 +25,8 @@ return-to-amo-subtitle = Hienoa, sinulla on { -brand-short-name }
 return-to-amo-addon-title = Hankitaanpa sinulle nyt <img data-l10n-name="icon"/> <b>{ $addon-name }</b>.
 return-to-amo-add-extension-label = Lisää laajennus
 return-to-amo-add-theme-label = Lisää teema
+return-to-amo-theme-install-complete-label = Teema asennettu
+return-to-amo-extension-install-complete-label = Laajennus asennettu
 
 ##  Variables: $addon-name (String) - Name of the add-on to be installed
 
@@ -53,9 +55,6 @@ mr1-onboarding-import-primary-button-label-attribution = Tuo selaimesta { $previ
 mr1-onboarding-theme-header = Omalla tyylillä
 mr1-onboarding-theme-subtitle = Valitse { -brand-short-name }-teema makusi mukaan.
 mr1-onboarding-theme-secondary-button-label = Ei nyt
-newtab-wallpaper-onboarding-title = Lisää ripaus väriä
-newtab-wallpaper-onboarding-subtitle = Valitse taustakuva, joka antaa uudelle välilehdelle raikkaan ilmeen.
-newtab-wallpaper-onboarding-primary-button-label = Aseta taustakuva
 # System theme uses operating system color settings
 mr1-onboarding-theme-label-system = Järjestelmän teema
 mr1-onboarding-theme-label-light = Vaalea
@@ -226,7 +225,9 @@ mr2022-onboarding-set-default-subtitle = Käytä voittoa tavoittelemattoman sä�
 mr2022-onboarding-get-started-primary-subtitle = Uusin versiomme on rakennettu ympärillesi; verkossa liikkuminen on helpompaa kuin koskaan. Se on täynnä ominaisuuksia, joihin uskomme sinun ihastuvan.
 mr2022-onboarding-get-started-primary-button-label = Määritä sekunneissa
 
-## MR2022 Import Settings screen strings
+## MR2022 Get Started screen strings.
+## These strings will be used on the welcome page
+## when Firefox is already set to default and pinned.
 
 mr2022-onboarding-import-header = Salamannopea määritys
 mr2022-onboarding-import-subtitle = Määritä { -brand-short-name } haluamallasi tavalla. Lisää kirjanmerkkisi, salasanasi ja paljon muuta aiemmin käyttämästäsi selaimesta.
@@ -357,6 +358,11 @@ onboarding-mobile-download-security-and-privacy-subtitle = Synkronoinnin myötä
 # Gratitude screen
 onboarding-gratitude-security-and-privacy-title = { -brand-short-name } huolehtii sinusta
 onboarding-gratitude-security-and-privacy-subtitle = Kiitos, että käytät Mozilla-säätiön tukemaa { -brand-short-name }ia. Tukesi avulla pyrimme tekemään Internetistä entistä turvallisemman ja helpommin saavutettavan kaikille.
+# Sign up or Sign in screen
+onboarding-sign-up-title = Synkronoi tietosi laitteiden välillä
+onboarding-sign-up-description = Luo tili ja kaikki tärkeät tietosi – salasanat, kirjanmerkit ja paljon muuta – tallennetaan turvallisesti ja ovat käytettävissä, kun kirjaudut sisään mille tahansa laitteelle.
+onboarding-sign-up-button = Rekisteröidy tai kirjaudu sisään
+onboarding-sign-up-secondary-button = Aloita selaaminen
 
 ## New user time and familiarity survey strings
 
@@ -376,3 +382,208 @@ onboarding-new-user-survey-familiarity-based-option-1 = Olen aivan uusi
 onboarding-new-user-survey-familiarity-based-option-2 = Olen käyttänyt sitä jonkin verran
 onboarding-new-user-survey-familiarity-based-option-3 = Olen hyvin perehtynyt siihen
 onboarding-new-user-survey-familiarity-based-option-4 = Olen käyttänyt sitä aiemmin, mutta siitä on aikaa
+
+## UI strings for the sidebar and vertical tabs
+
+# Setup screen for vertical tabs
+onboarding-new-tabs-title = Missä haluat välilehtien sijaitsevan?
+# Setup screen for vertical tabs - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-new-tabs-subtitle = Voit vaihtaa tätä asetusta milloin vain sivupalkin asetuksista.
+# Setup screen for vertical tabs - too many tabs variation
+onboarding-many-tabs-title = Välilehdet haluamallasi tavalla
+# Setup screen for vertical tabs - subtitle for too many tabs variation
+onboarding-many-tabs-subtitle = Pidätkö paljon välilehtiä avoinna? Kokeile sivulla olevia välilehtiä saadaksesi virtaviivaisemman näkymän. Tai pidä välilehdet yläosassa kuten tähän asti. Vaihda milloin tahansa.
+# Setup screen for vertical tabs - focused variation
+onboarding-focused-tabs-title = Valitse välilehtien asettelu
+# Setup screen for vertical tabs - subtitle for focused variation
+onboarding-focused-tabs-subtitle = Jos haluat keskittymistä helpottavan virtaviivaistetun näkymän, kokeile sivussa olevia välilehtiä. Tai pidä välilehdet yläosassa kuten tähän asti. Vaihda milloin tahansa.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-new-vertical-tabs-label = Välilehdet reunassa
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-new-horizontal-tabs-label = Välilehdet ylhäällä
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title = Pystysuuntaiset välilehdet ovat täällä
+# Setup screen for vertical tabs for existing users
+onboarding-existing-tabs-title2 = Esittelyssä pystysuuntaiset välilehdet
+# Setup screen for vertical tabs for existing users - "Switch it up" refers to switching between horizontal and vertical tabs.
+onboarding-existing-tabs-subtitle = Kokeile reunassa olevia välilehtiä. Voit vaihtaa tätä asetusta milloin vain sivupalkin asetuksista.
+# Text underneath an image used for selecting browser tabs to appear on the side of the browser.
+onboarding-existing-vertical-tabs-label = Kokeile pystysuuntaisia välilehtiä
+onboarding-flair-text = Uutta!
+# Text underneath an image used for selecting browser tabs to appear at the top of the browser.
+onboarding-existing-horizontal-tabs-label = Pidä vaakasuuntaiset välilehdet
+# Tooltip displayed on hover for vertical tabs image
+onboarding-vertical-tabs-tooltip =
+    .title = Selainikkuna, jossa välilehdet näkyvät näytön reunassa osana { -brand-shorter-name }-sivupalkkia.
+# Description for vertical tabs image
+onboarding-vertical-tabs-description =
+    .aria-description = Selainikkuna, jossa välilehdet näkyvät näytön reunassa osana { -brand-shorter-name }-sivupalkkia.
+# Tooltip displayed on hover for horizontal tabs image
+onboarding-horizontal-tabs-tooltip =
+    .title = Selainikkuna, jonka yläosassa näkyvät välilehdet.
+# Description for horizontal tabs image
+onboarding-horizontal-tabs-description =
+    .aria-description = Selainikkuna, jonka yläosassa näkyvät välilehdet.
+# Additional setup card for setting up aichatbot in the sidebar
+onboarding-genai-sidebar-title = Kokeile AI-chatbottia sivupalkissa
+# Setup card for setting up AI chatbot in the sidebar; "Providers" refers to AI chatbot providers (e.g. OpenAI, etc). "Switch anytime" refers to allowing the user to switch to a different chatbot.
+onboarding-genai-sidebar-subtitle = Tee yhteenveto verkkosivun sisällöstä, pohdi ideoita ja luonnostele viestejä – kaikki selaamisen aikana. Valitse useista palveluntarjoajista. Vaihda milloin tahansa. <a data-l10n-name="learn-more">Lisätietoja</a>
+onboarding-genai-sidebar-primary-button = Valitse chatbotti
+onboarding-genai-sidebar-secondary-button = Aloita selaaminen
+
+## New user onboarding checklist
+
+onboarding-checklist-title = Viimeistele { -brand-short-name }in määritys
+onboarding-checklist-subtitle = Suorita nämä vaiheet saadaksesi kaiken irti selauskokemuksestasi.
+onboarding-checklist-set-default = Aseta { -brand-short-name } oletusselaimeksi
+onboarding-checklist-pin = Kiinnitä { -brand-short-name } tehtäväpalkkiin
+onboarding-checklist-import = Tuo edellisestä selaimesta
+onboarding-checklist-extension = Lisää laajennus
+onboarding-checklist-sign-up = Rekisteröidy tai kirjaudu sisään tilillesi
+
+## Tab Groups feature onboarding strings
+
+tab-groups-onboarding-feature-callout-title = Kokeile välilehtiryhmiä vähentääksesi sotkua ja keskittyäksesi paremmin
+tab-groups-onboarding-feature-callout-subtitle = Järjestäydy vetämällä välilehti toisen päälle ja luo siten ensimmäinen ryhmä.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-create-group-title-3 = Löydä välilehtiryhmäsi Listaa kaikki välilehdet -valikosta milloin tahansa.
+tab-groups-onboarding-create-group-title-2 = Löydät välilehtiryhmät täältä milloin tahansa.
+tab-groups-onboarding-create-group-no-alltabs-button-title = Löydä ryhmäsi etsimällä niitä osoitepalkista.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-saved-groups-title-3 = Kun suljet välilehtiryhmän, voit avata sen uudelleen milloin tahansa Listaa kaikki välilehdet -valikosta.
+tab-groups-onboarding-saved-groups-title-2 = Kun suljet välilehtiryhmän, voit avata sen uudelleen milloin tahansa täältä.
+tab-groups-onboarding-saved-groups-no-alltabs-button-title-2 = Löydä suljetut ryhmät etsimällä niitä osoitepalkista.
+# The text "list all tabs" refers to the string tabs-toolbar-list-all-tabs
+tab-groups-onboarding-session-restore-title-2 = Avaa välilehtiryhmäsi uudelleen Listaa kaikki välilehdet -valikosta milloin tahansa.
+tab-groups-onboarding-session-restore-title = Avaa välilehtiryhmät uudelleen milloin tahansa täältä.
+tab-groups-onboarding-dismiss = OK
+
+## Multi Profiles feature onboarding messages
+
+multi-profile-spotlight-title = Tervehdi { -brand-product-name }-profiileja
+multi-profile-spotlight-body = Vaihda helposti työn ja huvin välillä selatessasi. Profiilit pitävät selaustietosi, mukaan lukien hakuhistorian ja salasanat, täysin erillään, jotta pysyt järjestyksessä.
+multi-profile-spotlight-cta = Luo profiili
+multi-profile-callout-title = Luo eri profiilit työtä ja vapaa-aikaa varten
+multi-profile-callout-subtitle = Profiilien avulla voit pitää selaustietosi, kuten hakuhistorian ja salasanat, täysin erillään.
+multi-profile-callout-cta = Luo profiili
+
+## Desktop to Mobile Adoption feature callout strings
+
+# If translating the headline is challenging, consider using a simplified alternative as a reference: 'Sync your browsing with Firefox for mobile.'
+desktop-to-mobile-headline = Lataa, synkronoi ja menoksi!
+# The phrase, 'on the go', is used to describe when people are very busy and are traveling from place to place.
+desktop-to-mobile-subtitle = Skannaa QR-koodi ladataksesi { -brand-product-name }in mobiililaitteelle. Kun olet asentanut sen, valitse "Synkronoi matkapuhelimeen" käyttääksesi salasanoja, kirjanmerkkejä ja muuta liikkeellä ollessasi.
+dismiss-button-label = Hylkää
+sync-to-mobile-button-label = Synkronoi mobiililaitteeseen
+desktop-to-mobile-qr-code-alt =
+    .aria-label = QR-koodi { -brand-product-name }in mobiiliversion lataamiseksi
+
+## Fx Backup onboarding: Create Backup spotlight
+
+create-backup-screen-1-title =
+    Päivittämässä Windows 11:een?
+    Varmuuskopioidaan { -brand-product-name }-tietosi.
+create-backup-screen-1-subtitle = Suojaa salasanasi, kirjanmerkkisi ja muut tiedot automaattisesti 1–2 minuutissa.
+create-backup-screen-1-flair = Suositeltu
+create-backup-learn-more-link = <a data-l10n-name="learn-more-label">Lue lisää</a>
+create-backup-screen-1-sync-label = Synkronoi { -brand-product-name }in kanssa
+create-backup-screen-1-sync-body = Varmuuskopioi kaikki sisäänkirjatut laitteet
+create-backup-screen-1-backup-label = Varmuuskopioi tietokoneelle
+create-backup-screen-1-backup-body = Tallentaa laitteellesi tai OneDriveen
+create-backup-select-tile-button-label = Valitse
+create-backup-back-button-label = Takaisin
+create-backup-show-fewer =
+    .label = Näytä vähemmän vastaavia
+create-backup-screen-2-title = Valitse varmuuskopioitavat { -brand-product-name }-tiedot
+create-backup-screen-2-subtitle = Kestää vain minuutin. Tietosi varmuuskopioidaan kerran päivässä.
+# Label for the "Easy setup" backup option
+create-backup-screen-2-easy-label = Helppo määritys
+# Preceded by a green check mark indicating that these are included in "Easy setup" backup
+create-backup-screen-2-easy-list-1 = Kirjanmerkit, historia, asetukset ja paljon muuta
+# Preceded by a red X indicating that these are not included in the "Easy setup" backup
+create-backup-screen-2-easy-list-2 = Ei sisällä salasanoja ja maksuja
+# Preceded by a red X indicating that "Easy setup" backups are not encrypted
+create-backup-screen-2-easy-list-3 = Ei salattu
+# Label for the "All data" backup option
+create-backup-screen-2-all-label = Kaikki tiedot
+# Preceded by a green check mark indicating that these are included in the "All data" backup
+create-backup-screen-2-all-list-2 = Sisältää salasanat ja maksut
+# Preceded by a green check mark and shield indicating "All data" backups are encrypted
+create-backup-screen-2-all-list-3 = Salattu salasanalla
+# Title for a screen asking users to choose a file location
+create-backup-screen-3-location = Minne haluat varmuuskopiosi tallennettavan?
+# Title for a screen asking users to create a password that will encrypt the backup
+create-backup-screen-3-title = Luo varmuuskopiotiedoston salasana
+create-backup-screen-3-subtitle = Vaaditaan tietojesi salaamiseen. Säilytä se paikassa, jonka muistat.
+fx-backup-opt-in-header = Valitse tiedoston sijainti
+fx-backup-opt-in-filepath-label = Valitse sijainti, jonka aiot siirtää uudelle laitteelle, kuten OneDrive.
+fx-backup-opt-in-create-password-label = Kirjoita salasana
+fx-backup-opt-in-confirm-btn-label = Jatka
+fx-backup-opt-in-cancel-btn-label = Takaisin
+
+## Fx Backup confirmation screen strings
+
+fx-backup-confirmation-screen-title = Varmuuskopiointi on ajastettu
+fx-backup-confirmation-screen-close-button = Sulje
+
+## These strings appear as a confirmation of which items will or won't be included as part of the selected backup method.
+
+fx-backup-confirmation-screen-all-data-item-text-1 = Kaikki selaustiedot mukana
+fx-backup-confirmation-screen-all-data-item-text-2 = Tallennettu laitteellesi
+fx-backup-confirmation-screen-all-data-item-text-3 = Salattu ja suojattu salasanalla
+fx-backup-confirmation-screen-easy-setup-item-text-1 = Kirjanmerkit, historia, asetukset ja muut tiedot sisältyvät
+fx-backup-confirmation-screen-easy-setup-item-text-2 = Tallennettu laitteellesi
+fx-backup-confirmation-screen-easy-setup-item-text-3 = Salasanat ja maksut eivät sisälly
+fx-backup-confirmation-screen-easy-setup-item-subtext-3 = Siirry <a data-l10n-name="settings">asetuksiin</a> lisätäksesi arkaluonteiset tiedot.
+fx-backup-confirmation-screen-item-subtext-1 = Varmuuskopiointi alkaa muutaman minuutin kuluttua ja suoritetaan kerran päivässä. Voit tarkistaa edistymisen <a data-l10n-name="settings">asetuksissa</a>.
+fx-backup-confirmation-screen-item-subtext-2 = { -brand-short-name } etsii varmuuskopiota, jos sinun on asennettava se uudelleen.
+
+## Restore from Backup Flow about:welcome screens
+
+restore-from-backup-secondary-top-button = Palauta varmuuskopiosta
+restore-from-backup-title = Palautetaan { -brand-short-name } mieleiseksesi
+restore-from-backup-subtitle = Palauta kaikki kirjanmerkit, historia ja muut tiedot, jotta voit jatkaa selaamista.
+restore-from-backup-secondary-button = Älä palauta
+
+## Restored from Backup spotlight
+
+restored-from-backup-success-title = Olemme palanneet! { -brand-short-name }-tietosi on palautettu.
+restored-from-backup-success-with-checklist-subtitle = Haluatko pitää yksityisyyttä varjelevan suosikkiselaimesi yhden napsautuksen päässä?
+restored-from-backup-success-no-checklist-subtitle = Voit ottaa varmuuskopioinnin käyttöön tälle laitteelle <a data-l10n-name="settings">asetuksissa</a>.
+restored-from-backup-success-with-checklist-primary-button = Tallenna ja jatka
+restored-from-backup-success-with-checklist-secondary-button = Ohita tämä vaihe
+restored-from-backup-success-no-checklist-primary-button = Jatka
+restored-from-backup-error-title = Hmm, varmuuskopiotiedostossasi oli ongelma.
+restored-from-backup-error-subtitle = Jos sinulla on toinen { -brand-short-name }-varmuuskopiotiedosto, yritä palauttaa siitä. <a data-l10n-name="restore-problems">Onko ongelmia edelleen?</a>
+restored-from-backup-error-primary-button = Sulje
+
+## Onboarding Personalization Screen
+## A screen shown to users during the onboarding process that asks them two qualifying questions about their use of the browser
+
+onboarding-personalization-title = Mukauta { -brand-short-name }-kokemustasi
+onboarding-personalization-subtitle = Vastaa muutamaan kysymykseen, niin suosittelemme ominaisuuksia ja laajennuksia, jotka parantavat { -brand-short-name }in käyttöä.
+onboarding-personalization-use-case-title = Mihin aiot käyttää { -brand-short-name }ia ensijaisesti?
+onboarding-personalization-use-case-personal-option = Henkilökohtaisiin asioihin
+onboarding-personalization-use-case-school-option = Kouluasioihin
+onboarding-personalization-use-case-work-option = Työasioihin
+onboarding-personalization-motivation-title = Mitkä { -brand-short-name }in ominaisuudet ovat sinulle tärkeimpiä?
+onboarding-personalization-motivation-privacy-option = Tietosuoja ja turvallisuus
+onboarding-personalization-motivation-productivity-option = Tuottavuus
+onboarding-personalization-motivation-other-option = Muu
+
+## Onboarding 2026 brand refresh
+
+onboarding-refresh-pin-set-default-subtitle = Suojaamme tietojasi ja estämme yrityksiä vakoilemasta napsautuksiasi – automaattisesti.
+# "safe paws" is a play on "safe hands", meaning you're being well taken care of or protected
+# If it doesn’t translate well, you can use the alternative: “You’re safe with Firefox.”
+onboarding-refresh-pin-set-default-title = Olet turvallisissa käpälissä
+onboarding-refresh-import-subtitle = Tuo salasanasi, kirjanmerkkisi, historiasi ja paljon muuta.
+onboarding-refresh-import-title = Tee { -brand-short-name }ista itsellesi sopiva
+onboarding-refresh-onboarding-addons-subtitle = Laajennukset ovat pieniä sovelluksia, joiden avulla voit mukauttaa { -brand-short-name }ia. Ne voivat tehostaa yksityisyyttäsi, parantaa tuottavuutta, muuttaa { -brand-short-name }in ulkoasua ja paljon muuta.
+# "Give your browsing a boost" means to enhance or improve the browsing experience
+onboarding-refresh-onboarding-addons-title = Anna selailullesi tehostus
+onboarding-refresh-sync-subtitle = Käytä kirjanmerkkejä, salasanoja ja paljon muuta kaikkialta, missä olet kirjautuneena { -brand-short-name }iin. Lisäksi tietosi salataan, joten vain sinä näet ne.
+onboarding-refresh-sync-title = Mene minne tahansa. Synkronoi kaikki.
+onboarding-refresh-gratitude-subtitle = Kiitos, että käytät { -brand-short-name }ia, ainoaa selainta, jota tukee voittoa tavoittelematon järjestö. Tukesi avulla pyrimme tekemään Internetistä turvallisemman ja helpommin käytettävän kaikille.
+# "has your back" is an idiom suggesting support and protection
+onboarding-refresh-gratitude-title = { -brand-short-name } huolehtii sinusta

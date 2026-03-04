@@ -12,7 +12,6 @@
 #include <inttypes.h>
 
 #include "X11UndefineNone.h"
-
 #include "gfxFontConstants.h"
 #include "mozilla/ServoStyleConsts.h"
 
@@ -146,32 +145,6 @@ enum class StyleShapeSourceType : uint8_t {
   Path,  // SVG path function
 };
 
-// user-focus
-enum class StyleUserFocus : uint8_t {
-  None,
-  Ignore,
-  Normal,
-};
-
-// user-input
-enum class StyleUserInput : uint8_t {
-  None,
-  Auto,
-};
-
-// user-modify
-enum class StyleUserModify : uint8_t {
-  ReadOnly,
-  ReadWrite,
-  WriteOnly,
-};
-
-// -moz-inert
-enum class StyleInert : uint8_t {
-  None,
-  Inert,
-};
-
 // -moz-window-dragging
 enum class StyleWindowDragging : uint8_t {
   Default,
@@ -217,15 +190,6 @@ enum class StyleDirection : uint8_t { Ltr, Rtl };
 // (To avoid ambiguity, this bit must be high enough such that no other
 // values here accidentally use it in their binary representation.)
 static constexpr uint8_t kWritingModeSidewaysMask = 4;
-
-enum class StyleWritingModeProperty : uint8_t {
-  HorizontalTb = 0,
-  VerticalRl = 1,
-  // HorizontalBT = 2,    // hypothetical
-  VerticalLr = 3,
-  SidewaysRl = VerticalRl | kWritingModeSidewaysMask,
-  SidewaysLr = VerticalLr | kWritingModeSidewaysMask,
-};
 
 // See nsStylePosition
 enum class StyleFlexDirection : uint8_t {
@@ -278,14 +242,8 @@ enum class StyleMathVariant : uint8_t {
 // See nsStyleFont::mMathStyle
 enum class StyleMathStyle : uint8_t { Compact = 0, Normal = 1 };
 
-// See nsStyleDisplay.mPosition
-enum class StylePositionProperty : uint8_t {
-  Static,
-  Relative,
-  Absolute,
-  Fixed,
-  Sticky,
-};
+// See nsStyleFont::mMathShift
+enum class StyleMathShift : uint8_t { Compact = 0, Normal = 1 };
 
 enum class FrameBorderProperty : uint8_t { Yes, No, One, Zero };
 
@@ -331,20 +289,6 @@ enum class ListStyle : uint8_t {
 // See nsStyleList
 enum class StyleListStylePosition : uint8_t { Inside, Outside };
 
-// See nsStyleVisibility
-enum class StylePointerEvents : uint8_t {
-  None,
-  Visiblepainted,
-  Visiblefill,
-  Visiblestroke,
-  Visible,
-  Painted,
-  Fill,
-  Stroke,
-  All,
-  Auto,
-};
-
 enum class StyleIsolation : uint8_t {
   Auto,
   Isolate,
@@ -381,7 +325,7 @@ enum class StyleTextSecurity : uint8_t {
 // See nsStyleDisplay
 enum class StyleTopLayer : uint8_t {
   None,
-  Top,
+  Auto,
 };
 
 // See nsStyleVisibility

@@ -8,6 +8,10 @@ do-not-track-option-default-content-blocking-known =
     .label = Само када је { -brand-short-name } подешен да блокира познате елементе за праћење
 do-not-track-option-always =
     .label = Увек
+# Do not translate.
+# "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
+# included to facilitate power-user search of the about:preferences page.
+global-privacy-control-search = Global Privacy Control (GPC)
 settings-page-title = Подешавања
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible
@@ -21,6 +25,8 @@ search-input-box2 =
     .style = width: 15.4em
     .placeholder = Претражите подешавања
 managed-notice = Вашим прегледачем управља ваша организација.
+managed-notice-info-icon =
+    .alt = Информације
 category-list =
     .aria-label = Категорије
 pane-general-title = Опште
@@ -44,15 +50,16 @@ category-experimental =
 pane-experimental-subtitle = Наставите с опрезом
 pane-experimental-search-results-header = { -brand-short-name } експерименти: наставите с опрезом
 pane-experimental-description2 =
-    Промена напредних подешавања може негативно да утиче на перформансе и безбедност { -brand-short-name.gender ->
-        [masculine] { -brand-short-name(case: "gen") }
-        [feminine] { -brand-short-name(case: "gen") }
-        [neuter] { -brand-short-name(case: "gen") }
-       *[other] програма { -brand-short-name }
-    }.
+    { -brand-short-name.gender ->
+        [masculine] Промена напредних подешавања може негативно да утиче на перформансе и безбедност { -brand-short-name(case: "gen") }.
+        [feminine] Промена напредних подешавања може негативно да утиче на перформансе и безбедност { -brand-short-name(case: "gen") }.
+        [neuter] Промена напредних подешавања може негативно да утиче на перформансе и безбедност { -brand-short-name(case: "gen") }.
+       *[other] Промена напредних подешавања може негативно да утиче на перформансе и безбедност програма { -brand-short-name }.
+    }
 settings-pane-labs-title = { -firefoxlabs-brand-name }
 settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Испробајте наше експерименталне функције! Још увек су у развоју и могу утицати на то како { -brand-short-name } ради.
 pane-experimental-reset =
     .label = Врати подразумевано
     .accesskey = В
@@ -135,6 +142,10 @@ startup-header = Покретање
 always-check-default =
     .label = Проверавај да ли је { -brand-short-name } подразумевани прегледач
     .accesskey = р
+is-default-browser =
+    .message = { -brand-short-name } је тренутно подразумевани прегледач
+is-not-default-browser =
+    .message = { -brand-short-name } није подразумевани прегледач
 is-default = { -brand-short-name } је тренутно подразумевани прегледач
 is-not-default = { -brand-short-name } није подразумевани прегледач
 set-as-my-default-browser =
@@ -143,6 +154,7 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Врати претходне прозоре и картице
     .accesskey = т
+windows-launch-on-login-disabled = Ово подешавање је онемогућено у Windows-у. Да промените, посетите <a data-l10n-name="startup-link">апликације при покретању</a> у подешавањима система.
 startup-restore-warn-on-quit =
     .label = Упозори ме при изласку из прегледача
 disable-extension =
@@ -152,6 +164,8 @@ preferences-data-migration-description = Увези обележиваче, ло
 preferences-data-migration-button =
     .label = Увези податке
     .accesskey = в
+tabs-group-header2 =
+    .label = Картице
 tabs-group-header = Картице
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab пролази кроз картице према редоследу коришћења
@@ -187,6 +201,8 @@ browser-containers-settings =
     .label = Подешавања…
     .accesskey = П
 containers-disable-alert-title = Затворити све картице у контејнеру?
+startup-group =
+    .label = Покретање
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -222,8 +238,20 @@ containers-remove-cancel-button = Не уклањај
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Језик и изглед
+appearance-group =
+    .label = Изглед веб странице
+    .description = Неке веб странице прилагођавају своју шему боја према вашим жељама. Изаберите шему боја коју желите да користите за те сајтове.
 preferences-web-appearance-header = Изглед веб странице
 preferences-web-appearance-description = Неке веб странице прилагођавају своју шему боја према вашим жељама. Изаберите шему боја коју желите да користите за те сајтове.
+preferences-web-appearance-choice-auto2 =
+    .label = Аутоматски
+    .title = Аутоматски промените позадину и садржај веб сајта на основу подешавања система и { -brand-short-name } теме.
+preferences-web-appearance-choice-light2 =
+    .label = Светла
+    .title = Користите светлу тему за позадину и садржај веб странице.
+preferences-web-appearance-choice-dark2 =
+    .label = Тамна
+    .title = Користите тамну тему за позадину и садржај веб странице.
 preferences-web-appearance-choice-auto = Аутоматски
 preferences-web-appearance-choice-light = Светла
 preferences-web-appearance-choice-dark = Тамна
@@ -239,13 +267,11 @@ preferences-web-appearance-choice-input-light =
     .aria-description = { preferences-web-appearance-choice-tooltip-light.title }
 preferences-web-appearance-choice-input-dark =
     .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
+preferences-web-appearance-link =
+    .label = Управљајте { -brand-short-name } темама у менију Проширења и теме
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = Ваш избор боја мења изглед веб странице. <a data-l10n-name="colors-link">Управљајте бојама</a>
-# This can appear when using windows HCM or "Override colors: always" without
-# system colors.
-preferences-web-appearance-override-warning2 =
-    .message = Ваш избор боја мења изглед веб странице.
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = Управљајте { -brand-short-name } темама у менију <a data-l10n-name="themes-link">Проширења и теме</a>
@@ -254,6 +280,14 @@ preferences-colors-description = Замените подразумеване { -
 preferences-colors-manage-button =
     .label = Управљајте бојама…
     .accesskey = У
+preferences-fonts-header2 =
+    .label = Фонтови
+default-font-2 =
+    .label = Фонт:
+    .accesskey = ф
+default-font-size-2 =
+    .label = Величина:
+    .accesskey = В
 preferences-fonts-header = Фонтови
 default-font = Фонт:
     .accesskey = ф
@@ -262,6 +296,12 @@ default-font-size = Величина:
 advanced-fonts =
     .label = Напредно…
     .accesskey = Н
+# Zoom is a noun, and the message is used as header for a group of options
+preferences-zoom-header2 =
+    .label = Зумирање
+preferences-default-zoom-label =
+    .label = Ниво зумирања:
+    .accesskey = з
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Зумирање
 preferences-default-zoom = Ниво зумирања:
@@ -305,6 +345,11 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = Датотеке и програми
+downloads-header-2 =
+    .label = Преузимања
+download-save-where-2 =
+    .label = Локација за чување датотека:
+    .accesskey = Л
 download-header = Преузимања
 download-save-where = Локација за чување датотека:
     .accesskey = Л
@@ -358,19 +403,19 @@ applications-file-ending-with-type = { applications-file-ending } ({ $type })
 #   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label =
-        Користи { $plugin-name } (у { -brand-short-name.gender ->
-            [masculine] { -brand-short-name(case: "loc") }
-            [feminine] { -brand-short-name(case: "loc") }
-            [neuter] { -brand-short-name(case: "loc") }
-           *[other] програму { -brand-short-name }
-        })
+        { -brand-short-name.gender ->
+            [masculine] Користи { $plugin-name } (у { -brand-short-name(case: "loc") })
+            [feminine] Користи { $plugin-name } (у { -brand-short-name(case: "loc") })
+            [neuter] Користи { $plugin-name } (у { -brand-short-name(case: "loc") })
+           *[other] Користи { $plugin-name } (у програму { -brand-short-name })
+        }
 applications-open-inapp =
     .label =
-        Отвори у { -brand-short-name.gender ->
-            [masculine] { -brand-short-name(case: "loc") }
-            [feminine] { -brand-short-name(case: "loc") }
-            [neuter] { -brand-short-name(case: "loc") }
-           *[other] програму { -brand-short-name }
+        { -brand-short-name.gender ->
+            [masculine] Отвори у { -brand-short-name(case: "loc") }
+            [feminine] Отвори у { -brand-short-name(case: "loc") }
+            [neuter] Отвори у { -brand-short-name(case: "loc") }
+           *[other] Отвори у програму { -brand-short-name }
         }
 
 ## The strings in this group are used to populate
@@ -403,25 +448,27 @@ applications-save-for-new-types =
 applications-ask-before-handling =
     .label = Питај да отворите или сачувате датотеке
     .accesskey = П
+drm-group =
+    .label = Садржај са заштитом ауторских права (DRM)
 drm-content-header = Садржај са заштитом ауторских права (DRM)
 play-drm-content =
     .label = Пуштај садржај заштићен DRM-ом
     .accesskey = ш
 play-drm-content-learn-more = Сазнајте више
 update-application-title =
-    Ажурирања { -brand-short-name.gender ->
-        [masculine] { -brand-short-name(case: "gen") }
-        [feminine] { -brand-short-name(case: "gen") }
-        [neuter] { -brand-short-name(case: "gen") }
-       *[other] програма { -brand-short-name }
+    { -brand-short-name.gender ->
+        [masculine] Ажурирања { -brand-short-name(case: "gen") }
+        [feminine] Ажурирања { -brand-short-name(case: "gen") }
+        [neuter] Ажурирања { -brand-short-name(case: "gen") }
+       *[other] Ажурирања програма { -brand-short-name }
     }
 update-application-description =
-    Ради побољшаних перформанси, стабилности и безбедности редовно ажурирајте { -brand-short-name.gender ->
-        [masculine] { -brand-short-name(case: "acc") }
-        [feminine] { -brand-short-name(case: "acc") }
-        [neuter] { -brand-short-name(case: "acc") }
-       *[other] програм { -brand-short-name }
-    }.
+    { -brand-short-name.gender ->
+        [masculine] Ради побољшаних перформанси, стабилности и безбедности редовно ажурирајте { -brand-short-name(case: "acc") }.
+        [feminine] Ради побољшаних перформанси, стабилности и безбедности редовно ажурирајте { -brand-short-name(case: "acc") }.
+        [neuter] Ради побољшаних перформанси, стабилности и безбедности редовно ажурирајте { -brand-short-name(case: "acc") }.
+       *[other] Ради побољшаних перформанси, стабилности и безбедности редовно ажурирајте програм { -brand-short-name }.
+    }
 # Variables:
 # $version (string) - Firefox version
 update-application-version = Верзија { $version } <a data-l10n-name="learn-more">Шта је ново</a>
@@ -429,12 +476,12 @@ update-history =
     .label = Прикажи историју ажурирања…
     .accesskey = П
 update-application-allow-description =
-    Дозволи { -brand-short-name.gender ->
-        [masculine] { -brand-short-name(case: "dat") }
-        [feminine] { -brand-short-name(case: "dat") }
-        [neuter] { -brand-short-name(case: "dat") }
-       *[other] програму { -brand-short-name }
-    }:
+    { -brand-short-name.gender ->
+        [masculine] Дозволи { -brand-short-name(case: "dat") }:
+        [feminine] Дозволи { -brand-short-name(case: "dat") }:
+        [neuter] Дозволи { -brand-short-name(case: "dat") }:
+       *[other] Дозволи програму { -brand-short-name }:
+    }
 update-application-auto =
     .label = аутоматско инсталирање ажурирања (препоручено)
     .accesskey = а
@@ -495,6 +542,8 @@ performance-limit-content-process-blocked-desc = Уређивање броја �
 #   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (подразумевано)
+performance-group =
+    .label = Перформансе
 
 ## General Section - Browsing
 
@@ -532,6 +581,8 @@ browsing-cfr-features =
     .label = Препоручуј функције током прегледања
     .accesskey = ф
 browsing-cfr-recommendations-learn-more = Сазнајте више
+browsing-group =
+    .label = Прегледање
 
 ## General Section - Proxy
 
@@ -541,16 +592,27 @@ network-proxy-connection-learn-more = Сазнајте више
 network-proxy-connection-settings =
     .label = Подешавања…
     .accesskey = П
+network-proxy-group =
+    .label = Подешавања мреже
+    .description = Подесите како { -brand-short-name } приступа интернету.
 
 ## Home Section
 
 home-new-windows-tabs-header = Нови прозори и картице
 home-new-windows-tabs-description2 = Изаберите шта желите да видите када отворите почетну страницу, нови прозор или картицу.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = Постави као подразумеван
+    .accesskey = П
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = Почетна страница и нови прозори:
 home-newtabs-mode-label = Нове картице:
+home-homepage-new-tabs =
+    .label = Нове картице:
 home-restore-defaults =
     .label = Врати на подразумевано
     .accesskey = В
@@ -589,12 +651,13 @@ home-prefs-shortcuts-description = Сачувани или посећени са
 home-prefs-shortcuts-by-option-sponsored =
     .label = Спонзорисане пречице
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Предложио { $provider }
 home-prefs-recommended-by-description-new = Изузетан садржај који је уредио { $provider }, део { -brand-product-name } породице
+home-prefs-recommended-by-header-generic =
+    .label = Препоручене приче
 
 ##
 
@@ -621,12 +684,16 @@ home-prefs-recent-activity-description = Избор недавних сајто�
 home-prefs-snippets-header =
     .label = Исечци
 home-prefs-snippets-description-new =
-    Савети и новости везани за { -brand-product-name.gender ->
-        [masculine] { -brand-product-name(case: "acc") }
-        [feminine] { -brand-product-name(case: "acc") }
-        [neuter] { -brand-product-name(case: "acc") }
-       *[other] програм { -brand-product-name }
-    } и организацију { -vendor-short-name }
+    { -brand-product-name.gender ->
+        [masculine] Савети и новости везани за { -brand-product-name(case: "acc") } и организацију { -vendor-short-name }
+        [feminine] Савети и новости везани за { -brand-product-name(case: "acc") } и организацију { -vendor-short-name }
+        [neuter] Савети и новости везани за { -brand-product-name(case: "acc") } и организацију { -vendor-short-name }
+       *[other] Савети и новости везани за програм { -brand-product-name } и организацију { -vendor-short-name }
+    }
+home-prefs-weather-header =
+    .label = Време
+home-prefs-weather-description = Временска прогноза за данас
+home-prefs-weather-learn-more-link = Сазнајте више
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -658,6 +725,8 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = У траци за адресу
     .accesskey = ц
+search-suggestions-cant-show-2 =
+    .message = Предлози претраге неће бити приказани у траци за локацију зато што сте подесили да { -brand-short-name } никада не памти историју.
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -697,12 +766,18 @@ search-keyword-warning-title = Постојећа кључна реч
 #   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Изабрали сте кључну реч коју тренутно користи "{ $name }". Одаберете неку другу.
 search-keyword-warning-bookmark = Одабрали сте кључну реч коју тренутно користи обележивач. Изаберете неку другу.
+search-engine-group =
+    .label = Подразумевани претраживач
+search-default-engine =
+    .aria-label = Подразумевани претраживач
 
 ## Containers Section
 
 containers-back-button2 =
     .aria-label = Назад на подешавања
 containers-header = Картице у контејнеру
+containers-section-header =
+    .heading = Картице у контејнеру
 containers-add-button =
     .label = Додај контејнер…
     .accesskey = Д
@@ -713,6 +788,11 @@ containers-settings-button =
     .label = Подешавања
 containers-remove-button =
     .label = Уклони
+
+## Account and sync
+
+sync-group-label =
+    .label = Синхронизација
 
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
@@ -739,14 +819,25 @@ sync-profile-picture =
 sync-profile-picture-with-alt =
     .tooltiptext = Промени профилну слику
     .alt = Промени профилну слику
+sync-profile-picture-account-problem =
+    .alt = Профилна слика налога
+fxa-login-rejected-warning =
+    .alt = Упозорење
 sync-sign-out =
     .label = Одјави ме…
     .accesskey = О
+sync-sign-out2 =
+    .label = Одјави ме
+    .accesskey = О
 sync-manage-account = Управљај налогом
+    .accesskey = У
+sync-manage-account2 =
+    .label = Управљај налогом
     .accesskey = У
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } није потврђен.
 sync-signedin-login-failure = Пријавите се да поново повежете { $email }
@@ -770,6 +861,9 @@ prefs-syncing-off = Синхронизација: ИСКЉУЧЕНА
 prefs-sync-turn-on-syncing =
     .label = Укључи синхронизацију
     .accesskey = У
+prefs-sync-turn-on-syncing-2 =
+    .label = Укључи синхронизацију
+    .accesskey = У
 prefs-sync-offer-setup-label2 = Синхронизујте обележиваче, историју, картице, лозинке, додатке и подешавања са свим уређајима.
 prefs-sync-now =
     .labelnotsyncing = Синхронизуј
@@ -778,8 +872,14 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = Синхронизуј
     .accesskey = С
+prefs-sync-now-button-2 =
+    .label = Синхронизуј
+    .accesskey = С
 prefs-syncing-button =
     .label = Синхронизовање…
+prefs-syncing-button-2 =
+    .label = Синхронизовање…
+    .title = Синхронизуј
 
 ## The list of things currently syncing.
 
@@ -788,8 +888,10 @@ sync-currently-syncing-bookmarks = Обележивачи
 sync-currently-syncing-history = Историја
 sync-currently-syncing-tabs = Отворене картице
 sync-currently-syncing-logins-passwords = Подаци за пријаву
+sync-currently-syncing-passwords = Лозинке
 sync-currently-syncing-addresses = Адресе
 sync-currently-syncing-creditcards = Кредитне картице
+sync-currently-syncing-payment-methods = Начини плаћања
 sync-currently-syncing-addons = Додаци
 sync-currently-syncing-settings = Подешавања
 sync-change-options =
@@ -840,6 +942,16 @@ sync-engine-settings =
 ## The device name controls.
 
 sync-device-name-header = Назив уређаја
+sync-device-name-header-2 =
+    .label = Назив уређаја
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Назив уређаја
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Промени назив уређаја
+    .accesskey = П
 sync-device-name-change =
     .label = Промени назив уређаја…
     .accesskey = П
@@ -850,6 +962,8 @@ sync-device-name-save =
     .label = Сачувај
     .accesskey = С
 sync-connect-another-device = Повежи други уређај
+sync-connect-another-device-2 =
+    .label = Повежи други уређај
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -931,13 +1045,25 @@ primary-password-os-auth-dialog-message-win = Из безбедносних ра
 # notes are only valid for English. Please test in your locale.
 primary-password-os-auth-dialog-message-macosx = направите главну лозинку
 master-password-os-auth-dialog-caption = { -brand-full-name }
+autofill-creditcard-os-auth-dialog-caption = { -brand-full-name }
 
 ## Privacy section - Autofill
 
+pane-privacy-autofill-header = Аутоматско попуњавање
 
 ## Privacy Section - History
 
 history-header = Историја
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label2 = { -brand-short-name }:
 # This label is followed, on the same line, by a dropdown list of options
 # (Remember history, etc.).
 # In English it visually creates a full sentence, e.g.
@@ -955,6 +1081,18 @@ history-remember-option-never =
     .label = не чувај историју
 history-remember-option-custom =
     .label = прилагођена подешавања
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } ће чувати историју прегледања, преузимања, образаца и претраге.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } ће користити иста подешавања као и за приватно прегледање и неће чувати историју прегледања веб-страница.
+history-remember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } ће чувати историју прегледања, преузимања, образаца и претраге.
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } ће користити иста подешавања као и за приватно прегледање и неће чувати историју прегледања веб-страница.
 history-remember-description = { -brand-short-name } ће чувати историју прегледања, преузимања, образаца и претраге.
 history-dontremember-description = { -brand-short-name } ће користити иста подешавања као и за приватно прегледање и неће чувати историју прегледања веб-страница.
 history-private-browsing-permanent =
@@ -968,11 +1106,11 @@ history-remember-search-option =
     .accesskey = у
 history-clear-on-close-option =
     .label =
-        Обриши историју када затворим { -brand-short-name.gender ->
-            [masculine] { -brand-short-name(case: "acc") }
-            [feminine] { -brand-short-name(case: "acc") }
-            [neuter] { -brand-short-name(case: "acc") }
-           *[other] програм { -brand-short-name }
+        { -brand-short-name.gender ->
+            [masculine] Обриши историју када затворим { -brand-short-name(case: "acc") }
+            [feminine] Обриши историју када затворим { -brand-short-name(case: "acc") }
+            [neuter] Обриши историју када затворим { -brand-short-name(case: "acc") }
+           *[other] Обриши историју када затворим програм { -brand-short-name }
         }
     .accesskey = ш
 history-clear-on-close-settings =
@@ -981,6 +1119,8 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = Обриши историју…
     .accesskey = с
+history-group =
+    .label = Историја
 
 ## Privacy Section - Site Data
 
@@ -993,20 +1133,20 @@ sitedata-total-size = Ускладиштени колачићи, подаци о
 sitedata-learn-more = Сазнајте више
 sitedata-delete-on-close =
     .label =
-        Избриши колачиће и податке о сајтовима након што затворим { -brand-short-name.gender ->
-            [masculine] { -brand-short-name(case: "acc") }
-            [feminine] { -brand-short-name(case: "acc") }
-            [neuter] { -brand-short-name(case: "acc") }
-           *[other] програм { -brand-short-name }
+        { -brand-short-name.gender ->
+            [masculine] Избриши колачиће и податке о сајтовима након што затворим { -brand-short-name(case: "acc") }
+            [feminine] Избриши колачиће и податке о сајтовима након што затворим { -brand-short-name(case: "acc") }
+            [neuter] Избриши колачиће и податке о сајтовима након што затворим { -brand-short-name(case: "acc") }
+           *[other] Избриши колачиће и податке о сајтовима након што затворим програм { -brand-short-name }
         }
     .accesskey = ш
 sitedata-delete-on-close-private-browsing =
-    У трајном режиму приватног прегледања колачићи и подаци о сајтовима ће бити обрисани када затворите { -brand-short-name.gender ->
-        [masculine] { -brand-short-name(case: "acc") }
-        [feminine] { -brand-short-name(case: "acc") }
-        [neuter] { -brand-short-name(case: "acc") }
-       *[other] програм { -brand-short-name }
-    }.
+    { -brand-short-name.gender ->
+        [masculine] У трајном режиму приватног прегледања колачићи и подаци о сајтовима ће бити обрисани када затворите { -brand-short-name(case: "acc") }.
+        [feminine] У трајном режиму приватног прегледања колачићи и подаци о сајтовима ће бити обрисани када затворите { -brand-short-name(case: "acc") }.
+        [neuter] У трајном режиму приватног прегледања колачићи и подаци о сајтовима ће бити обрисани када затворите { -brand-short-name(case: "acc") }.
+       *[other] У трајном режиму приватног прегледања колачићи и подаци о сајтовима ће бити обрисани када затворите програм { -brand-short-name }.
+    }
 sitedata-allow-cookies-option =
     .label = Прихватај колачиће и податке сајта
     .accesskey = П
@@ -1038,6 +1178,8 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = Управљај изузецима…
     .accesskey = з
+cookies-site-data-group =
+    .label = Колачићи и подаци о сајтовима
 
 ## Privacy Section - Cookie Banner Handling
 
@@ -1046,11 +1188,14 @@ cookie-banner-handling-description = { -brand-short-name } покушава ау
 
 ## Privacy Section - Cookie Banner Blocking
 
+cookie-banner-blocker-header = Блокатор банера колачића
 cookie-banner-learn-more = Сазнајте више
 forms-handle-cookie-banners =
     .label = Смањи банере колачића
+cookie-banner-blocker-checkbox-label =
+    .label = Аутоматски одбијте банере колачића
 
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = Трака за адресу
 addressbar-suggest = Предлози у траци за адресу се заснивају на:
@@ -1195,6 +1340,8 @@ permissions-notification-link = Сазнајте више
 permissions-notification-pause =
     .label = Паузирај обавештења док се { -brand-short-name } не покрене поново
     .accesskey = б
+permissions-autoplay2 =
+    .label = Аутоматска репродукција
 permissions-autoplay = Аутоматска репродукција
 permissions-autoplay-settings =
     .label = Подешавања…
@@ -1214,6 +1361,16 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = Изузеци
     .accesskey = И
+permissions-location2 =
+    .label = Локација
+permissions-xr2 =
+    .label = Виртуелна реалност
+permissions-camera2 =
+    .label = Камера
+permissions-microphone2 =
+    .label = Микрофон
+permissions-notification2 =
+    .label = Обавештења
 
 ## Privacy Section - Data Collection
 
@@ -1231,19 +1388,17 @@ collection-studies =
 collection-studies-link = Погледајте { -brand-short-name } студије
 addon-recommendations =
     .label =
-        Дозволи { -brand-short-name.gender ->
-            [masculine] { -brand-short-name(case: "loc") }
-            [feminine] { -brand-short-name(case: "loc") }
-            [neuter] { -brand-short-name(case: "loc") }
-           *[other] програму { -brand-short-name }
-        } да препоручује додатке изабране само за мене
+        { -brand-short-name.gender ->
+            [masculine] Дозволи { -brand-short-name(case: "loc") } да препоручује додатке изабране само за мене
+            [feminine] Дозволи { -brand-short-name(case: "loc") } да препоручује додатке изабране само за мене
+            [neuter] Дозволи { -brand-short-name(case: "loc") } да препоручује додатке изабране само за мене
+           *[other] Дозволи програму { -brand-short-name } да препоручује додатке изабране само за мене
+        }
 addon-recommendations-link = Сазнајте више
 # This message is displayed above disabled data sharing options in developer builds
 # or builds with no Telemetry support available.
 collection-health-report-disabled = У овој верзији је слање података онемогућено.
 collection-backlogged-crash-reports-with-link = Дозволи да { -brand-short-name } шаље заостале извештаје о отказивању у моје име <a data-l10n-name="crash-reports-link">Сазнајте више</a>
-    .accesskey = љ
-collection-backlogged-crash-reports = Дозволи да { -brand-short-name } шаље заостале извештаје о отказивању у моје име
     .accesskey = љ
 privacy-segmentation-section-header = Нове функције које побољшавају ваше прегледање
 privacy-segmentation-section-description = Када нудимо функције које користе ваше податке да би вам пружиле личније искуство:
@@ -1252,15 +1407,14 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = Прикажи детаљне информације
 
-## Privacy Section - Website Advertising Preferences
-
-
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
 ## https://developers.google.com/safe-browsing/developers_guide_v2#AcceptableUsage
 
 security-header = Безбедност
+browsing-protection-group =
+    .label = Заштита од обмањујућег садржаја и опасног софтвера
 security-browsing-protection = Заштита од обмањујућег садржаја и опасног софтвера
 security-enable-safe-browsing =
     .label = Блокирај опасан и обмањујућ садржај
@@ -1285,23 +1439,24 @@ certs-view =
 certs-devices =
     .label = Безбедносни уређаји…
     .accesskey = Б
+certs-devices-enable-fips = Омогући FIPS
 space-alert-over-5gb-settings-button =
     .label = Отвори подешавања
     .accesskey = О
 space-alert-over-5gb-message2 =
     { -brand-short-name.gender ->
-        [masculine] { -brand-short-name(case: "loc") }
-        [feminine] { -brand-short-name(case: "loc") }
-        [neuter] { -brand-short-name(case: "loc") }
-       *[other] Програму { -brand-short-name }
-    } понестаје слободног простора на диску. Садржај веб-сајтова се можда неће правилно приказивати. Ускладиштене податке можете обрисати у одељку Подешавања → Приватност и безбедност → Колачићи и подаци о сајтовима.
+        [masculine] { -brand-short-name(case: "loc") } понестаје слободног простора на диску. Садржај веб-сајтова се можда неће правилно приказивати. Ускладиштене податке можете обрисати у одељку Подешавања → Приватност и безбедност → Колачићи и подаци о сајтовима.
+        [feminine] { -brand-short-name(case: "loc") } понестаје слободног простора на диску. Садржај веб-сајтова се можда неће правилно приказивати. Ускладиштене податке можете обрисати у одељку Подешавања → Приватност и безбедност → Колачићи и подаци о сајтовима.
+        [neuter] { -brand-short-name(case: "loc") } понестаје слободног простора на диску. Садржај веб-сајтова се можда неће правилно приказивати. Ускладиштене податке можете обрисати у одељку Подешавања → Приватност и безбедност → Колачићи и подаци о сајтовима.
+       *[other] Програму { -brand-short-name } понестаје слободног простора на диску. Садржај веб-сајтова се можда неће правилно приказивати. Ускладиштене податке можете обрисати у одељку Подешавања → Приватност и безбедност → Колачићи и подаци о сајтовима.
+    }
 space-alert-under-5gb-message2 =
     { -brand-short-name.gender ->
-        [masculine] { -brand-short-name(case: "loc") }
-        [feminine] { -brand-short-name(case: "loc") }
-        [neuter] { -brand-short-name(case: "loc") }
-       *[other] Програму { -brand-short-name }
-    } понестаје слободног простора на диску. Садржај веб-сајтова се можда неће правилно приказивати. Кликните на „Сазнајте више” да бисте оптимизовали коришћење диска ради бољег угођаја при претраживању интернета.
+        [masculine] { -brand-short-name(case: "loc") } понестаје слободног простора на диску. Садржај веб-сајтова се можда неће правилно приказивати. Кликните на „Сазнајте више” да бисте оптимизовали коришћење диска ради бољег угођаја при претраживању интернета.
+        [feminine] { -brand-short-name(case: "loc") } понестаје слободног простора на диску. Садржај веб-сајтова се можда неће правилно приказивати. Кликните на „Сазнајте више” да бисте оптимизовали коришћење диска ради бољег угођаја при претраживању интернета.
+        [neuter] { -brand-short-name(case: "loc") } понестаје слободног простора на диску. Садржај веб-сајтова се можда неће правилно приказивати. Кликните на „Сазнајте више” да бисте оптимизовали коришћење диска ради бољег угођаја при претраживању интернета.
+       *[other] Програму { -brand-short-name } понестаје слободног простора на диску. Садржај веб-сајтова се можда неће правилно приказивати. Кликните на „Сазнајте више” да бисте оптимизовали коришћење диска ради бољег угођаја при претраживању интернета.
+    }
 
 ## Privacy Section - HTTPS-Only
 
@@ -1318,6 +1473,8 @@ httpsonly-radio-disabled =
 ## DoH Section
 
 preferences-doh-header = DNS преко HTTPS-а
+dns-over-https-group =
+    .label = DNS преко HTTPS-а
 preferences-doh-description = Систем доменских имена (DNS) преко HTTPS-а шаље ваше захтеве за име домена путем шифроване везе и тако ствара безбедан DNS, што отежава другима да сазнају који сајт желите да отворите.
 # Variables:
 #   $status (string) - The status of the DoH connection

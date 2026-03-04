@@ -30,4 +30,13 @@ webext-perms-description-sessions = Mengakses tab yang baru saja ditutup
 webext-perms-description-tabs = Mengakses tab peramban
 webext-perms-description-tabHide = Sembunyikan dan tampilkan tab peramban
 webext-perms-description-topSites = Mengakses riwayat penjelajahan
+webext-perms-description-trialML = Unduh dan jalankan model AI di perangkat Anda
+webext-perms-description-userScripts = Izinkan skrip pihak ketiga yang belum diverifikasi untuk mengakses data Anda
 webext-perms-description-webNavigation = Mengakses aktivitas peramban selama navigasi
+
+## The userScripts permission includes an additional explanation that is
+## displayed prominently near the usual permission description.
+
+webext-perms-extra-warning-userScripts-long = Skrip yang tidak terverifikasi dapat menimbulkan risiko keamanan dan privasi, seperti menjalankan kode berbahaya atau melacak aktivitas situs web. Jalankan hanya skrip dari ekstensi atau sumber yang Anda percayai.
+# A shorter warning is displayed in UI surfaces with little room, such as a permission prompt.
+webext-perms-extra-warning-userScripts-short = Skrip yang tidak terverifikasi dapat menimbulkan risiko keamanan dan privasi. Jalankan hanya skrip dari ekstensi atau sumber yang Anda percayai.

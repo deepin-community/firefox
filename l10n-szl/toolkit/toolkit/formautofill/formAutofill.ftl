@@ -3,9 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-## OS Prompt Dialog
-
-
 ## The credit card capture doorhanger
 
 
@@ -41,3 +38,6 @@ autofill-category-name = miano
 autofill-category-organization = ôrganizacyjo
 autofill-category-tel = telefōn
 autofill-category-email = email
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } znod niyzabezpieczōno strōna. Autōmatyczne wypełnianie formularōw je czasowo zastawiōne.

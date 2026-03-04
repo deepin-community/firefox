@@ -19,8 +19,6 @@ firefoxview-page-label =
 firefoxview-close-button =
     .title = Cerrar
     .aria-label = Cerrar
-firefoxview-empty-state-icon =
-    .alt = Atención:
 # Used instead of the localized relative time when a timestamp is within a minute or so of now
 firefoxview-just-now-timestamp = Justo ahora
 # This is a headline for an area in the product where users can resume and re-open tabs they have previously viewed on other devices.
@@ -32,15 +30,15 @@ firefoxview-tabpickup-progress-label = { $percentValue }% completo
 firefoxview-tabpickup-step-signin-header = Cambiar entre dispositivos sin interrupciones
 firefoxview-tabpickup-step-signin-description = Para ver las pestañas de tu teléfono aquí, primero conéctate o crea una cuenta.
 firefoxview-tabpickup-step-signin-primarybutton = Continuar
-firefoxview-syncedtabs-signin-header = Toma pestañas desde cualquier lugar
-firefoxview-syncedtabs-signin-description = Para ver tus pestañas desde cualquier lugar donde uses { -brand-product-name }, conéctate a tu cuenta. Si no tienes una cuenta, te guiaremos a través de los pasos para registrarse.
-firefoxview-syncedtabs-signin-primarybutton = Conectarse o registrarse
+firefoxview-syncedtabs-signin-header-2 = Tu { -brand-product-name } en todos tus dispositivos
+firefoxview-syncedtabs-signin-description-2 = Para ver las pestañas que tienes abiertas en tu teléfono y otros dispositivos, conéctate o crea una cuenta. Con una cuenta, también puedes sincronizar tus contraseñas, historial y más.
+firefoxview-syncedtabs-signin-primarybutton-2 = Conectarse
 firefoxview-tabpickup-adddevice-header = Sincroniza { -brand-product-name } en tu teléfono o tablet
 firefoxview-tabpickup-adddevice-description = Descarga { -brand-product-name } para dispositivos móviles y conéctate allí.
 firefoxview-tabpickup-adddevice-learn-how = Aprender cómo
 firefoxview-tabpickup-adddevice-primarybutton = Obtén { -brand-product-name } para dispositivos móviles
-firefoxview-syncedtabs-adddevice-header = Conéctate a { -brand-product-name } en tus otros dispositivos
-firefoxview-syncedtabs-adddevice-description = Para ver tus pestañas desde cualquier lugar donde uses { -brand-product-name }, conéctate en todos tus dispositivos. Obtén información sobre cómo <a data-l10n-name="url">conectar dispositivos adicionales</a>.
+firefoxview-syncedtabs-adddevice-header-2 = Toma pestañas desde cualquier lugar
+firefoxview-syncedtabs-adddevice-description-2 = Conectate en { -brand-product-name } en tu teléfono u otro computador para ver las pestañas aquí. Aprende cómo <a data-l10n-name="url">conectar dispositivos adicionales</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = Prueba { -brand-product-name } para dispositivos móviles
 firefoxview-tabpickup-synctabs-header = Activar sincronización de pestañas
 firefoxview-tabpickup-synctabs-description = Permitir que { -brand-short-name } comparta pestañas entre dispositivos.
@@ -48,7 +46,6 @@ firefoxview-tabpickup-synctabs-learn-how = Aprender cómo
 firefoxview-tabpickup-synctabs-primarybutton = Sincronizar pestañas abiertas
 firefoxview-syncedtabs-synctabs-header = Actualiza tus ajustes de sincronización
 firefoxview-syncedtabs-synctabs-description = Para ver pestañas de otros dispositivos, debes sincronizar tus pestañas abiertas.
-firefoxview-syncedtabs-synctabs-checkbox = Permitir que las pestañas abiertas sean sincronizadas
 firefoxview-syncedtabs-loading-header = Sincronización en proceso
 firefoxview-syncedtabs-loading-description = Cuando esté listo, verás las pestañas que tengas abiertas en otros dispositivos. Vuelve a consultar pronto.
 firefoxview-tabpickup-fxa-admin-disabled-header = Tu organización ha deshabilitado la sincronización
@@ -82,7 +79,6 @@ firefoxview-closed-tabs-title = Cerrados recientemente
 firefoxview-closed-tabs-description2 = Vuelve a abrir las páginas que cerraste en esta ventana.
 firefoxview-closed-tabs-placeholder-header = No hay pestañas cerradas recientemente
 firefoxview-closed-tabs-placeholder-body = Cuando cierres una pestaña de esta ventana, podrás buscarla aquí.
-firefoxview-closed-tabs-placeholder-body2 = Cuando cierres una pestaña, podrás buscarla aquí.
 # Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 firefoxview-closed-tabs-dismiss-tab =
@@ -136,6 +132,14 @@ firefoxview-synced-tabs-nav = Pestañas de otros dispositivos
     .title = Pestañas de otros dispositivos
 firefoxview-synced-tabs-header = Pestañas de otros dispositivos
 
+## Chats in this context refers to chats saved from the AI Window Assistant
+
+firefoxview-chats-nav = Chats
+    .title = Chats
+firefoxview-chats-header = Chats
+firefoxview-chat-context-delete = Eliminar de los chats
+    .accesskey = D
+
 ##
 
 # Used for a link in collapsible cards, in the ’Recent browsing’ page of Firefox View
@@ -148,8 +152,6 @@ firefoxview-opentabs-window-header =
 #   $winID (Number) - The index of the owner window (which is currently focused) for this set of tabs
 firefoxview-opentabs-current-window-header =
     .title = Ventana { $winID } (Actual)
-firefoxview-opentabs-focus-tab =
-    .title = Cambiar a esta pestaña
 firefoxview-show-more = Mostrar más
 firefoxview-show-less = Mostrar menos
 firefoxview-show-all = Mostrar todo
@@ -165,11 +167,14 @@ firefoxview-search-text-box-history =
 firefoxview-search-text-box-recentlyclosed =
     .placeholder = Buscar pestañas cerradas recientemente
 # Placeholder for the input field to search in tabs from other devices ("search" is a verb).
-firefoxview-search-text-box-syncedtabs =
-    .placeholder = Buscar pestañas sincronizadas
+firefoxview-search-text-box-tabs =
+    .placeholder = Buscar pestañas
 # Placeholder for the input field to search in open tabs ("search" is a verb).
 firefoxview-search-text-box-opentabs =
     .placeholder = Buscar pestañas abiertas
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-chats =
+    .placeholder = Buscar chats
 # "Search" is a noun (as in "Results of the search for")
 # Variables:
 #   $query (String) - The search query used for searching through browser history.
@@ -189,10 +194,6 @@ firefoxview-sort-history-by-date-label = Ordenar por fecha
 firefoxview-sort-history-by-site-label = Ordenar por sitio
 firefoxview-sort-open-tabs-by-recency-label = Ordenar por actividad reciente
 firefoxview-sort-open-tabs-by-order-label = Ordenar por orden de pestañas
-# Variables:
-#   $url (string) - URL that will be opened in the new tab
-firefoxview-opentabs-tab-row =
-    .title = Cambiar a { $url }
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
@@ -205,11 +206,14 @@ firefoxview-history-date-prev-month = { DATETIME($date, month: "long", year: "nu
 # order to group sites that do not come from an outside host.
 # For example, this would be the heading for all file:/// URLs in history.
 firefoxview-history-site-localhost = (archivos locales)
+firefoxview-chat-date-today = Hoy - { DATETIME($date, dateStyle: "full") }
+firefoxview-chat-date-yesterday = Ayer - { DATETIME($date, dateStyle: "full") }
+firefoxview-chat-date-this-month = { DATETIME($date, dateStyle: "full") }
+firefoxview-chat-date-prev-month = { DATETIME($date, month: "long", year: "numeric") }
 
 ##
 
 firefoxview-show-all-history = Mostrar historial completo
-firefoxview-view-more-browsing-history = Ver más historial de navegación
 
 ## Message displayed in Firefox View when the user has no history data
 
@@ -225,9 +229,8 @@ firefoxview-choose-browser-button = Elegir navegador
 
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
-firefoxview-dont-remember-history-empty-header = Nada que mostrar
-firefoxview-dont-remember-history-empty-description = La protección de tu privacidad está en el corazón de lo que hacemos. Es por eso que puedes controlar la actividad que { -brand-short-name } recuerda.
-firefoxview-dont-remember-history-empty-description-two = Según tus ajustes actual, { -brand-short-name } no recuerda tu actividad mientras navegas. Para cambiar eso, <a data-l10n-name="history-settings-url-two">cambia los ajustes de tu historial para empezar a recordarlo</a>.
+firefoxview-dont-remember-history-empty-header-2 = Tienes el control de lo que { -brand-short-name } recuerda
+firefoxview-dont-remember-history-empty-description-one = En este momento, { -brand-short-name } no recuerda ni registra tu actividad de navegación. Para cambiar eso, <a data-l10n-name="history-settings-url-two">actualiza tus ajustes de historial</a>.
 
 ##
 

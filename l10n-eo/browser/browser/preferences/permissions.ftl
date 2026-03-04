@@ -21,6 +21,9 @@ permissions-session =
 permissions-allow =
     .label = Permesi
     .accesskey = P
+permissions-add =
+    .label = Aldoni
+    .accesskey = A
 permissions-button-off =
     .label = Malŝalti
     .accesskey = M
@@ -92,6 +95,13 @@ permissions-exceptions-https-only-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-https-only-desc = Vi povas malŝalti la HTTPS-nuran reĝimon por specifaj retejoj. { -brand-short-name } ne klopodos plibonigi la konekton pero uzo de HTTPS por tiuj retejoj. Esceptoj ne aplikeblas al privataj fenestroj.
 permissions-exceptions-https-only-desc2 = Vi povas malŝalti la HTTPS-nuran reĝimon por specifaj retejoj. { -brand-short-name } ne klopodos plibonigi la konekton pero uzo de HTTPS por tiuj retejoj.
+
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-window3 =
+    .title = Permesitaj retejoj - ŝprucaĵoj kaj redirektoj al aliaj retejoj
+    .style = { permissions-window2.style }
+permissions-exceptions-popup-desc2 = Vi povas specifi, kiuj retejoj rajtas malfermi ŝprucaĵojn esti redirektitaj de kadroj de aliaj.
 
 ## Exceptions - Pop-ups
 
@@ -167,6 +177,26 @@ permissions-site-camera-desc = La jenaj retejoj petis permeson aliri vian filmil
 permissions-site-camera-disable-label =
     .label = Bloki novajn petojn pri permeso aliri vian filmilon
 permissions-site-camera-disable-desc = Tio ĉi evitos ke retejoj, kiuj ne estas listigitaj supre, petu permeson aliri vian filmilon. Blokado de aliro al via filmilo povas misfunkciigi kelkajn trajtojn de retejoj.
+
+## Site Permissions - Local host
+
+permissions-site-localhost-window =
+    .title = Agordoj - Programoj kaj servoj de la aparato
+    .style = { permissions-window2.style }
+permissions-site-localhost-desc = Tiuj ĉi retejoj petis aliron al programoj kaj servoj en tiu ĉi aparato. Vi povas elekti ĉu permesi aŭ bloki tiun eblon por retejoj.
+permissions-site-localhost-disable-label =
+    .label = Bloki novajn petojn aliri programojn kaj servojn en tiu ĉi aparato
+permissions-site-localhost-disable-desc = Tio ĉi blokos la peton aliri programojn kaj servoj en tiu ĉi aparato por ĉiu retejoj, kiu ne estas listigita supre. Tiu ĉi ago povus misfunkciigi kelkajn retejajn trajtojn.
+
+## Site Permissions - Local network
+
+permissions-site-local-network-window =
+    .title = Agordoj - Aparatoj en la loka reto
+    .style = { permissions-window2.style }
+permissions-site-local-network-desc = Tiuj ĉi retejoj petis aliron al programoj kaj servoj en aparatoj konektitaj al via sendrata (Wi-Fi) aŭ loka reto. Vi povas elekti ĉu permesi aŭ bloki tiun eblon por retejoj.
+permissions-site-local-network-disable-label =
+    .label = Bloki novajn petojn aliri programojn kaj servojn en aparatoj konektita al via sendrata (Wi-Fi) aŭ loka reto.
+permissions-site-local-network-disable-desc = Tio ĉi blokos la peton aliri programojn kaj servoj en aparatoj konektita al via sendrata (Wi-Fi) aŭ loka reto por ĉiu retejoj, kiu ne estas listigita supre. Tiu ĉi ago povus misfunkciigi kelkajn retejajn trajtojn.
 
 ## Site Permissions - Microphone
 

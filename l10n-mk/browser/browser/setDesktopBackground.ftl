@@ -4,28 +4,24 @@
 
 set-desktop-background-window =
     .title = Поставување на позадина на работна површина
-
 set-desktop-background-accept =
     .label = Поставување на позадина на работна површина
-
 open-desktop-prefs =
     .label = Отвори ги поставките за работна околина
-
+set-desktop-background-downloading =
+    .label = Ја снимам сликата…
+# Name of the file that will be used as the desktop background. The
+# extension ".bmp" is added by the system.
+set-desktop-background-filename = desktop_pozadina
 set-background-color = Боја:
-
 set-background-position = Позиција:
-
 set-background-tile =
     .label = Едно до друго
-
 set-background-center =
     .label = Централно
-
 set-background-stretch =
     .label = Раширено
-
 set-background-fill =
     .label = Исполни
-
 set-background-fit =
     .label = Собери

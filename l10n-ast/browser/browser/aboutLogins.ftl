@@ -4,9 +4,6 @@
 # NOTE: New strings should use the about-logins- prefix.
 
 about-logins-page-title = Cuentes y contraseñes
-
-# "Google Play" and "App Store" are both branding and should not be translated
-
 fxaccounts-sign-in-text = Consigui les tos contraseñes n'otros preseos
 fxaccounts-sign-in-sync-button = Aniciar sesión pa sincronizar
 fxaccounts-avatar-button =
@@ -32,6 +29,8 @@ about-logins-menu-menuitem-help = Ayuda
 
 login-list =
     .aria-label = Cuentes que concasen cola consulta de busca
+# Variables
+#   $count (number) - Number of logins
 login-list-count =
     { $count ->
         [one] { $count } cuenta
@@ -87,10 +86,6 @@ login-item-save-changes-button = Guardar los cambeos
 login-item-save-new-button = Guardar
 login-item-cancel-button = Encaboxar
 
-## The date is displayed in a timeline showing the password evolution.
-## A label is displayed under the date to describe the type of change.
-## (e.g. updated, created, etc.)
-
 ## OS Authentication dialog
 
 about-logins-os-auth-dialog-caption = { -brand-full-name }
@@ -104,21 +99,16 @@ about-logins-edit-login-os-auth-dialog-message-win = Pa editar l'aniciu de sesi�
 # This message can be seen when attempting to edit a login in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-edit-login-os-auth-dialog-message-macosx = editar la cuenta guardada
-
 # This message can be seen when attempting to reveal a password in about:logins on Windows.
 about-logins-reveal-password-os-auth-dialog-message-win = Pa ver la contraseña, introduz los tos datos d'aniciu de sesión de Windows. Esto ayuda a protexer la seguranza de les tos cuentes.
 # This message can be seen when attempting to reveal a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-reveal-password-os-auth-dialog-message-macosx = desvelar la contraseña guardada
-
 # This message can be seen when attempting to copy a password in about:logins on Windows.
 about-logins-copy-password-os-auth-dialog-message-win = Pa copiar la contraseña, introduz los tos datos d'aniciu de sesión de Windows. Esto ayuda a protexer la seguranza de les tos cuentes.
 # This message can be seen when attempting to copy a password in about:logins
 # On MacOS, only provide the reason that account verification is needed. Do not put a complete sentence here.
 about-logins-copy-password-os-auth-dialog-message-macosx = copiar la contraseña guardada
-
-## Master Password notification
-
 # This message can be seen when attempting to export a password in about:logins on Windows.
 about-logins-export-password-os-auth-dialog-message-win = Pa esportar les cuentes, introduz los tos datos d'aniciu de sesión de Windows. Esto ayuda a protexer la seguranza de les tos cuentes.
 # This message can be seen when attempting to export a password in about:logins
@@ -132,14 +122,11 @@ master-password-reload-button =
     .label = Aniciar sesión
     .accesskey = A
 
-## Password Sync notification
-
 ## Dialogs
 
 confirmation-dialog-cancel-button = Encaboxar
 confirmation-dialog-dismiss-button =
     .title = Encaboxar
-
 about-logins-confirm-remove-dialog-title = ¿Quitar esta cuenta?
 confirm-delete-dialog-message = Esta aición nun pue desfacese.
 about-logins-confirm-remove-dialog-confirm-button = Quitar
@@ -153,14 +140,12 @@ about-logins-confirm-remove-all-dialog-confirm-button-label =
         [one] Quitar
        *[other] Quitar too
     }
-
 about-logins-confirm-remove-all-dialog-checkbox-label =
     { $count ->
         [1] Sí, quitar esta cuenta
         [one] Sí, quitar esta cuenta
        *[other] Sí, quitar estes cuentes
     }
-
 about-logins-confirm-remove-all-dialog-title =
     { $count ->
         [one] ¿Quitar { $count } cuenta?
@@ -172,7 +157,6 @@ about-logins-confirm-remove-all-dialog-message =
         [one] Esto va quitar la cuenta que guardares en { -brand-short-name } y cualesquier alerta d'arrampuñamientu qu'apaeza equí. Nun vas ser a desfacer esta aición.
        *[other] Esto va quitar les cuentes que guardares en { -brand-short-name } y cualesquier alerta d'arrampuñamientu qu'apaeza equí. Nun vas ser a desfacer esta aición.
     }
-
 about-logins-confirm-remove-all-sync-dialog-title =
     { $count ->
         [one] ¿Quitar { $count } cuenta de tolos preseos?
@@ -190,10 +174,8 @@ about-logins-confirm-remove-all-sync-dialog-message =
 about-logins-confirm-export-dialog-title = Esportación de cuentes y contraseñes
 about-logins-confirm-export-dialog-message = Les contraseñes van guardase como testu lleíble (por exemplu: C0ntR4s4ñ4M4l4), polo que tol mundu va poder abrir el ficheru esportáu y veles.
 about-logins-confirm-export-dialog-confirm-button = Esportar…
-
 about-logins-alert-import-title = Completóse la importación
 about-logins-alert-import-message = Mira'l sumariu detalláu de la importación
-
 confirm-discard-changes-dialog-title = ¿Escartar los cambeos ensin guardar?
 confirm-discard-changes-dialog-message = Van perdese tolos cambeos ensin guardar.
 confirm-discard-changes-dialog-confirm-button = Escartar
@@ -223,7 +205,6 @@ about-logins-vulnerable-alert-learn-more-link = Lleer más
 # Variables:
 #   $loginTitle (String) - The title of the website associated with the login.
 about-logins-error-message-duplicate-login-with-link = Yá esiste una entrada pa «{ $loginTitle }» con esi nome d'usuariu. <a data-l10n-name="duplicate-link">¿Dir a la entrada esistente?</a>
-
 # This is a generic error message.
 about-logins-error-message-default = Asocedió un fallu al tentar de guardar esta contraseña.
 
@@ -273,13 +254,11 @@ about-logins-import-dialog-items-added =
         [one] <span>Cuentes amestaes:</span> <span data-l10n-name="count">{ $count }</span>
        *[other] <span>Cuentes amestaes:</span> <span data-l10n-name="count">{ $count }</span>
     }
-
 about-logins-import-dialog-items-modified =
     { $count ->
         [one] <span>Cuentes anovaes:</span> <span data-l10n-name="count">{ $count }</span>
        *[other] <span>Cuentes anovaes:</span> <span data-l10n-name="count">{ $count }</span>
     }
-
 about-logins-import-dialog-items-no-change =
     { $count ->
         [one] <span>Cuentes duplicaes:</span> <span data-l10n-name="count">{ $count }</span> <span data-l10n-name="meta">(nun s'importó)</span>
@@ -291,7 +270,6 @@ about-logins-import-dialog-items-error =
        *[other] <span>Fallos:</span> <span data-l10n-name="count">{ $count }</span><span data-l10n-name="meta">(nun s'importaron)</span>
     }
 about-logins-import-dialog-done = Fecho
-
 about-logins-import-dialog-error-title = Fallu de la importación
 about-logins-import-dialog-error-conflicting-values-title = Una cuenta tien dellos valores en conflictu
 about-logins-import-dialog-error-conflicting-values-description = Por exemplu: nomes d'usuariu, contraseñes o URL múltiples pa una cuenta.
@@ -304,10 +282,8 @@ about-logins-import-dialog-error-unable-to-read-description = Asegúrate de qu'e
 about-logins-import-dialog-error-no-logins-imported = Nun s'importó nenguna cuenta
 about-logins-import-dialog-error-learn-more = Lleer más
 about-logins-import-dialog-error-cancel = Encaboxar
-
 about-logins-import-report-title = Sumariu de la importación
 about-logins-import-report-description = Cuentes y contraseñes importaes a { -brand-short-name }.
-
 #
 # Variables:
 #  $number (number) - The number of the row

@@ -40,10 +40,10 @@ loader.lazyRequireGetter(
  * Create a Menu instance for the webconsole.
  *
  * @param {Event} context menu event
- *        {Object} message (optional) message object containing metadata such as:
+ *        {object} message (optional) message object containing metadata such as:
  *        - {String} source
  *        - {String} request
- * @param {Object} options
+ * @param {object} options
  *        - {Actions} bound actions
  *        - {WebConsoleWrapper} wrapper instance used for accessing properties like the store
  *          and window.
@@ -226,9 +226,8 @@ function createContextMenu(event, message, webConsoleWrapper) {
       accesskey: l10n.getStr("webconsole.menu.copyAllMessages.accesskey"),
       disabled: false,
       async click() {
-        const outputText = await getUnvirtualizedConsoleOutputText(
-          webConsoleWrapper
-        );
+        const outputText =
+          await getUnvirtualizedConsoleOutputText(webConsoleWrapper);
         clipboardHelper.copyString(outputText);
       },
     })
@@ -247,10 +246,9 @@ function createContextMenu(event, message, webConsoleWrapper) {
         const suggestedName =
           `console-export-${date.getFullYear()}-` +
           `${date.getMonth() + 1}-${date.getDate()}_${date.getHours()}-` +
-          `${date.getMinutes()}-${date.getSeconds()}.txt`;
-        const outputText = await getUnvirtualizedConsoleOutputText(
-          webConsoleWrapper
-        );
+          `${date.getMinutes()}-${date.getSeconds()}.log`;
+        const outputText =
+          await getUnvirtualizedConsoleOutputText(webConsoleWrapper);
         const data = new TextEncoder().encode(outputText);
         saveAs(window, data, suggestedName);
       },
@@ -314,11 +312,11 @@ exports.createContextMenu = createContextMenu;
  */
 async function getUnvirtualizedConsoleOutputText(webConsoleWrapper) {
   return new Promise(resolve => {
-    const ReactDOM = require("resource://devtools/client/shared/vendor/react-dom.js");
+    const ReactDOM = require("resource://devtools/client/shared/vendor/react-dom.mjs");
     const {
       createElement,
       createFactory,
-    } = require("resource://devtools/client/shared/vendor/react.js");
+    } = require("resource://devtools/client/shared/vendor/react.mjs");
     const ConsoleOutput = createFactory(
       require("resource://devtools/client/webconsole/components/Output/ConsoleOutput.js")
     );

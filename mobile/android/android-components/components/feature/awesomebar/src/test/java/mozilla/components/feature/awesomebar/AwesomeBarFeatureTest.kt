@@ -58,11 +58,11 @@ class AwesomeBarFeatureTest {
 
         verify(awesomeBar).onInputStarted()
 
-        listener!!.onTextChanged("Hello")
+        listener.onTextChanged("Hello")
 
         verify(awesomeBar).onInputChanged("Hello")
 
-        listener!!.onStopEditing()
+        listener.onStopEditing()
 
         verify(awesomeBar).onInputCancelled()
     }
@@ -128,7 +128,7 @@ class AwesomeBarFeatureTest {
         verify(awesomeBar, never()).addProviders(any())
 
         val store: BrowserStore = mock()
-        feature.addSearchProvider(testContext, store = store, searchUseCase = mock(), fetchClient = mock())
+        feature.addSearchProvider(store = store, searchUseCase = mock(), fetchClient = mock())
 
         val provider = argumentCaptor<SearchSuggestionProvider>()
         verify(awesomeBar).addProviders(provider.capture())
@@ -142,13 +142,13 @@ class AwesomeBarFeatureTest {
         val awesomeBar: AwesomeBar = mock()
 
         val feature = AwesomeBarFeature(awesomeBar, mock())
-        feature.addSearchProvider(testContext, mock(), mock(), mock(), engine = engine)
+        feature.addSearchProvider(searchEngine = mock(), mock(), mock(), engine = engine)
 
         val provider = argumentCaptor<SearchSuggestionProvider>()
         verify(awesomeBar).addProviders(provider.capture())
         assertSame(engine, provider.value.engine)
 
-        feature.addSearchProvider(mock(), mock(), mock(), engine = engine)
+        feature.addSearchProvider(searchEngine = mock(), mock(), mock(), engine = engine)
         verify(awesomeBar, times(2)).addProviders(provider.capture())
         assertSame(engine, provider.allValues.last().engine)
     }
@@ -297,9 +297,34 @@ class AwesomeBarFeatureTest {
         assertFalse(completeInvoked)
         startInvoked = false
 
-        listener!!.onStopEditing()
+        listener.onStopEditing()
 
         assertFalse(startInvoked)
         assertTrue(completeInvoked)
+    }
+
+    @Test
+    fun `Feature edit listener returns when editing has started or stopped`() {
+        val toolbar: Toolbar = mock()
+        val awesomeBar: AwesomeBar = mock()
+        doReturn(View(testContext)).`when`(awesomeBar).asView()
+
+        var listener: Toolbar.OnEditListener? = null
+
+        `when`(toolbar.setOnEditListener(any())).thenAnswer { invocation ->
+            listener = invocation.getArgument<Toolbar.OnEditListener>(0)
+            Unit
+        }
+
+        AwesomeBarFeature(
+            awesomeBar,
+            toolbar,
+        )
+
+        assertTrue("Nothing to cancel when editing has started.", listener!!.onCancelEditing())
+
+        listener.onStartEditing()
+
+        assertFalse("Cancelling because edit has started.", listener.onCancelEditing())
     }
 }

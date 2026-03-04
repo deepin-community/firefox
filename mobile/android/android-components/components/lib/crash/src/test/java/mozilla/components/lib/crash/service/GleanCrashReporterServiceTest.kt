@@ -7,20 +7,28 @@ package mozilla.components.lib.crash.service
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.work.testing.WorkManagerTestInitHelper
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import mozilla.components.concept.base.crash.Breadcrumb
 import mozilla.components.lib.crash.Crash
 import mozilla.components.lib.crash.GleanMetrics.CrashMetrics
+import mozilla.components.lib.crash.RuntimeTag
 import mozilla.components.support.test.whenever
-import mozilla.telemetry.glean.testing.GleanTestRule
+import mozilla.telemetry.glean.Glean
+import mozilla.telemetry.glean.config.Configuration
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -40,8 +48,25 @@ class GleanCrashReporterServiceTest {
     private val context: Context
         get() = ApplicationProvider.getApplicationContext()
 
-    @get:Rule
-    val gleanRule = GleanTestRule(context)
+    @Before
+    fun setUp() {
+        // We're using the WorkManager in a bunch of places, and Glean will crash
+        // in tests without this line. Let's simply put it here.
+        WorkManagerTestInitHelper.initializeTestWorkManager(context)
+        Glean.registerPings(GleanPings)
+        Glean.resetGlean(
+            context = context,
+            config = Configuration(),
+            clearStores = true,
+        )
+    }
+
+    @After
+    fun tearDown() {
+        // This closes the database to help prevent leaking it during tests.
+        // See Bug1719905 for more info.
+        WorkManagerTestInitHelper.closeWorkDatabase()
+    }
 
     @get:Rule
     val tempFolder = TemporaryFolder()
@@ -68,27 +93,27 @@ class GleanCrashReporterServiceTest {
             GleanCrashReporterService.MAIN_PROCESS_NATIVE_CODE_CRASH_KEY to Crash.NativeCodeCrash(
                 0,
                 "",
-                true,
                 "",
-                Crash.NativeCodeCrash.PROCESS_TYPE_MAIN,
+                Crash.NativeCodeCrash.PROCESS_VISIBILITY_MAIN,
+                processType = "main",
                 breadcrumbs = arrayListOf(),
                 remoteType = null,
             ),
             GleanCrashReporterService.FOREGROUND_CHILD_PROCESS_NATIVE_CODE_CRASH_KEY to Crash.NativeCodeCrash(
                 0,
                 "",
-                true,
                 "",
-                Crash.NativeCodeCrash.PROCESS_TYPE_FOREGROUND_CHILD,
+                Crash.NativeCodeCrash.PROCESS_VISIBILITY_FOREGROUND_CHILD,
+                processType = "content",
                 breadcrumbs = arrayListOf(),
                 remoteType = "web",
             ),
             GleanCrashReporterService.BACKGROUND_CHILD_PROCESS_NATIVE_CODE_CRASH_KEY to Crash.NativeCodeCrash(
                 0,
                 "",
-                true,
                 "",
-                Crash.NativeCodeCrash.PROCESS_TYPE_BACKGROUND_CHILD,
+                Crash.NativeCodeCrash.PROCESS_VISIBILITY_BACKGROUND_CHILD,
+                processType = "utility",
                 breadcrumbs = arrayListOf(),
                 remoteType = null,
             ),
@@ -178,36 +203,36 @@ class GleanCrashReporterServiceTest {
             val mainProcessNativeCodeCrash = Crash.NativeCodeCrash(
                 0,
                 "",
-                true,
                 "",
-                Crash.NativeCodeCrash.PROCESS_TYPE_MAIN,
+                Crash.NativeCodeCrash.PROCESS_VISIBILITY_MAIN,
+                processType = "main",
                 breadcrumbs = arrayListOf(),
                 remoteType = null,
             )
             val foregroundChildProcessNativeCodeCrash = Crash.NativeCodeCrash(
                 0,
                 "",
-                true,
                 "",
-                Crash.NativeCodeCrash.PROCESS_TYPE_FOREGROUND_CHILD,
+                Crash.NativeCodeCrash.PROCESS_VISIBILITY_FOREGROUND_CHILD,
+                processType = "content",
                 breadcrumbs = arrayListOf(),
                 remoteType = "web",
             )
             val backgroundChildProcessNativeCodeCrash = Crash.NativeCodeCrash(
                 0,
                 "",
-                true,
                 "",
-                Crash.NativeCodeCrash.PROCESS_TYPE_BACKGROUND_CHILD,
+                Crash.NativeCodeCrash.PROCESS_VISIBILITY_BACKGROUND_CHILD,
+                processType = "utility",
                 breadcrumbs = arrayListOf(),
                 remoteType = null,
             )
             val extensionProcessNativeCodeCrash = Crash.NativeCodeCrash(
                 0,
                 "",
-                true,
                 "",
-                Crash.NativeCodeCrash.PROCESS_TYPE_BACKGROUND_CHILD,
+                Crash.NativeCodeCrash.PROCESS_VISIBILITY_BACKGROUND_CHILD,
+                processType = "content",
                 breadcrumbs = arrayListOf(),
                 remoteType = "extension",
             )
@@ -389,9 +414,9 @@ class GleanCrashReporterServiceTest {
         val crash = Crash.NativeCodeCrash(
             12340000,
             "",
-            true,
             "",
-            Crash.NativeCodeCrash.PROCESS_TYPE_MAIN,
+            Crash.NativeCodeCrash.PROCESS_VISIBILITY_MAIN,
+            processType = "main",
             breadcrumbs = arrayListOf(),
             remoteType = null,
         )
@@ -414,7 +439,7 @@ class GleanCrashReporterServiceTest {
 
         run {
             var pingReceived = false
-            GleanPings.crash.testBeforeNextSubmit { _ ->
+            val job = GleanPings.crash.testBeforeNextSubmit { _ ->
                 val date = GregorianCalendar().apply {
                     time = Date(12340000)
                 }
@@ -430,6 +455,8 @@ class GleanCrashReporterServiceTest {
             }
 
             GleanCrashReporterService(context)
+
+            job.join()
             assertTrue("Expected ping to be sent", pingReceived)
         }
     }
@@ -441,9 +468,9 @@ class GleanCrashReporterServiceTest {
         val crash = Crash.NativeCodeCrash(
             12340000,
             null,
-            true,
             null,
-            Crash.NativeCodeCrash.PROCESS_TYPE_MAIN,
+            Crash.NativeCodeCrash.PROCESS_VISIBILITY_MAIN,
+            processType = "main",
             breadcrumbs = arrayListOf(
                 Breadcrumb(
                     message = "Breadcrumb-1",
@@ -479,7 +506,7 @@ class GleanCrashReporterServiceTest {
 
         run {
             var pingReceived = false
-            GleanPings.crash.testBeforeNextSubmit { _ ->
+            val job = GleanPings.crash.testBeforeNextSubmit { _ ->
                 val date = GregorianCalendar().apply {
                     time = Date(12340000)
                 }
@@ -521,6 +548,8 @@ class GleanCrashReporterServiceTest {
             }
 
             GleanCrashReporterService(context)
+
+            job.join()
             assertTrue("Expected ping to be sent", pingReceived)
         }
     }
@@ -528,6 +557,95 @@ class GleanCrashReporterServiceTest {
     @Test
     fun `GleanCrashReporterService reads extras`() {
         val service = spy(GleanCrashReporterService(context))
+        val stackTracesAnnotation = """
+        {
+            "status": "OK",
+            "crash_info": {
+                "type": "main",
+                "address": "0xf001ba11",
+                "crashing_thread": 1
+            },
+            "main_module": 0,
+            "modules": [
+            {
+                "base_addr": "0x00000000",
+                "end_addr": "0x00004000",
+                "code_id": "8675309",
+                "debug_file": "",
+                "debug_id": "18675309",
+                "filename": "foo.exe",
+                "version": "1.0.0"
+            },
+            {
+                "base_addr": "0x00004000",
+                "end_addr": "0x00008000",
+                "code_id": "42",
+                "debug_file": "foo.pdb",
+                "debug_id": "43",
+                "filename": "foo.dll",
+                "version": "1.1.0"
+            }
+            ],
+            "some_unused_key": 0,
+            "threads": [
+            {
+                "frames": [
+                { "module_index": 0, "ip": "0x10", "trust": "context" },
+                { "module_index": 0, "ip": "0x20", "trust": "cfi" }
+                ]
+            },
+            {
+                "frames": [
+                { "module_index": 1, "ip": "0x4010", "trust": "context" },
+                { "module_index": 0, "ip": "0x30", "trust": "cfi" }
+                ]
+            }
+            ]
+        }
+        """
+
+        val stackTracesGlean = """
+        {
+            "crash_type": "main",
+            "crash_address": "0xf001ba11",
+            "crash_thread": 1,
+            "main_module": 0,
+            "modules": [
+            {
+                "base_address": "0x00000000",
+                "end_address": "0x00004000",
+                "code_id": "8675309",
+                "debug_file": "",
+                "debug_id": "18675309",
+                "filename": "foo.exe",
+                "version": "1.0.0"
+            },
+            {
+                "base_address": "0x00004000",
+                "end_address": "0x00008000",
+                "code_id": "42",
+                "debug_file": "foo.pdb",
+                "debug_id": "43",
+                "filename": "foo.dll",
+                "version": "1.1.0"
+            }
+            ],
+            "threads": [
+            {
+                "frames": [
+                { "module_index": 0, "ip": "0x10", "trust": "context" },
+                { "module_index": 0, "ip": "0x20", "trust": "cfi" }
+                ]
+            },
+            {
+                "frames": [
+                { "module_index": 1, "ip": "0x4010", "trust": "context" },
+                { "module_index": 0, "ip": "0x30", "trust": "cfi" }
+                ]
+            }
+            ]
+        }
+        """
 
         val extrasFile = tempFolder.newFile()
         extrasFile.writeText(
@@ -537,9 +655,11 @@ class GleanCrashReporterServiceTest {
                 "Version": "123.0.0",
                 "StartupCrash": "1",
                 "TotalPhysicalMemory": 100,
-                "ExperimentalFeatures": "expa,expb",
                 "AsyncShutdownTimeout": "{\"phase\":\"abcd\",\"conditions\":[{\"foo\":\"bar\"}],\"brokenAddBlockers\":[\"foo\"]}",
-                "QuotaManagerShutdownTimeout": "line1\nline2\nline3"
+                "QuotaManagerShutdownTimeout": "line1\nline2\nline3",
+                "StackTraces": $stackTracesAnnotation,
+                "JSLargeAllocationFailure": "reporting",
+                "JSOutOfMemory": "recovered"
             }
             """.trimIndent(),
         )
@@ -547,9 +667,9 @@ class GleanCrashReporterServiceTest {
         val crash = Crash.NativeCodeCrash(
             12340000,
             "",
-            true,
             extrasFile.path,
-            Crash.NativeCodeCrash.PROCESS_TYPE_MAIN,
+            Crash.NativeCodeCrash.PROCESS_VISIBILITY_MAIN,
+            processType = "main",
             breadcrumbs = arrayListOf(),
             remoteType = null,
         )
@@ -560,7 +680,7 @@ class GleanCrashReporterServiceTest {
 
         run {
             var pingReceived = false
-            GleanPings.crash.testBeforeNextSubmit { _ ->
+            val job = GleanPings.crash.testBeforeNextSubmit { _ ->
                 val date = GregorianCalendar().apply {
                     time = Date(12340000)
                 }
@@ -575,16 +695,14 @@ class GleanCrashReporterServiceTest {
                 assertEquals("beta", GleanCrash.appChannel.testGetValue())
                 assertEquals("123.0.0", GleanCrash.appDisplayVersion.testGetValue())
                 assertEquals(100L, GleanMemory.totalPhysical.testGetValue())
-                assertEquals(
-                    listOf("expa", "expb"),
-                    GleanEnvironment.experimentalFeatures.testGetValue(),
-                )
+                assertEquals("reporting", GleanMemory.jsLargeAllocationFailure.testGetValue())
+                assertEquals("recovered", GleanMemory.jsOutOfMemory.testGetValue())
                 assertEquals(
                     JsonObject(
                         mapOf(
                             "phase" to JsonPrimitive("abcd"),
                             "conditions" to JsonPrimitive("[{\"foo\":\"bar\"}]"),
-                            "brokenAddBlockers" to JsonArray(listOf(JsonPrimitive("foo"))),
+                            "broken_add_blockers" to JsonArray(listOf(JsonPrimitive("foo"))),
                         ),
                     ),
                     GleanCrash.asyncShutdownTimeout.testGetValue(),
@@ -599,10 +717,16 @@ class GleanCrashReporterServiceTest {
                     ),
                     GleanCrash.quotaManagerShutdownTimeout.testGetValue(),
                 )
+                assertEquals(
+                    Json.decodeFromString<JsonElement>(stackTracesGlean),
+                    GleanCrash.stackTraces.testGetValue(),
+                )
                 pingReceived = true
             }
 
             GleanCrashReporterService(context)
+
+            job.join()
             assertTrue("Expected ping to be sent", pingReceived)
         }
     }
@@ -613,8 +737,12 @@ class GleanCrashReporterServiceTest {
 
         val crash = Crash.UncaughtExceptionCrash(
             12340000,
-            RuntimeException("Test"),
+            RuntimeException("Test", java.io.IOException("IO")),
             arrayListOf(),
+            runtimeTags = mapOf(
+                RuntimeTag.VERSION_NAME to "142.0.0",
+                RuntimeTag.BUILD_ID to "1337",
+            ),
         )
 
         service.record(crash)
@@ -634,7 +762,7 @@ class GleanCrashReporterServiceTest {
 
         run {
             var pingReceived = false
-            GleanPings.crash.testBeforeNextSubmit { _ ->
+            val job = GleanPings.crash.testBeforeNextSubmit { _ ->
                 val date = GregorianCalendar().apply {
                     time = Date(12340000)
                 }
@@ -645,14 +773,76 @@ class GleanCrashReporterServiceTest {
                 assertEquals("main", GleanCrash.processType.testGetValue())
                 assertEquals(false, GleanCrash.startup.testGetValue())
                 assertEquals("java_exception", GleanCrash.cause.testGetValue())
+                assertEquals("1337", GleanCrash.appBuild.testGetValue())
+                assertEquals("142.0.0", GleanCrash.appDisplayVersion.testGetValue())
                 val exc = GleanCrash.javaException.testGetValue()
                 assertNotNull(exc)
-                assertNotNull(exc?.jsonObject?.get("messages"))
-                assertNotNull(exc?.jsonObject?.get("stack"))
+                val throwables = exc?.jsonObject?.get("throwables")
+                assertNotNull(throwables)
+                throwables?.jsonArray?.let { arr ->
+                    assertEquals(2, arr.size)
+                    val first = arr.get(0).jsonObject.toMutableMap()
+                    assertNotNull(first.remove("stack"))
+                    assertEquals(
+                        JsonObject(
+                            mapOf(
+                                "type_name" to JsonPrimitive("java.lang.RuntimeException"),
+                                "message" to JsonPrimitive("Test"),
+                            ),
+                        ),
+                        first,
+                    )
+                    assertEquals(
+                        JsonObject(
+                            mapOf(
+                                "type_name" to JsonPrimitive("java.io.IOException"),
+                                "message" to JsonPrimitive("IO"),
+                            ),
+                        ),
+                        arr.get(1),
+                    )
+                }
                 pingReceived = true
             }
 
             GleanCrashReporterService(context)
+
+            job.join()
+            assertTrue("Expected ping to be sent", pingReceived)
+        }
+    }
+
+    @Test
+    fun `GleanCrashReporterService exception crash pings have crash-time app information metrics`() {
+        val service = spy(
+            GleanCrashReporterService(
+                context,
+                appChannel = "channel",
+                appVersion = "version",
+                appBuildId = "buildid",
+            ),
+        )
+
+        val crash = Crash.UncaughtExceptionCrash(
+            12340000,
+            RuntimeException("Test", java.io.IOException("IO")),
+            arrayListOf(),
+        )
+
+        service.record(crash)
+
+        run {
+            var pingReceived = false
+            val job = GleanPings.crash.testBeforeNextSubmit { _ ->
+                assertEquals("channel", GleanCrash.appChannel.testGetValue())
+                assertEquals("version", GleanCrash.appDisplayVersion.testGetValue())
+                assertEquals("buildid", GleanCrash.appBuild.testGetValue())
+                pingReceived = true
+            }
+
+            GleanCrashReporterService(context, appChannel = "intentionally-different")
+
+            job.join()
             assertTrue("Expected ping to be sent", pingReceived)
         }
     }

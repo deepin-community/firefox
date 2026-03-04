@@ -5,40 +5,41 @@
 colors-dialog2 =
     .title = رنگ‌ها
     .style = min-width: 41em;
-
 colors-close-key =
     .key = w
-
 colors-page-override = نادیده گرفتن رنگ مشخص شده توسط صفحه ای که شما در زیر انتخاب کرده‌اید
     .accesskey = O
-
 colors-page-override-option-always =
     .label = همیشه
 colors-page-override-option-auto =
     .label = تنها تم با کنتراست بالا
 colors-page-override-option-never =
     .label = هرگز
-
 colors-text-and-background = متن و پس‌زمینه
-
+colors-text =
+    .label = متن
+    .accesskey = T
+colors-text-background =
+    .label = پس‌زمینه
+    .accesskey = B
 colors-text-header = متن
     .accesskey = T
-
 colors-background = پس‌زمینه
     .accesskey = B
-
 colors-use-system =
     .label = استفاده از رنگ‌های سیستم
     .accesskey = س
-
 colors-underline-links =
     .label = زیرخط‌دار کردن پیوندها
     .accesskey = ز
-
 colors-links-header = رنگ پیوندها
-
+colors-links-unvisited =
+    .label = پیوندهای بازدید نشده
+    .accesskey = L
+colors-links-visited =
+    .label = پیوندهای بازدید شده
+    .accesskey = V
 colors-unvisited-links = پیوندهای بازدید نشده
     .accesskey = L
-
 colors-visited-links = پیوندهای بازدید شده
     .accesskey = V

@@ -164,9 +164,6 @@ about-debugging-setup-network-troubleshoot = Problems connecting via network loc
 # Clicking on it will add the new network location to the list.
 about-debugging-network-locations-add-button = Add
 
-# Text to display when there are no locations to show.
-about-debugging-network-locations-empty-text = No network locations have been added yet.
-
 # Text of the label for the text input that allows users to add new network locations in
 # the Connect page. A host is a hostname and a port separated by a colon, as suggested by
 # the input's placeholder "localhost:6080".
@@ -388,6 +385,10 @@ about-debugging-worker-scope =
 # of a worker
 about-debugging-worker-push-service =
   .label = Push Service
+
+# Displayed for service workers in runtime pages, to label the origin of a worker.
+about-debugging-worker-origin =
+  .label = Origin
 
 # Displayed as title of the inspect button when service worker debugging is disabled.
 about-debugging-worker-inspect-action-disabled =

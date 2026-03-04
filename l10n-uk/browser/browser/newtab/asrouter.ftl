@@ -61,7 +61,7 @@ cfr-doorhanger-extension-total-users =
        *[many] { $total } користувачів
     }
 
-## Firefox Accounts Message
+## Mozilla Account messages
 
 cfr-doorhanger-bookmark-fxa-header = Синхронізуйте свої закладки всюди.
 cfr-doorhanger-bookmark-fxa-body = Гарна знахідка! Тепер синхронізуйте цю закладку зі своїми мобільними пристроями. Почніть роботу з { -fxaccount-brand-name(case: "abl") }.
@@ -70,11 +70,18 @@ cfr-doorhanger-bookmark-fxa-link-text = Синхронізувати закла�
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = Кнопка закриття
     .title = Закрити
+fxa-adoption-addresses-backup-title = Резервне копіювання збережених адрес
+fxa-adoption-addresses-backup-subtitle = Захистіть свої збережені адреси, синхронізувавши їх з іншими пристроями за допомогою шифрування.
+fxa-adoption-credit-cards-backup-title = Резервне копіювання способів оплати
+fxa-adoption-credit-cards-backup-subtitle = Захистіть свої способи оплати, синхронізувавши їх з іншими пристроями за допомогою шифрування.
+fxa-adoption-bookmarks-treatment-backup-title = Створіть резервну копію своїх закладок
+fxa-adoption-bookmarks-treatment-backup-subtitle = Захистіть свої закладки, синхронізувавши їх з іншими пристроями за допомогою шифрування.
+fxa-adoption-primary-button-label = Зареєструватись
 
 ## Protections panel
 
 cfr-protections-panel-header = Переглядайте без стеження
-cfr-protections-panel-body = Зберігайте свої дані при собі. { -brand-short-name } захищає вас від численних найпоширеніших елементів стеження, що переслідують вас в мережі.
+cfr-protections-panel-body = Збережіть приватність своїх даних. { -brand-short-name } захищає вас від численних найпоширеніших елементів стеження, що переслідують вас в інтернеті.
 cfr-protections-panel-link-text = Докладніше
 
 ## What's New toolbar button and panel
@@ -229,6 +236,24 @@ fox-doodle-pin-secondary = Не зараз
 set-default-pdf-handler-headline = <strong>Тепер ваші файли PDF відкриватимуться в { -brand-short-name }.</strong> Редагуйте й підписуйте форми безпосередньо в браузері. Щоб змінити поведінку, шукайте “PDF” у налаштуваннях.
 set-default-pdf-handler-primary = Зрозуміло
 
+## PDF Annotations strings
+
+# “Sign on the dotted line” is an idiomatic English expression about
+# where to place your signature.
+# If this expression doesn’t have a direct translation, please
+# translate this alternative string: "Add your signature anywhere!"
+annotations-default-pdf-handler-headline = Поставте свій підпис де завгодно!
+# “Go-to” is an idiomatic English expression referring to something that is used often.
+annotations-default-pdf-handler-body = Намалюйте, надрукуйте або вивантажте свій підпис, а потім розмістіть його саме там, де потрібно. Зберігайте свої підписи для подальшого використання.
+annotations-make-default-pdf-handler-title = Зробити { -brand-short-name } типовим редактором PDF?
+annotations-make-default-pdf-handler-subtitle = Ви матимете доступ до наших інструментів щоразу, коли відкриватимете PDF-файл.
+annotations-make-default-pdf-primary-cta-label = Зробити типовим
+annotations-make-default-pdf-next-label = Далі
+annotations-make-default-pdf-primary-cta =
+    .label = Зробити типовим
+annotations-make-default-pdf-next =
+    .label = Далі
+
 ## FxA sync CFR
 
 fxa-sync-cfr-header = Новий пристрій у майбутньому?
@@ -249,11 +274,14 @@ device-migration-fxa-spotlight-older-device-primary-button = Створити о
 device-migration-fxa-spotlight-getting-new-device-header-2 = Новий пристрій у майбутньому?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Виконайте кілька простих кроків, щоб синхронізувати свої закладки, історію та паролі з іншими пристроями.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Як створити резервну копію моїх даних
+device-migration-fxa-spotlight-sync-header = Переглядайте, не пропускаючи жодного моменту
+device-migration-fxa-spotlight-sync-body = Синхронізуйте всю важливу інформацію із шифруванням, як-от закладки та паролі. Ви можете отримати доступ до синхронізованих даних всюди, де використовуєте { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = Розпочати
 
 ## Set as Default PDF Reader Infobar
 
 # The question portion of the following message should have the <strong> and </strong> tags surrounding it.
-pdf-default-notification-message = <strong>Зробити { -brand-short-name } типовою  програмою читання PDF?</strong> Використовуйте { -brand-short-name }, щоб читати та редагувати PDF-файли, збережені на вашому комп’ютері.
+pdf-default-notification-message = <strong>Зробити { -brand-short-name } типовою програмою читання PDF?</strong> Використовуйте { -brand-short-name }, щоб читати й редагувати PDF-файли, збережені на вашому комп'ютері.
 pdf-default-notification-set-default-button =
     .label = Установити типовим
 pdf-default-notification-decline-button =
@@ -285,3 +313,134 @@ tail-fox-spotlight-title = Тримайте надокучливі елемен�
 tail-fox-spotlight-subtitle = Попрощайтеся з надокучливим стеженням реклами та приготуйтеся до безпечнішої та швидшої роботи в інтернеті.
 tail-fox-spotlight-primary-button = Відкривати посилання в { -brand-short-name }
 tail-fox-spotlight-secondary-button = Не зараз
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Починаючи з 14 січня 2025 року, в старіших версіях { -brand-short-name } можуть виникати проблеми.</strong>
+root-certificate-succession-infobar-march-message = <strong>Оновіть, щоб і надалі використовувати { -brand-short-name } після 14 березня 2025 року.</strong>
+root-certificate-succession-infobar-link = Чому мені потрібно оновлювати?
+root-certificate-succession-infobar-primary-button =
+    .label = Оновити зараз
+    .accesskey = О
+root-certificate-succession-infobar-secondary-button =
+    .label = Пізніше
+    .accesskey = П
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Ви пропустили важливе оновлення { -brand-short-name }
+root-certificate-windows-background-notification-subtitle = Якщо ви не оновите, деякі функції браузера незабаром припинять роботу. Саме час отримати наші найновіші функції та захист.
+root-certificate-windows-background-notification-learn-more-button = Докладніше
+root-certificate-windows-background-notification-update-button = Оновити { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Закрити
+    .aria-label = Закрити
+fxa-menu-message-sign-up-button = Зареєструватись
+fxa-menu-message-sign-in-button = Увійти
+fxa-menu-message-sync-button = Почати синхронізацію
+fxa-menu-message-sync-devices-primary-text = Синхронізуйте всі свої пристрої
+fxa-menu-message-sync-devices-secondary-text = Миттєво отримуйте свої дані, як-от закладки та паролі, всюди, де ви використовуєте { -brand-short-name }.
+fxa-menu-message-sync-devices-secondary-text2 = Миттєво отримуйте свої закладки, паролі та інші дані на всіх пристроях, де ви ввійшли в { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = Синхронізуйте всі свої пристрої
+fxa-menu-message-backup-data-primary-text = Створіть резервну копію даних браузера
+fxa-menu-message-backup-data-secondary-text = Автоматично захищайте закладки, паролі та інші дані на всіх своїх пристроях.
+fxa-menu-message-backup-data-collapsed-text = Створіть резервну копію даних браузера
+fxa-menu-message-backup-sync-primary-text = Безпечно зберігайте і синхронізуйте свої дані
+fxa-menu-message-backup-sync-secondary-text = За допомогою синхронізації створюється резервна копія ваших даних, щоб ви могли отримати до них доступ усюди, де використовуєте { -brand-short-name }.
+fxa-menu-message-backup-sync-collapsed-text = Синхронізація та резервне копіювання даних
+fxa-menu-message-mobile-primary-text = Надсилайте вкладки на телефон
+fxa-menu-message-mobile-secondary-text = Миттєво продовжуйте з того місця, де зупинилися, синхронізувавши свої вкладки з мобільним пристроєм.
+fxa-menu-message-mobile-collapsed-text = Синхронізуйте зі своїм телефоном
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = З поверненням
+multi-cta-fox-doodle-set-default-checkbox = Встановити { -brand-short-name } типовим
+multi-cta-fox-doodle-pin-startmenu-checkbox = Закріпити { -brand-short-name } у меню Пуск
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Закріпити { -brand-short-name } у Dock
+       *[other] Закріпити { -brand-short-name } на панелі завдань
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Почати перегляд
+multi-cta-fox-doodle-main-browser-primary-button-label = Зробити { -brand-short-name } моїм основним браузером
+multi-cta-fox-doodle-quick-reminder-subtitle = Це швидке нагадування про те, що ви можете тримати завжди під рукою свій улюблений, орієнтований на приватність браузер.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Тримайте улюблений, орієнтований на приватність браузер на відстані одного натискання. Встановіть { -brand-short-name } типовим браузером для відкриття посилань і закріпіть його в Dock.
+       *[other] Тримайте улюблений, орієнтований на приватність браузер на відстані одного натискання. Встановіть { -brand-short-name } типовим браузером для відкриття посилань і закріпіть його на панель завдань.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Тримайте улюблений, орієнтований на приватність браузер на відстані одного натискання. Встановіть { -brand-short-name } типовим браузером для відкриття посилань і закріпіть його на панель завдань і в меню Пуск.
+
+## Windows 10 EoS Sync messages group 1 spotlight
+
+windows-10-eos-sync-spotlight-title = Збираєтесь оновитися з Windows 10?
+windows-10-eos-sync-spotlight-subtitle = Зробіть резервну копію своїх паролів і закладок, щоб бути готовими до переходу на будь-який пристрій.
+windows-10-eos-sync-spotlight-primary-label = Зробіть резервну копію свого { -brand-short-name }
+
+## Windows 10 EoS Sync messages group 1 toast notification
+
+windows-10-eos-sync-toast-title = Оновлюєтеся до Windows 11? Не втрачайте закладки та паролі.
+windows-10-eos-sync-toast-subtitle = Зробіть резервну копію своїх даних, щоб { -brand-short-name } був готовий до використання будь-коли, як на цьому, так і на іншому ПК.
+windows-10-eos-sync-toast-primary-label = Розпочати
+windows-10-eos-sync-toast-secondary-label = Нагадати пізніше
+
+## Windows 10 EoS sync messages group 2 feature callouts
+
+windows-10-eos-challenger-callout-title = { -brand-product-name } не завантажується заздалегідь, як інші браузери великих технологічних компаній. У цьому й сенс.
+windows-10-eos-challenger-sync-callout-subtitle = Створивши резервну копію закладок і паролів { -brand-product-name }, вам буде легше перенести улюблений браузер на інший пристрій.
+windows-10-eos-challenger-pin-callout-subtitle = Закріпіть { -brand-shorter-name } на панелі завдань, щоб ваш браузер завжди був під рукою, коли він вам потрібен.
+windows-10-eos-challenger-sync-primary-button = Зробити резервну копію { -brand-shorter-name }
+windows-10-eos-challenger-pin-primary-button = Закріпити { -brand-shorter-name }
+windows-10-eos-sync-callout-privacy-screen-1-title = { -brand-product-name } блокує криптомайнери, стеження соціальних мереж і зчитування цифрового відбитка.
+windows-10-eos-sync-callout-privacy-screen-1-subtitle = Елементи стеження не можуть ідентифікувати ваш пристрій або переслідувати вас в Інтернеті, бо ми їм цього не дозволяємо.
+windows-10-eos-sync-callout-privacy-screen-2-title = Захистіть свої паролі та закладки для наступного пристрою.
+windows-10-eos-sync-callout-privacy-screen-2-subtitle = Резервне копіювання { -brand-shorter-name } дає змогу легко переносити ваші дані та налаштування приватності.
+windows-10-eos-sync-callout-privacy-info-button = Переглянути, що заблоковано
+windows-10-eos-callout-addons-title = Спробуйте додатки: прості вдосконалення, що мають значний вплив
+windows-10-eos-callout-addons-subtitle = Ці розширення відібрано, щоб допомогти вам бути продуктивними, захищеними та зосередженими.
+windows-10-eos-callout-addons-primary-button = Перегляньте наші збірки
+windows-10-eos-sync-callout-addons-title = Не втрачайте свої додатки під час оновлення з Windows 10.
+windows-10-eos-sync-callout-addons-subtitle = Синхронізуйте зараз, щоб ваші додатки { -brand-product-name } завжди були доступні, навіть після зміни пристрою.
+windows-10-eos-sync-callout-next-button = Далі
+windows-10-eos-sync-callout-get-started-button = Розпочати
+
+## Windows 10 EoS Sync messages group 2 toast notification
+
+windows-10-eos-feature-toast-title = Вертикальні вкладки та групи вкладок вже тут!
+# In English, "dropped" is a colloquial form for released.
+windows-10-eos-feature-toast-subtitle = У відповідь на численні прохання { -brand-product-name } додав нові функції, щоб зробити перегляд сайтів ще зручнішим і зосередженішим.
+windows-10-eos-feature-toast-whats-new-button = Перегляньте, що нового
+windows-10-eos-feature-toast-dismiss-button = Відхилити
+
+## ETP (Enhanced Tracking Protection) Strict exceptions infobar
+##
+## These strings are displayed in an infobar notification that appears when
+## Enhanced Tracking Protection's Strict mode is causing website functionality
+## issues. The infobar offers users the option to apply automatic exceptions
+## to fix common site breakage by unblocking essential elements.
+
+etp-strict-exceptions-infobar-message = <strong>Надійний захист від відстеження може призвести до збоїв у роботі сайтів.</strong> Усуньте поширені проблеми, розблокувавши важливі елементи, які можуть містити стеження.
+etp-strict-exceptions-infobar-learn-more = Докладніше
+etp-strict-exceptions-infobar-button = Застосувати усунення проблем
+    .accesskey = З
+etp-strict-exceptions-infobar-not-now = Не зараз
+    .accesskey = е
+
+## 'Set to default' messaging displayed within the App menu
+
+set-default-menu-message-simple-layout-title = { -brand-short-name } не є вашим типовим браузером
+set-default-menu-message-simple-layout-title-variant = { -brand-short-name } не є вашим основним браузером
+set-default-menu-message-row-layout-title = Зробіть { -brand-short-name } своїм основним браузером
+set-default-menu-message-row-layout-title-variant = Зробіть { -brand-short-name } своїм типовим браузером
+set-default-menu-message-row-layout-subtitle = Отримайте швидкість, безпеку та приватність завжди під час перегляду.
+set-default-menu-message-row-layout-subtitle-variant =
+    { PLATFORM() ->
+        [macos] Тримайте { -brand-short-name } під рукою – зробіть його своїм типовим браузером і додайте до Dock.
+       *[other] Тримайте { -brand-short-name } під рукою – зробіть його своїм типовим браузером і закріпіть на панелі завдань.
+    }
+set-default-menu-message-primary-button = Зробити типовим
+set-default-menu-message-primary-button-variant = Зробити основним браузером

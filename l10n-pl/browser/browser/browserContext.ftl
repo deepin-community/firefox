@@ -149,9 +149,7 @@ main-context-menu-save-link-to-pocket =
     .label = Wyślij odnośnik do { -pocket-brand-name }
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Kopiuj adres e-mail
@@ -162,9 +160,13 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Kopiuj odnośnik
     .accesskey = o
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
+main-context-menu-preview-link =
+    .label = Podgląd odnośnika
+    .accesskey = P
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
     .label = Kopiuj odnośnik bez elementów śledzących
     .accesskey = b
 
@@ -268,6 +270,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Pokaż opis
     .accesskey = s
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Szukaj obrazu w { $engine }
+    .accesskey = S
 main-context-menu-video-save-as =
     .label = Zapisz wideo jako…
     .accesskey = s
@@ -283,6 +290,9 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Wyślij dźwięk…
     .accesskey = d
+main-context-menu-send-to-device-2 =
+    .label = Wyślij na urządzenie
+    .accesskey = W
 main-context-menu-save-to-pocket =
     .label = Wyślij stronę do { -pocket-brand-name }
     .accesskey = l
@@ -290,9 +300,7 @@ main-context-menu-send-to-device =
     .label = Wyślij stronę do
     .accesskey = W
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Użyj zachowanych danych logowania
@@ -319,6 +327,9 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Utwórz słowo kluczowe dla tej wyszukiwarki…
     .accesskey = U
+main-context-menu-add-engine =
+    .label = Dodaj wyszukiwarkę
+    .accesskey = D
 main-context-menu-link-send-to-device =
     .label = Wyślij odnośnik do
     .accesskey = W
@@ -389,3 +400,5 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Widoczne hasło
     .accesskey = h
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Nowe

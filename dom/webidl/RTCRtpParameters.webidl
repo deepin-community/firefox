@@ -22,6 +22,7 @@ enum RTCDegradationPreference {
 
 dictionary RTCRtpEncodingParameters {
   boolean                  active = true;
+  RTCRtpCodec codec;
   // From https://www.w3.org/TR/webrtc-priority/
   RTCPriorityType          priority = "low";
   unsigned long            maxBitrate;
@@ -61,6 +62,8 @@ dictionary RTCRtpParameters {
 dictionary RTCRtpSendParameters : RTCRtpParameters {
   DOMString transactionId;
   required sequence<RTCRtpEncodingParameters> encodings;
+  // https://w3c.github.io/mst-content-hint/
+  RTCDegradationPreference                  degradationPreference;
 };
 
 dictionary RTCRtpReceiveParameters : RTCRtpParameters {

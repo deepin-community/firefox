@@ -15,6 +15,7 @@
 #include "frontend/CompilationStencil.h"  // frontend::CompilationStencil
 #include "gc/GC.h"
 #include "gc/Zone.h"
+#include "jit/BaselineCompileTask.h"
 #include "jit/Ion.h"
 #include "jit/IonCompileTask.h"
 #include "jit/JitRuntime.h"
@@ -56,7 +57,7 @@ static void CancelOffThreadWasmPartialTier2CompileLocked(
 
 namespace js {
 
-Mutex gHelperThreadLock(mutexid::GlobalHelperThreadState);
+MOZ_RUNINIT Mutex gHelperThreadLock(mutexid::GlobalHelperThreadState);
 GlobalHelperThreadState* gHelperThreadState = nullptr;
 
 }  // namespace js
@@ -406,7 +407,6 @@ void GlobalHelperThreadState::addSizeOfIncludingThis(
       wasmCompleteTier2GeneratorWorklist_.sizeOfExcludingThis(mallocSizeOf) +
       wasmPartialTier2CompileWorklist_.sizeOfExcludingThis(mallocSizeOf) +
       promiseHelperTasks_.sizeOfExcludingThis(mallocSizeOf) +
-      compressionPendingList_.sizeOfExcludingThis(mallocSizeOf) +
       compressionWorklist_.sizeOfExcludingThis(mallocSizeOf) +
       compressionFinishedList_.sizeOfExcludingThis(mallocSizeOf) +
       gcParallelWorklist_.sizeOfExcludingThis(mallocSizeOf, lock) +
@@ -438,6 +438,13 @@ void GlobalHelperThreadState::addSizeOfIncludingThis(
   MOZ_ASSERT(threadCount >= totalCountRunningTasks);
   htStats.activeThreadCount = totalCountRunningTasks;
   htStats.idleThreadCount = threadCount - totalCountRunningTasks;
+}
+
+size_t GlobalHelperThreadState::maxBaselineCompilationThreads() const {
+  if (IsHelperThreadSimulatingOOM(js::THREAD_TYPE_BASELINE)) {
+    return 1;
+  }
+  return threadCount;
 }
 
 size_t GlobalHelperThreadState::maxIonCompilationThreads() const {
@@ -524,6 +531,13 @@ void GlobalHelperThreadState::trace(JSTracer* trc) {
     });
 #endif
 
+    for (auto task : baselineWorklist(lock)) {
+      task->trace(trc);
+    }
+    for (auto task : baselineFinishedList(lock)) {
+      task->trace(trc);
+    }
+
     for (auto task : ionWorklist(lock)) {
       task->alloc().lifoAlloc()->setReadWrite();
       task->trace(trc);
@@ -538,6 +552,8 @@ void GlobalHelperThreadState::trace(JSTracer* trc) {
         jit::IonCompileTask* ionCompileTask = helper->as<jit::IonCompileTask>();
         ionCompileTask->alloc().lifoAlloc()->setReadWrite();
         ionCompileTask->trace(trc);
+      } else if (helper->is<jit::BaselineCompileTask>()) {
+        helper->as<jit::BaselineCompileTask>()->trace(trc);
       }
     }
   }
@@ -559,6 +575,7 @@ void GlobalHelperThreadState::trace(JSTracer* trc) {
 // Priority is determined by the order they're listed here.
 const GlobalHelperThreadState::Selector GlobalHelperThreadState::selectors[] = {
     &GlobalHelperThreadState::maybeGetGCParallelTask,
+    &GlobalHelperThreadState::maybeGetBaselineCompileTask,
     &GlobalHelperThreadState::maybeGetIonCompileTask,
     &GlobalHelperThreadState::maybeGetWasmTier1CompileTask,
     &GlobalHelperThreadState::maybeGetPromiseHelperTask,
@@ -573,8 +590,8 @@ const GlobalHelperThreadState::Selector GlobalHelperThreadState::selectors[] = {
 
 bool GlobalHelperThreadState::canStartTasks(
     const AutoLockHelperThreadState& lock) {
-  return canStartGCParallelTask(lock) || canStartIonCompileTask(lock) ||
-         canStartWasmTier1CompileTask(lock) ||
+  return canStartGCParallelTask(lock) || canStartBaselineCompileTask(lock) ||
+         canStartIonCompileTask(lock) || canStartWasmTier1CompileTask(lock) ||
          canStartPromiseHelperTask(lock) || canStartFreeDelazifyTask(lock) ||
          canStartDelazifyTask(lock) || canStartCompressionTask(lock) ||
          canStartIonFreeTask(lock) || canStartWasmTier2CompileTask(lock) ||
@@ -1066,6 +1083,143 @@ js::AutoStartIonFreeTask::~AutoStartIonFreeTask() {
   jitRuntime_->maybeStartIonFreeTask(force_);
 }
 
+//== BaselineCompileTask ==================================================
+
+bool GlobalHelperThreadState::canStartBaselineCompileTask(
+    const AutoLockHelperThreadState& lock) {
+  return !baselineWorklist(lock).empty() &&
+         checkTaskThreadLimit(THREAD_TYPE_BASELINE,
+                              maxBaselineCompilationThreads(), lock);
+}
+
+HelperThreadTask* GlobalHelperThreadState::maybeGetBaselineCompileTask(
+    const AutoLockHelperThreadState& lock) {
+  if (!canStartBaselineCompileTask(lock)) {
+    return nullptr;
+  }
+
+  return baselineWorklist(lock).popCopy();
+}
+
+bool GlobalHelperThreadState::submitTask(
+    jit::BaselineCompileTask* task, const AutoLockHelperThreadState& locked) {
+  MOZ_ASSERT(isInitialized(locked));
+
+  if (!baselineWorklist(locked).append(task)) {
+    return false;
+  }
+
+  dispatch(locked);
+  return true;
+}
+
+bool js::StartOffThreadBaselineCompile(jit::BaselineCompileTask* task,
+                                       const AutoLockHelperThreadState& lock) {
+  return HelperThreadState().submitTask(task, lock);
+}
+
+/*
+ * Move a BaselineCompileTask for which compilation has either finished, failed,
+ * or been cancelled into the global finished compilation list. All off thread
+ * compilations which are started must eventually be finished.
+ */
+void js::FinishOffThreadBaselineCompile(jit::BaselineCompileTask* task,
+                                        const AutoLockHelperThreadState& lock) {
+  AutoEnterOOMUnsafeRegion oomUnsafe;
+  if (!HelperThreadState().baselineFinishedList(lock).append(task)) {
+    oomUnsafe.crash("FinishOffThreadBaselineCompile");
+  }
+  task->runtimeFromAnyThread()->jitRuntime()->numFinishedOffThreadTasksRef(
+      lock)++;
+}
+
+static bool BaselineCompileTaskMatches(const CompilationSelector& selector,
+                                       jit::BaselineCompileTask* task) {
+  struct TaskMatches {
+    jit::BaselineCompileTask* task_;
+
+    bool operator()(JSScript* script) { return task_->scriptMatches(script); }
+    bool operator()(Zone* zone) { return zone == task_->zoneFromAnyThread(); }
+    bool operator()(JSRuntime* runtime) {
+      return runtime == task_->runtimeFromAnyThread();
+    }
+    bool operator()(ZonesInState zbs) {
+      return zbs.runtime == task_->runtimeFromAnyThread() &&
+             zbs.state == task_->zoneFromAnyThread()->gcState();
+    }
+  };
+
+  return selector.match(TaskMatches{task});
+}
+
+void GlobalHelperThreadState::cancelOffThreadBaselineCompile(
+    const CompilationSelector& selector) {
+  jit::JitRuntime* jitRuntime = GetSelectorRuntime(selector)->jitRuntime();
+  MOZ_ASSERT(jitRuntime);
+
+  {
+    AutoLockHelperThreadState lock;
+    if (!isInitialized(lock)) {
+      return;
+    }
+
+    /* Cancel any pending entries for which processing hasn't started. */
+    GlobalHelperThreadState::BaselineCompileTaskVector& worklist =
+        baselineWorklist(lock);
+    for (size_t i = 0; i < worklist.length(); i++) {
+      jit::BaselineCompileTask* task = worklist[i];
+      if (BaselineCompileTaskMatches(selector, task)) {
+        FinishOffThreadBaselineCompile(task, lock);
+        remove(worklist, &i);
+      }
+    }
+
+    /* Wait for in progress entries to finish up. */
+    while (true) {
+      bool inProgress = false;
+      for (auto* helper : helperTasks(lock)) {
+        if (!helper->is<jit::BaselineCompileTask>()) {
+          continue;
+        }
+
+        jit::BaselineCompileTask* task = helper->as<jit::BaselineCompileTask>();
+        if (BaselineCompileTaskMatches(selector, task)) {
+          inProgress = true;
+          break;
+        }
+      }
+      if (!inProgress) {
+        break;
+      }
+      wait(lock);
+    }
+
+    /* Cancel linking for any completed entries. */
+    GlobalHelperThreadState::BaselineCompileTaskVector& finished =
+        baselineFinishedList(lock);
+    for (size_t i = 0; i < finished.length(); i++) {
+      jit::BaselineCompileTask* task = finished[i];
+      if (BaselineCompileTaskMatches(selector, task)) {
+        jitRuntime->numFinishedOffThreadTasksRef(lock)--;
+        jit::BaselineCompileTask::FinishOffThreadTask(task);
+        remove(finished, &i);
+      }
+    }
+  }
+}
+
+void js::CancelOffThreadBaselineCompile(const CompilationSelector& selector) {
+  if (!JitDataStructuresExist(selector)) {
+    return;
+  }
+
+  if (jit::IsPortableBaselineInterpreterEnabled()) {
+    return;
+  }
+
+  HelperThreadState().cancelOffThreadBaselineCompile(selector);
+}
+
 //== DelazifyTask =========================================================
 
 bool GlobalHelperThreadState::canStartDelazifyTask(
@@ -1096,7 +1250,7 @@ void GlobalHelperThreadState::submitTask(
 
 void js::StartOffThreadDelazification(
     JSContext* maybeCx, const JS::ReadOnlyCompileOptions& options,
-    const frontend::CompilationStencil& stencil) {
+    frontend::InitialStencilAndDelazifications* stencils) {
   // Skip delazify tasks if we parse everything on-demand or ahead.
   auto strategy = options.eagerDelazificationStrategy();
   if (strategy == JS::DelazificationOption::OnDemandOnly ||
@@ -1115,7 +1269,7 @@ void js::StartOffThreadDelazification(
 
   JSRuntime* maybeRuntime = maybeCx ? maybeCx->runtime() : nullptr;
   UniquePtr<DelazifyTask> task;
-  task = DelazifyTask::Create(maybeRuntime, options, stencil);
+  task = DelazifyTask::Create(maybeRuntime, options, stencils);
   if (!task) {
     return;
   }
@@ -1129,14 +1283,14 @@ void js::StartOffThreadDelazification(
 
 UniquePtr<DelazifyTask> DelazifyTask::Create(
     JSRuntime* maybeRuntime, const JS::ReadOnlyCompileOptions& options,
-    const frontend::CompilationStencil& stencil) {
+    frontend::InitialStencilAndDelazifications* stencils) {
   UniquePtr<DelazifyTask> task;
   task.reset(js_new<DelazifyTask>(maybeRuntime, options.prefableOptions()));
   if (!task) {
     return nullptr;
   }
 
-  if (!task->init(options, stencil)) {
+  if (!task->init(options, stencils)) {
     // In case of errors, skip this and delazify on-demand.
     return nullptr;
   }
@@ -1158,8 +1312,8 @@ DelazifyTask::~DelazifyTask() {
 }
 
 bool DelazifyTask::init(const JS::ReadOnlyCompileOptions& options,
-                        const frontend::CompilationStencil& stencil) {
-  return delazificationCx.init(options, stencil);
+                        frontend::InitialStencilAndDelazifications* stencils) {
+  return delazificationCx.init(options, stencils);
 }
 
 size_t DelazifyTask::sizeOfExcludingThis(
@@ -1455,23 +1609,80 @@ bool GlobalHelperThreadState::submitTask(
   return true;
 }
 
-void GlobalHelperThreadState::startHandlingCompressionTasks(
-    ScheduleCompressionTask schedule, JSRuntime* maybeRuntime,
-    const AutoLockHelperThreadState& lock) {
-  MOZ_ASSERT((schedule == ScheduleCompressionTask::GC) ==
-             (maybeRuntime != nullptr));
+void GlobalHelperThreadState::createAndSubmitCompressionTasks(
+    ScheduleCompressionTask schedule, JSRuntime* rt) {
+  // First create the SourceCompressionTasks and add them to a Vector.
+  Vector<UniquePtr<SourceCompressionTask>, 8, SystemAllocPolicy> tasksToSubmit;
 
-  auto& pending = compressionPendingList(lock);
+  // We use some simple heuristics to batch multiple script sources in a single
+  // SourceCompressionTask, to reduce overhead for small script sources.
+  //
+  // MaxBatchLength is the maximum length (in characters) for a single batch.
+  // If a single script source exceeds this length, it will get its own
+  // SourceCompressionTask.
+  //
+  // The main downside of increasing the MaxBatchLength threshold is that a
+  // large compression task could block a helper thread from taking on higher
+  // priority work.
+  static constexpr size_t MaxBatchLength = 300'000;
+  SourceCompressionTask* currentBatch = nullptr;
+  size_t currentBatchLength = 0;
 
-  for (size_t i = 0; i < pending.length(); i++) {
-    UniquePtr<SourceCompressionTask>& task = pending[i];
-    if (schedule == ScheduleCompressionTask::API ||
-        (task->runtimeMatches(maybeRuntime) && task->shouldStart())) {
-      // OOMing during appending results in the task not being scheduled
-      // and deleted.
-      (void)submitTask(std::move(task), lock);
-      remove(pending, &i);
+  rt->pendingCompressions().eraseIf([&](const auto& entry) {
+    MOZ_ASSERT(entry.source()->hasUncompressedSource());
+
+    // If the script source has no other references then remove it from the
+    // vector and don't compress it.
+    if (entry.shouldCancel()) {
+      return true;
     }
+
+    // If we're starting tasks on a non-shrinking GC, we wait a few major GCs to
+    // start compressing in order to avoid immediate compression.
+    if (schedule == ScheduleCompressionTask::NonShrinkingGC &&
+        rt->gc.majorGCCount() <= entry.majorGCNumber() + 3) {
+      return false;
+    }
+
+    // Add this entry to the current batch if the total length doesn't exceed
+    // MaxBatchLength.
+    size_t length = entry.source()->length();
+    if (currentBatch && currentBatchLength + length <= MaxBatchLength) {
+      if (!currentBatch->addEntry(entry.source())) {
+        return false;
+      }
+      currentBatchLength += length;
+      return true;
+    }
+
+    // Heap allocate the task. It will be freed upon compression completing in
+    // AttachFinishedCompressedSources. On OOM we leave the pending compression
+    // in the vector.
+    auto ownedTask = MakeUnique<SourceCompressionTask>(rt, entry.source());
+    SourceCompressionTask* task = ownedTask.get();
+    if (!ownedTask || !tasksToSubmit.append(std::move(ownedTask))) {
+      return false;
+    }
+    // Heuristic: prefer the task with the smallest source length for batching.
+    if (!currentBatch || length < currentBatchLength) {
+      currentBatch = task;
+      currentBatchLength = length;
+    }
+    return true;
+  });
+  if (rt->pendingCompressions().empty()) {
+    rt->pendingCompressions().clearAndFree();
+  }
+
+  if (tasksToSubmit.empty()) {
+    return;
+  }
+
+  AutoLockHelperThreadState lock;
+  for (auto& task : tasksToSubmit) {
+    // OOMing during appending results in the task not being scheduled and
+    // deleted.
+    (void)submitTask(std::move(task), lock);
   }
 }
 
@@ -1487,34 +1698,20 @@ void js::AttachFinishedCompressions(JSRuntime* runtime,
   }
 }
 
-void js::SweepPendingCompressions(AutoLockHelperThreadState& lock) {
-  auto& pending = HelperThreadState().compressionPendingList(lock);
-  for (size_t i = 0; i < pending.length(); i++) {
-    if (pending[i]->shouldCancel()) {
-      HelperThreadState().remove(pending, &i);
-    }
-  }
-}
-
 void js::RunPendingSourceCompressions(JSRuntime* runtime) {
   if (!CanUseExtraThreads()) {
     return;
   }
 
-  AutoLockHelperThreadState lock;
-  HelperThreadState().runPendingSourceCompressions(runtime, lock);
+  HelperThreadState().runPendingSourceCompressions(runtime);
 }
 
-void GlobalHelperThreadState::runPendingSourceCompressions(
-    JSRuntime* runtime, AutoLockHelperThreadState& lock) {
-  startHandlingCompressionTasks(
-      GlobalHelperThreadState::ScheduleCompressionTask::API, nullptr, lock);
-  {
-    // Dispatch tasks.
-    AutoUnlockHelperThreadState unlock(lock);
-  }
+void GlobalHelperThreadState::runPendingSourceCompressions(JSRuntime* runtime) {
+  createAndSubmitCompressionTasks(
+      GlobalHelperThreadState::ScheduleCompressionTask::API, runtime);
 
   // Wait until all tasks have started compression.
+  AutoLockHelperThreadState lock;
   while (!compressionWorklist(lock).empty()) {
     wait(lock);
   }
@@ -1525,23 +1722,13 @@ void GlobalHelperThreadState::runPendingSourceCompressions(
   AttachFinishedCompressions(runtime, lock);
 }
 
-bool js::EnqueueOffThreadCompression(JSContext* cx,
-                                     UniquePtr<SourceCompressionTask> task) {
-  AutoLockHelperThreadState lock;
-
-  auto& pending = HelperThreadState().compressionPendingList(lock);
-  if (!pending.append(std::move(task))) {
-    ReportOutOfMemory(cx);
-    return false;
-  }
-
-  return true;
-}
-
-void js::StartHandlingCompressionsOnGC(JSRuntime* runtime) {
-  AutoLockHelperThreadState lock;
-  HelperThreadState().startHandlingCompressionTasks(
-      GlobalHelperThreadState::ScheduleCompressionTask::GC, runtime, lock);
+void js::StartOffThreadCompressionsOnGC(JSRuntime* runtime,
+                                        bool isShrinkingGC) {
+  auto schedule =
+      isShrinkingGC
+          ? GlobalHelperThreadState::ScheduleCompressionTask::ShrinkingGC
+          : GlobalHelperThreadState::ScheduleCompressionTask::NonShrinkingGC;
+  HelperThreadState().createAndSubmitCompressionTasks(schedule, runtime);
 }
 
 template <typename T>
@@ -1556,7 +1743,7 @@ static void ClearCompressionTaskList(T& list, JSRuntime* runtime) {
 void GlobalHelperThreadState::cancelOffThreadCompressions(
     JSRuntime* runtime, AutoLockHelperThreadState& lock) {
   // Cancel all pending compression tasks.
-  ClearCompressionTaskList(compressionPendingList(lock), runtime);
+  runtime->pendingCompressions().clearAndFree();
   ClearCompressionTaskList(compressionWorklist(lock), runtime);
 
   // Cancel all in-process compression tasks and wait for them to join so we
@@ -1763,7 +1950,15 @@ HelperThreadTask* GlobalHelperThreadState::maybeGetWasmPartialTier2CompileTask(
     return nullptr;
   }
 
-  return wasmPartialTier2CompileWorklist(lock).popCopy();
+  // Take the task at the start of the vector and slide the rest down.  The
+  // vector is almost always small (fewer than 50 items) and most of the time
+  // has only one item, so this isn't a big expense.
+  wasm::PartialTier2CompileTaskPtrVector& worklist =
+      wasmPartialTier2CompileWorklist(lock);
+  MOZ_ASSERT(!worklist.empty());
+  HelperThreadTask* task = worklist[0];
+  worklist.erase(worklist.begin());
+  return task;
 }
 
 bool GlobalHelperThreadState::submitTask(
@@ -1774,6 +1969,10 @@ bool GlobalHelperThreadState::submitTask(
 
   wasm::PartialTier2CompileTaskPtrVector& workList =
       wasmPartialTier2CompileWorklist(lock);
+
+  // Put the new task at the end of the vector.
+  // ::maybeGetWasmPartialTier2CompileTask pulls tasks from the front of the
+  // vector, hence giving FIFO behaviour.
   if (!workList.append(task.get())) {
     return false;
   }

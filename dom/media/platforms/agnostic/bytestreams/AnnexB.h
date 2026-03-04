@@ -6,6 +6,7 @@
 #define DOM_MEDIA_PLATFORMS_AGNOSTIC_BYTESTREAMS_ANNEX_B_H_
 
 #include "ErrorList.h"
+#include "H264.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/Result.h"
 
@@ -38,6 +39,9 @@ class AnnexB {
   static mozilla::Result<mozilla::Ok, nsresult> ConvertHVCCSampleToAnnexB(
       mozilla::MediaRawData* aSample, bool aAddSPS = true);
 
+  // Extract extradata for AVCC from an Annex B sample.
+  static RefPtr<MediaByteBuffer> ExtractExtraDataForAVCC(
+      const Span<const uint8_t>& aSpan);
   // Convert a sample from Annex B to AVCC.
   // an AVCC extradata must not be set.
   static bool ConvertSampleToAVCC(
@@ -65,14 +69,22 @@ class AnnexB {
   // Returns true if format is HVCC and sample has valid extradata.
   static bool IsHVCC(const mozilla::MediaRawData* aSample);
   // Returns true if format is AnnexB.
-  static bool IsAnnexB(const mozilla::MediaRawData* aSample);
+  static bool IsAnnexB(const Span<const uint8_t>& aSpan);
 
   // Parse NAL entries from the bytes stream to know the offset and the size of
   // each NAL in the bytes stream.
   static void ParseNALEntries(const Span<const uint8_t>& aSpan,
                               nsTArray<AnnexB::NALEntry>& aEntries);
 
+  // Parse NAL entries and check if the NAL_TYPES are all present in data
+  static bool FindAllNalTypes(const Span<const uint8_t>& aSpan,
+                              const nsTArray<NAL_TYPES>& aTypes);
+
  private:
+  static size_t FindNalType(const Span<const uint8_t>& aSpan,
+                            const nsTArray<AnnexB::NALEntry>& aNalEntries,
+                            NAL_TYPES aType, size_t aStartIndex);
+
   // AVCC box parser helper.
   static mozilla::Result<mozilla::Ok, nsresult> ConvertSPSOrPPS(
       mozilla::BufferReader& aReader, uint8_t aCount,

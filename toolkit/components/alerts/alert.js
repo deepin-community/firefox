@@ -38,20 +38,9 @@ function prefillAlertInfo() {
   // arguments[9] --> replaced alert window (nsIDOMWindow)
   // arguments[10] --> an optional callback listener (nsIObserver)
   // arguments[11] -> the nsIURI.hostPort of the origin, optional
-  // arguments[12] -> the alert icon URL, optional
 
   switch (window.arguments.length) {
     default:
-    case 13: {
-      if (window.arguments[12]) {
-        let alertBox = document.getElementById("alertBox");
-        alertBox.setAttribute("hasIcon", true);
-
-        let icon = document.getElementById("alertIcon");
-        icon.src = window.arguments[12];
-      }
-    }
-    // fall through
     case 12: {
       if (window.arguments[11]) {
         let alertBox = document.getElementById("alertBox");
@@ -148,14 +137,6 @@ function prefillAlertInfo() {
         if (bodyText.length > BODY_TEXT_LIMIT) {
           bodyTextLabel.setAttribute("tooltiptext", bodyText);
 
-          let ellipsis = "\u2026";
-          try {
-            ellipsis = Services.prefs.getComplexValue(
-              "intl.ellipsis",
-              Ci.nsIPrefLocalizedString
-            ).data;
-          } catch (e) {}
-
           // Copied from nsContextMenu.js' formatSearchContextItem().
           // If the JS character after our truncation point is a trail surrogate,
           // include it in the truncated string to avoid splitting a surrogate pair.
@@ -165,7 +146,8 @@ function prefillAlertInfo() {
             truncLength++;
           }
 
-          bodyText = bodyText.substring(0, truncLength) + ellipsis;
+          bodyText =
+            bodyText.substring(0, truncLength) + Services.locale.ellipsis;
         }
         bodyTextLabel.textContent = bodyText;
       }
@@ -204,6 +186,8 @@ function onAlertLoad() {
     moveWindowToEnd();
   }
 
+  window.addEventListener("click", onAlertClick);
+  window.addEventListener("beforeunload", onAlertBeforeUnload);
   window.addEventListener("XULAlertClose", function () {
     window.close();
   });
@@ -233,6 +217,22 @@ function onAlertLoad() {
   let alertSettings = document.getElementById("alertSettings");
   alertSettings.addEventListener("focus", onAlertSettingsFocus);
   alertSettings.addEventListener("click", onAlertSettingsClick);
+
+  document
+    .getElementById("alert-close")
+    .addEventListener("click", event => event.stopPropagation());
+  document
+    .getElementById("alert-close")
+    .addEventListener("command", onAlertClose);
+  document
+    .getElementById("doNotDisturbMenuItem")
+    .addEventListener("command", doNotDisturb);
+  document
+    .getElementById("disableForOriginMenuItem")
+    .addEventListener("command", disableForOrigin);
+  document
+    .getElementById("openSettingsMenuItem")
+    .addEventListener("command", openSettings);
 
   gIsActive = true;
 
@@ -392,3 +392,6 @@ function onAlertClose() {
     window.close();
   }
 }
+
+window.addEventListener("DOMContentLoaded", prefillAlertInfo);
+window.addEventListener("load", onAlertLoad);

@@ -25,7 +25,6 @@ import mozilla.components.feature.tabs.TabsUseCases.SelectOrAddUseCase
 import mozilla.components.support.test.robolectric.testContext
 import mozilla.components.support.test.rule.MainCoroutineRule
 import mozilla.components.support.test.rule.runTestOnMain
-import mozilla.telemetry.glean.testing.GleanTestRule
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
@@ -36,22 +35,26 @@ import org.mozilla.fenix.GleanMetrics.RecentSearches
 import org.mozilla.fenix.R
 import org.mozilla.fenix.components.AppStore
 import org.mozilla.fenix.components.appstate.AppAction
-import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
+import org.mozilla.fenix.components.usecases.FenixBrowserUseCases
+import org.mozilla.fenix.helpers.FenixGleanTestRule
 import org.mozilla.fenix.home.HomeFragmentDirections
 import org.mozilla.fenix.home.recentvisits.RecentlyVisitedItem.RecentHistoryGroup
 import org.mozilla.fenix.home.recentvisits.RecentlyVisitedItem.RecentHistoryHighlight
+import org.mozilla.fenix.utils.Settings
+import org.robolectric.RobolectricTestRunner
 
-@OptIn(ExperimentalCoroutinesApi::class)
-@RunWith(FenixRobolectricTestRunner::class)
+@RunWith(RobolectricTestRunner::class)
 class RecentVisitsControllerTest {
 
     @get:Rule
-    val gleanTestRule = GleanTestRule(testContext)
+    val gleanTestRule = FenixGleanTestRule(testContext)
 
     @get:Rule
     val coroutinesTestRule = MainCoroutineRule()
     private val scope = coroutinesTestRule.scope
 
+    private val settings: Settings = mockk(relaxed = true)
+    private val fenixBrowserUseCases: FenixBrowserUseCases = mockk(relaxed = true)
     private val selectOrAddTabUseCase: SelectOrAddUseCase = mockk(relaxed = true)
     private val navController = mockk<NavController>(relaxed = true)
 
@@ -74,6 +77,8 @@ class RecentVisitsControllerTest {
             DefaultRecentVisitsController(
                 appStore = appStore,
                 store = store,
+                settings = settings,
+                fenixBrowserUseCases = fenixBrowserUseCases,
                 selectOrAddTabUseCase = selectOrAddTabUseCase,
                 navController = navController,
                 scope = scope,
@@ -118,6 +123,7 @@ class RecentVisitsControllerTest {
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class) // advanceUntilIdle
     @Test
     fun handleRemoveGroup() = runTestOnMain {
         val historyMetadataKey = HistoryMetadataKey(
@@ -164,6 +170,24 @@ class RecentVisitsControllerTest {
 
         verifyOrder {
             selectOrAddTabUseCase.invoke(historyHighlight.url)
+            navController.navigate(R.id.browserFragment)
+        }
+    }
+
+    @Test
+    fun `GIVEN homepage as a new tab is enabled WHEN a recent history highlight is clicked THEN open item in the existing tab`() = runTestOnMain {
+        every { settings.enableHomepageAsNewTab } returns true
+
+        val historyHighlight = RecentHistoryHighlight("title", "url")
+
+        controller.handleRecentHistoryHighlightClicked(historyHighlight)
+
+        verifyOrder {
+            fenixBrowserUseCases.loadUrlOrSearch(
+                searchTermOrURL = historyHighlight.url,
+                newTab = false,
+                private = false,
+            )
             navController.navigate(R.id.browserFragment)
         }
     }

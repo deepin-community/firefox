@@ -182,7 +182,7 @@ TestArray.addTest(
     Promise.all([
       crypto.subtle.importKey("jwk", tv.ecdh_p256.jwk_priv, alg, false, ["deriveBits"])
         .then(setPriv, error(that)),
-      crypto.subtle.importKey("jwk", tv.ecdh_p256.jwk_pub, alg, false, ["deriveBits"])
+      crypto.subtle.importKey("jwk", tv.ecdh_p256.jwk_pub, alg, false, [])
         .then(setPub, error(that)),
     ]).then(doDerive, error(that))
       .then(memcmp_complete(that, tv.ecdh_p256.secret), error(that));
@@ -207,7 +207,7 @@ TestArray.addTest(
     Promise.all([
       crypto.subtle.importKey("jwk", tv.ecdh_p384.jwk_priv, alg, false, ["deriveBits"])
         .then(setPriv, error(that)),
-      crypto.subtle.importKey("jwk", tv.ecdh_p384.jwk_pub, alg, false, ["deriveBits"])
+      crypto.subtle.importKey("jwk", tv.ecdh_p384.jwk_pub, alg, false, [])
         .then(setPub, error(that)),
     ]).then(doDerive, error(that))
       .then(memcmp_complete(that, tv.ecdh_p384.secret), error(that));
@@ -232,7 +232,7 @@ TestArray.addTest(
     Promise.all([
       crypto.subtle.importKey("jwk", tv.ecdh_p521.jwk_priv, alg, false, ["deriveBits"])
         .then(setPriv, error(that)),
-      crypto.subtle.importKey("jwk", tv.ecdh_p521.jwk_pub, alg, false, ["deriveBits"])
+      crypto.subtle.importKey("jwk", tv.ecdh_p521.jwk_pub, alg, false, [])
         .then(setPub, error(that)),
     ]).then(doDerive, error(that))
       .then(memcmp_complete(that, tv.ecdh_p521.secret), error(that));
@@ -260,7 +260,7 @@ TestArray.addTest(
     Promise.all([
       crypto.subtle.importKey("jwk", tv.ecdh_p256.jwk_priv, alg, true, ["deriveBits"])
         .then(setPriv, error(that)),
-      crypto.subtle.importKey("jwk", tv.ecdh_p256.jwk_pub, alg, true, ["deriveBits"])
+      crypto.subtle.importKey("jwk", tv.ecdh_p256.jwk_pub, alg, true, [])
         .then(setPub, error(that)),
     ]).then(doExportPub, error(that))
       .then(function(x) {
@@ -396,7 +396,7 @@ TestArray.addTest(
     Promise.all([
       crypto.subtle.importKey("jwk", tv.ecdh_p521.jwk_priv, alg, false, ["deriveKey"])
         .then(setPriv),
-      crypto.subtle.importKey("jwk", tv.ecdh_p521.jwk_pub, alg, false, ["deriveKey"])
+      crypto.subtle.importKey("jwk", tv.ecdh_p521.jwk_pub, alg, false, [])
         .then(setPub),
     ]).then(doDerive)
       .then(doSignAndVerify)
@@ -427,6 +427,81 @@ TestArray.addTest(
 );
 
 // -----------------------------------------------------------------------------
+// See bug 1994770
+TestArray.addTest(
+  "Derive an AES Key from two X25519 keys",
+  function() {
+    var that = this;
+    const alg = { name: 'X25519' };
+    const lengths = [128, 192, 256];
+
+    async function deriveKey(algorithm, privateKey, publicKey, length) {
+      return window.crypto.subtle.deriveKey(
+        { name: algorithm.name, public: publicKey },
+        privateKey,
+        { name: 'AES-GCM', length },
+        true,
+        ['encrypt', 'decrypt'],
+      );
+    }
+
+    async function doTest(length) {
+      let keyPair1 = await crypto.subtle.generateKey(alg, true, ["deriveKey", "deriveBits"]);
+      let keyPair2 = await crypto.subtle.generateKey(alg, true, ["deriveKey", "deriveBits"]);
+      let derivedKey = await deriveKey(alg, keyPair1.privateKey, keyPair2.publicKey, length);
+      const raw = await window.crypto.subtle.exportKey('raw', derivedKey);
+      const bitLength = raw.byteLength * 8;
+      return bitLength === length;
+    }
+
+    Promise.all(lengths.map(doTest))
+      .then(complete(that, function(results) {
+        return results.every(result => result === true);
+      }))
+      .catch(error(that));
+  }
+);
+
+// See bug 1994770
+TestArray.addTest(
+  "Derive an AES Key from two X25519 keys (invalid length)",
+  function() {
+    var that = this;
+    const alg = { name: "X25519" };
+    // AES-GCM only accepts 128, 192, 256.
+    const invalidLengths = [0, 64, 129, 200];
+
+    async function deriveKey(algorithm, privateKey, publicKey, length) {
+      return window.crypto.subtle.deriveKey(
+        { name: algorithm.name, public: publicKey },
+        privateKey,
+        { name: "AES-GCM", length },
+        true,
+        ["encrypt", "decrypt"],
+      );
+    }
+
+    async function doTest(length) {
+      let keyPair1 = await crypto.subtle.generateKey(alg, true, ["deriveKey", "deriveBits"]);
+      let keyPair2 = await crypto.subtle.generateKey(alg, true, ["deriveKey", "deriveBits"]);
+      try {
+        await deriveKey(alg, keyPair1.privateKey, keyPair2.publicKey, length);
+        return false;
+      } catch (e) {
+        return true;
+      }
+    }
+
+    Promise.all(invalidLengths.map(doTest))
+      .then(complete(that, function(results) {
+          return results.every(result => result === true);
+        }),
+      )
+      .catch(error(that));
+  }
+);
+
+// -----------------------------------------------------------------------------
 TestArray.addTest(
   "SPKI import/export of public ECDH keys (P-256)",
   function() {
@@ -435,7 +510,7 @@ TestArray.addTest(
     var keys = ["spki", "spki_id_ecpk"];
 
     function doImport(key) {
-      return crypto.subtle.importKey("spki", tv.ecdh_p256[key], alg, true, ["deriveBits"]);
+      return crypto.subtle.importKey("spki", tv.ecdh_p256[key], alg, true, []);
     }
 
     function doExport(x) {
@@ -479,7 +554,7 @@ TestArray.addTest(
     }
 
     Promise.all([
-      crypto.subtle.importKey("spki", tv.ecdh_p256.spki, alg, false, ["deriveBits"])
+      crypto.subtle.importKey("spki", tv.ecdh_p256.spki, alg, false, [])
         .then(setPub),
       crypto.subtle.importKey("jwk", tv.ecdh_p256.jwk_priv, alg, false, ["deriveBits"])
         .then(setPriv),
@@ -499,7 +574,7 @@ TestArray.addTest(
       return crypto.subtle.exportKey("raw", x);
     }
 
-    crypto.subtle.importKey("raw", tv.ecdh_p256.raw, alg, true, ["deriveBits"])
+    crypto.subtle.importKey("raw", tv.ecdh_p256.raw, alg, true, [])
       .then(doExport)
       .then(memcmp_complete(that, tv.ecdh_p256.raw), error(that));
   }
@@ -512,7 +587,7 @@ TestArray.addTest(
     var that = this;
     var alg = { name: "ECDH", namedCurve: "P-256" };
 
-    crypto.subtle.importKey("raw", tv, alg, false, ["deriveBits"])
+    crypto.subtle.importKey("raw", tv.ecdh_p256_negative.raw_bad, alg, false, [])
       .then(error(that), complete(that));
   }
 );
@@ -524,7 +599,7 @@ TestArray.addTest(
     var that = this;
     var alg = { name: "ECDH", namedCurve: "P-256" };
 
-    crypto.subtle.importKey("unknown", tv, alg, false, ["deriveBits"])
+    crypto.subtle.importKey("unknown", tv.ecdh_p256.raw, alg, false, [])
       .then(error(that), complete(that));
   }
 );
@@ -536,7 +611,7 @@ TestArray.addTest(
     var that = this;
     var alg = { name: "ECDH", namedCurve: "P-256" };
 
-    crypto.subtle.importKey("raw", tv, alg, false, ["deriveBits"])
+    crypto.subtle.importKey("raw", tv.ecdh_p256_negative.raw_short, alg, false, [])
       .then(error(that), complete(that));
   }
 );
@@ -548,7 +623,7 @@ TestArray.addTest(
     var that = this;
     var alg = { name: "ECDH", namedCurve: "P-256" };
 
-    crypto.subtle.importKey("raw", tv, alg, false, ["deriveBits"])
+    crypto.subtle.importKey("raw", tv.ecdh_p256_negative.raw_long, alg, false, [])
       .then(error(that), complete(that));
   }
 );
@@ -560,7 +635,7 @@ TestArray.addTest(
     var that = this;
     var alg = { name: "ECDH", namedCurve: "P-256" };
 
-    crypto.subtle.importKey("raw", tv, alg, false, ["deriveBits"])
+    crypto.subtle.importKey("raw", tv.ecdh_p256_negative.raw_compressed, alg, false, [])
       .then(error(that), complete(that));
   }
 );
@@ -581,7 +656,7 @@ TestArray.addTest(
     }
 
     Promise.all([
-      crypto.subtle.importKey("raw", tv.ecdh_p256.raw, alg, false, ["deriveBits"])
+      crypto.subtle.importKey("raw", tv.ecdh_p256.raw, alg, false, [])
         .then(setPub),
       crypto.subtle.importKey("jwk", tv.ecdh_p256.jwk_priv, alg, false, ["deriveBits"])
         .then(setPriv),

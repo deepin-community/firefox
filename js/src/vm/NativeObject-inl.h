@@ -32,12 +32,6 @@
 #include "vm/Realm-inl.h"
 #include "vm/Shape-inl.h"
 
-#ifdef ENABLE_RECORD_TUPLE
-// Defined in vm/RecordTupleShared.{h,cpp}. We cannot include that file
-// because it causes circular dependencies.
-extern bool js::IsExtendedPrimitive(const JSObject& obj);
-#endif
-
 namespace js {
 
 constexpr ObjectSlots::ObjectSlots(uint32_t capacity,
@@ -168,7 +162,7 @@ inline void NativeObject::initDenseElements(const Value* src, uint32_t count) {
   elementsRangePostWriteBarrier(0, count);
 }
 
-inline void NativeObject::initDenseElements(JSLinearString** src,
+inline void NativeObject::initDenseElements(IteratorProperty* src,
                                             uint32_t count) {
   MOZ_ASSERT(getDenseInitializedLength() == 0);
   MOZ_ASSERT(count <= getDenseCapacity());
@@ -178,7 +172,7 @@ inline void NativeObject::initDenseElements(JSLinearString** src,
   setDenseInitializedLength(count);
   Value* elementsBase = reinterpret_cast<Value*>(elements_);
   for (size_t i = 0; i < count; i++) {
-    elementsBase[i].setString(src[i]);
+    elementsBase[i].setString(src[i].asString());
   }
 
   elementsRangePostWriteBarrier(0, count);
@@ -243,7 +237,7 @@ inline bool NativeObject::initDenseElementsFromRange(JSContext* cx, Iter begin,
   MOZ_ASSERT(slot == count);
 
   getElementsHeader()->initializedLength = count;
-  as<ArrayObject>().setLength(count);
+  as<ArrayObject>().setLengthToInitializedLength();
   return true;
 }
 
@@ -463,7 +457,7 @@ inline DenseElementResult NativeObject::setOrExtendDenseElements(
   }
 
   if (is<ArrayObject>() && start + count >= as<ArrayObject>().length()) {
-    as<ArrayObject>().setLength(start + count);
+    as<ArrayObject>().setLengthToInitializedLength();
   }
 
   copyDenseElements(start, vp, count);
@@ -615,11 +609,8 @@ MOZ_ALWAYS_INLINE bool NativeObject::setShapeAndAddNewSlot(
 inline js::gc::AllocKind NativeObject::allocKindForTenure() const {
   using namespace js::gc;
   AllocKind kind = GetGCObjectFixedSlotsKind(numFixedSlots());
-  MOZ_ASSERT(!IsBackgroundFinalized(kind));
-  if (!CanChangeToBackgroundAllocKind(kind, getClass())) {
-    return kind;
-  }
-  return ForegroundToBackgroundAllocKind(kind);
+  MOZ_ASSERT(!IsFinalizedKind(kind));
+  return GetFinalizedAllocKindForClass(kind, getClass());
 }
 
 inline js::GlobalObject& NativeObject::global() const { return nonCCWGlobal(); }
@@ -721,9 +712,6 @@ static MOZ_ALWAYS_INLINE bool NativeLookupOwnPropertyInline(
   // violate this guidance are the ModuleEnvironmentObject.
   MOZ_ASSERT_IF(obj->getOpsLookupProperty(),
                 obj->template is<ModuleEnvironmentObject>());
-#ifdef ENABLE_RECORD_TUPLE
-  MOZ_ASSERT(!js::IsExtendedPrimitive(*obj));
-#endif
 
   // Check for a native dense element.
   if (id.isInt()) {
@@ -907,6 +895,7 @@ MOZ_ALWAYS_INLINE bool AddDataPropertyToPlainObject(
   obj->initSlot(*resultSlot, v);
 
   MOZ_ASSERT(!obj->getClass()->getAddProperty());
+  MOZ_ASSERT(!obj->getClass()->preservesWrapper());
   return true;
 }
 

@@ -7,10 +7,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsDebug.h"
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/IntegerPrintfMacros.h"
 #include "mozilla/Sprintf.h"
-#include "mozilla/Unused.h"
 #include "nsXRemoteClient.h"
 #include "RemoteUtils.h"
 #include "prsystem.h"
@@ -52,7 +50,6 @@
 #endif
 
 using mozilla::LogLevel;
-using mozilla::Unused;
 
 static mozilla::LazyLogModule sRemoteLm("nsXRemoteClient");
 
@@ -85,7 +82,7 @@ static const char* XAtomNames[] = {
     MOZILLA_VERSION_PROP, MOZILLA_LOCK_PROP,       MOZILLA_RESPONSE_PROP,
     "WM_STATE",           MOZILLA_USER_PROP,       MOZILLA_PROFILE_PROP,
     MOZILLA_PROGRAM_PROP, MOZILLA_COMMANDLINE_PROP};
-static Atom XAtoms[MOZ_ARRAY_LENGTH(XAtomNames)];
+static Atom XAtoms[std::size(XAtomNames)];
 
 nsresult nsXRemoteClient::Init() {
   MOZ_LOG(sRemoteLm, LogLevel::Debug, ("nsXRemoteClient::Init"));
@@ -97,8 +94,8 @@ nsresult nsXRemoteClient::Init() {
   if (!mDisplay) return NS_ERROR_FAILURE;
 
   // get our atoms
-  XInternAtoms(mDisplay, const_cast<char**>(XAtomNames),
-               MOZ_ARRAY_LENGTH(XAtomNames), False, XAtoms);
+  XInternAtoms(mDisplay, const_cast<char**>(XAtomNames), std::size(XAtomNames),
+               False, XAtoms);
 
   int i = 0;
   mMozVersionAtom = XAtoms[i++];
@@ -418,9 +415,9 @@ Window nsXRemoteClient::FindBestWindow(const char* aProgram,
     if (status != Success || type == None) continue;
 
     // Check that this window is from the right program.
-    Unused << XGetWindowProperty(
-        mDisplay, w, mMozProgramAtom, 0, (65536 / sizeof(long)), False,
-        XA_STRING, &type, &format, &nitems, &bytesafter, &data_return);
+    (void)XGetWindowProperty(mDisplay, w, mMozProgramAtom, 0,
+                             (65536 / sizeof(long)), False, XA_STRING, &type,
+                             &format, &nitems, &bytesafter, &data_return);
 
     // If the return name is not the same as this program name, we don't want
     // this window.
@@ -443,9 +440,9 @@ Window nsXRemoteClient::FindBestWindow(const char* aProgram,
     const char* username = PR_GetEnv("LOGNAME");
 
     if (username) {
-      Unused << XGetWindowProperty(
-          mDisplay, w, mMozUserAtom, 0, (65536 / sizeof(long)), False,
-          XA_STRING, &type, &format, &nitems, &bytesafter, &data_return);
+      (void)XGetWindowProperty(mDisplay, w, mMozUserAtom, 0,
+                               (65536 / sizeof(long)), False, XA_STRING, &type,
+                               &format, &nitems, &bytesafter, &data_return);
 
       // if there's a username compare it with what we have
       if (data_return) {
@@ -462,9 +459,9 @@ Window nsXRemoteClient::FindBestWindow(const char* aProgram,
     // Check to see if there's a profile name on this window.  If
     // there is, then we need to make sure it matches what someone
     // passed in.
-    Unused << XGetWindowProperty(
-        mDisplay, w, mMozProfileAtom, 0, (65536 / sizeof(long)), False,
-        XA_STRING, &type, &format, &nitems, &bytesafter, &data_return);
+    (void)XGetWindowProperty(mDisplay, w, mMozProfileAtom, 0,
+                             (65536 / sizeof(long)), False, XA_STRING, &type,
+                             &format, &nitems, &bytesafter, &data_return);
 
     // If there's a profile compare it with what we have
     if (data_return) {
@@ -533,12 +530,11 @@ nsresult nsXRemoteClient::DoSendCommandLine(Window aWindow, int32_t argc,
   *aDestroyed = false;
 
   int commandLineLength;
-  char* commandLine =
+  mozilla::UniquePtr<char[]> commandLine =
       ConstructCommandLine(argc, argv, aStartupToken, &commandLineLength);
   XChangeProperty(mDisplay, aWindow, mMozCommandLineAtom, XA_STRING, 8,
-                  PropModeReplace, (unsigned char*)commandLine,
+                  PropModeReplace, (unsigned char*)commandLine.get(),
                   commandLineLength);
-  free(commandLine);
 
   char* response;
   if (!WaitForResponse(aWindow, &response, aDestroyed, mMozCommandLineAtom))

@@ -5,11 +5,16 @@
 url-classifier-title = Informații privind clasificarea URL-urilor
 url-classifier-search-title = Caută
 url-classifier-search-result-title = Rezultate
+# Variables:
+#   $uri (string) - URI of blocked page
 url-classifier-search-result-uri = URI: { $uri }
+# Variables:
+#   $list (string) - List of tables where the page is blocked
 url-classifier-search-result-list = Listă de tabele: { $list }
 url-classifier-search-input = URL
 url-classifier-search-error-invalid-url = URL nevalid
 url-classifier-search-error-no-features = Nicio funcționalitate selectată
+url-classifier-search-error-no-results = Nu au fost găsite intrări pentru URL
 url-classifier-search-btn = Începe căutarea
 url-classifier-search-features = Funcționalități
 url-classifier-search-listType = Tip listă
@@ -40,7 +45,6 @@ url-classifier-debug-sb-modules = Module de jurnalizare pentru navigarea sigură
 url-classifier-debug-modules = Modulele actuale de înregistrare în jurnal
 url-classifier-debug-sbjs-modules = Jurnalizare JS pentru navigarea sigură
 url-classifier-debug-file = Fișierul actual pentru jurnal
-
 url-classifier-trigger-update = Declanșează actualizarea
 url-classifier-not-available = Indisponibil
 url-classifier-disable-sbjs-log = Dezactivează jurnalizarea JS pentru navigarea sigură

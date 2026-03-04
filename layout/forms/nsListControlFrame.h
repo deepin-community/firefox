@@ -10,7 +10,6 @@
 #include "mozilla/ScrollContainerFrame.h"
 #include "mozilla/StaticPtr.h"
 #include "nsISelectControlFrame.h"
-#include "nsSelectsAreaFrame.h"
 
 class nsComboboxControlFrame;
 class nsPresContext;
@@ -53,7 +52,7 @@ class nsListControlFrame final : public mozilla::ScrollContainerFrame,
 
   void SetInitialChildList(ChildListID aListID, nsFrameList&& aChildList) final;
 
-  nscoord IntrinsicISize(gfxContext* aContext,
+  nscoord IntrinsicISize(const mozilla::IntrinsicSizeInput& aInput,
                          mozilla::IntrinsicISizeType aType) final;
 
   void Reflow(nsPresContext* aCX, ReflowOutput& aDesiredSize,
@@ -62,14 +61,8 @@ class nsListControlFrame final : public mozilla::ScrollContainerFrame,
   void Init(nsIContent* aContent, nsContainerFrame* aParent,
             nsIFrame* aPrevInFlow) final;
 
-  void DidReflow(nsPresContext* aPresContext,
-                 const ReflowInput* aReflowInput) final;
+  bool ReflowFinished() final;
   void Destroy(DestroyContext&) override;
-
-  void BuildDisplayList(nsDisplayListBuilder* aBuilder,
-                        const nsDisplayListSet& aLists) final;
-
-  nsContainerFrame* GetContentInsertionFrame() final;
 
   int32_t GetEndSelectionIndex() const { return mEndSelectionIndex; }
 
@@ -177,10 +170,6 @@ class nsListControlFrame final : public mozilla::ScrollContainerFrame,
    */
   bool MightNeedSecondPass() const { return mMightNeedSecondPass; }
 
-  void SetSuppressScrollbarUpdate(bool aSuppress) {
-    ScrollContainerFrame::SetSuppressScrollbarUpdate(aSuppress);
-  }
-
   /**
    * Return the number of displayed rows in the list.
    */
@@ -276,14 +265,10 @@ class nsListControlFrame final : public mozilla::ScrollContainerFrame,
   void InitSelectionRange(int32_t aClickedIndex);
 
  public:
-  nsSelectsAreaFrame* GetOptionsContainer() const {
-    return static_cast<nsSelectsAreaFrame*>(GetScrolledFrame());
-  }
-
   static constexpr int32_t kNothingSelected = -1;
 
  protected:
-  nscoord BSizeOfARow() { return GetOptionsContainer()->BSizeOfARow(); }
+  nscoord BSizeOfARow() const { return mBSizeOfARow; }
 
   /**
    * @return how many displayable options/optgroups this frame has.
@@ -291,14 +276,12 @@ class nsListControlFrame final : public mozilla::ScrollContainerFrame,
   uint32_t GetNumberOfRows();
 
   // Data Members
-  int32_t mStartSelectionIndex;
-  int32_t mEndSelectionIndex;
+  int32_t mStartSelectionIndex = 0;
+  int32_t mEndSelectionIndex = 0;
 
-  uint32_t mNumDisplayRows;
+  uint32_t mNumDisplayRows = 0;
+  nscoord mBSizeOfARow = -1;
   bool mChangesSinceDragStart : 1;
-
-  // Has the user selected a visible item since we showed the dropdown?
-  bool mItemSelectionStarted : 1;
 
   bool mIsAllContentHere : 1;
   bool mIsAllFramesHere : 1;
@@ -310,18 +293,10 @@ class nsListControlFrame final : public mozilla::ScrollContainerFrame,
   // pass.  This only happens for auto heights.
   bool mMightNeedSecondPass : 1;
 
-  /**
-   * Set to aPresContext->HasPendingInterrupt() at the start of Reflow.
-   * Set to false at the end of DidReflow.
-   */
-  bool mHasPendingInterruptAtStartOfReflow : 1;
-
-  // True if the selection can be set to nothing or disabled options.
-  bool mForceSelection : 1;
+  // True if our reflow got interrupted.
+  bool mReflowWasInterrupted : 1;
 
   RefPtr<mozilla::HTMLSelectEventListener> mEventListener;
-
-  static nsListControlFrame* sFocused;
 };
 
 #endif /* nsListControlFrame_h___ */

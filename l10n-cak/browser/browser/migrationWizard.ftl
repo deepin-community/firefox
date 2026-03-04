@@ -47,11 +47,6 @@ migration-source-name-chrome = Google Chrome
 migration-imported-safari-reading-list = Rucholajem taq sik'inem (richin ri Safari)
 migration-imported-edge-reading-list = Rucholajem taq sik'inem (richin Edge)
 
-## These strings are shown if the selected browser data directory is unreadable.
-## In practice, this tends to only occur on Linux when Firefox
-## is installed as a Snap.
-
-
 ## These strings will be displayed based on how many resources are selected to import
 
 migration-all-available-data-label = Kejik' ronojel taq tzij e k'o
@@ -177,6 +172,8 @@ migration-safari-password-import-step1 = Pa Safari, tijaq ri cholsamaj “Safari
 migration-safari-password-import-step2 = Tacha' ri <img data-l10n-name="safari-icon-3dots"/> pitz'b'äl k'a ri tacha' “Kejik' Ronojel Ewan taq Tzij”
 migration-safari-password-import-step3 = Keyak kiyakb'al ewan taq tzij
 migration-safari-password-import-step4 = Tokisäx “Ticha' Yakb'äl” chuxe' richin nicha' ri ruyakb'al ewan taq tzij xtiyak
+migration-manual-password-import-skip-button = Tik'o'
+migration-manual-password-import-select-button = Ticha' Yakb'äl
 migration-safari-password-import-skip-button = Tik'o'
 migration-safari-password-import-select-button = Ticha' Yakb'äl
 # Shown in the migration wizard after importing bookmarks from another

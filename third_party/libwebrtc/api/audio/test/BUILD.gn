@@ -8,8 +8,8 @@
 
 import("../../../webrtc.gni")
 if (is_android) {
-  import("//build/config/android/config.gni")
-  import("//build/config/android/rules.gni")
+  import("//chromium/build/config/android/config.gni")
+  import("//chromium/build/config/android/rules.gni")
 }
 
 if (rtc_include_tests) {
@@ -23,7 +23,9 @@ if (rtc_include_tests) {
     deps = [
       "..:aec3_config",
       "..:audio_frame_api",
+      "../..:array_view",
       "../../../modules/audio_processing:aec3_config_json",
+      "../../../rtc_base:checks",
       "../../../test:test_support",
     ]
   }

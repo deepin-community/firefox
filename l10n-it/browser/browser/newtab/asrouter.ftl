@@ -59,7 +59,7 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } utenti
     }
 
-## Firefox Accounts Message
+## Mozilla Account messages
 
 cfr-doorhanger-bookmark-fxa-header = Sincronizza ovunque i tuoi segnalibri
 cfr-doorhanger-bookmark-fxa-body = Ottima scoperta. Assicurati di non restare senza questo segnalibro sul tuo dispositivo mobile. Crea un { -fxaccount-brand-name }.
@@ -68,6 +68,13 @@ cfr-doorhanger-bookmark-fxa-link-text = Sincronizza subito i segnalibri…
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = Pulsante di chiusura
     .title = Chiudi
+fxa-adoption-addresses-backup-title = Fai il backup degli indirizzi salvati
+fxa-adoption-addresses-backup-subtitle = Proteggi gli indirizzi che hai salvato sincronizzandoli con i tuoi dispositivi usando la crittografia.
+fxa-adoption-credit-cards-backup-title = Fai il backup dei tuoi metodi di pagamento
+fxa-adoption-credit-cards-backup-subtitle = Proteggi i tuoi metodi di pagamento sincronizzandoli con i tuoi dispositivi usando la crittografia.
+fxa-adoption-bookmarks-treatment-backup-title = Facciamo un backup dei tuoi segnalibri
+fxa-adoption-bookmarks-treatment-backup-subtitle = Proteggi i tuoi segnalibri sincronizzandoli con i tuoi dispositivi usando la crittografia.
+fxa-adoption-primary-button-label = Registrati
 
 ## Protections panel
 
@@ -201,7 +208,6 @@ cfr-cbh-confirm-button = Rifiuta banner per i cookie
     .accesskey = R
 cfr-cbh-dismiss-button = Non adesso
     .accesskey = N
-
 cookie-banner-blocker-onboarding-header = { -brand-short-name } ha appena rifiutato un banner per i cookie
 cookie-banner-blocker-onboarding-body = Meno distrazioni, meno cookie in grado di tracciarti su questo sito.
 cookie-banner-blocker-onboarding-learn-more = Ulteriori informazioni
@@ -223,6 +229,24 @@ fox-doodle-pin-secondary = Non adesso
 set-default-pdf-handler-headline = <strong>Ora puoi aprire i tuoi PDF in { -brand-short-name }.</strong> Modifica o firma i moduli direttamente nel tuo browser. Per iniziare, cerca “PDF” nelle impostazioni.
 set-default-pdf-handler-primary = OK
 
+## PDF Annotations strings
+
+# “Sign on the dotted line” is an idiomatic English expression about
+# where to place your signature.
+# If this expression doesn’t have a direct translation, please
+# translate this alternative string: "Add your signature anywhere!"
+annotations-default-pdf-handler-headline = Firma sulla linea tratteggiata, o dove preferisci
+# “Go-to” is an idiomatic English expression referring to something that is used often.
+annotations-default-pdf-handler-body = Disegna, digita o carica la tua firma, poi inseriscila esattamente dove desideri. Salva le tue firme preferite per riusarle in futuro.
+annotations-make-default-pdf-handler-title = Impostare { -brand-short-name } come editor predefinito per i PDF?
+annotations-make-default-pdf-handler-subtitle = Avrai accesso ai nostri strumenti ogni volta che apri un PDF.
+annotations-make-default-pdf-primary-cta-label = Imposta come predefinito
+annotations-make-default-pdf-next-label = Successivo
+annotations-make-default-pdf-primary-cta =
+    .label = Imposta come predefinito
+annotations-make-default-pdf-next =
+    .label = Successivo
+
 ## FxA sync CFR
 
 fxa-sync-cfr-header = Nuovo dispositivo nel tuo futuro?
@@ -243,6 +267,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Crea un account
 device-migration-fxa-spotlight-getting-new-device-header-2 = Nuovo dispositivo nel tuo futuro?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Segui alcuni semplici passaggi per portare con te segnalibri, cronologia e password quando inizi a utilizzare un nuovo dispositivo.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Come posso salvare i miei dati
+device-migration-fxa-spotlight-sync-header = Naviga senza perdere un colpo
+device-migration-fxa-spotlight-sync-body = Sincronizza tutte le tue informazioni più importanti, come segnalibri e password, e proteggile con la crittografia. Potrai accedervi ovunque utilizzi { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = Inizia
 
 ## Set as Default PDF Reader Infobar
 
@@ -286,8 +313,127 @@ root-certificate-succession-infobar-january-message = <strong>Le versioni più v
 root-certificate-succession-infobar-march-message = <strong>Aggiorna per continuare a utilizzare { -brand-short-name } dopo il 14 marzo 2025.</strong>
 root-certificate-succession-infobar-link = Perché devo aggiornare?
 root-certificate-succession-infobar-primary-button =
-  .label = Aggiorna adesso
-  .accesskey = A
+    .label = Aggiorna adesso
+    .accesskey = A
 root-certificate-succession-infobar-secondary-button =
-  .label = Più tardi
-  .accesskey = P
+    .label = Più tardi
+    .accesskey = P
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Ti sei perso un importante aggiornamento di { -brand-short-name }
+root-certificate-windows-background-notification-subtitle = Se non aggiorni, alcune parti del browser smetteranno di funzionare a breve. Adesso è il momento giusto per ottenere le nostre più recenti protezioni e funzionalità.
+root-certificate-windows-background-notification-learn-more-button = Ulteriori informazioni
+root-certificate-windows-background-notification-update-button = Aggiorna { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Chiudi
+    .aria-label = Chiudi
+fxa-menu-message-sign-up-button = Registrati
+fxa-menu-message-sign-in-button = Accedi
+fxa-menu-message-sync-button = Avvia la sincronizzazione
+fxa-menu-message-sync-devices-primary-text = Sincronizza tutti i tuoi dispositivi
+fxa-menu-message-sync-devices-secondary-text = Accedi al volo alle tue informazioni, come segnalibri e password, ovunque utilizzi { -brand-short-name }.
+fxa-menu-message-sync-devices-secondary-text2 = Accedi al volo ai tuoi segnalibri, password, e altro ancora, ovunque utilizzi { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = Sincronizza tutti i tuoi dispositivi
+fxa-menu-message-backup-data-primary-text = Salva i dati del browser
+fxa-menu-message-backup-data-secondary-text = Proteggi automaticamente segnalibri, password e altre informazioni su tutti i tuoi dispositivi.
+fxa-menu-message-backup-data-collapsed-text = Salva i dati del browser
+fxa-menu-message-backup-sync-primary-text = Mantieni i tuoi dati al sicuro e sincronizzati
+fxa-menu-message-backup-sync-secondary-text = La sincronizzazione esegue il backup della maggior parte dei tuoi dati, così puoi accedervi ovunque utilizzi { -brand-short-name }.
+fxa-menu-message-backup-sync-collapsed-text = Sincronizza e salva i tuoi dati
+fxa-menu-message-mobile-primary-text = Invia schede al tuo telefono
+fxa-menu-message-mobile-secondary-text = Riprendi immediatamente da dove eri rimasto sincronizzando le schede con un dispositivo mobile.
+fxa-menu-message-mobile-collapsed-text = Sincronizza con il tuo telefono
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Bentornato
+multi-cta-fox-doodle-set-default-checkbox = Imposta { -brand-short-name } come predefinito
+multi-cta-fox-doodle-pin-startmenu-checkbox = Aggiungi { -brand-short-name } al menu Start
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Mantieni { -brand-short-name } nel Dock
+       *[other] Aggiungi { -brand-short-name } alla barra delle applicazioni
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Inizia a navigare
+multi-cta-fox-doodle-main-browser-primary-button-label = Imposta { -brand-short-name } come browser principale
+multi-cta-fox-doodle-quick-reminder-subtitle = Un promemoria al volo: puoi avere il tuo browser preferito incentrato sulla privacy sempre a portata di clic.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Mantieni il tuo browser preferito incentrato sulla privacy sempre a portata di clic. Imposta { -brand-short-name } come browser predefinito per l’apertura dei link e aggiungilo alla barra delle applicazioni.
+       *[other] Mantieni il tuo browser preferito incentrato sulla privacy sempre a portata di clic. Imposta { -brand-short-name } come browser predefinito per l’apertura dei link, aggiungilo alla barra delle applicazioni e al menu Start.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Mantieni il tuo browser preferito incentrato sulla privacy sempre a portata di clic. Imposta { -brand-short-name } come browser predefinito per l’apertura dei link, aggiungilo alla barra delle applicazioni.
+
+## Windows 10 EoS Sync messages group 1 spotlight
+
+windows-10-eos-sync-spotlight-title = Hai in programma di aggiornare a breve da Windows 10?
+windows-10-eos-sync-spotlight-subtitle = Salva password e segnalibri per prepararti al salto verso qualsiasi dispositivo.
+windows-10-eos-sync-spotlight-primary-label = Effettua il backup di { -brand-short-name }
+
+## Windows 10 EoS Sync messages group 1 toast notification
+
+windows-10-eos-sync-toast-title = Vuoi passare a Windows 11? Non perdere segnalibri e password.
+windows-10-eos-sync-toast-subtitle = Salva i tuoi dati in modo che { -brand-short-name } sia pronto per l’uso in qualsiasi momento, su questo computer o sul prossimo.
+windows-10-eos-sync-toast-primary-label = Inizia
+windows-10-eos-sync-toast-secondary-label = Ricordamelo più tardi
+
+## Windows 10 EoS sync messages group 2 feature callouts
+
+windows-10-eos-challenger-callout-title = { -brand-product-name } non è preinstallato come i browser delle Big Tech. E c’è un motivo.
+windows-10-eos-challenger-sync-callout-subtitle = Facendo il backup di segnalibri e password di { -brand-product-name } potrai trasferire più facilmente il tuo browser preferito sul prossimo dispositivo.
+windows-10-eos-challenger-pin-callout-subtitle = Aggiungi { -brand-shorter-name } alla barra delle applicazioni in modo che il tuo browser preferito sia sempre disponibile quando ne hai bisogno.
+windows-10-eos-challenger-sync-primary-button = Esegui il backup di { -brand-shorter-name }
+windows-10-eos-challenger-pin-primary-button = Aggiungi { -brand-shorter-name }
+windows-10-eos-sync-callout-privacy-screen-1-title = { -brand-product-name } blocca cryptominer, elementi traccianti sui social media e fingerprinter.
+windows-10-eos-sync-callout-privacy-screen-1-subtitle = Gli elementi traccianti non possono identificare il tuo dispositivo o seguirti sul Web, perché non glielo permettiamo.
+windows-10-eos-sync-callout-privacy-screen-2-title = Proteggi password e segnalibri per il tuo prossimo dispositivo.
+windows-10-eos-sync-callout-privacy-screen-2-subtitle = Effettuando il backup di { -brand-shorter-name } puoi portare sempre con te i tuoi dati e le tue impostazioni relative alla privacy.
+windows-10-eos-sync-callout-privacy-info-button = Scopri che cosa viene bloccato
+windows-10-eos-callout-addons-title = Prova i componenti aggiuntivi: piccoli aggiornamenti, grandi risultati
+windows-10-eos-callout-addons-subtitle = Queste estensioni sono state scelte per aiutarti a rimanere produttivo, al sicuro e libero da distrazioni.
+windows-10-eos-callout-addons-primary-button = Scopri le nostre scelte
+windows-10-eos-sync-callout-addons-title = Non perdere i tuoi componenti aggiuntivi quando aggiorni da Windows 10.
+windows-10-eos-sync-callout-addons-subtitle = Sincronizza ora, così i tuoi componenti aggiuntivi per { -brand-product-name } saranno sempre disponibili, anche dopo aver cambiato dispositivo.
+windows-10-eos-sync-callout-next-button = Successivo
+windows-10-eos-sync-callout-get-started-button = Inizia
+
+## Windows 10 EoS Sync messages group 2 toast notification
+
+windows-10-eos-feature-toast-title = Schede verticali e gruppi di schede: ci siamo!
+# In English, "dropped" is a colloquial form for released.
+windows-10-eos-feature-toast-subtitle = A grande richiesta, { -brand-product-name } ha appena lanciato nuove funzioni per mantenere la tua navigazione ordinata e senza distrazioni.
+windows-10-eos-feature-toast-whats-new-button = Scopri le novità
+windows-10-eos-feature-toast-dismiss-button = Chiudi
+
+## ETP (Enhanced Tracking Protection) Strict exceptions infobar
+##
+## These strings are displayed in an infobar notification that appears when
+## Enhanced Tracking Protection's Strict mode is causing website functionality
+## issues. The infobar offers users the option to apply automatic exceptions
+## to fix common site breakage by unblocking essential elements.
+
+etp-strict-exceptions-infobar-message = <strong>Una protezione antitracciamento restrittiva può causare il malfunzionamento di alcuni siti.</strong> Risolvi i problemi più comuni sbloccando elementi essenziali che potrebbero contenere elementi traccianti.
+etp-strict-exceptions-infobar-learn-more = Ulteriori informazioni
+etp-strict-exceptions-infobar-button = Applica correzioni
+    .accesskey = A
+etp-strict-exceptions-infobar-not-now = Non adesso
+    .accesskey = N
+
+## 'Set to default' messaging displayed within the App menu
+
+set-default-menu-message-simple-layout-title = { -brand-short-name } non è il tuo browser predefinito
+set-default-menu-message-simple-layout-title-variant = { -brand-short-name } non è il tuo browser principale
+set-default-menu-message-row-layout-title = Imposta { -brand-short-name } come browser principale
+set-default-menu-message-row-layout-title-variant = Imposta { -brand-short-name } come browser predefinito
+set-default-menu-message-row-layout-subtitle = Ottieni velocità, sicurezza e privacy ogni volta che navighi.
+set-default-menu-message-row-layout-subtitle-variant =
+    { PLATFORM() ->
+        [macos] Tieni { -brand-short-name } sempre a portata di mano: impostalo come predefinito e mantienilo nel Dock.
+       *[other] Tieni { -brand-short-name } sempre a portata di mano: impostalo come predefinito e mantienilo nella barra delle applicazioni.
+    }
+set-default-menu-message-primary-button = Imposta come predefinito
+set-default-menu-message-primary-button-variant = Imposta come browser principale

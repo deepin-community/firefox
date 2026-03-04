@@ -7,10 +7,7 @@ import { IndexedDBHelper } from "resource://gre/modules/IndexedDBHelper.sys.mjs"
 const lazy = {};
 
 ChromeUtils.defineLazyGetter(lazy, "console", () => {
-  let { ConsoleAPI } = ChromeUtils.importESModule(
-    "resource://gre/modules/Console.sys.mjs"
-  );
-  return new ConsoleAPI({
+  return console.createInstance({
     maxLogLevelPref: "dom.push.loglevel",
     prefix: "PushDB",
   });
@@ -82,7 +79,7 @@ PushDB.prototype = {
     }
   },
 
-  /*
+  /**
    * @param aRecord
    *        The record to be added.
    */
@@ -119,7 +116,7 @@ PushDB.prototype = {
     );
   },
 
-  /*
+  /**
    * @param aKeyID
    *        The ID of record to be deleted.
    */
@@ -226,8 +223,8 @@ PushDB.prototype = {
   /**
    * Iterates over all records associated with an origin.
    *
-   * @param {String} origin The origin, matched as a prefix against the scope.
-   * @param {String} originAttributes Additional origin attributes. Requires
+   * @param {string} origin The origin, matched as a prefix against the scope.
+   * @param {string} originAttributes Additional origin attributes. Requires
    *  an exact match.
    * @param {Function} callback A function with the signature `(record,
    *  cursor)`, called for each record. `record` is the registration, and
@@ -388,7 +385,7 @@ PushDB.prototype = {
   /**
    * Updates an existing push registration.
    *
-   * @param {String} aKeyID The registration ID.
+   * @param {string} aKeyID The registration ID.
    * @param {Function} aUpdateFunc A function that receives the existing
    *  registration record as its argument, and returns a new record.
    * @returns {Promise} A promise resolved with either the updated record.

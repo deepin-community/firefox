@@ -6,18 +6,17 @@
 #ifndef GMPUtils_h_
 #define GMPUtils_h_
 
-#include "gmp-errors.h"
 #include "MediaResult.h"
+#include "gmp-errors.h"
 #include "mozilla/AbstractThread.h"
-#include "mozilla/RefPtr.h"
 #include "mozilla/UniquePtr.h"
 #include "nsCOMPtr.h"
 #include "nsClassHashtable.h"
 #include "nsStringFwd.h"
 #include "nsTArray.h"
 
-#define CHROMIUM_CDM_API_BACKWARD_COMPAT "chromium-cdm9-host4"
-#define CHROMIUM_CDM_API "chromium-cdm10-host4"
+#define CHROMIUM_CDM_API_BACKWARD_COMPAT "chromium-cdm10-host4"
+#define CHROMIUM_CDM_API "chromium-cdm11-host4"
 
 class GMPVideoEncodedFrame;
 class nsIFile;

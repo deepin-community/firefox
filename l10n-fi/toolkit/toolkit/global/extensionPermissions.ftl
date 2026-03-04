@@ -30,4 +30,46 @@ webext-perms-description-sessions = Käytä viimeksi suljettuja välilehtiä
 webext-perms-description-tabs = Käytä selaimen välilehtiä
 webext-perms-description-tabHide = Piilota ja näytä selaimen välilehtiä
 webext-perms-description-topSites = Käytä selaushistoriaa
+webext-perms-description-trialML = Lataa ja suorita tekoälymalleja laitteellasi
+webext-perms-description-userScripts = Salli vahvistamattomien kolmannen osapuolen komentosarjojen pääsy tietoihisi
 webext-perms-description-webNavigation = Tarkkaile selaimen toimintaa siirryttäessä sivulta toiselle
+
+## The userScripts permission includes an additional explanation that is
+## displayed prominently near the usual permission description.
+
+webext-perms-extra-warning-userScripts-long = Vahvistamattomat komentosarjat voivat aiheuttaa turvallisuus- ja tietosuojariskejä, kuten haitallisen koodin suorittamisen tai verkkosivuston toiminnan seuraamisen. Suorita komentosarjoja vain laajennuksista tai lähteistä, joihin luotat.
+# A shorter warning is displayed in UI surfaces with little room, such as a permission prompt.
+webext-perms-extra-warning-userScripts-short = Vahvistamattomat komentosarjat voivat aiheuttaa turvallisuus- ja tietosuojariskejä. Suorita komentosarjoja vain laajennuksista tai lähteistä, joihin luotat.
+
+## Short form to be used in lists or in a string (`webext-perms-description-data-some`)
+## that formats some of the data collection permissions below using `Intl.ListFormat`.
+##
+## This is used when the data collection permissions are required.
+
+webext-perms-description-data-short-authenticationInfo = todennustiedot
+webext-perms-description-data-short-bookmarksInfo = kirjanmerkit
+webext-perms-description-data-short-browsingActivity = selaustoiminta
+webext-perms-description-data-short-financialAndPaymentInfo = talous- ja maksutiedot
+webext-perms-description-data-short-healthInfo = terveystiedot
+webext-perms-description-data-short-locationInfo = sijainti
+webext-perms-description-data-short-personalCommunications = henkilökohtaisen yhteydenpidon
+webext-perms-description-data-short-personallyIdentifyingInfo = henkilökohtaisesti tunnistettavat tiedot
+webext-perms-description-data-short-searchTerms = hakuehdot
+webext-perms-description-data-short-technicalAndInteraction = tekniset ja vuorovaikutustiedot
+webext-perms-description-data-short-websiteActivity = verkkosivuston toiminta
+webext-perms-description-data-short-websiteContent = verkkosivuston sisältö
+
+## Long form to be used in `about:addons` when these data collection permissions are optional.
+
+webext-perms-description-data-long-authenticationInfo = Jaa todennustiedot laajennuksen kehittäjän kanssa
+webext-perms-description-data-long-bookmarksInfo = Jaa kirjanmerkkitiedot laajennuksen kehittäjän kanssa
+webext-perms-description-data-long-browsingActivity = Jaa selaustoiminta laajennuksen kehittäjän kanssa
+webext-perms-description-data-long-financialAndPaymentInfo = Jaa talous- ja maksutiedot laajennuksen kehittäjän kanssa
+webext-perms-description-data-long-healthInfo = Jaa terveystiedot laajennuksen kehittäjän kanssa
+webext-perms-description-data-long-locationInfo = Jaa sijaintitiedot laajennuksen kehittäjän kanssa
+webext-perms-description-data-long-personalCommunications = Jaa henkilökohtainen yhteydenpito laajennuksen kehittäjän kanssa
+webext-perms-description-data-long-personallyIdentifyingInfo = Jaa henkilökohtaisesti tunnistettavat tiedot laajennuksen kehittäjän kanssa
+webext-perms-description-data-long-searchTerms = Jaa hakuehdot laajennuksen kehittäjän kanssa
+webext-perms-description-data-long-technicalAndInteraction = Jaa tekniset ja vuorovaikutustiedot laajennuksen kehittäjän kanssa
+webext-perms-description-data-long-websiteActivity = Jaa verkkosivuston toiminta laajennuksen kehittäjän kanssa
+webext-perms-description-data-long-websiteContent = Jaa verkkosivuston sisältö laajennuksen kehittäjän kanssa

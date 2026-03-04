@@ -98,11 +98,6 @@ class DocAccessibleParent : public RemoteAccessible,
   virtual mozilla::ipc::IPCResult RecvEvent(const uint64_t& aID,
                                             const uint32_t& aType) override;
 
-  virtual mozilla::ipc::IPCResult RecvShowEvent(
-      nsTArray<AccessibleData>&& aNewTree, const bool& aEventSuppressed,
-      const bool& aComplete, const bool& aFromUser) override;
-  virtual mozilla::ipc::IPCResult RecvHideEvent(const uint64_t& aRootID,
-                                                const bool& aFromUser) override;
   mozilla::ipc::IPCResult RecvStateChangeEvent(const uint64_t& aID,
                                                const uint64_t& aState,
                                                const bool& aEnabled) final;
@@ -113,10 +108,10 @@ class DocAccessibleParent : public RemoteAccessible,
       const bool& aIsAtEndOfLine, const int32_t& aGranularity,
       const bool& aFromUser) final;
 
-  virtual mozilla::ipc::IPCResult RecvTextChangeEvent(
-      const uint64_t& aID, const nsAString& aStr, const int32_t& aStart,
-      const uint32_t& aLen, const bool& aIsInsert,
-      const bool& aFromUser) override;
+  virtual mozilla::ipc::IPCResult RecvMutationEvents(
+      nsTArray<MutationEventData>&& aData) override;
+
+  virtual mozilla::ipc::IPCResult RecvRequestAckMutationEvents() override;
 
   virtual mozilla::ipc::IPCResult RecvFocusEvent(
       const uint64_t& aID, const LayoutDeviceIntRect& aCaretRect) override;
@@ -277,6 +272,8 @@ class DocAccessibleParent : public RemoteAccessible,
 
   bool IsCaretAtEndOfLine() const { return mIsCaretAtEndOfLine; }
 
+  mozilla::LayoutDeviceIntRect GetCachedCaretRect();
+
   virtual void SelectionRanges(nsTArray<TextRange>* aRanges) const override;
 
   virtual Accessible* FocusedChild() override;
@@ -290,8 +287,8 @@ class DocAccessibleParent : public RemoteAccessible,
 
   // Tracks cached reverse relations (ie. those not set explicitly by an
   // attribute like aria-labelledby) for accessibles in this doc. This map is of
-  // the form: {accID, {relationType, [targetAccID, targetAccID, ...]}}
-  nsTHashMap<uint64_t, nsTHashMap<RelationType, nsTArray<uint64_t>>>
+  // the form: {accID, {pointerToRelationDataAddress, [targetAccID, ...]}}
+  nsTHashMap<uint64_t, nsTHashMap<const RelationData*, nsTArray<uint64_t>>>
       mReverseRelations;
 
   // Computed from the viewport cache, the accs referenced by these ids
@@ -343,6 +340,16 @@ class DocAccessibleParent : public RemoteAccessible,
    */
   void ShutdownOrPrepareForMove(RemoteAccessible* aAcc);
 
+  mozilla::ipc::IPCResult ProcessShowEvent(nsTArray<AccessibleData>&& aNewTree,
+                                           const bool& aEventSuppressed,
+                                           const bool& aComplete,
+                                           const bool& aFromUser);
+  mozilla::ipc::IPCResult ProcessHideEvent(const uint64_t& aRootID,
+                                           const bool& aFromUser);
+  mozilla::ipc::IPCResult ProcessTextChangeEvent(
+      const uint64_t& aID, const nsAString& aStr, const int32_t& aStart,
+      const uint32_t& aLen, const bool& aIsInsert, const bool& aFromUser);
+
   nsTArray<uint64_t> mChildDocs;
 
 #if defined(XP_WIN)
@@ -371,6 +378,7 @@ class DocAccessibleParent : public RemoteAccessible,
   uint64_t mCaretId;
   int32_t mCaretOffset;
   bool mIsCaretAtEndOfLine;
+  LayoutDeviceIntRect mCaretRect;
   nsTArray<TextRangeData> mTextSelections;
 
   static uint64_t sMaxDocID;

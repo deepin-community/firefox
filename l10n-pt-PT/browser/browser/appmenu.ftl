@@ -27,6 +27,10 @@ appmenuitem-downloads =
     .label = Transferências
 appmenuitem-passwords =
     .label = Palavras-passe
+appmenuitem-extensions-and-themes =
+    .label = Extensões e temas
+appmenuitem-extensions =
+    .label = Extensões
 appmenuitem-addons-and-themes =
     .label = Extras e temas
 appmenuitem-print =
@@ -108,8 +112,11 @@ appmenu-fxa-sync-and-save-data2 = Sincronizar e guardar dados
 appmenu-fxa-signed-in-label = Iniciar sessão
 appmenu-fxa-setup-sync =
     .label = Ativar a sincronização ...
+appmenu-fxa-setup-sync-new = Ativar
 appmenuitem-save-page =
     .label = Guardar página como…
+appmenuitem-fxa-sync-off-title = A sincronização está desativada
+appmenuitem-fxa-sync-off-description = Proteja e aceda aos seus marcadores, palavras-passe e muito mais, em qualquer sítio.
 
 ## What's New panel in App menu.
 
@@ -163,6 +170,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Abrir o painel do perfilador
+    .tooltiptext = Abrir painel do perfilador
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +199,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Predefinição para investigar bugs de áudio e vídeo no { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Multimédia
+profiler-popup-presets-ml-description = Pré-ajuste para investigar erros de aprendizagem automática no { -brand-shorter-name }.
+profiler-popup-presets-ml-label =
+    .label = Aprendizagem Automática
 profiler-popup-presets-networking-description = Predefinição para investigar bugs de rede no { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = Rede
@@ -277,5 +290,26 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Obter alertas de violações de dados
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Mascare o seu e-mail e telefone reais
+appmenuitem-services-relay-description = Iniciar o painel de máscaras de e-mail
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Proteja a sua privacidade na Internet
+appmenu-services-header = Os meus serviços
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Experimentar outras ferramentas de proteção da Mozilla:
+appmenu-other-protection-header = Experimente outras ferramentas de proteção da { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-other-profiles = Outros perfis
+appmenu-manage-profiles =
+    .label = Gerir perfis
+appmenu-copy-profile =
+    .label = Copiar este perfil
+appmenu-create-profile =
+    .label = Novo perfil
+appmenu-edit-profile =
+    .aria-label = Editar perfil
+appmenu-profiles-2 =
+    .label = Perfis

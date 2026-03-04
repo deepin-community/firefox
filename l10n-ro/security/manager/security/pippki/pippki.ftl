@@ -48,15 +48,17 @@ download-cert-view-cert =
     .label = Vizualizează
 download-cert-view-text = Examinează certificatul AC
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
     .title = Cerere identificare utilizator
 client-auth-site-description = Acest site îți cere să te identifici cu un certificat:
 client-auth-choose-cert = Alege un certificat care să fie prezentat drept identificare:
+client-auth-send-no-certificate =
+    .label = Nu trimite un certificat
+# Variables:
+# $hostname (String) - The domain name of the site requesting the client authentication certificate
+client-auth-site-identification = „{ $hostname }” îți cere să te identifici cu un certificat:
 client-auth-cert-details = Detaliile certificatului selectat:
 # Variables:
 # $issuedTo (String) - The subject common name of the currently-selected client authentication certificate
@@ -80,19 +82,27 @@ client-auth-cert-details-issued-by = Emis de: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Stocat pe: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Ține minte decizia
+client-auth-cert-remember-label = Ține minte decizia:
+client-auth-cert-remember-never =
+    .label = O dată
+client-auth-cert-remember-always =
+    .label = Permanent
+client-auth-cert-remember-temporarily =
+    .label = Pentru această sesiune
 
 ## Set password (p12) dialog
 
 set-password-window =
-    .title = Alege o parolă de siguranță pentru certificate
+    .title = Alege o parolă pentru backupul cu certificate
 set-password-message = Parola pe care o setezi aici protejează fișierul de siguranță pe care ești pe cale să-l creezi.  Trebuie să setezi această parolă pentru a continua salvarea de siguranță.
 set-password-backup-pw =
-    .value = Parola de siguranță pentru certificate:
+    .value = Parola backupului cu certificate:
 set-password-repeat-backup-pw =
-    .value = Parola de siguranță pentru certificate (din nou):
+    .value = Parola backupului cu certificate (din nou):
 set-password-reminder = Important: Dacă uiți parola de siguranță pentru certificate, nu vei putea reface această copie mai târziu.  Te rugăm să ai grijă să o păstrezi într-un loc sigur.
 
 ## Protected authentication alert
 
+# Variables:
+# $tokenName (String) - The name of the token to authenticate to (for example, "OS Client Cert Token (Modern)")
+protected-auth-alert = Te rugăm să te autentifici pe jetonul „{ $tokenName }”. Cum anume, depinde de jeton (de exemplu, folosind un cititor de amprente sau introducând un cod cu o tastatură).

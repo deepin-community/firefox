@@ -12,7 +12,6 @@
 #ifndef TestHarness_h__
 #define TestHarness_h__
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/Attributes.h"
 
 #include "prenv.h"
@@ -150,19 +149,18 @@ class ScopedXPCOM : public nsIDirectoryServiceProvider2 {
   }
 
   already_AddRefed<nsIFile> GetGREDirectory() {
-    if (mGRED) {
-      nsCOMPtr<nsIFile> copy = mGRED;
-      return copy.forget();
+    if (!mGRED) {
+      char* env = PR_GetEnv("MOZ_XRE_DIR");
+      if (!env) {
+        return nullptr;
+      }
+
+      nsresult rv =
+          NS_NewNativeLocalFile(nsDependentCString(env), getter_AddRefs(mGRED));
+      NS_ENSURE_SUCCESS(rv, nullptr);
     }
 
-    char* env = PR_GetEnv("MOZ_XRE_DIR");
-    nsCOMPtr<nsIFile> greD;
-    if (env) {
-      NS_NewLocalFile(NS_ConvertUTF8toUTF16(env), false, getter_AddRefs(greD));
-    }
-
-    mGRED = greD;
-    return greD.forget();
+    return do_AddRef(mGRED);
   }
 
   already_AddRefed<nsIFile> GetGREBinDirectory() {

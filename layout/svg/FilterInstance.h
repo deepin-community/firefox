@@ -7,20 +7,20 @@
 #ifndef LAYOUT_SVG_FILTERINSTANCE_H_
 #define LAYOUT_SVG_FILTERINSTANCE_H_
 
+#include "FilterDescription.h"
 #include "gfxMatrix.h"
 #include "gfxPoint.h"
 #include "gfxRect.h"
+#include "mozilla/SVGIntegrationUtils.h"
+#include "mozilla/ServoStyleConsts.h"
+#include "mozilla/gfx/2D.h"
+#include "mozilla/webrender/WebRenderTypes.h"
 #include "nsCOMPtr.h"
-#include "FilterDescription.h"
 #include "nsHashKeys.h"
 #include "nsPoint.h"
 #include "nsRect.h"
 #include "nsSize.h"
 #include "nsTArray.h"
-#include "mozilla/gfx/2D.h"
-#include "mozilla/webrender/WebRenderTypes.h"
-#include "mozilla/ServoStyleConsts.h"
-#include "mozilla/SVGIntegrationUtils.h"
 
 class gfxContext;
 class nsIContent;
@@ -28,6 +28,7 @@ class nsIFrame;
 struct WrFiltersHolder;
 
 namespace mozilla {
+class ISVGFilterObserverList;
 class SVGFilterFrame;
 
 namespace dom {
@@ -80,7 +81,7 @@ class FilterInstance {
    */
   static FilterDescription GetFilterDescription(
       nsIContent* aFilteredElement, Span<const StyleFilter> aFilterChain,
-      nsISupports* aFiltersObserverList, bool aFilterInputIsTainted,
+      ISVGFilterObserverList* aFiltersObserverList, bool aFilterInputIsTainted,
       const UserSpaceMetrics& aMetrics, const gfxRect& aBBox,
       nsTArray<RefPtr<SourceSurface>>& aOutAdditionalImages);
 

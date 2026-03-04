@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # This gets set as the initial title, and is overridden as soon as we start
 # updating the titlebar based on loaded tabs or private browsing state.
 # This should match the `data-title-default` attribute in both
@@ -60,9 +57,6 @@ urlbar-addons-notification-anchor =
 
 urlbar-search-tips-onboard = Taip sedikit, cari selanjutnya: Carian { $engineName } dari bar alamat anda.
 
-## Local search mode indicator labels in the urlbar
-
-
 ##
 
 urlbar-geolocation-blocked =
@@ -94,9 +88,6 @@ urlbar-star-edit-bookmark =
 urlbar-star-add-bookmark =
     .tooltiptext = Tandabuku halaman Ini ({ $shortcut })
 
-## Page Action Context Menu
-
-
 ## Auto-hide Context Menu
 
 full-screen-autohide =
@@ -120,19 +111,6 @@ search-one-offs-context-set-as-default =
 # submenu using this as its label.
 search-one-offs-add-engine-menu =
     .label = Tambah enjin carian
-
-## Local search mode one-off buttons
-## Variables:
-##  $restrict (String): The restriction token corresponding to the search mode.
-##    Restriction tokens are special characters users can type in the urlbar to
-##    restrict their searches to certain sources (e.g., "*" to search only
-##    bookmarks).
-
-
-## QuickActions are shown in the urlbar as the user types a matching string
-## The -cmd- strings are comma separated list of keywords that will match
-## the action.
-
 
 ## Bookmark Panel
 
@@ -195,32 +173,17 @@ browser-window-minimize-button =
 browser-window-close-button =
     .tooltiptext = Tutup
 
-## Tab actions
-
-
-## These labels should be written in all capital letters if your locale supports them.
-## Variables:
-##  $count (number): number of affected tabs
-
-
-## Bookmarks toolbar items
-
-
 ## WebRTC Pop-up notifications
 
 popup-all-windows-shared = Semua tetingkap yang kelihatan pada skrin anda akan dikongsi.
-
-## WebRTC window or screen share tab switch warning
-
-
-## DevTools F12 popup
-
 
 ## URL Bar
 
 # This string is used as an accessible name to the "X" button that cancels a custom search mode (i.e. exits the Amazon.com search mode).
 urlbar-search-mode-indicator-close =
     .aria-label = Tutup
+# This placeholder is used when not in search mode and the user's default search
+# engine is unknown.
 urlbar-placeholder =
     .placeholder = Cari atau masukkan alamat
 # Variables
@@ -248,14 +211,6 @@ urlbar-result-action-search-w-engine = Cari dengan { $engine }
 urlbar-result-action-switch-tab = Tukar ke Tab
 urlbar-result-action-visit = Lawati
 
-## Action text shown in urlbar results, usually appended after the search
-## string or the url, like "result value - action text".
-## In these actions "Search" is a verb, followed by where the search is performed.
-
-
-## Labels shown above groups of urlbar results
-
-
 ## Reader View toolbar buttons
 
 # This should match menu-view-enter-readerview in menubar.ftl
@@ -264,11 +219,6 @@ reader-view-enter-button =
 # This should match menu-view-close-readerview in menubar.ftl
 reader-view-close-button =
     .aria-label = Tutup Reader View
-
-## Picture-in-Picture urlbar button
-## Variables:
-##   $shortcut (String) - Keyboard shortcut to execute the command.
-
 
 ## Full Screen and Pointer Lock UI
 
@@ -340,12 +290,6 @@ bookmarks-toolbar-placeholder-button =
 library-bookmarks-menu =
     .label = Tandabuku
 
-## Pocket toolbar button
-
-
-## Repair text encoding toolbar button
-
-
 ## Customize Toolbar Buttons
 
 toolbar-overflow-customize-button =
@@ -377,9 +321,6 @@ toolbar-button-new-private-window =
 
 eme-notifications-drm-content-playing = Beberapa audio atau video pada laman ini menggunakan perisian DRM, yang mungkin mengehadkan penggunaan anda dengan { -brand-short-name }.
 
-## Password save/update panel
-
-
 ##
 
 ui-tour-info-panel-close =
@@ -400,10 +341,6 @@ popups-infobar-block =
 popups-infobar-dont-show-message =
     .label = Jangan papar mesej ini apabila popup telah disekat
     .accesskey = J
-
-## Since the default position for PiP controls does not change for RTL layout,
-## right-to-left languages should use "Left" and "Right" as in the English strings,
-
 
 ##
 
@@ -438,29 +375,12 @@ tabs-toolbar-list-all-tabs =
     .label = Senarai semua tab
     .tooltiptext = Senarai semua tab
 
-## Infobar shown at startup to suggest session-restore
-
-
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name } secara automatik menghantar data ke { -vendor-short-name } supaya kami boleh menambah baik pengalaman anda.
 data-reporting-notification-button =
     .label = Pilih Apa Yang Saya Kongsi
     .accesskey = P
-
-## Unified extensions (toolbar) button
-
-
-## Unified extensions button when permission(s) are needed.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Unified extensions button when some extensions are quarantined.
-## Note that the new line is intentionally part of the tooltip.
-
-
-## Private browsing reset button
-
 
 ## Autorefresh blocker
 
@@ -469,9 +389,6 @@ refresh-blocked-redirect-label = { -brand-short-name } menghalang halaman ini da
 refresh-blocked-allow =
     .label = Izinkan
     .accesskey = I
-
-## Firefox Relay integration
-
 
 ## Add-on Pop-up Notifications
 

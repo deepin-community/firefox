@@ -8,12 +8,14 @@
 #include "nsArray.h"
 #include "nsComponentManagerUtils.h"
 #include "nsCOMPtr.h"
+#include "mozilla/AppShutdown.h"
 #include "mozilla/ClearOnShutdown.h"
 #include "mozilla/EventForwards.h"
 #include "mozilla/LookAndFeel.h"
 #include "mozilla/dom/Notification.h"
 #include "nsISupportsPrimitives.h"
 #include "nsPIDOMWindow.h"
+#include "nsServiceManagerUtils.h"
 #include "nsIWindowWatcher.h"
 
 using namespace mozilla;
@@ -59,14 +61,14 @@ nsXULAlertObserver::Observe(nsISupports* aSubject, const char* aTopic,
 
 // We don't cycle collect nsXULAlerts since gXULAlerts will keep the instance
 // alive till shutdown anyway.
-NS_IMPL_ISUPPORTS(nsXULAlerts, nsIAlertsService, nsIAlertsDoNotDisturb,
-                  nsIAlertsIconURI)
+NS_IMPL_ISUPPORTS(nsXULAlerts, nsIAlertsService, nsIAlertsDoNotDisturb)
 
 /* static */
 already_AddRefed<nsXULAlerts> nsXULAlerts::GetInstance() {
   // Gecko on Android does not fully support XUL windows.
 #ifndef MOZ_WIDGET_ANDROID
-  if (!gXULAlerts) {
+  if (!gXULAlerts &&
+      !AppShutdown::IsInOrBeyond(ShutdownPhase::AppShutdownConfirmed)) {
     gXULAlerts = new nsXULAlerts();
     ClearOnShutdown(&gXULAlerts);
   }
@@ -81,38 +83,10 @@ void nsXULAlerts::PersistentAlertFinished() {
 
   // Show next pending persistent alert if any.
   if (!mPendingPersistentAlerts.IsEmpty()) {
-    ShowAlertWithIconURI(mPendingPersistentAlerts[0].mAlert,
-                         mPendingPersistentAlerts[0].mListener, nullptr);
+    ShowAlertImpl(mPendingPersistentAlerts[0].mAlert,
+                  mPendingPersistentAlerts[0].mListener);
     mPendingPersistentAlerts.RemoveElementAt(0);
   }
-}
-
-NS_IMETHODIMP
-nsXULAlerts::ShowAlertNotification(
-    const nsAString& aImageUrl, const nsAString& aAlertTitle,
-    const nsAString& aAlertText, bool aAlertTextClickable,
-    const nsAString& aAlertCookie, nsIObserver* aAlertListener,
-    const nsAString& aAlertName, const nsAString& aBidi, const nsAString& aLang,
-    const nsAString& aData, nsIPrincipal* aPrincipal, bool aInPrivateBrowsing,
-    bool aRequireInteraction) {
-  nsCOMPtr<nsIAlertNotification> alert =
-      do_CreateInstance(ALERT_NOTIFICATION_CONTRACTID);
-  NS_ENSURE_TRUE(alert, NS_ERROR_FAILURE);
-  // vibrate is unused for now
-  nsTArray<uint32_t> vibrate;
-  nsresult rv = alert->Init(aAlertName, aImageUrl, aAlertTitle, aAlertText,
-                            aAlertTextClickable, aAlertCookie, aBidi, aLang,
-                            aData, aPrincipal, aInPrivateBrowsing,
-                            aRequireInteraction, false, vibrate);
-  NS_ENSURE_SUCCESS(rv, rv);
-  return ShowAlert(alert, aAlertListener);
-}
-
-NS_IMETHODIMP
-nsXULAlerts::ShowPersistentNotification(const nsAString& aPersistentData,
-                                        nsIAlertNotification* aAlert,
-                                        nsIObserver* aAlertListener) {
-  return ShowAlert(aAlert, aAlertListener);
 }
 
 NS_IMETHODIMP
@@ -161,13 +135,11 @@ nsXULAlerts::ShowAlert(nsIAlertNotification* aAlert,
     pa->Init(aAlert, aAlertListener);
     return NS_OK;
   }
-  return ShowAlertWithIconURI(aAlert, aAlertListener, nullptr);
+  return ShowAlertImpl(aAlert, aAlertListener);
 }
 
-NS_IMETHODIMP
-nsXULAlerts::ShowAlertWithIconURI(nsIAlertNotification* aAlert,
-                                  nsIObserver* aAlertListener,
-                                  nsIURI* aIconURI) {
+nsresult nsXULAlerts::ShowAlertImpl(nsIAlertNotification* aAlert,
+                                    nsIObserver* aAlertListener) {
   bool inPrivateBrowsing;
   nsresult rv = aAlert->GetInPrivateBrowsing(&inPrivateBrowsing);
   NS_ENSURE_SUCCESS(rv, rv);
@@ -338,18 +310,6 @@ nsXULAlerts::ShowAlertWithIconURI(nsIAlertNotification* aAlert,
   rv = argsArray->AppendElement(scriptableAlertSource);
   NS_ENSURE_SUCCESS(rv, rv);
 
-  nsCOMPtr<nsISupportsCString> scriptableIconURL(
-      do_CreateInstance(NS_SUPPORTS_CSTRING_CONTRACTID));
-  NS_ENSURE_TRUE(scriptableIconURL, NS_ERROR_FAILURE);
-  if (aIconURI) {
-    nsAutoCString iconURL;
-    rv = aIconURI->GetSpec(iconURL);
-    NS_ENSURE_SUCCESS(rv, rv);
-    scriptableIconURL->SetData(iconURL);
-  }
-  rv = argsArray->AppendElement(scriptableIconURL);
-  NS_ENSURE_SUCCESS(rv, rv);
-
   nsCOMPtr<mozIDOMWindowProxy> newWindow;
   nsAutoCString features("chrome,dialog=yes,alert=yes,titlebar=no");
   if (inPrivateBrowsing) {
@@ -400,4 +360,18 @@ nsXULAlerts::CloseAlert(const nsAString& aAlertName, bool aContextClosed) {
                                    ChromeOnlyDispatch::eYes);
   }
   return NS_OK;
+}
+
+NS_IMETHODIMP nsXULAlerts::GetHistory(nsTArray<nsString>& aResult) {
+  // XUL backend do not manage a notification history.
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+NS_IMETHODIMP nsXULAlerts::Teardown() { return NS_OK; }
+
+NS_IMETHODIMP nsXULAlerts::PbmTeardown() {
+  // Usually XUL alerts close after a few seconds without being listed anywhere,
+  // but those with requireInteraction: true would still need an explicit
+  // closure.
+  return NS_ERROR_NOT_IMPLEMENTED;
 }

@@ -3,9 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Ad yazen asɣal “ur sfuɣul ara” ɣer ismal web akken ad gzun belli ur tebɣiḍ ara asfuɣel
-do-not-track-description2 =
-    .label = Ssuter i yismal web “Ur yi-ṭṭafaren ara”
-    .accesskey = s
+do-not-track-removal = Dayen, ur nettεawan ara tamuli “Ur ṭṭafar ara”
 do-not-track-learn-more = Issin ugar
 do-not-track-option-default-content-blocking-known =
     .label = Kan ticki { -brand-short-name } yettusbadu ɣer sewḥel ineḍfaṛen
@@ -14,7 +12,11 @@ do-not-track-option-always =
 global-privacy-control-description =
     .label = Ssuter i yismal web ur snuzuyen, ur beṭṭun isefka-w
     .accesskey = s
+non-technical-privacy-group =
+    .label = Ismenyifen n tbaḍnit n yismal web
 non-technical-privacy-header = Ismenyifen n tbaḍnit n yismal web
+non-technical-privacy-label =
+    .aria-label = { non-technical-privacy-header }
 # Do not translate.
 # "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
 # included to facilitate power-user search of the about:preferences page.
@@ -60,6 +62,7 @@ pane-experimental-description2 = Abeddel n yiɣewwaren n twila lqayen zemren ad 
 settings-pane-labs-title = { -firefoxlabs-brand-name }
 settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
+pane-experimental-description3 = Ɛreḍ timahilin-nneɣ tirmitanin! Ha-tent-an deg usnefli, la ttnernint. Ayen i izemren ad d-yeglu s usemdu ɣef wamek iteddu { -brand-short-name }.
 pane-experimental-reset =
     .label = Err-d iɣewwaren imezwer
     .accesskey = R
@@ -69,6 +72,8 @@ focus-search =
     .key = f
 close-button =
     .aria-label = Mdel
+do-not-track-removal2 =
+    .label = Dayen, ur nettεawan ara tamuli “Ur ṭṭafar ara”
 
 ## Browser Restart Dialog
 
@@ -124,6 +129,10 @@ startup-header = Asenker
 always-check-default =
     .label = Senqed yal tikkelt ma yella { -brand-short-name } d iminig-ik amezwar
     .accesskey = S
+is-default-browser =
+    .message = { -brand-short-name } d iminig-inek amezwar
+is-not-default-browser =
+    .message = { -brand-short-name } mačči d iminig-inek amezwer
 is-default = { -brand-short-name } d iminig-inek amezwar
 is-not-default = { -brand-short-name } mačči d iminig-inek amezwer
 set-as-my-default-browser =
@@ -132,10 +141,13 @@ set-as-my-default-browser =
 startup-restore-windows-and-tabs =
     .label = Ldi asfaylu d waccaren yezrin
     .accesskey = s
+startup-windows-launch-on-login-profile-disabled =
+    .message = Rmed taxtiṛt-a s uṛcem n “{ profile-manager-use-selected.label }” deg usfaylu “Fren amaɣnu n useqdac”.
 windows-launch-on-login =
     .label = Ldi { -brand-short-name } s wudem awurman mi ara yekker uselkim-ik·im
     .accesskey = L
 windows-launch-on-login-disabled = Asmenyif-a yensa deg Windows. I ubeddel-is, rzu ɣer <a data-l10n-name="startup-link">Asnas n usenker</a> deg yiɣewwaren n unagraw.
+windows-launch-on-login-profile-disabled = Rmed taxtiṛt-a s uṛcem n “{ profile-manager-use-selected.label }” deg usfaylu “Fren amaɣnu n useqdac”.
 startup-restore-warn-on-quit =
     .label = Lɣu ticki tettefɣeḍ seg iminig
 disable-extension =
@@ -145,6 +157,20 @@ preferences-data-migration-description = Kter ticraḍ n yisebtar, awalen uffire
 preferences-data-migration-button =
     .label = Kter isefka
     .accesskey = t
+preferences-profiles-group-header =
+    .heading = Imeɣna
+preferences-profiles-subpane-description =
+    .description = Yal amaɣnu yessemgired gar yisefka n tunigin d yiɣewwaren , gar-asen azray, awalen n uɛeddi d wayen niḍen.
+preferences-profiles-section-header =
+    .label = Imeɣna
+    .description = Yal amaɣnu yessemgired gar yisefka n tunigin d yiɣewwaren , gar-asen azray, awalen n uɛeddi d wayen niḍen.
+preferences-profiles-header = Imeɣna
+preferences-manage-profiles-description = Yal amaɣnu yessemgired gar yisefka n tunigin d yiɣewwaren , gar-asen azray, awalen n uɛeddi d wayen niḍen.
+preferences-manage-profiles-learn-more = Issin ugar
+preferences-manage-profiles-button =
+    .label = Sefrek imaɣunen
+tabs-group-header2 =
+    .label = Iccaren
 tabs-group-header = Iccaren
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab yessezray-d accaren n umizzwer yettwasqedcen melmi kan
@@ -152,6 +178,17 @@ ctrl-tab-recently-used-order =
 open-new-link-as-tabs =
     .label = Ldi iseɣwan deg iccaren deg umḍiq n isfuyla imaynuten
     .accesskey = L
+ask-on-close-multiple-tabs =
+    .label = Ssuter send amdal n waṭas n waccaren
+    .accesskey = m
+# This string is used for the confirm before quitting preference.
+# Variables:
+#   $quitKey (string) - the quit keyboard shortcut, and formatted
+#                       in the same manner as it would appear,
+#                       for example, in the File menu.
+ask-on-quit-with-key =
+    .label = Ssuter send ad teffɣeḍ s { $quitKey }
+    .accesskey = s
 confirm-on-close-multiple-tabs =
     .label = Sentem send amdal n waṭas n waccaren
     .accesskey = ṭ
@@ -180,6 +217,8 @@ browser-containers-settings =
     .label = Iγewwaṛen…
     .accesskey = I
 containers-disable-alert-title = Mdel akk iccaren imagbaren?
+startup-group =
+    .label = Asenker
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -208,12 +247,40 @@ containers-remove-alert-msg =
     }
 containers-remove-ok-button = Kkes amagbar-a
 containers-remove-cancel-button = Ur tekkes ara amagbar-a
+settings-tabs-show-image-in-preview =
+    .label = Sken-d taskant mi ara tettezziḍ ɣef yiccer
+    .accessKey = k
+browser-layout-header2 =
+    .label = Taneɣruft n yiminig
+browser-layout-header = Taneɣruft n yiminig
+browser-layout-horizontal-tabs =
+    .label = Accaren iglawanen
+browser-layout-horizontal-tabs-desc = Sken i usawen n yiminig
+browser-layout-vertical-tabs =
+    .label = Accaren ubdiden
+browser-layout-vertical-tabs-desc = Sken deg yidis n yiminig, deg ufeggag adisan
+browser-layout-show-sidebar =
+    .label = Sken afeggag adisan
 
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Tutlayt d urwes
+appearance-group =
+    .label = Arwes n usmel web
+    .description = Kra n yismal web ṭṭafaren aɣanib n yiniten yebnan ɣef yismenyifen-inek•inem. Fren anwa aɣanib n yiniten i tebɣiḍ ad t-tesqedceḍ i yismal-a.
 preferences-web-appearance-header = Arwes n usmel web
 preferences-web-appearance-description = Kra n yismal web ṭṭafaren aɣanib n yiniten yebnan ɣef yismenyifen-inek•inem. Fren anwa aɣanib n yiniten i tebɣiḍ ad t-tesqedceḍ i yismal-a.
+preferences-web-appearance-choice-auto2 =
+    .label = Awurman
+    .title = Senfel s wudem awurman igilalen n d ugbur n yismal web almend n yiɣewwaren-ik·im n unagraw d usentel n { -brand-short-name }.
+preferences-web-appearance-choice-light2 =
+    .label = Acaεlal
+    .title = Seqdec arwes aceɛlal i ugilal akked ugbur n yismal web.
+preferences-web-appearance-choice-dark2 =
+    .label = Aberkan
+    .title = Seqdec arwes aberkan i ugilal akked ugbur n yismal web.
+web-appearance-group =
+    .aria-label = Arwes n usmel web
 preferences-web-appearance-choice-auto = Awurman
 preferences-web-appearance-choice-light = Acaεlal
 preferences-web-appearance-choice-dark = Aberkan
@@ -231,19 +298,39 @@ preferences-web-appearance-choice-input-dark =
     .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
-preferences-web-appearance-override-warning = Tifranin-ik•im n yiniten ttbeddilent arwes n usmel web. <a data-l10n-name="colors-link">Sefrek initen</a>
+preferences-web-appearance-override-warning3 =
+    .message = Iɣewwaren n usenqed ugnil ttbeddilent arwes n usmel web.
+preferences-web-appearance-link =
+    .label = Sefrek isental n { -brand-short-name } deg yiseɣzaf & yisental
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
-preferences-web-appearance-override-warning2 =
-    .message = Tifranin-ik•im n yiniten ttbeddilent arwes n usmel web.
+preferences-web-appearance-override-warning = Tifranin-ik•im n yiniten ttbeddilent arwes n usmel web. <a data-l10n-name="colors-link">Sefrek initen</a>
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = Sefrek isental n { -brand-short-name } deg <a data-l10n-name="themes-link">yiseɣzaf & yisental</a>
+preferences-contrast-control-header = Asenqed n ugnil
+preferences-contrast-control-use-platform-settings =
+    .label = Awurman (seqdec iɣewwaren n unagraw)
+    .accesskey = A
+preferences-contrast-control-off =
+    .label = Yensa
+    .accesskey = Y
+preferences-contrast-control-custom =
+    .label = Sagen
+    .accesskey = S
 preferences-colors-header = Initen
 preferences-colors-description = Snefli initen n wudem amezwer n { -brand-short-name } i uḍris, igilalen n yismal web akked yiseɣwan.
 preferences-colors-manage-button =
     .label = Sefrek initen…
     .accesskey = I
+preferences-fonts-header2 =
+    .label = Tisefsiyin
+default-font-2 =
+    .label = Tasefsit tamezwarut
+    .accesskey = K
+default-font-size-2 =
+    .label = Teɣzi
+    .accesskey = T
 preferences-fonts-header = Tisefsiyin
 default-font = Tasefsit tamezwarut
     .accesskey = K
@@ -252,6 +339,12 @@ default-font-size = Teɣzi
 advanced-fonts =
     .label = Talqayt…
     .accesskey = l
+# Zoom is a noun, and the message is used as header for a group of options
+preferences-zoom-header2 =
+    .label = Semɣeṛ/Semẓi
+preferences-default-zoom-label =
+    .label = Zoom awurman
+    .accesskey = Z
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Semɣeṛ/Semẓi
 preferences-default-zoom = Zoom awurman
@@ -295,6 +388,11 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = Ifuyla d isnasen
+downloads-header-2 =
+    .label = Isadaren
+download-save-where-2 =
+    .label = Sekles ifuyla ɣer
+    .accesskey = S
 download-header = Isadaren
 download-save-where = Sekles ifuyla ɣer
     .accesskey = S
@@ -394,6 +492,8 @@ applications-save-for-new-types =
 applications-ask-before-handling =
     .label = Suter ma yella ad d-yeldi neɣ ad isekles ifuyla
     .accesskey = S
+drm-group =
+    .label = Izerfan n usefrek n ugbur umḍin (DRM)
 drm-content-header = Izerfan n usefrek n ugbur umḍin (DRM)
 play-drm-content =
     .label = Γɣaṛ agbur ittwaḥerzen s DRM-
@@ -462,10 +562,14 @@ performance-limit-content-process-blocked-desc = Tzemreḍ kan ad tesnifleḍ am
 #   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (amezwer)
+performance-group =
+    .label = Tamellit
 
 ## General Section - Browsing
 
 browsing-title = Tunigin
+browsing-group-label =
+    .aria-label = Tunigin
 browsing-use-autoscroll =
     .label = Seqdec adrurem awurman
     .accesskey = d
@@ -505,6 +609,8 @@ browsing-cfr-features =
     .label = Welleh ɣef timahilin n tunigin iteddun akka tura.
     .accesskey = W
 browsing-cfr-recommendations-learn-more = Issin ugar
+browsing-group =
+    .label = Tunigin
 
 ## General Section - Proxy
 
@@ -514,16 +620,27 @@ network-proxy-connection-learn-more = Issin ugar
 network-proxy-connection-settings =
     .label = Iɣewwaṛen…
     .accesskey = I
+network-proxy-group =
+    .label = Iɣewwaṛen n uẓeṭṭa
+    .description = Swel amek { -brand-short-name } ad iqqen γer internet.
 
 ## Home Section
 
 home-new-windows-tabs-header = Isfuyla d yiccaren imaynuten
 home-new-windows-tabs-description2 = Fren ayen ara d-yettwaseknen ticki telḍiḍ asebter agejdan, ifuyla imaynuten neɣ accaren imaynuten.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = Sbadut d amezwar
+    .accesskey = G
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = Asebter agejdan akked isfuyla imaynuten
 home-newtabs-mode-label = Iccer amaynut
+home-homepage-new-tabs =
+    .label = Iccer amaynut
 home-restore-defaults =
     .label = Err-d iɣewwaṛen imezwar
     .accesskey = R
@@ -562,8 +679,7 @@ home-prefs-shortcuts-description = Ismal i teskelseḍ neɣ wuɣur terziḍ
 home-prefs-shortcuts-by-option-sponsored =
     .label = Inegzumen yettwarefden
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Iwelleh-it-id { $provider }
@@ -598,7 +714,11 @@ home-prefs-snippets-header =
 home-prefs-snippets-description-new = Iwellihen d yisallen sɣur { -vendor-short-name } akked { -brand-product-name }
 home-prefs-weather-header =
     .label = Tagnawt
+home-prefs-weather-description = Taḥawact ɣef liḥala n tegnawt assa
 home-prefs-weather-learn-more-link = Issin ugar
+# "Support" here means to help sustain or contribute to something, especially through funding or sponsorship.
+home-prefs-support-firefox-header =
+    .label = Allel { -brand-product-name }
 # Variables:
 #   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
@@ -632,6 +752,8 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Sken isumar n unadi deg ugmuḍ n ufeggag n tansa
     .accesskey = u
+search-suggestions-cant-show-2 =
+    .message = Anadi n isumar ur d ittwaskan ara deg yigmaḍ n ufeggag n tansa acku tsewleḍ { -brand-short-name } akken ur iḥerrez ara azray.
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -663,6 +785,9 @@ search-remove-engine =
 search-add-engine =
     .label = Rnu
     .accesskey = R
+search-edit-engine =
+    .label = ẓreg
+    .accesskey = Ẓ
 search-find-more-link = Aff ugar n yimseddayen n unadi
 # This warning is displayed when the chosen keyword is already in use
 # ('Duplicate' is an adjective)
@@ -671,12 +796,19 @@ search-keyword-warning-title = Sleg awal n tsarutt
 #   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Tferneḍ awal n tsarutt i  yettusqedcen yakan sɣur "{ $name }".. Ma ulac aɣilif fren wayeḍ.
 search-keyword-warning-bookmark = Tferneḍ awal n tsarutt i yettusqedcen yakan di tecreḍṭ n usebter. Ma ulac aɣilif fren wayeḍ.
+remove-engine-remove = Kkes
+search-engine-group =
+    .label = Amsedday n unadi amezwer
+search-default-engine =
+    .aria-label = Amsedday n unadi amezwer
 
 ## Containers Section
 
 containers-back-button2 =
     .aria-label = Uɣal ɣer yiɣewwaren
 containers-header = Iccaren imagbaren
+containers-section-header =
+    .heading = Iccaren imagbaren
 containers-add-button =
     .label = Rnu amagbar-nniḍen
     .accesskey = R
@@ -687,6 +819,11 @@ containers-settings-button =
     .label = Iɣewwaren
 containers-remove-button =
     .label = Kkes
+
+## Account and sync
+
+sync-group-label =
+    .label = Sync
 
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
@@ -720,11 +857,18 @@ fxa-login-rejected-warning =
 sync-sign-out =
     .label = Ffeɣ…
     .accesskey = F
+sync-sign-out2 =
+    .label = Ffeɣ
+    .accesskey = F
 sync-manage-account = Sefrek amiḍan
+    .accesskey = m
+sync-manage-account2 =
+    .label = Sefrek amiḍan
     .accesskey = m
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } ur ittusenqed ara.
 sync-signedin-login-failure = Ma ulac aɣilif sesteb akken ad tkecmeḍ { $email }
@@ -751,6 +895,9 @@ prefs-syncing-off = Amtawi: INSA
 prefs-sync-turn-on-syncing =
     .label = Rmed amtawi…
     .accesskey = m
+prefs-sync-turn-on-syncing-2 =
+    .label = Rmed amtawi
+    .accesskey = m
 prefs-sync-offer-setup-label2 = Semtawi ticraḍ-inek n isebtar, amazray, awalen uffiren, izegrar, d yiɣewwaren akked ibenkan-inek akk.
 prefs-sync-now =
     .labelnotsyncing = Mtawi tura
@@ -759,8 +906,14 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = Mtawi tura
     .accesskey = T
+prefs-sync-now-button-2 =
+    .label = Mtawi tura
+    .accesskey = T
 prefs-syncing-button =
     .label = Amtawi…
+prefs-syncing-button-2 =
+    .label = Amtawi…
+    .title = Mtawi tura
 
 ## The list of things currently syncing.
 
@@ -775,6 +928,9 @@ sync-currently-syncing-creditcards = Tikarḍiwin n usmad
 sync-currently-syncing-payment-methods = Tarrayin n uxelleṣ
 sync-currently-syncing-addons = Izegrar
 sync-currently-syncing-settings = Iɣewwaren
+sync-manage-options =
+    .label = Sefrek amtawi…
+    .accesskey = S
 sync-change-options =
     .label = Snifel…
     .accesskey = f
@@ -831,6 +987,16 @@ sync-engine-settings =
 ## The device name controls.
 
 sync-device-name-header = Isem n yibenk
+sync-device-name-header-2 =
+    .label = Isem n yibenk
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Isem n yibenk
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Beddel isem n yibenk
+    .accesskey = q
 sync-device-name-change =
     .label = Beddel isem n yibenk…
     .accesskey = q
@@ -841,6 +1007,8 @@ sync-device-name-save =
     .label = Sekles
     .accesskey = l
 sync-connect-another-device = Qqen ibenk-nniḍen
+sync-connect-another-device-2 =
+    .label = Qqen ibenk-nniḍen
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -962,10 +1130,36 @@ autofill-payment-methods-checkbox-submessage = Deg-s tikarḍiwin n lbenkat
     .accesskey = D
 autofill-saved-payment-methods-button = Isseklas tarrayin n uxelleṣ
     .accesskey = s
+# This operation requires the user to authenticate with the operating system (device sign-in)
+autofill-reauth-payment-methods-checkbox = Ssuter tuqqna ɣer yibenk i wakken ad tesferkeḍ tarrayin n uxelleṣ
+    .accesskey = u
+autofill-payment-methods-title = Tarrayin n uxelleṣ
+autofill-payment-methods-header =
+    .aria-label = Tarrayin n uxelleṣ
+autofill-addresses-title = Tansiwin d wayen niḍen
+autofill-addresses-header =
+    .aria-label = Tansiwin d wayen niḍen
+autofill-addresses-checkbox-message =
+    .label = Asekles d taččart tawurmant n tansiwin
+    .accesskey = A
+addresses-group =
+    .label = Tansiwin d wayen niḍen
+payments-group =
+    .label = Tarrayin n uxelleṣ
 
 ## Privacy Section - History
 
 history-header = Azray
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label2 = { -brand-short-name } ad
 # This label is followed, on the same line, by a dropdown list of options
 # (Remember history, etc.).
 # In English it visually creates a full sentence, e.g.
@@ -983,6 +1177,18 @@ history-remember-option-never =
     .label = Ur ḥerrez ara azray
 history-remember-option-custom =
     .label = Seqdec iɣewwaṛen udmawanen i umazray-a
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } ad yeḥrez isefka n tunigin, izedman, tiferkiyin d umezruy n unadi.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } ad isseqdec iɣewwaṛen n tunigin tusligt, u diɣen ur iḥerrez ara azray n tunigin-inek.
+history-remember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } ad yeḥrez isefka n tunigin, izedman, tiferkiyin d umezruy n unadi.
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } ad isseqdec iɣewwaṛen n tunigin tusligt, u diɣen ur iḥerrez ara azray n tunigin-inek.
 history-remember-description = { -brand-short-name } ad yeḥrez isefka n tunigin, izedman, tiferkiyin d umezruy n unadi.
 history-dontremember-description = { -brand-short-name } ad isseqdec iɣewwaṛen n tunigin tusligt, u diɣen ur iḥerrez ara azray n tunigin-inek.
 history-private-browsing-permanent =
@@ -1003,10 +1209,14 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = Sfeḍ azray…
     .accesskey = s
+history-group =
+    .label = Azray
 
 ## Privacy Section - Site Data
 
 sitedata-header = Inagan n tuqna akked isefka n usmel
+sitedata-label =
+    .aria-label = { sitedata-header }
 sitedata-total-size-calculating = Asiḍen n teɣzi n yisefka akked tuɣzi n tuffirt…
 # Variables:
 #   $value (number) - Value of the unit (for example: 4.6, 500)
@@ -1031,6 +1241,8 @@ sitedata-option-block-cross-site-trackers =
     .label = Ineḍfaṛen gar yismal
 sitedata-option-block-cross-site-tracking-cookies =
     .label = Inagan n tuqqna i uḍfaṛ gar yismal
+sitedata-option-block-cross-site-cookies2 =
+    .label = Ɛzel inagan n tuqqna gar yismal
 sitedata-option-block-cross-site-cookies =
     .label = Inagan n tuqqna n uḍfar gar yismal d uɛzal n yinagan-nniḍen n tuqqna
 sitedata-option-block-unvisited =
@@ -1039,6 +1251,9 @@ sitedata-option-block-all-cross-site-cookies =
     .label = Akk inagan n tuqna gar yismal (izmer ad yiṛeẓ ismal web)
 sitedata-option-block-all =
     .label = Akk inagan n tuqqna (ad rẓen isaml web)
+sitedata-clear2 =
+    .label = Sfeḍ isefka n tunigin
+    .accesskey = I
 sitedata-clear =
     .label = Sfeḍ isefka…
     .accesskey = l
@@ -1048,6 +1263,8 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = Sefrek tisuraf…
     .accesskey = x
+cookies-site-data-group =
+    .label = Inagan n tuqna akked isefka n usmel
 
 ## Privacy Section - Cookie Banner Handling
 
@@ -1063,10 +1280,17 @@ forms-handle-cookie-banners =
 cookie-banner-blocker-checkbox-label =
     .label = Agi s wudem awurman iɣarracen n yinagan n tuqqna
 
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = Afeggag n tansa
 addressbar-suggest = Ticki tesqedceḍ afeggag n tansa, sumer
+# When Firefox Suggest is enabled, this replaces `addressbar-header`.
+addressbar-header-firefox-suggest = Afeggag n tansiwin — { -firefox-suggest-brand-name }
+# When Firefox Suggest is enabled, this replaces `addressbar-suggest`.
+addressbar-suggest-firefox-suggest = Fren anaw n yisumar ara d-ibanen deg ufeggag n tansiwin.
+# When Firefox Suggest is enabled, a "Learn more" link appears at the end of
+# `addressbar-suggest-firefox-suggest`.
+addressbar-locbar-firefox-suggest-learn-more = Issin ugar
 addressbar-locbar-history-option =
     .label = Azray n tunigin
     .accesskey = M
@@ -1092,11 +1316,35 @@ addressbar-locbar-engines-option =
 addressbar-locbar-quickactions-option =
     .label = Tigawin tiruradin
     .accesskey = T
+# Toggles whether suggestions are obtained from Firefox Suggest or not (local or online).
+addressbar-locbar-suggest-all-option-2 =
+    .label = Isumar seg { -brand-short-name }
+    .description = Awi isumar seg web yeqqnen ɣer unadi-k·m.
+addressbar-locbar-suggest-sponsored-option-2 =
+    .label = Isumar sɣur imendaden
+    .description = Mudd tallalt i { -brand-short-name } s uskan n yisumar i d-yettuwellhen sya ɣer da
 addressbar-suggestions-settings = Snifel ismenyifen i yisumar n umsedday n unadi
 addressbar-locbar-showrecentsearches-option =
     .label = Sken inadiyen imaynuten
     .accesskey = m
+addressbar-locbar-showtrendingsuggestions-option =
+    .label = Sken isumar n unadi i yettuɛelqen
+    .accesskey = t
+# Toggles whether suggestions are obtained from Firefox Suggest or not (local or online).
+addressbar-locbar-suggest-all-option =
+    .label = Isumar seg { -brand-short-name }
+addressbar-locbar-suggest-all-option-desc = Awi isumar seg web yeqqnen ɣer unadi-k·m.
+# Nonsponsored suggestions refers to Firefox Suggest suggestions like Wikipedia.
+addressbar-locbar-suggest-nonsponsored-option =
+    .label = Isumar seg { -brand-short-name }
+addressbar-locbar-suggest-nonsponsored-desc = Awi isumar seg web yeqqnen ɣer unadi-k·m.
+addressbar-locbar-suggest-sponsored-option =
+    .label = Isumar sɣur imendaden
+addressbar-locbar-suggest-sponsored-desc = Mudd tallalt i { -brand-short-name } s uskan n yisumar i d-yettuwellhen sya ɣer da
 addressbar-quickactions-learn-more = Issin ugar
+addressbar-dismissed-suggestions-label = Isumar i yettwanfen
+addressbar-restore-dismissed-suggestions-button =
+    .label = Err-d
 
 ## Privacy Section - Content Blocking
 
@@ -1129,6 +1377,7 @@ content-blocking-private-windows = Agbur yettwaseqdec i uḍfaṛ deg yisfuyla n
 content-blocking-cross-site-cookies-in-all-windows2 = Inagan n tuqqna deg meṛṛa yisfuyla
 content-blocking-cross-site-tracking-cookies = Inagan n tuqqna i uḍfaṛ gar yismal
 content-blocking-all-cross-site-cookies-private-windows = Inagan n tuqqna deg yisfuyla usligen
+content-blocking-isolate-cross-site-cookies = Ɛzel inagan n tuqqna gar yismal
 content-blocking-cross-site-tracking-cookies-plus-isolate = Inagan n tuqqna n uḍfar gar yismal d uɛzal n yinagan n tuqqna i d-yeqqimen
 content-blocking-social-media-trackers = Ineḍfaṛen n iẓeḍwa inmettiyen
 content-blocking-all-cookies = Inagan n tuqqna meṛṛa
@@ -1182,6 +1431,11 @@ content-blocking-fingerprinters-label =
 content-blocking-known-fingerprinters-label =
     .label = Idsilen umḍinen ussinen
     .accesskey = U
+# The suspected fingerprinters are those that we are uncertain about browser fingerprinting activities. But they could
+# possibly acquire browser fingerprints because of the behavior on accessing APIs that expose browser fingerprints.
+content-blocking-suspected-fingerprinters-label =
+    .label = Idlisen umḍinen yella ccek deg-sen
+    .accesskey = I
 
 ## Privacy Section - Tracking
 
@@ -1221,6 +1475,8 @@ permissions-notification-link = Issin ugar
 permissions-notification-pause =
     .label = Saḥbes ilγa arma yekker { -brand-short-name }
     .accesskey = n
+permissions-autoplay2 =
+    .label = Aseddu awurman
 permissions-autoplay = Aseddu awurman
 permissions-autoplay-settings =
     .label = Iɣewwaṛen
@@ -1240,23 +1496,52 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = Tisuraf…
     .accesskey = s
+permissions-location2 =
+    .label = Adig
+permissions-local-network2 =
+    .label = Ibenkan n uzeṭṭa adigan
+permissions-xr2 =
+    .label = Tilawt tuhlist
+permissions-camera2 =
+    .label = Takamiṛat
+permissions-microphone2 =
+    .label = Asawaḍ
+permissions-notification2 =
+    .label = Ilγa
 
 ## Privacy Section - Data Collection
 
 collection-header = Alqqaḍ d useqdec n isefka { -brand-short-name }
 collection-header2 = Alqqaḍ d useqdec n yisefka { -brand-short-name }
     .searchkeywords = telemetry
+preferences-collection-privacy-notice = Wali tasertit n tbaḍnit
+preferences-across-profiles = Iɣewwaren-a ttwasnasen ɣef meṛṛa imaɣnuten n { -brand-product-name } ɣef yibenk-a.
+preferences-view-profiles = Sken akk imaɣnuten
 collection-description = Ad k-d-nefk afus akken ad tferneḍ aleqqwaḍ n wayen kan ilaqen i weqaεed n { -brand-short-name } i yal yiwen. Ad k-d-nsuter yal tikkelt tasiregt send ad nawi talɣut tudmawant.
 collection-privacy-notice = Tasertit n tbaḍnit
 collection-health-report-telemetry-disabled = Ur tezgiḍ teǧǧiḍ { -vendor-short-name } ad d-yelqeḍ isefka itiknikanen akked wid n temyigawt. Meṛṛa isefka yezrin ad ttwakksen deg 30 n wussan.
 collection-health-report-telemetry-disabled-link = Issin ugar
+collection-usage-ping-description = Aya yettallel { -vendor-short-name } ad tessekyed amḍan n yiseqdacen urmiden.
+collection-health-report2 =
+    .label = Azen isefka itiknikanen d yimyigawen ɣer { -vendor-short-name }
+    .accesskey = r
 collection-health-report =
     .label = Sireg { -brand-short-name } ad yazen isefka itiknikanen ɣer { -vendor-short-name }
     .accesskey = r
 collection-health-report-link = Lmed ugar
+collection-studies2 =
+    .label = Sbedd syen bdu almad
+collection-studies-description = Ɛreḍ timahilin d tektiwin send ma ad asent-nserrḥen akk i medden.
 collection-studies =
     .label = Sireg { -brand-short-name } ad yessebded sakin ad isenker tizrawin
 collection-studies-link = Wali tizrawin n { -brand-short-name }
+# This message is displayed above disabled data sharing options in developer builds
+# or builds with no Telemetry support available.
+collection-health-report-disabled2 = Aneqqis n isefka ur irmid ara i uswel-a n usefsu.
+collection-backlogged-crash-reports2 =
+    .label = Azen s wudem awurman ineqqisen n truẓi
+    .accesskey = i
+collection-backlogged-crash-reports-description = Tallalt-a { -vendor-short-name } ad tesnined syen ad tṣeggem uguren akked yiminig. Ineqqisen zemren ad d-skecmen isefka udmawanen neɣ imḥulfa.
 addon-recommendations =
     .label = Sireg { -brand-short-name } ad yeg iwellihen n usiɣzef udmawan
 addon-recommendations-link = Issin ugar
@@ -1264,8 +1549,6 @@ addon-recommendations-link = Issin ugar
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Aneqqis n isefka ur irmid ara i uswel-a n usefsu
 collection-backlogged-crash-reports-with-link = Sireg { -brand-short-name } ad yazen ineqqisen n uɣelluy deg ugilal s yisem-ik·im <a data-l10n-name="crash-reports-link">Issin ugar</a>
-    .accesskey = g
-collection-backlogged-crash-reports = Sireg { -brand-short-name } ad yazen ineqqisen n uɣelluy deg ugilal s yisem-ik·im
     .accesskey = g
 privacy-segmentation-section-header = Timahilin timaynutin ara isselhun tunigin
 privacy-segmentation-section-description = Mi ara d-nmudd timahilin ara isseqdacen isefka-k•m i wakken ad ak•am-nmudd ugar n tirmit tudmawat:
@@ -1276,6 +1559,7 @@ privacy-segmentation-radio-on =
 
 ## Privacy Section - Website Advertising Preferences
 
+website-advertising-header = Ismenyifen n udellel n yismal web
 
 ## Privacy Section - Security
 ##
@@ -1283,6 +1567,8 @@ privacy-segmentation-radio-on =
 ## https://developers.google.com/safe-browsing/developers_guide_v2#AcceptableUsage
 
 security-header = Taɣellist
+browsing-protection-group =
+    .label = Ammesten mgal agbur n ukellex u d aseɣẓan n ddir
 security-browsing-protection = Ammesten mgal agbur n ukellex u d aseɣẓan n ddir
 security-enable-safe-browsing =
     .label = Sewḥel yir agbur neɣ win iweɛṛen
@@ -1307,6 +1593,7 @@ certs-view =
 certs-devices =
     .label = Ibenkan n tɣellist…
     .accesskey = B
+certs-devices-enable-fips = Rmed FIPS
 space-alert-over-5gb-settings-button =
     .label = Ldi iɣewwaren
     .accesskey = L
@@ -1328,6 +1615,8 @@ httpsonly-radio-disabled =
 ## DoH Section
 
 preferences-doh-header = DNS s HTTPS
+dns-over-https-group =
+    .label = DNS s HTTPS
 # Variables:
 #   $status (string) - The status of the DoH connection
 preferences-doh-status = Addad: { $status }
@@ -1344,6 +1633,7 @@ preferences-doh-status-disabled = Yensa
 #   $reason (string) - A string representation of the reason DoH is not active. For example NS_ERROR_UNKNOWN_HOST or TRR_RCODE_FAIL.
 preferences-doh-status-not-active = D arurmid ({ $reason })
 preferences-doh-group-message = Rmed DNS n tɣellist s:
+preferences-doh-group-message2 = Rmed DNS s useqdec HTTPS:
 preferences-doh-expand-section =
     .tooltiptext = Ugar n telɣut
 preferences-doh-setting-default =

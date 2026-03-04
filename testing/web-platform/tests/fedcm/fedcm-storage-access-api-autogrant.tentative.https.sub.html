@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <title>Federated Credential Management API / Storage Access API autogrants tests.</title>
+<meta name="timeout" content="long">
 <link rel="help" href="https://fedidcg.github.io/FedCM">
 <link rel="help" href="https://privacycg.github.io/storage-access/">
 <script src="/resources/testharness.js"></script>
@@ -9,7 +10,7 @@
 <script src="/storage-access-api/helpers.js"></script>
 
 <script type="module">
-import {request_options_with_mediation_optional,
+import {request_options_with_mediation_required,
         fedcm_test,
         select_manifest,
         fedcm_get_and_select_first_account} from './support/fedcm-helper.sub.js';
@@ -19,7 +20,7 @@ const responder_html_load_ack = "/storage-access-api/resources/script-with-cooki
 
 fedcm_test(async t => {
   await MaybeSetStorageAccess("*", "*", "blocked");
-  let test_options = request_options_with_mediation_optional("manifest_with_auto_selected_flag.json");
+  let test_options = request_options_with_mediation_required();
   await select_manifest(t, test_options);
 
   await fedcm_get_and_select_first_account(t, test_options);
@@ -34,6 +35,11 @@ fedcm_test(async t => {
   const frame = await CreateFrame(www_alt + responder_html_load_ack, false,
     undefined, `identity-credentials-get ${www_alt};`);
   assert_equals(await frame_loaded, "loaded");
+  if (await FrameHasStorageAccess(frame)) {
+    // Nothing to test here, as cross-site cookies are not blocked.
+    // See https://github.com/privacycg/storage-access/issues/162.
+    return;
+  }
 
   assert_true(await RequestStorageAccessInFrame(frame),
     "requestStorageAccess doesn't require a gesture since the FedCM account is already connected.");
@@ -44,7 +50,7 @@ fedcm_test(async t => {
 
 fedcm_test(async t => {
   await MaybeSetStorageAccess("*", "*", "blocked");
-  let test_options = request_options_with_mediation_optional("manifest_with_auto_selected_flag.json");
+  let test_options = request_options_with_mediation_required();
   await select_manifest(t, test_options);
 
   await fedcm_get_and_select_first_account(t, test_options);
@@ -58,6 +64,11 @@ fedcm_test(async t => {
   });
   const frame = await CreateFrame(www_alt + responder_html_load_ack, false);
   assert_equals(await frame_loaded, "loaded");
+  if (await FrameHasStorageAccess(frame)) {
+    // Nothing to test here, as cross-site cookies are not blocked.
+    // See https://github.com/privacycg/storage-access/issues/162.
+    return;
+  }
 
   assert_false(await RequestStorageAccessInFrame(frame),
     "requestStorageAccess requires a gesture since the 'identity-credentials-get' policy is absent.");
@@ -68,7 +79,7 @@ fedcm_test(async t => {
 
 fedcm_test(async t => {
   await MaybeSetStorageAccess("*", "*", "blocked");
-  let test_options = request_options_with_mediation_optional("manifest_with_auto_selected_flag.json");
+  let test_options = request_options_with_mediation_required();
   await select_manifest(t, test_options);
 
   await fedcm_get_and_select_first_account(t, test_options);
@@ -89,6 +100,11 @@ fedcm_test(async t => {
   const frame = await CreateFrame(www_alt + responder_html_load_ack, false,
     undefined, `identity-credentials-get ${www_alt};`);
   assert_equals(await frame_loaded, "loaded");
+  if (await FrameHasStorageAccess(frame)) {
+    // Nothing to test here, as cross-site cookies are not blocked.
+    // See https://github.com/privacycg/storage-access/issues/162.
+    return;
+  }
 
   assert_false(await RequestStorageAccessInFrame(frame),
     "requestStorageAccess requires a gesture since the preventSilentAccess flag is true.");

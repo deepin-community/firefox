@@ -65,6 +65,10 @@ startup-header = စတင်ခြင်း
 always-check-default =
     .label = { -brand-short-name } သည် ပုံသေဘရောင်ဇာ ဟုတ်/မဟုတ် အမြဲစစ်ဆေးပါ
     .accesskey = y
+is-default-browser =
+    .message = { -brand-short-name } သည် လက်ရှိတွင် ပုံသေဘရောက်ဇာ ဖြစ်ပါသည်
+is-not-default-browser =
+    .message = { -brand-short-name } သည် ပုံသေဘရောက်ဇာ ဖြစ်မနေပါ
 is-default = { -brand-short-name } သည် လက်ရှိတွင် ပုံသေဘရောက်ဇာ ဖြစ်ပါသည်
 is-not-default = { -brand-short-name } သည် ပုံသေဘရောက်ဇာ ဖြစ်မနေပါ
 set-as-my-default-browser =
@@ -74,6 +78,8 @@ startup-restore-warn-on-quit =
     .label = ဘရောက်ဇာပိတ်လျှင်အသိပေးပါ
 disable-extension =
     .label = တိုးချဲ့မှု အားပိတ်ထားပါ
+tabs-group-header2 =
+    .label = တပ်ဗ်များ
 tabs-group-header = တပ်ဗ်များ
 ctrl-tab-recently-used-order =
     .label = Ctrl+tab သည် အရင်သုံးခဲ့ဖူးသည့် တပ်ဗ်များကို အစဉ်လိုက် ပြောင်းပေးသွားမည်
@@ -95,6 +101,8 @@ browser-containers-settings =
     .label = အပြင်အဆင်များ…
     .accesskey = i
 containers-disable-alert-title = ကွန်တိန်နာတပ်ဗ်အားလုံးကို ပိတ်ပါမည်လား။
+startup-group =
+    .label = စတင်ခြင်း
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -115,6 +123,12 @@ containers-remove-cancel-button = ကွန်တိုင်အား မဖယ
 ## General Section - Language & Appearance
 
 language-and-appearance-header = ဘာသာစကားနှင့် အသွင်အပြင်
+default-font-2 =
+    .label = မူသေ ဖောင့်
+    .accesskey = D
+default-font-size-2 =
+    .label = အရွယ်အ​စား
+    .accesskey = S
 default-font = မူသေ ဖောင့်
     .accesskey = D
 default-font-size = အရွယ်အ​စား
@@ -147,6 +161,11 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = ဖိုင်များနှင့် အက်ပလီကေးရှင်းများ
+downloads-header-2 =
+    .label = ဆွဲယူထားသည့် ဖိုင်များ
+download-save-where-2 =
+    .label = ဖိုင်များကို ထိုနေရာတွင် သိမ်းရန်
+    .accesskey = v
 download-header = ဆွဲယူထားသည့် ဖိုင်များ
 download-save-where = ဖိုင်များကို ထိုနေရာတွင် သိမ်းရန်
     .accesskey = v
@@ -226,6 +245,8 @@ applications-use-other-label =
 
 ##
 
+drm-group =
+    .label = Digital Rights Management (DRM) အကြောင်းအရာ
 drm-content-header = Digital Rights Management (DRM) အကြောင်းအရာ
 play-drm-content =
     .label = DRMဖြင့်ထိန်းထားသော အကြောင်းအရာကို ဖွင့်ပါ
@@ -271,6 +292,8 @@ performance-limit-content-process-enabled-desc = ထပ်ပေါင်း အ
 #   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (မူလ သတ်မှတ်ချက်)
+performance-group =
+    .label = စွမ်းဆောင်ရည်
 
 ## General Section - Browsing
 
@@ -294,6 +317,8 @@ browsing-cfr-recommendations =
     .label = သင် လိုက်ကြည့် သောအပိုနောက်တိုး မျိုးကို အကြံပြုမည် (R)
     .accesskey = R
 browsing-cfr-recommendations-learn-more = ပိုမိုလေ့လာရန်
+browsing-group =
+    .label = ကြည့်ရှုခြင်း
 
 ## General Section - Proxy
 
@@ -303,15 +328,26 @@ network-proxy-connection-learn-more = ပိုမိုလေ့လာရန်
 network-proxy-connection-settings =
     .label = အပြင်အဆင်များ...
     .accesskey = e
+network-proxy-group =
+    .label = ကွန်ယက် အပြင်အဆင်များ
+    .description = အင်တာနက်နှင့် { -brand-short-name } ချိတ်ဆက်ပုံကို ပြုပြင်ပါ
 
 ## Home Section
 
 home-new-windows-tabs-header = ဝင်းဒိုးအသစ်နှင့် တပ်ဗ်အသစ်များ
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = စံသတ်မှတ်
+    .accesskey = D
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = အဖွင့်စာမျက်နှာနှင့် ဝင်းဒိုးအသစ်များ
 home-newtabs-mode-label = တပ်ဗ်အသစ်များ
+home-homepage-new-tabs =
+    .label = တပ်ဗ်အသစ်များ
 home-restore-defaults =
     .label = မူလအတိုင်း ပြန်ထားပါ
     .accesskey = R
@@ -341,8 +377,7 @@ choose-bookmark =
 home-prefs-search-header =
     .label = ဝက်ဘ် ရှာ‌ရန်
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = { $provider } က အကြံပြုထားသည်
@@ -388,6 +423,8 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = ရှာဖွေရေးအကြံပြုချက်များကို လိပ်စာဘားတန်းရလဒ်ထဲတွင် ပြသပါ
     .accesskey = i
+search-suggestions-cant-show-2 =
+    .message = ရှာဖွေရေးဘားတွင် ရှာဖွေမှု အကြံပြုချက်များကို ပြသမည်မဟုတ်ပါ။ မှတ်တမ်းများ မှတ်မထားရန် { -brand-short-name } ကို သတ်မှတ်ထားသောကြောင့် ဖြစ်သည်။
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
@@ -415,10 +452,16 @@ search-keyword-warning-title = သော့ချက် စာလုံး ပ�
 #   $name (string) - Name of a search engine.
 search-keyword-warning-engine = လောလောဆယ် "{ $name }" သုံးစွဲနေတဲ့ သော့ချက်တခုကို သင် ရွေးထားပြီးပြီ။ အခြားကို ရွေးပါ။
 search-keyword-warning-bookmark = စာမှတ်စု မှာ လက်ရှိသုံးထားတာကို သော့ချက်စာလုံး အဖြစ်ရေရွေးထားသည်။ နောက်တစ်ခု ရွေးချယ်ပါ။
+search-engine-group =
+    .label = မူသေ ရှာဖွေရေး ယန္တရား
+search-default-engine =
+    .aria-label = မူသေ ရှာဖွေရေး ယန္တရား
 
 ## Containers Section
 
 containers-header = ကွန်တိန်နာတပ်ဗ်များ
+containers-section-header =
+    .heading = ကွန်တိန်နာတပ်ဗ်များ
 containers-add-button =
     .label = ကွန်တိန်နာအသစ်ထပ်ထည့်ပါ
     .accesskey = A
@@ -448,9 +491,13 @@ sync-profile-picture-with-alt =
     .alt = ပရိုဖိုင်းရုပ်ပုံကို ပြောင်းလဲရန်
 sync-manage-account = အကောင့်ကို စီမံရန်
     .accesskey = o
+sync-manage-account2 =
+    .label = အကောင့်ကို စီမံရန်
+    .accesskey = o
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } ​ကို အတည်မပြုရသေးပါ။
 sync-signedin-login-failure = ပြန်လည်ချိတ်ဆက်ရန် အကောင့်ဖြင့် ဝင်ရောက်ပါ { $email }
@@ -466,9 +513,6 @@ sync-remove-account =
 sync-sign-in =
     .label = ဝင်ပါ
     .accesskey = g
-
-## Sync section - enabling or disabling sync.
-
 
 ## The list of things currently syncing.
 
@@ -505,6 +549,16 @@ sync-engine-addons =
 ## The device name controls.
 
 sync-device-name-header = ကိရိယာအမည်
+sync-device-name-header-2 =
+    .label = ကိရိယာအမည်
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = ကိရိယာအမည်
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = ကိရိယာအမည်ကို ပြောင်းလဲရန်
+    .accesskey = h
 sync-device-name-change =
     .label = ကိရိယာအမည်ကို ပြောင်းလဲရန်…
     .accesskey = h
@@ -515,6 +569,8 @@ sync-device-name-save =
     .label = သိမ်းဆည်းပါ
     .accesskey = v
 sync-connect-another-device = အခြားကိရိယာကို ချိတ်ပါ။
+sync-connect-another-device-2 =
+    .label = အခြားကိရိယာကို ချိတ်ပါ။
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -556,15 +612,19 @@ forms-master-pw-change =
     .accesskey = M
 forms-master-pw-fips-desc = စကားဝှက်ပြောင်းလဲမှု မအောင်မြင်ပါ
 
-## OS Authentication dialog
-
-
-## Privacy section - Autofill
-
-
 ## Privacy Section - History
 
 history-header = မှတ်တမ်း
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label2 = { -brand-short-name } သည်
 # This label is followed, on the same line, by a dropdown list of options
 # (Remember history, etc.).
 # In English it visually creates a full sentence, e.g.
@@ -582,6 +642,18 @@ history-remember-option-never =
     .label = မှတ်တမ်းကို ဘယ်တော့မှ မမှတ်ထားပါ
 history-remember-option-custom =
     .label = မှတ်တမ်းအတွက် စိတ်ကြိုက်အပြင်အဆင်ကို အသုံးပြုမည်
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name }သည် သင့်၏ရှာဖွေမှု၊ဆွဲယူမှု၊ရှာဖွေမှတ်တမ်းများကို မှတ်သားမည်။
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } က တူညီတဲ့ အပြင်အဆင်များကို သီးသန့် လှော်လှန်မှုအဖြစ် သုံးစွဲမှာ ဖြစ်ပြီး၊ ကွန်ရက်ကို သင်လှော်လှန်နေစဉ် ဘယ် မှတ်တမ်းကိုမှ မှတ်သားထားမှာ မဟုတ်ဘူး။
+history-remember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name }သည် သင့်၏ရှာဖွေမှု၊ဆွဲယူမှု၊ရှာဖွေမှတ်တမ်းများကို မှတ်သားမည်။
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } က တူညီတဲ့ အပြင်အဆင်များကို သီးသန့် လှော်လှန်မှုအဖြစ် သုံးစွဲမှာ ဖြစ်ပြီး၊ ကွန်ရက်ကို သင်လှော်လှန်နေစဉ် ဘယ် မှတ်တမ်းကိုမှ မှတ်သားထားမှာ မဟုတ်ဘူး။
 history-remember-description = { -brand-short-name }သည် သင့်၏ရှာဖွေမှု၊ဆွဲယူမှု၊ရှာဖွေမှတ်တမ်းများကို မှတ်သားမည်။
 history-dontremember-description = { -brand-short-name } က တူညီတဲ့ အပြင်အဆင်များကို သီးသန့် လှော်လှန်မှုအဖြစ် သုံးစွဲမှာ ဖြစ်ပြီး၊ ကွန်ရက်ကို သင်လှော်လှန်နေစဉ် ဘယ် မှတ်တမ်းကိုမှ မှတ်သားထားမှာ မဟုတ်ဘူး။
 history-private-browsing-permanent =
@@ -602,6 +674,8 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = မှတ်တမ်းကို ရှင်းလင်းပါ...
     .accesskey = s
+history-group =
+    .label = မှတ်တမ်း
 
 ## Privacy Section - Site Data
 
@@ -620,14 +694,10 @@ sitedata-clear =
 sitedata-settings =
     .label = အချက်အလက်ကို စီမံပါ...
     .accesskey = M
+cookies-site-data-group =
+    .label = ကွတ်ကီးနှင့် ဆိုက်အချက်အလက်များ
 
-## Privacy Section - Cookie Banner Handling
-
-
-## Privacy Section - Cookie Banner Blocking
-
-
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = လိပ်စာဘား
 addressbar-suggest = လိပ်စာဘားတန်းတွင်ရှာဖွေပါက အကြံပေးပါ
@@ -725,6 +795,14 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = ခြွင်းချက်များ...
     .accesskey = E
+permissions-location2 =
+    .label = တည်နေရာ
+permissions-camera2 =
+    .label = ကင်မရာ
+permissions-microphone2 =
+    .label = မိုက်ကရိုဖုန်း
+permissions-notification2 =
+    .label = အသိပေးချက်များ
 
 ## Privacy Section - Data Collection
 
@@ -744,15 +822,14 @@ addon-recommendations-link = ပိုမိုလေ့လာရန်
 # or builds with no Telemetry support available.
 collection-health-report-disabled = တည်ဆောက်မှုဆိုင်ရာ ယခုအပြင်အဆင်အတွက် အချက်အလက်အစီရင်ခံခြင်းကို ပိတ်ထားသည်
 
-## Privacy Section - Website Advertising Preferences
-
-
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
 ## https://developers.google.com/safe-browsing/developers_guide_v2#AcceptableUsage
 
 security-header = လုံခြုံရေး
+browsing-protection-group =
+    .label = အချက်အလက်အတုနှင့် အန္တရာယ်ရှိသော ဆော့ဖ်ဝဲ ကာကွယ်မှု
 security-browsing-protection = အချက်အလက်အတုနှင့် အန္တရာယ်ရှိသော ဆော့ဖ်ဝဲ ကာကွယ်မှု
 security-enable-safe-browsing =
     .label = အန္တရာယ်ရှိသည့် အကြောင်းအရာတုများကို တားဆီးပါ
@@ -777,12 +854,7 @@ certs-view =
 certs-devices =
     .label = လုံခြုံရေး ကိရိယာများ...
     .accesskey = D
-
-## Privacy Section - HTTPS-Only
-
-
-## DoH Section
-
+certs-devices-enable-fips = FIPS ကို ဖွင့်ထားပါ
 
 ## The following strings are used in the Download section of settings
 

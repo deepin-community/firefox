@@ -30,6 +30,10 @@ options-context-inspector = Inspektor
 options-show-user-agent-styles-label = Wobhladowakowe stile pokazać
 options-show-user-agent-styles-tooltip =
     .title = Jeli to zapinaće, so standardne stile pokazaja, kotrež wobhladowak začituje.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Shadow DOM wobhladowaka pokazać
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Hdyž to zmóžnjeće, budźe waš wobhladowak elementy Shadow DOM wužiwać.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = DOM-atributy wottřihać
 options-collapse-attrs-tooltip =
@@ -116,6 +120,8 @@ options-disable-http-cache-label = HTTP-pufrowak znjemóžnić (hdyž graty su w
 options-disable-http-cache-tooltip =
     .title = Hdyž so tute nastajenje zmóžnja, so HTTP-pufrowak za wšě rajtarki znjemóžni, kotrež maja graty wočinjene. Service workers njejsu přez tute nastajenje potrjechene.
 # The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = JavaScript znjemóžnić
+# The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = JavaScript znjemóžnić *
 options-disable-javascript-tooltip =
     .title = Zmóžnjenje tutoho nastajenja JavaScript za aktualny rajtark znjemóžni. Jeli rajtark abo graty so začinjeja, da tute nastajenje so zabudźe.
@@ -143,5 +149,11 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Žórłowe karty zmóžnić
 options-source-maps-tooltip =
     .title = Jeli tute nastajenje zmóžnjeće, so žórła w nastrojach kartěruja.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (jenož aktualne posedźenje, strona so znowa začituje)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Jenož aktualne posedźenje, strona so znowa začituje
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (začita stronu znowa)

@@ -18,6 +18,7 @@
 
 #include "wasm/WasmSignalHandlers.h"
 
+#include "mozilla/Casting.h"
 #include "mozilla/ThreadLocal.h"
 
 #include "threading/Thread.h"
@@ -98,6 +99,12 @@ using namespace js::wasm;
 #      define RFP_sig(p) ((p)->sc_x[29])
 #      define RLR_sig(p) ((p)->sc_lr)
 #      define R31_sig(p) ((p)->sc_sp)
+#    endif
+#    if defined(__riscv)
+#      define RPC_sig(p) ((p)->sc_sepc)
+#      define RRA_sig(p) ((p)->sc_ra)
+#      define RFP_sig(p) ((p)->sc_s[0])
+#      define R02_sig(p) ((p)->sc_sp)
 #    endif
 #    if defined(__mips__)
 #      define EPC_sig(p) ((p)->sc_pc)
@@ -422,7 +429,7 @@ struct macos_aarch64_context {
 
 static void SetContextPC(CONTEXT* context, uint8_t* pc) {
 #  ifdef PC_sig
-  *reinterpret_cast<uint8_t**>(&PC_sig(context)) = pc;
+  *mozilla::BitwiseCast<uint8_t**>(&PC_sig(context)) = pc;
 #  else
   MOZ_CRASH();
 #  endif
@@ -430,7 +437,7 @@ static void SetContextPC(CONTEXT* context, uint8_t* pc) {
 
 static uint8_t* ContextToPC(CONTEXT* context) {
 #  ifdef PC_sig
-  return reinterpret_cast<uint8_t*>(PC_sig(context));
+  return mozilla::BitwiseCast<uint8_t*>(PC_sig(context));
 #  else
   MOZ_CRASH();
 #  endif
@@ -438,7 +445,7 @@ static uint8_t* ContextToPC(CONTEXT* context) {
 
 static uint8_t* ContextToFP(CONTEXT* context) {
 #  ifdef FP_sig
-  return reinterpret_cast<uint8_t*>(FP_sig(context));
+  return mozilla::BitwiseCast<uint8_t*>(FP_sig(context));
 #  else
   MOZ_CRASH();
 #  endif
@@ -446,7 +453,7 @@ static uint8_t* ContextToFP(CONTEXT* context) {
 
 static uint8_t* ContextToSP(CONTEXT* context) {
 #  ifdef SP_sig
-  return reinterpret_cast<uint8_t*>(SP_sig(context));
+  return mozilla::BitwiseCast<uint8_t*>(SP_sig(context));
 #  else
   MOZ_CRASH();
 #  endif
@@ -456,7 +463,7 @@ static uint8_t* ContextToSP(CONTEXT* context) {
       defined(__loongarch__) || defined(__riscv)
 static uint8_t* ContextToLR(CONTEXT* context) {
 #    ifdef LR_sig
-  return reinterpret_cast<uint8_t*>(LR_sig(context));
+  return mozilla::BitwiseCast<uint8_t*>(LR_sig(context));
 #    else
   MOZ_CRASH();
 #    endif
@@ -521,8 +528,8 @@ struct AutoHandlingTrap {
   }
 
   Trap trap;
-  BytecodeOffset bytecode;
-  if (!codeBlock->lookupTrap(pc, &trap, &bytecode)) {
+  TrapSite trapSite;
+  if (!codeBlock->lookupTrap(pc, &trap, &trapSite)) {
     return false;
   }
 
@@ -537,6 +544,10 @@ struct AutoHandlingTrap {
   MOZ_RELEASE_ASSERT(&instance->code() == codeBlock->code ||
                      trap == Trap::IndirectCallBadSig);
 
+  // Ensure the active FP has a valid instance pointer that the trap stub can
+  // use.
+  ((FrameWithInstances*)frame)->setCalleeInstance(instance);
+
   JSContext* cx =
       instance->realm()->runtimeFromAnyThread()->mainContextFromAnyThread();
   MOZ_RELEASE_ASSERT(!assertCx || cx == assertCx);
@@ -545,7 +556,7 @@ struct AutoHandlingTrap {
   // point of the trap to allow stack unwinding or resumption, both of which
   // will call finishWasmTrap().
   jit::JitActivation* activation = cx->activation()->asJit();
-  activation->startWasmTrap(trap, bytecode.offset(), ToRegisterState(context));
+  activation->startWasmTrap(trap, trapSite, ToRegisterState(context));
   SetContextPC(context, codeBlock->code->trapCode());
   return true;
 }
@@ -802,7 +813,7 @@ struct InstallState {
   InstallState() : tried(false), success(false) {}
 };
 
-static ExclusiveData<InstallState> sEagerInstallState(
+MOZ_RUNINIT static ExclusiveData<InstallState> sEagerInstallState(
     mutexid::WasmSignalInstallState);
 
 #endif  // !(JS_CODEGEN_NONE)
@@ -884,7 +895,7 @@ void wasm::EnsureEagerProcessSignalHandlers() {
 }
 
 #ifndef JS_CODEGEN_NONE
-static ExclusiveData<InstallState> sLazyInstallState(
+MOZ_RUNINIT static ExclusiveData<InstallState> sLazyInstallState(
     mutexid::WasmSignalInstallState);
 
 static bool EnsureLazyProcessSignalHandlers() {
@@ -984,14 +995,15 @@ bool wasm::MemoryAccessTraps(const RegisterState& regs, uint8_t* addr,
   }
 
   Trap trap;
-  BytecodeOffset bytecode;
-  if (!codeBlock->code->lookupTrap(regs.pc, &trap, &bytecode)) {
+  TrapSite trapSite;
+  if (!codeBlock->code->lookupTrap(regs.pc, &trap, &trapSite)) {
     return false;
   }
   switch (trap) {
     case Trap::OutOfBounds:
       break;
     case Trap::NullPointerDereference:
+    case Trap::BadCast:
       break;
 #  ifdef WASM_HAS_HEAPREG
     case Trap::IndirectCallToNull:
@@ -1003,9 +1015,15 @@ bool wasm::MemoryAccessTraps(const RegisterState& regs, uint8_t* addr,
       return false;
   }
 
-  const Instance& instance =
-      *GetNearestEffectiveInstance(Frame::fromUntaggedWasmExitFP(regs.fp));
+  // This is a safe and expected wasm trap. This guarantees that FP is pointing
+  // at a wasm frame.
+  FrameWithInstances* frame = (FrameWithInstances*)(regs.fp);
+  Instance& instance = *GetNearestEffectiveInstance(frame);
   MOZ_ASSERT(&instance.code() == codeBlock->code);
+
+  // Ensure the active FP has a valid instance pointer that the trap stub can
+  // use.
+  frame->setCalleeInstance(&instance);
 
   switch (trap) {
     case Trap::OutOfBounds:
@@ -1014,6 +1032,7 @@ bool wasm::MemoryAccessTraps(const RegisterState& regs, uint8_t* addr,
       }
       break;
     case Trap::NullPointerDereference:
+    case Trap::BadCast:
       if ((uintptr_t)addr >= NullPtrGuardSize) {
         return false;
       }
@@ -1033,7 +1052,7 @@ bool wasm::MemoryAccessTraps(const RegisterState& regs, uint8_t* addr,
 
   JSContext* cx = TlsContext.get();  // Cold simulator helper function
   jit::JitActivation* activation = cx->activation()->asJit();
-  activation->startWasmTrap(trap, bytecode.offset(), regs);
+  activation->startWasmTrap(trap, trapSite, regs);
   *newPC = codeBlock->code->trapCode();
   return true;
 #endif
@@ -1050,14 +1069,24 @@ bool wasm::HandleIllegalInstruction(const RegisterState& regs,
   }
 
   Trap trap;
-  BytecodeOffset bytecode;
-  if (!codeBlock->code->lookupTrap(regs.pc, &trap, &bytecode)) {
+  TrapSite trapSite;
+  if (!codeBlock->code->lookupTrap(regs.pc, &trap, &trapSite)) {
     return false;
   }
 
+  // This is a safe and expected wasm trap. This guarantees that FP is pointing
+  // at a wasm frame.
+  FrameWithInstances* frame = (FrameWithInstances*)(regs.fp);
+  Instance& instance = *GetNearestEffectiveInstance(frame);
+  MOZ_ASSERT(&instance.code() == codeBlock->code);
+
+  // Ensure the active FP has a valid instance pointer that the trap stub can
+  // use.
+  frame->setCalleeInstance(&instance);
+
   JSContext* cx = TlsContext.get();  // Cold simulator helper function
   jit::JitActivation* activation = cx->activation()->asJit();
-  activation->startWasmTrap(trap, bytecode.offset(), regs);
+  activation->startWasmTrap(trap, trapSite, regs);
   *newPC = codeBlock->code->trapCode();
   return true;
 #endif

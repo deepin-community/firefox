@@ -4,14 +4,32 @@ Texture Usages Validation Tests on All Kinds of WebGPU Subresource Usage Scopes.
 
 import { makeTestGroup } from '../../../../../common/framework/test_group.js';
 import { unreachable } from '../../../../../common/util/util.js';
-import { ValidationTest } from '../../validation_test.js';
+import { kTextureUsages } from '../../../../capability_info.js';
+import { GPUConst } from '../../../../constants.js';
+import { AllFeaturesMaxLimitsGPUTest } from '../../../../gpu_test.js';
+import * as vtu from '../../validation_test_utils.js';
 import {
   TextureBindingType,
   kTextureBindingTypes,
-  IsReadOnlyTextureBindingType,
+  isReadOnlyTextureBindingType,
 } from '../texture/in_render_common.spec.js';
 
-class F extends ValidationTest {
+function skipIfStorageTexturesUsedAndNotAvailableInFragmentStage(
+  t: AllFeaturesMaxLimitsGPUTest,
+  usage: (typeof kTextureBindingTypes)[number] | 'copy-src' | 'copy-dst' | 'color-attachment',
+  numRequired: number
+) {
+  t.skipIf(
+    t.isCompatibility &&
+      (usage === 'writeonly-storage-texture' ||
+        usage === 'readonly-storage-texture' ||
+        usage === 'readwrite-storage-texture') &&
+      !(t.device.limits.maxStorageTexturesInFragmentStage! > numRequired),
+    `maxStorageTexturesInFragmentStage${t.device.limits.maxStorageTexturesInFragmentStage} < ${numRequired}`
+  );
+}
+
+class F extends AllFeaturesMaxLimitsGPUTest {
   createBindGroupLayoutForTest(
     textureUsage: TextureBindingType,
     sampleType: 'unfilterable-float' | 'depth' | 'uint',
@@ -88,6 +106,12 @@ g.test('subresources,set_bind_group_on_same_index_color_texture')
       .combine('view1Binding', kTextureBindingTypes)
       .combine('view2Binding', kTextureBindingTypes)
   )
+  .beforeAllSubcases(t => {
+    t.skipIf(
+      t.isCompatibility,
+      'texture views used in bindgroups must consist of the entire array in compatibility mode. textureView0 does not fit.'
+    );
+  })
   .fn(t => {
     const { useDifferentTextureAsTexture2, baseLayer2, view1Binding, view2Binding } = t.params;
 
@@ -145,7 +169,7 @@ g.test('subresources,set_bind_group_on_same_index_color_texture')
     renderPassEncoder.end();
 
     const noConflict =
-      (IsReadOnlyTextureBindingType(view1Binding) && IsReadOnlyTextureBindingType(view2Binding)) ||
+      (isReadOnlyTextureBindingType(view1Binding) && isReadOnlyTextureBindingType(view2Binding)) ||
       view1Binding === view2Binding;
     t.expectValidationError(() => {
       encoder.finish();
@@ -231,6 +255,12 @@ g.test('subresources,set_unused_bind_group')
       .combine('textureUsage0', kTextureBindingTypes)
       .combine('textureUsage1', kTextureBindingTypes)
   )
+  .beforeAllSubcases(t => {
+    t.skipIf(
+      t.isCompatibility,
+      'texture views used in bindgroups must consist of the entire array in compatibility mode. textureView0 does not fit.'
+    );
+  })
   .fn(t => {
     const { inRenderPass, textureUsage0, textureUsage1 } = t.params;
 
@@ -325,7 +355,7 @@ g.test('subresources,set_unused_bind_group')
         }),
         vertex: {
           module: t.device.createShaderModule({
-            code: t.getNoOpShaderCode('VERTEX'),
+            code: vtu.getNoOpShaderCode('VERTEX'),
           }),
         },
         fragment: {
@@ -454,8 +484,8 @@ g.test('subresources,set_unused_bind_group')
     //   the render pass’s usage scope.
     const success =
       !inRenderPass ||
-      (IsReadOnlyTextureBindingType(textureUsage0) &&
-        IsReadOnlyTextureBindingType(textureUsage1)) ||
+      (isReadOnlyTextureBindingType(textureUsage0) &&
+        isReadOnlyTextureBindingType(textureUsage1)) ||
       textureUsage0 === textureUsage1;
     t.expectValidationError(() => {
       encoder.finish();
@@ -494,6 +524,9 @@ g.test('subresources,texture_usages_in_copy_and_render_pass')
   .fn(t => {
     const { usage0, usage1 } = t.params;
 
+    skipIfStorageTexturesUsedAndNotAvailableInFragmentStage(t, usage0, 1);
+    skipIfStorageTexturesUsedAndNotAvailableInFragmentStage(t, usage1, 1);
+
     const texture = t.createTextureTracked({
       format: 'r32float',
       usage:
@@ -508,14 +541,14 @@ g.test('subresources,texture_usages_in_copy_and_render_pass')
       }),
     });
 
-    const UseTextureOnCommandEncoder = (
+    const useTextureOnCommandEncoder = (
       texture: GPUTexture,
       usage: 'copy-src' | 'copy-dst' | 'color-attachment' | TextureBindingType,
       encoder: GPUCommandEncoder
     ) => {
       switch (usage) {
         case 'copy-src': {
-          const buffer = t.createBufferWithState('valid', {
+          const buffer = vtu.createBufferWithState(t, 'valid', {
             size: 4,
             usage: GPUBufferUsage.COPY_DST,
           });
@@ -523,7 +556,7 @@ g.test('subresources,texture_usages_in_copy_and_render_pass')
           break;
         }
         case 'copy-dst': {
-          const buffer = t.createBufferWithState('valid', {
+          const buffer = vtu.createBufferWithState(t, 'valid', {
             size: 4,
             usage: GPUBufferUsage.COPY_SRC,
           });
@@ -565,9 +598,91 @@ g.test('subresources,texture_usages_in_copy_and_render_pass')
       }
     };
     const encoder = t.device.createCommandEncoder();
-    UseTextureOnCommandEncoder(texture, usage0, encoder);
-    UseTextureOnCommandEncoder(texture, usage1, encoder);
+    useTextureOnCommandEncoder(texture, usage0, encoder);
+    useTextureOnCommandEncoder(texture, usage1, encoder);
     t.expectValidationError(() => {
       encoder.finish();
     }, false);
+  });
+
+g.test('subresources,texture_view_usages')
+  .desc(
+    `
+  Test that the usages of the texture view are used to validate compatibility in command encoding
+  instead of the usages of the base texture.`
+  )
+  .params(u =>
+    u
+      .combine('bindingType', ['color-attachment', ...kTextureBindingTypes] as const)
+      .combine('viewUsage', [0, ...kTextureUsages])
+      .unless(({ viewUsage }) => {
+        // TRANSIENT_ATTACHMENT is only valid when combined with RENDER_ATTACHMENT.
+        return viewUsage === GPUConst.TextureUsage.TRANSIENT_ATTACHMENT;
+      })
+  )
+  .fn(t => {
+    const { bindingType, viewUsage } = t.params;
+
+    skipIfStorageTexturesUsedAndNotAvailableInFragmentStage(t, bindingType, 1);
+
+    const texture = t.createTextureTracked({
+      format: 'r32float',
+      usage:
+        GPUTextureUsage.COPY_SRC |
+        GPUTextureUsage.COPY_DST |
+        GPUTextureUsage.TEXTURE_BINDING |
+        GPUTextureUsage.STORAGE_BINDING |
+        (bindingType === 'color-attachment' ? GPUTextureUsage.RENDER_ATTACHMENT : 0),
+      size: [kTextureSize, kTextureSize, 1],
+      ...(t.isCompatibility && {
+        textureBindingViewDimension: '2d-array',
+      }),
+    });
+
+    switch (bindingType) {
+      case 'color-attachment': {
+        const encoder = t.device.createCommandEncoder();
+        const renderPassEncoder = encoder.beginRenderPass({
+          colorAttachments: [
+            { view: texture.createView({ usage: viewUsage }), loadOp: 'load', storeOp: 'store' },
+          ],
+        });
+        renderPassEncoder.end();
+
+        const success = viewUsage === 0 || (viewUsage & GPUTextureUsage.RENDER_ATTACHMENT) !== 0;
+
+        t.expectValidationError(() => {
+          encoder.finish();
+        }, !success);
+        break;
+      }
+      case 'sampled-texture':
+      case 'readonly-storage-texture':
+      case 'writeonly-storage-texture':
+      case 'readwrite-storage-texture':
+        {
+          let success = true;
+          if (viewUsage !== 0) {
+            if (bindingType === 'sampled-texture') {
+              if ((viewUsage & GPUTextureUsage.TEXTURE_BINDING) === 0) success = false;
+            } else {
+              if ((viewUsage & GPUTextureUsage.STORAGE_BINDING) === 0) success = false;
+            }
+          }
+
+          t.expectValidationError(() => {
+            t.createBindGroupForTest(
+              texture.createView({
+                dimension: '2d-array',
+                usage: viewUsage,
+              }),
+              bindingType,
+              'unfilterable-float'
+            );
+          }, !success);
+        }
+        break;
+      default:
+        unreachable();
+    }
   });

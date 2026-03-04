@@ -3,17 +3,16 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 do-not-track-description = Sūtīt lapām “Neizsekot” signālu, lai norādītu, ka nevēlaties, lai jūs izseko
-do-not-track-description2 =
-    .label = Nosūtīt vietnēm pieprasījumu “Neizsekot”.
-    .accesskey = N
 do-not-track-learn-more = Uzzināt vairāk
 do-not-track-option-default-content-blocking-known =
     .label = Tikai tad, ja { -brand-short-name } ir iestatīts bloķēt zināmos izsekotājus
 do-not-track-option-always =
     .label = Vienmēr
 global-privacy-control-description =
-    .label = Pateikt vietnēm, lai tās nepārdod un nedalās ar maniem datiem
+    .label = Teikt vietnēm, lai tās nepārdod un nedalās ar maniem datiem
     .accesskey = s
+non-technical-privacy-group =
+    .label = Vietņu privātuma preferences
 non-technical-privacy-header = Vietņu privātuma preferences
 # Do not translate.
 # "Global Privacy Control" or "GPC" are a web platform feature name and abbreviation
@@ -116,7 +115,7 @@ extension-controlled-enable = Lai aktivētu paplašinājumu, ejiet uz <img data-
 search-results-header = Meklēšanas rezultāti
 # `<span data-l10n-name="query"></span>` will be replaced by the search term.
 search-results-empty-message2 = Atvainojiet! Iestatījumos vaicājumam “<span data-l10n-name="query"></span>” nav rezultātu.
-search-results-help-link = Vajadzīga palīdzība? Apmeklējiet <a data-l10n-name="url">{ -brand-short-name } atbalsts</a>
+search-results-help-link = Vai nepieciešama palīdzība? Apmeklējiet <a data-l10n-name="url">{ -brand-short-name } atbalstu</a>
 
 ## General Section
 
@@ -124,6 +123,10 @@ startup-header = Palaišana
 always-check-default =
     .label = Vienmēr pārbaudīt vai { -brand-short-name } ir noklusējuma pārlūks
     .accesskey = t
+is-default-browser =
+    .message = { -brand-short-name } šobrīd ir jūsu noklusējuma pārlūks
+is-not-default-browser =
+    .message = { -brand-short-name } šobrīd nav jūsu noklusējuma pārlūks
 is-default = { -brand-short-name } šobrīd ir jūsu noklusējuma pārlūks
 is-not-default = { -brand-short-name } šobrīd nav jūsu noklusējuma pārlūks
 set-as-my-default-browser =
@@ -145,6 +148,8 @@ preferences-data-migration-description = Importēt grāmatzīmes, paroles, vēst
 preferences-data-migration-button =
     .label = Importēt datus
     .accesskey = m
+tabs-group-header2 =
+    .label = Cilnes
 tabs-group-header = Cilnes
 ctrl-tab-recently-used-order =
     .label = Ctrl+Tab slēdzas starp cilnēm to izmantošanas secībā
@@ -153,7 +158,7 @@ open-new-link-as-tabs =
     .label = Vērt saites cilnēs nevis jaunos logos
     .accesskey = v
 confirm-on-close-multiple-tabs =
-    .label = Apstipriniet, pirms aizvērt vairākas cilnes
+    .label = Apstiprināt, pirms aizvērt vairākas cilnes
     .accesskey = v
 # This string is used for the confirm before quitting preference.
 # Variables:
@@ -180,6 +185,8 @@ browser-containers-settings =
     .label = Iestatījumi...
     .accesskey = i
 containers-disable-alert-title = Vai aizvērt visas konteineru cilnes?
+startup-group =
+    .label = Palaišana
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -218,8 +225,20 @@ settings-tabs-show-image-in-preview =
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Valoda un izskats
+appearance-group =
+    .label = Vietnes izskats
+    .description = Dažas vietnes pielāgo savu krāsu shēmu atbilstoši jūsu preferencēm. Izvēlieties, kuru krāsu shēmu vēlaties izmantot šīm vietnēm.
 preferences-web-appearance-header = Vietnes izskats
 preferences-web-appearance-description = Dažas vietnes pielāgo savu krāsu shēmu atbilstoši jūsu preferencēm. Izvēlieties, kuru krāsu shēmu vēlaties izmantot šīm vietnēm.
+preferences-web-appearance-choice-auto2 =
+    .label = Automātiski
+    .title = Automātiski mainiet vietņu fonu un saturu, pamatojoties uz jūsu sistēmas iestatījumiem un { -brand-short-name } motīvu.
+preferences-web-appearance-choice-light2 =
+    .label = Gaišs
+    .title = Izmantot gaišu izskatu vietņu fonam un saturam.
+preferences-web-appearance-choice-dark2 =
+    .label = Tumšs
+    .title = Izmantot tumšu izskatu vietņu fonam un saturam.
 preferences-web-appearance-choice-auto = Automātiski
 preferences-web-appearance-choice-light = Gaišs
 preferences-web-appearance-choice-dark = Tumšs
@@ -235,13 +254,11 @@ preferences-web-appearance-choice-input-light =
     .aria-description = { preferences-web-appearance-choice-tooltip-light.title }
 preferences-web-appearance-choice-input-dark =
     .aria-description = { preferences-web-appearance-choice-tooltip-dark.title }
+preferences-web-appearance-link =
+    .label = Pārvaldiet { -brand-short-name } motīvus sadaļā Paplašinājumi un motīvi
 # This can appear when using windows HCM or "Override colors: always" without
 # system colors.
 preferences-web-appearance-override-warning = Jūsu izvēlētās krāsas ir svarīgākas par vietnes izskatu. <a data-l10n-name="colors-link">Pārvaldīt krāsas</a>
-# This can appear when using windows HCM or "Override colors: always" without
-# system colors.
-preferences-web-appearance-override-warning2 =
-    .message = Jūsu izvēlētās krāsas ir svarīgākas par vietnes izskatu.
 # This message contains one link. It can be moved within the sentence as needed
 # to adapt to your language, but should not be changed.
 preferences-web-appearance-footer = Pārvaldiet { -brand-short-name } motīvus sadaļā <a data-l10n-name="themes-link">Paplašinājumi un motīvi</a>
@@ -250,6 +267,14 @@ preferences-colors-description = Ignorēt { -brand-short-name } noklusējuma kr�
 preferences-colors-manage-button =
     .label = Pārvaldīt krāsas…
     .accesskey = k
+preferences-fonts-header2 =
+    .label = Fonti
+default-font-2 =
+    .label = Noklusējuma fonts
+    .accesskey = N
+default-font-size-2 =
+    .label = Izmērs
+    .accesskey = s
 preferences-fonts-header = Fonti
 default-font = Noklusējuma fonts
     .accesskey = N
@@ -258,6 +283,12 @@ default-font-size = Izmērs
 advanced-fonts =
     .label = Paplašināti…
     .accesskey = p
+# Zoom is a noun, and the message is used as header for a group of options
+preferences-zoom-header2 =
+    .label = Mērogs
+preferences-default-zoom-label =
+    .label = Noklusējuma mērogs
+    .accesskey = m
 # Zoom is a noun, and the message is used as header for a group of options
 preferences-zoom-header = Mērogs
 preferences-default-zoom = Noklusējuma mērogs
@@ -295,7 +326,7 @@ translate-exceptions =
 # Variables:
 #    $localeName (string) - Localized name of the locale to be used.
 use-system-locale =
-    .label = Izmantojiet operētājsistēmas “{ $localeName }” iestatījumus, lai formatētu datumus, laikus, skaitļus un mērus.
+    .label = Izmantot operētājsistēmas “{ $localeName }” iestatījumus, lai formatētu datumus, laiku, skaitļus un mērus.
 check-user-spelling =
     .label = Rakstot pārbaudīt pareizrakstību
     .accesskey = t
@@ -303,6 +334,11 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = Datnes un lietotnes
+downloads-header-2 =
+    .label = Lejupielādes
+download-save-where-2 =
+    .label = Vieta, kur saglabāt datnes:
+    .accesskey = k
 download-header = Lejupielādes
 download-save-where = Vieta, kur saglabāt datnes:
     .accesskey = k
@@ -402,6 +438,8 @@ applications-save-for-new-types =
 applications-ask-before-handling =
     .label = Vaicāt, vai atvērt vai saglabāt datnes
     .accesskey = a
+drm-group =
+    .label = Digitālā satura tiesību pārvaldības (DRM) saturs
 drm-content-header = Digitālā satura tiesību pārvaldības (DRM) saturs
 play-drm-content =
     .label = Atskaņot DRM kontrolētu saturu
@@ -470,6 +508,8 @@ performance-limit-content-process-blocked-desc = Modificēt satura procesu skait
 #   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (noklusējuma)
+performance-group =
+    .label = Veiktspēja
 
 ## General Section - Browsing
 
@@ -513,6 +553,8 @@ browsing-cfr-features =
     .label = Ieteikt funkcijas pārlūkošanas laikā
     .accesskey = f
 browsing-cfr-recommendations-learn-more = Uzzināt vairāk
+browsing-group =
+    .label = Pārlūkošana
 
 ## General Section - Proxy
 
@@ -522,16 +564,27 @@ network-proxy-connection-learn-more = Uzzināt vairāk
 network-proxy-connection-settings =
     .label = Iestatījumi...
     .accesskey = e
+network-proxy-group =
+    .label = Tīkla iestatījumi
+    .description = Konfigurēt kā { -brand-short-name } pieslēdzas internetam.
 
 ## Home Section
 
 home-new-windows-tabs-header = Jaunus logus un cilnes
 home-new-windows-tabs-description2 = Izvēlieties, ko rādīt atverot jaunu lapu, logu vai cilni.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = Padarīt par noklusējuma
+    .accesskey = n
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = Sākumlapa un jauni logi
 home-newtabs-mode-label = Jaunas cilnes
+home-homepage-new-tabs =
+    .label = Jaunas cilnes
 home-restore-defaults =
     .label = Atjaunot noklusējumus
     .accesskey = n
@@ -566,12 +619,11 @@ home-prefs-search-header =
     .label = Tīmekļa meklēšana
 home-prefs-shortcuts-header =
     .label = Saīsnes
-home-prefs-shortcuts-description = Vietnes, kuras saglabājat vai apmeklējat
+home-prefs-shortcuts-description = Saglabātās vai apmeklētās vietnes
 home-prefs-shortcuts-by-option-sponsored =
     .label = Sponsorētās saīsnes
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
 home-prefs-recommended-by-header =
     .label = Iesaka { $provider }
@@ -642,6 +694,8 @@ search-show-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Rādīt meklēšanas ieteikumus adrešu joslā
     .accesskey = r
+search-suggestions-cant-show-2 =
+    .message = Meklēšanas ieteikumi netiks parādīti adreses joslā, jo { -brand-short-name } ir nokonfigurēts neatcerēties vēsturi.
 # With this option enabled, on the search results page
 # the URL will be replaced by the search terms in the address bar
 # when using the current default search engine.
@@ -663,7 +717,7 @@ search-one-click-desc = Izvēlieties papildu meklētāju, kas parādīsies adre�
 search-choose-engine-column =
     .label = Meklētājs
 search-choose-keyword-column =
-    .label = Atslēgas vārds
+    .label = Atslēgvārds
 search-restore-default =
     .label = Atjaunot noklusējuma meklētājus
     .accesskey = n
@@ -681,12 +735,18 @@ search-keyword-warning-title = Šāds atslēgas vārds jau tiek izmantots
 #   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Jūs izvēlējāties atslēgas vārdu, ko šobrīd jau izmanto "{ $name }". Lūdzu, izvēlieties citu.
 search-keyword-warning-bookmark = Jūs izvēlējāties atslēgas vārdu, ko jau izmanto kāda grāmatzīme. Lūdzu, izvēlieties citu.
+search-engine-group =
+    .label = Noklusējuma meklētājs
+search-default-engine =
+    .aria-label = Noklusējuma meklētājs
 
 ## Containers Section
 
 containers-back-button2 =
     .aria-label = Atgriezties uz iestatījumiem
 containers-header = Saturošās cilnes
+containers-section-header =
+    .heading = Saturošās cilnes
 containers-add-button =
     .label = Pievienot jaunu konteineru
     .accesskey = A
@@ -697,6 +757,11 @@ containers-settings-button =
     .label = Iestatījumi
 containers-remove-button =
     .label = Noņemt
+
+## Account and sync
+
+sync-group-label =
+    .label = Sinhronizēšana
 
 ## Firefox account - Signed out. Note that "Sync" and "Firefox account" are now
 ## more discrete ("signed in" no longer means "and sync is connected").
@@ -730,11 +795,18 @@ fxa-login-rejected-warning =
 sync-sign-out =
     .label = Izrakstīties…
     .accesskey = z
+sync-sign-out2 =
+    .label = Izrakstīties
+    .accesskey = z
 sync-manage-account = Pārvaldīt kontu
+    .accesskey = a
+sync-manage-account2 =
+    .label = Pārvaldīt kontu
     .accesskey = a
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } nav apstiprināts.
 sync-signedin-login-failure = Lūdzu pieslēdzieties, lai atjaunotu savienojumu { $email }
@@ -761,6 +833,9 @@ prefs-syncing-off = Sinhronizācija: izslēgta
 prefs-sync-turn-on-syncing =
     .label = Ieslēgt sinhronizāciju…
     .accesskey = s
+prefs-sync-turn-on-syncing-2 =
+    .label = Ieslēgt sinhronizāciju
+    .accesskey = s
 prefs-sync-offer-setup-label2 = Sinhronizējiet savas grāmatzīmes, vēsturi, cilnes, paroles, papildinājumus un iestatījumus visās savās ierīcēs.
 prefs-sync-now =
     .labelnotsyncing = Sinhronizēt tagad
@@ -769,8 +844,14 @@ prefs-sync-now =
 prefs-sync-now-button =
     .label = Sinhronizēt tagad
     .accesskey = n
+prefs-sync-now-button-2 =
+    .label = Sinhronizēt tagad
+    .accesskey = n
 prefs-syncing-button =
     .label = Sinhronizē...
+prefs-syncing-button-2 =
+    .label = Sinhronizē...
+    .title = Sinhronizēt tagad
 
 ## The list of things currently syncing.
 
@@ -841,6 +922,16 @@ sync-engine-settings =
 ## The device name controls.
 
 sync-device-name-header = Ierīces nosaukums
+sync-device-name-header-2 =
+    .label = Ierīces nosaukums
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Ierīces nosaukums
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Mainīt ierīces nosaukumu
+    .accesskey = n
 sync-device-name-change =
     .label = Mainīt ierīces nosaukumu…
     .accesskey = n
@@ -851,6 +942,8 @@ sync-device-name-save =
     .label = Saglabāt
     .accesskey = r
 sync-connect-another-device = Savienot citu ierīci
+sync-connect-another-device-2 =
+    .label = Savienot citu ierīci
 
 ## These strings are shown in a desktop notification after the
 ## user requests we resend a verification email.
@@ -982,6 +1075,16 @@ history-header = Vēsture
 #   - Simply as "Firefox", moving the verb into each option.
 #     This will result in "Firefox" + "Will remember history", etc.
 #   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label2 = { -brand-short-name }
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
 history-remember-label = { -brand-short-name }
     .accesskey = v
 history-remember-option-all =
@@ -990,6 +1093,18 @@ history-remember-option-never =
     .label = Nekad neatcerēsies vēsturi
 history-remember-option-custom =
     .label = Izmantos pielāgotus vēstures iestatījumus
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } atcerēsies jūsu pārlūkošanas, lejupielāžu, formu un meklēšanas vēsturi.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } izmantos tādus pat iestatījumus kā privātās pārlūkošanas režīmā un pārlūkojot internetu nesaglabās vēsturi.
+history-remember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } atcerēsies jūsu pārlūkošanas, lejupielāžu, formu un meklēšanas vēsturi.
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } izmantos tādus pat iestatījumus kā privātās pārlūkošanas režīmā un pārlūkojot internetu nesaglabās vēsturi.
 history-remember-description = { -brand-short-name } atcerēsies jūsu pārlūkošanas, lejupielāžu, formu un meklēšanas vēsturi.
 history-dontremember-description = { -brand-short-name } izmantos tādus pat iestatījumus kā privātās pārlūkošanas režīmā un pārlūkojot internetu nesaglabās vēsturi.
 history-private-browsing-permanent =
@@ -1010,6 +1125,8 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = Notīrīt vēsturi…
     .accesskey = v
+history-group =
+    .label = Vēsture
 
 ## Privacy Section - Site Data
 
@@ -1023,6 +1140,8 @@ sitedata-learn-more = Uzzināt vairāk
 sitedata-delete-on-close =
     .label = Dzēst sīkdatnes un vietnes datus, kad { -brand-short-name } ir aizvērts
     .accesskey = D
+sitedata-delete-on-close-private-browsing3 =
+    .message = Pamatojoties uz jūsu vēstures iestatījumiem, { -brand-short-name } dzēš sīkdatnes un vietņu datus no jūsu sesijas, kad aizverat pārlūkprogrammu.
 sitedata-delete-on-close-private-browsing = Pastāvīgās privātās pārlūkošanas režīmā sīkdatnes un vietņu dati vienmēr tiks notīrīti, kad tiek aizvērts { -brand-short-name }.
 sitedata-delete-on-close-private-browsing2 = Pamatojoties uz jūsu vēstures iestatījumiem, { -brand-short-name } dzēš sīkdatnes un vietņu datus no jūsu sesijas, kad aizverat pārlūkprogrammu.
 sitedata-allow-cookies-option =
@@ -1056,6 +1175,8 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = Pārvaldīt izņēmumus…
     .accesskey = z
+cookies-site-data-group =
+    .label = Sīkdatnes un vietnes dati
 
 ## Privacy Section - Cookie Banner Handling
 
@@ -1072,7 +1193,7 @@ forms-handle-cookie-banners =
 cookie-banner-blocker-checkbox-label =
     .label = Automātiski atteikt sīkdatņu paziņojumus
 
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = Adrešu josla
 addressbar-suggest = Meklējot adreses joslā, ieteikt
@@ -1161,7 +1282,7 @@ content-blocking-known-and-suspected-fingerprinters = Zināmi un varbūtēji cip
 content-blocking-etp-standard-tcp-rollout-description = Totālā Sīkdatņu Aizsardzība neļauj sīkdatnēm izkļūt ārpus vietnes, kurā atrodaties, tāpēc izsekotāji nevar tos izmantot, lai sekotu jums starp vietnēm.
 content-blocking-etp-standard-tcp-rollout-learn-more = Uzzināt vairāk
 content-blocking-etp-standard-tcp-title = Ietver Totālu Sīkdatņu Aizsardzību, mūsu visu laiku spēcīgāko privātuma funkciju
-content-blocking-warning-title = Galvas augšu!
+content-blocking-warning-title = Uzmanību!
 content-blocking-and-isolating-etp-warning-description-2 = Šī iestatījuma dēļ dažas vietnes var nerādīt saturu vai nedarboties pareizi. Ja šķiet, ka vietne ir salauzta, iespējams, vēlēsities šai vietnei izslēgt izsekošanas aizsardzību, lai ielādētu visu saturu.
 content-blocking-warning-learn-how = Uzziniet kā
 content-blocking-reload-description = Lai šīs izmaiņas stātos spēkā, jums būs jāpārlādē cilnes.
@@ -1243,6 +1364,8 @@ permissions-notification-link = Uzzināt vairāk
 permissions-notification-pause =
     .label = Nerādīt paziņojumus līdz { -brand-short-name } pārstartēšanai
     .accesskey = a
+permissions-autoplay2 =
+    .label = Automātiskā atskaņošana
 permissions-autoplay = Automātiskā atskaņošana
 permissions-autoplay-settings =
     .label = Iestatījumi…
@@ -1262,6 +1385,16 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = Izņēmumi...
     .accesskey = I
+permissions-location2 =
+    .label = Atrašanās vieta
+permissions-xr2 =
+    .label = Virtuālā realitāte
+permissions-camera2 =
+    .label = Kamera
+permissions-microphone2 =
+    .label = Mikrofons
+permissions-notification2 =
+    .label = Paziņojumi
 
 ## Privacy Section - Data Collection
 
@@ -1287,8 +1420,6 @@ addon-recommendations-link = Uzzināt vairāk
 collection-health-report-disabled = Datu ziņošana ir atspējota šajā būvējuma konfigurācija
 collection-backlogged-crash-reports-with-link = Atļaut { -brand-short-name } jūsu vārdā sūtīt uzkrātos avāriju pārskatus. <a data-l10n-name="crash-reports-link">Uzzināt vairāk</a>.
     .accesskey = A
-collection-backlogged-crash-reports = Atļaut { -brand-short-name } sūtīt uzkrātos avāriju ziņojumus jūsu vārdā
-    .accesskey = A
 privacy-segmentation-section-header = Jaunas funkcijas, kas uzlabo jūsu pārlūkošanu
 privacy-segmentation-section-description = Kad mēs piedāvājam funkcijas, kas izmanto jūsu datus, lai sniegtu jums personiskāku pieredzi:
 privacy-segmentation-radio-off =
@@ -1296,15 +1427,14 @@ privacy-segmentation-radio-off =
 privacy-segmentation-radio-on =
     .label = Rādīt detalizētu informāciju
 
-## Privacy Section - Website Advertising Preferences
-
-
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
 ## https://developers.google.com/safe-browsing/developers_guide_v2#AcceptableUsage
 
 security-header = Drošība
+browsing-protection-group =
+    .label = Maldinoša satura un bīstamas programmatūras aizsardzība
 security-browsing-protection = Maldinoša satura un bīstamas programmatūras aizsardzība
 security-enable-safe-browsing =
     .label = Bloķēt bīstamu un maldinošu saturu
@@ -1332,6 +1462,7 @@ certs-devices =
 certs-thirdparty-toggle =
     .label = Ļaut { -brand-short-name } automātiski uzticēties instalētajiem trešās puses saknes sertifikātiem
     .accesskey = t
+certs-devices-enable-fips = Ieslēgt FIPS
 space-alert-over-5gb-settings-button =
     .label = Atvērt iestatījumus
     .accesskey = A
@@ -1353,6 +1484,8 @@ httpsonly-radio-disabled =
 ## DoH Section
 
 preferences-doh-header = DNS caur HTTPS
+dns-over-https-group =
+    .label = DNS caur HTTPS
 preferences-doh-description = Domēnu vārdu sistēma (DNS), izmantojot HTTPS, nosūta jūsu domēna vārda pieprasījumu, izmantojot šifrētu savienojumu, izveidojot drošu DNS un neļauj citiem viegli redzēt, kurai vietnei jūs grasāties piekļūt.
 preferences-doh-description2 = Domēnu vārdu sistēma (DNS), izmantojot HTTPS, nosūta jūsu domēna vārda pieprasījumu, izmantojot šifrētu savienojumu, nodrošinot drošu DNS un neļauj citiem viegli redzēt, kurai vietnei jūs grasāties piekļūt.
 # Variables:

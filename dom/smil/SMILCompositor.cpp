@@ -6,11 +6,11 @@
 
 #include "SMILCompositor.h"
 
-#include "mozilla/dom/SVGSVGElement.h"
-#include "nsComputedDOMStyle.h"
-#include "nsCSSProps.h"
-#include "nsHashKeys.h"
 #include "SMILCSSProperty.h"
+#include "mozilla/dom/SVGSVGElement.h"
+#include "nsCSSProps.h"
+#include "nsComputedDOMStyle.h"
+#include "nsHashKeys.h"
 
 namespace mozilla {
 
@@ -40,6 +40,17 @@ void SMILCompositor::Traverse(nsCycleCollectionTraversalCallback* aCallback) {
 // Other methods
 void SMILCompositor::AddAnimationFunction(SMILAnimationFunction* aFunc) {
   if (aFunc) {
+#ifdef DEBUG
+    // Check that we don't already have an animation function that references
+    // the animation element used by aFunc. This will be an assert when we
+    // later sort the list. Let's catch the assert now. We use the same
+    // assert message from the sort.
+    for (const SMILAnimationFunction* func : mAnimationFunctions) {
+      MOZ_ASSERT(
+          !aFunc->HasSameAnimationElement(func),
+          "Two animations cannot have the same animation content element!");
+    }
+#endif
     mAnimationFunctions.AppendElement(aFunc);
   }
 }
@@ -52,7 +63,7 @@ void SMILCompositor::ComposeAttribute(bool& aMightHavePendingStyleUpdates) {
   RefPtr<const ComputedStyle> baseComputedStyle;
   if (MightNeedBaseStyle()) {
     baseComputedStyle = nsComputedDOMStyle::GetUnanimatedComputedStyleNoFlush(
-        mKey.mElement, PseudoStyleType::NotPseudo);
+        mKey.mElement, {});
   }
 
   // FIRST: Get the SMILAttr (to grab base value from, and to eventually
@@ -123,10 +134,10 @@ void SMILCompositor::ClearAnimationEffects() {
 // --------------------------
 UniquePtr<SMILAttr> SMILCompositor::CreateSMILAttr(
     const ComputedStyle* aBaseComputedStyle) {
-  nsCSSPropertyID propID = GetCSSPropertyToAnimate();
+  NonCustomCSSPropertyId propId = GetCSSPropertyToAnimate();
 
-  if (propID != eCSSProperty_UNKNOWN) {
-    return MakeUnique<SMILCSSProperty>(propID, mKey.mElement.get(),
+  if (propId != eCSSProperty_UNKNOWN) {
+    return MakeUnique<SMILCSSProperty>(propId, mKey.mElement.get(),
                                        aBaseComputedStyle);
   }
 
@@ -134,15 +145,15 @@ UniquePtr<SMILAttr> SMILCompositor::CreateSMILAttr(
                                         mKey.mAttributeName);
 }
 
-nsCSSPropertyID SMILCompositor::GetCSSPropertyToAnimate() const {
+NonCustomCSSPropertyId SMILCompositor::GetCSSPropertyToAnimate() const {
   if (mKey.mAttributeNamespaceID != kNameSpaceID_None) {
     return eCSSProperty_UNKNOWN;
   }
 
-  nsCSSPropertyID propID =
+  NonCustomCSSPropertyId propId =
       nsCSSProps::LookupProperty(nsAtomCString(mKey.mAttributeName));
 
-  if (!SMILCSSProperty::IsPropertyAnimatable(propID)) {
+  if (!SMILCSSProperty::IsPropertyAnimatable(propId)) {
     return eCSSProperty_UNKNOWN;
   }
 
@@ -165,7 +176,7 @@ nsCSSPropertyID SMILCompositor::GetCSSPropertyToAnimate() const {
     // Indeed an outer <svg> element, fall through.
   }
 
-  return propID;
+  return propId;
 }
 
 bool SMILCompositor::MightNeedBaseStyle() const {

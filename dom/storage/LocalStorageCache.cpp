@@ -6,17 +6,16 @@
 
 #include "LocalStorageCache.h"
 
+#include "LocalStorageManager.h"
 #include "Storage.h"
 #include "StorageDBThread.h"
 #include "StorageIPC.h"
 #include "StorageUtils.h"
-#include "LocalStorageManager.h"
-
+#include "mozilla/glean/DomStorageMetrics.h"
 #include "nsDOMString.h"
-#include "nsXULAppAPI.h"
-#include "mozilla/Unused.h"
 #include "nsProxyRelease.h"
 #include "nsThreadUtils.h"
+#include "nsXULAppAPI.h"
 
 namespace mozilla::dom {
 
@@ -165,8 +164,7 @@ void LocalStorageCache::NotifyObservers(const LocalStorage* aStorage,
   // We want to send a message to the parent in order to broadcast the
   // StorageEvent correctly to any child process.
 
-  Unused << mActor->SendNotify(aStorage->DocumentURI(), aKey, aOldValue,
-                               aNewValue);
+  (void)mActor->SendNotify(aStorage->DocumentURI(), aKey, aOldValue, aNewValue);
 }
 
 inline bool LocalStorageCache::Persist(const LocalStorage* aStorage) const {
@@ -237,8 +235,11 @@ void LocalStorageCache::WaitForPreload() {
   // Telemetry of rates of pending preloads
   if (!mPreloadTelemetryRecorded) {
     mPreloadTelemetryRecorded = true;
-    Telemetry::Accumulate(
-        Telemetry::LOCALDOMSTORAGE_PRELOAD_PENDING_ON_FIRST_ACCESS, !loaded);
+    glean::localdomstorage::preload_pending_on_first_access
+        .EnumGet(static_cast<
+                 glean::localdomstorage::PreloadPendingOnFirstAccessLabel>(
+            !loaded))
+        .Add();
   }
 
   if (loaded) {
@@ -409,7 +410,7 @@ nsresult LocalStorageCache::RemoveItem(const LocalStorage* aStorage,
   // Recalculate the cached data size
   const int64_t delta = -(static_cast<int64_t>(aOld.Length()) +
                           static_cast<int64_t>(aKey.Length()));
-  Unused << ProcessUsageDelta(aStorage, delta, aSource);
+  (void)ProcessUsageDelta(aStorage, delta, aSource);
   data.mKeys.Remove(aKey);
 
   if (aSource != ContentMutation) {
@@ -457,7 +458,7 @@ nsresult LocalStorageCache::Clear(const LocalStorage* aStorage,
   bool hadData = !!data.mKeys.Count();
 
   if (hadData) {
-    Unused << ProcessUsageDelta(aStorage, -data.mOriginQuotaUsage, aSource);
+    (void)ProcessUsageDelta(aStorage, -data.mOriginQuotaUsage, aSource);
     data.mKeys.Clear();
   }
 

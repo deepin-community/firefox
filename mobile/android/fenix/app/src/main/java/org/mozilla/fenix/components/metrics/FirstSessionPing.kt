@@ -12,16 +12,19 @@ import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import androidx.annotation.RequiresApi
 import androidx.annotation.VisibleForTesting
+import androidx.core.content.edit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import mozilla.components.support.base.log.logger.Logger
-import org.mozilla.fenix.Config
 import org.mozilla.fenix.GleanMetrics.FirstSession
 import org.mozilla.fenix.GleanMetrics.Pings
 import org.mozilla.fenix.ext.application
+import org.mozilla.fenix.ext.components
 
-class FirstSessionPing(private val context: Context) {
+class FirstSessionPing(
+    private val context: Context,
+) {
 
     private val prefs: SharedPreferences by lazy {
         context.getSharedPreferences(
@@ -51,7 +54,7 @@ class FirstSessionPing(private val context: Context) {
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal fun markAsTriggered() {
-        prefs.edit().putBoolean("ping_sent", true).apply()
+        prefs.edit { putBoolean("ping_sent", true) }
     }
 
     /**
@@ -60,16 +63,12 @@ class FirstSessionPing(private val context: Context) {
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal fun triggerPing() {
-        FirstSession.distributionId.set(
-            when (Config.channel.isMozillaOnline) {
-                true -> "MozillaOnline"
-                false -> "Mozilla"
-            },
-        )
         FirstSession.timestamp.set()
         FirstSession.installSource.set(installSourcePackage())
 
         CoroutineScope(Dispatchers.IO).launch {
+            FirstSession.distributionId.set(context.components.distributionIdManager.getDistributionId())
+
             Pings.firstSession.submit()
             markAsTriggered()
         }

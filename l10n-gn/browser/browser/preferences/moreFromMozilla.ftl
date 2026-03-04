@@ -11,6 +11,7 @@ more-from-moz-category =
 more-from-moz-subtitle = Ehecha ambue { -vendor-short-name } ojapopyre oikóva oykeko hag̃ua Ñanduti hesãivape.
 more-from-moz-firefox-mobile-title = { -brand-product-name } pumbyrýpe g̃uarã
 more-from-moz-firefox-mobile-description = Pumbyry kundahára omotendéva nde rekoñemi.
+more-from-moz-firefox-mobile-title-1 = { -brand-product-name } pumbyrýpe g̃uarã
 more-from-moz-mozilla-vpn-title = { -mozilla-vpn-brand-name }
 more-from-moz-mozilla-vpn-description = Ejuhu peteĩ ñepytyvõ kundahára ha ñemo’ã ojekuaa’ỹvagui.
 more-from-moz-qr-code-box-firefox-mobile-title = Emboguejy ne pumbyrýpe. Emoma’ẽ ne ra’ãnganohẽha pe QR ayvu rehe. Osẽvove pe juajuha, eiporavóke.
@@ -32,3 +33,17 @@ more-from-moz-mozilla-monitor-title = { -mozmonitor-brand-name }
 more-from-moz-mozilla-monitor-us-description = Egueru ijehegui ne maranduete jehechapyréva.
 more-from-moz-mozilla-monitor-global-description = Tog̃uahẽ kyhyjerã ne mba’ekuaarã oñemboguáramo.
 more-from-moz-mozilla-monitor-button = Erekóke { -monitor-brand-short-name }
+
+## These strings are for the Solo card in about:preferences moreFromMozilla page
+
+more-from-moz-solo-title = { -solo-ai-brand-name } AI
+more-from-moz-solo-description = Emoheñói ne ñanduti rendarã ha eiporu hendatee voi viru’ỹetére.
+more-from-moz-solo-button = Eiporu { -solo-ai-brand-name }
+more-from-moz-solo-title-2 = { -solo-ai-brand-name } IA ñanduti rogue moheñoiha
+
+## These strings are for the MDN card in about:preferences moreFromMozilla page
+
+more-from-moz-mdn-title = MDN ñandutigua kuatiatee
+more-from-moz-mdn-description = Eikuaa ñanduti ñemboguata kuaukaha ndive ha opamba’e reigua ha tuichaháicha.
+more-from-moz-mdn-button = Eñembokatupyry ñanduti mboguatarãme
+more-from-moz-mdn-title2 = { -mdn-brand-name }

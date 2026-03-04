@@ -4,8 +4,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/ArrayUtils.h"
-
 #include "nsAtom.h"
 #include "nsString.h"
 #include "UTFStrings.h"
@@ -23,7 +21,7 @@ namespace TestAtoms {
 
 TEST(Atoms, Basic)
 {
-  for (unsigned int i = 0; i < ArrayLength(ValidStrings); ++i) {
+  for (unsigned int i = 0; i < std::size(ValidStrings); ++i) {
     nsDependentString str16(ValidStrings[i].m16);
     nsDependentCString str8(ValidStrings[i].m8);
 
@@ -48,7 +46,7 @@ TEST(Atoms, Basic)
 
 TEST(Atoms, 16vs8)
 {
-  for (unsigned int i = 0; i < ArrayLength(ValidStrings); ++i) {
+  for (unsigned int i = 0; i < std::size(ValidStrings); ++i) {
     RefPtr<nsAtom> atom16 = NS_Atomize(ValidStrings[i].m16);
     RefPtr<nsAtom> atom8 = NS_Atomize(ValidStrings[i].m8);
     EXPECT_EQ(atom16, atom8);
@@ -73,7 +71,7 @@ TEST(Atoms, Null)
 
 TEST(Atoms, Invalid)
 {
-  for (unsigned int i = 0; i < ArrayLength(Invalid16Strings); ++i) {
+  for (unsigned int i = 0; i < std::size(Invalid16Strings); ++i) {
     nsrefcnt count = NS_GetNumberOfAtoms();
 
     {
@@ -85,7 +83,7 @@ TEST(Atoms, Invalid)
   }
 #ifndef DEBUG
   // Don't run this test in debug builds as that intentionally asserts.
-  for (unsigned int i = 0; i < ArrayLength(Invalid8Strings); ++i) {
+  for (unsigned int i = 0; i < std::size(Invalid8Strings); ++i) {
     nsrefcnt count = NS_GetNumberOfAtoms();
 
     {
@@ -98,7 +96,7 @@ TEST(Atoms, Invalid)
     EXPECT_EQ(count, NS_GetNumberOfAtoms());
   }
 
-  for (unsigned int i = 0; i < ArrayLength(Malformed8Strings); ++i) {
+  for (unsigned int i = 0; i < std::size(Malformed8Strings); ++i) {
     nsrefcnt count = NS_GetNumberOfAtoms();
 
     {

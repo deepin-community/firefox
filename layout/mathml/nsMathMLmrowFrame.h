@@ -7,7 +7,6 @@
 #ifndef nsMathMLmrowFrame_h___
 #define nsMathMLmrowFrame_h___
 
-#include "mozilla/Attributes.h"
 #include "nsMathMLContainerFrame.h"
 
 namespace mozilla {
@@ -27,8 +26,8 @@ class nsMathMLmrowFrame final : public nsMathMLContainerFrame {
   friend nsIFrame* NS_NewMathMLmrowFrame(mozilla::PresShell* aPresShell,
                                          ComputedStyle* aStyle);
 
-  virtual nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
-                                    int32_t aModType) override;
+  nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
+                            AttrModType aModType) override;
 
   NS_IMETHOD
   InheritAutomaticData(nsIFrame* aParent) override;
@@ -38,7 +37,7 @@ class nsMathMLmrowFrame final : public nsMathMLContainerFrame {
     return TransmitAutomaticDataForMrowLikeElement();
   }
 
-  virtual eMathMLFrameType GetMathMLFrameType() override;
+  MathMLFrameType GetMathMLFrameType() override;
 
   bool IsMrowLike() override {
     // <mrow> elements with a single child are treated identically to the case

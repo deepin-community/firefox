@@ -30,6 +30,7 @@ perftools-description-intro =
     Nahrávání spustí v novém panelu <a>profiler.firefox.com</a>. Všechna data jsou
     ukládána lokálně na vašem počítači, ale můžete se rozhodnout je sdílet.
 perftools-description-local-build = Pokud profilujete sestavení, které jste si sami zkompilovali na tomto zařízení, přidejte prosím objdir vašeho sestavení do níže uvedeného seznamu, abyste mohli použít vyhledávání informací o symbolech.
+perftools-pick-local-build-directory = Vyberte adresář se sestavením
 
 ## The controls for the interval at which the profiler samples the code.
 
@@ -65,6 +66,14 @@ perftools-button-restart = Restartovat
 perftools-button-add-directory = Přidat adresář
 perftools-button-remove-directory = Odebrat vybrané
 perftools-button-edit-settings = Upravit nastavení…
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Více akcí
+perftools-menu-more-actions-restart-with-profiling = Restartovat { -brand-shorter-name } s povoleným profilováním při spuštění
+perftools-menu-more-actions-copy-for-startup = Kopírování proměnných prostředí pro profilování při spuštění
+perftools-menu-more-actions-copy-for-perf-tests = Kopírovat parametry pro výkonnostní testy
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -150,6 +159,8 @@ perftools-presets-media-description2 =
         [with-cases] Doporučené nastavení pro ladění chyb při přehrávání zvuku nebo videa ve { -brand-shorter-name(case: "loc") }.
        *[no-cases] Doporučené nastavení pro ladění chyb při přehrávání zvuku nebo videa v aplikaci { -brand-shorter-name }.
     }
+perftools-presets-ml-label = Strojové učení
+perftools-presets-ml-description2 = Doporučené nastavení pro ladění problémů se strojovým učením v aplikaci { -brand-shorter-name }.
 perftools-presets-networking-label = Síť
 perftools-presets-networking-description =
     { -brand-shorter-name.case-status ->
@@ -169,7 +180,6 @@ perftools-presets-debug-description =
         [with-cases] Přednastaveno pro ladění ve { -brand-shorter-name(case: "loc") }. Vysoká režie, nepoužívat pro zlepšení výkonu, ale spíše pro pochopení chování prohlížeče.
        *[no-cases] Přednastaveno pro ladění v aplikaci { -brand-shorter-name }. Vysoká režie, nepoužívat pro zlepšení výkonu, ale spíše pro pochopení chování prohlížeče.
     }
+perftools-presets-web-compat-label = Webová kompatibilita
+perftools-presets-web-compat-description = Doporučené nastavení pro ladění problémů s kompatibilitou webových stránek, spíše než pro sledování výkonu.
 perftools-presets-custom-label = Vlastní
-
-##
-

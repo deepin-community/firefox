@@ -62,6 +62,14 @@ perftools-button-add-directory = Shtoni një drejtori
 perftools-button-remove-directory = Hiq të përzgjedhurën
 perftools-button-edit-settings = Përpunoni Rregullime…
 
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Më tepër veprime
+perftools-menu-more-actions-restart-with-profiling = Riniseni { -brand-shorter-name } me profilizim nisjeje të aktivizuar
+perftools-menu-more-actions-copy-for-startup = Kopjo ndryshore mjedisi për profilizim nisjeje
+perftools-menu-more-actions-copy-for-perf-tests = Kopjo parametra për prova funksionimi
+
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
 perftools-thread-gecko-main =
@@ -89,7 +97,7 @@ perftools-thread-jvm-glean =
 
 perftools-record-all-registered-threads = Anashkalo përzgjedhjet më sipër dhe regjistro krejt rrjedha e regjistruara
 perftools-tools-threads-input-label =
-    .title = Këto emra rrjedhash janë një listë e ndarë me presje, që përdoret për të aktivizuar profilizim rrjedhash te profilizuesi. Emri lypset të jetë vetëm një përputhje e pjesshme e emrit të rrjedhës që duhet përfshirë. Është i ndjeshëm ndaj hapësirave të zbrazëta.
+    .title = Këto emra rrjedhash janë një listë e ndarë me presje, që përdoret për të aktivizuar profilizim rrjedhash te profilizuesi. Emri lypset të jetë vetëm një përputhje e pjesshme e emrit të rrjedhës që duhet përfshirë. Hapësira të zbrazëta merren në konsideratë.
 
 ## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
 ## devtools.performance.new-panel-onboarding preference is true.
@@ -118,6 +126,8 @@ perftools-presets-graphics-label = Grafikë
 perftools-presets-graphics-description = Model për hetim të metash grafike në { -brand-shorter-name }.
 perftools-presets-media-label = Media
 perftools-presets-media-description2 = Model për hetim të metash audio dhe video nën { -brand-shorter-name }.
+perftools-presets-ml-label = Nxënie Nga Makinat
+perftools-presets-ml-description2 = Model për hetim të metash në nxënie nga makinat në { -brand-shorter-name }.
 perftools-presets-networking-label = Punim në rrjet
 perftools-presets-networking-description = Model për hetim të metash punimi në rrjet në { -brand-shorter-name }.
 # "Power" is used in the sense of energy (electricity used by the computer).
@@ -125,7 +135,5 @@ perftools-presets-power-label = Energji
 perftools-presets-power-description = Paracaktim për hetim të metash përdorimi energjie në { -brand-shorter-name }, me ngarkesë të ulët.
 perftools-presets-debug-label = Diagnostikoje
 perftools-presets-debug-description = Paracaktim për diagnostikim në { -brand-shorter-name }. Ngarkesë e madhe, mos e përdorni për punë funksionimi, por përdoreni për t’u përqendruar te të kuptuarit e sjelljes së shfletuesit.
+perftools-presets-web-compat-description = Paracaktim i rekomanduar për diagnostikim problemesh përputhjeje web, në vend se ndjekjeje funksionimi.
 perftools-presets-custom-label = Vetjak
-
-##
-

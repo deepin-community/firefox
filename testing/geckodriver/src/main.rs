@@ -16,11 +16,11 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
-extern crate serde_yaml;
 extern crate tempfile;
 extern crate url;
 extern crate uuid;
 extern crate webdriver;
+extern crate yaml_rust;
 extern crate zip;
 
 #[macro_use]
@@ -254,8 +254,8 @@ fn parse_args(args: &ArgMatches) -> ProgramResult<Operation> {
         allow_hosts: allow_hosts.clone(),
         allow_origins: allow_origins.clone(),
         jsdebugger: args.get_flag("jsdebugger"),
-        enable_crash_reporter: args.get_flag("enable_crash_reporter"),
         android_storage,
+        system_access: args.get_flag("allow_system_access"),
     };
     Ok(Operation::Server {
         log_level,
@@ -359,6 +359,12 @@ fn make_command() -> Command {
                 .help("List of request origins to allow. These must be formatted as scheme://host:port. By default any request with an origin header is rejected. If --allow-origins is provided then only exactly those origins are allowed."),
         )
         .arg(
+            Arg::new("allow_system_access")
+                .long("allow-system-access")
+                .action(ArgAction::SetTrue)
+                .help("Enable privileged access to the application's parent process"),
+        )
+        .arg(
             Arg::new("android_storage")
                 .long("android-storage")
                 .value_parser(["auto", "app", "internal", "sdcard"])
@@ -379,12 +385,6 @@ fn make_command() -> Command {
                 .requires("marionette_port")
                 .action(ArgAction::SetTrue)
                 .help("Connect to an existing Firefox instance"),
-        )
-        .arg(
-            Arg::new("enable_crash_reporter")
-                .long("enable-crash-reporter")
-                .action(ArgAction::SetTrue)
-                .help("Enable the Firefox crash reporter for diagnostic purposes"),
         )
         .arg(
             Arg::new("help")

@@ -17,26 +17,40 @@ class BackupTest(MarionetteTestCase):
 
     def setUp(self):
         MarionetteTestCase.setUp(self)
-        # We need to quit the browser and restart with the browser.backup.log
-        # pref already set to true in order for it to be displayed.
-        self.marionette.quit()
-        self.marionette.instance.prefs = {
+
+        # We need to force the service to be enabled because it's disabled
+        # by default for Marionette. Also "browser.backup.log" has to be set
+        # to true before Firefox starts in order for it to be displayed.
+        self.marionette.enforce_gecko_prefs({
+            "browser.backup.enabled": True,
             "browser.backup.log": True,
-        }
-        # Now restart the browser.
+            "browser.backup.archive.enabled": True,
+            "browser.backup.restore.enabled": True,
+            "browser.backup.archive.overridePlatformCheck": True,
+            "browser.backup.restore.overridePlatformCheck": True,
+            # Necessary to test Session Restore from backup, which relies on
+            # the crash restore mechanism.
+            "browser.sessionstore.resume_from_crash": True,
+        })
+
+        self.marionette.set_context("chrome")
+
+    def tearDown(self):
+        # Restart Firefox with a new profile to get rid from all modifications.
+        self.marionette.quit()
         self.marionette.instance.switch_profile()
         self.marionette.start_session()
 
-    def test_backup(self):
-        self.marionette.set_context("chrome")
+        MarionetteTestCase.tearDown(self)
 
+    def test_backup(self):
         self.add_test_cookie()
         self.add_test_login()
         self.add_test_certificate()
         self.add_test_saved_address()
         self.add_test_identity_credential()
         self.add_test_form_history()
-        self.add_test_activity_stream_snippets_data()
+        self.add_test_asrouter_snippets_data()
         self.add_test_protections_data()
         self.add_test_bookmarks()
         self.add_test_history()
@@ -81,9 +95,13 @@ class BackupTest(MarionetteTestCase):
 
         # Restart the browser to force all of the test data we just added
         # to be flushed to disk and to be made ready for backup
-        self.marionette.quit()
-        self.marionette.start_session()
-        self.marionette.set_context("chrome")
+        self.marionette.restart()
+
+        # We want to validate that TabState is flushed before serializing the
+        # backup, so run this test in the same browser instance we invoke the
+        # backup in.
+        self.add_test_sessionstore()
+
         # Put the OSKeyStore label back, since it would have been cleared
         # from memory during the restart.
         self.marionette.execute_script(
@@ -147,17 +165,17 @@ class BackupTest(MarionetteTestCase):
         # Start a brand new profile, one without any of the data we created or
         # backed up. This is the one that we'll be starting recovery from.
         self.marionette.quit()
-        self.marionette.instance.profile = None
+        self.marionette.instance.switch_profile()
         self.marionette.start_session()
         self.marionette.set_context("chrome")
 
         # Recover the created backup into a new profile directory. Also get out
         # the client ID of this profile, because we're going to want to make
-        # sure that this client ID is inherited by the recovered profile.
+        # sure that this client ID is not inherited from the intermediate profile.
         [
             newProfileName,
             newProfilePath,
-            expectedClientID,
+            intermediateClientID,
             osKeyStoreLabel,
         ] = self.marionette.execute_async_script(
             """
@@ -191,18 +209,18 @@ class BackupTest(MarionetteTestCase):
               throw new Error("Could not create recovery profile.");
             }
 
-            let expectedClientID = await ClientID.getClientID();
+            let intermediateClientID = await ClientID.getClientID();
 
-            return [newProfile.name, newProfile.rootDir.path, expectedClientID, OSKeyStore.STORE_LABEL];
+            return [newProfile.name, newProfile.rootDir.path, intermediateClientID, OSKeyStore.STORE_LABEL];
           })().then(outerResolve);
         """,
             script_args=[archivePath, recoveryCode, recoveryPath],
         )
 
-        print("Recovery name: %s" % newProfileName)
-        print("Recovery path: %s" % newProfilePath)
-        print("Expected clientID: %s" % expectedClientID)
-        print("Persisting fake OSKeyStore label: %s" % osKeyStoreLabel)
+        print(f"Recovery name: {newProfileName}")
+        print(f"Recovery path: {newProfilePath}")
+        print(f"Intermediate clientID: {intermediateClientID}")
+        print(f"Persisting fake OSKeyStore label: {osKeyStoreLabel}")
 
         self.marionette.quit()
         originalProfile = self.marionette.instance.profile
@@ -237,13 +255,14 @@ class BackupTest(MarionetteTestCase):
         self.verify_recovered_saved_address()
         self.verify_recovered_identity_credential()
         self.verify_recovered_form_history()
-        self.verify_recovered_activity_stream_snippets_data()
+        self.verify_recovered_asrouter_snippets_data()
         self.verify_recovered_protections_data()
         self.verify_recovered_bookmarks()
         self.verify_recovered_history()
         self.verify_recovered_preferences()
         self.verify_recovered_permissions()
         self.verify_recovered_payment_methods(osKeyStoreLabel)
+        self.verify_recovered_sessionstore()
 
         # Clean up the temporary OSKeyStore label
         self.marionette.execute_async_script(
@@ -260,8 +279,8 @@ class BackupTest(MarionetteTestCase):
             script_args=[osKeyStoreLabel],
         )
 
-        # Now also ensure that the recovered profile inherited the client ID
-        # from the profile that initiated recovery.
+        # Now also ensure that the recovered profile new client ID and not that
+        # one from the intermediate profile that initiated recovery.
         recoveredClientID = self.marionette.execute_async_script(
             """
           const { ClientID } = ChromeUtils.importESModule("resource://gre/modules/ClientID.sys.mjs");
@@ -271,36 +290,105 @@ class BackupTest(MarionetteTestCase):
           })().then(outerResolve);
         """
         )
-        self.assertEqual(recoveredClientID, expectedClientID)
+        self.assertNotEqual(recoveredClientID, intermediateClientID)
 
-        # Try not to pollute the profile list by getting rid of the one we just
-        # created.
         self.marionette.quit()
         self.marionette.instance.profile = originalProfile
         self.marionette.start_session()
         self.marionette.set_context("chrome")
-        self.marionette.execute_script(
+
+        # Don't pollute the profile list by getting rid of the one we just created.
+        self.marionette.execute_async_script(
             """
-          let newProfileName = arguments[0];
+          let [newProfileName, outerResolve] = arguments;
           let profileSvc = Cc["@mozilla.org/toolkit/profile-service;1"].getService(
             Ci.nsIToolkitProfileService
           );
           let profile = profileSvc.getProfileByName(newProfileName);
           profile.remove(true);
-          profileSvc.flush();
+          profileSvc.asyncFlush().then(outerResolve);
         """,
             script_args=[newProfileName],
         )
 
-        # Cleanup the archive we moved, and the recovery folder we decompressed
-        # to.
+        # Cleanup the archive we moved, and the recovery folder we decompressed to.
         mozfile.remove(archivePath)
         mozfile.remove(recoveryPath)
+
+    def test_backup_disablement_in_new_session(self):
+        archiveDestPath = os.path.join(
+            tempfile.gettempdir(), "backup-dest-disable-test"
+        )
+
+        [archivePath, lastBackupFileName] = self.marionette.execute_async_script(
+            """
+          const { BackupService } = ChromeUtils.importESModule("resource:///modules/backup/BackupService.sys.mjs");
+          let bs = BackupService.init();
+          if (!bs) {
+            throw new Error("Could not get initialized BackupService.");
+          }
+
+          let [archiveDestPath, outerResolve] = arguments;
+          bs.setParentDirPath(archiveDestPath);
+
+          (async () => {
+            bs.setScheduledBackups(true);
+            let { archivePath } = await bs.createBackup();
+            if (!archivePath) {
+              throw new Error("Could not create backup.");
+            }
+
+            let lastBackupFileName = Services.prefs.getStringPref("browser.backup.scheduled.last-backup-file", "");
+            return [archivePath, lastBackupFileName];
+          })().then(outerResolve);
+        """,
+            script_args=[archiveDestPath],
+        )
+
+        print(f"Created backup at: {archivePath}")
+        print(f"Last backup filename: {lastBackupFileName}")
+
+        self.marionette.quit()
+        self.marionette.start_session()
+        self.marionette.set_context("chrome")
+
+        if os.path.exists(archivePath):
+            print(f"File size: {os.path.getsize(archivePath)} bytes")
+
+        self.marionette.execute_async_script(
+            """
+
+          ChromeUtils.defineESModuleGetters(this, {
+            BackupService: "resource:///modules/backup/BackupService.sys.mjs",
+            ASRouterTargeting: "resource:///modules/asrouter/ASRouterTargeting.sys.mjs",
+          });
+
+          let bs = BackupService.init();
+          if (!bs) {
+            throw new Error("Could not get initialized BackupService.");
+          }
+
+          let [outerResolve] = arguments;
+          (async () => {
+            await ASRouterTargeting.Environment.backupsInfo;
+            await bs.cleanupBackupFiles();
+            bs.setScheduledBackups(false);
+          })().then(outerResolve);
+        """,
+            script_args=[],
+        )
+
+        archiveDeletedAfterDisable = not os.path.exists(archivePath)
+        self.assertTrue(
+            archiveDeletedAfterDisable,
+            f"Backup file should be deleted after disabling backups. Path: {archivePath}, exists: {os.path.exists(archivePath)}",
+        )
 
     def add_test_cookie(self):
         self.marionette.execute_async_script(
             """
           let [outerResolve] = arguments;
+
           (async () => {
             // We'll just add a single cookie, and then make sure that it shows
             // up on the other side.
@@ -313,9 +401,9 @@ class BackupTest(MarionetteTestCase):
               false,
               false,
               false,
-              Date.now() / 1000 + 1,
+              Date.now() + 1000,
               {},
-              Ci.nsICookie.SAMESITE_NONE,
+              Ci.nsICookie.SAMESITE_UNSET,
               Ci.nsICookie.SCHEME_HTTP
             );
           })().then(outerResolve);
@@ -332,7 +420,8 @@ class BackupTest(MarionetteTestCase):
           })().then(outerResolve);
         """
         )
-        self.assertEqual(cookiesLength, 1)
+        # Expect cookies to be removed from the backup.
+        self.assertEqual(cookiesLength, 0)
 
     def add_test_login(self):
         self.marionette.execute_async_script(
@@ -582,17 +671,17 @@ class BackupTest(MarionetteTestCase):
         )
         self.assertEqual(formHistoryResultsLength, 1)
 
-    def add_test_activity_stream_snippets_data(self):
+    def add_test_asrouter_snippets_data(self):
         self.marionette.execute_async_script(
             """
-          const { ActivityStreamStorage } = ChromeUtils.importESModule(
-            "resource://activity-stream/lib/ActivityStreamStorage.sys.mjs",
+          const { ASRouterStorage } = ChromeUtils.importESModule(
+            "resource:///modules/asrouter/ASRouterStorage.sys.mjs",
           );
           const SNIPPETS_TABLE_NAME = "snippets";
 
           let [outerResolve] = arguments;
           (async () => {
-            let storage = new ActivityStreamStorage({
+            let storage = new ASRouterStorage({
               storeNames: [SNIPPETS_TABLE_NAME],
             });
             let snippetsTable = await storage.getDbTable(SNIPPETS_TABLE_NAME);
@@ -601,17 +690,17 @@ class BackupTest(MarionetteTestCase):
         """
         )
 
-    def verify_recovered_activity_stream_snippets_data(self):
+    def verify_recovered_asrouter_snippets_data(self):
         snippetsResult = self.marionette.execute_async_script(
             """
-          const { ActivityStreamStorage } = ChromeUtils.importESModule(
-            "resource://activity-stream/lib/ActivityStreamStorage.sys.mjs",
+          const { ASRouterStorage } = ChromeUtils.importESModule(
+            "resource:///modules/asrouter/ASRouterStorage.sys.mjs",
           );
           const SNIPPETS_TABLE_NAME = "snippets";
 
           let [outerResolve] = arguments;
           (async () => {
-            let storage = new ActivityStreamStorage({
+            let storage = new ASRouterStorage({
               storeNames: [SNIPPETS_TABLE_NAME],
             });
             let snippetsTable = await storage.getDbTable(SNIPPETS_TABLE_NAME);
@@ -849,3 +938,26 @@ class BackupTest(MarionetteTestCase):
             script_args=[osKeyStoreLabel],
         )
         self.assertTrue(cardExists)
+
+    def add_test_sessionstore(self):
+        with self.marionette.using_context("content"):
+            self.marionette.navigate("about:mozilla")
+
+    def verify_recovered_sessionstore(self):
+        [tabCount, url] = self.marionette.execute_script(
+            """
+          const { SessionStore } = ChromeUtils.importESModule(
+            "resource:///modules/sessionstore/SessionStore.sys.mjs"
+          );
+          const session = SessionStore.getCurrentState(true);
+          const win = session.windows[0];
+          const tabLen = win.tabs.length;
+          const tab = win.tabs[0];
+          const entry = tab.entries[0];
+          const url = entry.url;
+          return [tabLen, url];
+        """
+        )
+
+        self.assertEqual(tabCount, 1)
+        self.assertEqual(url, "about:mozilla")

@@ -19,6 +19,8 @@ NS_IMETHODIMP
 GeckoViewContentChannel::OpenContentStream(bool aAsync,
                                            nsIInputStream** aResult,
                                            nsIChannel** aChannel) {
+  MOZ_ASSERT(XRE_IsParentProcess());
+
   nsCOMPtr<nsIURI> uri;
   nsresult rv = GetURI(getter_AddRefs(uri));
   NS_ENSURE_SUCCESS(rv, NS_ERROR_MALFORMED_URI);
@@ -33,8 +35,9 @@ GeckoViewContentChannel::OpenContentStream(bool aAsync,
   }
 
   nsCOMPtr<nsIInputStream> inputStream;
-  rv = GeckoViewContentInputStream::getInstance(spec,
-                                                getter_AddRefs(inputStream));
+  rv = GeckoViewContentInputStream::GetInstance(
+      spec, GeckoViewContentInputStream::Allow::PDFOnly,
+      getter_AddRefs(inputStream));
   NS_ENSURE_SUCCESS(rv, rv);
 
   if (NS_WARN_IF(!inputStream)) {

@@ -14,6 +14,10 @@ const { sinon } = ChromeUtils.importESModule(
   "resource://testing-common/Sinon.sys.mjs"
 );
 
+const { TelemetryTestUtils } = ChromeUtils.importESModule(
+  "resource://testing-common/TelemetryTestUtils.sys.mjs"
+);
+
 const MOCK_PASSWORD = "mckP@ss3x2 fake_password";
 
 /**
@@ -51,6 +55,19 @@ function createMockValidityPassEventPromise(parentEl, passwordInputsEl, event) {
     })
   );
   return promise;
+}
+
+/**
+ * Tries to get the BackupService, and if it is not inited, inits it
+ *
+ * @returns {BackupService}
+ */
+function getAndMaybeInitBackupService() {
+  try {
+    return BackupService.get();
+  } catch {
+    return BackupService.init();
+  }
 }
 
 /**

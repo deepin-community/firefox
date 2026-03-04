@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Alliance for Open Media. All rights reserved
+ * Copyright (c) 2024, Alliance for Open Media. All rights reserved.
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
  * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
@@ -13,11 +13,11 @@
 #include <new>
 
 #include "config/av1_rtcd.h"
-#include "test/acm_random.h"
-#include "test/util.h"
 #include "aom_ports/aom_timer.h"
 #include "aom_ports/bitops.h"
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
+#include "gtest/gtest.h"
+#include "test/acm_random.h"
+#include "test/util.h"
 
 namespace {
 
@@ -30,7 +30,7 @@ using std::tuple;
 
 const int kIters = 1000;
 
-typedef tuple<int, int> FrameDimension;
+using FrameDimension = tuple<int, int>;
 
 // Check that two 8-bit output buffers are identical.
 void AssertOutputBufferEq(const uint8_t *p1, const uint8_t *p2, int width,
@@ -50,12 +50,12 @@ void AssertOutputBufferEq(const uint8_t *p1, const uint8_t *p2, int width,
   }
 }
 
-typedef bool (*LowBDResizeFunc)(uint8_t *intbuf, uint8_t *output,
-                                int out_stride, int height, int height2,
-                                int stride, int start_wd);
+using LowBDResizeFunc = bool (*)(uint8_t *intbuf, uint8_t *output,
+                                 int out_stride, int height, int height2,
+                                 int stride, int start_wd);
 // Test parameter list:
 //  <tst_fun, dims>
-typedef tuple<LowBDResizeFunc, FrameDimension> ResizeTestParams;
+using ResizeTestParams = tuple<LowBDResizeFunc, FrameDimension>;
 
 class AV1ResizeYTest : public ::testing::TestWithParam<ResizeTestParams> {
  public:
@@ -166,11 +166,11 @@ INSTANTIATE_TEST_SUITE_P(
                        ::testing::ValuesIn(kFrameDim)));
 #endif
 
-typedef void (*LowBDResize_x_Func)(const uint8_t *const input, int in_stride,
-                                   uint8_t *intbuf, int height,
-                                   int filtered_length, int width2);
+using LowBDResize_x_Func = void (*)(const uint8_t *const input, int in_stride,
+                                    uint8_t *intbuf, int height,
+                                    int filtered_length, int width2);
 
-typedef tuple<LowBDResize_x_Func, FrameDimension> Resize_x_TestParams;
+using Resize_x_TestParams = tuple<LowBDResize_x_Func, FrameDimension>;
 
 class AV1ResizeXTest : public ::testing::TestWithParam<Resize_x_TestParams> {
  public:

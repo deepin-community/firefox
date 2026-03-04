@@ -9,7 +9,6 @@
 #include "PreloaderBase.h"
 #include "mozilla/Assertions.h"
 #include "mozilla/AsyncEventDispatcher.h"
-#include "mozilla/Maybe.h"
 #include "mozilla/dom/FetchPriority.h"
 #include "mozilla/dom/HTMLLinkElement.h"
 #include "mozilla/dom/ScriptLoader.h"
@@ -85,10 +84,20 @@ already_AddRefed<PreloaderBase> PreloadService::PreloadLinkElement(
   aLinkElement->GetImageSizes(sizes);
   aLinkElement->GetHref(url);
   aLinkElement->GetCrossOrigin(crossOrigin);
-  aLinkElement->GetIntegrity(integrity);
   aLinkElement->GetReferrerPolicy(referrerPolicy);
   aLinkElement->GetFetchPriority(fetchPriority);
   aLinkElement->GetRel(rel);
+
+  aLinkElement->GetIntegrity(integrity);
+  integrity =
+      aLinkElement->HasAttr(nsGkAtoms::integrity) ? integrity : VoidString();
+
+  // rel=compression-dictionary fetches default to "anonymous" if no
+  // crossorigin=foo parameter is given
+  if (rel.LowerCaseEqualsASCII("compression-dictionary") &&
+      crossOrigin.IsEmpty()) {
+    crossOrigin = u"anonymous"_ns;
+  }
 
   nsAutoString nonce;
   if (nsString* cspNonce =
@@ -104,7 +113,7 @@ already_AddRefed<PreloaderBase> PreloadService::PreloadLinkElement(
     aLinkElement->GetType(type);
   }
 
-  auto result = PreloadOrCoalesce(uri, url, aPolicyType, as, type, charset,
+  auto result = PreloadOrCoalesce(uri, url, aPolicyType, as, rel, type, charset,
                                   srcset, sizes, nonce, integrity, crossOrigin,
                                   referrerPolicy, fetchPriority,
                                   /* aFromHeader = */ false, 0);
@@ -120,9 +129,9 @@ already_AddRefed<PreloaderBase> PreloadService::PreloadLinkElement(
 
 void PreloadService::PreloadLinkHeader(
     nsIURI* aURI, const nsAString& aURL, nsContentPolicyType aPolicyType,
-    const nsAString& aAs, const nsAString& aType, const nsAString& aNonce,
-    const nsAString& aIntegrity, const nsAString& aSrcset,
-    const nsAString& aSizes, const nsAString& aCORS,
+    const nsAString& aAs, const nsAString& aRel, const nsAString& aType,
+    const nsAString& aNonce, const nsAString& aIntegrity,
+    const nsAString& aSrcset, const nsAString& aSizes, const nsAString& aCORS,
     const nsAString& aReferrerPolicy, uint64_t aEarlyHintPreloaderId,
     const nsAString& aFetchPriority) {
   if (aPolicyType == nsIContentPolicy::TYPE_INVALID) {
@@ -130,10 +139,17 @@ void PreloadService::PreloadLinkHeader(
     return;
   }
 
-  PreloadOrCoalesce(aURI, aURL, aPolicyType, aAs, aType, u""_ns, aSrcset,
-                    aSizes, aNonce, aIntegrity, aCORS, aReferrerPolicy,
-                    aFetchPriority,
-                    /* aFromHeader = */ true, aEarlyHintPreloaderId);
+  // rel=compression-dictionary fetches default to "anonymous" if no
+  // crossorigin=foo parameter is given
+
+  PreloadOrCoalesce(
+      aURI, aURL, aPolicyType, aAs, aRel, aType, u""_ns, aSrcset, aSizes,
+      aNonce, aIntegrity,
+      aRel.LowerCaseEqualsASCII("compression-dictionary") && aCORS.IsEmpty()
+          ? u"anonymous"_ns
+          : aCORS,
+      aReferrerPolicy, aFetchPriority,
+      /* aFromHeader = */ true, aEarlyHintPreloaderId);
 }
 
 // The mapping is specified as implementation-defined, see step 15 of
@@ -164,8 +180,9 @@ class SupportsPriorityValueFor {
 
 PreloadService::PreloadOrCoalesceResult PreloadService::PreloadOrCoalesce(
     nsIURI* aURI, const nsAString& aURL, nsContentPolicyType aPolicyType,
-    const nsAString& aAs, const nsAString& aType, const nsAString& aCharset,
-    const nsAString& aSrcset, const nsAString& aSizes, const nsAString& aNonce,
+    const nsAString& aAs, const nsAString& aRel, const nsAString& aType,
+    const nsAString& aCharset, const nsAString& aSrcset,
+    const nsAString& aSizes, const nsAString& aNonce,
     const nsAString& aIntegrity, const nsAString& aCORS,
     const nsAString& aReferrerPolicy, const nsAString& aFetchPriority,
     bool aFromHeader, uint64_t aEarlyHintPreloaderId) {
@@ -199,6 +216,10 @@ PreloadService::PreloadOrCoalesceResult PreloadService::PreloadOrCoalesce(
   } else if (aAs.LowerCaseEqualsASCII("fetch")) {
     preloadKey = PreloadHashKey::CreateAsFetch(
         uri, dom::Element::StringToCORSMode(aCORS));
+  } else if (aRel.LowerCaseEqualsASCII("compression-dictionary")) {
+    // compression-dictionary doesn't specify an 'as=' value
+    preloadKey = PreloadHashKey::CreateAsFetch(
+        uri, dom::Element::StringToCORSMode(aCORS));
   } else {
     return {nullptr, false};
   }
@@ -212,11 +233,17 @@ PreloadService::PreloadOrCoalesceResult PreloadService::PreloadOrCoalesce(
                   aFetchPriority, aIntegrity, true /* isInHead - TODO */,
                   aEarlyHintPreloaderId);
   } else if (aAs.LowerCaseEqualsASCII("style")) {
+    const auto preloadKind = [&] {
+      if (aEarlyHintPreloaderId) {
+        MOZ_ASSERT(aFromHeader);
+        return css::StylePreloadKind::FromEarlyHintsHeader;
+      }
+      return aFromHeader ? css::StylePreloadKind::FromLinkRelPreloadHeader
+                         : css::StylePreloadKind::FromLinkRelPreloadElement;
+    }();
     auto status = mDocument->PreloadStyle(
         aURI, Encoding::ForLabel(aCharset), aCORS,
-        PreloadReferrerPolicy(aReferrerPolicy), aNonce, aIntegrity,
-        aFromHeader ? css::StylePreloadKind::FromLinkRelPreloadHeader
-                    : css::StylePreloadKind::FromLinkRelPreloadElement,
+        PreloadReferrerPolicy(aReferrerPolicy), aNonce, aIntegrity, preloadKind,
         aEarlyHintPreloaderId, aFetchPriority);
     switch (status) {
       case dom::SheetPreloadStatus::AlreadyComplete:
@@ -231,7 +258,8 @@ PreloadService::PreloadOrCoalesceResult PreloadService::PreloadOrCoalesce(
   } else if (aAs.LowerCaseEqualsASCII("font")) {
     PreloadFont(uri, aCORS, aReferrerPolicy, aEarlyHintPreloaderId,
                 aFetchPriority);
-  } else if (aAs.LowerCaseEqualsASCII("fetch")) {
+  } else if (aAs.LowerCaseEqualsASCII("fetch") ||
+             aRel.LowerCaseEqualsASCII("compression-dictionary")) {
     PreloadFetch(uri, aCORS, aReferrerPolicy, aEarlyHintPreloaderId,
                  aFetchPriority);
   }
@@ -250,10 +278,12 @@ void PreloadService::PreloadScript(
     const nsAString& aNonce, const nsAString& aFetchPriority,
     const nsAString& aIntegrity, bool aScriptFromHead,
     uint64_t aEarlyHintPreloaderId) {
-  mDocument->ScriptLoader()->PreloadURI(
-      aURI, aCharset, aType, aCrossOrigin, aNonce, aFetchPriority, aIntegrity,
-      aScriptFromHead, false, false, true,
-      PreloadReferrerPolicy(aReferrerPolicy), aEarlyHintPreloaderId);
+  if (ScriptLoader* scriptLoader = mDocument->GetScriptLoader()) {
+    scriptLoader->PreloadURI(
+        aURI, aCharset, aType, aCrossOrigin, aNonce, aFetchPriority, aIntegrity,
+        aScriptFromHead, false, false, true,
+        PreloadReferrerPolicy(aReferrerPolicy), aEarlyHintPreloaderId);
+  }
 }
 
 void PreloadService::PreloadImage(nsIURI* aURI, const nsAString& aCrossOrigin,

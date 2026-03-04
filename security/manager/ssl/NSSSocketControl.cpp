@@ -12,7 +12,9 @@
 #include "secerr.h"
 #include "mozilla/Base64.h"
 #include "mozilla/dom/Promise.h"
+#include "mozilla/glean/SecurityManagerSslMetrics.h"
 #include "nsNSSCallbacks.h"
+#include "nsNSSComponent.h"
 #include "nsProxyRelease.h"
 
 using namespace mozilla;
@@ -39,7 +41,7 @@ NSSSocketControl::NSSSocketControl(
       mIsFullHandshake(false),
       mNotedTimeUntilReady(false),
       mEchExtensionStatus(EchExtensionStatus::kNotPresent),
-      mSentXyberShare(false),
+      mSentMlkemShare(false),
       mHasTls13HandshakeSecrets(false),
       mIsShortWritePending(false),
       mShortWritePendingByte(0),
@@ -51,7 +53,7 @@ NSSSocketControl::NSSSocketControl(
       mSocketCreationTimestamp(TimeStamp::Now()),
       mPlaintextBytesRead(0),
       mClaimed(!(providerFlags & nsISocketProvider::IS_SPECULATIVE_CONNECTION)),
-      mPendingSelectClientAuthCertificate(nullptr),
+      mClientAuthCertificateRequest(Nothing()),
       mBrowserId(0) {}
 
 NS_IMETHODIMP
@@ -89,32 +91,27 @@ void NSSSocketControl::NoteTimeUntilReady() {
   }
   mNotedTimeUntilReady = true;
 
-  auto timestampNow = TimeStamp::Now();
+  auto duration = TimeStamp::Now() - mSocketCreationTimestamp;
   if (!(mProviderFlags & nsISocketProvider::IS_RETRY)) {
-    Telemetry::AccumulateTimeDelta(Telemetry::SSL_TIME_UNTIL_READY_FIRST_TRY,
-                                   mSocketCreationTimestamp, timestampNow);
+    glean::ssl::time_until_ready_first_try.AccumulateRawDuration(duration);
   }
 
   if (mProviderFlags & nsISocketProvider::BE_CONSERVATIVE) {
-    Telemetry::AccumulateTimeDelta(Telemetry::SSL_TIME_UNTIL_READY_CONSERVATIVE,
-                                   mSocketCreationTimestamp, timestampNow);
+    glean::ssl::time_until_ready_conservative.AccumulateRawDuration(duration);
   }
 
   switch (GetEchExtensionStatus()) {
     case EchExtensionStatus::kGREASE:
-      Telemetry::AccumulateTimeDelta(Telemetry::SSL_TIME_UNTIL_READY_ECH_GREASE,
-                                     mSocketCreationTimestamp, timestampNow);
+      glean::ssl::time_until_ready_ech_grease.AccumulateRawDuration(duration);
       break;
     case EchExtensionStatus::kReal:
-      Telemetry::AccumulateTimeDelta(Telemetry::SSL_TIME_UNTIL_READY_ECH,
-                                     mSocketCreationTimestamp, timestampNow);
+      glean::ssl::time_until_ready_ech.AccumulateRawDuration(duration);
       break;
     default:
       break;
   }
   // This will include TCP and proxy tunnel wait time
-  Telemetry::AccumulateTimeDelta(Telemetry::SSL_TIME_UNTIL_READY,
-                                 mSocketCreationTimestamp, timestampNow);
+  glean::ssl::time_until_ready.AccumulateRawDuration(duration);
 
   MOZ_LOG(gPIPNSSLog, LogLevel::Debug,
           ("[%p] NSSSocketControl::NoteTimeUntilReady\n", mFd));
@@ -137,16 +134,17 @@ void NSSSocketControl::SetHandshakeCompleted() {
                                       : NotAllowedToFalseStart;
     // This will include TCP and proxy tunnel wait time
     if (mKeaGroupName.isSome()) {
-      Telemetry::AccumulateTimeDelta(
-          Telemetry::SSL_TIME_UNTIL_HANDSHAKE_FINISHED_KEYED_BY_KA,
-          *mKeaGroupName, mSocketCreationTimestamp, TimeStamp::Now());
+      glean::ssl::time_until_handshake_finished_keyed_by_ka.Get(*mKeaGroupName)
+          .AccumulateRawDuration(TimeStamp::Now() - mSocketCreationTimestamp);
     }
 
     // If the handshake is completed for the first time from just 1 callback
     // that means that TLS session resumption must have been used.
-    Telemetry::Accumulate(Telemetry::SSL_RESUMED_SESSION,
-                          handshakeType == Resumption);
-    Telemetry::Accumulate(Telemetry::SSL_HANDSHAKE_TYPE, handshakeType);
+    glean::ssl::resumed_session
+        .EnumGet(static_cast<glean::ssl::ResumedSessionLabel>(handshakeType ==
+                                                              Resumption))
+        .Add();
+    glean::ssl_handshake::completed.AccumulateSingleSample(handshakeType);
   }
 
   // Remove the plaintext layer as it is not needed anymore.
@@ -172,7 +170,7 @@ void NSSSocketControl::SetHandshakeCompleted() {
 
   if (mTlsHandshakeCallback) {
     auto callback = std::move(mTlsHandshakeCallback);
-    Unused << callback->HandshakeDone();
+    (void)callback->HandshakeDone();
   }
 }
 
@@ -203,7 +201,7 @@ NSSSocketControl::GetAlpnEarlySelection(nsACString& aAlpnSelected) {
   unsigned char chosenAlpn[MAX_ALPN_LENGTH];
   unsigned int chosenAlpnLen;
   rv = SSL_GetNextProto(mFd, &alpnState, chosenAlpn, &chosenAlpnLen,
-                        AssertedCast<unsigned int>(ArrayLength(chosenAlpn)));
+                        AssertedCast<unsigned int>(std::size(chosenAlpn)));
 
   if (rv != SECSuccess) {
     return NS_ERROR_NOT_AVAILABLE;
@@ -409,7 +407,6 @@ void NSSSocketControl::SetCertVerificationWaiting() {
 // callbacks.
 void NSSSocketControl::SetCertVerificationResult(PRErrorCode errorCode) {
   COMMON_SOCKET_CONTROL_ASSERT_ON_OWNING_THREAD();
-  SetUsedPrivateDNS(GetProviderFlags() & nsISocketProvider::USED_PRIVATE_DNS);
   MOZ_ASSERT(mCertVerificationState == WaitingForCertVerification,
              "Invalid state transition to AfterCertVerification");
 
@@ -435,8 +432,8 @@ void NSSSocketControl::SetCertVerificationResult(PRErrorCode errorCode) {
   }
 
   if (mPlaintextBytesRead && !errorCode) {
-    Telemetry::Accumulate(Telemetry::SSL_BYTES_BEFORE_CERT_CALLBACK,
-                          AssertedCast<uint32_t>(mPlaintextBytesRead));
+    glean::ssl::bytes_before_cert_callback.Accumulate(
+        AssertedCast<uint32_t>(mPlaintextBytesRead));
   }
 
   MOZ_LOG(gPIPNSSLog, LogLevel::Debug,
@@ -446,7 +443,7 @@ void NSSSocketControl::SetCertVerificationResult(PRErrorCode errorCode) {
 
   mCertVerificationState = AfterCertVerification;
   if (mTlsHandshakeCallback) {
-    Unused << mTlsHandshakeCallback->CertVerificationDone();
+    (void)mTlsHandshakeCallback->CertVerificationDone();
   }
 }
 
@@ -463,6 +460,9 @@ void NSSSocketControl::ClientAuthCertificateSelected(
       const_cast<uint8_t*>(certBytes.Elements()),
       static_cast<unsigned int>(certBytes.Length()),
   };
+  // Ensure that osclientcerts (or ipcclientcerts, in the socket process) will
+  // populate its list of certificates and keys.
+  AutoSearchingForClientAuthCertificates _;
   UniqueCERTCertificate cert(CERT_NewTempCertificate(
       CERT_GetDefaultCertDB(), &certItem, nullptr, false, true));
   UniqueSECKEYPrivateKey key;
@@ -481,7 +481,7 @@ void NSSSocketControl::ClientAuthCertificateSelected(
         if (cert) {
           if (CERT_AddCertToListTail(mClientCertChain.get(), cert.get()) ==
               SECSuccess) {
-            Unused << cert.release();
+            (void)cert.release();
           }
         }
       }
@@ -491,11 +491,10 @@ void NSSSocketControl::ClientAuthCertificateSelected(
   bool sendingClientAuthCert = cert && key;
   if (sendingClientAuthCert) {
     mSentClientCert = true;
-    Telemetry::ScalarAdd(Telemetry::ScalarID::SECURITY_CLIENT_AUTH_CERT_USAGE,
-                         u"sent"_ns, 1);
+    glean::security::client_auth_cert_usage.Get("sent"_ns).Add(1);
   }
 
-  Unused << SSL_ClientCertCallbackComplete(
+  (void)SSL_ClientCertCallbackComplete(
       mFd, sendingClientAuthCert ? SECSuccess : SECFailure,
       sendingClientAuthCert ? key.release() : nullptr,
       sendingClientAuthCert ? cert.release() : nullptr);
@@ -504,7 +503,7 @@ void NSSSocketControl::ClientAuthCertificateSelected(
           ("[%p] ClientAuthCertificateSelected mTlsHandshakeCallback=%p",
            (void*)mFd, mTlsHandshakeCallback.get()));
   if (mTlsHandshakeCallback) {
-    Unused << mTlsHandshakeCallback->ClientAuthCertificateSelected();
+    (void)mTlsHandshakeCallback->ClientAuthCertificateSelected();
   }
 }
 
@@ -535,7 +534,7 @@ NSSSocketControl::SetHandshakeCallbackListener(
 PRStatus NSSSocketControl::CloseSocketAndDestroy() {
   COMMON_SOCKET_CONTROL_ASSERT_ON_OWNING_THREAD();
 
-  mPendingSelectClientAuthCertificate = nullptr;
+  mClientAuthCertificateRequest.reset();
 
   PRFileDesc* popped = PR_PopIOLayer(mFd, PR_TOP_IO_LAYER);
   MOZ_ASSERT(
@@ -752,6 +751,19 @@ void NSSSocketControl::SetPreliminaryHandshakeInfo(
   mSignatureSchemeName.emplace(getSignatureName(channelInfo.signatureScheme));
   mIsDelegatedCredential.emplace(channelInfo.peerDelegCred);
   mIsAcceptedEch.emplace(channelInfo.echAccepted);
+}
+
+void NSSSocketControl::MaybeSelectClientAuthCertificate() {
+  COMMON_SOCKET_CONTROL_ASSERT_ON_OWNING_THREAD();
+  if (!IsWaitingForCertVerification() && mClaimed &&
+      mClientAuthCertificateRequest.isSome()) {
+    MOZ_LOG(gPIPNSSLog, mozilla::LogLevel::Debug,
+            ("[%p] selecting client auth certificate", (void*)mFd));
+    ClientAuthCertificateRequest request(
+        mClientAuthCertificateRequest.extract());
+    DoSelectClientAuthCertificate(this, std::move(request.mServerCertificate),
+                                  std::move(request.mCANames));
+  }
 }
 
 NS_IMETHODIMP NSSSocketControl::Claim() {

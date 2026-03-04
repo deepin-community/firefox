@@ -4,7 +4,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-gkrust_features = []
+gkrust_features = [
+    "for_xul",
+]
 
 if CONFIG["MOZ_DEBUG"]:
     gkrust_features += [
@@ -41,9 +43,6 @@ if CONFIG["MOZ_MEMORY"]:
 
 if CONFIG["MOZ_PLACES"]:
     gkrust_features += ["moz_places"]
-
-if CONFIG["JS_ENABLE_SMOOSH"]:
-    gkrust_features += ["smoosh"]
 
 if CONFIG["MOZ_GECKO_PROFILER"]:
     gkrust_features += ["gecko_profiler"]
@@ -83,8 +82,8 @@ if CONFIG["MOZ_UNIFFI_FIXTURES"]:
 if CONFIG["MOZ_ICU4X"]:
     gkrust_features += ["icu4x"]
 
-if CONFIG["JS_HAS_TEMPORAL_API"]:
-    gkrust_features += ["icu4x_calendar"]
+if CONFIG["USE_LIBZ_RS"]:
+    gkrust_features += ["libz-rs-sys"]
 
 # This must remain last.
 gkrust_features = ["gkrust-shared/%s" % f for f in gkrust_features]

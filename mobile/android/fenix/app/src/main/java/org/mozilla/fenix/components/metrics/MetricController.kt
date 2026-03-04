@@ -61,7 +61,11 @@ import org.mozilla.fenix.GleanMetrics.ProgressiveWebApp
 import org.mozilla.fenix.GleanMetrics.SitePermissions
 import org.mozilla.fenix.GleanMetrics.Sync
 import org.mozilla.fenix.GleanMetrics.SyncedTabs
+import org.mozilla.fenix.GleanMetrics.Toolbar
 import org.mozilla.fenix.search.awesomebar.ShortcutsSuggestionProvider
+import org.mozilla.fenix.telemetry.ACTION_TAB_COUNTER_CLICKED
+import org.mozilla.fenix.telemetry.ACTION_TAB_COUNTER_LONG_CLICKED
+import org.mozilla.fenix.telemetry.SOURCE_ADDRESS_BAR
 import org.mozilla.fenix.utils.Settings
 import java.util.UUID
 import mozilla.components.compose.browser.awesomebar.AwesomeBarFacts as ComposeAwesomeBarFacts
@@ -72,10 +76,20 @@ interface MetricController {
     fun track(event: Event)
 
     companion object {
+        /**
+         * Instantiate either a debug or release version of the metric controller.
+         * The debug version writes logs rather than sending real telemetry.
+         * @param services the list of available services to start
+         * @param isDataTelemetryEnabled has data telemetry been enabled?
+         * @param isMarketingDataTelemetryEnabled has marketing telemetry been enabled?
+         * @param isUsageTelemetryEnabled has usage telemetry been enabled?
+         * @param settings the user's preferences are held in the settings object
+         */
         fun create(
             services: List<MetricsService>,
             isDataTelemetryEnabled: () -> Boolean,
             isMarketingDataTelemetryEnabled: () -> Boolean,
+            isUsageTelemetryEnabled: () -> Boolean,
             settings: Settings,
         ): MetricController {
             return if (BuildConfig.TELEMETRY) {
@@ -83,6 +97,7 @@ interface MetricController {
                     services,
                     isDataTelemetryEnabled,
                     isMarketingDataTelemetryEnabled,
+                    isUsageTelemetryEnabled,
                     settings,
                 )
             } else {
@@ -116,6 +131,7 @@ internal class ReleaseMetricController(
     private val services: List<MetricsService>,
     private val isDataTelemetryEnabled: () -> Boolean,
     private val isMarketingDataTelemetryEnabled: () -> Boolean,
+    private val isUsageTelemetryEnabled: () -> Boolean,
     private val settings: Settings,
 ) : MetricController {
     private var initialized = mutableSetOf<MetricServiceType>()
@@ -131,7 +147,7 @@ internal class ReleaseMetricController(
     }
 
     @VisibleForTesting
-    @Suppress("LongMethod")
+    @Suppress("LongMethod", "CognitiveComplexMethod")
     internal fun Fact.process(): Unit = when (component to item) {
         Component.FEATURE_PROMPTS to LoginDialogFacts.Items.DISPLAY -> {
             LoginDialog.displayed.record(NoExtras())
@@ -168,6 +184,16 @@ internal class ReleaseMetricController(
         }
         Component.BROWSER_TOOLBAR to ToolbarFacts.Items.MENU -> {
             Events.toolbarMenuVisible.record(NoExtras())
+        }
+        Component.UI_TABCOUNTER to ToolbarFacts.Items.TOOLBAR -> {
+            Toolbar.buttonTapped.record(
+                Toolbar.ButtonTappedExtra(source = SOURCE_ADDRESS_BAR, item = ACTION_TAB_COUNTER_CLICKED),
+            )
+        }
+        Component.UI_TABCOUNTER to ToolbarFacts.Items.MENU -> {
+            Toolbar.buttonTapped.record(
+                Toolbar.ButtonTappedExtra(source = SOURCE_ADDRESS_BAR, item = ACTION_TAB_COUNTER_LONG_CLICKED),
+            )
         }
         Component.FEATURE_CONTEXTMENU to ContextMenuFacts.Items.ITEM -> {
             metadata?.get("item")?.let { item ->
@@ -270,6 +296,36 @@ internal class ReleaseMetricController(
         Component.FEATURE_AWESOMEBAR to AwesomeBarFacts.Items.SEARCH_SUGGESTION_CLICKED -> {
             Awesomebar.searchSuggestionClicked.record(NoExtras())
         }
+        Component.FEATURE_AWESOMEBAR to AwesomeBarFacts.Items.TRENDING_SEARCH_SUGGESTION_CLICKED -> {
+            Awesomebar.trendingSearchSuggestionClicked.record(
+                Awesomebar.TrendingSearchSuggestionClickedExtra(position = value?.toInt() ?: 0),
+            )
+        }
+        Component.FEATURE_AWESOMEBAR to AwesomeBarFacts.Items.TOP_SITE_SUGGESTION_CLICKED -> {
+            Awesomebar.topSiteSuggestionClicked.record(
+                Awesomebar.TopSiteSuggestionClickedExtra(position = value?.toInt() ?: 0),
+            )
+        }
+        Component.FEATURE_AWESOMEBAR to AwesomeBarFacts.Items.RECENT_SEARCH_SUGGESTION_CLICKED -> {
+            Awesomebar.recentSearchSuggestionClicked.record(
+                Awesomebar.RecentSearchSuggestionClickedExtra(position = value?.toInt() ?: 0),
+            )
+        }
+        Component.FEATURE_AWESOMEBAR to AwesomeBarFacts.Items.TRENDING_SEARCH_SUGGESTIONS_DISPLAYED -> {
+            Awesomebar.trendingSearchSuggestionsDisplayed.record(
+                Awesomebar.TrendingSearchSuggestionsDisplayedExtra(count = value?.toInt() ?: 0),
+            )
+        }
+        Component.FEATURE_AWESOMEBAR to AwesomeBarFacts.Items.TOP_SITE_SUGGESTIONS_DISPLAYED -> {
+            Awesomebar.topSiteSuggestionsDisplayed.record(
+                Awesomebar.TopSiteSuggestionsDisplayedExtra(count = value?.toInt() ?: 0),
+            )
+        }
+        Component.FEATURE_AWESOMEBAR to AwesomeBarFacts.Items.RECENT_SEARCH_SUGGESTIONS_DISPLAYED -> {
+            Awesomebar.recentSearchSuggestionsDisplayed.record(
+                Awesomebar.RecentSearchSuggestionsDisplayedExtra(count = value?.toInt() ?: 0),
+            )
+        }
         Component.FEATURE_AWESOMEBAR to AwesomeBarFacts.Items.OPENED_TAB_SUGGESTION_CLICKED -> {
             Awesomebar.openedTabSuggestionClicked.record(NoExtras())
         }
@@ -313,6 +369,9 @@ internal class ReleaseMetricController(
 
             // Submit a separate `fx-suggest` ping for this click. These pings do not include the `client_id`.
             FxSuggest.pingType.set("fxsuggest-click")
+            (metadata?.get(FxSuggestFacts.MetadataKeys.CLIENT_COUNTRY) as? String)?.let {
+                FxSuggest.country.set(it)
+            }
             FxSuggest.isClicked.set(true)
             (metadata?.get(FxSuggestFacts.MetadataKeys.POSITION) as? Long)?.let {
                 FxSuggest.position.set(it)
@@ -363,6 +422,9 @@ internal class ReleaseMetricController(
             // and we submit them for engaged search sessions only.
             if (!engagementAbandoned) {
                 FxSuggest.pingType.set("fxsuggest-impression")
+                (metadata?.get(FxSuggestFacts.MetadataKeys.CLIENT_COUNTRY) as? String)?.let {
+                    FxSuggest.country.set(it)
+                }
                 (metadata?.get(FxSuggestFacts.MetadataKeys.IS_CLICKED) as? Boolean)?.let {
                     FxSuggest.isClicked.set(it)
                 }
@@ -386,6 +448,14 @@ internal class ReleaseMetricController(
             }
 
             Unit
+        }
+
+        Component.FEATURE_FXSUGGEST to FxSuggestFacts.Items.SUGGESTION_QUERY_COUNT -> {
+            FxSuggest.pingType.set("fxsuggest-query")
+            (metadata?.get("query_count") as? Long)?.let {
+                FxSuggest.queryCount.set(it)
+            }
+            Pings.fxSuggestApi.submit()
         }
 
         Component.FEATURE_PWA to ProgressiveWebAppFacts.Items.HOMESCREEN_ICON_TAP -> {
@@ -535,6 +605,7 @@ internal class ReleaseMetricController(
     private fun isTelemetryEnabled(type: MetricServiceType): Boolean = when (type) {
         MetricServiceType.Data -> isDataTelemetryEnabled()
         MetricServiceType.Marketing -> isMarketingDataTelemetryEnabled()
+        MetricServiceType.UsageReporting -> isUsageTelemetryEnabled()
     }
 
     companion object {

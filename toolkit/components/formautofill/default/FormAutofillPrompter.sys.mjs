@@ -826,7 +826,7 @@ export class AddressEditDoorhanger extends AutofillDoorhanger {
     return div;
   }
 
-  /*
+  /**
    * This method generates a unique input ID using the field name of the address field.
    *
    * @param {string} fieldName The name of the address field
@@ -974,7 +974,7 @@ export class CreditCardSaveDoorhanger extends AutofillDoorhanger {
     privacyLinkElement.setAttribute(
       "href",
       CreditCardSaveDoorhanger.spotlightURL ||
-        "about:preferences#privacy-form-autofill"
+        "about:preferences#privacy-payment-methods-autofill"
     );
 
     const linkId = `autofill-options-link${
@@ -1300,7 +1300,17 @@ export let FormAutofillPrompter = {
     flowId,
     { oldRecord, newRecord }
   ) {
+    if (!browser) {
+      return;
+    }
+
     const showUpdateDoorhanger = !!Object.keys(oldRecord).length;
+
+    lazy.log.debug(
+      `Show the ${
+        showUpdateDoorhanger ? "update" : "save"
+      } credit card doorhanger`
+    );
 
     const { ownerGlobal: win } = browser;
     win.MozXULElement.insertFTLIfNeeded(
@@ -1352,6 +1362,10 @@ export let FormAutofillPrompter = {
     flowId,
     { oldRecord, newRecord }
   ) {
+    if (!browser) {
+      return;
+    }
+
     const showUpdateDoorhanger = !!Object.keys(oldRecord).length;
 
     lazy.log.debug(
@@ -1423,9 +1437,19 @@ export let FormAutofillPrompter = {
     }
     storage.notifyUsed(changedGUID);
 
-    const hintId = `confirmation-hint-${type}-${
-      oldRecord ? "updated" : "created"
-    }`;
-    showConfirmation(browser, hintId);
+    const messageIdMap = {
+      "credit-card": {
+        created: "confirmation-hint-credit-card-created",
+        updated: "confirmation-hint-credit-card-updated",
+      },
+      address: {
+        created: "confirmation-hint-address-created",
+        updated: "confirmation-hint-address-updated",
+      },
+    };
+    showConfirmation(
+      browser,
+      messageIdMap[type][oldRecord ? "updated" : "created"]
+    );
   },
 };

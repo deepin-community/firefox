@@ -195,7 +195,7 @@ void OriginParser::HandleToken(const nsDependentCSubstring& aToken) {
         nsCString token(aToken);
 
         nsresult rv;
-        Unused << token.ToInteger(&rv);
+        (void)token.ToInteger(&rv);
         if (NS_SUCCEEDED(rv)) {
           mState = eExpectingInMozBrowser;
           return;
@@ -482,6 +482,23 @@ bool IsUUIDOrigin(const nsCString& aOrigin) {
       "][0-9A-Fa-f]{3}-[0-9A-Fa-f]{12}$");
 
   return regex_match(aOrigin.get(), pattern);
+}
+
+bool IsUserContextSuffix(const nsACString& aSuffix, uint32_t aUserContextId) {
+  OriginAttributes originAttributes;
+  MOZ_ALWAYS_TRUE(originAttributes.PopulateFromSuffix(aSuffix));
+  return originAttributes.mUserContextId == aUserContextId;
+}
+
+bool IsUserContextPattern(const OriginAttributesPattern& aPattern,
+                          uint32_t aUserContextId) {
+  const auto& userContextId = aPattern.mUserContextId;
+
+  if (!userContextId.WasPassed()) {
+    return false;
+  }
+
+  return userContextId.Value() == aUserContextId;
 }
 
 }  // namespace mozilla::dom::quota

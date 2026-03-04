@@ -10,14 +10,6 @@ learn-more = <span data-l10n-name="link">Mësoni më tepër</span>
 ## In the Rule View when a CSS property cannot be successfully applied we display
 ## an icon. When this icon is hovered this message is displayed to explain why
 ## the property is not applied.
-## Variables:
-##   $property (string) - A CSS property name e.g. "color".
-##   $display (string) - A CSS display value e.g. "inline-block".
-
-
-## In the Rule View when a CSS property cannot be successfully applied we display
-## an icon. When this icon is hovered this message is displayed to explain why
-## the property is not applied.
 ## The variables are all passed from the same place, in `InactiveCssTooltipHelper#getTemplate`
 ## (devtools/client/shared/widgets/tooltip/inactive-css-tooltip-helper.js#95)
 ## Variables:
@@ -53,11 +45,17 @@ inactive-css-border-image = <strong>{ $property }</strong> s’ka efekt mbi kët
 inactive-css-ruby-element = <strong>{ $property }</strong> s’ka efekt mbi këtë element, ngaqë është një element ruby. Madhësia e tij përcaktohet nga madhësia e shkronjave të tekstit ruby.
 
 ## In the Rule View when a CSS property cannot be successfully applied we display
-## an icon. When this icon is hovered this message is displayed to explain how
-## the problem can be solved.
+## an icon. When this icon is hovered this message is displayed to explain why
+## the property is not applied.
+## The variables are all passed from the same place, in `InactiveCssTooltipHelper#getTemplate`
+## (devtools/client/shared/widgets/tooltip/inactive-css-tooltip-helper.js#95)
+## Variables:
+##   $property (string) - A CSS property name e.g. "color".
+##   $display (string) - A CSS display value e.g. "inline-block".
 
 inactive-css-highlight-pseudo-elements-not-supported = <strong>{ $property }</strong> nuk mbulohet për pseudo-elementë të theksuar.
 inactive-css-cue-pseudo-element-not-supported = <strong>{ $property }</strong> nuk mbulohet për ::cue pseudo-elements.
+inactive-css-at-position-try-not-supported = <strong>{ $property }</strong> s’mbulohet në rregulla <strong>@position-try</strong>.
 # Variables:
 #   $lineCount (integer) - The number of lines the element has.
 inactive-css-text-wrap-balance-lines-exceeded =
@@ -78,6 +76,8 @@ inactive-css-not-grid-or-flex-or-block-container-fix = Provoni të shtoni <stron
 inactive-css-not-grid-or-flex-container-or-multicol-container-fix = Provoni të shtoni <strong>display:grid</strong>, <strong>display:flex</strong>, ose <strong>columns:2</strong>. { learn-more }
 inactive-css-not-multicol-container-fix = Provoni të shtoni ose <strong>column-count</strong>, ose <strong>column-width</strong>. { learn-more }
 inactive-css-column-span-fix = Provoni të shtoni <strong>column-count</strong>, ose <strong>column-width</strong> te një nga elementët e tij paraardhës. { learn-more }
+inactive-css-not-grid-or-flex-or-absolutely-positioned-item-fix = Provoni të shtoni <strong>position:absolute</strong> te elementi, ose <strong>display:grid</strong>, <strong>display:flex</strong>, <strong>display:inline-grid</strong>, ose <strong>display:inline-flex</strong> te mëma e elementit. { learn-more }
+inactive-css-not-grid-or-absolutely-positioned-item-fix = Provoni të shtoni <strong>position:absolute</strong> te elementi, ose <strong>display:grid</strong> apo <strong>display:inline-grid</strong> te mëma e elementit. { learn-more }
 inactive-css-not-grid-or-flex-item-fix-3 = Provoni të shtoni <strong>display:grid</strong>, <strong>display:flex</strong>, <strong>display:inline-grid</strong>, ose <strong>display:inline-flex</strong> te mëma e elementit. { learn-more }
 inactive-css-not-grid-item-fix-2 = Provoni të shtoni <strong>display:grid</strong> ose <strong>display:inline-grid</strong> te mëma e elementit. { learn-more }
 inactive-css-not-grid-container-fix = Provoni të shtoni <strong>display:grid</strong> ose <strong>display:inline-grid</strong>. { learn-more }
@@ -89,10 +89,13 @@ inactive-css-non-replaced-inline-or-table-column-or-column-group-fix = Provoni t
 inactive-css-not-display-block-on-floated-fix = Provoni të hiqni <strong>float</strong> ose të shtoni <strong>display:block</strong>. { learn-more }
 inactive-css-only-non-grid-or-flex-item-fix = Provoni të ndryshoni vlerën e <strong>display</strong> të kontejnerit të elementit në diçka tjetër nga <strong>flex</strong>, <strong>grid</strong>, <strong>inline-flex</strong>, apo <strong>inline-grid</strong>, ose të hiqni <strong>float</strong>. { learn-more }
 inactive-css-not-block-fix = Provoni të shtoni veti të tilla si <strong>display:block</strong>, ose <strong>float:left</strong>. { learn-more }
+inactive-css-not-block-container-fix = Provoni të shtoni <strong>display:block</strong>, <strong>display:inline-block</strong> ose <strong>display:flow-root</strong>. { learn-more }
+inactive-css-not-block-flex-grid-container-fix = Provoni të shtoni <strong>display:block</strong>, <strong>display:inline-block</strong>, <strong>display:flex</strong>, <strong>display:inline-flex</strong>, <strong>display:grid</strong>, <strong>display:inline-grid</strong> ose <strong>display:flow-root</strong>. { learn-more }
 inactive-css-not-floated-fix = Provoni të shtoni vetinë <strong>float</strong> me një vlerë tjetër nga <strong>none</strong>. { learn-more }
 inactive-css-position-property-on-unpositioned-box-fix = Provoni të ujdisni vetinë e tij <strong>position</strong> si diçka tjetër nga <strong>static</strong>. { learn-more }
 inactive-css-only-replaced-elements-fix = Garantoni se po e shtoni vetinë te një element i zëvendësuar. { learn-more }
 inactive-text-overflow-when-no-overflow-fix = Provoni të shtoni <strong>overflow:hidden</strong>. { learn-more }
+inactive-css-no-size-containment-fix = Provoni ta vini vetinë <strong>display</strong> për të si diçka tjetër nga <strong>none</strong>, <strong>contents</strong>, <strong>table</strong>, ose <strong>inline-table</strong> dhe sigurohuni se s’gjendet brenda një tabele, apo segmenti ruby. { learn-more }
 inactive-css-not-for-internal-table-elements-fix = Provoni të vini vetinë e tij <strong>display</strong> si diçka tjetër nga <strong>table-cell</strong>, <strong>table-column</strong>, <strong>table-row</strong>, <strong>table-column-group</strong>, <strong>table-row-group</strong>, ose <strong>table-footer-group</strong>. { learn-more }
 inactive-css-not-for-internal-table-elements-except-table-cells-fix = Provoni të vini vetinë e tij <strong>display</strong> si diçka tjetër nga <strong>table-column</strong>, <strong>table-row</strong>, <strong>table-column-group</strong>, <strong>table-row-group</strong>, ose <strong>table-footer-group</strong>. { learn-more }
 inactive-css-not-table-fix = Provoni të shtoni <strong>display:table</strong> ose <strong>display:inline-table</strong>. { learn-more }
@@ -103,6 +106,7 @@ inactive-css-border-image-fix = Te elementi i tabelës mëmë, hiqni vetinë ose
 inactive-css-ruby-element-fix = Provoni të ndryshoni <strong>font-size</strong> të tekstit Ruby. { learn-more }
 inactive-css-text-wrap-balance-lines-exceeded-fix = Provoni të ulni numrin e rreshtave. { learn-more }
 inactive-css-text-wrap-balance-fragmented-fix = Shmangni ndarjen e lëndës së elementit, p.sh., duke hequr shtylla, ose duke përdorur <strong>page-break-inside:avoid</strong>. { learn-more }
+inactive-css-no-principal-box-fix = Provoni të shtoni një vlerë <strong>display</strong> e cila krijon një kuadrat parësor, fjala vjen, <strong>block</strong>, <strong>inline-block</strong>, <strong>flex</strong>, ose <strong>grid</strong>. { learn-more }
 
 ## In the Rule View when a CSS property may have compatibility issues with other browsers
 ## we display an icon. When this icon is hovered this message is displayed to explain why

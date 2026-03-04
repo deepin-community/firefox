@@ -446,6 +446,22 @@ static const struct FREEBLVectorStr vector = {
 
     X25519_DerivePublicKey,
     /* End of version 3.029 */
+
+    EC_DerivePublicKey,
+    /* End of version 3.030 */
+
+    MLDSA_NewKey,
+    MLDSA_SignInit,
+    MLDSA_SignUpdate,
+    MLDSA_SignFinal,
+    MLDSA_VerifyInit,
+    MLDSA_VerifyUpdate,
+    MLDSA_VerifyFinal,
+    /* End of version 3.031 */
+
+    EC_DecompressPublicKey,
+    /* End of version 3.032 */
+
 };
 
 const FREEBLVector*

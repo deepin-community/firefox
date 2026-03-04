@@ -3,15 +3,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 use api::{
-    AlphaType, ColorDepth, ColorF, ColorU, ExternalImageData, ExternalImageType,
+    AlphaType, ColorDepth, ColorF, ColorU, ExternalImageType,
     ImageKey as ApiImageKey, ImageBufferKind, ImageRendering, PremultipliedColorF,
     RasterSpace, Shadow, YuvColorSpace, ColorRange, YuvFormat,
 };
 use api::units::*;
+use euclid::point2;
 use crate::composite::CompositorSurfaceKind;
+use crate::gpu_types::{ImageBrushPrimitiveData, YuvPrimitive};
+use crate::renderer::{GpuBufferBuilderF, GpuBufferWriterF};
 use crate::scene_building::{CreateShadow, IsVisible};
 use crate::frame_builder::{FrameBuildingContext, FrameBuildingState};
-use crate::gpu_cache::{GpuCache, GpuDataRequest};
 use crate::intern::{Internable, InternDebug, Handle as InternHandle};
 use crate::internal_types::LayoutPrimitiveInfo;
 use crate::prim_store::{
@@ -27,7 +29,6 @@ use crate::render_task_cache::{
     RenderTaskCacheKey, RenderTaskCacheKeyKind, RenderTaskParent
 };
 use crate::resource_cache::{ImageRequest, ImageProperties, ResourceCache};
-use crate::util::pack_as_float;
 use crate::visibility::{PrimitiveVisibility, compute_conservative_visible_rect};
 use crate::spatial_tree::SpatialNodeIndex;
 use crate::image_tiling;
@@ -71,6 +72,8 @@ pub struct ImageInstance {
     pub tight_local_clip_rect: LayoutRect,
     pub visible_tiles: Vec<VisibleImageTile>,
     pub src_color: Option<RenderTaskId>,
+    pub normalized_uvs: bool,
+    pub adjustment: AdjustedImageSource,
 }
 
 #[cfg_attr(feature = "capture", derive(Serialize))]
@@ -168,53 +171,68 @@ impl ImageData {
             tile: None,
         };
 
+        // Tighten the clip rect because decomposing the repeated image can
+        // produce primitives that are partially covering the original image
+        // rect and we want to clip these extra parts out.
+        // We also rely on having a tight clip rect in some cases other than
+        // tiled/repeated images, for example when rendering a snapshot image
+        // where the snapshot area is tighter than the rasterized area.
+        let tight_clip_rect = visibility
+            .clip_chain
+            .local_clip_rect
+            .intersection(&common.prim_rect).unwrap();
+        image_instance.tight_local_clip_rect = tight_clip_rect;
+
+        image_instance.adjustment = AdjustedImageSource::new();
+
         match image_properties {
             // Non-tiled (most common) path.
-            Some(ImageProperties { tiling: None, ref descriptor, ref external_image, .. }) => {
+            Some(ImageProperties { tiling: None, ref descriptor, ref external_image, adjustment, .. }) => {
+                image_instance.adjustment = adjustment;
+
                 let mut size = frame_state.resource_cache.request_image(
                     request,
-                    frame_state.gpu_cache,
+                    &mut frame_state.frame_gpu_data.f32,
                 );
 
-                let orig_task_id = frame_state.rg_builder.add().init(
-                    RenderTask::new_image(size, request)
+                let mut task_id = frame_state.rg_builder.add().init(
+                    RenderTask::new_image(size, request, false)
                 );
 
-                // On some devices we cannot render from an ImageBufferKind::TextureExternal
-                // source using most shaders, so must peform a copy to a regular texture first.
-                let task_id = if frame_context.fb_config.external_images_require_copy
-                    && matches!(
-                        external_image,
-                        Some(ExternalImageData {
-                            image_type: ExternalImageType::TextureHandle(
-                                ImageBufferKind::TextureExternal
-                            ),
-                            ..
-                        })
-                    )
-                {
-                    let target_kind = if descriptor.format.bytes_per_pixel() == 1 {
-                        RenderTargetKind::Alpha
-                    } else {
-                        RenderTargetKind::Color
-                    };
+                if let Some(external_image) = external_image {
+                    // On some devices we cannot render from an ImageBufferKind::TextureExternal
+                    // source using most shaders, so must peform a copy to a regular texture first.
+                    let requires_copy = frame_context.fb_config.external_images_require_copy &&
+                        external_image.image_type ==
+                            ExternalImageType::TextureHandle(ImageBufferKind::TextureExternal);
 
-                    let task_id = RenderTask::new_scaling(
-                        orig_task_id,
-                        frame_state.rg_builder,
-                        target_kind,
-                        size
-                    );
+                    if requires_copy {
+                        let target_kind = if descriptor.format.bytes_per_pixel() == 1 {
+                            RenderTargetKind::Alpha
+                        } else {
+                            RenderTargetKind::Color
+                        };
 
-                    frame_state.surface_builder.add_child_render_task(
-                        task_id,
-                        frame_state.rg_builder,
-                    );
+                        task_id = RenderTask::new_scaling(
+                            task_id,
+                            frame_state.rg_builder,
+                            target_kind,
+                            size
+                        );
 
-                    task_id
-                } else {
-                    orig_task_id
-                };
+                        frame_state.surface_builder.add_child_render_task(
+                            task_id,
+                            frame_state.rg_builder,
+                        );
+                    }
+
+                    // Ensure the instance is rendered using normalized_uvs if the external image
+                    // requires so. If we inserted a scale above this is not required as the
+                    // instance is rendered from a render task rather than the external image.
+                    if !requires_copy {
+                        image_instance.normalized_uvs = external_image.normalized_uvs;
+                    }
+                }
 
                 // Every frame, for cached items, we need to request the render
                 // task cache item. The closure will be invoked on the first
@@ -250,18 +268,16 @@ impl ImageData {
 
                     // Request a pre-rendered image task.
                     let cached_task_handle = frame_state.resource_cache.request_render_task(
-                        RenderTaskCacheKey {
+                        Some(RenderTaskCacheKey {
                             size,
                             kind: RenderTaskCacheKeyKind::Image(image_cache_key),
-                        },
-                        frame_state.gpu_cache,
-                        &mut frame_state.frame_gpu_data.f32,
-                        frame_state.rg_builder,
-                        None,
+                        }),
                         descriptor.is_opaque(),
                         RenderTaskParent::Surface,
+                        &mut frame_state.frame_gpu_data.f32,
+                        frame_state.rg_builder,
                         &mut frame_state.surface_builder,
-                        |rg_builder, _| {
+                        &mut |rg_builder, _| {
                             // Create a task to blit from the texture cache to
                             // a normal transient render task surface.
                             // TODO: figure out if/when we can do a blit instead.
@@ -299,18 +315,10 @@ impl ImageData {
                 // thing.
                 let active_rect = visible_rect;
 
-                // Tighten the clip rect because decomposing the repeated image can
-                // produce primitives that are partially covering the original image
-                // rect and we want to clip these extra parts out.
-                let tight_clip_rect = visibility
-                    .clip_chain
-                    .local_clip_rect
-                    .intersection(&common.prim_rect).unwrap();
-                image_instance.tight_local_clip_rect = tight_clip_rect;
-
                 let visible_rect = compute_conservative_visible_rect(
                     &visibility.clip_chain,
                     frame_state.current_dirty_region().combined,
+                    frame_state.current_dirty_region().visibility_spatial_node,
                     prim_spatial_node_index,
                     frame_context.spatial_tree,
                 );
@@ -348,11 +356,11 @@ impl ImageData {
                         let request = request.with_tile(tile.offset);
                         let size = frame_state.resource_cache.request_image(
                             request,
-                            frame_state.gpu_cache,
+                            &mut frame_state.frame_gpu_data.f32,
                         );
 
                         let task_id = frame_state.rg_builder.add().init(
-                            RenderTask::new_image(size, request)
+                            RenderTask::new_image(size, request, false)
                         );
 
                         image_instance.visible_tiles.push(VisibleImageTile {
@@ -374,23 +382,27 @@ impl ImageData {
             }
         }
 
-        if let Some(mut request) = frame_state.gpu_cache.request(&mut common.gpu_cache_handle) {
-            self.write_prim_gpu_blocks(&mut request);
+        if let Some(task_id) = frame_state.image_dependencies.get(&self.key) {
+            frame_state.surface_builder.add_child_render_task(
+                *task_id,
+                frame_state.rg_builder
+            );
         }
+
+        let mut writer = frame_state.frame_gpu_data.f32.write_blocks(3);
+        self.write_prim_gpu_blocks(&image_instance.adjustment, &mut writer);
+        common.gpu_buffer_address = writer.finish();
     }
 
-    pub fn write_prim_gpu_blocks(&self, request: &mut GpuDataRequest) {
-        // Images are drawn as a white color, modulated by the total
-        // opacity coming from any collapsed property bindings.
-        // Size has to match `VECS_PER_SPECIFIC_BRUSH` from `brush_image.glsl` exactly.
-        request.push(self.color.premultiplied());
-        request.push(PremultipliedColorF::WHITE);
-        request.push([
-            self.stretch_size.width + self.tile_spacing.width,
-            self.stretch_size.height + self.tile_spacing.height,
-            0.0,
-            0.0,
-        ]);
+    pub fn write_prim_gpu_blocks(&self, adjustment: &AdjustedImageSource, writer: &mut GpuBufferWriterF) {
+        let stretch_size = adjustment.map_stretch_size(self.stretch_size)
+             + self.tile_spacing;
+
+        writer.push(&ImageBrushPrimitiveData {
+            color: self.color.premultiplied(),
+            background_color: PremultipliedColorF::WHITE,
+            stretch_size,
+        });
     }
 }
 
@@ -449,6 +461,8 @@ impl InternablePrimitive for Image {
             tight_local_clip_rect: LayoutRect::zero(),
             visible_tiles: Vec::new(),
             src_color: None,
+            normalized_uvs: false,
+            adjustment: AdjustedImageSource::new(),
         });
 
         PrimitiveInstanceKind::Image {
@@ -480,6 +494,95 @@ impl CreateShadow for Image {
 impl IsVisible for Image {
     fn is_visible(&self) -> bool {
         true
+    }
+}
+
+/// Represents an adjustment to apply to an image primitive.
+/// This can be used to compensate for a difference between the bounds of
+/// the images expected by the primitive and the bounds that were actually
+/// drawn in the texture cache.
+///
+/// This happens when rendering snapshot images: A picture is marked so that
+/// a specific reference area in layout space can be rendered as an image.
+/// However, the bounds of the rasterized area of the picture typically differ
+/// from that reference area.
+///
+/// The adjustment is stored as 4 floats (x0, y0, x1, y1) that represent a
+/// transformation of the primitve's local rect such that:
+///
+/// ```ignore
+/// adjusted_rect.min = prim_rect.min + prim_rect.size() * (x0, y0);
+/// adjusted_rect.max = prim_rect.max + prim_rect.size() * (x1, y1);
+/// ```
+#[derive(Copy, Clone, Debug)]
+#[cfg_attr(feature = "capture", derive(Serialize))]
+#[cfg_attr(feature = "replay", derive(Deserialize))]
+pub struct AdjustedImageSource {
+    x0: f32,
+    y0: f32,
+    x1: f32,
+    y1: f32,
+}
+
+impl AdjustedImageSource {
+    /// The "identity" adjustment.
+    pub fn new() -> Self {
+        AdjustedImageSource {
+            x0: 0.0,
+            y0: 0.0,
+            x1: 0.0,
+            y1: 0.0,
+        }
+    }
+
+    /// An adjustment to render an image item defined in function of the `reference`
+    /// rect whereas the `actual` rect was cached instead.
+    pub fn from_rects(reference: &LayoutRect, actual: &LayoutRect) -> Self {
+        let ref_size = reference.size();
+        let min_offset = reference.min.to_vector();
+        let max_offset = reference.max.to_vector();
+        AdjustedImageSource {
+            x0: (actual.min.x - min_offset.x) / ref_size.width,
+            y0: (actual.min.y - min_offset.y) / ref_size.height,
+            x1: (actual.max.x - max_offset.x) / ref_size.width,
+            y1: (actual.max.y - max_offset.y) / ref_size.height,
+        }
+    }
+
+    /// Adjust the primitive's local rect.
+    pub fn map_local_rect(&self, rect: &LayoutRect) -> LayoutRect {
+        let w = rect.width();
+        let h = rect.height();
+        LayoutRect {
+            min: point2(
+                rect.min.x + w * self.x0,
+                rect.min.y + h * self.y0,
+            ),
+            max: point2(
+                rect.max.x + w * self.x1,
+                rect.max.y + h * self.y1,
+            ),
+        }
+    }
+
+    /// The stretch size has to be adjusted as well because it is defined
+    /// using the snapshot area as reference but will stretch the rasterized
+    /// area instead.
+    ///
+    /// It has to be scaled by a factor of (adjusted.size() / prim_rect.size()).
+    /// We derive the formula in function of the adjustment factors:
+    ///
+    /// ```ignore
+    /// factor = (adjusted.max - adjusted.min) / (w, h)
+    ///        = (rect.max + (w, h) * (x1, y1) - (rect.min + (w, h) * (x0, y0))) / (w, h)
+    ///        = ((w, h) + (w, h) * (x1, y1) - (w, h) * (x0, y0)) / (w, h)
+    ///        = (1.0, 1.0) + (x1, y1) - (x0, y0)
+    /// ```
+    pub fn map_stretch_size(&self, size: LayoutSize) -> LayoutSize {
+        LayoutSize::new(
+            size.width * (1.0 + self.x1 - self.x0),
+            size.height * (1.0 + self.y1 - self.y0),
+        )
     }
 }
 
@@ -548,6 +651,7 @@ impl YuvImageData {
     pub fn update(
         &mut self,
         common: &mut PrimTemplateCommonData,
+        is_composited: bool,
         frame_state: &mut FrameBuildingState,
     ) {
 
@@ -564,28 +668,32 @@ impl YuvImageData {
 
             let size = frame_state.resource_cache.request_image(
                 request,
-                frame_state.gpu_cache,
+                &mut frame_state.frame_gpu_data.f32,
             );
 
             let task_id = frame_state.rg_builder.add().init(
-                RenderTask::new_image(size, request)
+                RenderTask::new_image(
+                    size,
+                    request,
+                    is_composited,
+                )
             );
 
             self.src_yuv[channel] = Some(task_id);
         }
 
-        if let Some(mut request) = frame_state.gpu_cache.request(&mut common.gpu_cache_handle) {
-            self.write_prim_gpu_blocks(&mut request);
-        };
+        let mut writer = frame_state.frame_gpu_data.f32.write_blocks(1);
+        self.write_prim_gpu_blocks(&mut writer);
+        common.gpu_buffer_address = writer.finish();
 
-        // YUV images never have transparency
+    // YUV images never have transparency
         common.opacity = PrimitiveOpacity::opaque();
     }
 
     pub fn request_resources(
         &mut self,
         resource_cache: &mut ResourceCache,
-        gpu_cache: &mut GpuCache,
+        gpu_buffer: &mut GpuBufferBuilderF,
     ) {
         let channel_num = self.format.get_plane_num();
         debug_assert!(channel_num <= 3);
@@ -596,19 +704,17 @@ impl YuvImageData {
                     rendering: self.image_rendering,
                     tile: None,
                 },
-                gpu_cache,
+                gpu_buffer,
             );
         }
     }
 
-    pub fn write_prim_gpu_blocks(&self, request: &mut GpuDataRequest) {
-        let ranged_color_space = self.color_space.with_range(self.color_range);
-        request.push([
-            pack_as_float(self.color_depth.bit_depth()),
-            pack_as_float(ranged_color_space as u32),
-            pack_as_float(self.format as u32),
-            0.0
-        ]);
+    pub fn write_prim_gpu_blocks(&self, writer: &mut GpuBufferWriterF) {
+        writer.push(&YuvPrimitive {
+            channel_bit_depth: self.color_depth.bit_depth(),
+            color_space: self.color_space.with_range(self.color_range),
+            yuv_format: self.format,
+        });
     }
 }
 
@@ -672,9 +778,9 @@ fn test_struct_sizes() {
     // (b) You made a structure larger. This is not necessarily a problem, but should only
     //     be done with care, and after checking if talos performance regresses badly.
     assert_eq!(mem::size_of::<Image>(), 32, "Image size changed");
-    assert_eq!(mem::size_of::<ImageTemplate>(), 72, "ImageTemplate size changed");
+    assert_eq!(mem::size_of::<ImageTemplate>(), 68, "ImageTemplate size changed");
     assert_eq!(mem::size_of::<ImageKey>(), 52, "ImageKey size changed");
     assert_eq!(mem::size_of::<YuvImage>(), 32, "YuvImage size changed");
-    assert_eq!(mem::size_of::<YuvImageTemplate>(), 84, "YuvImageTemplate size changed");
+    assert_eq!(mem::size_of::<YuvImageTemplate>(), 80, "YuvImageTemplate size changed");
     assert_eq!(mem::size_of::<YuvImageKey>(), 52, "YuvImageKey size changed");
 }

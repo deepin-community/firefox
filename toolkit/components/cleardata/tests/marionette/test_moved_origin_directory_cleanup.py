@@ -2,6 +2,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import shutil
 from pathlib import Path
 
 from marionette_driver import Wait
@@ -11,14 +12,12 @@ from marionette_harness import MarionetteTestCase
 class MovedOriginDirectoryCleanupTestCase(MarionetteTestCase):
     def setUp(self):
         super().setUp()
-        self.marionette.enforce_gecko_prefs(
-            {
-                "privacy.sanitize.sanitizeOnShutdown": True,
-                "privacy.clearOnShutdown.offlineApps": True,
-                "dom.quotaManager.backgroundTask.enabled": False,
-                "browser.sanitizer.loglevel": "All",
-            }
-        )
+        self.marionette.enforce_gecko_prefs({
+            "privacy.sanitize.sanitizeOnShutdown": True,
+            "privacy.clearOnShutdown.offlineApps": True,
+            "dom.quotaManager.backgroundTask.enabled": False,
+            "browser.sanitizer.loglevel": "All",
+        })
         self.moved_origin_directory = (
             Path(self.marionette.profile_path) / "storage" / "to-be-removed" / "foo"
         )
@@ -46,9 +45,9 @@ class MovedOriginDirectoryCleanupTestCase(MarionetteTestCase):
                     false,
                     false,
                     false,
-                    Math.floor(Date.now() / 1000) + 24 * 60 * 60,
+                    Date.now() + 1000 * 24 * 60 * 60,
                     {},
-                    Ci.nsICookie.SAMESITE_NONE,
+                    Ci.nsICookie.SAMESITE_UNSET,
                     Ci.nsICookie.SCHEME_UNSET
                 );
                 return promise;
@@ -132,7 +131,7 @@ class MovedOriginDirectoryCleanupTestCase(MarionetteTestCase):
             "to-be-removed parent directory should still be alive",
         )
 
-    def test_ensure_no_cleanup_when_disabled(self):
+    def test_ensure_cleanup_when_disabled(self):
         self.assertTrue(
             self.moved_origin_directory.exists(),
             "to-be-removed subdirectory must exist",
@@ -141,12 +140,12 @@ class MovedOriginDirectoryCleanupTestCase(MarionetteTestCase):
         self.marionette.set_pref("privacy.sanitize.sanitizeOnShutdown", False)
         self.marionette.quit()
 
-        self.assertTrue(
+        self.assertFalse(
             self.moved_origin_directory.exists(),
-            "to-be-removed subdirectory must not disappear",
+            "to-be-removed subdirectory must disappear",
         )
 
-    def test_ensure_no_cleanup_when_no_cookie(self):
+    def test_ensure_cleanup_when_no_cookie(self):
         self.assertTrue(
             self.moved_origin_directory.exists(),
             "to-be-removed subdirectory must exist",
@@ -156,7 +155,23 @@ class MovedOriginDirectoryCleanupTestCase(MarionetteTestCase):
 
         self.marionette.quit()
 
-        self.assertTrue(
+        self.assertFalse(
             self.moved_origin_directory.exists(),
-            "to-be-removed subdirectory must not disappear",
+            "to-be-removed subdirectory must disappear",
+        )
+
+    def test_ensure_cleanup_empty_dir(self):
+        # assuming moved_origin_directory is the only sub-dir under
+        # 'to-be-removed'.
+        shutil.rmtree(self.moved_origin_directory.resolve())
+        self.assertFalse(
+            self.moved_origin_directory.exists(),
+            "to-be-removed subdirectory must not exist",
+        )
+
+        self.marionette.quit()
+
+        self.assertFalse(
+            self.to_be_removed_directory.exists(),
+            "to-be-removed must not disappear",
         )

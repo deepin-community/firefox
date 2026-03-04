@@ -4,16 +4,12 @@
 
 package mozilla.components.browser.engine.system
 
-import android.annotation.TargetApi
 import android.app.Activity
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
-import android.graphics.Canvas
 import android.net.Uri
 import android.net.http.SslError
-import android.os.Build
-import android.os.Build.VERSION.SDK_INT
 import android.os.Handler
 import android.os.Message
 import android.util.AttributeSet
@@ -43,8 +39,10 @@ import android.webkit.WebViewClient
 import android.widget.FrameLayout
 import androidx.annotation.VisibleForTesting
 import androidx.annotation.VisibleForTesting.Companion.PRIVATE
+import androidx.core.graphics.createBitmap
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import mozilla.components.browser.engine.system.matcher.UrlMatcher
 import mozilla.components.browser.engine.system.permission.SystemPermissionRequest
@@ -79,6 +77,9 @@ class SystemEngineView @JvmOverloads constructor(
     internal var session: SystemEngineSession? = null
 
     override var selectionActionDelegate: SelectionActionDelegate? = null
+
+    override val verticalScrollPosition = flowOf(0f)
+    override val verticalScrollDelta = flowOf(0f)
 
     /**
      * Render the content of the given session.
@@ -143,7 +144,7 @@ class SystemEngineView @JvmOverloads constructor(
         return webView
     }
 
-    @Suppress("ComplexMethod", "NestedBlockDepth")
+    @Suppress("NestedBlockDepth", "CognitiveComplexMethod")
     private fun createWebViewClient() = object : WebViewClient() {
         override fun doUpdateVisitedHistory(view: WebView, url: String, isReload: Boolean) {
             // TODO private browsing not supported for SystemEngine
@@ -184,8 +185,11 @@ class SystemEngineView @JvmOverloads constructor(
                     onLoadingStateChange(false)
                     onSecurityChange(
                         secure = cert != null,
-                        host = cert?.let { Uri.parse(url).host },
+                        host = cert?.let { url.toUri().host },
                         issuer = cert?.issuedBy?.oName,
+                        // Bug 2000336: when the minimum API version is 29,
+                        // this can use cert?.x509Certificate.
+                        certificate = null,
                     )
                 }
             }
@@ -220,7 +224,7 @@ class SystemEngineView @JvmOverloads constructor(
 
                 val (matches, stringCategory) = getOrCreateUrlMatcher(resources, it).matches(
                     resourceUri,
-                    Uri.parse(session?.currentUrl),
+                    session?.currentUrl?.toUri() ?: Uri.EMPTY,
                 )
 
                 if (!request.isForMainFrame && matches) {
@@ -237,11 +241,7 @@ class SystemEngineView @JvmOverloads constructor(
                 }
             }
 
-            val isRedirect = if (SDK_INT >= Build.VERSION_CODES.N) {
-                request.isRedirect
-            } else {
-                false
-            }
+            val isRedirect = request.isRedirect
 
             session?.let { session ->
                 session.settings.requestInterceptor?.let { interceptor ->
@@ -265,7 +265,12 @@ class SystemEngineView @JvmOverloads constructor(
                             is InterceptionResponse.AppIntent -> {
                                 if (request.isForMainFrame) {
                                     session.notifyObservers {
-                                        onLaunchIntentRequest(url = url, appIntent = appIntent)
+                                        onLaunchIntentRequest(
+                                            url = url,
+                                            appIntent = appIntent,
+                                            fallbackUrl = fallbackUrl,
+                                            appName = appName,
+                                        )
                                     }
                                 }
 
@@ -302,21 +307,6 @@ class SystemEngineView @JvmOverloads constructor(
             }
         }
 
-        @Deprecated("Deprecated in Java")
-        override fun onReceivedError(view: WebView, errorCode: Int, description: String?, failingUrl: String?) {
-            session?.let { session ->
-                val errorType = SystemEngineSession.webViewErrorToErrorType(errorCode)
-                session.settings.requestInterceptor?.onErrorRequest(
-                    session,
-                    errorType,
-                    failingUrl,
-                )?.apply {
-                    view.loadUrl(this.uri)
-                }
-            }
-        }
-
-        @TargetApi(Build.VERSION_CODES.M)
         override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
             session?.let { session ->
                 if (!request.isForMainFrame) {
@@ -375,7 +365,6 @@ class SystemEngineView @JvmOverloads constructor(
         }
     }
 
-    @Suppress("ComplexMethod")
     private fun createWebChromeClient() = object : WebChromeClient() {
         override fun getVisitedHistory(callback: ValueCallback<Array<String>>) {
             // TODO private browsing not supported for SystemEngine
@@ -738,27 +727,15 @@ class SystemEngineView @JvmOverloads constructor(
             return
         }
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            createThumbnailUsingDrawingView(webView, onFinish)
-        } else {
-            createThumbnailUsingPixelCopy(webView, onFinish)
-        }
+        createThumbnailUsingPixelCopy(webView, onFinish)
     }
 
     override fun clearSelection() {
         // no-op
     }
 
-    private fun createThumbnailUsingDrawingView(view: View, onFinish: (Bitmap?) -> Unit) {
-        val outBitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(outBitmap)
-        view.draw(canvas)
-        onFinish(outBitmap)
-    }
-
-    @TargetApi(Build.VERSION_CODES.O)
     private fun createThumbnailUsingPixelCopy(view: View, onFinish: (Bitmap?) -> Unit) {
-        val out = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+        val out = createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
         val viewRect = view.getRectWithViewLocation()
         val window = (context as Activity).window
 
@@ -781,11 +758,7 @@ class SystemEngineView @JvmOverloads constructor(
 
     @Suppress("Deprecation")
     private fun WebView.getAuthCredentials(host: String, realm: String): Pair<String, String> {
-        val credentials = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            session?.webViewDatabase(context)?.getHttpAuthUsernamePassword(host, realm)
-        } else {
-            this.getHttpAuthUsernamePassword(host, realm)
-        }
+        val credentials = session?.webViewDatabase(context)?.getHttpAuthUsernamePassword(host, realm)
 
         var credentialsPair = "" to ""
 
@@ -813,7 +786,7 @@ class SystemEngineView @JvmOverloads constructor(
         internal const val SECOND_MS: Int = 1000
 
         @Volatile
-        internal var URL_MATCHER: UrlMatcher? = null
+        internal var urlMatcher: UrlMatcher? = null
 
         private val urlMatcherCategoryMap = mapOf(
             UrlMatcher.ADVERTISING to TrackingProtectionPolicy.TrackingCategory.AD,
@@ -837,8 +810,8 @@ class SystemEngineView @JvmOverloads constructor(
         internal fun getOrCreateUrlMatcher(resources: Resources, policy: TrackingProtectionPolicy): UrlMatcher {
             val categories = urlMatcherCategoryMap.filterValues { policy.contains(it) }.keys
 
-            URL_MATCHER?.setCategoriesEnabled(categories) ?: run {
-                URL_MATCHER = UrlMatcher.createMatcher(
+            urlMatcher?.setCategoriesEnabled(categories) ?: run {
+                urlMatcher = UrlMatcher.createMatcher(
                     resources,
                     R.raw.domain_blocklist,
                     R.raw.domain_safelist,
@@ -846,7 +819,7 @@ class SystemEngineView @JvmOverloads constructor(
                 )
             }
 
-            return URL_MATCHER as UrlMatcher
+            return urlMatcher as UrlMatcher
         }
     }
 }

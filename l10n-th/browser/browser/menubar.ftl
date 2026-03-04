@@ -3,22 +3,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
-    .label = การกำหนดลักษณะ
+    .label = ค่าปรับแต่ง
 menu-application-services =
     .label = บริการ
 menu-application-hide-this =
@@ -145,8 +133,6 @@ menu-view-history-button =
     .label = ประวัติ
 menu-view-synced-tabs-sidebar =
     .label = แท็บที่ซิงค์
-menu-view-megalist-sidebar =
-    .label = รหัสผ่าน
 menu-view-full-zoom =
     .label = ซูม
     .accesskey = ม
@@ -254,6 +240,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = ที่คั่นหน้าในมือถือ
 
+## Profiles Menu
+
+menu-profiles =
+    .label = โปรไฟล์
+menu-profiles-manage-profiles =
+    .label = จัดการโปรไฟล์
+menu-profiles-new-profile =
+    .label = โปรไฟล์ใหม่
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (ปัจจุบัน)
+menu-profiles-menu =
+    .label = โปรไฟล์
+    .accesskey = ป
+
 ## Tools Menu
 
 menu-tools =
@@ -262,6 +264,9 @@ menu-tools =
 menu-tools-downloads =
     .label = การดาวน์โหลด
     .accesskey = ด
+menu-tools-extensions-and-themes =
+    .label = ส่วนขยายและชุดตกแต่ง
+    .accesskey = ส
 menu-tools-addons-and-themes =
     .label = ส่วนเสริมและชุดตกแต่ง
     .accesskey = ส

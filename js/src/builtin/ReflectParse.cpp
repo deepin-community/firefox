@@ -8,7 +8,6 @@
 
 #include "mozilla/DebugOnly.h"
 
-#include <stdlib.h>
 #include <utility>
 
 #include "jspubtd.h"
@@ -646,14 +645,6 @@ class NodeBuilder {
 
   [[nodiscard]] bool super(TokenPos* pos, MutableHandleValue dst);
 
-#ifdef ENABLE_RECORD_TUPLE
-  [[nodiscard]] bool recordExpression(NodeVector& elts, TokenPos* pos,
-                                      MutableHandleValue dst);
-
-  [[nodiscard]] bool tupleExpression(NodeVector& elts, TokenPos* pos,
-                                     MutableHandleValue dst);
-#endif
-
   /*
    * declarations
    */
@@ -1132,18 +1123,6 @@ bool NodeBuilder::objectExpression(NodeVector& elts, TokenPos* pos,
                                    MutableHandleValue dst) {
   return listNode(AST_OBJECT_EXPR, "properties", elts, pos, dst);
 }
-
-#ifdef ENABLE_RECORD_TUPLE
-bool NodeBuilder::recordExpression(NodeVector& elts, TokenPos* pos,
-                                   MutableHandleValue dst) {
-  return listNode(AST_RECORD_EXPR, "properties", elts, pos, dst);
-}
-
-bool NodeBuilder::tupleExpression(NodeVector& elts, TokenPos* pos,
-                                  MutableHandleValue dst) {
-  return listNode(AST_TUPLE_EXPR, "elements", elts, pos, dst);
-}
-#endif
 
 bool NodeBuilder::thisExpression(TokenPos* pos, MutableHandleValue dst) {
   return newNode(AST_THIS_EXPR, pos, dst);
@@ -2188,7 +2167,8 @@ bool ASTSerializer::forInit(ParseNode* pn, MutableHandleValue dst) {
   bool lexical = pn->isKind(ParseNodeKind::LetDecl) ||
                  pn->isKind(ParseNodeKind::ConstDecl)
 #ifdef ENABLE_EXPLICIT_RESOURCE_MANAGEMENT
-                 || pn->isKind(ParseNodeKind::UsingDecl)
+                 || pn->isKind(ParseNodeKind::UsingDecl) ||
+                 pn->isKind(ParseNodeKind::AwaitUsingDecl)
 #endif
       ;
   return (lexical || pn->isKind(ParseNodeKind::VarStmt))
@@ -3132,48 +3112,6 @@ bool ASTSerializer::expression(ParseNode* pn, MutableHandleValue dst) {
       return builder.objectExpression(elts, &obj->pn_pos, dst);
     }
 
-#ifdef ENABLE_RECORD_TUPLE
-    case ParseNodeKind::RecordExpr: {
-      ListNode* record = &pn->as<ListNode>();
-      NodeVector elts(cx);
-      if (!elts.reserve(record->count())) {
-        return false;
-      }
-
-      for (ParseNode* item : record->contents()) {
-        MOZ_ASSERT(record->pn_pos.encloses(item->pn_pos));
-
-        RootedValue prop(cx);
-        if (!property(item, &prop)) {
-          return false;
-        }
-        elts.infallibleAppend(prop);
-      }
-
-      return builder.recordExpression(elts, &record->pn_pos, dst);
-    }
-
-    case ParseNodeKind::TupleExpr: {
-      ListNode* tuple = &pn->as<ListNode>();
-      NodeVector elts(cx);
-      if (!elts.reserve(tuple->count())) {
-        return false;
-      }
-
-      for (ParseNode* item : tuple->contents()) {
-        MOZ_ASSERT(tuple->pn_pos.encloses(item->pn_pos));
-
-        RootedValue expr(cx);
-        if (!expression(item, &expr)) {
-          return false;
-        }
-        elts.infallibleAppend(expr);
-      }
-
-      return builder.tupleExpression(elts, &tuple->pn_pos, dst);
-    }
-#endif
-
     case ParseNodeKind::PrivateName:
     case ParseNodeKind::Name:
       return identifier(&pn->as<NameNode>(), dst);
@@ -3900,10 +3838,9 @@ static bool reflect_parse(JSContext* cx, uint32_t argc, Value* vp) {
     return false;
   }
 
-  Parser<FullParseHandler, char16_t> parser(
-      &fc, options, chars.begin().get(), chars.length(),
-      /* foldConstants = */ false, compilationState,
-      /* syntaxParser = */ nullptr);
+  Parser<FullParseHandler, char16_t> parser(&fc, options, chars.begin().get(),
+                                            chars.length(), compilationState,
+                                            /* syntaxParser = */ nullptr);
   if (!parser.checkOptions()) {
     return false;
   }

@@ -34,7 +34,7 @@ clear-time-duration-prefix =
     .accesskey = t
 clear-time-duration-prefix2 =
     .value = Período:
-    .accesskey = Q
+    .accesskey = P
 clear-time-duration-value-last-hour =
     .label = Última hora
 clear-time-duration-value-last-2-hours =
@@ -59,10 +59,7 @@ history-section-label = Histórico
 item-history-and-downloads =
     .label = Histórico de navegação e downloads
     .accesskey = H
-item-history-form-data-downloads =
-    .label = Histórico
-    .accesskey = H
-item-history-form-data-downloads-description = Limpa o histórico de sites e downloads, informações salvas de formulários e pesquisas
+item-history-and-downloads-description2 = Limpa o histórico de sites e downloads
 item-cookies =
     .label = Cookies
     .accesskey = o
@@ -98,6 +95,10 @@ item-form-search-history =
 item-site-prefs =
     .label = Configurações de sites
     .accesskey = f
+item-formdata-prefs =
+    .label = Informações salvas de formulários
+    .accesskey = o
+item-formdata-description = Limpa coisas como nomes, emails e outros itens preenchidos em formulários
 item-site-prefs-description = Redefine suas permissões e preferências de sites para a configuração original
 data-section-label = Dados
 item-site-settings =
@@ -127,3 +128,6 @@ sanitize-everything-warning = Todo o histórico será limpo.
 # Recent History dialog, provided that the user has modified the default set of
 # history items to clear.
 sanitize-selected-warning = Será limpo tudo dos itens selecionados.
+# Label shown next to the loading spinner while calculating the size of cached data
+# and cookies in the clear data dialog.
+sanitize-calculating-size = Calculando…

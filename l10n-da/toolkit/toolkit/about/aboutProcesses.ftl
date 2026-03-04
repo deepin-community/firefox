@@ -131,6 +131,7 @@ about-processes-utility-actor-mf-media-engine = Windows Media Foundation Media E
 about-processes-utility-actor-js-oracle = JavaScript Oracle
 about-processes-utility-actor-windows-utils = Windows Utils
 about-processes-utility-actor-windows-file-dialog = Fil-dialog i Windows
+about-processes-utility-actor-pkcs11-module = Hjælper til sikkerhedsmodul
 
 ## Displaying CPU (percentage and total)
 ## Variables:
@@ -166,7 +167,7 @@ about-processes-cpu-fully-idle = inaktiv
 ##                        of `memory-unit-*`.
 
 # Common case.
-about-processes-total-memory-size-changed = 	{ NUMBER($total, maximumFractionDigits: 0) }{ $totalUnit }
+about-processes-total-memory-size-changed = { NUMBER($total, maximumFractionDigits: 0) }{ $totalUnit }
     .title = Udvikling: { $deltaSign }{ NUMBER($delta, maximumFractionDigits: 0) }{ $deltaUnit }
 # Special case: no change.
 about-processes-total-memory-size-no-change = { NUMBER($total, maximumFractionDigits: 0) }{ $totalUnit }

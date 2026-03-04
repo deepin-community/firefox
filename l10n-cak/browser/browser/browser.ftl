@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # These are the default window titles everywhere except macOS.
 # .data-title-default and .data-title-private are used when the web content
 # opened has no title:
@@ -594,6 +591,17 @@ urlbar-result-action-copy-to-clipboard = Tiwachib'ëx
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
 
+## Strings used for buttons in the urlbar
+
+urlbar-searchmode-bookmarks =
+    .label = Taq yaketal
+urlbar-searchmode-tabs =
+    .label = Taq ruwi'
+urlbar-searchmode-history =
+    .label = Natab'äl
+urlbar-searchmode-actions =
+    .label = Taq b'anoj
+
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
 ## In these actions "Search" is a verb, followed by where the search is performed.
@@ -887,9 +895,6 @@ tabs-toolbar-list-all-tabs =
 restore-session-startup-suggestion-message = <strong> ¿La yejaq taq ruwi' xe'ik'o yan?</strong> Yatikïr natzolij ri amolojri'ïl pa ri rucha'ob'äl choköy{ -brand-short-name } <img data-l10n-name="icon"/>, pa Natab'äl.
 restore-session-startup-suggestion-button = Tik'ut achi'el
 
-## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
-
-
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name } pa ruyonil yerutäq pa { -vendor-short-name } jujun taq tzij, ruma ri' yojtikïr niqutzilaj ri asamaj.
@@ -943,9 +948,6 @@ refresh-blocked-redirect-label = { -brand-short-name } man xuya' ta q'ij chi re 
 refresh-blocked-allow =
     .label = Tiya' q'ij
     .accesskey = y
-
-## Firefox Relay integration
-
 
 ## Add-on Pop-up Notifications
 

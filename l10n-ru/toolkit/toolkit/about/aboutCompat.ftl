@@ -5,10 +5,13 @@
 label-disable = Отключить
 label-enable = Включить
 label-interventions = Вмешательства
+# Variables:
+#   $bug (string) - Bug number
 label-more-information = Дополнительная информация: Баг { $bug }
 label-overrides = Переопределения User Agent
 text-disabled-in-about-config = Эта функция была отключена в about:config
 text-no-interventions = Вмешательства не используются
+text-page-title = Веб-совместимость
 text-no-overrides = Переопределения UA не используются
 text-title = about:compat
 

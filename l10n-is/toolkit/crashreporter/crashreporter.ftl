@@ -8,17 +8,18 @@ crashreporter-crashed-and-restore = { -brand-short-name } átti í vandræðum o
 crashreporter-plea = Til að hjálpa okkur að greina vandamálið, geturðu sent okkur hrun skýrslu.
 crashreporter-information = Þetta forrit er keyrt eftir hvert hrun og tilkynnir vandamálið til { -vendor-short-name }.  Þetta forrit ætti ekki að keyra beint.
 crashreporter-error = { -brand-short-name } lenti í vandræðum og hrundi. Því miður gat forritið ekki sent skýrslu fyrir þetta hrun.
-# $details (String) - the reason that a crash report cannot be submitted
-crashreporter-error-details = Upplýsingar: { $details }
+crashreporter-error-details-header = Nánar:
 crashreporter-no-run-message = Þetta forrit er keyrt eftir hvert hrun og tilkynnir vandamálið til framleiðanda forrits.  Þetta forrit ætti ekki að keyra beint.
 crashreporter-button-details = Upplýsingar…
 crashreporter-loading-details = Hleður…
 crashreporter-view-report-title = Innihald skýrslu
 crashreporter-comment-prompt = Bæta við athugasemd (athugasemdir eru opnar öllum)
 crashreporter-report-info = Þessi skýrsla inniheldur einnig tæknilegar upplýsingar um stöðu forrits þegar hrun varð.
-crashreporter-send-report = Segðu { -vendor-short-name } frá þessu hruni svo þau geti lagfært þetta.
-crashreporter-include-url = Taka með vistfang síðunnar sem ég var á.
+crashreporter-checkbox-test-hardware = Athuga með vélbúnaðar- og stillingavandamál í tækinu mínu.
+crashreporter-checkbox-send-report = Segðu { -vendor-short-name } frá þessu hruni svo þau geti lagfært þetta.
+crashreporter-checkbox-include-url = Hafa með vistfang síðunnar sem ég var á.
 crashreporter-submit-status = Hrun skýrslan verður send áður en þú hættir eða endurræsir.
+crashreporter-submit-waiting-hardware-tests = Athuga með vélbúnaðar- og stillingavandamál…
 crashreporter-submit-in-progress = Sendi skýrslu…
 crashreporter-submit-success = Sending á skýrslu tókst!
 crashreporter-submit-failure = Ekki tókst ekki að senda skýrsluna.
@@ -34,7 +35,6 @@ crashreporter-crash-details = Þú getur skoðað upplýsingar um þetta hrun á
 
 # Error strings
 
-crashreporter-error-minidump-analyzer = Mistókst að keyra minidump-analyzer
 # $path (String) - the file path
 crashreporter-error-opening-file = Mistókst að opna skrá ({ $path })
 # $path (String) - the file path

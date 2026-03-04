@@ -8,11 +8,11 @@
 #include "MediaControlKeySource.h"
 #include "MediaEventSource.h"
 #include "MediaPlaybackStatus.h"
+#include "mozilla/Maybe.h"
 #include "mozilla/dom/MediaMetadata.h"
 #include "mozilla/dom/MediaSessionBinding.h"
-#include "mozilla/Maybe.h"
-#include "nsTHashMap.h"
 #include "nsISupportsImpl.h"
+#include "nsTHashMap.h"
 
 namespace mozilla::dom {
 
@@ -230,6 +230,7 @@ class MediaStatusManager : public IMediaInfoUpdater {
  private:
   nsString GetDefaultFaviconURL() const;
   nsString GetDefaultTitle() const;
+  nsCString GetUrl() const;
   MediaMetadataBase CreateDefaultMetadata() const;
   bool IsInPrivateBrowsing() const;
   void FillMissingTitleAndArtworkIfNeeded(MediaMetadataBase& aMetadata) const;

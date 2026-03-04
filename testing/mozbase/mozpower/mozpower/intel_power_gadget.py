@@ -48,7 +48,7 @@ class IPGUnknownValueTypeError(Exception):
     pass
 
 
-class IntelPowerGadget(object):
+class IntelPowerGadget:
     """IntelPowerGadget provides methods for using Intel Power Gadget
     to measure power consumption.
 
@@ -265,7 +265,7 @@ class IntelPowerGadget(object):
         self._running = False
 
 
-class IPGResultsHandler(object):
+class IPGResultsHandler:
     """IPGResultsHandler provides methods for cleaning and formatting
     the files that were created by IntelPowerGadget.
 
@@ -454,7 +454,7 @@ class IPGResultsHandler(object):
 
         txt = ""
         if os.path.exists(file):
-            with open(file, "r") as f:
+            with open(file) as f:
                 txt = f.read()
         else:
             # This should never happen, so prevent IPGResultsHandler
@@ -483,7 +483,7 @@ class IPGResultsHandler(object):
         clean_rows = []
         csv_header = None
         for c, row in enumerate(
-            csv.reader(tseries.split("\n"), quotechar=str('"'), delimiter=str(","))
+            csv.reader(tseries.split("\n"), quotechar='"', delimiter=",")
         ):
             if not row:
                 continue
@@ -818,12 +818,12 @@ class IPGResultsHandler(object):
         for measure in cut_results:
             if "watt" in measure.lower() and "limit" not in measure.lower():
                 # pylint --py3k W1619
-                watt_usage[replace_measure_name(measure) + "-avg"] = sum(
-                    [float(val) for val in cut_results[measure]]
-                ) / len(cut_results[measure])
-                watt_usage[replace_measure_name(measure) + "-max"] = max(
-                    [float(val) for val in cut_results[measure]]
-                )
+                watt_usage[replace_measure_name(measure) + "-avg"] = sum([
+                    float(val) for val in cut_results[measure]
+                ]) / len(cut_results[measure])
+                watt_usage[replace_measure_name(measure) + "-max"] = max([
+                    float(val) for val in cut_results[measure]
+                ])
 
         # Get average CPU and GPU utilization
         average_utilization = {}
@@ -841,9 +841,9 @@ class IPGResultsHandler(object):
                 utilized_name = "gpu"
 
             # pylint --py3k W1619
-            average_utilization[utilized_name] = sum(
-                [float(val) for val in cut_results[utilization]]
-            ) / len(cut_results[utilization])
+            average_utilization[utilized_name] = sum([
+                float(val) for val in cut_results[utilization]
+            ]) / len(cut_results[utilization])
 
         # Get average and maximum CPU and GPU frequency
         frequency_info = {"cpu": {}, "gpu": {}}
@@ -861,17 +861,17 @@ class IPGResultsHandler(object):
                 fmeasure_name = "gpu"
             # pylint --py3k W1619
 
-            frequency_info[fmeasure_name]["favg"] = sum(
-                [float(val) for val in cut_results[frequency_measure]]
-            ) / len(cut_results[frequency_measure])
+            frequency_info[fmeasure_name]["favg"] = sum([
+                float(val) for val in cut_results[frequency_measure]
+            ]) / len(cut_results[frequency_measure])
 
-            frequency_info[fmeasure_name]["fmax"] = max(
-                [float(val) for val in cut_results[frequency_measure]]
-            )
+            frequency_info[fmeasure_name]["fmax"] = max([
+                float(val) for val in cut_results[frequency_measure]
+            ])
 
-            frequency_info[fmeasure_name]["fmin"] = min(
-                [float(val) for val in cut_results[frequency_measure]]
-            )
+            frequency_info[fmeasure_name]["fmin"] = min([
+                float(val) for val in cut_results[frequency_measure]
+            ])
 
         summarized_results = {
             "utilization": {

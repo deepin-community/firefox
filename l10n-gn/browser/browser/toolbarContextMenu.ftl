@@ -30,6 +30,12 @@ toolbar-context-menu-reopen-closed-tabs =
            *[other] Embojurujajey umi tendayke mbotypyre
         }
     .accesskey = o
+toolbar-context-turn-on-vertical-tabs =
+    .label = Emyandy tendayke oñembo’ýva
+toolbar-context-turn-off-vertical-tabs =
+    .label = Embogue tendayke oñembo’ýva
+toolbar-context-customize-sidebar =
+    .label = Embohéra pe tenda yke
 toolbar-context-menu-manage-extension =
     .label = Emongu’e jepysokue
     .accesskey = E
@@ -54,6 +60,10 @@ toolbar-context-menu-auto-hide-downloads-button-2 =
 toolbar-context-menu-always-open-downloads-panel =
     .label = Ehechauka ta’ãngarupa oñepyrũvo ñemboguejy
     .accesskey = S
+# Label of checkbox menu item to toggle visibility of Extensions Button.
+toolbar-context-menu-always-show-extensions-button =
+    .label = Ehechauka meme temboporu rupa
+    .accesskey = A
 toolbar-context-menu-remove-from-toolbar =
     .label = Tembiporu rendágui mboguete
     .accesskey = R

@@ -20,9 +20,9 @@ protections-popup-footer-protection-label-standard = Ստանդարտ
 
 # The text a screen reader speaks when focused on the info button.
 protections-panel-etp-more-info =
-    .aria-label = Հետագծումից ընդլայնված պաշտպանության մասին լրացուցիչ տեղեկություններ
-protections-panel-etp-on-header = Ընդլայնված պաշտպանությունը հետագծումից ՄԻԱՑՎԱԾ է այս կայքում
-protections-panel-etp-off-header = Ընդլայնված պաշտպանությունը հետագծումից ԱՆՋԱՏՎԱԾ է այս կայքում
+    .aria-label = Լրացուցիչ տեղեկություններ բարելավված հետագծման պաշտպանության մասին
+protections-panel-etp-on-header = Բարելավված պաշտպանությունը հետագծումից ՄԻԱՑՎԱԾ է այս կայքում
+protections-panel-etp-off-header = Բարելավված պաշտպանությունը հետագծումից ԱՆՋԱՏՎԱԾ է այս կայքում
 # The link to be clicked to open the sub-panel view
 protections-panel-site-not-working = Կայքը չի՞ աշխատում:
 # The heading/title of the sub-panel view
@@ -34,6 +34,14 @@ protections-panel-site-not-working-view =
 ## custom element code.
 ##   $host (String): the hostname of the site that is being displayed.
 
+protections-panel-etp-toggle-on =
+    .label = Բարելավված հետագծման պաշտպանություն
+    .description = Այս կայքում
+    .aria-label = Բարելավված հետագծման պաշտպանություն. Միացված է { $host }-ի համար
+protections-panel-etp-toggle-off =
+    .label = Բարելավված հետագծման պաշտպանություն
+    .description = Անջատված է այս կայքի համար
+    .aria-label = Բարելավված հետագծման պաշտպանություն. Անջատված է { $host }-ի համար
 
 ## The "Allowed" header also includes a "Why?" link that, when hovered, shows
 ## a tooltip explaining why these items were not blocked in the page.
@@ -50,7 +58,7 @@ protections-panel-not-blocking-why-etp-off-tooltip-label =
 
 protections-panel-no-trackers-found = { -brand-short-name }-ին հայտնի ոչ մի հայտնի հետագծիչներ չեն հայտնաբերվել այս էջում։
 protections-panel-content-blocking-tracking-protection = Հետևող բովանդակություն
-protections-panel-content-blocking-socialblock = Սոց մեդիայի հետևումներ
+protections-panel-content-blocking-socialblock = Սոց մեդիայի հետագծիչներ
 protections-panel-content-blocking-cryptominers-label = Ծպտյալ արժույթներ
 protections-panel-content-blocking-fingerprinters-label = Մատնահետքեր
 
@@ -63,6 +71,11 @@ protections-panel-content-blocking-fingerprinters-label = Մատնահետքեր
 protections-panel-blocking-label = Արգելափակված
 protections-panel-not-blocking-label = Թույլատրված
 protections-panel-not-found-label = Ոչ մեկը չի հայտնաբերվել
+
+## Smartblock strings
+
+#  $websitehost (String): host of website with blocked content.
+smartblock-placeholder-button-text = Թույլատրել { $websitehost }-ում
 
 ##
 
@@ -95,7 +108,7 @@ protections-panel-content-blocking-manage-settings =
     .label = Կառավարել պաշտպանություն կարգավորումները
     .accesskey = M
 protections-panel-content-blocking-breakage-report-view =
-    .title = Հաղորդել կոտրված կայքի մասին
+    .title = Զեկուցել խոտանված կայքի մասին
 protections-panel-content-blocking-breakage-report-view-description = Որոշ հետևումների արգելափակումը կարող է որոշ կայքերի խնդիրների պատճառ դառնալ։ Այս խնդիրների զեկուցումը { -brand-short-name }-ը բոլորի համար ավելի լավը կդարձնի։ Այս զեկույցն ուղարկելով Mozila-ին կուղարկվի URL և ձեր զննարկչի կարգավորումների մասին տեղեկություն։ <label data-l10n-name="learn-more">Իմանալ ավելին</label>
 protections-panel-content-blocking-breakage-report-view-collection-url = URL
 protections-panel-content-blocking-breakage-report-view-collection-url-label =

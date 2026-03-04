@@ -1,5 +1,15 @@
 "use strict";
-/* global NodeHTTPServer, NodeHTTPProxyServer*/
+
+const { NodeHTTPServer, NodeHTTPProxyServer } = ChromeUtils.importESModule(
+  "resource://testing-common/NodeServer.sys.mjs"
+);
+
+// We don't normally allow localhost channels to be proxied, but this
+// is easier than updating all the certs and/or domains.
+Services.prefs.setBoolPref("network.proxy.allow_hijacking_localhost", true);
+registerCleanupFunction(() => {
+  Services.prefs.clearUserPref("network.proxy.allow_hijacking_localhost");
+});
 
 add_task(async function run_test() {
   let proxy = new NodeHTTPProxyServer();

@@ -9,11 +9,11 @@
  */
 #include "net/dcsctp/packet/error_cause/out_of_resource_error_cause.h"
 
-#include <stdint.h>
-
+#include <cstdint>
+#include <optional>
+#include <string>
 #include <vector>
 
-#include "absl/types/optional.h"
 #include "api/array_view.h"
 
 namespace dcsctp {
@@ -23,12 +23,11 @@ namespace dcsctp {
 //  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //  |     Cause Code=4              |      Cause Length=4           |
 //  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-constexpr int OutOfResourceErrorCause::kType;
 
-absl::optional<OutOfResourceErrorCause> OutOfResourceErrorCause::Parse(
-    rtc::ArrayView<const uint8_t> data) {
+std::optional<OutOfResourceErrorCause> OutOfResourceErrorCause::Parse(
+    webrtc::ArrayView<const uint8_t> data) {
   if (!ParseTLV(data).has_value()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   return OutOfResourceErrorCause();
 }

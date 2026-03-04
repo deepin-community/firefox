@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use alloc::{string::String, sync::Arc, vec::Vec};
 
 use parking_lot::RwLock;
 use windows::{
@@ -11,22 +11,14 @@ use windows::{
 
 use super::SurfaceTarget;
 use crate::{
-    auxil::{self, dxgi::result::HResult as _},
-    dx12::D3D12Lib,
+    auxil,
+    dx12::{shader_compilation::CompilerContainer, D3D12Lib, DCompLib},
 };
-
-impl Drop for super::Instance {
-    fn drop(&mut self) {
-        if self.flags.contains(wgt::InstanceFlags::VALIDATION) {
-            auxil::dxgi::exception::unregister_exception_handler();
-        }
-    }
-}
 
 impl crate::Instance for super::Instance {
     type A = super::Api;
 
-    unsafe fn init(desc: &crate::InstanceDescriptor) -> Result<Self, crate::InstanceError> {
+    unsafe fn init(desc: &crate::InstanceDescriptor<'_>) -> Result<Self, crate::InstanceError> {
         profiling::scope!("Init DX12 Backend");
         let lib_main = D3D12Lib::new().map_err(|e| {
             crate::InstanceError::with_source(String::from("failed to load d3d12.dll"), e)
@@ -37,55 +29,28 @@ impl crate::Instance for super::Instance {
             .intersects(wgt::InstanceFlags::VALIDATION | wgt::InstanceFlags::GPU_BASED_VALIDATION)
         {
             // Enable debug layer
-            match lib_main.debug_interface() {
-                Ok(pair) => match pair {
-                    Ok(debug_controller) => {
-                        if desc.flags.intersects(wgt::InstanceFlags::VALIDATION) {
-                            unsafe { debug_controller.EnableDebugLayer() }
-                        }
-                        if desc
-                            .flags
-                            .intersects(wgt::InstanceFlags::GPU_BASED_VALIDATION)
-                        {
-                            #[allow(clippy::collapsible_if)]
-                            if let Ok(debug1) = debug_controller.cast::<Direct3D12::ID3D12Debug1>()
-                            {
-                                unsafe { debug1.SetEnableGPUBasedValidation(true) }
-                            } else {
-                                log::warn!("Failed to enable GPU-based validation");
-                            }
-                        }
+            if let Ok(Some(debug_controller)) = lib_main.debug_interface() {
+                if desc.flags.intersects(wgt::InstanceFlags::VALIDATION) {
+                    unsafe { debug_controller.EnableDebugLayer() }
+                }
+                if desc
+                    .flags
+                    .intersects(wgt::InstanceFlags::GPU_BASED_VALIDATION)
+                {
+                    #[allow(clippy::collapsible_if)]
+                    if let Ok(debug1) = debug_controller.cast::<Direct3D12::ID3D12Debug1>() {
+                        unsafe { debug1.SetEnableGPUBasedValidation(true) }
+                    } else {
+                        log::warn!("Failed to enable GPU-based validation");
                     }
-                    Err(err) => {
-                        log::warn!("Unable to enable D3D12 debug interface: {}", err);
-                    }
-                },
-                Err(err) => {
-                    log::warn!("Debug interface function for D3D12 not found: {:?}", err);
                 }
             }
         }
 
-        // Create DXGIFactory4
-        let (lib_dxgi, factory) = auxil::dxgi::factory::create_factory(
-            auxil::dxgi::factory::DxgiFactoryType::Factory4,
-            desc.flags,
-        )?;
+        let (lib_dxgi, factory) = auxil::dxgi::factory::create_factory(desc.flags)?;
 
         // Create IDXGIFactoryMedia
-        let factory_media = match lib_dxgi.create_factory_media() {
-            Ok(pair) => match pair {
-                Ok(factory_media) => Some(factory_media),
-                Err(err) => {
-                    log::error!("Failed to create IDXGIFactoryMedia: {}", err);
-                    None
-                }
-            },
-            Err(err) => {
-                log::warn!("IDXGIFactory1 creation function not found: {:?}", err);
-                None
-            }
-        };
+        let factory_media = lib_dxgi.create_factory_media().ok();
 
         let mut supports_allow_tearing = false;
         if let Some(factory5) = factory.as_factory5() {
@@ -94,35 +59,44 @@ impl crate::Instance for super::Instance {
                 factory5.CheckFeatureSupport(
                     Dxgi::DXGI_FEATURE_PRESENT_ALLOW_TEARING,
                     <*mut _>::cast(&mut allow_tearing),
-                    std::mem::size_of_val(&allow_tearing) as u32,
+                    size_of_val(&allow_tearing) as u32,
                 )
             };
 
-            match hr.into_result() {
-                Err(err) => log::warn!("Unable to check for tearing support: {}", err),
+            match hr {
+                Err(err) => log::warn!("Unable to check for tearing support: {err}"),
                 Ok(()) => supports_allow_tearing = true,
             }
         }
 
-        // Initialize DXC shader compiler
-        let dxc_container = match desc.dx12_shader_compiler.clone() {
-            wgt::Dx12Compiler::Dxc {
-                dxil_path,
+        // Initialize the shader compiler
+        let compiler_container = match desc.backend_options.dx12.shader_compiler.clone() {
+            wgt::Dx12Compiler::DynamicDxc {
                 dxc_path,
-            } => {
-                let container = super::shader_compilation::get_dxc_container(dxc_path, dxil_path)
-                    .map_err(|e| {
-                    crate::InstanceError::with_source(String::from("Failed to load DXC"), e)
-                })?;
-
-                container.map(Arc::new)
-            }
-            wgt::Dx12Compiler::Fxc => None,
+                max_shader_model,
+            } => CompilerContainer::new_dynamic_dxc(dxc_path.into(), max_shader_model).map_err(
+                |e| {
+                    crate::InstanceError::with_source(String::from("Failed to load dynamic DXC"), e)
+                },
+            )?,
+            wgt::Dx12Compiler::StaticDxc => CompilerContainer::new_static_dxc().map_err(|e| {
+                crate::InstanceError::with_source(String::from("Failed to load static DXC"), e)
+            })?,
+            wgt::Dx12Compiler::Fxc => CompilerContainer::new_fxc().map_err(|e| {
+                crate::InstanceError::with_source(String::from("Failed to load FXC"), e)
+            })?,
         };
 
-        match dxc_container {
-            Some(_) => log::debug!("Using DXC for shader compilation"),
-            None => log::debug!("Using FXC for shader compilation"),
+        match compiler_container {
+            CompilerContainer::DynamicDxc(..) => {
+                log::debug!("Using dynamic DXC for shader compilation")
+            }
+            CompilerContainer::StaticDxc(..) => {
+                log::debug!("Using static DXC for shader compilation")
+            }
+            CompilerContainer::Fxc(..) => {
+                log::debug!("Using FXC for shader compilation")
+            }
         }
 
         Ok(Self {
@@ -130,10 +104,15 @@ impl crate::Instance for super::Instance {
             factory,
             factory_media,
             library: Arc::new(lib_main),
+            dcomp_lib: Arc::new(DCompLib::new()),
+            presentation_system: desc.backend_options.dx12.presentation_system,
             _lib_dxgi: lib_dxgi,
             supports_allow_tearing,
             flags: desc.flags,
-            dxc_container,
+            memory_budget_thresholds: desc.memory_budget_thresholds,
+            compiler_container: Arc::new(compiler_container),
+            options: desc.backend_options.dx12.clone(),
+            telemetry: desc.telemetry,
         })
     }
 
@@ -143,14 +122,26 @@ impl crate::Instance for super::Instance {
         window_handle: raw_window_handle::RawWindowHandle,
     ) -> Result<super::Surface, crate::InstanceError> {
         match window_handle {
-            raw_window_handle::RawWindowHandle::Win32(handle) => Ok(super::Surface {
-                factory: self.factory.clone(),
-                factory_media: self.factory_media.clone(),
+            raw_window_handle::RawWindowHandle::Win32(handle) => {
                 // https://github.com/rust-windowing/raw-window-handle/issues/171
-                target: SurfaceTarget::WndHandle(Foundation::HWND(handle.hwnd.get() as *mut _)),
-                supports_allow_tearing: self.supports_allow_tearing,
-                swap_chain: RwLock::new(None),
-            }),
+                let handle = Foundation::HWND(handle.hwnd.get() as *mut _);
+                let target = match self.presentation_system {
+                    wgt::Dx12SwapchainKind::DxgiFromHwnd => SurfaceTarget::WndHandle(handle),
+                    wgt::Dx12SwapchainKind::DxgiFromVisual => SurfaceTarget::VisualFromWndHandle {
+                        handle,
+                        dcomp_state: Default::default(),
+                    },
+                };
+
+                Ok(super::Surface {
+                    factory: self.factory.clone(),
+                    factory_media: self.factory_media.clone(),
+                    target,
+                    supports_allow_tearing: self.supports_allow_tearing,
+                    swap_chain: RwLock::new(None),
+                    options: self.options.clone(),
+                })
+            }
             _ => Err(crate::InstanceError::new(format!(
                 "window handle {window_handle:?} is not a Win32 handle"
             ))),
@@ -166,7 +157,16 @@ impl crate::Instance for super::Instance {
         adapters
             .into_iter()
             .filter_map(|raw| {
-                super::Adapter::expose(raw, &self.library, self.flags, self.dxc_container.clone())
+                super::Adapter::expose(
+                    raw,
+                    &self.library,
+                    &self.dcomp_lib,
+                    self.flags,
+                    self.memory_budget_thresholds,
+                    self.compiler_container.clone(),
+                    self.options.clone(),
+                    self.telemetry,
+                )
             })
             .collect()
     }

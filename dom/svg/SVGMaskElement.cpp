@@ -6,12 +6,11 @@
 
 #include "mozilla/dom/SVGMaskElement.h"
 
-#include "nsGkAtoms.h"
 #include "mozilla/AlreadyAddRefed.h"
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/dom/SVGLengthBinding.h"
 #include "mozilla/dom/SVGMaskElementBinding.h"
 #include "mozilla/dom/SVGUnitTypesBinding.h"
+#include "nsGkAtoms.h"
 
 NS_IMPL_NS_NEW_SVG_ELEMENT(Mask)
 
@@ -93,11 +92,11 @@ bool SVGMaskElement::HasValidDimensions() const {
 
 SVGElement::LengthAttributesInfo SVGMaskElement::GetLengthInfo() {
   return LengthAttributesInfo(mLengthAttributes, sLengthInfo,
-                              ArrayLength(sLengthInfo));
+                              std::size(sLengthInfo));
 }
 
 SVGElement::EnumAttributesInfo SVGMaskElement::GetEnumInfo() {
-  return EnumAttributesInfo(mEnumAttributes, sEnumInfo, ArrayLength(sEnumInfo));
+  return EnumAttributesInfo(mEnumAttributes, sEnumInfo, std::size(sEnumInfo));
 }
 
 }  // namespace mozilla::dom

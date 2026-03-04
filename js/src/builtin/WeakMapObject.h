@@ -17,24 +17,34 @@ class WeakCollectionObject : public NativeObject {
  public:
   enum { DataSlot, SlotCount };
 
-  ValueValueWeakMap* getMap() {
-    return maybePtrFromReservedSlot<ValueValueWeakMap>(DataSlot);
-  }
+  using Map = WeakMap<Value, Value, ZoneAllocPolicy>;
+  Map* getMap() { return maybePtrFromReservedSlot<Map>(DataSlot); }
 
   size_t sizeOfExcludingThis(mozilla::MallocSizeOf aMallocSizeOf);
 
+  size_t nondeterministicGetSize();
   [[nodiscard]] static bool nondeterministicGetKeys(
       JSContext* cx, Handle<WeakCollectionObject*> obj,
       MutableHandleObject ret);
 
  protected:
   static const JSClassOps classOps_;
+
+  static void trace(JSTracer* trc, JSObject* obj);
+  static void finalize(JS::GCContext* gcx, JSObject* obj);
 };
 
 class WeakMapObject : public WeakCollectionObject {
  public:
   static const JSClass class_;
   static const JSClass protoClass_;
+
+  [[nodiscard]] static bool has(JSContext* cx, unsigned argc, Value* vp);
+  [[nodiscard]] static bool get(JSContext* cx, unsigned argc, Value* vp);
+  [[nodiscard]] static bool set(JSContext* cx, unsigned argc, Value* vp);
+
+  static void getObject(WeakMapObject* weakMap, JSObject* obj, Value* result);
+  static bool hasObject(WeakMapObject* weakMap, JSObject* obj);
 
  private:
   static const ClassSpec classSpec_;
@@ -44,20 +54,25 @@ class WeakMapObject : public WeakCollectionObject {
 
   [[nodiscard]] static bool construct(JSContext* cx, unsigned argc, Value* vp);
 
+  [[nodiscard]] static bool tryOptimizeCtorWithIterable(
+      JSContext* cx, Handle<WeakMapObject*> obj, Handle<Value> iterableVal,
+      bool* optimized);
+
   [[nodiscard]] static MOZ_ALWAYS_INLINE bool is(HandleValue v);
 
   [[nodiscard]] static MOZ_ALWAYS_INLINE bool has_impl(JSContext* cx,
                                                        const CallArgs& args);
-  [[nodiscard]] static bool has(JSContext* cx, unsigned argc, Value* vp);
   [[nodiscard]] static MOZ_ALWAYS_INLINE bool get_impl(JSContext* cx,
                                                        const CallArgs& args);
-  [[nodiscard]] static bool get(JSContext* cx, unsigned argc, Value* vp);
   [[nodiscard]] static MOZ_ALWAYS_INLINE bool delete_impl(JSContext* cx,
                                                           const CallArgs& args);
   [[nodiscard]] static bool delete_(JSContext* cx, unsigned argc, Value* vp);
   [[nodiscard]] static MOZ_ALWAYS_INLINE bool set_impl(JSContext* cx,
                                                        const CallArgs& args);
-  [[nodiscard]] static bool set(JSContext* cx, unsigned argc, Value* vp);
+  [[nodiscard]] static MOZ_ALWAYS_INLINE bool getOrInsert_impl(
+      JSContext* cx, const CallArgs& args);
+  [[nodiscard]] static bool getOrInsert(JSContext* cx, unsigned argc,
+                                        Value* vp);
 };
 
 }  // namespace js

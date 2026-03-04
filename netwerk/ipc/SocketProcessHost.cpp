@@ -65,7 +65,7 @@ bool SocketProcessHost::Launch() {
   MOZ_ASSERT(!mSocketProcessParent);
   MOZ_ASSERT(NS_IsMainThread());
 
-  std::vector<std::string> extraArgs;
+  geckoargs::ChildProcessArgs extraArgs;
   ProcessChild::AddPlatformBuildID(extraArgs);
 
   SharedPreferenceSerializer prefSerializer;
@@ -76,7 +76,8 @@ bool SocketProcessHost::Launch() {
   prefSerializer.AddSharedPrefCmdLineArgs(*this, extraArgs);
 
   mLaunchPhase = LaunchPhase::Waiting;
-  if (!GeckoChildProcessHost::LaunchAndWaitForProcessHandle(extraArgs)) {
+  if (!GeckoChildProcessHost::LaunchAndWaitForProcessHandle(
+          std::move(extraArgs))) {
     mLaunchPhase = LaunchPhase::Complete;
     return false;
   }
@@ -169,16 +170,16 @@ void SocketProcessHost::InitAfterConnect(bool aSucceeded) {
                                 attributes.mSandboxBroker().ref());
       // This is unlikely to fail and probably indicates OS resource
       // exhaustion.
-      Unused << NS_WARN_IF(mSandboxBroker == nullptr);
+      (void)NS_WARN_IF(mSandboxBroker == nullptr);
       MOZ_ASSERT(attributes.mSandboxBroker().ref().IsValid());
     }
     attributes.mInitSandbox() = true;
   }
 #endif  // XP_LINUX && MOZ_SANDBOX
 
-  Unused << GetActor()->SendInit(attributes);
+  (void)GetActor()->SendInit(attributes);
 
-  Unused << GetActor()->SendInitProfiler(
+  (void)GetActor()->SendInitProfiler(
       ProfilerParent::CreateForProcess(GetActor()->OtherPid()));
 
   if (mListener) {

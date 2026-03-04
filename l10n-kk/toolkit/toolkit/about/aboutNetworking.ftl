@@ -39,6 +39,7 @@ about-networking-dns-lookup = DNS іздеуі
 about-networking-dns-lookup-button = Шешу
 about-networking-dns-domain = Домен:
 about-networking-dns-lookup-table-column = IP адрестері
+about-networking-dns-https-rrs-lookup-table-column = HTTPS RRs
 about-networking-dns-https-rr-lookup-table-column = HTTP RRs
 about-networking-rcwn = RCWN статистикасы
 about-networking-rcwn-status = RCWN қалып-күйі
@@ -64,6 +65,3 @@ about-networking-moved-about-logging = Бұл бет <a data-l10n-name="about-lo
 
 about-networking-networkid-is-up = Байланыс орнатылды
 about-networking-networkid-status-known = Байланыс қалып-күйі белгісіз
-
-##
-

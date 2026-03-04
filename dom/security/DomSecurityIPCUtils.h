@@ -8,6 +8,7 @@
 #define mozilla_dom_domsecurityipcutils_h
 
 #include "ipc/EnumSerializer.h"
+#include "nsIContentSecurityPolicy.h"
 #include "nsILoadInfo.h"
 
 namespace IPC {
@@ -19,6 +20,22 @@ struct ParamTraits<nsILoadInfo::HTTPSUpgradeTelemetryType>
           nsILoadInfo::HTTPSUpgradeTelemetryType,
           nsILoadInfo::HTTPSUpgradeTelemetryType::NOT_INITIALIZED,
           nsILoadInfo::HTTPSUpgradeTelemetryType::UPGRADE_EXCEPTION> {};
+
+template <>
+struct ParamTraits<nsILoadInfo::SchemelessInputType>
+    : public ContiguousEnumSerializerInclusive<
+          nsILoadInfo::SchemelessInputType,
+          nsILoadInfo::SchemelessInputType::SchemelessInputTypeUnset,
+          nsILoadInfo::SchemelessInputType::SchemelessInputTypeSchemeless> {};
+
+template <>
+struct ParamTraits<
+    nsIContentSecurityPolicy::RequireTrustedTypesForDirectiveState>
+    : public ContiguousEnumSerializerInclusive<
+          nsIContentSecurityPolicy::RequireTrustedTypesForDirectiveState,
+          nsIContentSecurityPolicy::RequireTrustedTypesForDirectiveState::NONE,
+          nsIContentSecurityPolicy::RequireTrustedTypesForDirectiveState::
+              ENFORCE> {};
 
 }  // namespace IPC
 

@@ -27,7 +27,7 @@ void ContentBlockingUserInteraction::Observe(nsIPrincipal* aPrincipal) {
   if (XRE_IsParentProcess()) {
     LOG_PRIN(("Saving the userInteraction for %s", _spec), aPrincipal);
 
-    PermissionManager* permManager = PermissionManager::GetInstance();
+    RefPtr<PermissionManager> permManager = PermissionManager::GetInstance();
     if (NS_WARN_IF(!permManager)) {
       LOG(("Permission manager is null, bailing out early"));
       return;
@@ -51,7 +51,7 @@ void ContentBlockingUserInteraction::Observe(nsIPrincipal* aPrincipal) {
     rv = permManager->AddFromPrincipal(aPrincipal, USER_INTERACTION_PERM,
                                        nsIPermissionManager::ALLOW_ACTION,
                                        expirationType, when);
-    Unused << NS_WARN_IF(NS_FAILED(rv));
+    (void)NS_WARN_IF(NS_FAILED(rv));
 
     if (StaticPrefs::privacy_antitracking_testing()) {
       nsCOMPtr<nsIObserverService> obs = services::GetObserverService();
@@ -72,7 +72,7 @@ void ContentBlockingUserInteraction::Observe(nsIPrincipal* aPrincipal) {
 
 /* static */
 bool ContentBlockingUserInteraction::Exists(nsIPrincipal* aPrincipal) {
-  PermissionManager* permManager = PermissionManager::GetInstance();
+  RefPtr<PermissionManager> permManager = PermissionManager::GetInstance();
   if (NS_WARN_IF(!permManager)) {
     return false;
   }

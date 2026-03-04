@@ -4,7 +4,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "CompositorWidgetParent.h"
 
-#include "mozilla/Unused.h"
 #include "mozilla/StaticPrefs_layers.h"
 #include "mozilla/gfx/DeviceManagerDx.h"
 #include "mozilla/gfx/Point.h"
@@ -34,25 +33,17 @@ CompositorWidgetParent::CompositorWidgetParent(
                           aOptions),
       mWnd(reinterpret_cast<HWND>(
           aInitData.get_WinCompositorWidgetInitData().hWnd())),
-      mTransparencyMode(uint32_t(
-          aInitData.get_WinCompositorWidgetInitData().transparencyMode())),
-      mSizeMode(nsSizeMode_Normal),
-      mIsFullyOccluded(false),
-      mRemoteBackbufferClient() {
+      mIsFullyOccluded(false) {
   MOZ_ASSERT(XRE_GetProcessType() == GeckoProcessType_GPU);
   MOZ_ASSERT(mWnd && ::IsWindow(mWnd));
 }
 
-CompositorWidgetParent::~CompositorWidgetParent() {}
+CompositorWidgetParent::~CompositorWidgetParent() = default;
 
 bool CompositorWidgetParent::Initialize(
     const RemoteBackbufferHandles& aRemoteHandles) {
   mRemoteBackbufferClient = std::make_unique<remote_backbuffer::Client>();
-  if (!mRemoteBackbufferClient->Initialize(aRemoteHandles)) {
-    return false;
-  }
-
-  return true;
+  return mRemoteBackbufferClient->Initialize(aRemoteHandles);
 }
 
 bool CompositorWidgetParent::PreRender(WidgetRenderingContext* aContext) {
@@ -78,25 +69,23 @@ LayoutDeviceIntSize CompositorWidgetParent::GetClientSize() {
 
 already_AddRefed<gfx::DrawTarget>
 CompositorWidgetParent::StartRemoteDrawingInRegion(
-    const LayoutDeviceIntRegion& aInvalidRegion,
-    layers::BufferMode* aBufferMode) {
-  MOZ_ASSERT(mRemoteBackbufferClient);
-  MOZ_ASSERT(aBufferMode);
-
-  // Because we use remote backbuffering, there is no need to use a local
-  // backbuffer too.
-  (*aBufferMode) = layers::BufferMode::BUFFER_NONE;
-
+    const LayoutDeviceIntRegion& aInvalidRegion) {
+  if (!mRemoteBackbufferClient) {
+    MOZ_DIAGNOSTIC_CRASH("Missing mRemoteBackbufferClient for SW compositing!");
+    return nullptr;
+  }
   return mRemoteBackbufferClient->BorrowDrawTarget();
 }
 
 void CompositorWidgetParent::EndRemoteDrawingInRegion(
     gfx::DrawTarget* aDrawTarget, const LayoutDeviceIntRegion& aInvalidRegion) {
-  Unused << mRemoteBackbufferClient->PresentDrawTarget(
+  if (!mRemoteBackbufferClient) {
+    MOZ_DIAGNOSTIC_CRASH("Missing mRemoteBackbufferClient for SW compositing!");
+    return;
+  }
+  (void)mRemoteBackbufferClient->PresentDrawTarget(
       aInvalidRegion.ToUnknownRegion());
 }
-
-bool CompositorWidgetParent::NeedsToDeferEndRemoteDrawing() { return false; }
 
 already_AddRefed<gfx::DrawTarget>
 CompositorWidgetParent::GetBackBufferDrawTarget(gfx::DrawTarget* aScreenTarget,
@@ -122,7 +111,7 @@ bool CompositorWidgetParent::IsHidden() const { return ::IsIconic(mWnd); }
 
 mozilla::ipc::IPCResult CompositorWidgetParent::RecvInitialize(
     const RemoteBackbufferHandles& aRemoteHandles) {
-  Unused << Initialize(aRemoteHandles);
+  (void)Initialize(aRemoteHandles);
   return IPC_OK();
 }
 
@@ -136,45 +125,19 @@ mozilla::ipc::IPCResult CompositorWidgetParent::RecvLeavePresentLock() {
   return IPC_OK();
 }
 
-mozilla::ipc::IPCResult CompositorWidgetParent::RecvUpdateTransparency(
-    const TransparencyMode& aMode) {
-  mTransparencyMode = uint32_t(aMode);
-  return IPC_OK();
-}
-
 mozilla::ipc::IPCResult CompositorWidgetParent::RecvNotifyVisibilityUpdated(
-    const nsSizeMode& aSizeMode, const bool& aIsFullyOccluded) {
-  mSizeMode = aSizeMode;
+    const bool& aIsFullyOccluded) {
   mIsFullyOccluded = aIsFullyOccluded;
   return IPC_OK();
-}
-
-nsSizeMode CompositorWidgetParent::GetWindowSizeMode() const {
-  return mSizeMode;
 }
 
 bool CompositorWidgetParent::GetWindowIsFullyOccluded() const {
   return mIsFullyOccluded;
 }
 
-mozilla::ipc::IPCResult CompositorWidgetParent::RecvClearTransparentWindow() {
-  gfx::CriticalSectionAutoEnter lock(&mPresentLock);
-
-  RefPtr<DrawTarget> drawTarget = mRemoteBackbufferClient->BorrowDrawTarget();
-  if (!drawTarget) {
-    return IPC_OK();
-  }
-
-  IntSize size = drawTarget->GetSize();
-  if (size.IsEmpty()) {
-    return IPC_OK();
-  }
-
-  drawTarget->ClearRect(Rect(0, 0, size.width, size.height));
-
-  Unused << mRemoteBackbufferClient->PresentDrawTarget(
-      IntRect(0, 0, size.width, size.height));
-
+mozilla::ipc::IPCResult CompositorWidgetParent::RecvUpdateTransparency(
+    const TransparencyMode& aMode) {
+  SetTransparencyMode(aMode);
   return IPC_OK();
 }
 
@@ -182,9 +145,9 @@ nsIWidget* CompositorWidgetParent::RealWidget() { return nullptr; }
 
 void CompositorWidgetParent::ObserveVsync(VsyncObserver* aObserver) {
   if (aObserver) {
-    Unused << SendObserveVsync();
+    (void)SendObserveVsync();
   } else {
-    Unused << SendUnobserveVsync();
+    (void)SendUnobserveVsync();
   }
   mVsyncObserver = aObserver;
 }

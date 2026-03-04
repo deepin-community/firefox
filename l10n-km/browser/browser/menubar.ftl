@@ -3,12 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-services =
@@ -34,11 +28,9 @@ menu-quit =
             [windows] x
            *[other] Q
         }
-
 # This menu-quit-mac string is only used on macOS.
 menu-quit-mac =
     .label = បិទ { -brand-shorter-name }
-
 menu-about =
     .label = អំពី { -brand-shorter-name }
     .accesskey = A
@@ -84,7 +76,7 @@ menu-file-print =
     .label = បោះពុម្ព…
     .accesskey = P
 menu-file-go-offline =
-    .label = ធ្វើ​ការដោយ​គ្មាន​អ៊ីនធឺណិត
+    .label = ធ្វើ​ការដោយអហ្វឡាញ
     .accesskey = k
 
 ## Edit Menu
@@ -190,12 +182,19 @@ menu-history-undo-menu =
     .label = ផ្ទាំង​ដែល​បិទ​ថ្មីៗ
 menu-history-undo-window-menu =
     .label = បង្អួច​ដែល​បាន​បិទ​ថ្មីៗ
+# "Search" is a verb, as in "Search in History"
+menu-history-search =
+    .label = ស្វែងរក​ប្រវត្តិ
 
 ## Bookmarks Menu
 
 menu-bookmarks-menu =
     .label = ចំណាំ
     .accesskey = B
+menu-bookmarks-manage =
+    .label = គ្រប់គ្រងចំណាំ
+menu-bookmark-tab =
+    .label = ចំណាំផ្ទាំងបច្ចុប្បន្ន…
 menu-bookmarks-all-tabs =
     .label = ចំណាំ​ផ្ទាំង​ទាំងអស់…
 menu-bookmarks-toolbar =
@@ -204,6 +203,16 @@ menu-bookmarks-other =
     .label = ចំណាំ​ផ្សេង​ៗ​ទៀត
 menu-bookmarks-mobile =
     .label = ចំណាំ​ចល័ត
+
+## Profiles Menu
+
+menu-profiles-manage-profiles =
+    .label = គ្រប់គ្រងប្រវត្តិរូប
+menu-profiles-new-profile =
+    .label = ប្រវត្តិរូបថ្មី
+menu-profiles-menu =
+    .label = ប្រវត្តិរូប
+    .accesskey = P
 
 ## Tools Menu
 

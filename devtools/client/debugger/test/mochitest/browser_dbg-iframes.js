@@ -21,13 +21,17 @@ add_task(async function () {
   const onReloaded = reload(dbg);
   await waitForPaused(dbg);
   await waitForLoadedSource(dbg, "doc-iframes.html");
-  assertPausedAtSourceAndLine(dbg, findSource(dbg, "doc-iframes.html").id, 11);
+  await assertPausedAtSourceAndLine(
+    dbg,
+    findSource(dbg, "doc-iframes.html").id,
+    11
+  );
 
   // test pausing in the iframe
   await resume(dbg);
   await waitForPaused(dbg);
   await waitForLoadedSource(dbg, "doc-debugger-statements.html");
-  assertPausedAtSourceAndLine(
+  await assertPausedAtSourceAndLine(
     dbg,
     findSource(dbg, "doc-debugger-statements.html").id,
     11
@@ -36,7 +40,7 @@ add_task(async function () {
   // test pausing in the iframe
   await resume(dbg);
   await waitForPaused(dbg);
-  assertPausedAtSourceAndLine(
+  await assertPausedAtSourceAndLine(
     dbg,
     findSource(dbg, "doc-debugger-statements.html").id,
     16
@@ -44,17 +48,15 @@ add_task(async function () {
   await waitFor(() => dbg.toolbox.isHighlighted("jsdebugger"));
   ok(true, "Debugger is highlighted when paused");
 
-  if (isFissionEnabled() || isEveryFrameTargetEnabled()) {
-    info("Remove the iframe and wait for resume");
-    await SpecialPowers.spawn(gBrowser.selectedBrowser, [], () => {
-      const iframe = content.document.querySelector("iframe");
-      iframe.remove();
-    });
-    await waitForResumed(dbg);
-    await waitFor(() => !dbg.toolbox.isHighlighted("jsdebugger"));
-    ok(true, "Debugger is no longer highlighted when resumed");
+  info("Remove the iframe and wait for resume");
+  await SpecialPowers.spawn(gBrowser.selectedBrowser, [], () => {
+    const iframe = content.document.querySelector("iframe");
+    iframe.remove();
+  });
+  await waitForResumed(dbg);
+  await waitFor(() => !dbg.toolbox.isHighlighted("jsdebugger"));
+  ok(true, "Debugger is no longer highlighted when resumed");
 
-    info("Wait for reload to complete after resume");
-    await onReloaded;
-  }
+  info("Wait for reload to complete after resume");
+  await onReloaded;
 });

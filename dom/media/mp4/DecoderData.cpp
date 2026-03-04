@@ -2,17 +2,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "DecoderData.h"
+
 #include "Adts.h"
 #include "AnnexB.h"
 #include "BufferReader.h"
-#include "DecoderData.h"
-#include "mozilla/ArrayUtils.h"
-#include "mozilla/EndianUtils.h"
-#include "mozilla/Telemetry.h"
-#include "VideoUtils.h"
 #include "MP4Metadata.h"
+#include "VideoUtils.h"
+#include "mozilla/EndianUtils.h"
 #include "mozilla/Logging.h"
-
+#include "mozilla/glean/DomMediaMp4Metrics.h"
 #include "mp4parse.h"
 
 #define LOG(...) \
@@ -88,8 +87,7 @@ static MediaResult UpdateTrackProtectedInfo(mozilla::TrackInfo& aConfig,
 template <typename Mp4ParseTrackAudioOrVideoInfo>
 static MediaResult VerifyAudioOrVideoInfoAndRecordTelemetry(
     Mp4ParseTrackAudioOrVideoInfo* audioOrVideoInfo) {
-  Telemetry::Accumulate(
-      Telemetry::MEDIA_MP4_PARSE_NUM_SAMPLE_DESCRIPTION_ENTRIES,
+  glean::media_mp4_parse::num_sample_description_entries.AccumulateSingleSample(
       audioOrVideoInfo->sample_info_count);
 
   bool hasMultipleCodecs = false;
@@ -106,18 +104,20 @@ static MediaResult VerifyAudioOrVideoInfoAndRecordTelemetry(
     }
   }
 
-  Telemetry::Accumulate(
-      Telemetry::
-          MEDIA_MP4_PARSE_SAMPLE_DESCRIPTION_ENTRIES_HAVE_MULTIPLE_CODECS,
-      hasMultipleCodecs);
+  glean::media_mp4_parse::sample_description_entries_have_multiple_codecs
+      .EnumGet(static_cast<glean::media_mp4_parse::
+                               SampleDescriptionEntriesHaveMultipleCodecsLabel>(
+          hasMultipleCodecs))
+      .Add();
 
   // Accumulate if we have multiple (2 or more) crypto entries.
   // TODO(1715283): rework this to count number of crypto entries + gather
   // richer data.
-  Telemetry::Accumulate(
-      Telemetry::
-          MEDIA_MP4_PARSE_SAMPLE_DESCRIPTION_ENTRIES_HAVE_MULTIPLE_CRYPTO,
-      cryptoCount >= 2);
+  glean::media_mp4_parse::sample_description_entries_have_multiple_crypto
+      .EnumGet(static_cast<glean::media_mp4_parse::
+                               SampleDescriptionEntriesHaveMultipleCryptoLabel>(
+          cryptoCount >= 2))
+      .Add();
 
   if (audioOrVideoInfo->sample_info_count == 0) {
     return MediaResult(
@@ -182,7 +182,8 @@ MediaResult MP4AudioInfo::Update(const Mp4parseTrackInfo* aTrack,
         mp4ParseSampleCodecSpecific.data, mp4ParseSampleCodecSpecific.length);
     mCodecSpecificConfig =
         AudioCodecSpecificVariant{std::move(opusCodecSpecificData)};
-  } else if (codecType == MP4PARSE_CODEC_AAC) {
+  } else if (codecType == MP4PARSE_CODEC_AAC ||
+             codecType == MP4PARSE_CODEC_XHEAAC) {
     mMimeType = "audio/mp4a-latm"_ns;
     int64_t codecDelayUS = aTrack->media_time;
     double USECS_PER_S = 1e6;

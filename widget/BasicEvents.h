@@ -7,7 +7,6 @@
 #define mozilla_BasicEvents_h__
 
 #include <stdint.h>
-#include <type_traits>
 
 #include "mozilla/EventForwards.h"
 #include "mozilla/TimeStamp.h"
@@ -162,6 +161,9 @@ struct BaseEventFlags {
   // Certain mouse events can be marked as positionless to return 0 from
   // coordinate related getters.
   bool mIsPositionless : 1;
+  // Indicates if a key handler is registered to execute a command for the key
+  // combination.
+  bool mIsShortcutKey : 1;
 
   // Flags managing state of propagation between processes.
   // Note the the following flags shouldn't be referred directly.  Use utility
@@ -451,9 +453,9 @@ class WidgetEvent : public WidgetEventTime {
         break;
       case ePointerEventClass:
         mFlags.mCancelable =
-            (mMessage != ePointerEnter && mMessage != ePointerLeave &&
-             mMessage != ePointerCancel && mMessage != ePointerGotCapture &&
-             mMessage != ePointerLostCapture);
+            (mMessage != ePointerRawUpdate && mMessage != ePointerEnter &&
+             mMessage != ePointerLeave && mMessage != ePointerCancel &&
+             mMessage != ePointerGotCapture && mMessage != ePointerLostCapture);
         mFlags.mBubbles =
             (mMessage != ePointerEnter && mMessage != ePointerLeave);
         break;
@@ -740,6 +742,24 @@ class WidgetEvent : public WidgetEventTime {
   inline bool IsReservedByChrome() const { return mFlags.IsReservedByChrome(); }
 
   /**
+   * Return true if the corresponding DOM event supports screen(X|Y), etc.
+   */
+  [[nodiscard]] inline bool DOMEventSupportsCoords() const {
+    switch (mClass) {
+      case eMouseEventClass:
+      case eMouseScrollEventClass:
+      case eWheelEventClass:
+      case eTouchEventClass:
+      case eDragEventClass:
+      case ePointerEventClass:
+      case eSimpleGestureEventClass:
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /**
    * Utils for checking event types
    */
 
@@ -910,12 +930,12 @@ class WidgetEvent : public WidgetEventTime {
       case ePointerEventClass:
         // All pointer events are composed
         mFlags.mComposed =
+            mMessage == ePointerRawUpdate || mMessage == ePointerMove ||
             mMessage == ePointerClick || mMessage == ePointerAuxClick ||
             mMessage == eContextMenu || mMessage == ePointerDown ||
-            mMessage == ePointerMove || mMessage == ePointerUp ||
-            mMessage == ePointerCancel || mMessage == ePointerOver ||
-            mMessage == ePointerOut || mMessage == ePointerGotCapture ||
-            mMessage == ePointerLostCapture;
+            mMessage == ePointerUp || mMessage == ePointerCancel ||
+            mMessage == ePointerOver || mMessage == ePointerOut ||
+            mMessage == ePointerGotCapture || mMessage == ePointerLostCapture;
         break;
       case eTouchEventClass:
         // All touch events are composed
@@ -990,6 +1010,7 @@ class WidgetEvent : public WidgetEventTime {
         aEventTypeArg.EqualsLiteral("pointerout") ||
         aEventTypeArg.EqualsLiteral("pointerenter") ||
         aEventTypeArg.EqualsLiteral("pointerleave") ||
+        aEventTypeArg.EqualsLiteral("pointerrawupdate") ||
         aEventTypeArg.EqualsLiteral("gotpointercapture") ||
         aEventTypeArg.EqualsLiteral("lostpointercapture") ||
         // touch events

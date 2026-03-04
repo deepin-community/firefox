@@ -14,7 +14,6 @@
 #include "mozilla/TextControlElement.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/WeakPtr.h"
-#include "mozilla/dom/HTMLInputElementBinding.h"
 #include "mozilla/dom/Nullable.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsITimer.h"
@@ -40,6 +39,7 @@ enum class SelectionDirection : uint8_t {
 };
 
 namespace dom {
+enum class SelectionMode : uint8_t;
 class Element;
 class HTMLInputElement;
 }  // namespace dom
@@ -220,11 +220,14 @@ class TextControlState final : public SupportsWeakPtr {
   bool IsBusy() const { return !!mHandlingState || mValueTransferInProgress; }
 
   MOZ_CAN_RUN_SCRIPT TextEditor* GetTextEditor();
-  TextEditor* GetTextEditorWithoutCreation() const;
+  TextEditor* GetExtantTextEditor() const;
   nsISelectionController* GetSelectionController() const;
-  nsFrameSelection* GetConstFrameSelection();
+  nsFrameSelection* GetIndependentFrameSelection() const;
   nsresult BindToFrame(nsTextControlFrame* aFrame);
   MOZ_CAN_RUN_SCRIPT void UnbindFromFrame(nsTextControlFrame* aFrame);
+  [[nodiscard]] nsTextControlFrame* GetBoundFrame() const {
+    return mBoundFrame;
+  }
   MOZ_CAN_RUN_SCRIPT nsresult PrepareEditor(const nsAString* aValue = nullptr);
   void InitializeKeyboardEventListeners();
 
@@ -292,7 +295,7 @@ class TextControlState final : public SupportsWeakPtr {
    * GetValue() returns current value either with or without TextEditor.
    * The result never includes \r.
    */
-  void GetValue(nsAString& aValue, bool aIgnoreWrap, bool aForDisplay) const;
+  void GetValue(nsAString& aValue, bool aForDisplay) const;
 
   /**
    * ValueEquals() is designed for internal use so that aValue shouldn't
@@ -349,18 +352,17 @@ class TextControlState final : public SupportsWeakPtr {
     uint32_t GetStart() const { return mStart; }
     bool SetStart(uint32_t value) {
       uint32_t newValue = std::min(value, *mMaxLength);
-      bool changed = mStart != newValue;
-      mStart = newValue;
-      mIsDirty |= changed;
-      return changed;
+      return SetStartInternal(newValue);
     }
     uint32_t GetEnd() const { return mEnd; }
     bool SetEnd(uint32_t value) {
       uint32_t newValue = std::min(value, *mMaxLength);
-      bool changed = mEnd != newValue;
-      mEnd = newValue;
-      mIsDirty |= changed;
-      return changed;
+      return SetEndInternal(newValue);
+    }
+    void CollapseToStart() {
+      // 0 is always a fine value regardless of max length.
+      SetStartInternal(0);
+      SetEndInternal(0);
     }
     SelectionDirection GetDirection() const { return mDirection; }
     bool SetDirection(SelectionDirection value) {
@@ -383,6 +385,20 @@ class TextControlState final : public SupportsWeakPtr {
     void SetIsDirty() { mIsDirty = true; }
 
    private:
+    bool SetStartInternal(uint32_t aNewValue) {
+      bool changed = mStart != aNewValue;
+      mStart = aNewValue;
+      mIsDirty |= changed;
+      return changed;
+    }
+
+    bool SetEndInternal(uint32_t aNewValue) {
+      bool changed = mEnd != aNewValue;
+      mEnd = aNewValue;
+      mIsDirty |= changed;
+      return changed;
+    }
+
     uint32_t mStart = 0;
     uint32_t mEnd = 0;
     Maybe<uint32_t> mMaxLength;

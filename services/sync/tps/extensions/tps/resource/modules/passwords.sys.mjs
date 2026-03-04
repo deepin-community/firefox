@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* This is a JavaScript module (JSM) to be imported via
- * ChromeUtils.import() and acts as a singleton. Only the following
+/* This is a JavaScript module to be imported via
+ * ChromeUtils.importESModule() and acts as a singleton. Only the following
  * listed symbols will exposed on import, and only when and where imported.
  */
 
@@ -142,7 +142,7 @@ Password.prototype = {
    *
    * @return nothing
    */
-  Update() {
+  async Update() {
     let oldlogin = new nsLoginInfo(
       this.props.hostname,
       this.props.submitURL,
@@ -161,7 +161,7 @@ Password.prototype = {
       this.updateProps.usernameField,
       this.updateProps.passwordField
     );
-    Services.logins.modifyLogin(oldlogin, newlogin);
+    await Services.logins.modifyLoginAsync(oldlogin, newlogin);
   },
 
   /**

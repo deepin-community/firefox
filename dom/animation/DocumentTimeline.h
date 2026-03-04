@@ -7,11 +7,11 @@
 #ifndef mozilla_dom_DocumentTimeline_h
 #define mozilla_dom_DocumentTimeline_h
 
-#include "mozilla/dom/Document.h"
-#include "mozilla/dom/DocumentTimelineBinding.h"
+#include "AnimationTimeline.h"
 #include "mozilla/LinkedList.h"
 #include "mozilla/TimeStamp.h"
-#include "AnimationTimeline.h"
+#include "mozilla/dom/Document.h"
+#include "mozilla/dom/DocumentTimelineBinding.h"
 #include "nsDOMNavigationTiming.h"  // for DOMHighResTimeStamp
 #include "nsRefreshDriver.h"
 
@@ -51,7 +51,6 @@ class DocumentTimeline final : public AnimationTimeline,
 
   void NotifyAnimationUpdated(Animation& aAnimation) override;
 
-  void RemoveAnimation(Animation* aAnimation) override;
   void NotifyAnimationContentVisibilityChanged(Animation* aAnimation,
                                                bool aIsVisible) override;
 
@@ -76,6 +75,9 @@ class DocumentTimeline final : public AnimationTimeline,
   // iframe).
   TimeStamp mLastRefreshDriverTime;
   TimeDuration mOriginTime;
+
+ private:
+  TimeStamp EnsureValidTimestamp(const TimeStamp& aTimestamp) const;
 };
 
 }  // namespace mozilla::dom

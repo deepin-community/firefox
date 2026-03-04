@@ -15,7 +15,6 @@
 #  include "MediaMetadataManager.h"
 #  include "MediaPromiseDefs.h"
 #  include "MediaResource.h"
-#  include "MediaStatistics.h"
 #  include "SeekTarget.h"
 #  include "TelemetryProbesReporter.h"
 #  include "TimeUnits.h"
@@ -39,7 +38,6 @@ namespace mozilla {
 
 class AbstractThread;
 class DOMMediaStream;
-class DecoderBenchmark;
 class ProcessedMediaTrack;
 class FrameStatistics;
 class VideoFrameContainer;
@@ -490,7 +488,7 @@ class MediaDecoder : public DecoderDoctorLifeLogger<MediaDecoder> {
     DurationChanged();
   }
 
-  virtual void OnPlaybackEvent(MediaPlaybackEvent&& aEvent);
+  virtual void OnPlaybackEvent(const MediaPlaybackEvent& aEvent);
 
   // Called when the metadata from the media file has been loaded by the
   // state machine. Call on the main thread only.
@@ -562,12 +560,14 @@ class MediaDecoder : public DecoderDoctorLifeLogger<MediaDecoder> {
   void OnSecondaryVideoContainerInstalled(
       const RefPtr<VideoFrameContainer>& aSecondaryVideoContainer);
 
-  void OnStoreDecoderBenchmark(const VideoInfo& aInfo);
-
   void FinishShutdown();
 
   void ConnectMirrors(MediaDecoderStateMachineBase* aObject);
   void DisconnectMirrors();
+#  ifdef MOZ_WMF_MEDIA_ENGINE
+  // Return true if we switched to a new state machine.
+  bool SwitchStateMachine(const MediaResult& aError);
+#  endif
 
   virtual bool CanPlayThroughImpl() = 0;
 
@@ -603,9 +603,6 @@ class MediaDecoder : public DecoderDoctorLifeLogger<MediaDecoder> {
 
   // Counters related to decode and presentation of frames.
   const RefPtr<FrameStatistics> mFrameStats;
-
-  // Store a benchmark of the decoder based on FrameStatistics.
-  RefPtr<DecoderBenchmark> mDecoderBenchmark;
 
   RefPtr<VideoFrameContainer> mVideoFrameContainer;
 
@@ -671,7 +668,6 @@ class MediaDecoder : public DecoderDoctorLifeLogger<MediaDecoder> {
   MediaEventListener mOnNextFrameStatus;
   MediaEventListener mOnTrackInfoUpdated;
   MediaEventListener mOnSecondaryVideoContainerInstalled;
-  MediaEventListener mOnStoreDecoderBenchmark;
 
   // True if we have suspended video decoding.
   bool mIsVideoDecodingSuspended = false;

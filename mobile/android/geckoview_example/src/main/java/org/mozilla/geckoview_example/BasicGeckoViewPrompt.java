@@ -5,19 +5,20 @@
 
 package org.mozilla.geckoview_example;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.TypedArray;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.net.Uri;
-import android.os.Build;
+import android.provider.OpenableColumns;
 import android.text.InputType;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -25,6 +26,7 @@ import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckedTextView;
@@ -39,12 +41,16 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.UUID;
 import org.mozilla.geckoview.AllowOrDeny;
 import org.mozilla.geckoview.Autocomplete;
 import org.mozilla.geckoview.GeckoResult;
@@ -200,6 +206,39 @@ final class BasicGeckoViewPrompt implements GeckoSession.PromptDelegate {
 
     builder.setPositiveButton(R.string.before_unload_leave_page, listener);
     builder.setNegativeButton(R.string.before_unload_stay, listener);
+
+    createStandardDialog(builder, prompt, res).show();
+    return res;
+  }
+
+  @Nullable
+  @Override
+  public GeckoResult<PromptResponse> onFolderUploadPrompt(
+      final GeckoSession session, final FolderUploadPrompt prompt) {
+    final Activity activity = mActivity;
+    if (activity == null) {
+      return GeckoResult.fromValue(prompt.dismiss());
+    }
+    final AlertDialog.Builder builder =
+        new AlertDialog.Builder(activity)
+            .setTitle(R.string.folder_upload_title)
+            .setMessage(R.string.folder_upload_message);
+
+    final GeckoResult<PromptResponse> res = new GeckoResult<>();
+
+    final DialogInterface.OnClickListener listener =
+        (dialog, which) -> {
+          if (which == DialogInterface.BUTTON_POSITIVE) {
+            res.complete(prompt.confirm(AllowOrDeny.ALLOW));
+          } else if (which == DialogInterface.BUTTON_NEGATIVE) {
+            res.complete(prompt.confirm(AllowOrDeny.DENY));
+          } else {
+            res.complete(prompt.dismiss());
+          }
+        };
+
+    builder.setPositiveButton(R.string.folder_upload_confirm_accept, listener);
+    builder.setNegativeButton(R.string.folder_upload_confirm_cancel, listener);
 
     createStandardDialog(builder, prompt, res).show();
     return res;
@@ -696,26 +735,14 @@ final class BasicGeckoViewPrompt implements GeckoSession.PromptDelegate {
     return defaultToNow ? new Date() : null;
   }
 
-  @SuppressWarnings("deprecation")
   private static void setTimePickerTime(final TimePicker picker, final Calendar cal) {
-    if (Build.VERSION.SDK_INT >= 23) {
-      picker.setHour(cal.get(Calendar.HOUR_OF_DAY));
-      picker.setMinute(cal.get(Calendar.MINUTE));
-    } else {
-      picker.setCurrentHour(cal.get(Calendar.HOUR_OF_DAY));
-      picker.setCurrentMinute(cal.get(Calendar.MINUTE));
-    }
+    picker.setHour(cal.get(Calendar.HOUR_OF_DAY));
+    picker.setMinute(cal.get(Calendar.MINUTE));
   }
 
-  @SuppressWarnings("deprecation")
   private static void setCalendarTime(final Calendar cal, final TimePicker picker) {
-    if (Build.VERSION.SDK_INT >= 23) {
-      cal.set(Calendar.HOUR_OF_DAY, picker.getHour());
-      cal.set(Calendar.MINUTE, picker.getMinute());
-    } else {
-      cal.set(Calendar.HOUR_OF_DAY, picker.getCurrentHour());
-      cal.set(Calendar.MINUTE, picker.getCurrentMinute());
-    }
+    cal.set(Calendar.HOUR_OF_DAY, picker.getHour());
+    cal.set(Calendar.MINUTE, picker.getMinute());
   }
 
   @Override
@@ -857,12 +884,33 @@ final class BasicGeckoViewPrompt implements GeckoSession.PromptDelegate {
     return res;
   }
 
+  private GeckoResult<PromptResponse> onFolderPrompt(
+      final GeckoSession session, final FilePrompt prompt) {
+    final Activity activity = mActivity;
+    final Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+    intent.addCategory(Intent.CATEGORY_DEFAULT);
+    final GeckoResult<PromptResponse> res = new GeckoResult<PromptResponse>();
+
+    try {
+      mFileResponse = res;
+      mFilePrompt = prompt;
+      activity.startActivityForResult(intent, filePickerRequestCode);
+    } catch (final ActivityNotFoundException e) {
+      Log.e(LOGTAG, "Cannot launch activity", e);
+      return GeckoResult.fromValue(prompt.dismiss());
+    }
+    return res;
+  }
+
   @Override
-  @TargetApi(19)
   public GeckoResult<PromptResponse> onFilePrompt(GeckoSession session, FilePrompt prompt) {
     final Activity activity = mActivity;
     if (activity == null) {
       return GeckoResult.fromValue(prompt.dismiss());
+    }
+
+    if (prompt.type == FilePrompt.Type.FOLDER) {
+      return onFolderPrompt(session, prompt);
     }
 
     // Merge all given MIME types into one, using wildcard if needed.
@@ -933,8 +981,20 @@ final class BasicGeckoViewPrompt implements GeckoSession.PromptDelegate {
       return;
     }
 
-    final Uri uri = data.getData();
+    Uri uri = data.getData();
+
+    if (prompt.type == FilePrompt.Type.FOLDER) {
+      res.complete(prompt.confirm(mActivity, uri));
+      return;
+    }
+
     final ClipData clip = data.getClipData();
+
+    if (uri == null) return;
+    if (!"file".equalsIgnoreCase(uri.getScheme())) {
+      uri = toFileUri(mActivity.getBaseContext(), "/temps", uri);
+      if (uri == null) return;
+    }
 
     if (prompt.type == FilePrompt.Type.SINGLE
         || (prompt.type == FilePrompt.Type.MULTIPLE && clip == null)) {
@@ -951,6 +1011,67 @@ final class BasicGeckoViewPrompt implements GeckoSession.PromptDelegate {
         uris.add(clip.getItemAt(i).getUri());
       }
       res.complete(prompt.confirm(mActivity, uris.toArray(new Uri[uris.size()])));
+    }
+  }
+
+  /**
+   * Copy the content of [this] [Uri] into a temporary file in the given [dirToCopy]
+   *
+   * @return A "file://" [Uri] which contains the content of [this] [Uri] or null if an issue
+   *     occurs.
+   */
+  public Uri toFileUri(Context context, String dirToCopy, Uri uri) {
+    File cacheDirectory = new File(context.getCacheDir(), dirToCopy);
+    if (!cacheDirectory.exists() && !cacheDirectory.mkdirs()) return null;
+
+    String fileName = getFileNameFromUri(context.getContentResolver(), uri);
+    if (fileName == null)
+      fileName = generateFileName(getFileExtFromUri(context.getContentResolver(), uri));
+
+    File temporalFile = new File(cacheDirectory, fileName.replaceAll("[^a-zA-Z0-9._]+", "_"));
+    if (copyUriToFile(context.getContentResolver(), uri, temporalFile))
+      return Uri.fromFile(temporalFile);
+    return null;
+  }
+
+  private static String generateFileName(String fileExtension) {
+    String randomId = UUID.randomUUID().toString().replace("-", "").trim();
+    long timeStamp = System.currentTimeMillis();
+    if (fileExtension != null && !fileExtension.isEmpty()) {
+      return randomId + timeStamp + "." + fileExtension;
+    } else {
+      return randomId + timeStamp;
+    }
+  }
+
+  private String getFileExtFromUri(ContentResolver contentResolver, Uri uri) {
+    String mimeType = contentResolver.getType(uri);
+    if (mimeType == null) return null;
+    return MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
+  }
+
+  private String getFileNameFromUri(ContentResolver contentResolver, Uri uri) {
+    try (Cursor cursor = contentResolver.query(uri, null, null, null, null)) {
+      if (cursor != null && cursor.moveToFirst()) {
+        int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+        if (nameIndex >= 0) return cursor.getString(nameIndex);
+      }
+    }
+    return null;
+  }
+
+  private boolean copyUriToFile(ContentResolver contentResolver, Uri uri, File temporalFile) {
+    try (InputStream inputStream = contentResolver.openInputStream(uri);
+        FileOutputStream output = new FileOutputStream(temporalFile)) {
+      if (inputStream == null) return false;
+      byte[] buffer = new byte[8192];
+      int len;
+      while ((len = inputStream.read(buffer)) != -1) {
+        output.write(buffer, 0, len);
+      }
+      return true;
+    } catch (Exception e) {
+      return false;
     }
   }
 

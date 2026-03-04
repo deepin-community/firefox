@@ -39,6 +39,7 @@ about-networking-dns-lookup = DNS kikeresés
 about-networking-dns-lookup-button = Feloldás
 about-networking-dns-domain = Tartomány:
 about-networking-dns-lookup-table-column = IP-k
+about-networking-dns-https-rrs-lookup-table-column = HTTPS RR-ek
 about-networking-dns-https-rr-lookup-table-column = HTTP RR-ek
 about-networking-rcwn = RCWN statisztikák
 about-networking-rcwn-status = RCWN állapot
@@ -64,6 +65,3 @@ about-networking-moved-about-logging = Ez az oldal átkerült az <a data-l10n-na
 
 about-networking-networkid-is-up = A kapcsolat él
 about-networking-networkid-status-known = A kapcsolat állapota ismert
-
-##
-

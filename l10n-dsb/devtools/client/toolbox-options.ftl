@@ -30,6 +30,10 @@ options-context-inspector = Inspektor
 options-show-user-agent-styles-label = Stile wobglědowaka pokazaś
 options-show-user-agent-styles-tooltip =
     .title = Gaž to zašaltujośo, standardne stile se pokažu, kótarež wobglědowak zacytujo.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Shadow DOM wobglědowaka pokazaś
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Gaž to zmóžnjaśo, buźo waš wobglědowak elementy Shadow DOM wužywaś.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = DOM-atributy wótrězaś
 options-collapse-attrs-tooltip =
@@ -42,7 +46,7 @@ options-inspector-draggable-properties-tooltip =
 # within the inspector for users who enabled prefers-reduced-motion = reduce
 options-inspector-simplified-highlighters-label = Jadnorjejše wuzwigowaki z prefers-reduced-motion wužywaś
 options-inspector-simplified-highlighters-tooltip =
-    .title = Zmóžnja zjadnorjone wuzwigowaki, gaž prefers-reduced-motion jo zmóžnjony. Śěga linije město wupołnjone pšawokuty wó wuzwignjone elementy, aby se blinkajucych efektow wobinuli.
+    .title = Zmóžnja zjadnorjone wuzwigowaki, gaž prefers-reduced-motion jo zmóžnjony. Śěga linije město wupołnjone pšawokuty wokoło wuzwignjonych elementow, aby se blinkajucych efektow wobinuli.
 # The label for the checkbox option to make the Enter key move the focus to the next input
 # when editing a property name or value in the Inspector rules view
 options-inspector-rules-focus-next-on-enter-label = Z <kbd>Enter</kbd> fokus na pśiduce zapódaśe stajiś
@@ -88,7 +92,7 @@ options-screenshot-clipboard-tooltip2 =
 # Label for the checkbox that toggles the camera shutter audio for screenshot tool
 options-screenshot-audio-label = Zapušćeński zuk kamery wótgraś
 options-screenshot-audio-tooltip =
-    .title = Zmóžnja awdiozuk kamery, gaž foto wobrazowki so cyni
+    .title = Zmóžnja awdiozuk kamery, gaž foto wobrazowki se cyni
 
 ## Editor section
 
@@ -116,6 +120,8 @@ options-disable-http-cache-label = HTTP-Cache znjemóžniś (gaž rědy su wócy
 options-disable-http-cache-tooltip =
     .title = Gaž se toś to nastajenje zmóžnja, se HTTP-cache za wšykne rejtariki znjemóžnijo, kótarež maju rědy wócynjone. Service workers njejsu pśez toś te nastajenje pótrjefjone.
 # The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = JavaScript znjemóžniś
+# The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = JavaScript znjemóžniś *
 options-disable-javascript-tooltip =
     .title = Zmóžnjenje toś togo nastajenja znjemóžnijo JavaScript za aktualny rejtarik. Jolic rejtarik abo rědy se zacyniju, ga toś to nastajenje se zabydnjo.
@@ -142,6 +148,12 @@ options-enable-service-workers-http-tooltip =
 # The label for the checkbox that toggles source maps in all tools.
 options-source-maps-label = Žrědłowe kórty zmóžniś
 options-source-maps-tooltip =
-    .title = Joliv toś to nastajenje zmóžnjaśo, se žrědła w rědach kartěruju.
-# The message shown for settings that trigger page reload
+    .title = Jolic toś to nastajenje zmóžnjaśo, se žrědła w rědach kartěruju.
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (jano aktualne pósejźenje, bok se znowego zacytujo)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Jano aktualne pósejźenje, bok zacytujo se znowego
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (zacytajo bok znowego)

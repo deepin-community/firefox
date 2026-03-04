@@ -12,20 +12,27 @@
 #include <algorithm>
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
 #include "api/environment/environment.h"
 #include "api/field_trials_view.h"
+#include "api/sequence_checker.h"
+#include "api/units/data_rate.h"
 #include "api/units/data_size.h"
 #include "api/units/time_delta.h"
 #include "api/units/timestamp.h"
 #include "modules/rtp_rtcp/source/ntp_time_util.h"
+#include "modules/rtp_rtcp/source/rtcp_packet.h"
 #include "modules/rtp_rtcp/source/rtcp_packet/congestion_control_feedback.h"
-#include "rtc_base/logging.h"
-#include "rtc_base/network/ecn_marking.h"
+#include "modules/rtp_rtcp/source/rtp_packet_received.h"
+#include "rtc_base/checks.h"
+#include "rtc_base/experiments/field_trial_parser.h"
 
 namespace webrtc {
+
+constexpr DataRate kMaxFeedbackRate = DataRate::KilobitsPerSec(500);
 
 CongestionControlFeedbackGenerator::CongestionControlFeedbackGenerator(
     const Environment& env,
@@ -35,7 +42,7 @@ CongestionControlFeedbackGenerator::CongestionControlFeedbackGenerator(
       min_time_between_feedback_("min_send_delta", TimeDelta::Millis(25)),
       max_time_to_wait_for_packet_with_marker_("max_wait_for_marker",
                                                TimeDelta::Millis(25)),
-      max_time_between_feedback_("max_send_delta", TimeDelta::Millis(250)) {
+      max_time_between_feedback_("max_send_delta", TimeDelta::Millis(500)) {
   ParseFieldTrial(
       {&min_time_between_feedback_, &max_time_to_wait_for_packet_with_marker_,
        &max_time_between_feedback_},
@@ -47,26 +54,25 @@ void CongestionControlFeedbackGenerator::OnReceivedPacket(
   RTC_DCHECK_RUN_ON(&sequence_checker_);
 
   marker_bit_seen_ |= packet.Marker();
-  packets_.push_back({.ssrc = packet.Ssrc(),
-                      .unwrapped_sequence_number =
-                          sequence_number_unwrappers_[packet.Ssrc()].Unwrap(
-                              packet.SequenceNumber()),
-                      .arrival_time = packet.arrival_time(),
-                      .ecn = packet.ecn()});
-  if (NextFeedbackTime() < packet.arrival_time()) {
-    SendFeedback(env_.clock().CurrentTime());
+  Timestamp now = env_.clock().CurrentTime();
+  if (!first_arrival_time_since_feedback_) {
+    first_arrival_time_since_feedback_ = now;
+  }
+  feedback_trackers_[packet.Ssrc()].ReceivedPacket(packet);
+  if (NextFeedbackTime() < now) {
+    SendFeedback(now);
   }
 }
 
 Timestamp CongestionControlFeedbackGenerator::NextFeedbackTime() const {
-  if (packets_.empty()) {
+  if (!first_arrival_time_since_feedback_) {
     return std::max(env_.clock().CurrentTime() + min_time_between_feedback_,
                     next_possible_feedback_send_time_);
   }
 
   if (!marker_bit_seen_) {
     return std::max(next_possible_feedback_send_time_,
-                    packets_.front().arrival_time +
+                    *first_arrival_time_since_feedback_ +
                         max_time_to_wait_for_packet_with_marker_.Get());
   }
   return next_possible_feedback_send_time_;
@@ -80,60 +86,16 @@ TimeDelta CongestionControlFeedbackGenerator::Process(Timestamp now) {
   return NextFeedbackTime() - now;
 }
 
-void CongestionControlFeedbackGenerator::OnSendBandwidthEstimateChanged(
-    DataRate estimate) {
-  RTC_DCHECK_RUN_ON(&sequence_checker_);
-  // Feedback reports should max occupy 5% of total bandwidth.
-  max_feedback_rate_ = estimate * 0.05;
-}
-
-void CongestionControlFeedbackGenerator::SetTransportOverhead(
-    DataSize overhead_per_packet) {
-  RTC_DCHECK_RUN_ON(&sequence_checker_);
-  packet_overhead_ = overhead_per_packet;
-}
-
 void CongestionControlFeedbackGenerator::SendFeedback(Timestamp now) {
-  absl::c_sort(packets_, [](const PacketInfo& a, const PacketInfo& b) {
-    return std::tie(a.ssrc, a.unwrapped_sequence_number, a.arrival_time) <
-           std::tie(b.ssrc, b.unwrapped_sequence_number, b.arrival_time);
-  });
+  RTC_DCHECK_GE(now, next_possible_feedback_send_time_);
   uint32_t compact_ntp =
       CompactNtp(env_.clock().ConvertTimestampToNtpTime(now));
   std::vector<rtcp::CongestionControlFeedback::PacketInfo> rtcp_packet_info;
-  rtcp_packet_info.reserve(packets_.size());
-
-  absl::optional<uint32_t> previous_ssrc;
-  absl::optional<int64_t> previous_seq_no;
-  for (const PacketInfo packet : packets_) {
-    if (previous_ssrc == packet.ssrc &&
-        previous_seq_no == packet.unwrapped_sequence_number) {
-      // According to RFC 8888:
-      // If duplicate copies of a particular RTP packet are received, then the
-      // arrival time of the first copy to arrive MUST be reported. If any of
-      // the copies of the duplicated packet are ECN-CE marked, then an ECN-CE
-      // mark MUST be reported for that packet; otherwise, the ECN mark of the
-      // first copy to arrive is reported.
-      if (packet.ecn == rtc::EcnMarking::kCe) {
-        rtcp_packet_info.back().ecn = packet.ecn;
-      }
-      RTC_LOG(LS_WARNING) << "Received duplicate packet ssrc:" << packet.ssrc
-                          << " seq:"
-                          << static_cast<uint16_t>(
-                                 packet.unwrapped_sequence_number);
-    } else {
-      previous_ssrc = packet.ssrc;
-      previous_seq_no = packet.unwrapped_sequence_number;
-      rtcp_packet_info.push_back(
-          {.ssrc = packet.ssrc,
-           .sequence_number =
-               static_cast<uint16_t>(packet.unwrapped_sequence_number),
-           .arrival_time_offset = now - packet.arrival_time,
-           .ecn = packet.ecn});
-    }
+  for (auto& [unused, tracker] : feedback_trackers_) {
+    tracker.AddPacketsToFeedback(now, rtcp_packet_info);
   }
-  packets_.clear();
   marker_bit_seen_ = false;
+  first_arrival_time_since_feedback_ = std::nullopt;
 
   auto feedback = std::make_unique<rtcp::CongestionControlFeedback>(
       std::move(rtcp_packet_info), compact_ntp);
@@ -148,13 +110,13 @@ void CongestionControlFeedbackGenerator::CalculateNextPossibleSendTime(
     DataSize feedback_size,
     Timestamp now) {
   TimeDelta time_since_last_sent = now - last_feedback_sent_time_;
-  DataSize debt_payed = time_since_last_sent * max_feedback_rate_;
+  DataSize debt_payed = time_since_last_sent * kMaxFeedbackRate;
   send_rate_debt_ = debt_payed > send_rate_debt_ ? DataSize::Zero()
                                                  : send_rate_debt_ - debt_payed;
-  send_rate_debt_ += feedback_size + packet_overhead_;
+  send_rate_debt_ += feedback_size;
   last_feedback_sent_time_ = now;
   next_possible_feedback_send_time_ =
-      now + std::clamp(send_rate_debt_ / max_feedback_rate_,
+      now + std::clamp(send_rate_debt_ / kMaxFeedbackRate,
                        min_time_between_feedback_.Get(),
                        max_time_between_feedback_.Get());
 }

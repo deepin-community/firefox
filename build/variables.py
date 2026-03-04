@@ -14,7 +14,7 @@ def get_buildid():
     import buildconfig
 
     path = os.path.join(buildconfig.topobjdir, "buildid.h")
-    _define, _MOZ_BUILDID, buildid = open(path, "r", encoding="utf-8").read().split()
+    _define, _MOZ_BUILDID, buildid = open(path, encoding="utf-8").read().split()
     return buildid
 
 
@@ -97,7 +97,7 @@ def source_repo_header(output):
         changeset = get_hg_changeset(buildconfig.topsrcdir)
         if not changeset:
             raise Exception(
-                "could not resolve changeset; " "try setting MOZ_SOURCE_CHANGESET"
+                "could not resolve changeset; try setting MOZ_SOURCE_CHANGESET"
             )
 
     if changeset:

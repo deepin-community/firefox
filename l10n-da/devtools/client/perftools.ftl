@@ -33,6 +33,7 @@ perftools-description-local-build =
     Hvis du profilerer et build, du selv har kompileret på denne maskine
     så tilføj dit builds objdir på listen nedenfor, så det kan bruges til at
     slå symbol-information op.
+perftools-pick-local-build-directory = Vælg build-mappe
 
 ## The controls for the interval at which the profiler samples the code.
 
@@ -68,6 +69,14 @@ perftools-button-restart = Genstart
 perftools-button-add-directory = Tilføj en mappe
 perftools-button-remove-directory = Fjern valgte
 perftools-button-edit-settings = Rediger indstillinger…
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = Flere handlinger
+perftools-menu-more-actions-restart-with-profiling = Genstart { -brand-shorter-name } med profilering af opstart aktiveret
+perftools-menu-more-actions-copy-for-startup = Kopier miljøvariabler for profilering af opstart
+perftools-menu-more-actions-copy-for-perf-tests = Kopier parametre for ydelsestests
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -141,6 +150,8 @@ perftools-presets-graphics-label = Grafik
 perftools-presets-graphics-description = Forhåndsindstilling for at undersøge grafik-problemer i { -brand-shorter-name }.
 perftools-presets-media-label = Medieindhold
 perftools-presets-media-description2 = Forhåndsindstilling for at undersøge lyd- og video-problemer i { -brand-shorter-name }.
+perftools-presets-ml-label = Maskinlæring
+perftools-presets-ml-description2 = Forhåndsindstilling for at undersøge problemer med maskinlæring i { -brand-shorter-name }.
 perftools-presets-networking-label = Netværk
 perftools-presets-networking-description = Forhåndsindstilling for at undersøge netværksproblemer i { -brand-shorter-name }.
 # "Power" is used in the sense of energy (electricity used by the computer).
@@ -148,7 +159,6 @@ perftools-presets-power-label = Energi
 perftools-presets-power-description = Forhåndsindstilling for at undersøge strømproblemer i { -brand-shorter-name }, med lavt overhead.
 perftools-presets-debug-label = Debug
 perftools-presets-debug-description = Forhåndsindstilling for debugging i { -brand-shorter-name }. Tungt at køre, så benyt det ikke til opgaver fokuseret på ydelse, men til at fokusere på at forstå browseradfærd.
+perftools-presets-web-compat-label = Web-kompatibilitet
+perftools-presets-web-compat-description = Anbefalet forhåndsindstilling for at fejlsøge problemer med web-kompatibilitet frem for at spore ydelse.
 perftools-presets-custom-label = Tilpasset
-
-##
-

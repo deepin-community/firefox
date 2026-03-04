@@ -15,6 +15,10 @@ support-addons-type = Gjenar
 support-addons-enabled = Atîf
 support-addons-version = Version
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Posizion
 legacy-user-stylesheets-title = Sfueis di stîl dal utent vecje maniere
 legacy-user-stylesheets-enabled = Atîf
 legacy-user-stylesheets-stylesheet-types = Sfueis di stîl
@@ -129,11 +133,15 @@ place-database-stats-efficiency-perc = Eficience (%)
 place-database-stats-sequentiality-perc = Secuenzialitât (%)
 place-database-integrity = Integritât
 place-database-verify-integrity = Verifiche integritât
-a11y-title = Acessibilitât
+place-database-last-idle-maintenance-data = Dalte ultime operazion di Idle Maintenance
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = Date ultime operazion Vacuum
+place-database-last-integrity-corruption-date = Date ultime violazion di integritât
+a11y-title = Acès facilitât
 a11y-activated = Ativât
-a11y-force-disabled = Impedìs servizis di acessibilitât
+a11y-force-disabled = Impedìs servizis di acès facilitât
 a11y-handler-used = Doprât un gjestôr acessibil
-a11y-instantiator = Gjeneradôr di istance pe acessibilitât
+a11y-instantiator = Gjeneradôr di istance pal acès facilitât
 library-version-title = Versions des librariis
 copy-text-to-clipboard-label = Copie il test intes notis
 copy-raw-data-to-clipboard-label = Copie i dâts grês intes notis
@@ -181,6 +189,8 @@ media-capabilities-enumerate = Enumere base di dâts
 
 media-codec-support-sw-decoding = Decodifiche software
 media-codec-support-hw-decoding = Decodifiche hardware
+media-codec-support-sw-encoding = Codifiche software
+media-codec-support-hw-encoding = Codifiche hardware
 media-codec-support-codec-name = Non codec
 media-codec-support-supported = Supuartade
 media-codec-support-unsupported = No supuartade

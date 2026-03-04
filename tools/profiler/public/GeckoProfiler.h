@@ -21,17 +21,16 @@
 // If your file only uses particular APIs (e.g., only markers), please consider
 // including only the needed headers instead of this one, to reduce compilation
 // dependencies.
-#include "BaseProfiler.h"
 #include "ProfileAdditionalInformation.h"
+#include "mozilla/BaseProfiler.h"
 #include "mozilla/ProfilerCounts.h"
 #include "mozilla/ProfilerLabels.h"
 #include "mozilla/ProfilerMarkers.h"
 #include "mozilla/ProfilerState.h"
 #include "mozilla/ProfilerThreadSleep.h"
 #include "mozilla/ProfilerThreadState.h"
+#include "mozilla/ProfilerUtils.h"
 #include "mozilla/ProgressLogger.h"
-#include "mozilla/Result.h"
-#include "mozilla/ResultVariant.h"
 
 #ifndef MOZ_GECKO_PROFILER
 
@@ -50,6 +49,10 @@
 
 #  define PROFILER_SET_JS_CONTEXT(cx)
 #  define PROFILER_CLEAR_JS_CONTEXT()
+
+namespace mozilla {
+class CycleCollectedJSContext;
+}
 
 // Function stubs for when MOZ_GECKO_PROFILER is not defined.
 
@@ -102,13 +105,10 @@ static inline void profiler_record_wakeup_count(
 #else  // !MOZ_GECKO_PROFILER
 
 #  include "js/ProfilingStack.h"
-#  include "mozilla/Assertions.h"
-#  include "mozilla/Atomics.h"
 #  include "mozilla/Attributes.h"
 #  include "mozilla/BaseProfilerRAIIMacro.h"
 #  include "mozilla/Maybe.h"
 #  include "mozilla/PowerOfTwo.h"
-#  include "mozilla/ThreadLocal.h"
 #  include "mozilla/TimeStamp.h"
 #  include "mozilla/UniquePtr.h"
 #  include "nscore.h"
@@ -131,14 +131,6 @@ class SpliceableJSONWriter;
 }  // namespace baseprofiler
 }  // namespace mozilla
 class nsIURI;
-
-enum class ProfilerError {
-  IsInactive,
-  JsonGenerationFailed,
-};
-
-template <typename T>
-using ProfilerResult = mozilla::Result<T, ProfilerError>;
 
 //---------------------------------------------------------------------------
 // Give information to the profiler
@@ -227,7 +219,7 @@ void profiler_js_interrupt_callback();
 // Set and clear the current thread's JSContext.
 #  define PROFILER_SET_JS_CONTEXT(cx) profiler_set_js_context(cx)
 #  define PROFILER_CLEAR_JS_CONTEXT() profiler_clear_js_context()
-void profiler_set_js_context(JSContext* aCx);
+void profiler_set_js_context(mozilla::CycleCollectedJSContext* aCx);
 void profiler_clear_js_context();
 
 //---------------------------------------------------------------------------
@@ -269,8 +261,9 @@ class ProfilerStackCollector {
 
   virtual void CollectJitReturnAddr(void* aAddr) = 0;
 
-  virtual void CollectWasmFrame(JS::ProfilingCategoryPair aCategory,
-                                const char* aLabel) = 0;
+  virtual void CollectWasmOrSyncJITFrame(JS::ProfilingCategoryPair aCategory,
+                                         const char* aLabel,
+                                         uint32_t aSourceId) = 0;
 
   virtual void CollectProfilingStackFrame(
       const js::ProfilingStackFrame& aFrame) = 0;

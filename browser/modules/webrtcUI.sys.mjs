@@ -100,8 +100,6 @@ export var webrtcUI = {
         "privacy.webrtc.showIndicatorsOnMacos14AndAbove",
         true
       );
-
-      Services.telemetry.setEventRecordingEnabled("webrtc.ui", true);
     }
   },
 
@@ -133,15 +131,6 @@ export var webrtcUI = {
   allowedSharedBrowsers: new WeakSet(),
   allowTabSwitchesForSession: false,
   tabSwitchCountForSession: 0,
-
-  // True if a window or screen is being shared.
-  sharingDisplay: false,
-
-  // The session ID is used to try to differentiate between instances
-  // where the user is sharing their display somehow. If the user
-  // transitions from a state of not sharing their display, to sharing a
-  // display, we bump the ID.
-  sharingDisplaySessionId: 0,
 
   // Map of browser elements to indicator data.
   perTabIndicators: new Map(),
@@ -224,7 +213,7 @@ export var webrtcUI = {
 
   _streams: [],
   // The boolean parameters indicate which streams should be included in the result.
-  getActiveStreams(aCamera, aMicrophone, aScreen, aWindow = false) {
+  getActiveStreams(aCamera, aMicrophone, aScreen, aTab, aWindow = false) {
     return webrtcUI._streams
       .filter(aStream => {
         let state = aStream.state;
@@ -232,6 +221,7 @@ export var webrtcUI = {
           (aCamera && state.camera) ||
           (aMicrophone && state.microphone) ||
           (aScreen && state.screen) ||
+          (aTab && state.browser) ||
           (aWindow && state.window)
         );
       })
@@ -410,14 +400,11 @@ export var webrtcUI = {
       };
     }
 
-    let wasSharingDisplay = this.sharingDisplay;
-
     // Reset our internal notion of whether or not we're sharing
     // a screen or browser window. Now we'll go through the shared
     // devices and re-determine what's being shared.
     let sharingBrowserWindow = false;
     let sharedWindowRawDeviceIds = new Set();
-    this.sharingDisplay = false;
     this.sharingScreen = false;
     let suppressNotifications = false;
 
@@ -429,16 +416,11 @@ export var webrtcUI = {
       suppressNotifications |= state.suppressNotifications;
 
       for (let device of state.devices) {
-        let mediaSource = device.mediaSource;
-
-        if (mediaSource == "window" || mediaSource == "screen") {
-          this.sharingDisplay = true;
-        }
-
         if (!device.scary) {
           continue;
         }
 
+        let mediaSource = device.mediaSource;
         if (mediaSource == "window") {
           sharedWindowRawDeviceIds.add(device.rawId);
         } else if (mediaSource == "screen") {
@@ -484,42 +466,6 @@ export var webrtcUI = {
         this.allowedSharedBrowsers.add(selectedBrowser.permanentKey);
 
         sharingBrowserWindow = true;
-      }
-    }
-
-    // If we weren't sharing a window or screen, and now are, bump
-    // the sharingDisplaySessionId. We use this ID for Event
-    // telemetry, and consider a transition from no shared displays
-    // to some shared displays as a new session.
-    if (!wasSharingDisplay && this.sharingDisplay) {
-      this.sharingDisplaySessionId++;
-    }
-
-    // If we were adding a new display stream, record some Telemetry for
-    // it with the most recent sharedDisplaySessionId. We do this separately
-    // from the loops above because those take into account the pre-existing
-    // streams that might already have been shared.
-    if (aData.devices) {
-      // The mixture of camelCase with under_score notation here is due to
-      // an unfortunate collision of conventions between this file and
-      // Event Telemetry.
-      let silence_notifs = suppressNotifications ? "true" : "false";
-      for (let device of aData.devices) {
-        if (device.mediaSource == "screen") {
-          this.recordEvent("share_display", "screen", {
-            silence_notifs,
-          });
-        } else if (device.mediaSource == "window") {
-          if (device.scary) {
-            this.recordEvent("share_display", "browser_window", {
-              silence_notifs,
-            });
-          } else {
-            this.recordEvent("share_display", "window", {
-              silence_notifs,
-            });
-          }
-        }
       }
     }
 
@@ -591,7 +537,7 @@ export var webrtcUI = {
    * For camera and microphone streams, this will also revoke any associated
    * permissions from SitePermissions.
    *
-   * @param {Array<Object>} activeStreams - An array of streams obtained via webrtcUI.getActiveStreams.
+   * @param {Array<object>} activeStreams - An array of streams obtained via webrtcUI.getActiveStreams.
    * @param {boolean} stopCameras - True to stop the camera streams (defaults to true)
    * @param {boolean} stopMics - True to stop the microphone streams (defaults to true)
    * @param {boolean} stopScreens - True to stop the screen streams (defaults to true)
@@ -651,6 +597,7 @@ export var webrtcUI = {
   /**
    * Clears permissions and stops sharing (if active) for a list of device types
    * and a specific tab.
+   *
    * @param {("camera"|"microphone"|"screen")[]} types - Device types to stop
    * and clear permissions for.
    * @param tab - Tab of the devices to stop and clear permissions.
@@ -754,6 +701,7 @@ export var webrtcUI = {
    * child frames.
    * Note: activePerms is an internal WebRTC UI permission map and does not
    * reflect the PermissionManager or SitePermissions state.
+   *
    * @param aBrowser - Browser to clear active permissions for.
    */
   forgetActivePermissionsFromBrowser(aBrowser) {
@@ -768,6 +716,7 @@ export var webrtcUI = {
   /**
    * Shows the Permission Panel for the tab associated with the provided
    * active stream.
+   *
    * @param aActiveStream - The stream that the user wants to see permissions for.
    * @param aEvent - The user input event that is invoking the panel. This can be
    *        undefined / null if no such event exists.
@@ -964,16 +913,6 @@ export var webrtcUI = {
     this.allowTabSwitchesForSession = allowForSession;
   },
 
-  recordEvent(type, object, args = {}) {
-    Services.telemetry.recordEvent(
-      "webrtc.ui",
-      type,
-      object,
-      this.sharingDisplaySessionId.toString(),
-      args
-    );
-  },
-
   /**
    * Updates the sharedData structure to reflect shared screen and window
    * state. This sets the following key: data pairs on sharedData.
@@ -1030,11 +969,17 @@ export function showStreamSharingMenu(win, event, inclWindow = false) {
   let type = menu.getAttribute("type");
   let activeStreams;
   if (type == "Camera") {
-    activeStreams = webrtcUI.getActiveStreams(true, false, false);
+    activeStreams = webrtcUI.getActiveStreams(true, false, false, false);
   } else if (type == "Microphone") {
-    activeStreams = webrtcUI.getActiveStreams(false, true, false);
+    activeStreams = webrtcUI.getActiveStreams(false, true, false, false);
   } else if (type == "Screen") {
-    activeStreams = webrtcUI.getActiveStreams(false, false, true, inclWindow);
+    activeStreams = webrtcUI.getActiveStreams(
+      false,
+      false,
+      true,
+      inclWindow,
+      inclWindow
+    );
     type = webrtcUI.showScreenSharingIndicator;
   }
 
@@ -1048,8 +993,10 @@ export function showStreamSharingMenu(win, event, inclWindow = false) {
     let stream = activeStreams[0];
 
     const sharingItem = doc.createXULElement("menuitem");
-    const streamTitle = stream.browser.contentTitle || stream.uri;
-    doc.l10n.setAttributes(sharingItem, l10nIds[0], { streamTitle });
+    const displayHost = getDisplayHostForStream(stream);
+    doc.l10n.setAttributes(sharingItem, l10nIds[0], {
+      streamTitle: displayHost,
+    });
     sharingItem.setAttribute("disabled", "true");
     menu.appendChild(sharingItem);
 
@@ -1073,11 +1020,11 @@ export function showStreamSharingMenu(win, event, inclWindow = false) {
 
     for (let stream of activeStreams) {
       const controlItem = doc.createXULElement("menuitem");
-      const streamTitle = stream.browser.contentTitle || stream.uri;
+      const displayHost = getDisplayHostForStream(stream);
       doc.l10n.setAttributes(
         controlItem,
         "webrtc-indicator-menuitem-control-sharing-on",
-        { streamTitle }
+        { streamTitle: displayHost }
       );
       controlItem.stream = stream;
       controlItem.addEventListener("command", this);
@@ -1086,8 +1033,27 @@ export function showStreamSharingMenu(win, event, inclWindow = false) {
   }
 }
 
+function getDisplayHostForStream(stream) {
+  let uri = Services.io.newURI(stream.uri);
+
+  let displayHost;
+
+  try {
+    displayHost = uri.displayHost;
+  } catch (ex) {
+    displayHost = null;
+  }
+
+  // Host getter threw or returned "". Fall back to spec.
+  if (displayHost == null || displayHost == "") {
+    displayHost = uri.displaySpec;
+  }
+
+  return displayHost;
+}
+
 function onTabSharingMenuPopupShowing(e) {
-  const streams = webrtcUI.getActiveStreams(true, true, true, true);
+  const streams = webrtcUI.getActiveStreams(true, true, true, true, true);
   for (let streamInfo of streams) {
     const names = streamInfo.devices.map(({ mediaSource }) => {
       const l10nId = MEDIA_SOURCE_L10NID_BY_TYPE.get(mediaSource);

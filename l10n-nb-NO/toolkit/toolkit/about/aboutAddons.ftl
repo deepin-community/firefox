@@ -23,7 +23,7 @@ list-empty-available-updates =
 list-empty-recent-updates =
     .value = Du har ikke nylig oppdatert noen utvidelser
 list-empty-find-updates =
-    .label = Søk etter oppdateringer
+    .label = Se etter oppdateringer
 list-empty-button =
     .label = Les mer om utvidelser
 help-button = Brukerstøtte for utvidelser
@@ -81,9 +81,9 @@ detail-repository =
 detail-repository-value =
     .value = { detail-repository.label }
 detail-check-for-updates =
-    .label = Søk etter oppdateringer
+    .label = Se etter oppdateringer
     .accesskey = S
-    .tooltiptext = Søker etter oppdateringer til denne utvidelsen
+    .tooltiptext = Ser etter oppdateringer til denne utvidelsen
 detail-show-preferences =
     .label =
         { PLATFORM() ->
@@ -170,10 +170,12 @@ extensions-warning-update-security-button = Slå på
 extensions-warning-imported-addons2 =
     .message = Fullfør installasjonen av utvidelser som ble importert til { -brand-short-name }.
 extensions-warning-imported-addons-button = Installer utvidelser
+extensions-warning-safe-mode3 =
+    .message = Alle tillegg er deaktivert av feilsøkingsmodus.
 
 ## Strings connected to add-on updates
 
-addon-updates-check-for-updates = Søk etter oppdateringer nå
+addon-updates-check-for-updates = Se etter oppdateringer
     .accesskey = S
 addon-updates-view-updates = Vis nylig oppdaterte
     .accesskey = V
@@ -205,6 +207,10 @@ addon-updates-manual-updates-found = Vis tilgjengelige oppdateringer
 ## Add-on install/debug strings for page options menu
 
 addon-install-from-file = Installer utvidelse fra fil …
+    .accesskey = I
+# Like `addon-install-from-file` but used when the `extensions.webextensions.prefer-update-over-install-for-existing-addon`
+# pref is set.
+addon-install-or-update-from-file = Installer eller oppdater tillegg fra fil…
     .accesskey = I
 addon-install-from-file-dialog-title = Velg utvidelse å installere
 addon-install-from-file-filter-name = Utvidelser
@@ -277,7 +283,20 @@ discopane-notice-recommendations2 =
         Noen av disse anbefalingene er målrettet deg. De er basert på andre
         utvidelser du har installert, profilinnstillinger og statistikk for bruk.
 discopane-notice-learn-more = Les mer
-privacy-policy = Personvernbestemmelser
+# Notice for the colorway theme removal
+colorway-removal-notice-message =
+    .heading = Fargesammensetting-temaet/temaene dine ble fjernet.
+    .message =
+        { -brand-product-name } oppdaterte fargesammensetting sin. Vi fjernet
+        den/de gamle versjonen(e) fra listen over «Lagrede temaer». Få nye versjoner
+        på tilleggssiden.
+colorway-removal-notice-learn-more = Les mer
+colorway-removal-notice-button = Få oppdaterte fargesammensettingstemaer
+# Notice to make user aware that themes are not applied in forced colors mode.
+# This notice is only visible on Windows.
+forced-colors-theme-notice =
+    .message = Kontrastinnstillingene i Windows overstyrer temaene i { -brand-short-name }. Slå av disse innstillingene for å bruke temaer i { -brand-short-name }.
+privacy-policy = Personvernpraksis
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
 #   $author (string) - The name of the add-on developer.
@@ -297,6 +316,13 @@ find-more-themes = Finn flere tema
 # used for screen readers.
 addon-options-button =
     .aria-label = Flere innstillinger
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+# We hard code "Firefox" because we do not want to imply that a Firefox fork is
+# making this recommendation.
+discopane-intro3 =
+    Utvidelser og temaer lar deg tilpasse { -brand-product-name }. De kan øke personvernet, forbedre produktiviteten, forbedre media, endre hvordan { -brand-product-name } ser ut og mye mer. Disse små programvarene er ofte utviklet av en tredjepart. Her er et utvalg Firefox <a data-l10n-name="learn-more-trigger">anbefaler</a> for
+    eksepsjonell sikkerhet, ytelse og funksjonalitet.
 
 ## Add-on actions
 
@@ -383,6 +409,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Tillatt i private vinduer
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Tillatt i private vinduer
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -422,6 +452,24 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Denne utvidelsen er gjennomgått for å oppfylle våre standarder for sikkerhet og ytelse.
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Offisiell utvidelse utviklet av Mozilla. Oppfyller sikkerhets- og ytelsesstandarder.
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are performing the
+# security or performance reviews. As such, we avoid personalising language
+# like the words "our" or "we".
+addon-badge-verified4 =
+    .title = Denne utvidelsen er gjennomgått for å oppfylle standarder for sikkerhet og ytelse.
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are making the
+# recommendation. As such, we hard code "Firefox" and avoid personalising
+# language like the words "our" or "we".
+addon-badge-recommended4 =
+    .title = Firefox anbefaler bare utvidelser som oppfyller standarder for sikkerhet og ytelse.
 
 ##
 
@@ -429,6 +477,10 @@ available-updates-heading = Tilgjengelige oppdateringer
 recent-updates-heading = Nylig oppdatert
 release-notes-loading = Laster…
 release-notes-error = Beklager, men en feil oppstod under lasting av versjonsnotatet.
+addon-permissions-heading = Tillatelser
+addon-permissions-empty2 = Denne utvidelsen krever ingen tillatelser.
+addon-permissions-required-label = Nødvendig:
+addon-permissions-optional-label = Valgfri:
 addon-permissions-empty = Denne utvidelsen krever ingen tillatelser
 addon-permissions-required = Nødvendige tillatelser for kjernefunksjonalitet:
 addon-permissions-optional = Valgfrie tillatelser for ekstra funksjonalitet:
@@ -456,6 +508,9 @@ shortcuts-heading = Håndter snarveier for utvidelser
 default-heading-search-label = Finn flere utvidelser
 addons-heading-search-input =
     .placeholder = Søk på addons.mozilla.org
+addons-heading-search-button =
+    .title = Søk på addons.mozilla.org
+    .aria-label = Søk på addons.mozilla.org
 addon-page-options-button =
     .title = Verktøy for alle utvidelser
 
@@ -478,14 +533,32 @@ details-notification-unsigned-and-disabled-link = Mer informasjon
 details-notification-unsigned = { $name } har ikke blitt bekreftet for bruk i { -brand-short-name }. Fortsett med varsomhet.
 details-notification-unsigned2 =
     .message = { $name } har ikke blitt bekreftet for bruk i { -brand-short-name }. Fortsett med varsomhet.
+details-notification-hard-blocked-extension =
+    .message = Denne utvidelsen er blokkert for brudd på Mozillas retningslinjer og har blitt deaktivert.
+details-notification-hard-blocked-other =
+    .message = Dette tillegget er blokkert for brudd på Mozillas retningslinjer og har blitt deaktivert.
 details-notification-unsigned-link = Mer informasjon
 details-notification-blocked = { $name } er avslått av sikkerhets- eller stabilitetshensyn .
-details-notification-blocked2 =
-    .message = { $name } er avslått av sikkerhets- eller stabilitetshensyn .
+details-notification-blocked-link2 = Se detaljer
+details-notification-soft-blocked-extension-disabled2 =
+    .message = Denne utvidelsen er begrenset og har blitt deaktivert. Du kan aktivere den, men dette kan være risikabelt.
+details-notification-soft-blocked-extension-enabled2 =
+    .message = Denne utvidelsen er begrenset. Bruk av den kan være risikabelt.
+details-notification-soft-blocked-other-disabled2 =
+    .message = Dette tillegget er begrenset og har blitt deaktivert. Du kan aktivere den, men dette kan være risikabelt.
+details-notification-soft-blocked-other-enabled2 =
+    .message = Dette tillegget er begrenset. Bruk av den kan være risikabelt.
+details-notification-soft-blocked-extension-disabled =
+    .message = Denne utvidelsen har blitt begrenset for brudd på Mozillas retningslinjer og har blitt deaktivert. Du kan aktivere den, men dette kan være risikabelt.
+details-notification-soft-blocked-extension-enabled =
+    .message = Denne utvidelsen bryter Mozillas retningslinjer. Å bruke det kan være risikabelt.
+details-notification-soft-blocked-other-disabled =
+    .message = Dette tillegget har blitt begrenset for brudd på Mozillas retningslinjer og har blitt deaktivert. Du kan aktivere den, men dette kan være risikabelt.
+details-notification-soft-blocked-other-enabled =
+    .message = Dette tillegget bryter Mozillas retningslinjer. Å bruke det kan være risikabelt.
+details-notification-softblocked-link2 = Se detaljer
 details-notification-blocked-link = Mer informasjon
 details-notification-softblocked = { $name } er kjent for å skape sikkerhets- eller stabilitetsproblemer.
-details-notification-softblocked2 =
-    .message = { $name } er kjent for å skape sikkerhets- eller stabilitetsproblemer.
 details-notification-softblocked-link = Mer informasjon
 details-notification-gmp-pending = { $name } vil installeres snart.
 details-notification-gmp-pending2 =
@@ -499,3 +572,45 @@ plugins-openh264-name = OpenH264 video-kodek er levert av Cisco Systems, Inc.
 plugins-openh264-description = Dette programtillegget installeres automatisk av Mozilla for å følge WebRTC-spesifikasjonen, og for å tillate WebRTC-kall med enheter som bruker videokodeken H.264. Gå til http://www.openh264.org/ for å se kildekoden og lese mer om implementasjonen.
 plugins-widevine-name = Widevine Content Decryption Module levert av Google Inc.
 plugins-widevine-description = Dette programtillegget gjør det mulig å spille av krypterte medier i samsvar med spesifikasjonene for Encrypted Media Extensions. Krypterte medier blir vanligvis brukt av nettsider for å verne mot kopiering av betalt medieinnhold. Gå til https://www.w3.org/TR/encrypted-media/ for mer informasjon om Encrypted Media Extensions.
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-permissions-required-data-collection = Nødvendig datainnsamling:
+addon-permissions-optional-data-collection = Valgfri datainnsamling:
+# Name of the Permissions tab in `about:addons` when the data collection feature is enabled.
+permissions-data-addon-button = Tillatelser og data
+# This is a description for extension that use this AI model
+# Variables:
+#   $extensionName (String) - Name of the extension
+mlmodel-extension-label = Brukes av utvidelsen { $extensionName }
+addon-permissions-data-collection-heading = Datainnsamling
+addon-permissions-data-collection-empty = Utvikleren sier at denne utvidelsen ikke krever datainnsamling.
+addon-data-collection-provided = Informasjon levert av utvidelsesutvikleren
+addon-data-collection-learnmore = Les mer om datainnsamling
+
+## Mapping Engine IDs from AI models to how that feature represented by the engine Id is described in the used by section in local model management
+
+mlmodel-about-inference = { -brand-short-name } bruker dette på about:inference
+mlmodel-link-preview = { -brand-short-name } bruker denne modellen til å generere hovedpunkter når du forhåndsviser lenker
+mlmodel-pdfjs = { -brand-short-name } bruker dette til å lage alternativ tekst for bilder du legger til i PDF-er
+mlmodel-smart-tab-topic-engine = { -brand-short-name } bruker dette til å foreslå navn for dine fanegrupper
+mlmodel-smart-tab-embedding-engine = { -brand-short-name } bruker dette til å foreslå faner for dine fanegrupper
+# AI Model will be downloaded on the users device and used locally
+addon-category-mlmodel = AI på enheten
+addon-category-mlmodel-title =
+    .title = AI på enheten
+mlmodel-heading = Behandle AI-modeller på enheten
+mlmodel-description = Noen funksjoner og utvidelser i { -brand-short-name } drives av AI-modeller som fungerer lokalt på enheten din. Denne tilnærmingen beskytter personvernet ditt og øker i mange tilfeller ytelsen. <a data-l10n-name="learn-more">Les mer</a>
+# Label for button that when clicked removed local model
+mlmodel-remove-addon-button =
+    .aria-label = Fjern
+# Label for the aggregated value of all files for a model
+mlmodel-addon-detail-totalsize-label = Filstørrelse
+mlmodel-addon-detail-last-used-label = Sist brukt
+# This is a section label to describe what extensions or features use a specific local AI model
+mlmodel-addon-detail-used-by-label = Brukt av
+# This is a section label to describe the link to the model card on the Hugging Face website
+mlmodel-addon-detail-model-card = Modellkort
+# This is a label for the Model Card link to Hugging face
+mlmodel-addon-detail-model-card-link-label = Vis på Hugging Face

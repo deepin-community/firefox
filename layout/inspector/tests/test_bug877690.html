@@ -10,7 +10,7 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=877690
 <link rel="stylesheet" type="text/css" href="/tests/SimpleTest/test.css"/>
 <script>
 
-/** Test for InspectorUtils.getCSSValuesForProperty **/
+/** Test for InspectorUtils.getCSSValuesForProperty */
 
 const InspectorUtils = SpecialPowers.InspectorUtils;
 
@@ -46,6 +46,7 @@ function do_test() {
     "hwb",
     "color-mix",
     "color",
+    "contrast-color",
     "lab",
     "lch",
     "light-dark",
@@ -87,6 +88,10 @@ function do_test() {
 
   if(SpecialPowers.getBoolPref("layout.css.cross-fade.enabled")) {
     expected.push("cross-fade");
+  }
+
+  if(SpecialPowers.getBoolPref("layout.css.light-dark.images.enabled")) {
+    expected.push("light-dark");
   }
 
   ok(testValues(values, expected), "property background values.");
@@ -133,7 +138,76 @@ function do_test() {
   var prop = "margin";
   var values = InspectorUtils.getCSSValuesForProperty(prop);
   var expected = [ "initial", "unset", "auto", "inherit", "revert", "revert-layer" ];
+
+  if(SpecialPowers.getBoolPref("layout.css.anchor-positioning.enabled")) {
+    expected.push("anchor-size");
+  }
+
   ok(testValues(values, expected), "property margin's values.");
+
+  var prop = "inset";
+  var values = InspectorUtils.getCSSValuesForProperty(prop);
+  var expected = [ "initial", "unset", "auto", "inherit", "revert", "revert-layer" ];
+
+  if(SpecialPowers.getBoolPref("layout.css.anchor-positioning.enabled")) {
+    expected.push(...["anchor", "anchor-size"]);
+  }
+
+  ok(testValues(values, expected), "property inset's values.");
+
+  var prop = "width";
+  var values = InspectorUtils.getCSSValuesForProperty(prop);
+  var expected = [
+    "-moz-available",
+    "auto",
+    "fit-content",
+    "inherit",
+    "initial",
+    "max-content",
+    "min-content",
+    "revert",
+    "revert-layer",
+    "unset",
+  ];
+
+  if(SpecialPowers.getBoolPref("layout.css.stretch-size-keyword.enabled")) {
+    expected.push("stretch");
+  }
+  if(SpecialPowers.getBoolPref("layout.css.webkit-fill-available.enabled")) {
+    expected.push("-webkit-fill-available");
+  }
+  if(SpecialPowers.getBoolPref("layout.css.anchor-positioning.enabled")) {
+    expected.push("anchor-size");
+  }
+
+  ok(testValues(values, expected), "property width's values.");
+
+  var prop = "max-width";
+  var values = InspectorUtils.getCSSValuesForProperty(prop);
+  var expected = [
+    "-moz-available",
+    "none",
+    "fit-content",
+    "inherit",
+    "initial",
+    "max-content",
+    "min-content",
+    "revert",
+    "revert-layer",
+    "unset",
+  ];
+
+  if(SpecialPowers.getBoolPref("layout.css.stretch-size-keyword.enabled")) {
+    expected.push("stretch");
+  }
+  if(SpecialPowers.getBoolPref("layout.css.webkit-fill-available.enabled")) {
+    expected.push("-webkit-fill-available");
+  }
+  if(SpecialPowers.getBoolPref("layout.css.anchor-positioning.enabled")) {
+    expected.push("anchor-size");
+  }
+
+  ok(testValues(values, expected), "property max-width's values.");
 
   // Test property with "normal"
   var prop = "font-style";
@@ -218,8 +292,9 @@ function do_test() {
   ok(testValues(values, expected), "property box-shadow's values");
 
   // Regression test for bug 1255379.
-  var shapeFunction = [ "close", "evenodd", "nonzero", "by", "to", "cw", "ccw",
-                        "small", "large" ];
+  var shapeFunction = [ "close", "evenodd", "nonzero", "cw", "ccw", "small", "large",
+                        "end", "origin", "start", "center", "left", "right", "top",
+                        "bottom", "x-end","x-start", "y-end","y-start" ];
   var expected = [ "inherit", "initial", "unset", "revert", "revert-layer",
                    "none", "url", "polygon", "circle", "ellipse", "inset",
                    "path", "rect", "xywh", "fill-box", "stroke-box",
@@ -263,6 +338,36 @@ function do_test() {
   var values = InspectorUtils.getCSSValuesForProperty("cursor");
   ok(values.includes("url"), "property cursor values include url");
   ok(values.includes("image-set"), "property cursor values include image-set");
+
+  // Test for bug 1935181.
+  var values = InspectorUtils.getCSSValuesForProperty("align-items");
+  var expected = [
+    "baseline",
+    "center",
+    "end",
+    "first baseline",
+    "flex-end",
+    "flex-start",
+    "inherit",
+    "initial",
+    "last baseline",
+    "normal",
+    "revert",
+    "revert-layer",
+    "safe",
+    "self-end",
+    "self-start",
+    "start",
+    "stretch",
+    "unsafe",
+    "unset"
+  ];
+
+  if(SpecialPowers.getBoolPref("layout.css.anchor-positioning.enabled")) {
+    expected.push("anchor-center");
+  }
+
+  ok(testValues(values, expected), "property align-items values.");
 
   SimpleTest.finish();
 }

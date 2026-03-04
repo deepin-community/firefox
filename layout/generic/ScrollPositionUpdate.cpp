@@ -60,7 +60,8 @@ ScrollPositionUpdate ScrollPositionUpdate::NewRelativeScroll(
 ScrollPositionUpdate ScrollPositionUpdate::NewSmoothScroll(
     ScrollMode aMode, ScrollOrigin aOrigin, nsPoint aDestination,
     ScrollTriggeredByScript aTriggeredByScript,
-    UniquePtr<ScrollSnapTargetIds> aSnapTargetIds) {
+    UniquePtr<ScrollSnapTargetIds> aSnapTargetIds,
+    ViewportType aViewportToScroll) {
   MOZ_ASSERT(aOrigin != ScrollOrigin::NotSpecified);
   MOZ_ASSERT(aOrigin != ScrollOrigin::None);
   MOZ_ASSERT(aMode == ScrollMode::Smooth || aMode == ScrollMode::SmoothMsd);
@@ -71,6 +72,7 @@ ScrollPositionUpdate ScrollPositionUpdate::NewSmoothScroll(
   ret.mScrollMode = aMode;
   ret.mScrollOrigin = aOrigin;
   ret.mDestination = CSSPoint::FromAppUnits(aDestination);
+  ret.mViewportType = aViewportToScroll;
   ret.mTriggeredByScript = aTriggeredByScript;
   if (aSnapTargetIds) {
     ret.mSnapTargetIds = *aSnapTargetIds;
@@ -88,6 +90,9 @@ ScrollPositionUpdate ScrollPositionUpdate::NewPureRelativeScroll(
   ret.mScrollGeneration = sGenerationCounter.NewMainThreadGeneration();
   ret.mType = ScrollUpdateType::PureRelative;
   ret.mScrollMode = aMode;
+  // Pure relative scrolls always apply to the visual viewport.
+  // FIXME: Should they? (Bug 1984224)
+  ret.mViewportType = ViewportType::Visual;
   ret.mScrollOrigin = aOrigin;
   ret.mDelta = CSSPoint::FromAppUnits(aDelta);
   return ret;
@@ -128,10 +133,9 @@ CSSPoint ScrollPositionUpdate::GetDelta() const {
 
 std::ostream& operator<<(std::ostream& aStream,
                          const ScrollPositionUpdate& aUpdate) {
-  aStream << "{ gen=" << aUpdate.mScrollGeneration
-          << ", type=" << (int)aUpdate.mType
-          << ", mode=" << (int)aUpdate.mScrollMode
-          << ", origin=" << (int)aUpdate.mScrollOrigin
+  aStream << "{ gen=" << aUpdate.mScrollGeneration << ", type=" << aUpdate.mType
+          << ", mode=" << aUpdate.mScrollMode
+          << ", origin=" << aUpdate.mScrollOrigin
           << ", dst=" << aUpdate.mDestination << ", src=" << aUpdate.mSource
           << ", delta=" << aUpdate.mDelta
           << ", triggered by script=" << aUpdate.WasTriggeredByScript() << " }";

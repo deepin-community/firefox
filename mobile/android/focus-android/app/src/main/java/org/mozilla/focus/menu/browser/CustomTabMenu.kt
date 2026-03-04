@@ -1,6 +1,7 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 package org.mozilla.focus.menu.browser
 
 import android.content.Context
@@ -20,12 +21,24 @@ import mozilla.components.feature.webcompat.reporter.WebCompatReporterFeature
 import org.mozilla.focus.R
 import org.mozilla.focus.menu.ToolbarMenu
 import org.mozilla.focus.theme.resolveAttribute
+import androidx.appcompat.R as appcompatR
+import mozilla.components.ui.icons.R as iconsR
 
+/**
+ * A menu designed for Custom Tabs.
+ *
+ * @param context The Android context.
+ * @param store The browser store, used to retrieve session information.
+ * @param currentTabId The ID of the currently selected tab.
+ * @param isOnboardingTab Whether the current tab is an onboarding tab, in which case some menu items will be hidden.
+ * @param onItemTapped A callback invoked when a menu item is tapped.
+ */
 class CustomTabMenu(
     private val context: Context,
     private val store: BrowserStore,
     private val currentTabId: String,
-    private val onItemTapped: (ToolbarMenu.Item) -> Unit = {},
+    private val isOnboardingTab: Boolean = false,
+    private val onItemTapped: (ToolbarMenu.FocusMenuItem) -> Unit = {},
 ) : ToolbarMenu {
 
     private val selectedSession: CustomTabSessionState?
@@ -40,11 +53,11 @@ class CustomTabMenu(
 
     override val menuToolbar by lazy {
         val back = BrowserMenuItemToolbar.TwoStateButton(
-            primaryImageResource = R.drawable.mozac_ic_back_24,
+            primaryImageResource = iconsR.drawable.mozac_ic_back_24,
             primaryContentDescription = context.getString(R.string.content_description_back),
             primaryImageTintResource = context.theme.resolveAttribute(R.attr.primaryText),
             isInPrimaryState = {
-                selectedSession?.content?.canGoBack ?: false
+                selectedSession?.content?.canGoBack == true
             },
             secondaryImageTintResource = context.theme.resolveAttribute(R.attr.disabled),
             disableInSecondaryState = true,
@@ -54,11 +67,11 @@ class CustomTabMenu(
         }
 
         val forward = BrowserMenuItemToolbar.TwoStateButton(
-            primaryImageResource = R.drawable.mozac_ic_forward_24,
+            primaryImageResource = iconsR.drawable.mozac_ic_forward_24,
             primaryContentDescription = context.getString(R.string.content_description_forward),
             primaryImageTintResource = context.theme.resolveAttribute(R.attr.primaryText),
             isInPrimaryState = {
-                selectedSession?.content?.canGoForward ?: true
+                selectedSession?.content?.canGoForward != false
             },
             secondaryImageTintResource = context.theme.resolveAttribute(R.attr.disabled),
             disableInSecondaryState = true,
@@ -68,13 +81,13 @@ class CustomTabMenu(
         }
 
         val refresh = BrowserMenuItemToolbar.TwoStateButton(
-            primaryImageResource = R.drawable.mozac_ic_arrow_clockwise_24,
+            primaryImageResource = iconsR.drawable.mozac_ic_arrow_clockwise_24,
             primaryContentDescription = context.getString(R.string.content_description_reload),
             primaryImageTintResource = context.theme.resolveAttribute(R.attr.primaryText),
             isInPrimaryState = {
                 selectedSession?.content?.loading == false
             },
-            secondaryImageResource = R.drawable.mozac_ic_stop,
+            secondaryImageResource = iconsR.drawable.mozac_ic_stop,
             secondaryContentDescription = context.getString(R.string.content_description_stop),
             secondaryImageTintResource = context.theme.resolveAttribute(R.attr.primaryText),
             disableInSecondaryState = false,
@@ -92,16 +105,16 @@ class CustomTabMenu(
     private val menuItems by lazy {
         val findInPage = BrowserMenuImageText(
             label = context.getString(R.string.find_in_page),
-            imageResource = R.drawable.mozac_ic_search_24,
+            imageResource = iconsR.drawable.mozac_ic_search_24,
         ) {
             onItemTapped.invoke(ToolbarMenu.CustomTabItem.FindInPage)
         }
 
         val desktopMode = BrowserMenuImageSwitch(
-            imageResource = R.drawable.mozac_ic_device_desktop_24,
+            imageResource = iconsR.drawable.mozac_ic_device_desktop_24,
             label = context.getString(R.string.preference_performance_request_desktop_site2),
             initialState = {
-                selectedSession?.content?.desktopMode ?: true
+                selectedSession?.content?.desktopMode != false
             },
         ) { checked ->
             onItemTapped.invoke(ToolbarMenu.CustomTabItem.RequestDesktop(checked))
@@ -114,44 +127,51 @@ class CustomTabMenu(
 
         val addToHomescreen = BrowserMenuImageText(
             label = context.getString(R.string.menu_add_to_home_screen),
-            imageResource = R.drawable.mozac_ic_add_to_homescreen_24,
+            imageResource = iconsR.drawable.mozac_ic_add_to_homescreen_24,
         ) {
             onItemTapped.invoke(ToolbarMenu.CustomTabItem.AddToHomeScreen)
         }
 
-        val appName = context.getString(R.string.app_name)
-        val openInFocus = SimpleBrowserMenuItem(
-            label = context.getString(R.string.menu_open_with_default_browser2, appName),
-        ) {
-            onItemTapped.invoke(ToolbarMenu.CustomTabItem.OpenInBrowser)
-        }
-
-        val openInApp = SimpleBrowserMenuItem(
-            label = context.getString(R.string.menu_open_with_a_browser2),
-        ) {
-            onItemTapped.invoke(ToolbarMenu.CustomTabItem.OpenInApp)
-        }
-
-        val poweredBy = BrowserMenuCategory(
-            label = context.getString(R.string.menu_custom_tab_branding, context.getString(R.string.app_name)),
-            textSize = CAPTION_TEXT_SIZE,
-            textColorResource = context.theme.resolveAttribute(R.attr.secondaryText),
-            backgroundColorResource = context.theme.resolveAttribute(R.attr.colorPrimary),
-            textStyle = Typeface.NORMAL,
-        )
-
-        listOfNotNull(
+        val menuItems = mutableListOf(
             menuToolbar,
             BrowserMenuDivider(),
             findInPage,
-            desktopMode,
+            desktopMode.apply { visible = { selectedSession?.content?.isPdf == false } },
             reportSiteIssue,
             BrowserMenuDivider(),
             addToHomescreen,
-            openInFocus,
-            openInApp,
-            poweredBy,
         )
+
+        if (!isOnboardingTab) {
+            val appName = context.getString(R.string.app_name)
+            val openInFocus = SimpleBrowserMenuItem(
+                label = context.getString(R.string.menu_open_with_default_browser2, appName),
+            ) {
+                onItemTapped.invoke(ToolbarMenu.CustomTabItem.OpenInBrowser)
+            }
+            menuItems.add(openInFocus)
+
+            val openInApp = SimpleBrowserMenuItem(
+                label = context.getString(R.string.menu_open_with_a_browser2),
+            ) {
+                onItemTapped.invoke(ToolbarMenu.CustomTabItem.OpenInApp)
+            }
+            menuItems.add(openInApp)
+        }
+
+        val poweredBy = BrowserMenuCategory(
+            label = context.getString(
+                R.string.menu_custom_tab_branding,
+                context.getString(R.string.app_name),
+            ),
+            textSize = CAPTION_TEXT_SIZE,
+            textColorResource = context.theme.resolveAttribute(R.attr.secondaryText),
+            backgroundColorResource = context.theme.resolveAttribute(appcompatR.attr.colorPrimary),
+            textStyle = Typeface.NORMAL,
+        )
+
+        menuItems.add(poweredBy)
+        menuItems.toList()
     }
 
     companion object {

@@ -4,12 +4,11 @@
 
 sidebar-menu-bookmarks =
     .label = Sinnalibros
+sidebar-menu-bookmarks-2 = Sinnalibros
 sidebar-menu-history =
     .label = Cronologia
 sidebar-menu-synced-tabs =
     .label = Ischedas sincronizadas
-sidebar-menu-megalist =
-    .label = Craes
 sidebar-menu-close =
     .label = Serra sa barra laterale
 sidebar-close-button =

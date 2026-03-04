@@ -36,7 +36,7 @@ async function performDelete(store, rowName, action) {
       case "deleteAllSessionCookies":
         menuDeleteAllSessionCookiesItem.click();
         break;
-      case "deleteAllFrom":
+      case "deleteAllFrom": {
         menuDeleteAllFromItem.click();
         const hostName = cells.host.value;
         ok(
@@ -44,6 +44,7 @@ async function performDelete(store, rowName, action) {
           `Context menu item label contains '${hostName}'`
         );
         break;
+      }
     }
   });
 
@@ -182,4 +183,29 @@ add_task(async function () {
     [["cookies", "http://test1.example.org"], []],
     [["cookies", "https://sectest1.example.org"], []],
   ]);
+});
+
+add_task(async function testDeleteWithDomain() {
+  // Test that cookies whose host starts with "." are properly deleted
+  await openTabAndSetupStorage(MAIN_DOMAIN + "storage-cookies.html");
+
+  await checkState([
+    [
+      ["cookies", "http://test1.example.org"],
+      [
+        getCookieId("test1", ".test1.example.org", "/browser"),
+        getCookieId("test2", "test1.example.org", "/browser"),
+        getCookieId("test3", ".test1.example.org", "/browser"),
+        getCookieId("test4", "test1.example.org", "/browser"),
+        getCookieId("test5", ".test1.example.org", "/browser"),
+      ],
+    ],
+  ]);
+
+  // delete all cookies for host, including domain cookies
+  const id = getCookieId("test1", ".test1.example.org", "/browser");
+  await performDelete(["cookies", "http://test1.example.org"], id, "deleteAll");
+
+  info("test state after delete all");
+  await checkState([[["cookies", "http://test1.example.org"], []]]);
 });

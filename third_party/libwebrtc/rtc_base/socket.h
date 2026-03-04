@@ -11,34 +11,30 @@
 #ifndef RTC_BASE_SOCKET_H_
 #define RTC_BASE_SOCKET_H_
 
-#include <errno.h>
+#include <cerrno>
+#include <cstddef>
+#include <cstdint>
+#include <optional>
 
-#include "absl/types/optional.h"
-#include "rtc_base/checks.h"
-
-#if defined(WEBRTC_POSIX)
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#define SOCKET_EACCES EACCES
-#endif
-
-#if defined(WEBRTC_WIN)
-#include "rtc_base/win32.h"
-#endif
-
+#include "api/transport/ecn_marking.h"
 #include "api/units/timestamp.h"
 #include "rtc_base/buffer.h"
-#include "rtc_base/network/ecn_marking.h"
+#include "rtc_base/checks.h"
 #include "rtc_base/socket_address.h"
 #include "rtc_base/system/rtc_export.h"
 #include "rtc_base/third_party/sigslot/sigslot.h"
 
+// IWYU pragma: begin_exports
+#if defined(WEBRTC_POSIX)
+#include <arpa/inet.h>
+#include <sys/types.h>
+#define SOCKET_EACCES EACCES
+#endif
+// IWYU pragma: end_exports
+
 // Rather than converting errors into a private namespace,
 // Reuse the POSIX socket api errors. Note this depends on
 // Win32 compatibility.
-
 #if defined(WEBRTC_WIN)
 #undef EWOULDBLOCK  // Remove errno.h's definition for each macro below.
 #define EWOULDBLOCK WSAEWOULDBLOCK
@@ -77,7 +73,7 @@
 #define closesocket(s) close(s)
 #endif  // WEBRTC_POSIX
 
-namespace rtc {
+namespace webrtc {
 
 inline bool IsBlockingError(int e) {
   return (e == EWOULDBLOCK) || (e == EAGAIN) || (e == EINPROGRESS);
@@ -90,7 +86,7 @@ class RTC_EXPORT Socket {
   struct ReceiveBuffer {
     ReceiveBuffer(Buffer& payload) : payload(payload) {}
 
-    absl::optional<webrtc::Timestamp> arrival_time;
+    std::optional<Timestamp> arrival_time;
     SocketAddress source_address;
     EcnMarking ecn = EcnMarking::kNotEct;
     Buffer& payload;
@@ -115,10 +111,10 @@ class RTC_EXPORT Socket {
   // `timestamp` is in units of microseconds.
   virtual int Recv(void* pv, size_t cb, int64_t* timestamp) = 0;
   // TODO(webrtc:15368): Deprecate and remove.
-  virtual int RecvFrom(void* pv,
-                       size_t cb,
-                       SocketAddress* paddr,
-                       int64_t* timestamp) {
+  virtual int RecvFrom(void* /* pv */,
+                       size_t /* cb */,
+                       SocketAddress* /* paddr */,
+                       int64_t* /* timestamp */) {
     // Not implemented. Use RecvFrom(ReceiveBuffer& buffer).
     RTC_CHECK_NOTREACHED();
   }
@@ -172,6 +168,7 @@ class RTC_EXPORT Socket {
   Socket() {}
 };
 
-}  // namespace rtc
+}  //  namespace webrtc
+
 
 #endif  // RTC_BASE_SOCKET_H_

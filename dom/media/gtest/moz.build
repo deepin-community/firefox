@@ -6,21 +6,20 @@
 
 include("/dom/media/webrtc/third_party_build/webrtc.mozbuild")
 
-DEFINES["ENABLE_SET_CUBEB_BACKEND"] = True
 DEFINES["VISIBLE_TIMEUNIT_INTERNALS"] = True
 
 LOCAL_INCLUDES += [
+    "!/dist/include/libwebrtc_overrides",
     "/dom/media/driftcontrol",
     "/dom/media/mediasink",
     "/dom/media/systemservices",
     "/dom/media/webrtc",
     "/dom/media/webrtc/common",
+    "/third_party/abseil-cpp",
     "/third_party/libwebrtc",
-    "/third_party/libwebrtc/third_party/abseil-cpp",
 ]
 
 UNIFIED_SOURCES += [
-    "MockCubeb.cpp",
     "MockMediaResource.cpp",
     "TestAudioBuffer.cpp",
     "TestAudioBuffers.cpp",
@@ -36,23 +35,23 @@ UNIFIED_SOURCES += [
     "TestAudioSinkWrapper.cpp",
     "TestAudioTrackEncoder.cpp",
     "TestAudioTrackGraph.cpp",
-    "TestBenchmarkStorage.cpp",
     "TestBitWriter.cpp",
     "TestBlankVideoDataCreator.cpp",
     "TestBufferReader.cpp",
     "TestCubebInputStream.cpp",
     "TestDataMutex.cpp",
-    "TestDecoderBenchmark.cpp",
+    "TestDecodedStream.cpp",
     "TestDeviceInputTrack.cpp",
     "TestDriftCompensation.cpp",
     "TestGMPUtils.cpp",
     "TestGroupId.cpp",
+    "TestImageConversion.cpp",
     "TestIntervalSet.cpp",
-    "TestKeyValueStorage.cpp",
     "TestMediaCodecsSupport.cpp",
     "TestMediaDataDecoder.cpp",
     "TestMediaDataEncoder.cpp",
     "TestMediaEventSource.cpp",
+    "TestMediaFormatReader.cpp",
     "TestMediaInfo.cpp",
     "TestMediaMIMETypes.cpp",
     "TestMediaQueue.cpp",
@@ -61,12 +60,14 @@ UNIFIED_SOURCES += [
     "TestMP3Demuxer.cpp",
     "TestMP4Demuxer.cpp",
     "TestMuxer.cpp",
+    "TestOfflineClockDriver.cpp",
     "TestOggWriter.cpp",
     "TestOpusParser.cpp",
-    "TestPacer.cpp",
     "TestRust.cpp",
     "TestTimeUnit.cpp",
+    "TestVideoFrameContainer.cpp",
     "TestVideoSegment.cpp",
+    "TestVideoSink.cpp",
     "TestVideoTrackEncoder.cpp",
     "TestVideoUtils.cpp",
     "TestVPXDecoding.cpp",
@@ -76,9 +77,14 @@ UNIFIED_SOURCES += [
 ]
 
 if CONFIG["MOZ_WEBRTC"]:
+    LOCAL_INCLUDES += [
+        "/dom/media/webrtc/libwebrtcglue",
+    ]
+
     UNIFIED_SOURCES += [
         "TestAudioInputProcessing.cpp",
         "TestRTCStatsTimestampMaker.cpp",
+        "TestWebrtcTaskQueueWrapper.cpp",
     ]
 
 if CONFIG["OS_TARGET"] != "Android":
@@ -91,6 +97,7 @@ if CONFIG["OS_TARGET"] != "Android":
 if CONFIG["MOZ_WEBRTC"] and CONFIG["OS_TARGET"] != "Android":
     UNIFIED_SOURCES += [
         "TestAudioDeviceEnumerator.cpp",
+        "TestPacer.cpp",
         "TestVideoFrameConverter.cpp",
     ]
 
@@ -146,5 +153,4 @@ FINAL_LIBRARY = "xul-gtest"
 if CONFIG["CC_TYPE"] in ("clang", "clang-cl"):
     CXXFLAGS += [
         "-Wno-inconsistent-missing-override",
-        "-Wno-unused-private-field",
     ]

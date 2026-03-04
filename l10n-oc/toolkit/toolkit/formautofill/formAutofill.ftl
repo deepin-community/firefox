@@ -21,7 +21,7 @@ credit-card-capture-cancel-button =
     .label = Pas ara
     .accessKey = P
 credit-card-capture-never-save-button =
-    .label = Salvar pas jamai las carta
+    .label = Salvar pas jamai las cartas
     .accessKey = S
 
 # Used on the doorhanger when an credit card change is detected.
@@ -63,3 +63,6 @@ autofill-category-name = nom
 autofill-category-organization = societat
 autofill-category-tel = telefòn
 autofill-category-email = adreça electronica
+# This string is used in drop down suggestion when users try to autofill credit
+# card on an insecure website (without https).
+autofill-insecure-field-warning-description = { -brand-short-name } a detectat un site pas securizat. L’emplenatge automatic es desactivat per ara.

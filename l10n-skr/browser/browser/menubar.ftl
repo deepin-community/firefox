@@ -3,18 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -145,8 +133,6 @@ menu-view-history-button =
     .label = تاریخ
 menu-view-synced-tabs-sidebar =
     .label = سینک تھئے ٹیبز
-menu-view-megalist-sidebar =
-    .label = پاس ورڈز
 menu-view-full-zoom =
     .label = زوم
     .accesskey = Z
@@ -253,6 +239,15 @@ menu-bookmarks-other =
     .label = ٻیاں نشانیاں
 menu-bookmarks-mobile =
     .label = موبائل بک مارک
+
+## Profiles Menu
+
+menu-profiles =
+    .label = پروفائلاں
+menu-profiles-manage-profiles =
+    .label = پروفائلاں منیج کرو
+menu-profiles-new-profile =
+    .label = نویں پروفائل
 
 ## Tools Menu
 

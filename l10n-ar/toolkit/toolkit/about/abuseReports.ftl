@@ -17,8 +17,6 @@ abuse-report-addon-authored-by = طوّرها <a data-l10n-name="author-name">{ 
 abuse-report-learnmore =
     لا تعرف ما تختار؟
     <a data-l10n-name="learnmore-link">اطّلع على المزيد حول الإبلاغ عن الامتدادات والسمات</a>
-abuse-report-learnmore-intro = لا تعرف ما تختار؟
-abuse-report-learnmore-link = اطّلع على المزيد حول الإبلاغ عن الامتدادات والسمات
 abuse-report-submit-description = صِف المشكلة (لو أردت)
 abuse-report-textarea =
     .placeholder = سيسهل علينا فهم المشكلة لو عرفنا تفاصيلها، فمن فضلك صِف المشكلة التي تُواجهها، ونشكرك على مساعدتنا في الحفاظ على صحّة الوِب.
@@ -46,27 +44,12 @@ abuse-report-messagebar-removed-extension = نشكرك على إرسال الت�
 abuse-report-messagebar-removed-theme = نشكرك على إرسال التقرير. أزلت بنجاح السمة <span data-l10n-name="addon-name">{ $addon-name }</span>.
 abuse-report-messagebar-error = حدث خطأ في إرسال التقرير عن <span data-l10n-name="addon-name">{ $addon-name }</span>.
 abuse-report-messagebar-error-recent-submit = لم يُرسل التقرير عن <span data-l10n-name="addon-name">{ $addon-name }</span> إذ أُرسل تقرير آخر عنها حديثًا.
-abuse-report-messagebar-aborted2 =
-    .message = أُلغي التقرير عن { $addon-name }.
-abuse-report-messagebar-submitting2 =
-    .message = يُرسل تقريرًا عن { $addon-name }.
-abuse-report-messagebar-submitted2 =
-    .message = نشكرك على إرسال التقرير. أتريد إزالة { $addon-name }؟
-abuse-report-messagebar-submitted-noremove2 =
-    .message = نشكرك على إرسال التقرير.
-abuse-report-messagebar-removed-extension2 =
-    .message = نشكرك على إرسال التقرير. أزلت بنجاح الامتداد { $addon-name }.
-abuse-report-messagebar-removed-theme2 =
-    .message = نشكرك على إرسال التقرير. أزلت بنجاح السمة { $addon-name }.
-abuse-report-messagebar-error2 =
-    .message = حدث خطأ في إرسال التقرير عن { $addon-name }.
-abuse-report-messagebar-error-recent-submit2 =
-    .message = لم يُرسل التقرير عن { $addon-name } إذ أُرسل تقرير آخر عنها حديثًا.
 
 ## Message bars actions.
 
-abuse-report-messagebar-action-remove-extension = نعم ، أزِله
+abuse-report-messagebar-action-remove-extension = نعم، أزِله
 abuse-report-messagebar-action-keep-extension = لا، سأُبقيه
+abuse-report-messagebar-action-remove-sitepermission = نعم، أزِله
 abuse-report-messagebar-action-remove-theme = نعم، أزِلها
 abuse-report-messagebar-action-keep-theme = لا، سأُبقيها
 abuse-report-messagebar-action-retry = أعِد المحاولة

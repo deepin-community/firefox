@@ -4,6 +4,8 @@
 
 package org.mozilla.fenix.utils
 
+import android.content.pm.PackageInfo
+import androidx.core.content.edit
 import io.mockk.every
 import io.mockk.spyk
 import mozilla.components.concept.engine.Engine.HttpsOnlyMode.DISABLED
@@ -23,12 +25,18 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mozilla.fenix.browser.browsingmode.BrowsingMode
-import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
+import org.mozilla.fenix.components.toolbar.ToolbarPosition
+import org.mozilla.fenix.nimbus.DefaultBrowserPrompt
+import org.mozilla.fenix.nimbus.FakeNimbusEventStore
 import org.mozilla.fenix.settings.PhoneFeature
+import org.mozilla.fenix.settings.ShortcutType
 import org.mozilla.fenix.settings.deletebrowsingdata.DeleteBrowsingDataOnQuitType
+import org.robolectric.RobolectricTestRunner
 import java.util.Calendar
 
-@RunWith(FenixRobolectricTestRunner::class)
+private const val TOU_VERSION = 5
+
+@RunWith(RobolectricTestRunner::class)
 class SettingsTest {
 
     lateinit var settings: Settings
@@ -43,6 +51,8 @@ class SettingsTest {
         persistentStorage = ASK_TO_ALLOW,
         mediaKeySystemAccess = ASK_TO_ALLOW,
         crossOriginStorageAccess = ASK_TO_ALLOW,
+        localDeviceAccess = ASK_TO_ALLOW,
+        localNetworkAccess = ASK_TO_ALLOW,
     )
 
     @Before
@@ -583,6 +593,30 @@ class SettingsTest {
     }
 
     @Test
+    fun getSitePermissionsCustomSettingsRules_localDeviceAccess() {
+        // When
+        settings.setSitePermissionsPhoneFeatureAction(PhoneFeature.LOCAL_DEVICE_ACCESS, BLOCKED)
+
+        // Then
+        assertEquals(
+            defaultPermissions.copy(localDeviceAccess = BLOCKED),
+            settings.getSitePermissionsCustomSettingsRules(),
+        )
+    }
+
+    @Test
+    fun getSitePermissionsCustomSettingsRules_localNetworkAccess() {
+        // When
+        settings.setSitePermissionsPhoneFeatureAction(PhoneFeature.LOCAL_NETWORK_ACCESS, BLOCKED)
+
+        // Then
+        assertEquals(
+            defaultPermissions.copy(localNetworkAccess = BLOCKED),
+            settings.getSitePermissionsCustomSettingsRules(),
+        )
+    }
+
+    @Test
     fun getSitePermissionsCustomSettingsRules_autoplayAudible() {
         settings.setSitePermissionsPhoneFeatureAction(PhoneFeature.AUTOPLAY_AUDIBLE, ALLOWED)
 
@@ -828,22 +862,11 @@ class SettingsTest {
     }
 
     @Test
-    fun `GIVEN hasUserBeenOnboarded is false and isLauncherIntent is false THEN shouldShowOnboarding returns false`() {
+    fun `GIVEN feature is disabled, hasUserBeenOnboarded is true and isLauncherIntent is true THEN shouldShowOnboarding returns false`() {
         val settings = spyk(settings)
 
         val actual = settings.shouldShowOnboarding(
-            hasUserBeenOnboarded = false,
-            isLauncherIntent = false,
-        )
-
-        assertFalse(actual)
-    }
-
-    @Test
-    fun `GIVEN hasUserBeenOnboarded is true THEN shouldShowOnboarding returns false`() {
-        val settings = spyk(settings)
-
-        val actual = settings.shouldShowOnboarding(
+            featureEnabled = false,
             hasUserBeenOnboarded = true,
             isLauncherIntent = true,
         )
@@ -852,10 +875,37 @@ class SettingsTest {
     }
 
     @Test
-    fun `GIVEN hasUserBeenOnboarded is false and isLauncherIntent is true THEN shouldShowOnboarding returns true`() {
+    fun `GIVEN feature is enabled, hasUserBeenOnboarded is false and isLauncherIntent is false THEN shouldShowOnboarding returns false`() {
         val settings = spyk(settings)
 
         val actual = settings.shouldShowOnboarding(
+            featureEnabled = true,
+            hasUserBeenOnboarded = false,
+            isLauncherIntent = false,
+        )
+
+        assertFalse(actual)
+    }
+
+    @Test
+    fun `GIVEN feature is enabled, hasUserBeenOnboarded is true THEN shouldShowOnboarding returns false`() {
+        val settings = spyk(settings)
+
+        val actual = settings.shouldShowOnboarding(
+            featureEnabled = true,
+            hasUserBeenOnboarded = true,
+            isLauncherIntent = true,
+        )
+
+        assertFalse(actual)
+    }
+
+    @Test
+    fun `GIVEN feature is enabled, hasUserBeenOnboarded is false and isLauncherIntent is true THEN shouldShowOnboarding returns true`() {
+        val settings = spyk(settings)
+
+        val actual = settings.shouldShowOnboarding(
+            featureEnabled = true,
             hasUserBeenOnboarded = false,
             isLauncherIntent = true,
         )
@@ -864,12 +914,17 @@ class SettingsTest {
     }
 
     @Test
-    fun `GIVEN toolbarPositionTop is false, touchExplorationIsEnabled is true THEN shouldDefaultToBottomToolbar returns false`() {
+    fun `GIVEN should not show by default WHEN enablePersistentOnboarding is true THEN shouldShowOnboarding returns true`() {
         val settings = spyk(settings)
-        every { settings.toolbarPositionTop } returns true
-        every { settings.touchExplorationIsEnabled } returns true
+        every { settings.enablePersistentOnboarding } returns true
 
-        assertEquals(false, settings.shouldDefaultToBottomToolbar())
+        val actual = settings.shouldShowOnboarding(
+            featureEnabled = false,
+            hasUserBeenOnboarded = true,
+            isLauncherIntent = false,
+        )
+
+        assertTrue(actual)
     }
 
     @Test
@@ -1006,45 +1061,312 @@ class SettingsTest {
     }
 
     @Test
-    fun `GIVEN navigation toolbar is enabled  and microsurvey are enabled WHEN getBottomToolbarContainerHeight THEN returns the combined navbar & microsurvey height`() {
+    fun `GIVEN top composable toolbar is enabled WHEN querying the toolbar height THEN get the height of the composable toolbar`() {
         val settings = spyk(settings)
-        every { settings.navigationToolbarEnabled } returns true
-        every { settings.shouldShowMicrosurveyPrompt } returns true
+        every { settings.shouldUseComposableToolbar } returns true
+        every { settings.toolbarPosition } returns ToolbarPosition.TOP
 
-        val bottomToolbarContainerHeight = settings.getBottomToolbarContainerHeight()
-
-        assertEquals(179, bottomToolbarContainerHeight)
+        assertEquals(64, settings.browserToolbarHeight)
     }
 
     @Test
-    fun `GIVEN only navigation toolbar is enabled  WHEN getBottomToolbarContainerHeight THEN returns navbar height`() {
+    fun `GIVEN bottom composable toolbar is enabled and navigation bar is disabled WHEN querying the toolbar height THEN get the height of the composable toolbar`() {
         val settings = spyk(settings)
-        every { settings.navigationToolbarEnabled } returns true
+        every { settings.shouldUseComposableToolbar } returns true
+        every { settings.toolbarPosition } returns ToolbarPosition.BOTTOM
+        every { settings.shouldUseExpandedToolbar } returns false
 
-        val bottomToolbarContainerHeight = settings.getBottomToolbarContainerHeight()
+        assertEquals(64, settings.browserToolbarHeight)
+    }
 
-        assertEquals(48, bottomToolbarContainerHeight)
+    @Test fun `GIVEN bottom composable toolbar is enabled and navigation bar is enabled WHEN querying the toolbar height THEN get the height of the composable toolbar`() {
+        testContext.resources.configuration.apply {
+            screenHeightDp = 481
+            screenWidthDp = 599
+        }
+        val settings = spyk(settings)
+        every { settings.shouldUseComposableToolbar } returns true
+        every { settings.toolbarPosition } returns ToolbarPosition.BOTTOM
+        every { settings.shouldUseExpandedToolbar } returns true
+
+        assertEquals(56, settings.browserToolbarHeight)
     }
 
     @Test
-    fun `GIVEN only microsurvey is enabled WHEN getBottomToolbarContainerHeight THEN returns microsurvey height`() {
+    fun `GIVEN bottom composable toolbar is enabled and navigation bar is enabled but window is not tall enough WHEN querying the toolbar height THEN get the height of the composable toolbar`() {
+        testContext.resources.configuration.apply {
+            screenHeightDp = 479
+            screenWidthDp = 599
+        }
         val settings = spyk(settings)
-        every { settings.navigationToolbarEnabled } returns false
-        every { settings.shouldShowMicrosurveyPrompt } returns true
 
-        val bottomToolbarContainerHeight = settings.getBottomToolbarContainerHeight()
+        every { settings.shouldUseComposableToolbar } returns true
+        every { settings.toolbarPosition } returns ToolbarPosition.BOTTOM
+        every { settings.shouldUseExpandedToolbar } returns true
 
-        assertEquals(131, bottomToolbarContainerHeight)
+        assertEquals(64, settings.browserToolbarHeight)
     }
 
     @Test
-    fun `GIVEN that both navigation toolbar and microsurvey are not enabled WHEN getBottomToolbarContainerHeight THEN returns zero height`() {
+    fun `GIVEN bottom composable toolbar is enabled and navigation bar is enabled but window is too wide WHEN querying the toolbar height THEN get the height of the composable toolbar`() {
+        testContext.resources.configuration.apply {
+            screenHeightDp = 481
+            screenWidthDp = 601
+        }
         val settings = spyk(settings)
-        every { settings.navigationToolbarEnabled } returns false
-        every { settings.shouldShowMicrosurveyPrompt } returns false
 
-        val bottomToolbarContainerHeight = settings.getBottomToolbarContainerHeight()
+        every { settings.shouldUseComposableToolbar } returns true
+        every { settings.toolbarPosition } returns ToolbarPosition.BOTTOM
+        every { settings.shouldUseExpandedToolbar } returns true
 
-        assertEquals(0, bottomToolbarContainerHeight)
+        assertEquals(64, settings.browserToolbarHeight)
+    }
+
+    @Test
+    fun `GIVEN composable toolbar is not enabled WHEN querying the toolbar heigh THEN get the height of the toolbar view`() {
+        val settings = spyk(settings)
+        every { settings.shouldUseComposableToolbar } returns false
+
+        assertEquals(56, settings.browserToolbarHeight)
+    }
+
+    @Test
+    fun `GIVEN the conditions to show a prompt are not met WHEN checking prompt eligibility THEN shouldShowSetAsDefaultPrompt is false`() {
+        settings.numberOfSetAsDefaultPromptShownTimes = 0
+        settings.lastSetAsDefaultPromptShownTimeInMillis = System.currentTimeMillis()
+        settings.coldStartsBetweenSetAsDefaultPrompts = 5
+
+        assertFalse(settings.shouldShowSetAsDefaultPrompt())
+    }
+
+    @Test
+    fun `GIVEN the prompt has been shown maximum times WHEN checking prompt eligibility THEN shouldShowSetAsDefaultPrompt is false`() {
+        settings.numberOfSetAsDefaultPromptShownTimes = 3 // Maximum number of times the prompt can be shown based on the design criteria
+        settings.lastSetAsDefaultPromptShownTimeInMillis = 0L
+        settings.coldStartsBetweenSetAsDefaultPrompts = 5
+
+        assertFalse(settings.shouldShowSetAsDefaultPrompt())
+    }
+
+    @Test
+    fun `GIVEN the time since last prompt is too short WHEN checking prompt eligibility THEN shouldShowSetAsDefaultPrompt is false`() {
+        settings.numberOfSetAsDefaultPromptShownTimes = 1
+        settings.lastSetAsDefaultPromptShownTimeInMillis = System.currentTimeMillis() - 1000
+        settings.coldStartsBetweenSetAsDefaultPrompts = 5
+
+        assertFalse(settings.shouldShowSetAsDefaultPrompt())
+    }
+
+    @Test
+    fun `GIVEN not enough cold starts WHEN checking prompt eligibility THEN shouldShowSetAsDefaultPrompt is false`() {
+        settings.numberOfSetAsDefaultPromptShownTimes = 1
+        settings.lastSetAsDefaultPromptShownTimeInMillis = 0L
+        settings.coldStartsBetweenSetAsDefaultPrompts = 1
+
+        assertFalse(settings.shouldShowSetAsDefaultPrompt())
+    }
+
+    @Test
+    fun `GIVEN enough cold starts and conditions met WHEN checking prompt eligibility THEN shouldShowSetAsDefaultPrompt is true`() {
+        settings.numberOfSetAsDefaultPromptShownTimes = 1
+        settings.lastSetAsDefaultPromptShownTimeInMillis = 0L
+        settings.coldStartsBetweenSetAsDefaultPrompts = 5 // More than required cold starts
+
+        assertTrue(settings.shouldShowSetAsDefaultPrompt())
+    }
+
+    @Test
+    fun `GIVEN other conditions are valid WHEN the default browser prompt is disabled THEN shouldShowSetAsDefaultPrompt is false`() {
+        settings.numberOfSetAsDefaultPromptShownTimes = 1
+        settings.lastSetAsDefaultPromptShownTimeInMillis = 0L
+        settings.coldStartsBetweenSetAsDefaultPrompts = 5 // More than required cold starts
+
+        assertFalse(
+            settings.shouldShowSetAsDefaultPrompt(
+                DefaultBrowserPrompt(
+                    enabled = false,
+                ),
+            ),
+        )
+    }
+
+    @Test
+    fun `GIVEN other conditions are valid WHEN the days between prompts is null THEN the value is ignored`() {
+        settings.numberOfSetAsDefaultPromptShownTimes = 1
+        settings.lastSetAsDefaultPromptShownTimeInMillis = System.currentTimeMillis()
+        settings.coldStartsBetweenSetAsDefaultPrompts = 5
+
+        assertTrue(
+            settings.shouldShowSetAsDefaultPrompt(
+                DefaultBrowserPrompt(
+                    daysBetweenPrompts = null,
+                ),
+            ),
+        )
+    }
+
+    @Test
+    fun `GIVEN other conditions are valid WHEN max prompts shown is null THEN the value is ignored`() {
+        settings.numberOfSetAsDefaultPromptShownTimes = 10
+        settings.lastSetAsDefaultPromptShownTimeInMillis = 0L
+        settings.coldStartsBetweenSetAsDefaultPrompts = 5
+
+        assertTrue(
+            settings.shouldShowSetAsDefaultPrompt(
+                DefaultBrowserPrompt(
+                    maxPromptsShown = null,
+                ),
+            ),
+        )
+    }
+
+    @Test
+    fun `GIVEN other conditions are valid WHEN cold starts between prompts is null THEN the value is ignored`() {
+        settings.numberOfSetAsDefaultPromptShownTimes = 1
+        settings.lastSetAsDefaultPromptShownTimeInMillis = 0L
+        settings.coldStartsBetweenSetAsDefaultPrompts = 0
+
+        assertTrue(
+            settings.shouldShowSetAsDefaultPrompt(
+                DefaultBrowserPrompt(
+                    coldStartsBetweenPrompts = null,
+                ),
+            ),
+        )
+    }
+
+    @Test
+    fun `GIVEN previously stored pref_key_last_review_prompt_shown_time value WHEN calling migrateLastReviewPromptTimePrefIfNeeded THEN migrate the value`() {
+        val oldKey = "pref_key_last_review_prompt_shown_time"
+        val lastReviewPromptTimeInMillis = 300_000L
+        val timeNowInMillis = 500_000L
+        val eventStore = FakeNimbusEventStore()
+
+        val settings = spyk(settings)
+        every { settings.timeNowInMillis() } returns timeNowInMillis
+
+        settings.preferences.edit { putLong(oldKey, lastReviewPromptTimeInMillis) }
+
+        assertEquals(lastReviewPromptTimeInMillis, settings.preferences.getLong(oldKey, 0))
+        eventStore.assertNoPastEvents()
+
+        settings.migrateLastReviewPromptTimePrefIfNeeded(eventStore)
+
+        assertFalse(settings.preferences.contains(oldKey))
+        eventStore.assertSinglePastEventEquals(
+            eventId = "review_prompt_shown",
+            secondsAgo = (timeNowInMillis - lastReviewPromptTimeInMillis) / 1000,
+        )
+    }
+
+    @Test
+    fun `GIVEN none previously stored pref_key_last_review_prompt_shown_time value WHEN calling migrateLastReviewPromptTimePrefIfNeeded THEN migration should not happen`() {
+        val oldKey = "pref_key_last_review_prompt_shown_time"
+        val eventStore = FakeNimbusEventStore()
+
+        assertFalse(settings.preferences.contains(oldKey))
+        eventStore.assertNoPastEvents()
+
+        settings.migrateLastReviewPromptTimePrefIfNeeded(eventStore)
+
+        eventStore.assertNoPastEvents()
+    }
+
+    @Test
+    fun `GIVEN previously stored pref_key_last_review_prompt_shown_time value is a String WHEN calling migrateLastReviewPromptTimePrefIfNeeded THEN crash should not happen`() {
+        val oldKey = "pref_key_last_review_prompt_shown_time"
+        val eventStore = FakeNimbusEventStore()
+
+        settings.preferences.edit { putString(oldKey, "something unexpected") }
+        eventStore.assertNoPastEvents()
+
+        settings.migrateLastReviewPromptTimePrefIfNeeded(eventStore)
+
+        assertFalse(settings.preferences.contains(oldKey))
+        eventStore.assertNoPastEvents()
+    }
+
+    @Test
+    fun `WHEN user has accepted the ToU THEN termsOfUseAcceptedTimeInMillis returns the app installed time`() {
+        val installTime = 12345L
+        val settings = Settings(
+            appContext = testContext,
+            packageName = "test",
+            packageManagerCompatHelper = FakePackageManagerCompatHelper(
+                packageInfo = PackageInfo().apply { firstInstallTime = installTime },
+            ),
+        )
+        settings.hasAcceptedTermsOfService = true
+
+        val result = settings.termsOfUseAcceptedTimeInMillis
+
+        assertEquals(installTime, result)
+    }
+
+    @Test
+    fun `WHEN user has not accepted the ToU THEN termsOfUseAcceptedTimeInMillis returns 0L`() {
+        val installTime = 12345L
+        val settings = Settings(
+            appContext = testContext,
+            packageName = "test",
+            packageManagerCompatHelper = FakePackageManagerCompatHelper(
+                packageInfo = PackageInfo().apply { firstInstallTime = installTime },
+            ),
+        )
+        settings.hasAcceptedTermsOfService = false
+
+        val result = settings.termsOfUseAcceptedTimeInMillis
+
+        assertEquals(0L, result)
+    }
+
+    @Test
+    fun `WHEN user has accepted the ToU THEN termsOfUseAcceptedVersion returns the ToU version`() {
+        settings.hasAcceptedTermsOfService = true
+
+        val result = settings.termsOfUseAcceptedVersion
+        assertEquals(TOU_VERSION, result)
+    }
+
+    @Test
+    fun `WHEN user has not accepted the ToU THEN termsOfUseAcceptedVersion returns 0`() {
+        settings.hasAcceptedTermsOfService = false
+
+        val result = settings.termsOfUseAcceptedVersion
+        assertEquals(0, result)
+    }
+
+    @Test
+    fun `GIVEN toolbar customization is disabled WHEN reading toolbarSimpleShortcut THEN NEW_TAB is returned regardless of stored key`() {
+        settings.toolbarSimpleShortcutKey = ShortcutType.SHARE.value
+
+        val result = settings.toolbarSimpleShortcut
+        assertEquals(ShortcutType.NEW_TAB.value, result)
+    }
+
+    @Test
+    fun `GIVEN toolbar customization is enabled WHEN reading toolbarSimpleShortcut THEN stored key is returned`() {
+        settings.shouldShowToolbarCustomization = true
+        settings.toolbarSimpleShortcutKey = ShortcutType.SHARE.value
+
+        val result = settings.toolbarSimpleShortcut
+        assertEquals(ShortcutType.SHARE.value, result)
+    }
+
+    @Test
+    fun `GIVEN toolbar customization is disabled WHEN reading toolbarExpandedShortcut THEN BOOKMARK is returned regardless of stored key`() {
+        settings.toolbarExpandedShortcutKey = ShortcutType.NEW_TAB.value
+
+        val result = settings.toolbarExpandedShortcut
+        assertEquals(ShortcutType.BOOKMARK.value, result)
+    }
+
+    @Test
+    fun `GIVEN toolbar customization is enabled WHEN reading toolbarExpandedShortcut THEN stored key is returned`() {
+        settings.shouldShowToolbarCustomization = true
+        settings.toolbarExpandedShortcutKey = ShortcutType.TRANSLATE.value
+
+        val result = settings.toolbarExpandedShortcut
+        assertEquals(ShortcutType.TRANSLATE.value, result)
     }
 }

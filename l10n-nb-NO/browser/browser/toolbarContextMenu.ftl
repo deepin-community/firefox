@@ -20,28 +20,33 @@ toolbar-context-menu-bookmark-selected-tabs =
 toolbar-context-menu-select-all-tabs =
     .label = Velg alle faner
     .accesskey = V
+# Variables
+#   $tabCount (number) - Number of tabs
 toolbar-context-menu-reopen-closed-tabs =
     .label =
         { $tabCount ->
-            [1] Gjenopprett lukket fane
-           *[other] Gjenopprett lukkede faner
+            [1] Gjenåpne lukket fane
+           *[other] Gjenåpne lukkede faner
         }
-    .accesskey = o
-
+    .accesskey = e
+toolbar-context-turn-on-vertical-tabs =
+    .label = Slå på vertikale faner
+toolbar-context-turn-off-vertical-tabs =
+    .label = Slå av vertikale faner
+toolbar-context-customize-sidebar =
+    .label = Tilpass sidestolpe
 toolbar-context-menu-manage-extension =
     .label = Behandle utvidelser
     .accesskey = e
 toolbar-context-menu-remove-extension =
     .label = Fjern utvidelse
     .accesskey = v
-
 # This label is used in the extensions toolbar buttons context menus,
 # a user can use this command to submit to Mozilla an abuse report
 # related to that extension. "Report" is a verb.
 toolbar-context-menu-report-extension =
     .label = Rapporter utvidelse
     .accesskey = o
-
 # Can appear on the same context menu as toolbar-context-menu-menu-bar-cmd
 # ("Menu Bar") and personalbarCmd ("Bookmarks Toolbar"), so they should
 # have different access keys.
@@ -54,6 +59,10 @@ toolbar-context-menu-auto-hide-downloads-button-2 =
 toolbar-context-menu-always-open-downloads-panel =
     .label = Vis panel når nedlastingen starter
     .accesskey = s
+# Label of checkbox menu item to toggle visibility of Extensions Button.
+toolbar-context-menu-always-show-extensions-button =
+    .label = Vis alltid i verktøylinjen
+    .accesskey = V
 toolbar-context-menu-remove-from-toolbar =
     .label = Fjern fra verktøylinje
     .accesskey = n
@@ -68,7 +77,6 @@ toolbar-context-menu-view-customize-toolbar-2 =
 toolbar-context-menu-pin-to-toolbar =
     .label = Fest til verktøylinjen
     .accesskey = F
-
 toolbar-context-menu-bookmarks-toolbar-always-show-2 =
     .label = Vis alltid
     .accesskey = V
@@ -78,11 +86,9 @@ toolbar-context-menu-bookmarks-toolbar-never-show-2 =
 toolbar-context-menu-bookmarks-toolbar-on-new-tab-2 =
     .label = Vis bare på ny fane
     .accesskey = V
-
 toolbar-context-menu-bookmarks-show-other-bookmarks =
     .label = Vis andre bokmerker
     .accesskey = V
-
 toolbar-context-menu-menu-bar-cmd =
     .toolbarname = Menylinje
     .accesskey = M

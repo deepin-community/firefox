@@ -19,21 +19,21 @@ object Constants {
         const val GOOGLE_DOCS = "com.google.android.apps.docs"
         const val YOUTUBE_APP = "com.google.android.youtube"
         const val GMAIL_APP = "com.google.android.gm"
-        const val PHONE_APP = "com.android.dialer"
+        const val PHONE_APP = "com.google.android.dialer"
         const val ANDROID_SETTINGS = "com.android.settings"
         const val PRINT_SPOOLER = "com.android.printspooler"
         const val PIXEL_LAUNCHER = "com.google.android.apps.nexuslauncher"
     }
 
     const val SPEECH_RECOGNITION = "android.speech.action.RECOGNIZE_SPEECH"
-    const val POCKET_RECOMMENDED_STORIES_UTM_PARAM = "utm_source=pocket-newtab-android"
+    const val STORIES_UTM_PARAM = "utm_source=firefox-newtab-en-us"
     const val LONG_CLICK_DURATION: Long = 5000
     const val LISTS_MAXSWIPES: Int = 3
     const val RETRY_COUNT = 3
 
     val searchEngineCodes = mapOf(
         "Google" to "client=firefox-b-m",
-        "Bing" to "firefox&pc=MOZB&form=MOZMBA",
+        "Bing" to "MOZB&form=MOZMBA&q=firefox",
         "DuckDuckGo" to "t=fpas",
     )
 
@@ -46,8 +46,29 @@ object Constants {
             "Google" to "Google",
             "First sponsored shortcut" to firstSponsoredShortcutTitle,
             "Second sponsored shortcut" to secondSponsoredShortcutTitle,
-            "Top Articles" to "Top Articles",
             "Wikipedia" to "Wikipedia",
         )
     }
+
+    // Notes:
+    // "Ghostery" - not included in the list because of the name discrepancy between the recommended list and the install confirmation prompt
+    // "AdGuard AdBlocker" - not included in the list because of the inconsistencies caused by the new tab that is opened after installation
+    // "Video Background Play Fix", "FoxyProxy" and "Google Search Fixer"
+    // - not included because instead of the add-on name the main menu extensions button displays "No extensions enabled"
+    // and no name is being displayed in the installed "Extensions" list, only the add-on icon
+    val recommendedAddons = listOf(
+        "uBlock Origin",
+        "Privacy Badger",
+        "Dark Reader",
+        "Bitwarden",
+        "NoScript",
+        "Search by Image",
+        "ClearURLs",
+        "Firefox Relay",
+        "Read Aloud: A Text to Speech Voice Reader",
+        "Decentraleyes",
+        "YouTube High Definition",
+        "Web Archives",
+        "Tomato Clock",
+    )
 }

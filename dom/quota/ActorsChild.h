@@ -7,7 +7,6 @@
 #ifndef mozilla_dom_quota_ActorsChild_h
 #define mozilla_dom_quota_ActorsChild_h
 
-#include <cstdint>
 #include "ErrorList.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/dom/quota/PQuotaChild.h"
@@ -99,8 +98,6 @@ class QuotaRequestChild final : public PQuotaRequestChild {
   void HandleResponse(const nsAString& aResponse);
 
   void HandleResponse(const EstimateResponse& aResponse);
-
-  void HandleResponse(const nsTArray<nsCString>& aResponse);
 
   void HandleResponse(const GetFullOriginMetadataResponse& aResponse);
 

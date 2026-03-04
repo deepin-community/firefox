@@ -8,6 +8,7 @@
 
 #include "HyperTextAccessible.h"
 #include "AccEvent.h"
+#include "nsAccessibilityService.h"
 
 #include "nsClassHashtable.h"
 #include "nsTHashMap.h"
@@ -64,8 +65,10 @@ class DocAccessible : public HyperTextAccessible,
   virtual nsINode* GetNode() const override;
   Document* DocumentNode() const { return mDocumentNode; }
 
-  virtual mozilla::a11y::ENameValueFlag Name(nsString& aName) const override;
-  virtual void Description(nsString& aDescription) const override;
+  virtual mozilla::a11y::ENameValueFlag DirectName(
+      nsString& aName) const override;
+  virtual EDescriptionValueFlag Description(
+      nsString& aDescription) const override;
   virtual Accessible* FocusedChild() override;
   virtual mozilla::a11y::role NativeRole() const override;
   virtual uint64_t NativeState() const override;
@@ -118,7 +121,8 @@ class DocAccessible : public HyperTextAccessible,
    * Note that this CANNOT be used for anything which fires events, since events
    * must be fired after their associated cache update.
    */
-  void QueueCacheUpdate(LocalAccessible* aAcc, uint64_t aNewDomain);
+  void QueueCacheUpdate(LocalAccessible* aAcc, uint64_t aNewDomain,
+                        bool aBypassActiveDomains = false);
 
   /**
    * Walks the dependent ids and elements maps for the given accessible and
@@ -126,7 +130,8 @@ class DocAccessible : public HyperTextAccessible,
    * We call this when we observe an ID mutation or when an acc is bound
    * to its document.
    */
-  void QueueCacheUpdateForDependentRelations(LocalAccessible* aAcc);
+  void QueueCacheUpdateForDependentRelations(
+      LocalAccessible* aAcc, const nsAttrValue* aOldId = nullptr);
 
   /**
    * Returns true if the instance has shutdown.
@@ -215,14 +220,13 @@ class DocAccessible : public HyperTextAccessible,
    */
   void MaybeNotifyOfValueChange(LocalAccessible* aAccessible);
 
-  /**
-   * Get/set the anchor jump.
-   */
-  LocalAccessible* AnchorJump() {
-    return GetAccessibleOrContainer(mAnchorJumpElm);
-  }
-
   void SetAnchorJump(nsIContent* aTargetNode) { mAnchorJumpElm = aTargetNode; }
+
+  /**
+   * Process an anchor jump, if any. Returns false if the current focus caused
+   * us to ignore the anchor jump, true otherwise.
+   */
+  bool ProcessAnchorJump();
 
   /**
    * Bind the child document to the tree.
@@ -399,9 +403,11 @@ class DocAccessible : public HyperTextAccessible,
    * and returns its scroll position and scroll range. If the given
    * accessible is `this`, return the scroll position and range of
    * the root scroll frame. Return values have been scaled by the
-   * PresShell's resolution.
+   * PresShell's resolution when aShouldScaleByResolution is explicitly
+   * true or unspecified.
    */
-  std::pair<nsPoint, nsRect> ComputeScrollData(LocalAccessible* aAcc);
+  std::pair<nsPoint, nsRect> ComputeScrollData(
+      const LocalAccessible* aAcc, bool aShouldScaleByResolution = true);
 
   /**
    * Only works in content process documents.
@@ -412,6 +418,12 @@ class DocAccessible : public HyperTextAccessible,
 
   void AttrElementWillChange(dom::Element* aElement, nsAtom* aAttr);
   void AttrElementChanged(dom::Element* aElement, nsAtom* aAttr);
+
+  /**
+   * Given an accessible, check if it is anchored to other frames, and
+   * refresh the cache on each of those frames' accessibles.
+   */
+  void RefreshAnchorRelationCacheForTarget(LocalAccessible* aTarget);
 
  protected:
   virtual ~DocAccessible();
@@ -559,8 +571,10 @@ class DocAccessible : public HyperTextAccessible,
    * Called from NotificationController to process this doc's
    * queued cache updates. For each acc in the map, this function
    * sends a cache update with its corresponding CacheDomain.
+   * Each domain bit in aInitialDomains indicates that this is the first push
+   * for that cache domain.
    */
-  void ProcessQueuedCacheUpdates();
+  void ProcessQueuedCacheUpdates(uint64_t aInitialDomains = 0);
 
   /**
    * Called from NotificationController before mutation events are processed to
@@ -620,10 +634,8 @@ class DocAccessible : public HyperTextAccessible,
    * Return true if the document is a target of document loading events
    * (for example, state busy change or document reload events).
    *
-   * Rules: The root chrome document accessible is never an event target
-   * (for example, Firefox UI window). If the sub document is loaded within its
-   * parent document then the parent document is a target only (aka events
-   * coalescence).
+   * Rule: The root chrome document accessible is never an event target
+   * (for example, Firefox UI window).
    */
   bool IsLoadEventTarget() const;
 
@@ -817,6 +829,12 @@ class DocAccessible : public HyperTextAccessible,
   friend class EventTree;
   friend class NotificationController;
 
+  /*
+   * The accessibility service may need to process queued cache updates outside
+   * of the regular NotificationController flow.
+   */
+  friend class ::nsAccessibilityService;
+
  private:
   void SetRoleMapEntryForDoc(dom::Element* aElement);
 
@@ -833,6 +851,9 @@ class DocAccessible : public HyperTextAccessible,
    * aria-labelledby/describedby target.
    */
   void MaybeHandleChangeToHiddenNameOrDescription(nsIContent* aChild);
+
+  void MaybeHandleChangeToAriaActions(LocalAccessible* aAcc,
+                                      const nsAtom* aAttribute);
 
   void MaybeFireEventsForChangedPopover(LocalAccessible* aAcc);
 

@@ -4,7 +4,8 @@
 
 const path = require("path");
 const webpack = require("webpack");
-const { ResourceUriPlugin } = require("../newtab/tools/resourceUriPlugin");
+const { ResourceUriPlugin } = require("../../tools/resourceUriPlugin");
+const { MozSrcUriPlugin } = require("../../tools/mozsrcUriPlugin");
 
 const PATHS = {
   // Where is the entry point for the unit tests?
@@ -15,7 +16,6 @@ const PATHS = {
 
   // The base directory of all source files (used for path resolution in webpack importing)
   moduleResolveDirectory: __dirname,
-  newtabResolveDirectory: "../newtab",
 
   // a RegEx matching all Cu.import statements of local files
   resourcePathRegEx: /^resource:\/\/activity-stream\//,
@@ -120,6 +120,21 @@ module.exports = function (config) {
               functions: 0,
               branches: 0,
             },
+            "content-src/components/EmbeddedBrowser.jsx": {
+              // Enzyme can't test this file because it relies on XUL elements
+              // which Enzyme can't simulate. Browser tests are in
+              // browser_aboutwelcome_embedded_browser.js
+              statements: 0,
+              lines: 0,
+              functions: 0,
+              branches: 0,
+            },
+            "content-src/components/EmbeddedFxBackupOptIn.jsx": {
+              statements: 60,
+              lines: 60,
+              functions: 50,
+              branches: 60,
+            },
             "content-src/components/MSLocalized.jsx": {
               statements: 77.42,
               lines: 77.42,
@@ -137,12 +152,6 @@ module.exports = function (config) {
               functions: 75,
               branches: 37.5,
             },
-            "content-src/components/MRColorways.jsx": {
-              statements: 76.09,
-              lines: 75,
-              functions: 76.92,
-              branches: 74.07,
-            },
             "content-src/components/MobileDownloads.jsx": {
               branches: 56.25,
             },
@@ -151,7 +160,7 @@ module.exports = function (config) {
             },
             "content-src/components/MultiStageAboutWelcome.jsx": {
               statements: 78.06,
-              lines: 79.89,
+              lines: 79,
               functions: 73.17,
               branches: 61.74,
             },
@@ -159,7 +168,36 @@ module.exports = function (config) {
               branches: 75,
             },
             "content-src/components/MultiStageProtonScreen.jsx": {
-              branches: 79.07,
+              branches: 78,
+            },
+            // The install actions and dynamic label of the InstallButton are covered
+            // in the browser test browser_aboutwelcome_multistage_addonspicker.js.
+            "content-src/components/InstallButton.jsx": {
+              statements: 60,
+              lines: 60,
+              functions: 60,
+              branches: 30,
+            },
+            "content-src/components/TileButton.jsx": {
+              // TODO: This file will be covered in a followup by end-to-end tests of the backup component
+              statements: 0,
+              lines: 0,
+              functions: 0,
+              branches: 0,
+            },
+            "content-src/components/TileList.jsx": {
+              // This file will be covered in a followup by end-to-end tests of the backup component
+              statements: 0,
+              lines: 0,
+              functions: 0,
+              branches: 0,
+            },
+            "content-src/components/ConfirmationChecklist.jsx": {
+              // This file is will be covered in a followup by end-to-end tests of the backup component
+              statements: 0,
+              lines: 0,
+              functions: 0,
+              branches: 0,
             },
           },
         },
@@ -173,13 +211,8 @@ module.exports = function (config) {
       // This resolve config allows us to import with paths relative to the root directory
       resolve: {
         extensions: [".js", ".jsx"],
-        modules: [
-          PATHS.moduleResolveDirectory,
-          "node_modules",
-          PATHS.newtabResolveDirectory,
-        ],
+        modules: [PATHS.moduleResolveDirectory, "node_modules"],
         alias: {
-          newtab: path.join(__dirname, "../newtab"),
           asrouter: path.join(__dirname, "../asrouter"),
         },
       },
@@ -189,14 +222,13 @@ module.exports = function (config) {
         new ResourceUriPlugin({
           resourcePathRegExes: [
             [
-              new RegExp("^resource://activity-stream/"),
-              path.join(__dirname, "../newtab/"),
-            ],
-            [
               new RegExp("^resource:///modules/asrouter/"),
               path.join(__dirname, "../asrouter/modules/"),
             ],
           ],
+        }),
+        new MozSrcUriPlugin({
+          baseDir: path.join(__dirname, "..", "..", ".."),
         }),
         new webpack.DefinePlugin({
           "process.env.NODE_ENV": JSON.stringify("development"),

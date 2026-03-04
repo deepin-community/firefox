@@ -4,7 +4,10 @@
 
 //! Write colors into CSS strings.
 
-use super::{AbsoluteColor, ColorFlags, ColorSpace};
+use super::{
+    parsing::{NumberOrAngleComponent, NumberOrPercentageComponent},
+    AbsoluteColor, ColorFlags, ColorSpace,
+};
 use crate::values::normalize;
 use cssparser::color::{clamp_unit_f32, serialize_color_alpha, OPAQUE};
 use std::fmt::{self, Write};
@@ -35,6 +38,36 @@ impl<'a> ToCss for ModernComponent<'a> {
         } else {
             dest.write_str("none")
         }
+    }
+}
+
+impl ToCss for NumberOrPercentageComponent {
+    fn to_css<W>(&self, dest: &mut CssWriter<W>) -> fmt::Result
+    where
+        W: Write,
+    {
+        use crate::values::computed::Percentage;
+
+        match self {
+            Self::Number(number) => number.to_css(dest)?,
+            Self::Percentage(percentage) => Percentage(*percentage).to_css(dest)?,
+        }
+        Ok(())
+    }
+}
+
+impl ToCss for NumberOrAngleComponent {
+    fn to_css<W>(&self, dest: &mut CssWriter<W>) -> fmt::Result
+    where
+        W: Write,
+    {
+        use crate::values::computed::Angle;
+
+        match self {
+            Self::Number(number) => number.to_css(dest)?,
+            Self::Angle(degrees) => Angle::from_degrees(*degrees).to_css(dest)?,
+        }
+        Ok(())
     }
 }
 
@@ -93,16 +126,22 @@ impl ToCss for AbsoluteColor {
                             "legacy srgb is not a color function"
                         );
                     },
-                    ColorSpace::SrgbLinear |
-                    ColorSpace::DisplayP3 |
-                    ColorSpace::A98Rgb |
-                    ColorSpace::ProphotoRgb |
-                    ColorSpace::Rec2020 |
-                    ColorSpace::XyzD50 |
-                    ColorSpace::XyzD65 => {
+                    ColorSpace::SrgbLinear
+                    | ColorSpace::DisplayP3
+                    | ColorSpace::DisplayP3Linear
+                    | ColorSpace::A98Rgb
+                    | ColorSpace::ProphotoRgb
+                    | ColorSpace::Rec2020
+                    | ColorSpace::XyzD50
+                    | ColorSpace::XyzD65 => {
                         // These color spaces are allowed.
                     },
-                    _ => {
+                    ColorSpace::Hsl
+                    | ColorSpace::Hwb
+                    | ColorSpace::Lab
+                    | ColorSpace::Oklab
+                    | ColorSpace::Lch
+                    | ColorSpace::Oklch => {
                         unreachable!("other color spaces do not support color() syntax")
                     },
                 };
@@ -234,13 +273,14 @@ impl AbsoluteColor {
                 serialize_color_alpha(dest, self.alpha(), false)?;
                 dest.write_char(')')
             },
-            ColorSpace::SrgbLinear |
-            ColorSpace::DisplayP3 |
-            ColorSpace::A98Rgb |
-            ColorSpace::ProphotoRgb |
-            ColorSpace::Rec2020 |
-            ColorSpace::XyzD50 |
-            ColorSpace::XyzD65 => {
+            ColorSpace::SrgbLinear
+            | ColorSpace::DisplayP3
+            | ColorSpace::DisplayP3Linear
+            | ColorSpace::A98Rgb
+            | ColorSpace::ProphotoRgb
+            | ColorSpace::Rec2020
+            | ColorSpace::XyzD50
+            | ColorSpace::XyzD65 => {
                 dest.write_str("color(")?;
                 self.color_space.to_css(dest)?;
                 dest.write_char(' ')?;

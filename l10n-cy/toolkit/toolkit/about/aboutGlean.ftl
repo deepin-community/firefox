@@ -15,6 +15,12 @@ about-glean-interface-description =
     Mae <a data-l10n-name="glean-sdk-doc-link">{ glean-sdk-brand-name }</a>
     yn lyfrgell casglu data sy'n cael ei ddefnyddio mewn projectau { -vendor-short-name }.
     Mae'r rhyngwyneb hwn wedi'i gynllunio i'w ddefnyddio gan ddatblygwyr a phrofwyr <a data-l10n-name="fog-link">i brofi'r offeryniaeth</a> â llaw.
+about-glean-category-about-glean = Ynghylch { -glean-brand-name }
+about-glean-category-manual-testing = Profi â Llaw
+about-glean-category-adhoc-testing = Profion Ad Hoc
+about-glean-category-profiler = Defnyddio'r Proffiliwr
+about-glean-category-about-data = Ynghylch Data
+about-glean-category-metrics-table = Tabl Metrigau
 about-glean-upload-enabled = Mae llwytho data i fyny wedi'i alluogi.
 about-glean-upload-disabled = Mae llwytho data i fyny wedi'i analluogi.
 about-glean-upload-enabled-local = Dim ond ar gyfer anfon i weinydd lleol y mae llwytho data i fyny wedi'i alluogi.
@@ -42,6 +48,9 @@ about-glean-glean-android = <code>MOZ_GLEAN_ANDROID</code>: { $glean-android-def
 #   $moz-official-define-value (Boolean): the value of the MOZILLA_OFFICIAL define.
 # Do not translate strings between <code> </code> tags.
 about-glean-moz-official = <code>MOZILLA_OFFICIAL</code>: { $moz-official-define-value }
+about-glean-additional-links =
+    I gael esboniad o wahanol ffyrdd o gofnodi a dod o hyd i ddata, cyfeiriwch at y
+    tab <strong>Ynghylch Data</strong>.
 about-glean-about-testing-header = Ynghylch Profi
 # This message is followed by a numbered list.
 about-glean-manual-testing =
@@ -99,8 +108,109 @@ about-glean-adhoc-note =
     Sylwch eich bod yn defnyddio'r API Glean JS trwy ddefnyddio'r consol devtools.
     Mae hyn yn golygu bod y categori metrig a'r enw metrig wedi'u fformatio
     <code>camelCase</code> yn wahanol i'r APIs Rust a C++.
+about-glean-profiler-explanation =
+    I weld golwg lawn o'r holl fetrigau a recordiwyd, gallwch ddefnyddio'r { -profiler-brand-name }.
+    Yn gyntaf rhaid i chi <a data-l10n-name="firefox-profiler-link">gipio proffil perfformiad</a>.
+    Unwaith y byddwch yn dal y proffil, dewiswch <q>Siart Marciwr</q> ac edrychwch ar y marcwyr o dan <q>Telemetreg</q>.
+about-glean-profiler-explanation-profiler =
+    Yn y proffil perfformiad gallwch weld yr holl fetrigau a gasglwyd, pan gawson nhw
+    eu casglu, a pha werthoedd yn union a gasglwyd. Trwy hofran ar farcwyr unigol,
+    gallwch wirio bod y gwerth cywir wedi'i gasglu a bod y casgliad hwnnw wedi digwydd ar yr amser cywir.
 controls-button-label-verbose = Gosod y gosodiadau ac anfon ping
+about-glean-feedback-settings-only =
+    .message = Gosodiadau wedi'u gosod!
+about-glean-feedback-settings-and-ping =
+    .message = Gosodiadau wedi'u gosod a ping wedi'i anfon!
 about-glean-about-data-header = Ynghylch Data
+about-glean-about-data-description =
+    Mae yna ychydig o offer gwahanol y gallwch eu defnyddio i weld eich data, yn dibynnu ar
+    yr hyn rydych yn chwilio amdano.
+about-glean-about-data-description-list-intro =
+    Cyfeiriwch at y restr isod am ddefnydd penodol
+    ar gyfer yr offer unigol:
+about-glean-about-data-list-item-dictionary =
+    I bori drwy'r rhestr o ddata a gasglwyd, edrychwch ar y
+    <a data-l10n-name="glean-dictionary-link"> { -glean-brand-name } Dictionary</a>.
+about-glean-about-data-list-item-about-telemetry =
+    I bori'r data sy'n cael ei gasglu gan yr hen delemetreg, ewch i
+    <a data-l10n-name="about-telemetry-link">about:telemetry</a>.
+about-glean-about-data-list-item-debug-ping-viewer =
+    I bori tagiau dadfygio, edrychwch ar y  pingiau llawn, edrych ar ffrwd digwyddiad byw, neu weld metrig
+    delweddu, ymgynghorwch â'r
+    <a data-l10n-name="glean-debug-ping-viewer">{ glean-debug-ping-viewer-brand-name }</a>.
+about-glean-about-data-list-item-firefox-profiler =
+    I gofnodi proffil perfformiad a gweld yr holl fetrigau a gofnodwyd, defnyddiwch
+    <a data-l10n-name="about-glean-firefox-profiler">{ -profiler-brand-name }</a>.
+about-glean-metrics-table-header = Pob Metrig
+# This message refers to the category in which a given metric is recorded.
+about-glean-metrics-table-header-category = Categori
+# This message refers to the name of a given metric.
+about-glean-metrics-table-header-name = Enw
+# This message refers to a given metric's metric type.
+about-glean-metrics-table-header-type = Math
+# This message refers to the underlying value of a given metric.
+about-glean-metrics-table-header-value = Gwerth
+# This message refers to the UI action buttons for a given metric.
+about-glean-metrics-table-header-actions = Gweithredoedd
+about-glean-metrics-table-settings-button = Gosodiadau
+# Settings for the metrics table and its visualizations in about:glean
+about-glean-metrics-table-settings-title = Gosodiadau Tabl Metrics
+about-glean-metrics-table-settings-category-general = Cyffredinol
+about-glean-metrics-table-settings-hide-empty-value-rows = Cuddio rhesi gwerth gwag
+about-glean-metrics-table-settings-category-visualizations = Delweddu
+# This is a heading that is immediately followed by an example data visualization
+about-glean-metrics-table-settings-visualization-example = Esiampl
+about-glean-metrics-table-settings-category-visualizations-histogram = Histogram
+about-glean-metrics-table-settings-histograms-chart-max = Uchder uchaf y siart
+# The maximum height after to which the y-values on the chart will be scaled
+about-glean-metrics-table-settings-histograms-scaled-max = Uchder uchaf graddedig
+about-glean-metrics-table-settings-histograms-box-padding = Padin blwch
+about-glean-metrics-table-settings-histograms-chart-padding = Padin siart
+about-glean-metrics-table-settings-histograms-left-padding = Padin chwith ychwanegol
+about-glean-metrics-table-settings-category-visualizations-timeline = Llinell Amser
+about-glean-metrics-table-settings-timelines-height = Uchder:
+about-glean-metrics-table-settings-timelines-width = Lled:
+about-glean-metrics-table-settings-timelines-chart-padding = Padin siart
+# The radius of each circle denoting individual events recorded for an event metric
+about-glean-metrics-table-settings-timelines-circle-radius = Radiws cylch
+# The offset on the x-axis from the end of the horizontal line for the y-axis line
+about-glean-metrics-table-settings-timelines-vertical-line-x-offset = Atred X echel Y
+# The offset on the y-axis from the x-axis for the y-axis line
+about-glean-metrics-table-settings-timelines-vertical-line-y-offset = Atred Y echel X
+# Label displayed near an input field that can be used to filter metrics
+about-glean-label-for-filter-metrics = Hidl
+# This message sits alongside an input field, further describing its purpose.
+# Category refers to the category in which a given metric is recorded.
+# Name refers to the name of a given metric.
+# Type refers to a given metric's metric type.
+# Value refers to the underlying value of a given metric.
+# "Simple type" refers to a value type that does not have deeply-nested data, such as a boolean, number, string, or list of strings.
+about-glean-description-for-filter-metrics = Bydd hyn yn hidlo'r tabl isod yn seiliedig ar gategori, enw, math, a gwerth (os yw'r gwerth yn fath syml).
+about-glean-button-load-all = Llwytho Pob Gwerth
+# A button that, when pressed, exports the data currently shown in the metrics table
+about-glean-button-export-data = Allforio Data
+about-glean-button-load-value = Llwytho
+# "Docs" is shorthand for "documentation"
+about-glean-button-dictionary-link = Dogfennau
+about-glean-button-watch = Gwylio
+# Meaning "to stop watching"
+about-glean-button-unwatch = Dadwylio
+about-glean-no-data-to-display = Dim data i'w ddangos.
+# Do not translate strings between <code> </code> tags.
+about-glean-dual-labeled-metric-warning = Dyw metrigau <code>DualLabeledCounter</code> heb eu cefnogi eto yn y wedd <code>about:glean</code>.
+about-glean-unknown-metric-type-warning = Math metrig anhysbys.
+about-glean-enable-new-features-promo =
+    .message = Rydym yn gweithio ar ychwanegu nodweddion newydd! Maen nhw'n dal i gael eu datblygu, ond cliciwch y botwm gweithredu yma os hoffech eu galluogi.
+    .heading = Mae nodweddion newydd ar eu ffordd!
+about-glean-enable-new-features-button = Galluogi nodweddion newydd
+about-glean-disable-new-features-button = Analluogi nodweddion newydd
 about-glean-about-data-explanation =
     I bori drwy'r rhestr o ddata a gasglwyd, edrychwch ar y
     <a data-l10n-name="glean-dictionary-link"> { -glean-brand-name } Geiriadur</a>.
+
+## These labels are displayed to organize the different ping types within the dropdown.
+
+about-glean-ping-list-optgroup-built-in =
+    .label = Pingiau Mewnol
+about-glean-ping-list-optgroup-custom =
+    .label = Pingiau Cyfaddas

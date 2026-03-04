@@ -53,6 +53,8 @@ fxviewtabrow-move-tab-end = Premakni na konec
     .accesskey = k
 fxviewtabrow-move-tab-window = Premakni v novo okno
     .accesskey = o
+fxviewtabrow-send-to-device = Pošlji na napravo
+    .accesskey = n
 fxviewtabrow-send-tab = Pošlji zavihek na napravo
     .accesskey = P
 fxviewtabrow-pin-tab = Pripni zavihek
@@ -67,14 +69,6 @@ fxviewtabrow-unmute-tab = Povrni glasnost zavihka
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Možnosti zavihka { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = Utišaj { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = Povrni zvok { $tabTitle }
 
 ## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
 

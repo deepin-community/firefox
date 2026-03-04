@@ -4,14 +4,14 @@
 
 
 ## Error messages for failed HTTP web requests.
-## https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#client_error_responses
+## https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status#client_error_responses
 ## Variables:
 ##   $status (Number) - HTTP status code, for example 403
 
 firefox-relay-mask-generation-failed = { -relay-brand-name } ᱫᱚ ᱱᱟᱶᱟ ᱢᱟᱥᱠ ᱫᱚ ᱵᱟᱭ ᱛᱮᱭᱟᱨ ᱫᱟᱲᱮᱭᱟᱫᱟᱭ ᱾ HTTP ᱵᱷᱩᱞ ᱠᱳᱰ : { $status } ᱾
 firefox-relay-get-reusable-masks-failed = { -relay-brand-name } ᱫᱩᱦᱲᱟᱹ ᱵᱮᱵᱷᱟᱨ ᱫᱟᱲᱮᱭᱟᱜ ᱢᱟᱥᱠ ᱫᱚ ᱵᱟᱝ ᱯᱟᱱᱛᱮ ᱫᱟᱲᱮᱭᱟᱫ ᱟᱭ ᱾ HTTP  ᱵᱷᱩᱞ ᱠᱳᱰ : { $status } ᱾
 
-##
+## The "control" variation of the Relay offer popup
 
 firefox-relay-must-login-to-fxa = { -relay-brand-name } ᱵᱮᱵᱷᱟᱨ ᱞᱟᱹᱜᱤᱫ ᱟᱢᱟᱜ { -fxaccount-brand-name } ᱨᱮ ᱵᱚᱞᱚ ᱛᱟᱦᱮᱸ ᱞᱟᱹᱠᱛᱤ ᱠᱟᱱᱟ ᱾
 firefox-relay-must-login-to-account = ᱟᱢᱟᱜ ᱤᱢᱟᱞ ᱩᱠᱩ { -relay-brand-name } ᱵᱮᱵᱷᱟᱨ ᱞᱟᱹᱜᱤᱫ ᱛᱮ ᱟᱢᱟᱜ ᱠᱷᱟᱛᱟ ᱨᱮ ᱥᱩᱦᱤ ᱮᱢ ᱢᱮ ᱾

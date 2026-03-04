@@ -21,6 +21,7 @@ policy-AutofillAddressEnabled = Адрестер үшін автотолтыру
 policy-AutofillCreditCardEnabled = Төлем әдістері үшін автотолтыруды іске қосу.
 policy-AutoLaunchProtocolsFromOrigins = Пайдаланушыға сұраусыз тізімделген қайнар көздерден пайдалануға болатын сыртқы хаттамалар тізімін анықтау.
 policy-BackgroundAppUpdate2 = Фондық жаңартқышты іске қосу немесе сөндіру
+policy-Backup = Профиль деректерінің сақтық көшірмесін жасауды немесе қалпына келтіруді сөндіру.
 policy-BlockAboutAddons = Қосымшалар басқарушысына (about:addons) қатынауды бұғаттау.
 policy-BlockAboutConfig = about:config парағына қатынауды бұғаттау.
 policy-BlockAboutProfiles = about:profiles парағына қатынауды бұғаттау.
@@ -55,6 +56,7 @@ policy-DisablePocket2 = Веб-парақтары { -pocket-brand-name }-ке с
 policy-DisablePrivateBrowsing = Жекелік шолуды сөндіру
 policy-DisableProfileImport = Басқа браузерден деректерді импорттау мәзір командасын сөндіру.
 policy-DisableProfileRefresh = about:support бетінде { -brand-short-name } жаңғырту батырмасын сөндіру.
+policy-DisableRemoteImprovements = { -brand-short-name } браузерінің жаңартулар арасында өнімділікке, тұрақтылыққа және функцияларға өзгерістер енгізуіне жол бермеу.
 policy-DisableSafeMode = Қауіпсіз режимде қайта іске қосылу мүмкіндігін сөндіру. Ескерту: Қауіпсіз режиміне өту үшін Shift пернесін Windows-та тек Топтық Саясат көмегімен сөндіруге болады.
 policy-DisableSecurityBypass = Пайдаланушыға кейбір қауіпсіздік ескертулерді аттап кетуге рұқсат етпеу.
 policy-DisableSetAsDesktopBackground = Суреттер үшін Жұмыс үстел фоны ретінде орнату мәзір командасын сөндіру.
@@ -79,6 +81,7 @@ policy-ExtensionSettings = Кеңейту орнатылуының барлық 
 policy-ExtensionUpdate = Кеңейтулерді автожаңартуды іске қосу немесе сөндіру.
 policy-FirefoxHome2 = { -firefox-home-brand-name } баптау.
 policy-FirefoxSuggest = { -firefox-suggest-brand-name } баптау.
+policy-GenerativeAI = Генеративті ЖИ мүмкіндіктерін баптау.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Адрес жолағында бір сөзді енгізуді теру кезінде іздеудің орнына тікелей интранет торабын навигациялауды мәжбүрлеу.
 policy-Handlers = Үнсіз келісім бойынша қолданба өңдеушілерін баптау.
 policy-HardwareAcceleration = Мәні false болса, құрылғылық үдетуді сөндіру.
@@ -97,6 +100,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Көрсетілген
 ##
 
 policy-LocalFileLinks = Арнайы веб-сайттарға жергілікті файлдарға сілтеуді рұқсат ету.
+policy-LocalNetworkAccess = Жергілікті желіге қол жеткізуді тексеруді іске қосу немесе сөндіру.
 policy-ManagedBookmarks = Әкімші басқаратын және пайдаланушы өзгерте алмайтын бетбелгілер тізімін баптайды.
 policy-ManualAppUpdateOnly = Тек қолмен жаңартуды рұқсат ету және пайдаланушыға жаңартулар туралы хабарламау.
 policy-PrimaryPassword = Басты парольді орнатуды талап ету немесе оған тыйым салу.
@@ -117,6 +121,7 @@ policy-PostQuantumKeyAgreementEnabled = TLS үшін посткванттық к
 policy-PDFjs = PDF.js, { -brand-short-name } құрамындағы PDF шолушысын сөндіру немесе баптау.
 policy-Permissions2 = Камера, микрофон, орналасулар, хабарламалар және автоойнату рұқсаттарын баптау.
 policy-PictureInPicture = Суреттегі сурет режимін іске қосу немесе сөндіру.
+policy-PopupBlocking2 = Белгілі бір веб-сайттарға қалқымалы терезелерді көрсетуге және үшінші тарап фреймдермен қайта бағытталуға рұқсат беру.
 policy-PopupBlocking = Кейбір веб-сайттарға үнсіз келісім бойынша қалқымалы хабарламаларды көрсетуге рұқсат ету.
 policy-Preferences = Баптаулардың бір жиыны үшін мәндерін орнату және бұғаттау.
 policy-PrivateBrowsingModeAvailability = Жекелік шолу режимінің қолжетімділігін орнату.
@@ -130,6 +135,8 @@ policy-SearchSuggestEnabled = Іздеу ұсыныстарын іске қос�
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = PKCS #11 модульдерін қосу немесе өшіру.
 policy-ShowHomeButton = Құралдар панелінде үй батырмасын көрсету.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = Іске қосылу кезінде Қолдану шарттары мен Жекелік ескертуін көрсетпеу. Осы браузерге қол жеткізуді ұсынатын барлық адамдар атынан Қолдану шарттарын қабылдайтыныңызды және оларды қабылдауға өкілетті екеніңізді мәлімдейсіз.
 policy-SSLVersionMax = Максималды SSL нұсқасын орнату.
 policy-SSLVersionMin = Минималды SSL нұсқасын орнату.
 policy-StartDownloadsInTempDirectory = Жүктемелерді қалыпты жүктеп алу бумасында емес, жергілікті, уақытша жерде бастауға мәжбүрлету.
@@ -137,6 +144,9 @@ policy-SupportMenu = Көмек мәзіріне таңдауыңызша қол
 policy-TranslateEnabled = Веб-парақтарды аударуды іске қосу немесе жасыру.
 policy-UserMessaging = Пайдаланушыға кейбір хабарламаларды көрсетпеу.
 policy-UseSystemPrintDialog = Жүйелік сұхбатын қолданып, баспаға шығару.
+policy-VisualSearchEnabled = Визуалды іздеуді іске қосу немесе сөндіру.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Веб-сайттарды шолуға тыйым салады. Пішімі туралы көбірек білу үшін, құжаттаманы қараңыз.
 policy-Windows10SSO = Microsoft, жұмыс және мектеп есептік жазбаларына Windows дара кіруін рұқсат ету.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Microsoft Entra тіркелгілері үшін бірыңғай кіруді рұқсат ету.

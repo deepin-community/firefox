@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # These are the default window titles everywhere except macOS.
 # .data-title-default and .data-title-private are used when the web content
 # opened has no title:
@@ -51,11 +48,80 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = { -brand-shortcut-name } مرور ناشناس
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = مرور خصوصی { -brand-full-name }
+    .data-title-default-with-profile = ‍{ $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = مرور خصوصی ‍{ $profile-name } — { -brand-full-name }
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = مرور خصوصی { $content-title } — { -brand-full-name }
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = مرور خصوصی { $content-title } — { $profile-name } — { -brand-full-name }
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — مرور خصوصی
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } مرور خصوصی
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — مرور خصوصی
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — مرور خصوصی
+# This is the initial default title for the browser window.
+# It gets updated based on loaded tabs or private browsing state.
+browser-main-window-default-title = { -brand-full-name }
+# Note: only on macOS do we use a `-` separator between the brand name and the
+# "Private Browsing" suffix.
+browser-main-private-window-title =
+    { PLATFORM() ->
+        [macos] { -brand-full-name } — مرور خصوصی
+       *[other] مرور خصوصی { -brand-full-name }
+    }
 
 ##
 
 urlbar-identity-button =
-    .aria-label = نمایش اطلاعات سایت
+    .aria-label = نمایش اطلاعات وبگاه
 
 ## Tooltips for images appearing in the address bar
 
@@ -123,6 +189,32 @@ urlbar-result-menu-remove-from-history =
 urlbar-result-menu-tip-get-help =
     .label = دریافت راهنما
     .accesskey = h
+urlbar-result-menu-dismiss-suggestion =
+    .label = رد این پیشنهاد
+    .accesskey = ر
+urlbar-result-menu-learn-more-about-firefox-suggest =
+    .label = دربارهٔ { -firefox-suggest-brand-name } بیشتر بدانید
+    .accesskey = ب
+urlbar-result-menu-manage-firefox-suggest =
+    .label = مدیریت { -firefox-suggest-brand-name }
+    .accesskey = م
+# Some urlbar suggestions show the user's approximate location as automatically
+# detected by Firefox (e.g., weather suggestions), and this menu item lets the
+# user tell Firefox that the location is not accurate. Typically the location
+# will be a city name, or a city name combined with the name of its parent
+# administrative division (e.g., a province, prefecture, or state).
+urlbar-result-menu-report-inaccurate-location =
+    .label = گزارش موقعیت مکانی نادقیق
+urlbar-result-menu-show-less-frequently =
+    .label = دیر به دیرتر نشان بده
+urlbar-result-menu-dont-show-weather-suggestions =
+    .label = پیشنهادهای آب و هوا را نشان نده
+# A message shown in the urlbar when the user submits feedback on a suggestion
+# (e.g., it shows an inaccurate location, it's shown too often, etc.).
+urlbar-feedback-acknowledgment = با تشکر از بازخورد شما
+# A message shown in the urlbar when the user dismisses weather suggestions.
+# Weather suggestions won't be shown at all anymore.
+urlbar-dismissal-acknowledgment-weather = از بازخورد شما متشکریم. دیگر پیشنهادات آب و هوا را نخواهید دید.
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -259,6 +351,8 @@ quickactions-cmd-addons2 = افزونه‌ها
 quickactions-bookmarks2 = مدیریت نشانک‌ها
 quickactions-cmd-bookmarks = نشانک‌ها
 # Opens a SUMO article explaining how to clear history
+quickactions-clearrecenthistory = پاک کردن تاریخچهٔ اخیر
+# Opens a SUMO article explaining how to clear history
 quickactions-clearhistory = پاک کردن تاریخچه
 quickactions-cmd-clearhistory = پاک کردن تاریخچه
 # Opens about:downloads page
@@ -267,18 +361,26 @@ quickactions-cmd-downloads = بارگیری‌ها
 # Opens about:addons page in the extensions section
 quickactions-extensions = مدیریت افزونه‌ها
 quickactions-cmd-extensions = افزونه‌ها
+# Opens Firefox View
+quickactions-firefoxview = باز کردن { -firefoxview-brand-name }
+# Opens SUMO home page
+quickactions-help = راهنمای { -brand-product-name }
+quickactions-cmd-help = کمک, پشتیبانی
 # Opens the devtools web inspector
 quickactions-inspector2 = گشایش ابزارهای توسعه دهنده
-quickactions-cmd-inspector = بازرسی، ابزارهای توسعه
+quickactions-cmd-inspector2 = بازرس, بازرسی, ابزارهای توسعه
+quickactions-cmd-inspector = بازرسی, ابزارهای توسعه
 # Opens about:logins
 quickactions-logins2 = مدیریت گذرواژه‌ها
-quickactions-cmd-logins = ورودها، گذرواژه‌ها
+quickactions-cmd-logins = ورودها, گذرواژه‌ها
 # Opens about:addons page in the plugins section
 quickactions-plugins = مدیریت افزایه‌ها
 quickactions-cmd-plugins = افزایه‌ها
 # Opens the print dialog
 quickactions-print2 = چاپ صفحه
 quickactions-cmd-print = چاپ
+# Opens the print dialog at the save to PDF option
+quickactions-savepdf = ذخیره صفحه به صورت PDF
 # Opens a new private browsing window
 quickactions-private2 = گشایش پنجره ناشناس
 quickactions-cmd-private = مرور ناشناس
@@ -293,7 +395,7 @@ quickactions-screenshot3 = از صفحه عکس بگیرید
 quickactions-cmd-screenshot = نماگرفت
 # Opens about:preferences
 quickactions-settings2 = مدیریت تنظیمات
-quickactions-cmd-settings = تنظیمات، ترجیحات، گزینه‌ها
+quickactions-cmd-settings = تنظیمات, ترجیحات, گزینه‌ها
 # Opens about:addons page in the themes section
 quickactions-themes = مدیریت زمینه‌ها
 quickactions-cmd-themes = زمینه‌ها
@@ -302,10 +404,15 @@ quickactions-update = به‌روز رسانی { -brand-short-name }
 quickactions-cmd-update = به‌روز رسانی
 # Opens the view-source UI with current pages source
 quickactions-viewsource2 = نمایش کدمنبع صفحه
-quickactions-cmd-viewsource = مشاهدهٔ منبع، منبع
+quickactions-cmd-viewsource2 = مشاهده منبع, منبع, منبع صفحه
+quickactions-cmd-viewsource = مشاهدهٔ منبع, منبع
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = دربارهٔ کنش‌های سریع بیشتر بدانید
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = برای انتخاب، زبانه را فشار دهید:
 
 ## Bookmark Panel
 
@@ -348,6 +455,7 @@ identity-connection-secure = اتصال امن است
 identity-connection-failure = شکست در برقراری ارتباط
 identity-connection-internal = این یک صفحهٔ امن { -brand-short-name } است.
 identity-connection-file = این صفحه بر روی رایانه شما ذخیره شده است.
+identity-connection-associated = این برگه از برگه دیگری بارگیری می‌شود.
 identity-extension-page = این صفحه توسط یک افزونه بارگیری شده است.
 identity-active-blocked = { -brand-short-name } قسمت‌هایی از این صفحه را که ایمن نیستند، مسدود کرده است.
 identity-custom-root = گواهیِ این اتصال، توسط صادرکننده‌ای ایجاد شده است که برای موزیلا قابل شناسایی نیست.
@@ -357,6 +465,7 @@ identity-weak-encryption = این صفحه از کدگذاری ضعیفی است
 identity-insecure-login-forms = اطلاعات ورودی که در این صفحه وارد می‌کنید می‌توانند فاش شوند.
 identity-https-only-connection-upgraded = (ارتقا یافته به HTTPS)
 identity-https-only-label = حالت فقط HTTPS
+identity-https-only-label2 = به‌طور خودکار این وبگاه را به یک اتصال امن ارتقاء دهید.
 identity-https-only-dropdown-on =
     .label = روشن
 identity-https-only-dropdown-off =
@@ -365,6 +474,8 @@ identity-https-only-dropdown-off-temporarily =
     .label = خاموش موقت
 identity-https-only-info-turn-on2 = اگر می‌خواهید در صورت امکان { -brand-short-name } اتصال را ارتقا دهد، حالت فقط HTTPS را برای این سایت روشن کنید.
 identity-https-only-info-turn-off2 = اگر صفحه خراب به نظر می‌رسد، ممکن است بخواهید حالت فقط HTTPS را برای این سایت خاموش کنید تا سایت در حال غیر امن HTTP بارگیری شود.
+identity-https-only-info-turn-on3 = اگر می‌خواهید { -brand-short-name } در صورت امکان اتصال را ارتقا دهد، ارتقاهای HTTPS را برای این وبگاه فعال کنید.
+identity-https-only-info-turn-off3 = اگر صفحه خراب به نظر می‌رسد، ممکن است بخواهید ارتقاء HTTPS را برای این وبگاه غیرفعال کنید تا با استفاده از HTTP ناامن دوباره بارگذاری شود.
 identity-https-only-info-no-upgrade = ارتقا اتصال از HTTP امکان‌پذیر نبود.
 identity-permissions-storage-access-header = کلوچک‌های میان‌پایگاهی
 identity-permissions-storage-access-hint = این سازمان‌ها می‌توانند از کلوچک‌های میان‌پایگاهی و داده‌های پایگاه‌ها در حالی که شما در این پایگاه هستید استفاده کنند.
@@ -540,6 +651,8 @@ urlbar-go-button =
     .tooltiptext = رفتن به نشانی موجود در نوار مکان
 urlbar-page-action-button =
     .tooltiptext = کنش‌های صفحه
+urlbar-revert-button =
+    .tooltiptext = نمایش نشانی در نوار مکان
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -560,6 +673,13 @@ urlbar-result-action-search-w-engine = جست‌وجو از طریق { $engine }
 urlbar-result-action-sponsored = حمایت شده
 urlbar-result-action-switch-tab = پرش به زبانه
 urlbar-result-action-visit = بازدید
+# "Switch to tab with container" is used when the target tab is located in a
+# different container.
+# Variables
+# $container (String): the name of the target container
+urlbar-result-action-switch-tab-with-container = تعویض به زبانه · <span>{ $container }</span>
+# Allows the user to visit a URL that was previously copied to the clipboard.
+urlbar-result-action-visit-from-clipboard = بازدید از تخته‌گیره
 # Directs a user to press the Tab key to perform a search with the specified
 # engine.
 # Variables
@@ -587,6 +707,70 @@ urlbar-result-action-copy-to-clipboard = رونوشت
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+# The string returned for an undefined calculator result such as when dividing by 0
+urlbar-result-action-undefined-calculator-result = تعریف نشده
+# Shows the result of a formula expression being calculated, in scientific notation.
+# The last = sign will be shown as part of the result (e.g. "= 1.0e17").
+# Variables
+#  $result (String): the string representation for a result in scientific notation
+#  (e.g. "1.0e17").
+urlbar-result-action-calculator-result-scientific-notation = = { $result }
+# Shows the result of a formula expression being calculated, this is used for numbers >= 1.
+# The last = sign will be shown as part of the result (e.g. "= 2").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-3 = = { NUMBER($result, useGrouping: "false", maximumFractionDigits: 8) }
+# Shows the result of a formula expression being calculated, to a maximum of 9 significant
+# digits. This is used for numbers < 1.
+# The last = sign will be shown as part of the result (e.g. "= 0.333333333").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-decimal = = { NUMBER($result, maximumSignificantDigits: 9) }
+
+## These strings are used for suggestions of important dates in the urlbar.
+
+# The name of an event and a note that it is happening today separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-today = { $name } · امروز
+
+## Strings used for buttons in the urlbar
+
+# Label prompting user to search with a particular search engine.
+#  $engine (String): the name of a search engine that searches a specific site
+urlbar-result-search-with = جست‌وجو با { $engine }
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - جستجو { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - جستجو با { $engine }
+urlbar-searchmode-dropmarker =
+    .tooltiptext = انتخاب یک موتور جستجو
+urlbar-searchmode-bookmarks =
+    .label = نشانک‌ها
+urlbar-searchmode-tabs =
+    .label = زبانه‌ها
+urlbar-searchmode-history =
+    .label = تاریخچه
+urlbar-searchmode-actions =
+    .label = کنش‌ها
+urlbar-searchmode-exit-button =
+    .tooltiptext = بستن
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = این بار جستجو با:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = تنظیمات جستجو
+# Label shown next to a new search engine in the Searchmode Switcher popup to promote it.
+urlbar-searchmode-new = جدید
+urlbar-searchmode-button-no-engine =
+    .label = میانبری انتخاب نشده است، یک میانبر انتخاب کنید
+    .tooltiptext = میانبری انتخاب نشده است، یک میانبر انتخاب کنید
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -596,6 +780,12 @@ urlbar-result-action-search-bookmarks = جست‌وجو نشانک‌ها
 urlbar-result-action-search-history = جست‌وجو تاریخچه
 urlbar-result-action-search-tabs = جست‌وجو زبانه‌ها
 urlbar-result-action-search-actions = اقدامات جست‌وجو
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = جابجایی به { $group }
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = باز کردن { $group }
 
 ## Labels shown above groups of urlbar results
 
@@ -612,6 +802,14 @@ urlbar-group-search-suggestions =
 # A label shown above Quick Actions in the urlbar results.
 urlbar-group-quickactions =
     .label = کنش‌های سریع
+# A label shown above the recent searches group in the urlbar results.
+# Variables
+#  $engine (String): the name of the search engine used to search.
+urlbar-group-recent-searches =
+    .label = جستجوهای اخیر
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-trending-dismissal-acknowledgment = سپاس از بازخورد شما. بیش از این جستجوهای پرطرفدار را نخواهید دید.
 
 ## Reader View toolbar buttons
 
@@ -626,7 +824,15 @@ reader-view-close-button =
 ## Variables:
 ##   $shortcut (String) - Keyboard shortcut to execute the command.
 
+picture-in-picture-urlbar-button-open =
+    .tooltiptext = باز کردن تصویر در تصویر ({ $shortcut })
+picture-in-picture-urlbar-button-close =
+    .tooltiptext = بستن تصویر در تصویر ({ $shortcut })
 picture-in-picture-panel-header = تصویر-در-تصویر
+picture-in-picture-panel-headline = این وبگاه حالت تصویر در تصویر را توصیه نمی‌کند
+picture-in-picture-panel-body = هنگامی که تصویر در تصویر فعال است، ممکن است ویدئوها آن‌طور که برنامه‌نویس در نظر داشته نمایش داده نشوند.
+picture-in-picture-enable-toggle =
+    .label = به هر حال فعال شود
 
 ## Full Screen and Pointer Lock UI
 
@@ -790,6 +996,9 @@ panel-save-update-password = گذرواژه
 # "More" item in macOS share menu
 menu-share-more =
     .label = بیشتر…
+menu-share-copy-link =
+    .label = رونوشت پیوند
+    .accesskey = پ
 ui-tour-info-panel-close =
     .tooltiptext = بستن
 
@@ -869,6 +1078,10 @@ tabs-toolbar-list-all-tabs =
 restore-session-startup-suggestion-message = <strong>می‌خواهید برگه‌های قبلی را باز کنید؟</strong> می‌توانید نشست قبلی خود را از منوی { -brand-short-name } <img data-l10n-name="icon"/>، در قسمت تاریخچه بازیابی کنید.
 restore-session-startup-suggestion-button = نمایش روش کار
 
+## Infobar shown when the user tries to open a file picker and file pickers are blocked by enterprise policy
+
+filepicker-blocked-infobar = سازمان شما، دسترسی به پرونده‌های محلی روی این رایانه را مسدود کرده است
+
 ## Mozilla data reporting notification (Telemetry, Firefox Health Report, etc)
 
 data-reporting-notification-message = { -brand-short-name } به صورت خودکار بعضی اطلاعات را جهت بهبود تجربه کاربری شما به { -vendor-short-name } می‌فرستد.
@@ -877,6 +1090,10 @@ data-reporting-notification-button =
     .accesskey = ا
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = مرور ناشناس
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = مرور ناشناس
+content-analysis-panel-title = محافظت از داده
 
 ## Unified extensions (toolbar) button
 
@@ -902,8 +1119,26 @@ unified-extensions-button-quarantined =
         افزونه‌ها
         بعضی افزونه‌ها مجاز نیستند
 
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = افزونه‌ها
+    .tooltiptext =
+        افزونه‌ها
+        برخی از افزونه‌ها غیرفعال هستند
+
 ## Private browsing reset button
 
+reset-pbm-toolbar-button =
+    .label = پایان نشست خصوصی
+    .tooltiptext = پایان نشست خصوصی
+reset-pbm-panel-heading = آیا می‌خواهید نشست خصوصی خود را خاتمه دهید؟
+reset-pbm-panel-description = همۀ زبانه‌های خصوصی بسته شده و تاریخچه و کوکی‌ها و دادهٔ همهٔ وبگاه‌های دیگر پاک شوند.
+reset-pbm-panel-cancel-button =
+    .label = انصراف
+    .accesskey = ا
+reset-pbm-panel-complete = داده‌های نشست خصوصی پاک شد
 
 ## Autorefresh blocker
 
@@ -915,12 +1150,17 @@ refresh-blocked-allow =
 
 ## Firefox Relay integration
 
+firefox-relay-offer-why-to-use-relay = پوشانه‌های ایمن ما که استفادهٔ آسانی دارند، از هویت شما محافظت و با پنهان‌سازی نشانی رایانامهٔ شما از هرزنامه جلوگیری می‌کنند.
+# Variables:
+#  $useremail (String): user email that will receive messages
+firefox-relay-offer-what-relay-provides = همه رایانامه‌های ارسال شده به پوشانه‌های رایانامه شما به <strong>{ $useremail }</strong> هدایت می‌شوند (مگر اینکه تصمیم به مسدود کردن آن‌ها داشته باشید).
 
 ## Add-on Pop-up Notifications
 
 popup-notification-addon-install-unsigned =
     .value = (تایید نشده)
 popup-notification-xpinstall-prompt-learn-more = در مورد نصبِ امنِ افزونه‌ها اطلاعات بیشتر بیاموزید
+popup-notification-xpinstall-prompt-block-url = مشاهده جزئیات
 
 ## Pop-up warning
 
@@ -950,3 +1190,12 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = نمایش «‪{ $popupURI }‬»
+
+## Onboarding Finish Setup checklist
+
+onboarding-checklist-button-label = پایان نصب
+
+## The urlbar trust icon & panel
+
+trustpanel-clear-cookies-subview-button-cancel = انصراف
+trustpanel-blocker-see-all = نمايش همه

@@ -59,7 +59,7 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } utilisaders
     }
 
-## Firefox Accounts Message
+## Mozilla Account messages
 
 cfr-doorhanger-bookmark-fxa-header = Sincronisescha tes segnapaginas dapertut.
 cfr-doorhanger-bookmark-fxa-body = Ina buna scuverta! Fa ussa la segira che ti chattas quest segnapagina era sin tes apparats mobils. Creescha in { -fxaccount-brand-name }.
@@ -68,6 +68,13 @@ cfr-doorhanger-bookmark-fxa-link-text = Sincronisar ussa ils segnapaginas…
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = Buttun per serrar
     .title = Serrar
+fxa-adoption-addresses-backup-title = Far copias da segirezza da las adressas memorisadas
+fxa-adoption-addresses-backup-subtitle = Protegia tias adressas memorisadas cun las sincronisar a moda criptada cun tes apparats.
+fxa-adoption-credit-cards-backup-title = Far copias da segirezza da las metodas da pajament
+fxa-adoption-credit-cards-backup-subtitle = Protegia tias metodas da pajament cun las sincronisar a moda criptada cun tes apparats.
+fxa-adoption-bookmarks-treatment-backup-title = Faschain ina copia da segirezza da tes segnapaginas
+fxa-adoption-bookmarks-treatment-backup-subtitle = Protegia tes segnapaginas cun als sincronisar a moda criptada cun tes apparats.
+fxa-adoption-primary-button-label = Crear in conto
 
 ## Protections panel
 
@@ -226,6 +233,24 @@ fox-doodle-pin-secondary = Betg ussa
 set-default-pdf-handler-headline = <strong>Tes PDFs s'avran ussa en { -brand-short-name }.</strong> Modifitgescha u suttascriva formulars directamain en tes navigatur. Per midar quest cumportament, tschertgar «PDF» en ils parameters.
 set-default-pdf-handler-primary = Jau hai chapì
 
+## PDF Annotations strings
+
+# “Sign on the dotted line” is an idiomatic English expression about
+# where to place your signature.
+# If this expression doesn’t have a direct translation, please
+# translate this alternative string: "Add your signature anywhere!"
+annotations-default-pdf-handler-headline = Suttascriva sin la lingia cun stritgins – u insanua auter!
+# “Go-to” is an idiomatic English expression referring to something that is used often.
+annotations-default-pdf-handler-body = Dissegna, tippa u transferescha tia signatura e la plazzescha lura exact là nua che ti la vuls. Memorisescha tias signaturas per la proxima giada.
+annotations-make-default-pdf-handler-title = Definir { -brand-short-name } sco editur predefinì per PDFs?
+annotations-make-default-pdf-handler-subtitle = Ti vegns ad avair access a noss utensils mintga giada cura che ti avras in PDF.
+annotations-make-default-pdf-primary-cta-label = Definir sco standard
+annotations-make-default-pdf-next-label = Enavant
+annotations-make-default-pdf-primary-cta =
+    .label = Definir sco standard
+annotations-make-default-pdf-next =
+    .label = Enavant
+
 ## FxA sync CFR
 
 fxa-sync-cfr-header = In nov apparat en tes futur?
@@ -246,6 +271,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Crear in conto
 device-migration-fxa-spotlight-getting-new-device-header-2 = In nov apparat en tes futur?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Suonda in pèr simpels pass per prender cun tai tes segnapaginas, la cronologia ed ils pleds-clav sche ti has in nov apparat.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Co far copias da segirezza da mias datas
+device-migration-fxa-spotlight-sync-header = Navighescha senza perder il fil
+device-migration-fxa-spotlight-sync-body = Sincronisescha tut tias infurmaziuns impurtantas – sco segnapaginas e pleds-clav – a moda criptada. Ti pos acceder a tut las datas dapertut là nua che ti utiliseschas { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = Cumenzar
 
 ## Set as Default PDF Reader Infobar
 
@@ -282,3 +310,134 @@ tail-fox-spotlight-title = Ta liberescha da fastizaders stentus
 tail-fox-spotlight-subtitle = Piglia cumià da fastizaders da reclama stentus e giauda l’internet a moda pli segira e svelta.
 tail-fox-spotlight-primary-button = Avrir mias colliaziuns cun { -brand-short-name }
 tail-fox-spotlight-secondary-button = Betg ussa
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Versiuns pli veglias da { -brand-short-name } pon chaschunar problems a partir dals 14 da schaner 2025.</strong>
+root-certificate-succession-infobar-march-message = <strong>Actualisescha il program per vinavant pudair utilisar { -brand-short-name } suenter ils 14 da mars 2025.</strong>
+root-certificate-succession-infobar-link = Pertge actualisar?
+root-certificate-succession-infobar-primary-button =
+    .label = Actualisar ussa
+    .accesskey = u
+root-certificate-succession-infobar-secondary-button =
+    .label = Pli tard
+    .accesskey = l
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Ti has manchentà in’actualisaziun impurtanta da { -brand-short-name }
+root-certificate-windows-background-notification-subtitle = Tschertas parts dal navigatur na vegnan prest betg pli a funcziunar sche ti n’actualiseschas betg. Ussa è in bun mument per ir per nossas protecziuns e funcziuns las pli novas.
+root-certificate-windows-background-notification-learn-more-button = Ulteriuras infurmaziuns
+root-certificate-windows-background-notification-update-button = Actualisar { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Serrar
+    .aria-label = Serrar
+fxa-menu-message-sign-up-button = Sa registrar
+fxa-menu-message-sign-in-button = S’annunziar
+fxa-menu-message-sync-button = Cumenzar a sincronisar
+fxa-menu-message-sync-devices-primary-text = Sincronisescha tut tes apparats
+fxa-menu-message-sync-devices-secondary-text = Acceda immediatamain a tias datas – sco segnapaginas e pleds-clav – dapertut là nua che ti utiliseschas { -brand-short-name }.
+fxa-menu-message-sync-devices-secondary-text2 = Acceda en in batterdegl a tes segnapaginas, pleds-clav e dapli – sin tut ils apparats connectads cun { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = Sincronisescha tut tes apparats
+fxa-menu-message-backup-data-primary-text = Fa copias da segirezza da tias datas dal navigatur
+fxa-menu-message-backup-data-secondary-text = Protegia automaticamain segnapaginas, pleds-clav ed autras infurmaziuns sin tut tes apparats.
+fxa-menu-message-backup-data-collapsed-text = Far copias da segirezza da las datas dal navigatur
+fxa-menu-message-backup-sync-primary-text = Guarda che tias datas restian segiradas e sincronisadas
+fxa-menu-message-backup-sync-secondary-text = La sincronisaziun creescha copias da segirezza da la gronda part da tias datas, uschia che ti pos acceder ad ellas dapertut là nua che ti utiliseschas { -brand-short-name }.
+fxa-menu-message-backup-sync-collapsed-text = Sincronisar ed arcunar las datas
+fxa-menu-message-mobile-primary-text = Trametta tabs a tes telefonin
+fxa-menu-message-mobile-secondary-text = Cuntinuescha directamain là nua che ti has chalà, grazia a la sincronisaziun da tes tabs cun in apparat mobil.
+fxa-menu-message-mobile-collapsed-text = Sincronisaziun cun tes telefonin
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Bel da ta vesair puspè!
+multi-cta-fox-doodle-set-default-checkbox = Definir { -brand-short-name } sco standard
+multi-cta-fox-doodle-pin-startmenu-checkbox = Fixar { -brand-short-name } en il menu «Start»
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Fixar { -brand-short-name } en il dock
+       *[other] Fixar { -brand-short-name } en la taskbar
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Cumenzar a navigar
+multi-cta-fox-doodle-main-browser-primary-button-label = Definir { -brand-short-name } sco mes navigatur principal
+multi-cta-fox-doodle-quick-reminder-subtitle = Nus vulain ta regurdar che ti pos endrizzar tes navigatur preferì e spezialisà en la protecziun da datas uschia ch’el è accessibel cun mo in clic.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Endrizza tes navigatur preferì e spezialisà en la protecziun da datas uschia ch’el è accessibel cun mo in clic. Definescha { -brand-short-name } sco tes navigatur standard per avrir colliaziuns ed al fixescha en tes dock.
+       *[other] Endrizza tes navigatur preferì e spezialisà en la protecziun da datas uschia ch’el è accessibel cun mo in clic. Definescha { -brand-short-name } sco tes navigatur standard per avrir colliaziuns ed al fixescha en tia taskbar.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Endrizza tes navigatur preferì e spezialisà en la protecziun da datas uschia ch’el è accessibel cun mo in clic. Definescha { -brand-short-name } sco tes navigatur standard per avrir colliaziuns ed al fixescha en tia taskbar ed en il menu «Start».
+
+## Windows 10 EoS Sync messages group 1 spotlight
+
+windows-10-eos-sync-spotlight-title = Actualiseschas ti prest Windows 10?
+windows-10-eos-sync-spotlight-subtitle = Segirescha tes pleds-clav e tes segnapaginas per che ti sajas pront da midar a mintga apparat.
+windows-10-eos-sync-spotlight-primary-label = Segirescha tes { -brand-short-name }
+
+## Windows 10 EoS Sync messages group 1 toast notification
+
+windows-10-eos-sync-toast-title = Actualiseschas ti a Windows 11? Betg perda tes segnapaginas e tes pleds-clav.
+windows-10-eos-sync-toast-subtitle = Segirescha tias datas per che { -brand-short-name } saja da tut temp pront per il diever, sin quest computer e sin il proxim.
+windows-10-eos-sync-toast-primary-label = Cumenzar
+windows-10-eos-sync-toast-secondary-label = Ma regurdar pli tard
+
+## Windows 10 EoS sync messages group 2 feature callouts
+
+windows-10-eos-challenger-callout-title = { -brand-product-name } n’è betg preinstallà sco ils navigaturs da concerns da tecnologia. Quai è il punct.
+windows-10-eos-challenger-sync-callout-subtitle = Sche ti segireschas tes segnapaginas e tes pleds-clav da { -brand-product-name }, èsi pli simpel da midar cun il navigatur che ti has tschernì sin tes nov apparat.
+windows-10-eos-challenger-pin-callout-subtitle = Fixescha { -brand-shorter-name } en tia taskbar per ch’il navigatur che ti has tschernì saja adina per mauns cura che ti al dovras.
+windows-10-eos-challenger-sync-primary-button = Segirar { -brand-shorter-name }
+windows-10-eos-challenger-pin-primary-button = Fixar { -brand-shorter-name }
+windows-10-eos-sync-callout-privacy-screen-1-title = { -brand-product-name } blochescha criptominiers, fastizaders da social media ed improntaders.
+windows-10-eos-sync-callout-privacy-screen-1-subtitle = Fastizaders na pon betg identifitgar tes apparat u ta persequitar en il web – perquai che nus n’als dain betg la pussaivladad.
+windows-10-eos-sync-callout-privacy-screen-2-title = Segirescha tes pleds-clav e tes segnapaginas per tes proxim apparat.
+windows-10-eos-sync-callout-privacy-screen-2-subtitle = Cun segirar { -brand-shorter-name } daventi simpel da prender tias datas e tes parameters per la protecziun da datas cun tai.
+windows-10-eos-sync-callout-privacy-info-button = Vesair tge che vegn bloccà
+windows-10-eos-callout-addons-title = Emprova supplements: simplas actualisaziuns, gronds resultats
+windows-10-eos-callout-addons-subtitle = Questas extensiuns èn vegnidas selecziunadas per ta gidar a restar productiv, protegì e concentrà.
+windows-10-eos-callout-addons-primary-button = Scuvrir nossa selecziun
+windows-10-eos-sync-callout-addons-title = Betg perda tes supplements cura che ti actualiseschas Windows 10.
+windows-10-eos-sync-callout-addons-subtitle = Sincronisescha ussa per ch’ils supplements da { -brand-product-name } stettian adina a disposiziun, era suenter avair midà apparat.
+windows-10-eos-sync-callout-next-button = Enavant
+windows-10-eos-sync-callout-get-started-button = Cumenzar
+
+## Windows 10 EoS Sync messages group 2 toast notification
+
+windows-10-eos-feature-toast-title = Ils tabs verticals e las gruppas da tabs èn qua!
+# In English, "dropped" is a colloquial form for released.
+windows-10-eos-feature-toast-subtitle = { -brand-product-name } ha reagì a la gronda dumonda e gist publitgà novas funcziuns che ta pussibiliteschan da navigar a moda effizienta e focussada.
+windows-10-eos-feature-toast-whats-new-button = Scuvrir las novaziuns
+windows-10-eos-feature-toast-dismiss-button = Serrar
+
+## ETP (Enhanced Tracking Protection) Strict exceptions infobar
+##
+## These strings are displayed in an infobar notification that appears when
+## Enhanced Tracking Protection's Strict mode is causing website functionality
+## issues. The infobar offers users the option to apply automatic exceptions
+## to fix common site breakage by unblocking essential elements.
+
+etp-strict-exceptions-infobar-message = <strong>La protecziun stricta cunter fastizaders po avair per consequenza che paginas na funcziunan betg endretg.</strong> Curregia problems frequents cun debloccar elements essenzials che pudessan cuntegnair fastizaders.
+etp-strict-exceptions-infobar-learn-more = Ulteriuras infurmaziuns
+etp-strict-exceptions-infobar-button = Applitgar las correcturas
+    .accesskey = A
+etp-strict-exceptions-infobar-not-now = Betg ussa
+    .accesskey = B
+
+## 'Set to default' messaging displayed within the App menu
+
+set-default-menu-message-simple-layout-title = { -brand-short-name } n’è betg tes navigatur da standard
+set-default-menu-message-simple-layout-title-variant = { -brand-short-name } n’è betg tes navigatur principal
+set-default-menu-message-row-layout-title = Definescha { -brand-short-name } sco tes navigatur principal
+set-default-menu-message-row-layout-title-variant = Definescha { -brand-short-name } sco tes navigatur standard
+set-default-menu-message-row-layout-subtitle = Profitescha adina da sveltezza, segirezza e sfera privata cura che ti navigheschas.
+set-default-menu-message-row-layout-subtitle-variant =
+    { PLATFORM() ->
+        [macos] Plazzescha { -brand-short-name } uschia ch’il navigatur è adina per mauns – definescha el sco standard ed al fixescha en tes dock.
+       *[other] Plazzescha { -brand-short-name } uschia ch’il navigatur è adina per mauns – definescha el sco standard ed al fixescha en tia taskbar.
+    }
+set-default-menu-message-primary-button = Definir sco standard
+set-default-menu-message-primary-button-variant = Definir sco navigatur principal

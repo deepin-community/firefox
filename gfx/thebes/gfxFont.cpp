@@ -5,13 +5,10 @@
 
 #include "gfxFont.h"
 
-#include "mozilla/BinarySearch.h"
 #include "mozilla/DebugOnly.h"
 #include "mozilla/FontPropertyTypes.h"
 #include "mozilla/gfx/2D.h"
-#include "mozilla/IntegerRange.h"
 #include "mozilla/intl/Segmenter.h"
-#include "mozilla/MathAlgorithms.h"
 #include "mozilla/StaticPrefs_gfx.h"
 #include "mozilla/ScopeExit.h"
 #include "mozilla/SVGContextPaint.h"
@@ -44,7 +41,7 @@
 #include "mozilla/MemoryReporting.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/Services.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/GfxMetrics.h"
 #include "gfxMathTable.h"
 #include "gfxSVGGlyphs.h"
 #include "gfx2DGlue.h"
@@ -183,7 +180,7 @@ void gfxFontCache::Shutdown() {
 
 gfxFontCache::gfxFontCache(nsIEventTarget* aEventTarget)
     : ExpirationTrackerImpl<gfxFont, 3, Lock, AutoLock>(
-          FONT_TIMEOUT_SECONDS * 1000, "gfxFontCache", aEventTarget) {
+          FONT_TIMEOUT_SECONDS * 1000, "gfxFontCache"_ns, aEventTarget) {
   nsCOMPtr<nsIObserverService> obs = GetObserverService();
   if (obs) {
     obs->AddObserver(new Observer, "memory-pressure", false);
@@ -235,7 +232,10 @@ already_AddRefed<gfxFont> gfxFontCache::Lookup(
   Key key(aFontEntry, aStyle, aUnicodeRangeMap);
   HashEntry* entry = mFonts.GetEntry(key);
 
-  Telemetry::Accumulate(Telemetry::FONT_CACHE_HIT, entry != nullptr);
+  glean::fontlist::font_cache_hit
+      .EnumGet(
+          static_cast<glean::fontlist::FontCacheHitLabel>(entry != nullptr))
+      .Add();
 
   if (!entry) {
     return nullptr;
@@ -919,7 +919,7 @@ float gfxFont::AngleForSyntheticOblique() const {
   if (mStyle.style == FontSlantStyle::NORMAL) {
     return 0.0f;  // Requested style is 'normal'.
   }
-  if (!mStyle.allowSyntheticStyle) {
+  if (mStyle.synthesisStyle == StyleFontSynthesisStyle::None) {
     return 0.0f;  // Synthetic obliquing is disabled.
   }
   if (!mFontEntry->MayUseSyntheticSlant()) {
@@ -927,11 +927,12 @@ float gfxFont::AngleForSyntheticOblique() const {
   }
 
   // If style calls for italic, and face doesn't support it, use default
-  // oblique angle as a simulation.
+  // oblique angle as a simulation, but only if synthesis setting allows it.
   if (mStyle.style.IsItalic()) {
-    return mFontEntry->SupportsItalic()
-               ? 0.0f
-               : FontSlantStyle::DEFAULT_OBLIQUE_DEGREES;
+    return mFontEntry->SupportsItalic() ? 0.0f
+           : mStyle.synthesisStyle == StyleFontSynthesisStyle::Auto
+               ? FontSlantStyle::DEFAULT_OBLIQUE_DEGREES
+               : 0.0f;
   }
 
   // OK, we're going to use synthetic oblique: return the requested angle.
@@ -1000,7 +1001,7 @@ gfxFont::gfxFont(const RefPtr<UnscaledFont>& aUnscaledFont,
 
   // Ensure the gfxFontEntry's unitsPerEm and extents fields are initialized,
   // so that GetFontExtents can use them without risk of races.
-  Unused << mFontEntry->UnitsPerEm();
+  (void)mFontEntry->UnitsPerEm();
 }
 
 gfxFont::~gfxFont() {
@@ -1136,14 +1137,14 @@ static void CollectLookupsByFeature(hb_face_t* aFace, hb_tag_t aTableTag,
 
   offset = 0;
   do {
-    len = ArrayLength(lookups);
+    len = std::size(lookups);
     hb_ot_layout_feature_get_lookups(aFace, aTableTag, aFeatureIndex, offset,
                                      &len, lookups);
     for (i = 0; i < len; i++) {
       hb_set_add(aLookups, lookups[i]);
     }
     offset += len;
-  } while (len == ArrayLength(lookups));
+  } while (len == std::size(lookups));
 }
 
 static void CollectLookupsByLanguage(
@@ -1162,7 +1163,7 @@ static void CollectLookupsByLanguage(
 
   offset = 0;
   do {
-    len = ArrayLength(featureIndexes);
+    len = std::size(featureIndexes);
     hb_ot_layout_language_get_feature_indexes(aFace, aTableTag, aScriptIndex,
                                               aLangIndex, offset, &len,
                                               featureIndexes);
@@ -1184,7 +1185,7 @@ static void CollectLookupsByLanguage(
       CollectLookupsByFeature(aFace, aTableTag, featureIndex, lookups);
     }
     offset += len;
-  } while (len == ArrayLength(featureIndexes));
+  } while (len == std::size(featureIndexes));
 }
 
 static bool HasLookupRuleWithGlyphByScript(
@@ -1338,8 +1339,12 @@ static const hb_tag_t defaultFeatures[] = {
 void gfxFont::CheckForFeaturesInvolvingSpace() const {
   gfxFontEntry::SpaceFeatures flags = gfxFontEntry::SpaceFeatures::None;
 
+  // mFontEntry->mHasSpaceFeatures is a std::atomic<>, so we set it with
+  // `exchange` to avoid a potential data race. It's ok if two threads both
+  // try to set it; they'll end up with the same value, so it doesn't matter
+  // that one will overwrite the other.
   auto setFlags =
-      MakeScopeExit([&]() { mFontEntry->mHasSpaceFeatures = flags; });
+      MakeScopeExit([&]() { mFontEntry->mHasSpaceFeatures.exchange(flags); });
 
   bool log = LOG_FONTINIT_ENABLED();
   TimeStamp start;
@@ -1389,7 +1394,7 @@ void gfxFont::CheckForFeaturesInvolvingSpace() const {
 
     // Set up the default-features hashset on first use.
     if (!sDefaultFeatures) {
-      uint32_t numDefaultFeatures = ArrayLength(defaultFeatures);
+      uint32_t numDefaultFeatures = std::size(defaultFeatures);
       auto* set = new nsTHashSet<uint32_t>(numDefaultFeatures);
       for (uint32_t i = 0; i < numDefaultFeatures; i++) {
         set->Insert(defaultFeatures[i]);
@@ -1404,7 +1409,7 @@ void gfxFont::CheckForFeaturesInvolvingSpace() const {
 
     uint32_t len, offset = 0;
     do {
-      len = ArrayLength(scriptTags);
+      len = std::size(scriptTags);
       hb_ot_layout_table_get_script_tags(face, HB_OT_TAG_GSUB, offset, &len,
                                          scriptTags);
       for (uint32_t i = 0; i < len; i++) {
@@ -1419,6 +1424,7 @@ void gfxFont::CheckForFeaturesInvolvingSpace() const {
         flags = flags | gfxFontEntry::SpaceFeatures::HasFeatures;
         uint32_t index = static_cast<uint32_t>(s) >> 5;
         uint32_t bit = static_cast<uint32_t>(s) & 0x1f;
+        MutexAutoLock lock(mFontEntry->mFeatureInfoLock);
         if (isDefaultFeature) {
           mFontEntry->mDefaultSubSpaceFeatures[index] |= (1 << bit);
         } else {
@@ -1426,14 +1432,17 @@ void gfxFont::CheckForFeaturesInvolvingSpace() const {
         }
       }
       offset += len;
-    } while (len == ArrayLength(scriptTags));
+    } while (len == std::size(scriptTags));
   }
 
   // spaces in default features of default script?
   // ==> can't use word cache, skip GPOS analysis
   bool canUseWordCache = true;
-  if (HasSubstitution(mFontEntry->mDefaultSubSpaceFeatures, Script::COMMON)) {
-    canUseWordCache = false;
+  {
+    MutexAutoLock lock(mFontEntry->mFeatureInfoLock);
+    if (HasSubstitution(mFontEntry->mDefaultSubSpaceFeatures, Script::COMMON)) {
+      canUseWordCache = false;
+    }
   }
 
   // GPOS lookups - distinguish kerning from non-kerning features
@@ -1452,6 +1461,7 @@ void gfxFont::CheckForFeaturesInvolvingSpace() const {
   }
 
   if (MOZ_UNLIKELY(log)) {
+    MutexAutoLock lock(mFontEntry->mFeatureInfoLock);
     TimeDuration elapsed = TimeStamp::Now() - start;
     LOG_FONTINIT((
         "(fontinit-spacelookups) font: %s - "
@@ -1486,6 +1496,7 @@ bool gfxFont::HasSubstitutionRulesWithSpaceLookups(Script aRunScript) const {
   }
 
   // default features have space lookups ==> true
+  MutexAutoLock lock(mFontEntry->mFeatureInfoLock);
   if (HasSubstitution(mFontEntry->mDefaultSubSpaceFeatures, Script::COMMON) ||
       HasSubstitution(mFontEntry->mDefaultSubSpaceFeatures, aRunScript)) {
     return true;
@@ -2723,14 +2734,18 @@ bool gfxFont::RenderColorGlyph(DrawTarget* aDrawTarget, gfxContext* aContext,
       }
     }
 
+    const int kScale = 2;
     if (!snapshot) {
       // Create a temporary DrawTarget and render the glyph to it.
       IntSize size(int(bounds.width), int(bounds.height));
       SurfaceFormat format = SurfaceFormat::B8G8R8A8;
       RefPtr target =
-          Factory::CreateDrawTarget(BackendType::SKIA, size, format);
+          Factory::CreateDrawTarget(BackendType::SKIA, size * kScale, format);
       if (target) {
         // Use OP_OVER and opaque alpha to create the glyph snapshot.
+        Matrix m;
+        m.PreScale(kScale, kScale);
+        target->SetTransform(m);
         DrawOptions drawOptions(aFontParams.drawOptions);
         drawOptions.mCompositionOp = CompositionOp::OP_OVER;
         drawOptions.mAlpha = 1.0f;
@@ -2754,17 +2769,18 @@ bool gfxFont::RenderColorGlyph(DrawTarget* aDrawTarget, gfxContext* aContext,
             // Save a snapshot of the rendering in the cache.
             // (We ignore potential failure here, and just paint the snapshot
             // without caching it.)
-            Unused << mColorGlyphCache->mCache.add(cached, aGlyphId, snapshot);
+            (void)mColorGlyphCache->mCache.add(cached, aGlyphId, snapshot);
           }
         }
       }
     }
     if (snapshot) {
       // Paint the snapshot using the appropriate composition op.
-      aDrawTarget->DrawSurface(snapshot,
-                               Rect(aPoint + bounds.TopLeft(), bounds.Size()),
-                               Rect(Point(), bounds.Size()),
-                               DrawSurfaceOptions(), aFontParams.drawOptions);
+      Point snappedPoint = Point(roundf(aPoint.x), roundf(aPoint.y));
+      aDrawTarget->DrawSurface(
+          snapshot, Rect(snappedPoint + bounds.TopLeft(), bounds.Size()),
+          Rect(Point(), bounds.Size() * kScale), DrawSurfaceOptions(),
+          aFontParams.drawOptions);
       return true;
     }
   }
@@ -2813,10 +2829,19 @@ bool gfxFont::HasColorGlyphFor(uint32_t aCh, uint32_t aNextCh) {
   uint32_t gid = 0;
   if (gfxFontUtils::IsVarSelector(aNextCh)) {
     gid = shaper->GetVariationGlyph(aCh, aNextCh);
+    if (gid) {
+      if (aNextCh == kVariationSelector16) {
+        // If the font explicitly supports the character + VS16, we accept it
+        // as implying it will provide an emoji-style glyph.
+        return true;
+      }
+      if (aNextCh == kVariationSelector15) {
+        // Explicit support for VS15 implies a text-style glyph.
+        return false;
+      }
+    }
   }
-  if (!gid) {
-    gid = shaper->GetNominalGlyph(aCh);
-  }
+  gid = shaper->GetNominalGlyph(aCh);
   if (!gid) {
     return false;
   }
@@ -2887,16 +2912,16 @@ bool gfxFont::MeasureGlyphs(const gfxTextRun* aTextRun, uint32_t aStart,
                             gfxFloat* aAdvanceMin, gfxFloat* aAdvanceMax) {
   const gfxTextRun::CompressedGlyph* charGlyphs =
       aTextRun->GetCharacterGlyphs();
-  double x = 0;
-  if (aSpacing) {
-    x += aSpacing[0].mBefore;
-  }
   uint32_t spaceGlyph = GetSpaceGlyph();
   bool allGlyphsInvisible = true;
 
   AutoReadLock lock(aExtents->mLock);
 
+  double x = 0;
   for (uint32_t i = aStart; i < aEnd; ++i) {
+    if (aSpacing) {
+      x += aSpacing->mBefore;
+    }
     const gfxTextRun::CompressedGlyph* glyphData = &charGlyphs[i];
     if (glyphData->IsSimpleGlyph()) {
       double advance = glyphData->GetSimpleAdvance();
@@ -2984,11 +3009,8 @@ bool gfxFont::MeasureGlyphs(const gfxTextRun* aTextRun, uint32_t aStart,
       }
     }
     if (aSpacing) {
-      double space = aSpacing[i - aStart].mAfter;
-      if (i + 1 < aEnd) {
-        space += aSpacing[i + 1 - aStart].mBefore;
-      }
-      x += space;
+      x += aSpacing->mAfter;
+      ++aSpacing;
     }
   }
 
@@ -3211,6 +3233,7 @@ bool gfxFont::AgeCachedWords() {
         it.remove();
       }
     }
+    mWordCache->compact();
     return mWordCache->empty();
   }
   return true;
@@ -3842,10 +3865,11 @@ template bool gfxFont::SplitAndInitTextRun(
 
 template <>
 bool gfxFont::InitFakeSmallCapsRun(
-    nsPresContext* aPresContext, DrawTarget* aDrawTarget, gfxTextRun* aTextRun,
-    const char16_t* aText, uint32_t aOffset, uint32_t aLength,
-    FontMatchType aMatchType, gfx::ShapedTextFlags aOrientation, Script aScript,
-    nsAtom* aLanguage, bool aSyntheticLower, bool aSyntheticUpper) {
+    FontVisibilityProvider* aFontVisibilityProvider, DrawTarget* aDrawTarget,
+    gfxTextRun* aTextRun, const char16_t* aText, uint32_t aOffset,
+    uint32_t aLength, FontMatchType aMatchType,
+    gfx::ShapedTextFlags aOrientation, Script aScript, nsAtom* aLanguage,
+    bool aSyntheticLower, bool aSyntheticUpper) {
   bool ok = true;
 
   RefPtr<gfxFont> smallCapsFont = GetSmallCapsFont();
@@ -4029,13 +4053,14 @@ bool gfxFont::InitFakeSmallCapsRun(
 
 template <>
 bool gfxFont::InitFakeSmallCapsRun(
-    nsPresContext* aPresContext, DrawTarget* aDrawTarget, gfxTextRun* aTextRun,
-    const uint8_t* aText, uint32_t aOffset, uint32_t aLength,
-    FontMatchType aMatchType, gfx::ShapedTextFlags aOrientation, Script aScript,
-    nsAtom* aLanguage, bool aSyntheticLower, bool aSyntheticUpper) {
+    FontVisibilityProvider* aFontVisibilityProvider, DrawTarget* aDrawTarget,
+    gfxTextRun* aTextRun, const uint8_t* aText, uint32_t aOffset,
+    uint32_t aLength, FontMatchType aMatchType,
+    gfx::ShapedTextFlags aOrientation, Script aScript, nsAtom* aLanguage,
+    bool aSyntheticLower, bool aSyntheticUpper) {
   NS_ConvertASCIItoUTF16 unicodeString(reinterpret_cast<const char*>(aText),
                                        aLength);
-  return InitFakeSmallCapsRun(aPresContext, aDrawTarget, aTextRun,
+  return InitFakeSmallCapsRun(aFontVisibilityProvider, aDrawTarget, aTextRun,
                               static_cast<const char16_t*>(unicodeString.get()),
                               aOffset, aLength, aMatchType, aOrientation,
                               aScript, aLanguage, aSyntheticLower,
@@ -4278,12 +4303,8 @@ void gfxFont::CalculateDerivedMetrics(Metrics& aMetrics) {
   }
 
   aMetrics.maxHeight = aMetrics.maxAscent + aMetrics.maxDescent;
-
-  if (aMetrics.maxHeight - aMetrics.emHeight > 0.0) {
-    aMetrics.internalLeading = aMetrics.maxHeight - aMetrics.emHeight;
-  } else {
-    aMetrics.internalLeading = 0.0;
-  }
+  aMetrics.internalLeading =
+      std::max(0.0, aMetrics.maxHeight - aMetrics.emHeight);
 
   aMetrics.emAscent =
       aMetrics.maxAscent * aMetrics.emHeight / aMetrics.maxHeight;
@@ -4649,9 +4670,12 @@ void gfxFont::CreateVerticalMetrics() {
 
   // Somewhat arbitrary values for now, subject to future refinement...
   metrics->spaceWidth = metrics->aveCharWidth;
-  metrics->maxHeight = metrics->maxAscent + metrics->maxDescent;
   metrics->xHeight = metrics->emHeight / 2;
   metrics->capHeight = metrics->maxAscent;
+
+  metrics->maxHeight = metrics->maxAscent + metrics->maxDescent;
+  metrics->internalLeading =
+      std::max(0.0, metrics->maxHeight - metrics->emHeight);
 
   if (metrics->zeroWidth < 0.0) {
     metrics->zeroWidth = metrics->aveCharWidth;
@@ -4752,18 +4776,26 @@ gfxFontStyle::gfxFontStyle()
       sizeAdjustBasis(uint8_t(FontSizeAdjust::Tag::None)),
       systemFont(true),
       printerFont(false),
+#ifdef XP_WIN
+      allowForceGDIClassic(true),
+#endif
       useGrayscaleAntialiasing(false),
       allowSyntheticWeight(true),
-      allowSyntheticStyle(true),
+      synthesisStyle(StyleFontSynthesisStyle::Auto),
       allowSyntheticSmallCaps(true),
       useSyntheticPosition(true),
-      noFallbackVariantFeatures(true) {}
+      noFallbackVariantFeatures(true) {
+}
 
 gfxFontStyle::gfxFontStyle(FontSlantStyle aStyle, FontWeight aWeight,
                            FontStretch aStretch, gfxFloat aSize,
                            const FontSizeAdjust& aSizeAdjust, bool aSystemFont,
-                           bool aPrinterFont, bool aAllowWeightSynthesis,
-                           bool aAllowStyleSynthesis,
+                           bool aPrinterFont,
+#ifdef XP_WIN
+                           bool aAllowForceGDIClassic,
+#endif
+                           bool aAllowWeightSynthesis,
+                           StyleFontSynthesisStyle aStyleSynthesis,
                            bool aAllowSmallCapsSynthesis,
                            bool aUsePositionSynthesis,
                            StyleFontLanguageOverride aLanguageOverride)
@@ -4777,9 +4809,12 @@ gfxFontStyle::gfxFontStyle(FontSlantStyle aStyle, FontWeight aWeight,
       variantSubSuper(NS_FONT_VARIANT_POSITION_NORMAL),
       systemFont(aSystemFont),
       printerFont(aPrinterFont),
+#ifdef XP_WIN
+      allowForceGDIClassic(aAllowForceGDIClassic),
+#endif
       useGrayscaleAntialiasing(false),
       allowSyntheticWeight(aAllowWeightSynthesis),
-      allowSyntheticStyle(aAllowStyleSynthesis),
+      synthesisStyle(aStyleSynthesis),
       allowSyntheticSmallCaps(aAllowSmallCapsSynthesis),
       useSyntheticPosition(aUsePositionSynthesis),
       noFallbackVariantFeatures(true) {

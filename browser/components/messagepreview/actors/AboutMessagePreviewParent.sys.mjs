@@ -3,20 +3,29 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import { XPCOMUtils } from "resource://gre/modules/XPCOMUtils.sys.mjs";
+import { ASRouter } from "resource:///modules/asrouter/ASRouter.sys.mjs";
 import { JsonSchema } from "resource://gre/modules/JsonSchema.sys.mjs";
 
-const lazy = {};
-
-ChromeUtils.defineESModuleGetters(lazy, {
+const lazy = XPCOMUtils.declareLazy({
   AddonManager: "resource://gre/modules/AddonManager.sys.mjs",
   BookmarksBarButton: "resource:///modules/asrouter/BookmarksBarButton.sys.mjs",
   CFRPageActions: "resource:///modules/asrouter/CFRPageActions.sys.mjs",
+  CustomizableUI:
+    "moz-src:///browser/components/customizableui/CustomizableUI.sys.mjs",
   FeatureCalloutBroker:
     "resource:///modules/asrouter/FeatureCalloutBroker.sys.mjs",
   InfoBar: "resource:///modules/asrouter/InfoBar.sys.mjs",
   SpecialMessageActions:
     "resource://messaging-system/lib/SpecialMessageActions.sys.mjs",
   Spotlight: "resource:///modules/asrouter/Spotlight.sys.mjs",
+
+  log: () => {
+    const { Logger } = ChromeUtils.importESModule(
+      "resource://messaging-system/lib/Logger.sys.mjs"
+    );
+    return new Logger("AboutMessagePreviewParent");
+  },
 });
 
 const SWITCH_THEMES = {
@@ -58,7 +67,13 @@ export class AboutMessagePreviewParent extends JSWindowActorParent {
   }
 
   showBookmarksBarButton(message, browser) {
-    lazy.BookmarksBarButton.showBookmarksBarButton(message, browser);
+    //ensure the bookmarks bar is open
+    lazy.CustomizableUI.setToolbarVisibility(
+      lazy.CustomizableUI.AREA_BOOKMARKS,
+      true
+    );
+    //and then send the message
+    lazy.BookmarksBarButton.showBookmarksBarButton(browser, message);
   }
 
   showCFR(message, browser) {
@@ -69,6 +84,10 @@ export class AboutMessagePreviewParent extends JSWindowActorParent {
     );
   }
 
+  showPrivateBrowsingMessage(message, browser) {
+    ASRouter.forcePBWindow(browser, message);
+  }
+
   async showFeatureCallout(message, browser) {
     // Clear the Feature Tour prefs used by some callouts, to ensure
     // the behaviour of the message is correct
@@ -77,7 +96,7 @@ export class AboutMessagePreviewParent extends JSWindowActorParent {
       Services.prefs.clearUserPref(tourPref);
     }
     // For messagePreview, force the trigger && targeting to be something we can show.
-    message.trigger.id = "nthTabClosed";
+    message.trigger = { id: "nthTabClosed" };
     message.targeting = "true";
     // Check whether or not the callout is showing already, then
     // modify the anchor property of the feature callout to
@@ -101,32 +120,44 @@ export class AboutMessagePreviewParent extends JSWindowActorParent {
         }
 
         screen.anchors = [...existingAnchors, fallbackAnchor];
-        console.log("ANCHORS: ", screen.anchors);
+        lazy.log.debug("ANCHORS: ", screen.anchors);
       }
       // Try showing again
       await lazy.FeatureCalloutBroker.showFeatureCallout(browser, message);
     }
   }
 
-  async showMessage(data) {
+  /**
+   * Chooses the appropriate messaging system function for showing
+   * the message, based on the template passed in data
+   *
+   * @param {string} data - a string containing the message JSON
+   * @param {boolean} validationEnabled - whether or not to run
+   * schema validation on the message JSON. Should be false in
+   * tests so that we don't have to pass real messages or call
+   * the validation function.
+   */
+
+  async showMessage(data, validationEnabled = true) {
     let message;
     try {
       message = JSON.parse(data);
     } catch (e) {
-      console.error("Could not parse message", e);
+      lazy.log.error("Could not parse message", e);
       return;
     }
 
-    const schema = await fetch(
-      "chrome://browser/content/asrouter/schemas/MessagingExperiment.schema.json",
-      { credentials: "omit" }
-    ).then(rsp => rsp.json());
-
-    const result = JsonSchema.validate(message, schema);
-    if (!result.valid) {
-      console.error(
-        `Invalid message: ${JSON.stringify(result.errors, undefined, 2)}`
-      );
+    if (validationEnabled) {
+      const schema = await fetch(
+        "chrome://browser/content/asrouter/schemas/MessagingExperiment.schema.json",
+        { credentials: "omit" }
+      ).then(rsp => rsp.json());
+      const result = JsonSchema.validate(message, schema);
+      if (!result.valid) {
+        lazy.log.error(
+          `Invalid message: ${JSON.stringify(result.errors, undefined, 2)}`
+        );
+      }
     }
 
     const browser =
@@ -147,25 +178,31 @@ export class AboutMessagePreviewParent extends JSWindowActorParent {
       case "bookmarks_bar_button":
         this.showBookmarksBarButton(message, browser);
         return;
+      case "pb_newtab":
+        this.showPrivateBrowsingMessage(message, browser);
+        return;
       default:
-        console.error(`Unsupported message template ${message.template}`);
+        lazy.log.error(`Unsupported message template ${message.template}`);
     }
   }
 
-  receiveMessage(message) {
-    const { name, data } = message;
+  async receiveMessage(message) {
+    // validationEnabled is used for testing
+    const { name, data, validationEnabled } = message;
 
     switch (name) {
       case "MessagePreview:SHOW_MESSAGE":
-        this.showMessage(data);
+        await this.showMessage(data, validationEnabled);
         return;
       case "MessagePreview:CHANGE_THEME": {
         const theme = data.isDark ? SWITCH_THEMES.LIGHT : SWITCH_THEMES.DARK;
-        lazy.AddonManager.getAddonByID(theme).then(addon => addon.enable());
+        await lazy.AddonManager.getAddonByID(theme).then(addon =>
+          addon.enable()
+        );
         return;
       }
       default:
-        console.log(`Unexpected event ${name} was not handled.`);
+        lazy.log.debug(`Unexpected event ${name} was not handled.`);
     }
   }
 }

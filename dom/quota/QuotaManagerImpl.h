@@ -9,10 +9,23 @@
 
 #include "GroupInfo.h"
 #include "GroupInfoPair.h"
-#include "mozilla/dom/quota/QuotaManager.h"
 #include "OriginInfo.h"
+#include "mozilla/dom/quota/QuotaManager.h"
 
 namespace mozilla::dom::quota {
+
+template <typename F>
+auto QuotaManager::WithOriginInfo(const OriginMetadata& aOriginMetadata,
+                                  F aFunction)
+    -> std::invoke_result_t<F, const RefPtr<OriginInfo>&> {
+  MutexAutoLock lock(mQuotaMutex);
+
+  RefPtr<OriginInfo> originInfo =
+      LockedGetOriginInfo(aOriginMetadata.mPersistenceType, aOriginMetadata);
+  MOZ_ASSERT(originInfo);
+
+  return aFunction(originInfo);
+}
 
 template <typename P>
 void QuotaManager::CollectPendingOriginsForListing(P aPredicate) {
@@ -28,7 +41,7 @@ void QuotaManager::CollectPendingOriginsForListing(P aPredicate) {
         pair->LockedGetGroupInfo(PERSISTENCE_TYPE_DEFAULT);
     if (groupInfo) {
       for (const auto& originInfo : groupInfo->mOriginInfos) {
-        if (!originInfo->mDirectoryExists) {
+        if (!originInfo->LockedDirectoryExists()) {
           aPredicate(originInfo);
         }
       }

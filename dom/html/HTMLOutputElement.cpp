@@ -116,17 +116,25 @@ void HTMLOutputElement::CharacterDataChanged(nsIContent* aContent,
   DescendantsChanged();
 }
 
-void HTMLOutputElement::ContentAppended(nsIContent* aFirstNewContent) {
+void HTMLOutputElement::ContentAppended(nsIContent* aFirstNewContent,
+                                        const ContentAppendInfo&) {
   DescendantsChanged();
 }
 
-void HTMLOutputElement::ContentInserted(nsIContent* aChild) {
+void HTMLOutputElement::ContentInserted(nsIContent* aChild,
+                                        const ContentInsertInfo&) {
   DescendantsChanged();
 }
 
-void HTMLOutputElement::ContentRemoved(nsIContent* aChild,
-                                       nsIContent* aPreviousSibling) {
-  DescendantsChanged();
+void HTMLOutputElement::ContentWillBeRemoved(nsIContent* aChild,
+                                             const ContentRemoveInfo& aInfo) {
+  if (aInfo.mBatchRemovalState && !aInfo.mBatchRemovalState->mIsFirst) {
+    return;
+  }
+  // Make sure to run this once the removal has taken place.
+  nsContentUtils::AddScriptRunner(
+      NewRunnableMethod("HTMLOutputElement::DescendantsChanged", this,
+                        &HTMLOutputElement::DescendantsChanged));
 }
 
 JSObject* HTMLOutputElement::WrapNode(JSContext* aCx,

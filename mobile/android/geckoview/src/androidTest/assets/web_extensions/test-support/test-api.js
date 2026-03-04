@@ -91,6 +91,10 @@ this.test = class extends ExtensionAPI {
           return Preferences.get(prefs);
         },
 
+        /* Clears a given user preference. */
+        async clearUserPref(pref) {
+          Services.prefs.clearUserPref(pref);
+        },
         /* Gets link color for a given selector. */
         async getLinkColor(tabId, selector) {
           return getActorForTab(tabId, "TestSupport").sendQuery(
@@ -146,10 +150,6 @@ this.test = class extends ExtensionAPI {
             "@mozilla.org/security/certoverride;1"
           ].getService(Ci.nsICertOverrideService);
           overrideService.clearAllOverrides();
-        },
-
-        async setScalar(id, value) {
-          return Services.telemetry.scalarSet(id, value);
         },
 
         async setResolutionAndScaleTo(tabId, resolution) {
@@ -222,6 +222,14 @@ this.test = class extends ExtensionAPI {
           return sss.clearAll();
         },
 
+        async isSessionHistoryInParentRunning() {
+          return Services.appinfo.sessionHistoryInParent;
+        },
+
+        async isFissionRunning() {
+          return Services.appinfo.fissionAutostart;
+        },
+
         async triggerCookieBannerDetected(tabId) {
           const actor = getActorForTab(tabId, "CookieBanner");
           return actor.receiveMessage({
@@ -254,6 +262,33 @@ this.test = class extends ExtensionAPI {
               bubbles: true,
               detail: languageState,
             })
+          );
+        },
+
+        async setHandlingUserInput(tabId, handlingUserInput) {
+          return getActorForTab(tabId, "TestSupport").sendQuery(
+            "SetHandlingUserInput",
+            { handlingUserInput }
+          );
+        },
+
+        async getWebExtensionsSchemaPermissionNames(typeNames) {
+          const { Schemas } = ChromeUtils.importESModule(
+            "resource://gre/modules/Schemas.sys.mjs"
+          );
+          return Schemas.getPermissionNames(typeNames);
+        },
+
+        async teardownAlertsService() {
+          const alertsService = Cc["@mozilla.org/alerts-service;1"].getService(
+            Ci.nsIAlertsService
+          );
+          alertsService.teardown();
+        },
+
+        async notifyUserGestureActivation(tabId) {
+          return getActorForTab(tabId, "TestSupport").sendQuery(
+            "NotifyUserGestureActivation"
           );
         },
       },

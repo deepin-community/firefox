@@ -9,75 +9,71 @@
 #include "mozilla/css/Loader.h"
 
 #include "MainThreadUtils.h"
-#include "mozilla/ArrayUtils.h"
-#include "mozilla/css/ErrorReporter.h"
-#include "mozilla/dom/DocGroup.h"
-#include "mozilla/dom/FetchPriority.h"
-#include "mozilla/dom/SRILogHelper.h"
-#include "mozilla/IntegerPrintfMacros.h"
+#include "ReferrerInfo.h"
+#include "mozilla/AsyncEventDispatcher.h"
 #include "mozilla/AutoRestore.h"
+#include "mozilla/ConsoleReportCollector.h"
+#include "mozilla/Encoding.h"
+#include "mozilla/IntegerPrintfMacros.h"
 #include "mozilla/LoadInfo.h"
 #include "mozilla/Logging.h"
-#include "mozilla/glean/GleanMetrics.h"
 #include "mozilla/MemoryReporting.h"
 #include "mozilla/PreloadHashKey.h"
-#include "mozilla/ResultExtensions.h"
-#include "mozilla/URLPreloader.h"
-#include "nsIPrincipal.h"
-#include "nsISupportsPriority.h"
-#include "nsITimedChannel.h"
-#include "nsICachingChannel.h"
-#include "nsSyncLoadService.h"
-#include "nsContentSecurityManager.h"
-#include "nsCOMPtr.h"
-#include "nsString.h"
-#include "nsIContent.h"
-#include "nsIContentInlines.h"
-#include "nsICookieJarSettings.h"
-#include "mozilla/dom/Document.h"
-#include "nsIURI.h"
-#include "nsContentUtils.h"
-#include "nsIScriptSecurityManager.h"
-#include "nsContentPolicyUtils.h"
-#include "nsIHttpChannel.h"
-#include "nsIHttpChannelInternal.h"
-#include "nsIClassOfService.h"
-#include "nsIScriptError.h"
-#include "nsMimeTypes.h"
-#include "nsICSSLoaderObserver.h"
-#include "nsThreadUtils.h"
-#include "nsINetworkPredictor.h"
-#include "nsQueryActor.h"
-#include "nsStringStream.h"
-#include "mozilla/dom/MediaList.h"
-#include "mozilla/dom/ShadowRoot.h"
-#include "mozilla/dom/URL.h"
-#include "mozilla/net/UrlClassifierFeatureFactory.h"
-#include "mozilla/AsyncEventDispatcher.h"
 #include "mozilla/ProfilerLabels.h"
+#include "mozilla/ResultExtensions.h"
 #include "mozilla/ServoBindings.h"
-#include "mozilla/StyleSheet.h"
-#include "mozilla/StyleSheetInlines.h"
-#include "mozilla/ConsoleReportCollector.h"
-#include "mozilla/css/StreamLoader.h"
 #include "mozilla/SharedStyleSheetCache.h"
 #include "mozilla/StaticPrefs_layout.h"
 #include "mozilla/StaticPrefs_network.h"
+#include "mozilla/StyleSheet.h"
+#include "mozilla/StyleSheetInlines.h"
+#include "mozilla/TimeStamp.h"
 #include "mozilla/Try.h"
-#include "ReferrerInfo.h"
-
+#include "mozilla/URLPreloader.h"
+#include "mozilla/css/ErrorReporter.h"
+#include "mozilla/css/StreamLoader.h"
+#include "mozilla/dom/DocGroup.h"
+#include "mozilla/dom/Document.h"
+#include "mozilla/dom/FetchPriority.h"
+#include "mozilla/dom/MediaList.h"
+#include "mozilla/dom/SRICheck.h"
+#include "mozilla/dom/SRILogHelper.h"
+#include "mozilla/dom/ShadowRoot.h"
+#include "mozilla/dom/URL.h"
+#include "mozilla/glean/LayoutMetrics.h"
+#include "mozilla/net/UrlClassifierFeatureFactory.h"
+#include "nsCOMPtr.h"
+#include "nsContentPolicyUtils.h"
+#include "nsContentSecurityManager.h"
+#include "nsContentUtils.h"
+#include "nsError.h"
+#include "nsHttpChannel.h"
+#include "nsICSSLoaderObserver.h"
+#include "nsICachingChannel.h"
+#include "nsIClassOfService.h"
+#include "nsIClassifiedChannel.h"
+#include "nsIContent.h"
+#include "nsIContentInlines.h"
+#include "nsICookieJarSettings.h"
+#include "nsIHttpChannel.h"
+#include "nsIHttpChannelInternal.h"
+#include "nsIPrincipal.h"
+#include "nsIScriptError.h"
+#include "nsIScriptSecurityManager.h"
+#include "nsISupportsPriority.h"
+#include "nsITimedChannel.h"
+#include "nsIURI.h"
+#include "nsMimeTypes.h"
+#include "nsQueryActor.h"
+#include "nsQueryObject.h"
+#include "nsString.h"
+#include "nsStringStream.h"
+#include "nsSyncLoadService.h"
+#include "nsThreadUtils.h"
 #include "nsXULPrototypeCache.h"
 
-#include "nsError.h"
-
-#include "mozilla/dom/SRICheck.h"
-
-#include "mozilla/Encoding.h"
-
 using namespace mozilla::dom;
-
-// 1024 bytes is specified in https://drafts.csswg.org/css-syntax/
-#define SNIFFING_BUFFER_SIZE 1024
+using namespace mozilla::net;
 
 /**
  * OVERALL ARCHITECTURE
@@ -143,17 +139,15 @@ namespace mozilla {
 
 SheetLoadDataHashKey::SheetLoadDataHashKey(const css::SheetLoadData& aLoadData)
     : mURI(aLoadData.mURI),
-      mPrincipal(aLoadData.mTriggeringPrincipal),
       mLoaderPrincipal(aLoadData.mLoader->LoaderPrincipal()),
       mPartitionPrincipal(aLoadData.mLoader->PartitionedPrincipal()),
       mEncodingGuess(aLoadData.mGuessedEncoding),
       mCORSMode(aLoadData.mSheet->GetCORSMode()),
       mParsingMode(aLoadData.mSheet->ParsingMode()),
       mCompatMode(aLoadData.mCompatMode),
-      mIsLinkRelPreload(aLoadData.IsLinkRelPreload()) {
+      mIsLinkRelPreloadOrEarlyHint(aLoadData.IsLinkRelPreloadOrEarlyHint()) {
   MOZ_COUNT_CTOR(SheetLoadDataHashKey);
   MOZ_ASSERT(mURI);
-  MOZ_ASSERT(mPrincipal);
   MOZ_ASSERT(mLoaderPrincipal);
   MOZ_ASSERT(mPartitionPrincipal);
   aLoadData.mSheet->GetIntegrity(mSRIMetadata);
@@ -179,20 +173,9 @@ bool SheetLoadDataHashKey::KeyEquals(const SheetLoadDataHashKey& aKey) const {
     return true;
   }
 
-  if (!mPrincipal->Equals(aKey.mPrincipal)) {
-    LOG((" > Principal mismatch\n"));
+  if (!mPartitionPrincipal->Equals(aKey.mPartitionPrincipal)) {
+    LOG((" > Partition principal mismatch\n"));
     return false;
-  }
-
-  // We only check for partition principal equality if any of the loads are
-  // triggered by a document rather than e.g. an extension (which have different
-  // origins than the loader principal).
-  if (mPrincipal->Equals(mLoaderPrincipal) ||
-      aKey.mPrincipal->Equals(aKey.mLoaderPrincipal)) {
-    if (!mPartitionPrincipal->Equals(aKey.mPartitionPrincipal)) {
-      LOG((" > Partition principal mismatch\n"));
-      return false;
-    }
   }
 
   if (mCORSMode != aKey.mCORSMode) {
@@ -220,12 +203,11 @@ bool SheetLoadDataHashKey::KeyEquals(const SheetLoadDataHashKey& aKey) const {
   // check makes sure that regular loads will never find such a weaker preload
   // and rather start a new, independent load with new, stronger SRI checker
   // set up, so that integrity is ensured.
-  if (mIsLinkRelPreload != aKey.mIsLinkRelPreload) {
+  if (mIsLinkRelPreloadOrEarlyHint != aKey.mIsLinkRelPreloadOrEarlyHint) {
     const auto& linkPreloadMetadata =
-        mIsLinkRelPreload ? mSRIMetadata : aKey.mSRIMetadata;
+        mIsLinkRelPreloadOrEarlyHint ? mSRIMetadata : aKey.mSRIMetadata;
     const auto& consumerPreloadMetadata =
-        mIsLinkRelPreload ? aKey.mSRIMetadata : mSRIMetadata;
-
+        mIsLinkRelPreloadOrEarlyHint ? aKey.mSRIMetadata : mSRIMetadata;
     if (!consumerPreloadMetadata.CanTrustBeDelegatedTo(linkPreloadMetadata)) {
       LOG((" > Preload SRI metadata mismatch\n"));
       return false;
@@ -276,7 +258,8 @@ SheetLoadData::SheetLoadData(
     IsAlternate aIsAlternate, MediaMatched aMediaMatches,
     StylePreloadKind aPreloadKind, nsICSSLoaderObserver* aObserver,
     nsIPrincipal* aTriggeringPrincipal, nsIReferrerInfo* aReferrerInfo,
-    const nsAString& aNonce, FetchPriority aFetchPriority)
+    const nsAString& aNonce, FetchPriority aFetchPriority,
+    already_AddRefed<SubResourceNetworkMetadataHolder>&& aNetworkMetadata)
     : mLoader(aLoader),
       mTitle(aTitle),
       mEncoding(nullptr),
@@ -295,9 +278,8 @@ SheetLoadData::SheetLoadData(
       mMediaMatched(aMediaMatches == MediaMatched::Yes),
       mUseSystemPrincipal(false),
       mSheetAlreadyComplete(false),
-      mIsCrossOriginNoCORS(false),
-      mBlockResourceTiming(false),
       mLoadFailed(false),
+      mShouldEmulateNotificationsForCachedLoad(false),
       mPreloadKind(aPreloadKind),
       mObserver(aObserver),
       mTriggeringPrincipal(aTriggeringPrincipal),
@@ -308,18 +290,19 @@ SheetLoadData::SheetLoadData(
       mCompatMode(aLoader->CompatMode(aPreloadKind)),
       mRecordErrors(
           aLoader && aLoader->GetDocument() &&
-          css::ErrorReporter::ShouldReportErrors(*aLoader->GetDocument())) {
+          css::ErrorReporter::ShouldReportErrors(*aLoader->GetDocument())),
+      mNetworkMetadata(std::move(aNetworkMetadata)) {
   MOZ_ASSERT(!aOwningNode || dom::LinkStyle::FromNode(*aOwningNode),
              "Must implement LinkStyle");
   MOZ_ASSERT(mTriggeringPrincipal);
   MOZ_ASSERT(mLoader, "Must have a loader!");
 }
 
-SheetLoadData::SheetLoadData(css::Loader* aLoader, nsIURI* aURI,
-                             StyleSheet* aSheet, SheetLoadData* aParentData,
-                             nsICSSLoaderObserver* aObserver,
-                             nsIPrincipal* aTriggeringPrincipal,
-                             nsIReferrerInfo* aReferrerInfo)
+SheetLoadData::SheetLoadData(
+    css::Loader* aLoader, nsIURI* aURI, StyleSheet* aSheet,
+    SheetLoadData* aParentData, nsICSSLoaderObserver* aObserver,
+    nsIPrincipal* aTriggeringPrincipal, nsIReferrerInfo* aReferrerInfo,
+    already_AddRefed<SubResourceNetworkMetadataHolder>&& aNetworkMetadata)
     : mLoader(aLoader),
       mEncoding(nullptr),
       mURI(aURI),
@@ -338,9 +321,8 @@ SheetLoadData::SheetLoadData(css::Loader* aLoader, nsIURI* aURI,
       mMediaMatched(true),
       mUseSystemPrincipal(aParentData && aParentData->mUseSystemPrincipal),
       mSheetAlreadyComplete(false),
-      mIsCrossOriginNoCORS(false),
-      mBlockResourceTiming(false),
       mLoadFailed(false),
+      mShouldEmulateNotificationsForCachedLoad(false),
       mPreloadKind(StylePreloadKind::None),
       mObserver(aObserver),
       mTriggeringPrincipal(aTriggeringPrincipal),
@@ -352,7 +334,8 @@ SheetLoadData::SheetLoadData(css::Loader* aLoader, nsIURI* aURI,
       mCompatMode(aLoader->CompatMode(mPreloadKind)),
       mRecordErrors(
           aLoader && aLoader->GetDocument() &&
-          css::ErrorReporter::ShouldReportErrors(*aLoader->GetDocument())) {
+          css::ErrorReporter::ShouldReportErrors(*aLoader->GetDocument())),
+      mNetworkMetadata(std::move(aNetworkMetadata)) {
   MOZ_ASSERT(mLoader, "Must have a loader!");
   MOZ_ASSERT(mTriggeringPrincipal);
   MOZ_ASSERT(!mUseSystemPrincipal || mSyncLoad,
@@ -365,7 +348,8 @@ SheetLoadData::SheetLoadData(
     UseSystemPrincipal aUseSystemPrincipal, StylePreloadKind aPreloadKind,
     const Encoding* aPreloadEncoding, nsICSSLoaderObserver* aObserver,
     nsIPrincipal* aTriggeringPrincipal, nsIReferrerInfo* aReferrerInfo,
-    const nsAString& aNonce, FetchPriority aFetchPriority)
+    const nsAString& aNonce, FetchPriority aFetchPriority,
+    already_AddRefed<SubResourceNetworkMetadataHolder>&& aNetworkMetadata)
     : mLoader(aLoader),
       mEncoding(nullptr),
       mURI(aURI),
@@ -383,9 +367,8 @@ SheetLoadData::SheetLoadData(
       mMediaMatched(true),
       mUseSystemPrincipal(aUseSystemPrincipal == UseSystemPrincipal::Yes),
       mSheetAlreadyComplete(false),
-      mIsCrossOriginNoCORS(false),
-      mBlockResourceTiming(false),
       mLoadFailed(false),
+      mShouldEmulateNotificationsForCachedLoad(false),
       mPreloadKind(aPreloadKind),
       mObserver(aObserver),
       mTriggeringPrincipal(aTriggeringPrincipal),
@@ -397,7 +380,8 @@ SheetLoadData::SheetLoadData(
       mCompatMode(aLoader->CompatMode(aPreloadKind)),
       mRecordErrors(
           aLoader && aLoader->GetDocument() &&
-          css::ErrorReporter::ShouldReportErrors(*aLoader->GetDocument())) {
+          css::ErrorReporter::ShouldReportErrors(*aLoader->GetDocument())),
+      mNetworkMetadata(std::move(aNetworkMetadata)) {
   MOZ_ASSERT(mTriggeringPrincipal);
   MOZ_ASSERT(mLoader, "Must have a loader!");
   MOZ_ASSERT(!mUseSystemPrincipal || mSyncLoad,
@@ -421,11 +405,13 @@ void SheetLoadData::SetLoadCompleted() {
   MOZ_ASSERT(mIsLoading, "Not loading?");
   MOZ_ASSERT(!mLoadStart.IsNull());
   mIsLoading = false;
-  // Belts and suspenders just in case.
-  if (MOZ_LIKELY(!mLoadStart.IsNull())) {
-    glean::performance_pageload::async_sheet_load.AccumulateRawDuration(
-        TimeStamp::Now() - mLoadStart);
+}
+
+void SheetLoadData::OnCoalescedTo(const SheetLoadData& aExistingLoad) {
+  if (&aExistingLoad.Loader() != &Loader()) {
+    mShouldEmulateNotificationsForCachedLoad = true;
   }
+  mLoadStart = TimeStamp::Now();
 }
 
 RefPtr<StyleSheet> SheetLoadData::ValueForCache() const {
@@ -455,7 +441,7 @@ SheetLoadData::PrepareLoadEventIfNeeded() {
   if (!node) {
     return nullptr;
   }
-  MOZ_ASSERT(!RootLoadData().IsLinkRelPreload(),
+  MOZ_ASSERT(!RootLoadData().IsLinkRelPreloadOrEarlyHint(),
              "rel=preload handled elsewhere");
   RefPtr<AsyncEventDispatcher> dispatcher;
   if (BlocksLoadEvent()) {
@@ -560,7 +546,9 @@ static const char kCharsetSym[] = "@charset \"";
 static bool GetCharsetFromData(const char* aStyleSheetData,
                                uint32_t aDataLength, nsACString& aCharset) {
   aCharset.Truncate();
-  if (aDataLength <= sizeof(kCharsetSym) - 1) return false;
+  if (aDataLength <= sizeof(kCharsetSym) - 1) {
+    return false;
+  }
 
   if (strncmp(aStyleSheetData, kCharsetSym, sizeof(kCharsetSym) - 1)) {
     return false;
@@ -586,28 +574,23 @@ static bool GetCharsetFromData(const char* aStyleSheetData,
 
 NotNull<const Encoding*> SheetLoadData::DetermineNonBOMEncoding(
     const nsACString& aSegment, nsIChannel* aChannel) const {
-  const Encoding* encoding;
+  // 1024 bytes is specified in https://drafts.csswg.org/css-syntax/
+  constexpr size_t kSniffingBufferSize = 1024;
   nsAutoCString label;
-
   // Check HTTP
   if (aChannel && NS_SUCCEEDED(aChannel->GetContentCharset(label))) {
-    encoding = Encoding::ForLabel(label);
-    if (encoding) {
+    if (const auto* encoding = Encoding::ForLabel(label)) {
       return WrapNotNull(encoding);
     }
   }
 
   // Check @charset
-  auto sniffingLength = aSegment.Length();
-  if (sniffingLength > SNIFFING_BUFFER_SIZE) {
-    sniffingLength = SNIFFING_BUFFER_SIZE;
-  }
+  auto sniffingLength = std::min(aSegment.Length(), kSniffingBufferSize);
   if (GetCharsetFromData(aSegment.BeginReading(), sniffingLength, label)) {
-    encoding = Encoding::ForLabel(label);
-    if (encoding == UTF_16BE_ENCODING || encoding == UTF_16LE_ENCODING) {
-      return UTF_8_ENCODING;
-    }
-    if (encoding) {
+    if (const auto* encoding = Encoding::ForLabel(label)) {
+      if (encoding == UTF_16BE_ENCODING || encoding == UTF_16LE_ENCODING) {
+        return UTF_8_ENCODING;
+      }
       return WrapNotNull(encoding);
     }
   }
@@ -616,33 +599,18 @@ NotNull<const Encoding*> SheetLoadData::DetermineNonBOMEncoding(
 
 static nsresult VerifySheetIntegrity(const SRIMetadata& aMetadata,
                                      nsIChannel* aChannel,
+                                     LoadTainting aTainting,
                                      const nsACString& aFirst,
                                      const nsACString& aSecond,
-                                     const nsACString& aSourceFileURI,
                                      nsIConsoleReportCollector* aReporter) {
   NS_ENSURE_ARG_POINTER(aReporter);
+  MOZ_LOG(SRILogHelper::GetSriLog(), LogLevel::Debug,
+          ("VerifySheetIntegrity (unichar stream)"));
 
-  if (MOZ_LOG_TEST(SRILogHelper::GetSriLog(), LogLevel::Debug)) {
-    nsAutoCString requestURL;
-    nsCOMPtr<nsIURI> originalURI;
-    if (aChannel &&
-        NS_SUCCEEDED(aChannel->GetOriginalURI(getter_AddRefs(originalURI))) &&
-        originalURI) {
-      originalURI->GetAsciiSpec(requestURL);
-    }
-    MOZ_LOG(SRILogHelper::GetSriLog(), LogLevel::Debug,
-            ("VerifySheetIntegrity (unichar stream)"));
-  }
-
-  SRICheckDataVerifier verifier(aMetadata, aSourceFileURI, aReporter);
-  nsresult rv =
-      verifier.Update(aFirst.Length(), (const uint8_t*)aFirst.BeginReading());
-  NS_ENSURE_SUCCESS(rv, rv);
-  rv =
-      verifier.Update(aSecond.Length(), (const uint8_t*)aSecond.BeginReading());
-  NS_ENSURE_SUCCESS(rv, rv);
-
-  return verifier.Verify(aMetadata, aChannel, aSourceFileURI, aReporter);
+  SRICheckDataVerifier verifier(aMetadata, aChannel, aReporter);
+  MOZ_TRY(verifier.Update(aFirst));
+  MOZ_TRY(verifier.Update(aSecond));
+  return verifier.Verify(aMetadata, aChannel, aTainting, aReporter);
 }
 
 static bool AllLoadsCanceled(const SheetLoadData& aData) {
@@ -655,121 +623,109 @@ static bool AllLoadsCanceled(const SheetLoadData& aData) {
   return true;
 }
 
+void SheetLoadData::OnStartRequest(nsIRequest* aRequest) {
+  MOZ_ASSERT(NS_IsMainThread());
+  NotifyStart(aRequest);
+
+  SetMinimumExpirationTime(
+      nsContentUtils::GetSubresourceCacheExpirationTime(aRequest, mURI));
+
+  // We need to block resolution of parse promise until we receive OnStopRequest
+  // on Main thread. This is necessary because parse promise resolution fires
+  // OnLoad event must not be dispatched until OnStopRequest in main thread is
+  // processed, for stuff like performance resource entries.
+  mSheet->BlockParsePromise();
+
+  nsCOMPtr<nsIChannel> channel = do_QueryInterface(aRequest);
+  if (!channel) {
+    return;
+  }
+
+  nsCOMPtr<nsILoadInfo> loadInfo = channel->LoadInfo();
+  mTainting = loadInfo->GetTainting();
+
+  nsCOMPtr<nsIURI> originalURI;
+  channel->GetOriginalURI(getter_AddRefs(originalURI));
+  MOZ_DIAGNOSTIC_ASSERT(originalURI,
+                        "Someone just violated the nsIRequest contract");
+  nsCOMPtr<nsIURI> finalURI;
+  NS_GetFinalChannelURI(channel, getter_AddRefs(finalURI));
+  MOZ_DIAGNOSTIC_ASSERT(finalURI,
+                        "Someone just violated the nsIRequest contract");
+  nsCOMPtr<nsIPrincipal> principal;
+  nsIScriptSecurityManager* secMan = nsContentUtils::GetSecurityManager();
+  if (mUseSystemPrincipal) {
+    secMan->GetSystemPrincipal(getter_AddRefs(principal));
+  } else {
+    secMan->GetChannelResultPrincipal(channel, getter_AddRefs(principal));
+  }
+  MOZ_DIAGNOSTIC_ASSERT(principal);
+
+  nsCOMPtr<nsIReferrerInfo> referrerInfo =
+      ReferrerInfo::CreateForExternalCSSResources(
+          mSheet, finalURI,
+          nsContentUtils::GetReferrerPolicyFromChannel(channel));
+  mSheet->SetURIs(originalURI, finalURI, referrerInfo, principal);
+  mSheet->SetOriginClean([&] {
+    if (mParentData && !mParentData->mSheet->IsOriginClean()) {
+      return false;
+    }
+    if (mSheet->GetCORSMode() != CORS_NONE) {
+      return true;
+    }
+    if (!mLoader->LoaderPrincipal()->Subsumes(mSheet->Principal())) {
+      return false;
+    }
+    if (nsCOMPtr<nsITimedChannel> timedChannel = do_QueryInterface(channel)) {
+      bool allRedirectsSameOrigin = false;
+      bool hadCrossOriginRedirects =
+          NS_SUCCEEDED(timedChannel->GetAllRedirectsSameOrigin(
+              &allRedirectsSameOrigin)) &&
+          !allRedirectsSameOrigin;
+      if (hadCrossOriginRedirects) {
+        return false;
+      }
+    }
+    return true;
+  }());
+  if (nsCOMPtr<nsIHttpChannel> httpChannel = do_QueryInterface(channel)) {
+    nsCString sourceMapURL;
+    if (nsContentUtils::GetSourceMapURL(httpChannel, sourceMapURL)) {
+      mSheet->SetSourceMapURL(std::move(sourceMapURL));
+    }
+  }
+}
+
 /*
- * Stream completion code shared by Stylo and the old style system.
- *
  * Here we need to check that the load did not give us an http error
  * page and check the mimetype on the channel to make sure we're not
  * loading non-text/css data in standards mode.
  */
-nsresult SheetLoadData::VerifySheetReadyToParse(
-    nsresult aStatus, const nsACString& aBytes1, const nsACString& aBytes2,
-    nsIChannel* aChannel, nsIURI* aFinalChannelURI,
-    nsIPrincipal* aChannelResultPrincipal) {
+nsresult SheetLoadData::VerifySheetReadyToParse(nsresult aStatus,
+                                                const nsACString& aBytes1,
+                                                const nsACString& aBytes2,
+                                                nsIChannel* aChannel) {
   LOG(("SheetLoadData::VerifySheetReadyToParse"));
   NS_ASSERTION((!NS_IsMainThread() || !mLoader->mSyncCallback),
                "Synchronous callback from necko");
+  MOZ_DIAGNOSTIC_ASSERT_IF(mRecordErrors, NS_IsMainThread());
+  MOZ_DIAGNOSTIC_ASSERT(aChannel);
 
   if (AllLoadsCanceled(*this)) {
-    if (NS_IsMainThread()) {
-      LOG_WARN(("  All loads are canceled, dropping"));
-      mLoader->SheetComplete(*this, NS_BINDING_ABORTED);
-    }
-    return NS_OK;
-  }
-
-  if (!NS_IsMainThread() && mRecordErrors) {
-    // we cannot parse sheet OMT if we need to record errors
-    return NS_OK;
+    return NS_BINDING_ABORTED;
   }
 
   if (NS_FAILED(aStatus)) {
-    if (NS_IsMainThread()) {
-      LOG_WARN(
-          ("  Load failed: status 0x%" PRIx32, static_cast<uint32_t>(aStatus)));
-      // Handle sheet not loading error because source was a tracking URL (or
-      // fingerprinting, cryptomining, etc).
-      // We make a note of this sheet node by including it in a dedicated
-      // array of blocked tracking nodes under its parent document.
-      //
-      // Multiple sheet load instances might be tied to this request,
-      // we annotate each one linked to a valid owning element (node).
-      if (net::UrlClassifierFeatureFactory::IsClassifierBlockingErrorCode(
-              aStatus)) {
-        if (Document* doc = mLoader->GetDocument()) {
-          for (SheetLoadData* data = this; data; data = data->mNext) {
-            // owner node may be null but AddBlockTrackingNode can cope
-            doc->AddBlockedNodeByClassifier(data->mSheet->GetOwnerNode());
-          }
-        }
-      }
-      mLoader->SheetComplete(*this, aStatus);
-    }
-    return NS_OK;
+    return aStatus;
   }
-
-  if (!aChannel) {
-    MOZ_ASSERT(NS_IsMainThread());
-    mLoader->SheetComplete(*this, NS_OK);
-    return NS_OK;
-  }
-
-  nsCOMPtr<nsIURI> originalURI;
-  aChannel->GetOriginalURI(getter_AddRefs(originalURI));
-
-  // If the channel's original URI is "chrome:", we want that, since
-  // the observer code in nsXULPrototypeCache depends on chrome stylesheets
-  // having a chrome URI.  (Whether or not chrome stylesheets come through
-  // this codepath seems nondeterministic.)
-  // Otherwise we want the potentially-HTTP-redirected URI.
-  if (!aFinalChannelURI || !originalURI) {
-    MOZ_ASSERT(NS_IsMainThread());
-    NS_ERROR("Someone just violated the nsIRequest contract");
-    LOG_WARN(("  Channel without a URI.  Bad!"));
-    mLoader->SheetComplete(*this, NS_ERROR_UNEXPECTED);
-    return NS_OK;
-  }
-
-  nsCOMPtr<nsIPrincipal> principal;
-  nsIScriptSecurityManager* secMan = nsContentUtils::GetSecurityManager();
-  nsresult result = NS_ERROR_NOT_AVAILABLE;
-  if (secMan) {  // Could be null if we already shut down
-    if (mUseSystemPrincipal) {
-      result = secMan->GetSystemPrincipal(getter_AddRefs(principal));
-    } else {
-      if (aChannelResultPrincipal) {
-        principal = aChannelResultPrincipal;
-        result = NS_OK;
-      }
-    }
-  }
-
-  if (NS_FAILED(result)) {
-    if (NS_IsMainThread()) {
-      LOG_WARN(("  Couldn't get principal"));
-      mLoader->SheetComplete(*this, result);
-    }
-    return NS_OK;
-  }
-
-  mSheet->SetPrincipal(principal);
 
   // If it's an HTTP channel, we want to make sure this is not an
   // error document we got.
   if (nsCOMPtr<nsIHttpChannel> httpChannel = do_QueryInterface(aChannel)) {
     bool requestSucceeded;
-    result = httpChannel->GetRequestSucceeded(&requestSucceeded);
+    nsresult result = httpChannel->GetRequestSucceeded(&requestSucceeded);
     if (NS_SUCCEEDED(result) && !requestSucceeded) {
-      if (NS_IsMainThread()) {
-        LOG(("  Load returned an error page"));
-        mLoader->SheetComplete(*this, NS_ERROR_NOT_AVAILABLE);
-      }
-      return NS_OK;
-    }
-
-    nsCString sourceMapURL;
-    if (nsContentUtils::GetSourceMapURL(httpChannel, sourceMapURL)) {
-      mSheet->SetSourceMapURL(std::move(sourceMapURL));
+      return NS_ERROR_NOT_AVAILABLE;
     }
   }
 
@@ -781,99 +737,51 @@ nsresult SheetLoadData::VerifySheetReadyToParse(
   // MIME type, but only if the style sheet is same-origin with the
   // requesting document or parent sheet.  See bug 524223.
 
-  bool validType = contentType.EqualsLiteral("text/css") ||
-                   contentType.EqualsLiteral(UNKNOWN_CONTENT_TYPE) ||
-                   contentType.IsEmpty();
+  const bool validType = contentType.EqualsLiteral("text/css") ||
+                         contentType.EqualsLiteral(UNKNOWN_CONTENT_TYPE) ||
+                         contentType.IsEmpty();
 
   if (!validType) {
-    if (!NS_IsMainThread()) {
-      return NS_OK;
+    // FIXME(emilio, bug 1995647): This should arguably use IsOriginClean(),
+    // though test_css_cross_domain_no_orb.html tests precisely this behavior
+    // intentionally, and this is quirks-only...
+    const bool sameOrigin =
+        mLoader->LoaderPrincipal()->Subsumes(mSheet->Principal());
+    const auto flag = sameOrigin && mCompatMode == eCompatibility_NavQuirks
+                          ? nsIScriptError::warningFlag
+                          : nsIScriptError::errorFlag;
+    const auto errorMessage = flag == nsIScriptError::errorFlag
+                                  ? "MimeNotCss"_ns
+                                  : "MimeNotCssWarn"_ns;
+    NS_ConvertUTF8toUTF16 sheetUri(mURI->GetSpecOrDefault());
+    NS_ConvertUTF8toUTF16 contentType16(contentType);
+
+    nsAutoCString referrerSpec;
+    if (nsCOMPtr<nsIURI> referrer = ReferrerInfo()->GetOriginalReferrer()) {
+      referrer->GetSpec(referrerSpec);
     }
-    const char* errorMessage;
-    uint32_t errorFlag;
-    bool sameOrigin = true;
-
-    bool subsumed;
-    result = mTriggeringPrincipal->Subsumes(principal, &subsumed);
-    if (NS_FAILED(result) || !subsumed) {
-      sameOrigin = false;
-    }
-
-    if (sameOrigin && mCompatMode == eCompatibility_NavQuirks) {
-      errorMessage = "MimeNotCssWarn";
-      errorFlag = nsIScriptError::warningFlag;
-    } else {
-      errorMessage = "MimeNotCss";
-      errorFlag = nsIScriptError::errorFlag;
-    }
-
-    AutoTArray<nsString, 2> strings;
-    CopyUTF8toUTF16(aFinalChannelURI->GetSpecOrDefault(),
-                    *strings.AppendElement());
-    CopyASCIItoUTF16(contentType, *strings.AppendElement());
-
-    nsCOMPtr<nsIURI> referrer = ReferrerInfo()->GetOriginalReferrer();
-    nsContentUtils::ReportToConsole(
-        errorFlag, "CSS Loader"_ns, mLoader->mDocument,
-        nsContentUtils::eCSS_PROPERTIES, errorMessage, strings,
-        SourceLocation(referrer.get()));
-
-    if (errorFlag == nsIScriptError::errorFlag) {
+    mLoader->mReporter->AddConsoleReport(
+        flag, "CSS Loader"_ns, nsContentUtils::eCSS_PROPERTIES, referrerSpec, 0,
+        0, errorMessage, {sheetUri, contentType16});
+    if (flag == nsIScriptError::errorFlag) {
       LOG_WARN(
           ("  Ignoring sheet with improper MIME type %s", contentType.get()));
-      mLoader->SheetComplete(*this, NS_ERROR_NOT_AVAILABLE);
-      return NS_OK;
+      return NS_ERROR_NOT_AVAILABLE;
     }
   }
 
   SRIMetadata sriMetadata;
   mSheet->GetIntegrity(sriMetadata);
   if (!sriMetadata.IsEmpty()) {
-    if (!NS_IsMainThread()) {
-      // We dont process any further in OMT.
-      // This is because we have some main-thread only accesses below.
-      // We need to find a way to optimize this handling.
-      // See Bug 1882046.
-      return NS_OK;
-    }
-    nsAutoCString sourceUri;
-    if (mLoader->mDocument && mLoader->mDocument->GetDocumentURI()) {
-      mLoader->mDocument->GetDocumentURI()->GetAsciiSpec(sourceUri);
-    }
-    nsresult rv = VerifySheetIntegrity(sriMetadata, aChannel, aBytes1, aBytes2,
-                                       sourceUri, mLoader->mReporter);
-
-    nsCOMPtr<nsILoadGroup> loadGroup;
-    aChannel->GetLoadGroup(getter_AddRefs(loadGroup));
-    if (loadGroup) {
-      mLoader->mReporter->FlushConsoleReports(loadGroup);
-    } else {
-      mLoader->mReporter->FlushConsoleReports(mLoader->mDocument);
-    }
-
+    nsresult rv = VerifySheetIntegrity(sriMetadata, aChannel, mTainting,
+                                       aBytes1, aBytes2, mLoader->mReporter);
     if (NS_FAILED(rv)) {
       LOG(("  Load was blocked by SRI"));
       MOZ_LOG(gSriPRLog, LogLevel::Debug,
               ("css::Loader::OnStreamComplete, bad metadata"));
-      mLoader->SheetComplete(*this, NS_ERROR_SRI_CORRUPT);
-      return NS_OK;
+      return NS_ERROR_SRI_CORRUPT;
     }
   }
-
-  if (mSheet->GetCORSMode() == CORS_NONE &&
-      !mTriggeringPrincipal->Subsumes(principal)) {
-    mIsCrossOriginNoCORS = true;
-  }
-  // Enough to set the URIs on mSheet, since any sibling datas we have share
-  // the same mInner as mSheet and will thus get the same URI.
-  mSheet->SetURIs(aFinalChannelURI, originalURI, aFinalChannelURI);
-
-  ReferrerPolicy policy =
-      nsContentUtils::GetReferrerPolicyFromChannel(aChannel);
-  nsCOMPtr<nsIReferrerInfo> referrerInfo =
-      ReferrerInfo::CreateForExternalCSSResources(mSheet, policy);
-
-  mSheet->SetReferrerInfo(referrerInfo);
   return NS_OK_PARSE_SHEET;
 }
 
@@ -908,26 +816,48 @@ Loader::IsAlternate Loader::IsAlternateSheet(const nsAString& aTitle,
   return IsAlternate::Yes;
 }
 
-nsresult Loader::CheckContentPolicy(nsIPrincipal* aLoadingPrincipal,
-                                    nsIPrincipal* aTriggeringPrincipal,
-                                    nsIURI* aTargetURI,
-                                    nsINode* aRequestingNode,
-                                    const nsAString& aNonce,
-                                    StylePreloadKind aPreloadKind) {
+static nsSecurityFlags ComputeSecurityFlags(CORSMode aCORSMode) {
+  nsSecurityFlags securityFlags =
+      nsContentSecurityManager::ComputeSecurityFlags(
+          aCORSMode, nsContentSecurityManager::CORSSecurityMapping::
+                         CORS_NONE_MAPS_TO_INHERITED_CONTEXT);
+  securityFlags |= nsILoadInfo::SEC_ALLOW_CHROME;
+  return securityFlags;
+}
+
+static nsContentPolicyType ComputeContentPolicyType(
+    StylePreloadKind aPreloadKind) {
+  return aPreloadKind == StylePreloadKind::None
+             ? nsIContentPolicy::TYPE_INTERNAL_STYLESHEET
+             : nsIContentPolicy::TYPE_INTERNAL_STYLESHEET_PRELOAD;
+}
+
+nsresult Loader::CheckContentPolicy(
+    nsIPrincipal* aLoadingPrincipal, nsIPrincipal* aTriggeringPrincipal,
+    nsIURI* aTargetURI, nsINode* aRequestingNode, const nsAString& aNonce,
+    StylePreloadKind aPreloadKind, CORSMode aCORSMode,
+    const nsAString& aIntegrity) {
   // When performing a system load don't consult content policies.
   if (!mDocument) {
     return NS_OK;
   }
 
   nsContentPolicyType contentPolicyType =
-      aPreloadKind == StylePreloadKind::None
-          ? nsIContentPolicy::TYPE_INTERNAL_STYLESHEET
-          : nsIContentPolicy::TYPE_INTERNAL_STYLESHEET_PRELOAD;
+      ComputeContentPolicyType(aPreloadKind);
 
-  nsCOMPtr<nsILoadInfo> secCheckLoadInfo = new net::LoadInfo(
+  nsCOMPtr<nsILoadInfo> secCheckLoadInfo = MOZ_TRY(net::LoadInfo::Create(
       aLoadingPrincipal, aTriggeringPrincipal, aRequestingNode,
-      nsILoadInfo::SEC_ONLY_FOR_EXPLICIT_CONTENTSEC_CHECK, contentPolicyType);
+      nsILoadInfo::SEC_ONLY_FOR_EXPLICIT_CONTENTSEC_CHECK, contentPolicyType));
   secCheckLoadInfo->SetCspNonce(aNonce);
+
+  // Required for IntegrityPolicy checks.
+  RequestMode requestMode = nsContentSecurityManager::SecurityModeToRequestMode(
+      nsContentSecurityManager::ComputeSecurityMode(
+          ComputeSecurityFlags(aCORSMode)));
+  secCheckLoadInfo->SetRequestMode(Some(requestMode));
+
+  // Required for IntegrityPolicy checks.
+  secCheckLoadInfo->SetIntegrityMetadata(aIntegrity);
 
   int16_t shouldLoad = nsIContentPolicy::ACCEPT;
   nsresult rv =
@@ -959,24 +889,13 @@ nsresult Loader::CheckContentPolicy(nsIPrincipal* aLoadingPrincipal,
   return NS_OK;
 }
 
-static void RecordUseCountersIfNeeded(Document* aDoc,
-                                      const StyleSheet& aSheet) {
-  if (!aDoc) {
-    return;
+bool Loader::MaybePutIntoLoadsPerformed(SheetLoadData& aLoadData) {
+  if (!aLoadData.mURI) {
+    // Inline style sheet is not tracked.
+    return false;
   }
-  const StyleUseCounters* docCounters = aDoc->GetStyleUseCounters();
-  if (!docCounters) {
-    return;
-  }
-  if (aSheet.URLData()->ChromeRulesEnabled()) {
-    return;
-  }
-  const auto* sheetCounters = aSheet.GetStyleUseCounters();
-  if (!sheetCounters) {
-    return;
-  }
-  Servo_UseCounters_Merge(docCounters, sheetCounters);
-  aDoc->MaybeWarnAboutZoom();
+
+  return mLoadsPerformed.EnsureInserted(SheetLoadDataHashKey(aLoadData));
 }
 
 /**
@@ -987,12 +906,14 @@ static void RecordUseCountersIfNeeded(Document* aDoc,
  * state of the sheet they are clones off; make sure to call PrepareSheet() on
  * the result of CreateSheet().
  */
-std::tuple<RefPtr<StyleSheet>, Loader::SheetState> Loader::CreateSheet(
-    nsIURI* aURI, nsIContent* aLinkingContent,
-    nsIPrincipal* aTriggeringPrincipal, css::SheetParsingMode aParsingMode,
-    CORSMode aCORSMode, const Encoding* aPreloadOrParentDataEncoding,
-    const nsAString& aIntegrity, bool aSyncLoad,
-    StylePreloadKind aPreloadKind) {
+std::tuple<RefPtr<StyleSheet>, Loader::SheetState,
+           RefPtr<SubResourceNetworkMetadataHolder>>
+Loader::CreateSheet(nsIURI* aURI, nsIContent* aLinkingContent,
+                    nsIPrincipal* aTriggeringPrincipal,
+                    css::SheetParsingMode aParsingMode, CORSMode aCORSMode,
+                    const Encoding* aPreloadOrParentDataEncoding,
+                    const nsAString& aIntegrity, bool aSyncLoad,
+                    StylePreloadKind aPreloadKind) {
   MOZ_ASSERT(aURI, "This path is not taken for inline stylesheets");
   LOG(("css::Loader::CreateSheet(%s)", aURI->GetSpecOrDefault().get()));
 
@@ -1009,8 +930,7 @@ std::tuple<RefPtr<StyleSheet>, Loader::SheetState> Loader::CreateSheet(
   }
 
   if (mSheets) {
-    SheetLoadDataHashKey key(aURI, aTriggeringPrincipal, LoaderPrincipal(),
-                             PartitionedPrincipal(),
+    SheetLoadDataHashKey key(aURI, LoaderPrincipal(), PartitionedPrincipal(),
                              GetFallbackEncoding(*this, aLinkingContent,
                                                  aPreloadOrParentDataEncoding),
                              aCORSMode, aParsingMode, CompatMode(aPreloadKind),
@@ -1019,11 +939,11 @@ std::tuple<RefPtr<StyleSheet>, Loader::SheetState> Loader::CreateSheet(
     if (cacheResult.mState != CachedSubResourceState::Miss) {
       SheetState sheetState = SheetState::Complete;
       RefPtr<StyleSheet> sheet;
+      RefPtr<SubResourceNetworkMetadataHolder> networkMetadata;
       if (cacheResult.mCompleteValue) {
         sheet = cacheResult.mCompleteValue->Clone(nullptr, nullptr);
+        networkMetadata = cacheResult.mNetworkMetadata;
         mDocument->SetDidHitCompleteSheetCache();
-        RecordUseCountersIfNeeded(mDocument, *sheet);
-        mLoadsPerformed.PutEntry(key);
       } else {
         MOZ_ASSERT(cacheResult.mLoadingOrPendingValue);
         sheet = cacheResult.mLoadingOrPendingValue->ValueForCache();
@@ -1032,21 +952,19 @@ std::tuple<RefPtr<StyleSheet>, Loader::SheetState> Loader::CreateSheet(
                          : SheetState::Pending;
       }
       LOG(("  Hit cache with state: %s", gStateStrings[size_t(sheetState)]));
-      return {std::move(sheet), sheetState};
+      return {std::move(sheet), sheetState, std::move(networkMetadata)};
     }
   }
-
-  nsIURI* sheetURI = aURI;
-  nsIURI* baseURI = aURI;
-  nsIURI* originalURI = aURI;
-
   auto sheet = MakeRefPtr<StyleSheet>(aParsingMode, aCORSMode, sriMetadata);
-  sheet->SetURIs(sheetURI, originalURI, baseURI);
   nsCOMPtr<nsIReferrerInfo> referrerInfo =
-      ReferrerInfo::CreateForExternalCSSResources(sheet);
-  sheet->SetReferrerInfo(referrerInfo);
+      ReferrerInfo::CreateForExternalCSSResources(sheet, aURI);
+  // NOTE: If the sheet is loaded, then SetURIs gets called again with the right
+  // principal / final uri / etc.
+  sheet->SetURIs(aURI, aURI, referrerInfo, LoaderPrincipal());
+  // Load errors should be origin-dirty, even if same-origin.
+  sheet->SetOriginClean(false);
   LOG(("  Needs parser"));
-  return {std::move(sheet), SheetState::NeedsParser};
+  return {std::move(sheet), SheetState::NeedsParser, nullptr};
 }
 
 static Loader::MediaMatched MediaListMatches(const MediaList* aMediaList,
@@ -1107,62 +1025,23 @@ void Loader::InsertSheetInTree(StyleSheet& aSheet) {
   LOG(("css::Loader::InsertSheetInTree"));
   MOZ_ASSERT(mDocument, "Must have a document to insert into");
 
+  // If our owning node is null, we come from a link header.
   nsINode* owningNode = aSheet.GetOwnerNode();
-  MOZ_ASSERT(!owningNode || owningNode->IsInUncomposedDoc() ||
-                 owningNode->IsInShadowTree(),
-             "Why would we insert it anywhere?");
-  ShadowRoot* shadow = owningNode ? owningNode->GetContainingShadow() : nullptr;
+  MOZ_ASSERT_IF(owningNode, owningNode->OwnerDoc() == mDocument);
+  DocumentOrShadowRoot* target =
+      owningNode ? owningNode->GetContainingDocumentOrShadowRoot() : mDocument;
+  MOZ_ASSERT(target, "Where should we insert it?");
 
-  auto& target = shadow ? static_cast<DocumentOrShadowRoot&>(*shadow)
-                        : static_cast<DocumentOrShadowRoot&>(*mDocument);
-
-  // XXX Need to cancel pending sheet loads for this element, if any
-
-  int32_t sheetCount = target.SheetCount();
-
-  /*
-   * Start the walk at the _end_ of the list, since in the typical
-   * case we'll just want to append anyway.  We want to break out of
-   * the loop when insertionPoint points to just before the index we
-   * want to insert at.  In other words, when we leave the loop
-   * insertionPoint is the index of the stylesheet that immediately
-   * precedes the one we're inserting.
-   */
-  int32_t insertionPoint = sheetCount - 1;
-  for (; insertionPoint >= 0; --insertionPoint) {
-    nsINode* sheetOwner = target.SheetAt(insertionPoint)->GetOwnerNode();
-    if (sheetOwner && !owningNode) {
-      // Keep moving; all sheets with a sheetOwner come after all
-      // sheets without a linkingNode
-      continue;
-    }
-
-    if (!sheetOwner) {
-      // Aha!  The current sheet has no sheet owner, so we want to insert after
-      // it no matter whether we have a linking content or not.
-      break;
-    }
-
-    MOZ_ASSERT(owningNode != sheetOwner, "Why do we still have our old sheet?");
-
-    // Have to compare
-    if (nsContentUtils::PositionIsBefore(sheetOwner, owningNode)) {
-      // The current sheet comes before us, and it better be the first
-      // such, because now we break
-      break;
-    }
-  }
-
-  ++insertionPoint;
-
-  if (shadow) {
+  size_t insertionPoint = target->FindSheetInsertionPointInTree(aSheet);
+  if (auto* shadow = ShadowRoot::FromNode(target->AsNode())) {
     shadow->InsertSheetAt(insertionPoint, aSheet);
   } else {
+    MOZ_ASSERT(&target->AsNode() == mDocument);
     mDocument->InsertSheetAt(insertionPoint, aSheet);
   }
 
-  LOG(("  Inserting into target (doc: %d) at position %d",
-       target.AsNode().IsDocument(), insertionPoint));
+  LOG(("  Inserting into target (doc: %d) at position %zu",
+       target->AsNode().IsDocument(), insertionPoint));
 }
 
 /**
@@ -1188,6 +1067,80 @@ void Loader::InsertChildSheet(StyleSheet& aSheet, StyleSheet& aParentSheet) {
   LOG(("  Inserting into parent sheet"));
 }
 
+nsresult Loader::NewStyleSheetChannel(SheetLoadData& aLoadData,
+                                      CORSMode aCorsMode,
+                                      UsePreload aUsePreload,
+                                      UseLoadGroup aUseLoadGroup,
+                                      nsIChannel** aOutChannel) {
+  nsCOMPtr<nsILoadGroup> loadGroup;
+  nsCOMPtr<nsICookieJarSettings> cookieJarSettings;
+  net::ClassificationFlags triggeringClassificationFlags;
+  if (aUseLoadGroup == UseLoadGroup::Yes && mDocument) {
+    loadGroup = mDocument->GetDocumentLoadGroup();
+    // load for a document with no loadgrup indicates that something is
+    // completely bogus, let's bail out early.
+    if (!loadGroup) {
+      LOG_ERROR(("  Failed to query loadGroup from document"));
+      return NS_ERROR_UNEXPECTED;
+    }
+
+    cookieJarSettings = mDocument->CookieJarSettings();
+
+    // If the script context is tracking, we use the flags from the script
+    // tracking flags. Otherwise, we fallback to use the flags from the
+    // document.
+    triggeringClassificationFlags = mDocument->GetScriptTrackingFlags();
+  }
+
+  nsSecurityFlags securityFlags = ComputeSecurityFlags(aCorsMode);
+
+  nsContentPolicyType contentPolicyType =
+      ComputeContentPolicyType(aLoadData.mPreloadKind);
+
+  nsINode* requestingNode = aLoadData.GetRequestingNode();
+
+  nsIPrincipal* triggeringPrincipal = aLoadData.mTriggeringPrincipal;
+
+  // Note that we are calling NS_NewChannelWithTriggeringPrincipal() with both
+  // a node and a principal.
+  // This is because of a case where the node is the document being styled and
+  // the principal is the stylesheet (perhaps from a different origin) that is
+  // applying the styles.
+  if (requestingNode) {
+    return NS_NewChannelWithTriggeringPrincipal(
+        aOutChannel, aLoadData.mURI, requestingNode, triggeringPrincipal,
+        securityFlags, contentPolicyType,
+        /* aPerformanceStorage = */ nullptr, loadGroup);
+  }
+
+  MOZ_ASSERT(triggeringPrincipal->Equals(LoaderPrincipal()));
+
+  if (aUsePreload == UsePreload::Yes) {
+    auto result = URLPreloader::ReadURI(aLoadData.mURI);
+    if (result.isOk()) {
+      nsCOMPtr<nsIInputStream> stream;
+      MOZ_TRY(
+          NS_NewCStringInputStream(getter_AddRefs(stream), result.unwrap()));
+
+      return NS_NewInputStreamChannel(aOutChannel, aLoadData.mURI,
+                                      stream.forget(), triggeringPrincipal,
+                                      securityFlags, contentPolicyType);
+    }
+  }
+
+  MOZ_TRY(NS_NewChannel(aOutChannel, aLoadData.mURI, triggeringPrincipal,
+                        securityFlags, contentPolicyType, cookieJarSettings,
+                        /* aPerformanceStorage = */ nullptr, loadGroup));
+
+  nsCOMPtr<nsILoadInfo> loadInfo = (*aOutChannel)->LoadInfo();
+  loadInfo->SetTriggeringFirstPartyClassificationFlags(
+      triggeringClassificationFlags.firstPartyFlags);
+  loadInfo->SetTriggeringThirdPartyClassificationFlags(
+      triggeringClassificationFlags.thirdPartyFlags);
+
+  return NS_OK;
+}
+
 nsresult Loader::LoadSheetSyncInternal(SheetLoadData& aLoadData,
                                        SheetState aSheetState) {
   LOG(("  Synchronous load"));
@@ -1195,62 +1148,17 @@ nsresult Loader::LoadSheetSyncInternal(SheetLoadData& aLoadData,
   MOZ_ASSERT(aSheetState == SheetState::NeedsParser,
              "Sync loads can't reuse existing async loads");
 
-  nsINode* requestingNode = aLoadData.GetRequestingNode();
-
-  nsresult rv = NS_OK;
-
   // Create a StreamLoader instance to which we will feed
   // the data from the sync load.  Do this before creating the
   // channel to make error recovery simpler.
   auto streamLoader = MakeRefPtr<StreamLoader>(aLoadData);
 
-  if (mDocument) {
-    net::PredictorLearn(aLoadData.mURI, mDocument->GetDocumentURI(),
-                        nsINetworkPredictor::LEARN_LOAD_SUBRESOURCE, mDocument);
-  }
-
   // Synchronous loads should only be used internally. Therefore no CORS
   // policy is needed.
-  nsSecurityFlags securityFlags =
-      nsContentSecurityManager::ComputeSecurityFlags(
-          CORSMode::CORS_NONE, nsContentSecurityManager::CORSSecurityMapping::
-                                   CORS_NONE_MAPS_TO_INHERITED_CONTEXT);
-
-  securityFlags |= nsILoadInfo::SEC_ALLOW_CHROME;
-
-  nsContentPolicyType contentPolicyType =
-      aLoadData.mPreloadKind == StylePreloadKind::None
-          ? nsIContentPolicy::TYPE_INTERNAL_STYLESHEET
-          : nsIContentPolicy::TYPE_INTERNAL_STYLESHEET_PRELOAD;
-
-  // Just load it
   nsCOMPtr<nsIChannel> channel;
-  // Note that we are calling NS_NewChannelWithTriggeringPrincipal() with both
-  // a node and a principal.
-  // This is because of a case where the node is the document being styled and
-  // the principal is the stylesheet (perhaps from a different origin) that is
-  // applying the styles.
-  if (requestingNode) {
-    rv = NS_NewChannelWithTriggeringPrincipal(
-        getter_AddRefs(channel), aLoadData.mURI, requestingNode,
-        aLoadData.mTriggeringPrincipal, securityFlags, contentPolicyType);
-  } else {
-    MOZ_ASSERT(aLoadData.mTriggeringPrincipal->Equals(LoaderPrincipal()));
-    auto result = URLPreloader::ReadURI(aLoadData.mURI);
-    if (result.isOk()) {
-      nsCOMPtr<nsIInputStream> stream;
-      MOZ_TRY(
-          NS_NewCStringInputStream(getter_AddRefs(stream), result.unwrap()));
-
-      rv = NS_NewInputStreamChannel(
-          getter_AddRefs(channel), aLoadData.mURI, stream.forget(),
-          aLoadData.mTriggeringPrincipal, securityFlags, contentPolicyType);
-    } else {
-      rv = NS_NewChannel(getter_AddRefs(channel), aLoadData.mURI,
-                         aLoadData.mTriggeringPrincipal, securityFlags,
-                         contentPolicyType);
-    }
-  }
+  nsresult rv =
+      NewStyleSheetChannel(aLoadData, CORSMode::CORS_NONE, UsePreload::Yes,
+                           UseLoadGroup::No, getter_AddRefs(channel));
   if (NS_FAILED(rv)) {
     LOG_ERROR(("  Failed to create channel"));
     streamLoader->ChannelOpenFailed(rv);
@@ -1336,9 +1244,9 @@ bool Loader::MaybeCoalesceLoadAndNotifyOpen(SheetLoadData& aLoadData,
     if (aSheetState == SheetState::Pending) {
       ++mPendingLoadCount;
     } else {
-      aLoadData.NotifyOpen(
-          aPreloadKey, mDocument,
-          aLoadData.IsLinkRelPreload() /* TODO: why not `IsPreload()`?*/);
+      // TODO: why not just `IsPreload()`?
+      aLoadData.NotifyOpen(aPreloadKey, mDocument,
+                           aLoadData.IsLinkRelPreloadOrEarlyHint());
     }
   }
   return coalescedLoad;
@@ -1405,14 +1313,15 @@ nsresult Loader::LoadSheet(SheetLoadData& aLoadData, SheetState aSheetState,
     }
   }
 
-  aLoadData.NotifyOpen(preloadKey, mDocument, aLoadData.IsLinkRelPreload());
+  aLoadData.NotifyOpen(preloadKey, mDocument,
+                       aLoadData.IsLinkRelPreloadOrEarlyHint());
 
   return LoadSheetAsyncInternal(aLoadData, aEarlyHintPreloaderId, key);
 }
 
 void Loader::AdjustPriority(const SheetLoadData& aLoadData,
                             nsIChannel* aChannel) {
-  if (!aLoadData.ShouldDefer() && aLoadData.IsLinkRelPreload()) {
+  if (!aLoadData.ShouldDefer() && aLoadData.IsLinkRelPreloadOrEarlyHint()) {
     SheetLoadData::PrioritizeAsPreload(aChannel);
   }
 
@@ -1433,7 +1342,7 @@ void Loader::AdjustPriority(const SheetLoadData& aLoadData,
       return FETCH_PRIORITY_ADJUSTMENT_FOR(deferred_style,
                                            aLoadData.mFetchPriority);
     }
-    if (aLoadData.IsLinkRelPreload()) {
+    if (aLoadData.IsLinkRelPreloadOrEarlyHint()) {
       return FETCH_PRIORITY_ADJUSTMENT_FOR(link_preload_style,
                                            aLoadData.mFetchPriority);
     }
@@ -1447,69 +1356,27 @@ void Loader::AdjustPriority(const SheetLoadData& aLoadData,
   sp->GetPriority(&adjustedPriority);
   LogPriorityMapping(sCssLoaderLog, aLoadData.mFetchPriority, adjustedPriority);
 #endif
+
+  if (nsCOMPtr<nsIClassOfService> cos = do_QueryInterface(aChannel)) {
+    cos->SetFetchPriorityDOM(aLoadData.mFetchPriority);
+  }
 }
 
 nsresult Loader::LoadSheetAsyncInternal(SheetLoadData& aLoadData,
                                         uint64_t aEarlyHintPreloaderId,
                                         const SheetLoadDataHashKey& aKey) {
-  nsresult rv = NS_OK;
-
   SRIMetadata sriMetadata;
   aLoadData.mSheet->GetIntegrity(sriMetadata);
-
-  nsINode* requestingNode = aLoadData.GetRequestingNode();
-
-  nsCOMPtr<nsILoadGroup> loadGroup;
-  nsCOMPtr<nsICookieJarSettings> cookieJarSettings;
-  if (mDocument) {
-    loadGroup = mDocument->GetDocumentLoadGroup();
-    // load for a document with no loadgrup indicates that something is
-    // completely bogus, let's bail out early.
-    if (!loadGroup) {
-      LOG_ERROR(("  Failed to query loadGroup from document"));
-      SheetComplete(aLoadData, NS_ERROR_UNEXPECTED);
-      return NS_ERROR_UNEXPECTED;
-    }
-
-    cookieJarSettings = mDocument->CookieJarSettings();
-  }
 
 #ifdef DEBUG
   AutoRestore<bool> syncCallbackGuard(mSyncCallback);
   mSyncCallback = true;
 #endif
 
-  nsSecurityFlags securityFlags =
-      nsContentSecurityManager::ComputeSecurityFlags(
-          aLoadData.mSheet->GetCORSMode(),
-          nsContentSecurityManager::CORSSecurityMapping::
-              CORS_NONE_MAPS_TO_INHERITED_CONTEXT);
-
-  securityFlags |= nsILoadInfo::SEC_ALLOW_CHROME;
-
-  nsContentPolicyType contentPolicyType =
-      aLoadData.mPreloadKind == StylePreloadKind::None
-          ? nsIContentPolicy::TYPE_INTERNAL_STYLESHEET
-          : nsIContentPolicy::TYPE_INTERNAL_STYLESHEET_PRELOAD;
-
   nsCOMPtr<nsIChannel> channel;
-  // Note we are calling NS_NewChannelWithTriggeringPrincipal here with a node
-  // and a principal. This is because of a case where the node is the document
-  // being styled and the principal is the stylesheet (perhaps from a different
-  // origin)  that is applying the styles.
-  if (requestingNode) {
-    rv = NS_NewChannelWithTriggeringPrincipal(
-        getter_AddRefs(channel), aLoadData.mURI, requestingNode,
-        aLoadData.mTriggeringPrincipal, securityFlags, contentPolicyType,
-        /* PerformanceStorage */ nullptr, loadGroup);
-  } else {
-    MOZ_ASSERT(aLoadData.mTriggeringPrincipal->Equals(LoaderPrincipal()));
-    rv = NS_NewChannel(getter_AddRefs(channel), aLoadData.mURI,
-                       aLoadData.mTriggeringPrincipal, securityFlags,
-                       contentPolicyType, cookieJarSettings,
-                       /* aPerformanceStorage */ nullptr, loadGroup);
-  }
-
+  nsresult rv = NewStyleSheetChannel(aLoadData, aLoadData.mSheet->GetCORSMode(),
+                                     UsePreload::No, UseLoadGroup::Yes,
+                                     getter_AddRefs(channel));
   if (NS_FAILED(rv)) {
     LOG_ERROR(("  Failed to create channel"));
     SheetComplete(aLoadData, rv);
@@ -1518,13 +1385,14 @@ nsresult Loader::LoadSheetAsyncInternal(SheetLoadData& aLoadData,
 
   nsCOMPtr<nsILoadInfo> loadInfo = channel->LoadInfo();
   loadInfo->SetCspNonce(aLoadData.Nonce());
+  loadInfo->SetIntegrityMetadata(sriMetadata.GetIntegrityString());
 
   if (!aLoadData.ShouldDefer()) {
     if (nsCOMPtr<nsIClassOfService> cos = do_QueryInterface(channel)) {
       cos->AddClassFlags(nsIClassOfService::Leader);
     }
 
-    if (aLoadData.IsLinkRelPreload()) {
+    if (!aLoadData.BlocksLoadEvent()) {
       SheetLoadData::AddLoadBackgroundFlag(channel);
     }
   }
@@ -1534,24 +1402,16 @@ nsresult Loader::LoadSheetAsyncInternal(SheetLoadData& aLoadData,
   if (nsCOMPtr<nsIHttpChannel> httpChannel = do_QueryInterface(channel)) {
     if (nsCOMPtr<nsIReferrerInfo> referrerInfo = aLoadData.ReferrerInfo()) {
       rv = httpChannel->SetReferrerInfo(referrerInfo);
-      Unused << NS_WARN_IF(NS_FAILED(rv));
-    }
-
-    nsCOMPtr<nsIHttpChannelInternal> internalChannel =
-        do_QueryInterface(httpChannel);
-    if (internalChannel) {
-      rv = internalChannel->SetIntegrityMetadata(
-          sriMetadata.GetIntegrityString());
-      NS_ENSURE_SUCCESS(rv, rv);
+      (void)NS_WARN_IF(NS_FAILED(rv));
     }
 
     // Set the initiator type
     if (nsCOMPtr<nsITimedChannel> timedChannel =
             do_QueryInterface(httpChannel)) {
-      if (aLoadData.mParentData) {
-        timedChannel->SetInitiatorType(u"css"_ns);
-
-        // This is a child sheet load.
+      timedChannel->SetInitiatorType(aLoadData.InitiatorTypeString());
+      if (aLoadData.mParentData &&
+          !aLoadData.mParentData->mSheet->IsOriginClean()) {
+        // This is a child sheet load of a cross-origin stylesheet.
         //
         // The resource timing of the sub-resources that a document loads
         // should normally be reported to the document.  One exception is any
@@ -1563,29 +1423,9 @@ nsresult Loader::LoadSheetAsyncInternal(SheetLoadData& aLoadData,
         // timings for any sub-resources that a cross-origin resource may load
         // since that obviously leaks information about what the cross-origin
         // resource loads, which is bad.
-        //
-        // In addition to checking whether we're an immediate child resource of
-        // a cross-origin resource (by checking if mIsCrossOriginNoCORS is set
-        // to true on our parent), we also check our parent to see whether it
-        // itself is a sub-resource of a cross-origin resource by checking
-        // mBlockResourceTiming.  If that is set then we too are such a
-        // sub-resource and so we set the flag on ourself too to propagate it
-        // on down.
-        if (aLoadData.mParentData->mIsCrossOriginNoCORS ||
-            aLoadData.mParentData->mBlockResourceTiming) {
-          // Set a flag so any other stylesheet triggered by this one will
-          // not be reported
-          aLoadData.mBlockResourceTiming = true;
-
-          // Mark the channel so PerformanceMainThread::AddEntry will not
-          // report the resource.
-          timedChannel->SetReportResourceTiming(false);
-        }
-
-      } else if (aEarlyHintPreloaderId) {
-        timedChannel->SetInitiatorType(u"early-hints"_ns);
-      } else {
-        timedChannel->SetInitiatorType(u"link"_ns);
+        // Mark the channel so PerformanceMainThread::AddEntry will not
+        // report the resource.
+        timedChannel->SetReportResourceTiming(false);
       }
     }
   }
@@ -1598,10 +1438,6 @@ nsresult Loader::LoadSheetAsyncInternal(SheetLoadData& aLoadData,
   // model is: Necko owns the stream loader, which owns the load data,
   // which owns us
   auto streamLoader = MakeRefPtr<StreamLoader>(aLoadData);
-  if (mDocument) {
-    net::PredictorLearn(aLoadData.mURI, mDocument->GetDocumentURI(),
-                        nsINetworkPredictor::LEARN_LOAD_SUBRESOURCE, mDocument);
-  }
 
 #ifdef DEBUG
   {
@@ -1696,11 +1532,41 @@ Loader::Completed Loader::ParseSheet(
   return Completed::No;
 }
 
+void Loader::AddPerformanceEntryForCachedSheet(SheetLoadData& aLoadData) {
+  MOZ_ASSERT(aLoadData.mURI);
+
+  if (!aLoadData.mNetworkMetadata) {
+    return;
+  }
+  if (!mDocument) {
+    return;
+  }
+
+  nsAutoCString name;
+  aLoadData.mURI->GetSpec(name);
+  NS_ConvertUTF8toUTF16 entryName(name);
+
+  auto end = TimeStamp::Now();
+  auto start = aLoadData.mLoadStart;
+  if (start.IsNull()) {
+    start = end;
+  }
+
+  SharedSubResourceCacheUtils::AddPerformanceEntryForCache(
+      entryName, aLoadData.InitiatorTypeString(), aLoadData.mNetworkMetadata,
+      start, end, mDocument);
+}
+
 void Loader::NotifyObservers(SheetLoadData& aData, nsresult aStatus) {
-  RecordUseCountersIfNeeded(mDocument, *aData.mSheet);
+  aData.mSheet->PropagateUseCountersTo(mDocument);
+  if (MaybePutIntoLoadsPerformed(aData) &&
+      aData.mShouldEmulateNotificationsForCachedLoad) {
+    NotifyObserversForCachedSheet(aData);
+    AddPerformanceEntryForCachedSheet(aData);
+  }
+
   RefPtr loadDispatcher = aData.PrepareLoadEventIfNeeded();
   if (aData.mURI) {
-    mLoadsPerformed.PutEntry(SheetLoadDataHashKey(aData));
     aData.NotifyStop(aStatus);
     // NOTE(emilio): This needs to happen before notifying observers, as
     // FontFaceSet for example checks for pending sheet loads from the
@@ -1722,7 +1588,7 @@ void Loader::NotifyObservers(SheetLoadData& aData, nsresult aStatus) {
           // of desktop Firefox).
           nsCOMPtr<nsISupports> pageStyleActor =
               do_QueryActor("PageStyle", doc);
-          Unused << pageStyleActor;
+          (void)pageStyleActor;
         }));
   }
   if (aData.mMustNotify) {
@@ -1757,6 +1623,9 @@ void Loader::NotifyObservers(SheetLoadData& aData, nsresult aStatus) {
 void Loader::SheetComplete(SheetLoadData& aLoadData, nsresult aStatus) {
   LOG(("css::Loader::SheetComplete, status: 0x%" PRIx32,
        static_cast<uint32_t>(aStatus)));
+  if (aLoadData.mURI) {
+    mReporter->FlushConsoleReports(mDocument);
+  }
   SharedStyleSheetCache::LoadCompleted(mSheets.get(), aLoadData, aStatus);
 }
 
@@ -1782,25 +1651,98 @@ void Loader::MarkLoadTreeFailed(SheetLoadData& aLoadData,
   } while (data);
 }
 
+static bool URIsEqual(nsIURI* aA, nsIURI* aB) {
+  if (aA == aB) {
+    return true;
+  }
+  if (!aA || !aB) {
+    return false;
+  }
+  bool equal = false;
+  return NS_SUCCEEDED(aA->Equals(aB, &equal)) && equal;
+}
+
+// The intention is that this would return true for inputs like
+//   (https://example.com/a, https://example.com/b)
+// but not for:
+//   (https://example.com/a, https://example.com/b/c)
+// where "regular" relative URIs would resolve differently.
+static bool BaseURIsArePathCompatible(nsIURI* aA, nsIURI* aB) {
+  if (!aA || !aB) {
+    return false;
+  }
+  constexpr auto kDummyPath = "foo.css"_ns;
+  nsAutoCString resultA;
+  nsAutoCString resultB;
+  aA->Resolve(kDummyPath, resultA);
+  aB->Resolve(kDummyPath, resultB);
+  return resultA == resultB;
+}
+
+static bool CanReuseInlineSheet(SharedStyleSheetCache::InlineSheetEntry& aEntry,
+                                nsIURI* aNewBaseURI, bool aIsImage) {
+  auto dependency = aEntry.mSheet->OriginalContentsUriDependency();
+  if (dependency == StyleNonLocalUriDependency::No) {
+    // If there are no non-local uris, then we can reuse.
+    return true;
+  }
+  if (aIsImage != aEntry.mWasLoadedAsImage) {
+    // Even with the same base uri, if the document was loaded as an image on
+    // one document, but wasn't on another, we can't cache the sheet, since
+    // non-local URIs should not load in those, see bug 1982344.
+    return false;
+  }
+  if (dependency == StyleNonLocalUriDependency::Absolute) {
+    // If there are only absolute uris, then we don't need to worry about the
+    // base.
+    return true;
+  }
+  nsIURI* oldBase = aEntry.mSheet->GetBaseURI();
+  if (URIsEqual(oldBase, aNewBaseURI)) {
+    return true;
+  }
+  switch (dependency) {
+    case StyleNonLocalUriDependency::Absolute:
+    case StyleNonLocalUriDependency::No:
+      MOZ_ASSERT_UNREACHABLE("How?");
+      break;
+    case StyleNonLocalUriDependency::Path:
+      if (BaseURIsArePathCompatible(oldBase, aNewBaseURI)) {
+        break;
+      }
+      [[fallthrough]];
+    case StyleNonLocalUriDependency::Full:
+      LOG(("  Can't reuse due to base URI dependency"));
+      return false;
+  }
+  return true;
+}
+
 RefPtr<StyleSheet> Loader::LookupInlineSheetInCache(
-    const nsAString& aBuffer, nsIPrincipal* aSheetPrincipal) {
-  auto result = mInlineSheets.Lookup(aBuffer);
+    const nsAString& aBuffer, nsIPrincipal* aSheetPrincipal, nsIURI* aBaseURI) {
+  MOZ_ASSERT(mDocument);
+  MOZ_ASSERT(mSheets, "Document associated loader should have sheet cache");
+  auto result = mSheets->LookupInline(LoaderPrincipal(), aBuffer);
   if (!result) {
     return nullptr;
   }
-  StyleSheet* sheet = result.Data();
-  if (NS_WARN_IF(sheet->HasModifiedRules())) {
-    // Remove it now that we know that we're never going to use this stylesheet
-    // again.
-    result.Remove();
-    return nullptr;
+  MOZ_ASSERT(!result.Data().IsEmpty());
+  const bool asImage = mDocument->IsBeingUsedAsImage();
+  for (auto& candidate : result.Data()) {
+    auto* sheet = candidate.mSheet.get();
+    MOZ_ASSERT(!sheet->HasModifiedRules(),
+               "How did we end up with a dirty sheet?");
+    if (NS_WARN_IF(!sheet->Principal()->Equals(aSheetPrincipal))) {
+      // If the sheet is going to have different access rights, don't return it
+      // from the cache. XXX can this happen now that we eagerly clone?
+      continue;
+    }
+    if (!CanReuseInlineSheet(candidate, aBaseURI, asImage)) {
+      continue;
+    }
+    return sheet->Clone(nullptr, nullptr);
   }
-  if (NS_WARN_IF(!sheet->Principal()->Equals(aSheetPrincipal))) {
-    // If the sheet is going to have different access rights, don't return it
-    // from the cache.
-    return nullptr;
-  }
-  return sheet->Clone(nullptr, nullptr);
+  return nullptr;
 }
 
 void Loader::MaybeNotifyPreloadUsed(SheetLoadData& aData) {
@@ -1845,9 +1787,6 @@ Result<Loader::LoadSheetResult, nsresult> Loader::LoadInlineStyle(
   // Use the document's base URL so that @import in the inline sheet picks up
   // the right base.
   nsIURI* baseURI = aInfo.mContent->GetBaseURI();
-  nsIURI* sheetURI = aInfo.mContent->OwnerDoc()->GetDocumentURI();
-  nsIURI* originalURI = nullptr;
-
   MOZ_ASSERT(aInfo.mIntegrity.IsEmpty());
   nsIPrincipal* loadingPrincipal = LoaderPrincipal();
   nsIPrincipal* principal = aInfo.mTriggeringPrincipal
@@ -1867,18 +1806,24 @@ Result<Loader::LoadSheetResult, nsresult> Loader::LoadInlineStyle(
     return LoaderPrincipal();
   }();
 
-  RefPtr<StyleSheet> sheet = LookupInlineSheetInCache(aBuffer, sheetPrincipal);
+  RefPtr<StyleSheet> sheet =
+      LookupInlineSheetInCache(aBuffer, sheetPrincipal, baseURI);
   const bool isSheetFromCache = !!sheet;
   if (!isSheetFromCache) {
     sheet = MakeRefPtr<StyleSheet>(eAuthorSheetFeatures, aInfo.mCORSMode,
                                    SRIMetadata{});
-    sheet->SetURIs(sheetURI, originalURI, baseURI);
-    nsIReferrerInfo* referrerInfo =
-        aInfo.mContent->OwnerDoc()->ReferrerInfoForInternalCSSAndSVGResources();
-    sheet->SetReferrerInfo(referrerInfo);
-    // We never actually load this, so just set its principal directly.
-    sheet->SetPrincipal(sheetPrincipal);
+    // If an extension creates an inline stylesheet, we don't want to consider
+    // it same-origin with the page.
+    // FIXME(emilio): That's rather odd.
+    sheet->SetOriginClean(LoaderPrincipal()->Subsumes(sheetPrincipal));
   }
+  // We allow sharing inline sheets with e.g. different base URIs, iff there's
+  // no dependency on that base URI. However, we still need to keep track of the
+  // right URIs in case the sheet is then mutated. EnsureUniqueInner will make
+  // sure the StylesheetContents get fixed up.
+  nsIReferrerInfo* referrerInfo =
+      aInfo.mContent->OwnerDoc()->ReferrerInfoForInternalCSSAndSVGResources();
+  sheet->SetURIs(nullptr, baseURI, referrerInfo, sheetPrincipal);
 
   auto matched = PrepareSheet(*sheet, aInfo.mTitle, aInfo.mMedia, nullptr,
                               isAlternate, aInfo.mIsExplicitlyEnabled);
@@ -1891,7 +1836,8 @@ Result<Loader::LoadSheetResult, nsresult> Loader::LoadInlineStyle(
   auto data = MakeRefPtr<SheetLoadData>(
       this, aInfo.mTitle, /* aURI = */ nullptr, sheet, SyncLoad::No,
       aInfo.mContent, isAlternate, matched, StylePreloadKind::None, aObserver,
-      principal, aInfo.mReferrerInfo, aInfo.mNonce, aInfo.mFetchPriority);
+      principal, aInfo.mReferrerInfo, aInfo.mNonce, aInfo.mFetchPriority,
+      nullptr);
   MOZ_ASSERT(data->GetRequestingNode() == aInfo.mContent);
   if (isSheetFromCache) {
     MOZ_ASSERT(sheet->IsComplete());
@@ -1911,13 +1857,31 @@ Result<Loader::LoadSheetResult, nsresult> Loader::LoadInlineStyle(
                                                       true));
     completed = ParseSheet(utf8, holder, AllowAsyncParse::No);
     if (completed == Completed::Yes) {
-      mInlineSheets.InsertOrUpdate(aBuffer, std::move(sheet));
+      mSheets->InsertInline(
+          LoaderPrincipal(), aBuffer,
+          {data->ValueForCache(), mDocument->IsBeingUsedAsImage()});
     } else {
       data->mMustNotify = true;
     }
   }
 
   return LoadSheetResult{completed, isAlternate, matched};
+}
+
+nsLiteralString SheetLoadData::InitiatorTypeString() {
+  MOZ_ASSERT(mURI, "Inline sheet doesn't have the initiator type string");
+
+  if (mPreloadKind == StylePreloadKind::FromEarlyHintsHeader) {
+    return u"early-hints"_ns;
+  }
+
+  if (mParentData) {
+    // @import rule.
+    return u"css"_ns;
+  }
+
+  // <link>.
+  return u"link"_ns;
 }
 
 Result<Loader::LoadSheetResult, nsresult> Loader::LoadStyleLink(
@@ -1968,10 +1932,10 @@ Result<Loader::LoadSheetResult, nsresult> Loader::LoadStyleLink(
   LOG(("  Link sync load: '%s'", syncLoad ? "true" : "false"));
   MOZ_ASSERT_IF(syncLoad, !aObserver);
 
-  nsresult rv =
-      CheckContentPolicy(loadingPrincipal, principal, aInfo.mURI,
-                         requestingNode, aInfo.mNonce, StylePreloadKind::None);
-  if (NS_WARN_IF(NS_FAILED(rv))) {
+  nsresult rv = CheckContentPolicy(
+      loadingPrincipal, principal, aInfo.mURI, requestingNode, aInfo.mNonce,
+      StylePreloadKind::None, aInfo.mCORSMode, aInfo.mIntegrity);
+  if (NS_FAILED(rv)) {
     // Don't fire the error event if our document is loaded as data.  We're
     // supposed to not even try to do loads in that case... Unfortunately, we
     // implement that via nsDataDocumentContentPolicy, which doesn't have a good
@@ -1991,8 +1955,8 @@ Result<Loader::LoadSheetResult, nsresult> Loader::LoadStyleLink(
   // Check IsAlternateSheet now, since it can mutate our document and make
   // pending sheets go to the non-pending state.
   auto isAlternate = IsAlternateSheet(aInfo.mTitle, aInfo.mHasAlternateRel);
-  auto [sheet, state] = CreateSheet(aInfo, eAuthorSheetFeatures, syncLoad,
-                                    StylePreloadKind::None);
+  auto [sheet, state, networkMetadata] = CreateSheet(
+      aInfo, eAuthorSheetFeatures, syncLoad, StylePreloadKind::None);
 
   LOG(("  Sheet is alternate: %d", static_cast<int>(isAlternate)));
 
@@ -2010,7 +1974,8 @@ Result<Loader::LoadSheetResult, nsresult> Loader::LoadStyleLink(
   auto data = MakeRefPtr<SheetLoadData>(
       this, aInfo.mTitle, aInfo.mURI, sheet, SyncLoad(syncLoad), aInfo.mContent,
       isAlternate, matched, StylePreloadKind::None, aObserver, principal,
-      aInfo.mReferrerInfo, aInfo.mNonce, aInfo.mFetchPriority);
+      aInfo.mReferrerInfo, aInfo.mNonce, aInfo.mFetchPriority,
+      networkMetadata.forget());
 
   MOZ_ASSERT(data->GetRequestingNode() == requestingNode);
 
@@ -2094,9 +2059,9 @@ nsresult Loader::LoadChildSheet(StyleSheet& aParentSheet,
   }
 
   nsIPrincipal* principal = aParentSheet.Principal();
-  nsresult rv =
-      CheckContentPolicy(LoaderPrincipal(), principal, aURL, requestingNode,
-                         /* aNonce = */ u""_ns, StylePreloadKind::None);
+  nsresult rv = CheckContentPolicy(
+      LoaderPrincipal(), principal, aURL, requestingNode,
+      /* aNonce = */ u""_ns, StylePreloadKind::None, CORS_NONE, u""_ns);
   if (NS_WARN_IF(NS_FAILED(rv))) {
     if (aParentData) {
       MarkLoadTreeFailed(*aParentData);
@@ -2128,12 +2093,15 @@ nsresult Loader::LoadChildSheet(StyleSheet& aParentSheet,
   // Now that we know it's safe to load this (passes security check and not a
   // loop) do so.
   RefPtr<StyleSheet> sheet;
+  RefPtr<SubResourceNetworkMetadataHolder> networkMetadata;
   SheetState state;
+  bool isReusableSheet = false;
   if (aReusableSheets && aReusableSheets->FindReusableStyleSheet(aURL, sheet)) {
     state = SheetState::Complete;
+    isReusableSheet = true;
   } else {
     // For now, use CORS_NONE for child sheets
-    std::tie(sheet, state) = CreateSheet(
+    std::tie(sheet, state, networkMetadata) = CreateSheet(
         aURL, nullptr, principal, aParentSheet.ParsingMode(), CORS_NONE,
         aParentData ? aParentData->mEncoding : nullptr,
         u""_ns,  // integrity is only checked on main sheet
@@ -2145,9 +2113,9 @@ nsresult Loader::LoadChildSheet(StyleSheet& aParentSheet,
   MOZ_ASSERT(sheet);
   InsertChildSheet(*sheet, aParentSheet);
 
-  auto data =
-      MakeRefPtr<SheetLoadData>(this, aURL, sheet, aParentData, observer,
-                                principal, aParentSheet.GetReferrerInfo());
+  auto data = MakeRefPtr<SheetLoadData>(
+      this, aURL, sheet, aParentData, observer, principal,
+      aParentSheet.GetReferrerInfo(), networkMetadata.forget());
   MOZ_ASSERT(data->GetRequestingNode() == requestingNode);
 
   MaybeNotifyPreloadUsed(*data);
@@ -2157,6 +2125,15 @@ nsresult Loader::LoadChildSheet(StyleSheet& aParentSheet,
     // We're completely done.  No need to notify, even, since the
     // @import rule addition/modification will trigger the right style
     // changes automatically.
+    if (!isReusableSheet) {
+      // Child sheets are not handled by NotifyObservers, and these need to be
+      // performed here if the sheet comes from the SharedStyleSheetCache.
+      data->mSheet->PropagateUseCountersTo(mDocument);
+      if (MaybePutIntoLoadsPerformed(*data)) {
+        NotifyObserversForCachedSheet(*data);
+        AddPerformanceEntryForCachedSheet(*data);
+      }
+    }
     data->mIntentionallyDropped = true;
     return NS_OK;
   }
@@ -2226,14 +2203,15 @@ Result<RefPtr<StyleSheet>, nsresult> Loader::InternalLoadNonDocumentSheet(
 
   nsIPrincipal* loadingPrincipal = LoaderPrincipal();
   nsIPrincipal* triggeringPrincipal = loadingPrincipal;
-  nsresult rv = CheckContentPolicy(loadingPrincipal, triggeringPrincipal, aURL,
-                                   mDocument, aNonce, aPreloadKind);
+  nsresult rv =
+      CheckContentPolicy(loadingPrincipal, triggeringPrincipal, aURL, mDocument,
+                         aNonce, aPreloadKind, aCORSMode, aIntegrity);
   if (NS_FAILED(rv)) {
     return Err(rv);
   }
 
   bool syncLoad = !aObserver;
-  auto [sheet, state] =
+  auto [sheet, state, networkMetadata] =
       CreateSheet(aURL, nullptr, triggeringPrincipal, aParsingMode, aCORSMode,
                   aPreloadEncoding, aIntegrity, syncLoad, aPreloadKind);
 
@@ -2243,7 +2221,7 @@ Result<RefPtr<StyleSheet>, nsresult> Loader::InternalLoadNonDocumentSheet(
   auto data = MakeRefPtr<SheetLoadData>(
       this, aURL, sheet, SyncLoad(syncLoad), aUseSystemPrincipal, aPreloadKind,
       aPreloadEncoding, aObserver, triggeringPrincipal, aReferrerInfo, aNonce,
-      aFetchPriority);
+      aFetchPriority, networkMetadata.forget());
   MOZ_ASSERT(data->GetRequestingNode() == mDocument);
   if (state == SheetState::Complete) {
     LOG(("  Sheet already complete"));
@@ -2273,12 +2251,48 @@ void Loader::NotifyOfCachedLoad(RefPtr<SheetLoadData> aLoadData) {
   MOZ_ASSERT(!aLoadData->mLoadFailed, "Why are we marked as failed?");
   aLoadData->mSheetAlreadyComplete = true;
 
+  if (aLoadData->mURI) {
+    aLoadData->mShouldEmulateNotificationsForCachedLoad = true;
+  }
+
   // We need to check mURI to match
   // DecrementOngoingLoadCountAndMaybeUnblockOnload().
   if (aLoadData->mURI && aLoadData->BlocksLoadEvent()) {
     IncrementOngoingLoadCountAndMaybeBlockOnload();
   }
   SheetComplete(*aLoadData, NS_OK);
+}
+
+void Loader::NotifyObserversForCachedSheet(SheetLoadData& aLoadData) {
+  nsCOMPtr<nsIObserverService> obsService = services::GetObserverService();
+
+  if (!obsService->HasObservers("http-on-resource-cache-response")) {
+    return;
+  }
+
+  nsCOMPtr<nsIChannel> channel;
+  nsresult rv = NewStyleSheetChannel(aLoadData, aLoadData.mSheet->GetCORSMode(),
+                                     UsePreload::No, UseLoadGroup::No,
+                                     getter_AddRefs(channel));
+  if (NS_FAILED(rv)) {
+    return;
+  }
+
+  RefPtr<HttpBaseChannel> httpBaseChannel = do_QueryObject(channel);
+  if (httpBaseChannel) {
+    const net::nsHttpResponseHead* responseHead = nullptr;
+    if (aLoadData.GetNetworkMetadata()) {
+      responseHead = aLoadData.GetNetworkMetadata()->GetResponseHead();
+    }
+    httpBaseChannel->SetDummyChannelForCachedResource(responseHead);
+  }
+
+  channel->SetContentType("text/css"_ns);
+
+  // TODO: Populate other fields (bug 1915626).
+
+  obsService->NotifyObservers(channel, "http-on-resource-cache-response",
+                              nullptr);
 }
 
 void Loader::Stop() {
@@ -2309,10 +2323,6 @@ NS_IMPL_CYCLE_COLLECTION_CLASS(Loader)
 
 NS_IMPL_CYCLE_COLLECTION_TRAVERSE_BEGIN(Loader)
   NS_IMPL_CYCLE_COLLECTION_TRAVERSE(mSheets);
-  for (const auto& data : tmp->mInlineSheets.Values()) {
-    NS_CYCLE_COLLECTION_NOTE_EDGE_NAME(cb, "Inline sheet cache in Loader");
-    cb.NoteXPCOMChild(data);
-  }
   for (nsCOMPtr<nsICSSLoaderObserver>& obs : tmp->mObservers.ForwardRange()) {
     ImplCycleCollectionTraverse(cb, obs, "mozilla::css::Loader.mObservers");
   }
@@ -2326,7 +2336,6 @@ NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(Loader)
     }
     tmp->mSheets = nullptr;
   }
-  tmp->mInlineSheets.Clear();
   tmp->mObservers.Clear();
   NS_IMPL_CYCLE_COLLECTION_UNLINK(mDocGroup)
 NS_IMPL_CYCLE_COLLECTION_UNLINK_END
@@ -2335,19 +2344,6 @@ size_t Loader::SizeOfIncludingThis(MallocSizeOf aMallocSizeOf) const {
   size_t n = aMallocSizeOf(this);
 
   n += mObservers.ShallowSizeOfExcludingThis(aMallocSizeOf);
-
-  n += mInlineSheets.ShallowSizeOfExcludingThis(aMallocSizeOf);
-  for (const auto& entry : mInlineSheets) {
-    n += entry.GetKey().SizeOfExcludingThisIfUnshared(aMallocSizeOf);
-    // If the sheet has a parent, then its parent will report it so we don't
-    // have to worry about it here.
-    const StyleSheet* sheet = entry.GetWeak();
-    MOZ_ASSERT(!sheet->GetParentSheet(),
-               "How did an @import rule end up here?");
-    if (!sheet->GetOwnerNode()) {
-      n += sheet->SizeOfIncludingThis(aMallocSizeOf);
-    }
-  }
 
   // Measurement of the following members may be added later if DMD finds it is
   // worthwhile:
@@ -2366,10 +2362,7 @@ nsIPrincipal* Loader::LoaderPrincipal() const {
 }
 
 nsIPrincipal* Loader::PartitionedPrincipal() const {
-  if (mDocument && StaticPrefs::privacy_partition_network_state()) {
-    return mDocument->PartitionedPrincipal();
-  }
-  return LoaderPrincipal();
+  return mDocument ? mDocument->PartitionedPrincipal() : LoaderPrincipal();
 }
 
 bool Loader::ShouldBypassCache() const {

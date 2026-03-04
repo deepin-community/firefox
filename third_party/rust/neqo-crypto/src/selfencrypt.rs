@@ -9,6 +9,7 @@ use std::mem;
 use neqo_common::{hex, qinfo, qtrace, Encoder};
 
 use crate::{
+    aead::Aead as _,
     constants::{Cipher, Version},
     err::{Error, Res},
     hkdf,
@@ -61,7 +62,7 @@ impl SelfEncrypt {
         self.old_key = Some(mem::replace(&mut self.key, new_key));
         let (kid, _) = self.key_id.overflowing_add(1);
         self.key_id = kid;
-        qinfo!(["SelfEncrypt"], "Rotated keys to {}", self.key_id);
+        qinfo!("[SelfEncrypt] Rotated keys to {}", self.key_id);
         Ok(())
     }
 
@@ -89,7 +90,7 @@ impl SelfEncrypt {
         let mut enc = Encoder::with_capacity(encoded_len);
         enc.encode_byte(Self::VERSION);
         enc.encode_byte(self.key_id);
-        enc.encode(&salt);
+        enc.encode(salt);
 
         let mut extended_aad = enc.clone();
         extended_aad.encode(aad);
@@ -99,8 +100,7 @@ impl SelfEncrypt {
         output.resize(encoded_len, 0);
         cipher.encrypt(0, extended_aad.as_ref(), plaintext, &mut output[offset..])?;
         qtrace!(
-            ["SelfEncrypt"],
-            "seal {} {} -> {}",
+            "[SelfEncrypt] seal {} {} -> {}",
             hex(aad),
             hex(plaintext),
             hex(&output)
@@ -127,31 +127,31 @@ impl SelfEncrypt {
     ///
     /// Returns an error when the self-encrypted object is invalid;
     /// when the keys have been rotated; or when NSS fails.
-    #[allow(clippy::similar_names)] // aad is similar to aead
+    #[expect(clippy::similar_names, reason = "aad is similar to aead.")]
     pub fn open(&self, aad: &[u8], ciphertext: &[u8]) -> Res<Vec<u8>> {
-        if ciphertext[0] != Self::VERSION {
-            return Err(Error::SelfEncryptFailure);
+        const OFFSET: usize = 2 + SelfEncrypt::SALT_LENGTH;
+        if *ciphertext.first().ok_or(Error::SelfEncrypt)? != Self::VERSION {
+            return Err(Error::SelfEncrypt);
         }
-        let Some(key) = self.select_key(ciphertext[1]) else {
-            return Err(Error::SelfEncryptFailure);
+        let Some(key) = self.select_key(*ciphertext.get(1).ok_or(Error::SelfEncrypt)?) else {
+            return Err(Error::SelfEncrypt);
         };
-        let offset = 2 + Self::SALT_LENGTH;
+        let salt = ciphertext.get(2..OFFSET).ok_or(Error::SelfEncrypt)?;
 
-        let mut extended_aad = Encoder::with_capacity(offset + aad.len());
-        extended_aad.encode(&ciphertext[0..offset]);
+        let mut extended_aad = Encoder::with_capacity(OFFSET + aad.len());
+        extended_aad.encode(&ciphertext[..OFFSET]);
         extended_aad.encode(aad);
 
-        let aead = self.make_aead(key, &ciphertext[2..offset])?;
+        let aead = self.make_aead(key, salt)?;
         // NSS insists on having extra space available for decryption.
-        let padded_len = ciphertext.len() - offset;
+        let padded_len = ciphertext.len() - OFFSET;
         let mut output = vec![0; padded_len];
         let decrypted =
-            aead.decrypt(0, extended_aad.as_ref(), &ciphertext[offset..], &mut output)?;
+            aead.decrypt(0, extended_aad.as_ref(), &ciphertext[OFFSET..], &mut output)?;
         let final_len = decrypted.len();
         output.truncate(final_len);
         qtrace!(
-            ["SelfEncrypt"],
-            "open {} {} -> {}",
+            "[SelfEncrypt] open {} {} -> {}",
             hex(aad),
             hex(ciphertext),
             hex(&output)

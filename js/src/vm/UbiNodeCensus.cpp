@@ -155,7 +155,7 @@ bool BucketCount::report(JSContext* cx, CountBase& countBase,
   Count& count = static_cast<Count&>(countBase);
 
   size_t length = count.ids_.length();
-  Rooted<ArrayObject*> arr(cx, NewDenseFullyAllocatedArray(cx, length));
+  ArrayObject* arr = NewDenseFullyAllocatedArray(cx, length);
   if (!arr) {
     return false;
   }
@@ -583,12 +583,12 @@ bool ByDomObjectClass::report(JSContext* cx, CountBase& countBase,
                               MutableHandleValue report) {
   Count& count = static_cast<Count&>(countBase);
 
-  Rooted<PlainObject*> obj(
-      cx, countMapToObject(cx, count.table, [cx](const UniqueC16String& key) {
+  PlainObject* obj =
+      countMapToObject(cx, count.table, [cx](const UniqueC16String& key) {
         const char16_t* chars = key.get();
         MOZ_ASSERT(chars);
         return AtomizeChars(cx, chars, js_strlen(chars));
-      }));
+      });
   if (!obj) {
     return false;
   }
@@ -876,7 +876,7 @@ bool ByAllocationStack::report(JSContext* cx, CountBase& countBase,
       return false;
     }
 
-    if (!MapObject::set(cx, map, stackVal, stackReport)) {
+    if (!map->set(cx, stackVal, stackReport)) {
       return false;
     }
   }
@@ -887,7 +887,7 @@ bool ByAllocationStack::report(JSContext* cx, CountBase& countBase,
       return false;
     }
     RootedValue noStack(cx, StringValue(cx->names().noStack));
-    if (!MapObject::set(cx, map, noStack, noStackReport)) {
+    if (!map->set(cx, noStack, noStackReport)) {
       return false;
     }
   }

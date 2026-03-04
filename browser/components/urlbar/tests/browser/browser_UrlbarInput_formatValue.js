@@ -40,6 +40,9 @@ async function testVal(urlFormatString, clobberedURLString = null) {
 }
 
 add_task(async function () {
+  await SpecialPowers.pushPrefEnv({
+    set: [["browser.urlbar.scotchBonnet.enableOverride", false]],
+  });
   const PREF_FORMATTING = "browser.urlbar.formatting.enabled";
   const PREF_TRIM_HTTPS = "browser.urlbar.trimHttps";
 
@@ -66,9 +69,6 @@ add_task(async function () {
   await testVal("<mozilla.com.>mozilla.com");
   await testVal("<https://mozilla.com:mozilla.com@>mozilla.com");
   await testVal("<mozilla.com:mozilla.com@>mozilla.com");
-
-  await testVal("<ftp.>mozilla.org");
-  await testVal("<ftp://ftp.>mozilla.org");
 
   await testVal("<https://sub.>mozilla.org");
   await testVal("<https://sub1.sub2.sub3.>mozilla.org");
@@ -113,10 +113,6 @@ add_task(async function () {
 
   let IPs = [
     "192.168.1.1",
-    "[::]",
-    "[::1]",
-    "[1::]",
-    "[::]",
     "[::1]",
     "[1::]",
     "[1:2:3:4:5:6:7::]",
@@ -146,6 +142,7 @@ add_task(async function () {
   }
 
   await testVal("mailto:admin@mozilla.org");
+  await testVal("ftp://ftp.mozilla.org");
   await testVal("gopher://mozilla.org/");
   await testVal("about:config");
   await testVal("jar:http://mozilla.org/example.jar!/");

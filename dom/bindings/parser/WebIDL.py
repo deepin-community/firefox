@@ -1044,6 +1044,17 @@ class IDLInterfaceMixin(IDLInterfaceOrInterfaceMixinOrNamespace):
         return set(self.members)
 
 
+class ReflectedHTMLAttributesReturningFrozenArray(object):
+    __slots__ = (
+        "slotIndex",
+        "totalMembersInSlots",
+    )
+
+    def __init__(self, slotIndex):
+        self.slotIndex = slotIndex
+        self.totalMembersInSlots = 0
+
+
 class IDLInterfaceOrNamespace(IDLInterfaceOrInterfaceMixinOrNamespace):
     __slots__ = (
         "parent",
@@ -1057,6 +1068,7 @@ class IDLInterfaceOrNamespace(IDLInterfaceOrInterfaceMixinOrNamespace):
         "_isOnGlobalProtoChain",
         "totalMembersInSlots",
         "_ownMembersInSlots",
+        "reflectedHTMLAttributesReturningFrozenArray",
         "iterableInterface",
         "asyncIterableInterface",
         "hasCrossOriginMembers",
@@ -1083,11 +1095,21 @@ class IDLInterfaceOrNamespace(IDLInterfaceOrInterfaceMixinOrNamespace):
         self._hasChildInterfaces = False
         self._isOnGlobalProtoChain = False
 
-        # Tracking of the number of reserved slots we need for our
-        # members and those of ancestor interfaces.
+        # Tracking of the number of reserved slots we need for our members and
+        # those of ancestor interfaces. Note that reflected HTML attributes that
+        # have a FrozenArray<Element> return value also need to be stored in
+        # slots. Because we don't want to use a lot of memory to store them when
+        # they are not in use we use two levels of storage, the slot points to
+        # an array of slots, so these have two indices. These attributes share
+        # 1 slot in totalMembersInSlots, and count for 1 slot each in
+        # reflectedHTMLAttributesReturningFrozenArray.totalMembersInSlots.
         self.totalMembersInSlots = 0
         # Tracking of the number of own own members we have in slots
         self._ownMembersInSlots = 0
+        # Tracking the slot in the binding object for reflected HTML attributes
+        # that return a FrozenArray, and the slot in the array stored in that
+        # slot in the binding object.
+        self.reflectedHTMLAttributesReturningFrozenArray = None
         # If this is an iterator interface, we need to know what iterable
         # interface we're iterating for in order to get its nativeType.
         self.iterableInterface = None
@@ -1460,8 +1482,40 @@ class IDLInterfaceOrNamespace(IDLInterfaceOrInterfaceMixinOrNamespace):
                     )
                 if member.slotIndices is None:
                     member.slotIndices = dict()
-                member.slotIndices[self.identifier.name] = self.totalMembersInSlots
-                self.totalMembersInSlots += 1
+                if member.getExtendedAttribute(
+                    "ReflectedHTMLAttributeReturningFrozenArray"
+                ):
+                    parent = self.parent
+                    while parent:
+                        if self.parent.reflectedHTMLAttributesReturningFrozenArray:
+                            raise WebIDLError(
+                                "Interface %s has at least one attribute marked "
+                                "as[ReflectedHTMLAttributeReturningFrozenArray],"
+                                "but one of its ancestors also has an attribute "
+                                "marked as "
+                                "[ReflectedHTMLAttributeReturningFrozenArray]"
+                                % self.identifier.name,
+                                [self.location, member.location, parent.location],
+                            )
+                        parent = parent.parent
+
+                    if not self.reflectedHTMLAttributesReturningFrozenArray:
+                        self.reflectedHTMLAttributesReturningFrozenArray = (
+                            ReflectedHTMLAttributesReturningFrozenArray(
+                                self.totalMembersInSlots
+                            )
+                        )
+                        self.totalMembersInSlots += 1
+                    member.slotIndices[self.identifier.name] = (
+                        self.reflectedHTMLAttributesReturningFrozenArray.slotIndex,
+                        self.reflectedHTMLAttributesReturningFrozenArray.totalMembersInSlots,
+                    )
+                    self.reflectedHTMLAttributesReturningFrozenArray.totalMembersInSlots += (
+                        1
+                    )
+                else:
+                    member.slotIndices[self.identifier.name] = self.totalMembersInSlots
+                    self.totalMembersInSlots += 1
                 if member.getExtendedAttribute("StoreInSlot"):
                     self._ownMembersInSlots += 1
 
@@ -2128,8 +2182,27 @@ class IDLInterface(IDLInterfaceOrNamespace):
         else:
             IDLInterfaceOrNamespace.handleExtendedAttribute(self, attr)
 
+    def implementedWithProxy(self):
+        if self.parent and self.parent.implementedWithProxy():
+            return True
+        return self.hasCrossOriginMembers or any(
+            member.isMethod()
+            and member.isGetter()
+            and (member.isIndexed() or member.isNamed())
+            for member in self.members
+        )
+
     def validate(self):
         IDLInterfaceOrNamespace.validate(self)
+        if (
+            self.getExtendedAttribute("InstrumentedProps")
+            and not self.implementedWithProxy()
+        ):
+            raise WebIDLError(
+                "IntrumentedProps attribute can't be used for non-proxy-based interfaces."
+                "Proxy is used if the interface has any named/indexed getters or has cross origin members.",
+                [self.location],
+            )
         if self.parent and self.isSerializable() and not self.parent.isSerializable():
             raise WebIDLError(
                 "Serializable interface inherits from non-serializable "
@@ -2623,6 +2696,9 @@ class IDLType(IDLObject):
     def isJSString(self):
         return False
 
+    def isInteger(self):
+        return False
+
     def isUndefined(self):
         return False
 
@@ -2765,11 +2841,11 @@ class IDLUnresolvedType(IDLType):
         assert not obj.isType()
         if obj.isTypedef():
             assert self.name.name == obj.identifier.name
-            typedefType = IDLTypedefType(self.location, obj.innerType, obj.identifier)
+            typedefType = IDLTypedefType(
+                self.location, obj.innerType, obj.identifier
+            ).withExtendedAttributes(self.extraTypeAttributes)
             assert not typedefType.isComplete()
-            return typedefType.complete(scope).withExtendedAttributes(
-                self.extraTypeAttributes
-            )
+            return typedefType.complete(scope)
         elif obj.isCallback() and not obj.isInterface():
             assert self.name.name == obj.identifier.name
             return IDLCallbackType(self.location, obj)
@@ -3348,6 +3424,12 @@ class IDLUnionType(IDLType):
     def _getDependentObjects(self):
         return set(self.memberTypes)
 
+    def withExtendedAttributes(self, attrs):
+        memberTypes = list(self.memberTypes)
+        for idx, memberType in enumerate(self.memberTypes):
+            memberTypes[idx] = memberType.withExtendedAttributes(attrs)
+        return IDLUnionType(self.location, memberTypes)
+
 
 class IDLTypedefType(IDLType):
     __slots__ = "inner", "builtin"
@@ -3461,7 +3543,9 @@ class IDLTypedefType(IDLType):
 class IDLTypedef(IDLObjectWithIdentifier):
     __slots__ = ("innerType",)
 
-    def __init__(self, location, parentScope, innerType, identifier):
+    innerType: IDLType
+
+    def __init__(self, location, parentScope, innerType: IDLType, identifier):
         # Set self.innerType first, because IDLObjectWithIdentifier.__init__
         # will call our __str__, which wants to use it.
         self.innerType = innerType
@@ -3783,6 +3867,8 @@ class IDLBuiltinType(IDLType):
         "Uint32Array",
         "Float32Array",
         "Float64Array",
+        "BigInt64Array",
+        "BigUint64Array",
     )
 
     TagLookup = {
@@ -3818,6 +3904,8 @@ class IDLBuiltinType(IDLType):
         Types.Uint32Array: IDLType.Tags.interface,
         Types.Float32Array: IDLType.Tags.interface,
         Types.Float64Array: IDLType.Tags.interface,
+        Types.BigInt64Array: IDLType.Tags.interface,
+        Types.BigUint64Array: IDLType.Tags.interface,
     }
 
     PrettyNames = {
@@ -3853,6 +3941,8 @@ class IDLBuiltinType(IDLType):
         Types.Uint32Array: "Uint32Array",
         Types.Float32Array: "Float32Array",
         Types.Float64Array: "Float64Array",
+        Types.BigInt64Array: "BigInt64Array",
+        Types.BigUint64Array: "BigUint64Array",
     }
 
     __slots__ = (
@@ -4021,7 +4111,7 @@ class IDLBuiltinType(IDLType):
     def isTypedArray(self):
         return (
             self._typeTag >= IDLBuiltinType.Types.Int8Array
-            and self._typeTag <= IDLBuiltinType.Types.Float64Array
+            and self._typeTag <= IDLBuiltinType.Types.BigUint64Array
         )
 
     def isInterface(self):
@@ -4327,6 +4417,16 @@ BuiltinTypes = {
         BuiltinLocation("<builtin type>"),
         "Float64Array",
         IDLBuiltinType.Types.Float64Array,
+    ),
+    IDLBuiltinType.Types.BigInt64Array: IDLBuiltinType(
+        BuiltinLocation("<builtin type>"),
+        "BigInt64Array",
+        IDLBuiltinType.Types.BigInt64Array,
+    ),
+    IDLBuiltinType.Types.BigUint64Array: IDLBuiltinType(
+        BuiltinLocation("<builtin type>"),
+        "BigUint64Array",
+        IDLBuiltinType.Types.BigUint64Array,
     ),
 }
 
@@ -5068,7 +5168,7 @@ class IDLAsyncIterable(IDLMaplikeOrSetlikeOrIterableBase):
         self.argList = argList
 
     def __str__(self):
-        return "declared async iterable with key '%s' and value '%s'" % (
+        return "declared async_iterable with key '%s' and value '%s'" % (
             self.keyType,
             self.valueType,
         )
@@ -5416,6 +5516,10 @@ class IDLAttribute(IDLInterfaceMember):
         self.legacyLenientThis = False
         self._legacyUnforgeable = False
         self.stringifier = stringifier
+        # slotIndices can be a dictionary mapping concrete interface name to
+        # either a slot index in the binding object, or to a tuple of the slot
+        # index in the binding object and an index in the array that's stored
+        # in that slot.
         self.slotIndices = None
         assert maplikeOrSetlike is None or isinstance(
             maplikeOrSetlike, IDLMaplikeOrSetlike
@@ -6433,6 +6537,13 @@ class IDLMethod(IDLInterfaceMember, IDLScope):
                 [location],
             )
 
+        # See https://github.com/whatwg/webidl/issues/1516
+        if (setter or deleter) and not returnType.isUndefined():
+            raise WebIDLError(
+                "The return type of a setter or deleter operation must be 'undefined'",
+                [location],
+            )
+
         self.assertSignatureConstraints()
 
     def __str__(self):
@@ -7338,10 +7449,10 @@ class Tokenizer(object):
         "maplike": "MAPLIKE",
         "setlike": "SETLIKE",
         "iterable": "ITERABLE",
+        "async_iterable": "ASYNC_ITERABLE",
         "namespace": "NAMESPACE",
         "constructor": "CONSTRUCTOR",
         "symbol": "SYMBOL",
-        "async": "ASYNC",
     }
 
     tokens.extend(keywords.values())
@@ -8155,30 +8266,30 @@ class Parser(Tokenizer):
 
     def p_AsyncIterable(self, p):
         """
-        AsyncIterable : ASYNC ITERABLE LT TypeWithExtendedAttributes GT SEMICOLON
-                      | ASYNC ITERABLE LT TypeWithExtendedAttributes COMMA TypeWithExtendedAttributes GT SEMICOLON
-                      | ASYNC ITERABLE LT TypeWithExtendedAttributes GT LPAREN ArgumentList RPAREN SEMICOLON
-                      | ASYNC ITERABLE LT TypeWithExtendedAttributes COMMA TypeWithExtendedAttributes GT LPAREN ArgumentList RPAREN SEMICOLON
+        AsyncIterable : ASYNC_ITERABLE LT TypeWithExtendedAttributes GT SEMICOLON
+                      | ASYNC_ITERABLE LT TypeWithExtendedAttributes COMMA TypeWithExtendedAttributes GT SEMICOLON
+                      | ASYNC_ITERABLE LT TypeWithExtendedAttributes GT LPAREN ArgumentList RPAREN SEMICOLON
+                      | ASYNC_ITERABLE LT TypeWithExtendedAttributes COMMA TypeWithExtendedAttributes GT LPAREN ArgumentList RPAREN SEMICOLON
         """
-        location = self.getLocation(p, 2)
+        location = self.getLocation(p, 1)
         identifier = IDLUnresolvedIdentifier(
-            location, "__iterable", allowDoubleUnderscore=True
+            location, "__async_iterable", allowDoubleUnderscore=True
         )
-        if len(p) == 12:
-            keyType = p[4]
-            valueType = p[6]
-            argList = p[9]
-        elif len(p) == 10:
-            keyType = None
-            valueType = p[4]
-            argList = p[7]
+        if len(p) == 11:
+            keyType = p[3]
+            valueType = p[5]
+            argList = p[8]
         elif len(p) == 9:
-            keyType = p[4]
-            valueType = p[6]
+            keyType = None
+            valueType = p[3]
+            argList = p[6]
+        elif len(p) == 8:
+            keyType = p[3]
+            valueType = p[5]
             argList = []
         else:
             keyType = None
-            valueType = p[4]
+            valueType = p[3]
             argList = []
 
         p[0] = IDLAsyncIterable(
@@ -8400,11 +8511,15 @@ class Parser(Tokenizer):
                 location,
                 "__%s%s%s%s%s%s"
                 % (
-                    "named"
-                    if specialType == IDLMethod.NamedOrIndexed.Named
-                    else "indexed"
-                    if specialType == IDLMethod.NamedOrIndexed.Indexed
-                    else "",
+                    (
+                        "named"
+                        if specialType == IDLMethod.NamedOrIndexed.Named
+                        else (
+                            "indexed"
+                            if specialType == IDLMethod.NamedOrIndexed.Indexed
+                            else ""
+                        )
+                    ),
                     "getter" if getter else "",
                     "setter" if setter else "",
                     "deleter" if deleter else "",
@@ -8615,8 +8730,7 @@ class Parser(Tokenizer):
 
     def p_ArgumentNameKeyword(self, p):
         """
-        ArgumentNameKeyword : ASYNC
-                            | ATTRIBUTE
+        ArgumentNameKeyword : ATTRIBUTE
                             | CALLBACK
                             | CONST
                             | CONSTRUCTOR
@@ -8655,8 +8769,7 @@ class Parser(Tokenizer):
 
     def p_AttributeNameKeyword(self, p):
         """
-        AttributeNameKeyword : ASYNC
-                             | REQUIRED
+        AttributeNameKeyword : REQUIRED
         """
         p[0] = p[1]
 
@@ -9226,18 +9339,12 @@ class Parser(Tokenizer):
         self._installBuiltins(self._globalScope)
         self._productions = []
 
-        self._filename = "<builtin>"
-        self.lexer.input(Parser._builtins)
-        self._filename = None
-
-        self.parser.parse(lexer=self.lexer, tracking=True)
-
     def _installBuiltins(self, scope):
         assert isinstance(scope, IDLScope)
 
         # range omits the last value.
         for x in range(
-            IDLBuiltinType.Types.ArrayBuffer, IDLBuiltinType.Types.Float64Array + 1
+            IDLBuiltinType.Types.ArrayBuffer, IDLBuiltinType.Types.BigUint64Array + 1
         ):
             builtin = BuiltinTypes[x]
             identifier = IDLUnresolvedIdentifier(
@@ -9392,11 +9499,6 @@ class Parser(Tokenizer):
 
     def reset(self):
         return Parser(lexer=self.lexer)
-
-    # Builtin IDL defined by WebIDL
-    _builtins = """
-        typedef (ArrayBufferView or ArrayBuffer) BufferSource;
-    """
 
 
 def main():

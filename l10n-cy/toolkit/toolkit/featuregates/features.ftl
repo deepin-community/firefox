@@ -46,25 +46,3 @@ experimental-features-js-warp-description = Galluogi Warp, project i wella perff
 experimental-features-ime-search =
     .label = Bar Cyfeiriadau: dangos canlyniadau wrth ddefnyddio'r IME
 experimental-features-ime-search-description = Offeryn yw IME (Golygydd Dull Mewnbwn) sy'n eich galluogi i nodi symbolau cymhleth, fel y rhai sy'n cael eu ddefnyddio mewn ieithoedd ysgrifenedig yn Nwyrain Asia neu India, gan ddefnyddio bysellfwrdd safonol. Bydd galluogi'r arbrawf hwn yn cadw'r panel bar cyfeiriadau ar agor, dangos canlyniadau chwilio ac awgrymiadau, tra'n defnyddio IME i fewnbynnu testun. Sylwch y gallai'r IME ddangos panel sy'n ymdrin â chanlyniadau'r bar cyfeiriad, felly mae'r dewis hwn yn cael ei awgrymu ar gyfer IME sydd ddim yn defnyddio'r math hwn o banel.
-# Auto Picture-in-Picture
-experimental-features-auto-pip =
-    .label = Llun-mewn-Llun: agor yn awtomatig wrth newid tabiau
-experimental-features-auto-pip-description = Galluogi Llun-mewn-Llun ar fideos byw wrth newid tabiau.
-genai-settings-chat-title =
-    .label = Sgwrsfot AI
-# Updated sidebar settings
-sidebar-title =
-    .label = Bar Ochr
-sidebar-description = Cyrchwch eich hanes, tabiau o ddyfeisiau eraill, estyniadau bar ochr, a mwy yn hawdd wrth i chi bori. <a data-l10n-name="connect">Rhannu adborth</a>
-vertical-tabs-title =
-    .label = Tabiau fertigol
-vertical-tabs-description = Symudwch eich tabiau o frig y porwr i'r ochr. Mae angen i chi hefyd roi cynnig ar y bar ochr. <a data-l10n-name="connect">Rhannu adborth</a>
-experimental-features-group-browsing =
-    .label = Pori
-experimental-features-group-developer-tools =
-    .label = Offer Datblygwyr
-experimental-features-group-webpage-display =
-    .label = Dangos Tudalen We
-experimental-features-group-customize-browsing =
-    .label = Cyfaddasu eich pori
-experimental-features-group-customize-browsing-description = Os rhowch gynnig ar y nodweddion hyn, <a data-l10n-name="connect">rhannwch eich barn ar Connect</a>

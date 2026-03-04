@@ -152,7 +152,7 @@ const networkEventSpec = generateActorSpec({
       encoding: Option(1, "string"),
       transferredSize: Option(1, "number"),
       blockedReason: Option(1, "number"),
-      blockingExtension: Option(1, "string"),
+      extension: Option(1, "json"),
     },
 
     "network-event-update:event-timings": {
@@ -182,6 +182,10 @@ const networkEventSpec = generateActorSpec({
       response: RetVal("json"),
     },
     getRequestPostData: {
+      request: {},
+      response: RetVal("json"),
+    },
+    getEarlyHintsResponseHeaders: {
       request: {},
       response: RetVal("json"),
     },

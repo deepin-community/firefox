@@ -39,6 +39,7 @@ about-networking-dns-lookup = DNS 查询
 about-networking-dns-lookup-button = 解析
 about-networking-dns-domain = 域名：
 about-networking-dns-lookup-table-column = IP
+about-networking-dns-https-rrs-lookup-table-column = HTTPS 资源记录（RR）
 about-networking-dns-https-rr-lookup-table-column = HTTP 资源记录（RR）
 about-networking-rcwn = RCWN 统计
 about-networking-rcwn-status = RCWN 状态
@@ -64,6 +65,3 @@ about-networking-moved-about-logging = 此页面已移动至 <a data-l10n-name="
 
 about-networking-networkid-is-up = 网络已连接
 about-networking-networkid-status-known = 已知网络连接状态
-
-##
-

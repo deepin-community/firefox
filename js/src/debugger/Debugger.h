@@ -336,15 +336,15 @@ extern void CheckDebuggeeThing(JSObject* obj, bool invisibleOk);
  * beacomes a debuggee again later, new Frame objects are created.)
  */
 template <class Referent, class Wrapper, bool InvisibleKeysOk = false>
-class DebuggerWeakMap : private WeakMap<HeapPtr<Referent*>, HeapPtr<Wrapper*>> {
+class DebuggerWeakMap : private WeakMap<Referent*, Wrapper*, ZoneAllocPolicy> {
  private:
-  using Key = HeapPtr<Referent*>;
-  using Value = HeapPtr<Wrapper*>;
+  using Key = Referent*;
+  using Value = Wrapper*;
 
   JS::Compartment* compartment;
 
  public:
-  using Base = WeakMap<Key, Value>;
+  using Base = WeakMap<Key, Value, ZoneAllocPolicy>;
   using ReferentType = Referent;
   using WrapperType = Wrapper;
 
@@ -394,12 +394,17 @@ class DebuggerWeakMap : private WeakMap<HeapPtr<Referent*>, HeapPtr<Wrapper*>> {
  public:
   void traceCrossCompartmentEdges(JSTracer* tracer) {
     for (Enum e(*this); !e.empty(); e.popFront()) {
-      TraceEdge(tracer, &e.front().mutableKey(), "Debugger WeakMap key");
+      // The values are debugger objects which contain a cross-compartment
+      // debuggee pointer, so trace their contents.
       e.front().value()->trace(tracer);
+
+      // Trace the keys, which are cross compartment debuggee pointers.
+      // This can rekey the entry and invalidate |e.front()|.
+      Base::traceKey(tracer, e);
     }
   }
 
-  bool findSweepGroupEdges() override;
+  bool findSweepGroupEdges(JS::Zone* atomsZone) override;
 
  private:
 #ifdef JS_GC_ZEAL
@@ -425,6 +430,7 @@ class MOZ_RAII EvalOptions {
   JS::UniqueChars filename_;
   unsigned lineno_ = 1;
   bool hideFromDebugger_ = false;
+  bool bypassCSP_ = false;
   EnvKind kind_;
 
  public:
@@ -433,6 +439,7 @@ class MOZ_RAII EvalOptions {
   const char* filename() const { return filename_.get(); }
   unsigned lineno() const { return lineno_; }
   bool hideFromDebugger() const { return hideFromDebugger_; }
+  bool bypassCSP() const { return bypassCSP_; }
   EnvKind kind() const { return kind_; }
   void setUseInnerBindings() {
     MOZ_ASSERT(kind_ == EvalOptions::EnvKind::GlobalWithExtraOuterBindings);
@@ -441,6 +448,7 @@ class MOZ_RAII EvalOptions {
   [[nodiscard]] bool setFilename(JSContext* cx, const char* filename);
   void setLineno(unsigned lineno) { lineno_ = lineno; }
   void setHideFromDebugger(bool hide) { hideFromDebugger_ = hide; }
+  void setBypassCSP(bool bypass) { bypassCSP_ = bypass; }
 };
 
 /*
@@ -656,12 +664,12 @@ class Debugger : private mozilla::LinkedListElement<Debugger> {
   // See JS::dbg::ShouldAvoidSideEffects.
   bool shouldAvoidSideEffects;
 
-  // Whether to enable native tracing on the Debuggee.
-  bool nativeTracing;
-
   template <typename T>
   struct DebuggerLinkAccess {
     static mozilla::DoublyLinkedListElement<T>& Get(T* aThis) {
+      return aThis->debuggerLink;
+    }
+    static const mozilla::DoublyLinkedListElement<T>& Get(const T* aThis) {
       return aThis->debuggerLink;
     }
   };
@@ -746,6 +754,10 @@ class Debugger : private mozilla::LinkedListElement<Debugger> {
    * The keys are always live stack frames. We drop them from this map as
    * soon as they leave the stack (see slowPathOnLeaveFrame) and in
    * removeDebuggee.
+   *
+   * Wasm JS PI allows suspending/resuming a portion of the stack, only
+   * frame pointers and activations are changed. The stack frames are still
+   * live, and shall be present in the frames map if DebuggerFrame is created.
    *
    * We don't trace the keys of this map (the frames are on the stack and
    * thus necessarily live), but we do trace the values. It's like a WeakMap
@@ -1463,6 +1475,9 @@ class BreakpointSite {
   template <typename T>
   struct SiteLinkAccess {
     static mozilla::DoublyLinkedListElement<T>& Get(T* aThis) {
+      return aThis->siteLink;
+    }
+    static const mozilla::DoublyLinkedListElement<T>& Get(const T* aThis) {
       return aThis->siteLink;
     }
   };

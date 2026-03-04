@@ -8,10 +8,3 @@ about-logging-set-log-file = Itakda ang Log ng File
 about-logging-set-log-modules = Itakda ang Log ng mga Modules
 about-logging-start-logging = Nagsimula ang Pag-log
 about-logging-stop-logging = Itigil ang Pag-log
-
-## Logging presets
-
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
-

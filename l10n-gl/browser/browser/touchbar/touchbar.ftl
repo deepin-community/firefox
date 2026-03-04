@@ -19,7 +19,6 @@ open-location = Buscar ou escribir o enderezo
 share = Compartir
 close-window = Pechar xanela
 open-sidebar = Barras laterais
-
 # This string describes shortcuts for search.
 search-popover = Atallos de busca
 # Describes searches limited to a specific scope
@@ -33,6 +32,3 @@ search-history = Historial
 search-opentabs = Lapelas abertas
 search-tags = Etiquetas
 search-titles = Títulos
-
-##
-

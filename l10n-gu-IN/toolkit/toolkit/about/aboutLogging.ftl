@@ -8,10 +8,3 @@ about-logging-set-log-file = લોગ ફાઇલ સેટ કરો
 about-logging-set-log-modules = લોગ મોડ્યુલ સેટ કરો
 about-logging-start-logging = લોગિંગ શરૂ કરો
 about-logging-stop-logging = લોગિંગ રોકો
-
-## Logging presets
-
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
-

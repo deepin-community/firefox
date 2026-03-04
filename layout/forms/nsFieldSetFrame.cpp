@@ -5,17 +5,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "nsFieldSetFrame.h"
-#include "mozilla/dom/HTMLLegendElement.h"
 
 #include <algorithm>
+
 #include "gfxContext.h"
 #include "mozilla/Baseline.h"
-#include "mozilla/gfx/2D.h"
 #include "mozilla/Likely.h"
-#include "mozilla/PresShell.h"
 #include "mozilla/Maybe.h"
-#include "mozilla/webrender/WebRenderAPI.h"
+#include "mozilla/PresShell.h"
 #include "mozilla/ScrollContainerFrame.h"
+#include "mozilla/dom/HTMLLegendElement.h"
+#include "mozilla/gfx/2D.h"
+#include "mozilla/webrender/WebRenderAPI.h"
 #include "nsBlockFrame.h"
 #include "nsCSSAnonBoxes.h"
 #include "nsCSSFrameConstructor.h"
@@ -107,7 +108,8 @@ class nsDisplayFieldSetBorder final : public nsPaintedDisplayItem {
       : nsPaintedDisplayItem(aBuilder, aFrame) {
     MOZ_COUNT_CTOR(nsDisplayFieldSetBorder);
   }
-  MOZ_COUNTED_DTOR_OVERRIDE(nsDisplayFieldSetBorder)
+
+  MOZ_COUNTED_DTOR_FINAL(nsDisplayFieldSetBorder)
 
   void Paint(nsDisplayListBuilder* aBuilder, gfxContext* aCtx) override;
   bool CreateWebRenderCommands(
@@ -123,7 +125,7 @@ class nsDisplayFieldSetBorder final : public nsPaintedDisplayItem {
 
 void nsDisplayFieldSetBorder::Paint(nsDisplayListBuilder* aBuilder,
                                     gfxContext* aCtx) {
-  Unused << static_cast<nsFieldSetFrame*>(mFrame)->PaintBorder(
+  (void)static_cast<nsFieldSetFrame*>(mFrame)->PaintBorder(
       aBuilder, *aCtx, ToReferenceFrame(), GetPaintRect(aBuilder, aCtx));
 }
 
@@ -175,10 +177,12 @@ bool nsDisplayFieldSetBorder::CreateWebRenderCommands(
       region.mode = wr::ClipMode::ClipOut;
       region.radii = wr::EmptyBorderRadius();
 
-      auto rect_clip = aBuilder.DefineRectClip(Nothing(), layoutRect);
-      auto complex_clip = aBuilder.DefineRoundedRectClip(Nothing(), region);
-      auto clipChain =
-          aBuilder.DefineClipChain({rect_clip, complex_clip}, true);
+      std::array<wr::WrClipId, 2> clips = {
+          aBuilder.DefineRectClip(Nothing(), layoutRect),
+          aBuilder.DefineRoundedRectClip(Nothing(), region),
+      };
+      auto clipChain = aBuilder.DefineClipChain(
+          clips, aBuilder.CurrentClipChainIdIfNotRoot());
       clipOut.emplace(aBuilder, clipChain);
     }
   } else {
@@ -221,8 +225,13 @@ void nsFieldSetFrame::BuildDisplayList(nsDisplayListBuilder* aBuilder,
     DO_GLOBAL_REFLOW_COUNT_DSP("nsFieldSetFrame");
   }
 
+  if (HidesContent()) {
+    return;
+  }
+
   if (GetPrevInFlow()) {
     DisplayOverflowContainers(aBuilder, aLists);
+    DisplayPushedAbsoluteFrames(aBuilder, aLists);
   }
 
   nsDisplayListCollection contentDisplayItems(aBuilder);
@@ -321,7 +330,7 @@ ImgDrawResult nsFieldSetFrame::PaintBorder(nsDisplayListBuilder* aBuilder,
   return result;
 }
 
-nscoord nsFieldSetFrame::IntrinsicISize(gfxContext* aContext,
+nscoord nsFieldSetFrame::IntrinsicISize(const IntrinsicSizeInput& aInput,
                                         IntrinsicISizeType aType) {
   // Both inner and legend are children, and if the fieldset is
   // size-contained they should not contribute to the intrinsic size.
@@ -331,7 +340,8 @@ nscoord nsFieldSetFrame::IntrinsicISize(gfxContext* aContext,
 
   nscoord legendWidth = 0;
   if (nsIFrame* legend = GetLegend()) {
-    legendWidth = nsLayoutUtils::IntrinsicForContainer(aContext, legend, aType);
+    legendWidth =
+        nsLayoutUtils::IntrinsicForContainer(aInput.mContext, legend, aType);
   }
 
   nscoord contentWidth = 0;
@@ -340,7 +350,8 @@ nscoord nsFieldSetFrame::IntrinsicISize(gfxContext* aContext,
     // outer instead, and the padding computed for the inner is wrong
     // for percentage padding.
     contentWidth = nsLayoutUtils::IntrinsicForContainer(
-        aContext, inner, aType, Nothing(), nsLayoutUtils::IGNORE_PADDING);
+        aInput.mContext, inner, aType, aInput.mPercentageBasisForChildren,
+        nsLayoutUtils::IGNORE_PADDING);
   }
 
   return std::max(legendWidth, contentWidth);
@@ -369,8 +380,6 @@ void nsFieldSetFrame::Reflow(nsPresContext* aPresContext,
     AutoFrameListPtr prevOverflowFrames(PresContext(),
                                         prevInFlow->StealOverflowFrames());
     if (prevOverflowFrames) {
-      nsContainerFrame::ReparentFrameViewList(*prevOverflowFrames, prevInFlow,
-                                              this);
       mFrames.InsertFrames(this, nullptr, std::move(*prevOverflowFrames));
     }
   }
@@ -410,7 +419,9 @@ void nsFieldSetFrame::Reflow(nsPresContext* aPresContext,
     const auto legendWM = legend->GetWritingMode();
     LogicalSize legendAvailSize = availSize.ConvertTo(legendWM, wm);
     ComputeSizeFlags sizeFlags;
-    if (legend->StylePosition()->ISize(wm).IsAuto()) {
+    if (legend->StylePosition()
+            ->ISize(wm, AnchorPosResolutionParams::From(legend))
+            ->IsAuto()) {
       sizeFlags = ComputeSizeFlag::ShrinkWrap;
     }
     ReflowInput::InitFlags initFlags;  // intentionally empty
@@ -690,8 +701,6 @@ void nsFieldSetFrame::Reflow(nsPresContext* aPresContext,
                                           containerSize);
 
     legend->SetPosition(wm, actualLegendPos, containerSize);
-    nsContainerFrame::PositionFrameView(legend);
-    nsContainerFrame::PositionChildViews(legend);
   }
 
   // Skip our block-end border if we're INCOMPLETE.

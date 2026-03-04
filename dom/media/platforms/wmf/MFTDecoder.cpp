@@ -5,14 +5,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "MFTDecoder.h"
+
+#include "PlatformDecoderModule.h"
 #include "WMFUtils.h"
 #include "mozilla/Logging.h"
-#include "nsThreadUtils.h"
 #include "mozilla/mscom/COMWrappers.h"
 #include "mozilla/mscom/Utils.h"
-#include "PlatformDecoderModule.h"
+#include "nsThreadUtils.h"
 
 #define LOG(...) MOZ_LOG(sPDMLog, mozilla::LogLevel::Debug, (__VA_ARGS__))
+#define LOGV(...) MOZ_LOG(sPDMLog, mozilla::LogLevel::Verbose, (__VA_ARGS__))
 
 namespace mozilla {
 MFTDecoder::MFTDecoder() {
@@ -45,24 +47,24 @@ MFTDecoder::Create(const GUID& aCategory, const GUID& aInSubtype,
   MOZ_ASSERT(mscom::IsCurrentThreadMTA());
 
   // Use video by default, but select audio if necessary.
-  const GUID major = aCategory == MFT_CATEGORY_AUDIO_DECODER
-                         ? MFMediaType_Audio
-                         : MFMediaType_Video;
+  mMajorType = aCategory == MFT_CATEGORY_AUDIO_DECODER ? MFMediaType_Audio
+                                                       : MFMediaType_Video;
 
   // Ignore null GUIDs to allow searching for all decoders supporting
   // just one input or output type.
-  auto createInfo = [&major](const GUID& subtype) -> MFT_REGISTER_TYPE_INFO* {
+  auto createInfo = [](const GUID& majortype,
+                       const GUID& subtype) -> MFT_REGISTER_TYPE_INFO* {
     if (IsEqualGUID(subtype, GUID_NULL)) {
       return nullptr;
     }
 
     MFT_REGISTER_TYPE_INFO* info = new MFT_REGISTER_TYPE_INFO();
-    info->guidMajorType = major;
+    info->guidMajorType = majortype;
     info->guidSubtype = subtype;
     return info;
   };
-  const MFT_REGISTER_TYPE_INFO* inInfo = createInfo(aInSubtype);
-  const MFT_REGISTER_TYPE_INFO* outInfo = createInfo(aOutSubtype);
+  const MFT_REGISTER_TYPE_INFO* inInfo = createInfo(mMajorType, aInSubtype);
+  const MFT_REGISTER_TYPE_INFO* outInfo = createInfo(mMajorType, aOutSubtype);
 
   // Request a decoder from the Windows API.
   HRESULT hr;
@@ -100,34 +102,27 @@ MFTDecoder::Create(const GUID& aCategory, const GUID& aInSubtype,
       SUCCEEDED(hr),
       nsPrintfCString("IMFActivate::ActivateObject failed with code %lx", hr)
           .get());
+  LOG("MFTDecoder::Create, created decoder, input=%s, output=%s",
+      GetSubTypeStr(aInSubtype).get(), GetSubTypeStr(aOutSubtype).get());
   return hr;
 }
 
 HRESULT
 MFTDecoder::SetMediaTypes(IMFMediaType* aInputType, IMFMediaType* aOutputType,
+                          const GUID& aFallbackSubType,
                           std::function<HRESULT(IMFMediaType*)>&& aCallback) {
   MOZ_ASSERT(mscom::IsCurrentThreadMTA());
 
   // Set the input type to the one the caller gave us...
-  HRESULT hr = mDecoder->SetInputType(0, aInputType, 0);
-  NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
+  RETURN_IF_FAILED(mDecoder->SetInputType(0, aInputType, 0));
 
   GUID currentSubtype = {0};
-  hr = aOutputType->GetGUID(MF_MT_SUBTYPE, &currentSubtype);
-  NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
-
-  hr = SetDecoderOutputType(currentSubtype, aOutputType, std::move(aCallback));
-  NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
-
-  hr = mDecoder->GetInputStreamInfo(0, &mInputStreamInfo);
-  NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
-
-  hr = SendMFTMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, 0);
-  NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
-
-  hr = SendMFTMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, 0);
-  NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
-
+  RETURN_IF_FAILED(aOutputType->GetGUID(MF_MT_SUBTYPE, &currentSubtype));
+  RETURN_IF_FAILED(SetDecoderOutputType(currentSubtype, aFallbackSubType,
+                                        aOutputType, std::move(aCallback)));
+  RETURN_IF_FAILED(mDecoder->GetInputStreamInfo(0, &mInputStreamInfo));
+  RETURN_IF_FAILED(SendMFTMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, 0));
+  RETURN_IF_FAILED(SendMFTMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, 0));
   return S_OK;
 }
 
@@ -148,22 +143,41 @@ already_AddRefed<IMFAttributes> MFTDecoder::GetOutputStreamAttributes() {
 }
 
 HRESULT
-MFTDecoder::FindDecoderOutputType() {
+MFTDecoder::FindDecoderOutputType(const GUID& aFallbackSubType) {
   MOZ_ASSERT(mscom::IsCurrentThreadMTA());
   MOZ_ASSERT(mOutputType, "SetDecoderTypes must have been called once");
 
-  return FindDecoderOutputTypeWithSubtype(mOutputSubType);
+  return FindDecoderOutputTypeWithSubtype(mOutputSubType, aFallbackSubType);
 }
 
 HRESULT
-MFTDecoder::FindDecoderOutputTypeWithSubtype(const GUID& aSubType) {
-  return SetDecoderOutputType(aSubType, nullptr,
+MFTDecoder::FindDecoderOutputTypeWithSubtype(const GUID& aSubType,
+                                             const GUID& aFallbackSubType) {
+  return SetDecoderOutputType(aSubType, aFallbackSubType, nullptr,
                               [](IMFMediaType*) { return S_OK; });
 }
 
+// This method first attempts to find the provided aSubType in the compatible
+// list reported by the decoder, if found it will be set up.
+//
+// If aSubType is not found in the compatible list, and aFallbackSubType is
+// GUID_NULL, this will promptly return E_FAIL instead of attempting fallbacks.
+//
+// If aSubType is not found in the compatible list, and aFallbackSubType is not
+// GUID_NULL, this method will attempt to find aFallbackSubType in the
+// compatible list, if found it will be set up.
+//
+// If aSubType is not found in the compatible list, and aFallbackSubType is not
+// GUID_NULL, but aFallbackSubType is also not found in the compatible list,
+// this method will set up the last available compatible type reported by the
+// decoder.
+//
+// Callers that do not want a fallback behavior must pass GUID_NULL as
+// aFallbackSubType.
 HRESULT
 MFTDecoder::SetDecoderOutputType(
-    const GUID& aSubType, IMFMediaType* aTypeToUse,
+    const GUID& aSubType, const GUID& aFallbackSubType,
+    IMFMediaType* aTypeToUse,
     std::function<HRESULT(IMFMediaType*)>&& aCallback) {
   MOZ_ASSERT(mscom::IsCurrentThreadMTA());
   NS_ENSURE_TRUE(mDecoder != nullptr, E_POINTER);
@@ -172,37 +186,84 @@ MFTDecoder::SetDecoderOutputType(
     aTypeToUse = mOutputType;
   }
 
-  // Iterate the enumerate the output types, until we find one compatible
-  // with what we need.
-  RefPtr<IMFMediaType> outputType;
+  // https://learn.microsoft.com/en-us/windows/win32/api/mftransform/nf-mftransform-imftransform-getoutputavailabletype
+  // Enumerate the output types in order to find a compatible type. However, not
+  // every MFT is required to implement this, and some MFT even can not return
+  // an accurate list of output types until the MFT receives the first input
+  // sample. Therefore, if we can't find one, we will use the last available
+  // type as fallback type.
+  RefPtr<IMFMediaType> outputType, lastOutputType;
+  GUID lastOutputSubtype;
+  enum class Result : uint8_t {
+    eNotFound,
+    eFoundCompatibleType,
+    eFoundPreferredType,
+  };
+  Result foundType = Result::eNotFound;
   UINT32 typeIndex = 0;
   while (SUCCEEDED(mDecoder->GetOutputAvailableType(
       0, typeIndex++, getter_AddRefs(outputType)))) {
     GUID outSubtype = {0};
-    HRESULT hr = outputType->GetGUID(MF_MT_SUBTYPE, &outSubtype);
-    NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
-
+    RETURN_IF_FAILED(outputType->GetGUID(MF_MT_SUBTYPE, &outSubtype));
+    LOGV("Searching compatible type, input=%s, output=%s",
+         GetSubTypeStr(aSubType).get(), GetSubTypeStr(outSubtype).get());
+    lastOutputType = outputType;
+    lastOutputSubtype = outSubtype;
     if (aSubType == outSubtype) {
-      hr = aCallback(outputType);
-      NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
-
-      hr = mDecoder->SetOutputType(0, outputType, 0);
-      NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
-
-      hr = mDecoder->GetOutputStreamInfo(0, &mOutputStreamInfo);
-      NS_ENSURE_TRUE(SUCCEEDED(hr), hr);
-
-      mMFTProvidesOutputSamples = IsFlagSet(mOutputStreamInfo.dwFlags,
-                                            MFT_OUTPUT_STREAM_PROVIDES_SAMPLES);
-
-      mOutputType = outputType;
-      mOutputSubType = outSubtype;
-
-      return S_OK;
+      foundType = Result::eFoundCompatibleType;
+      break;
     }
     outputType = nullptr;
   }
-  return E_FAIL;
+
+  if (foundType == Result::eNotFound) {
+    if (aFallbackSubType == GUID_NULL) {
+      // The caller specifically did not want a fallback, so just return.
+      return E_FAIL;
+    }
+    typeIndex = 0;
+    LOG("Can't find a compatible output type, searching with the preferred "
+        "type instead");
+    const GUID preferredSubtype = aFallbackSubType;
+    while (SUCCEEDED(mDecoder->GetOutputAvailableType(
+        0, typeIndex++, getter_AddRefs(outputType)))) {
+      GUID outSubtype = {0};
+      RETURN_IF_FAILED(outputType->GetGUID(MF_MT_SUBTYPE, &outSubtype));
+      LOGV("Searching preferred type, input=%s, output=%s",
+           GetSubTypeStr(preferredSubtype).get(),
+           GetSubTypeStr(outSubtype).get());
+      lastOutputType = outputType;
+      lastOutputSubtype = outSubtype;
+      if (preferredSubtype == outSubtype) {
+        foundType = Result::eFoundPreferredType;
+        break;
+      }
+      outputType = nullptr;
+    }
+  }
+
+  if (!lastOutputType) {
+    LOG("No available output type!");
+    return E_FAIL;
+  }
+
+  if (foundType != Result::eNotFound) {
+    LOG("Found %s type %s",
+        foundType == Result::eFoundCompatibleType ? "compatible" : "preferred",
+        GetSubTypeStr(lastOutputSubtype).get());
+  } else {
+    LOG("Can't find compatible and preferred type, use the last available type "
+        "%s",
+        GetSubTypeStr(lastOutputSubtype).get());
+  }
+  RETURN_IF_FAILED(aCallback(lastOutputType));
+  RETURN_IF_FAILED(mDecoder->SetOutputType(0, lastOutputType, 0));
+  RETURN_IF_FAILED(mDecoder->GetOutputStreamInfo(0, &mOutputStreamInfo));
+  mMFTProvidesOutputSamples =
+      IsFlagSet(mOutputStreamInfo.dwFlags, MFT_OUTPUT_STREAM_PROVIDES_SAMPLES);
+  mOutputType = lastOutputType;
+  mOutputSubType = lastOutputSubtype;
+  return S_OK;
 }
 
 HRESULT

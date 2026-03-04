@@ -13,7 +13,6 @@
 #include "mozilla/SVGUtils.h"
 #include "mozilla/dom/Document.h"
 #include "mozilla/dom/Element.h"
-#include "mozilla/dom/ImageTracker.h"
 #include "mozilla/dom/SVGDocument.h"
 #include "nsError.h"
 #include "nsString.h"
@@ -39,9 +38,6 @@
 using namespace mozilla;
 using mozilla::dom::Document;
 using mozilla::dom::Element;
-
-/* static */
-const mozilla::gfx::DeviceColor SimpleTextContextPaint::sZero;
 
 gfxSVGGlyphs::gfxSVGGlyphs(hb_blob_t* aSVGTable, gfxFontEntry* aFontEntry)
     : mSVGData(aSVGTable), mFontEntry(aFontEntry) {
@@ -132,7 +128,7 @@ gfxSVGGlyphsDocument* gfxSVGGlyphs::FindOrCreateGlyphsDocument(
 
 nsresult gfxSVGGlyphsDocument::SetupPresentation() {
   nsCOMPtr<nsIDocumentLoaderFactory> docLoaderFactory =
-      nsContentUtils::FindInternalDocumentViewer("image/svg+xml"_ns);
+      nsContentUtils::FindInternalDocumentViewer(SVG_CONTENT_TYPE);
   NS_ASSERTION(docLoaderFactory, "Couldn't get DocumentLoaderFactory");
 
   nsCOMPtr<nsIDocumentViewer> viewer;
@@ -141,7 +137,7 @@ nsresult gfxSVGGlyphsDocument::SetupPresentation() {
   NS_ENSURE_SUCCESS(rv, rv);
 
   auto upem = mOwner->FontEntry()->UnitsPerEm();
-  rv = viewer->Init(nullptr, gfx::IntRect(0, 0, upem, upem), nullptr);
+  rv = viewer->Init(nullptr, LayoutDeviceIntRect(0, 0, upem, upem), nullptr);
   if (NS_SUCCEEDED(rv)) {
     rv = viewer->Open(nullptr, nullptr);
     NS_ENSURE_SUCCESS(rv, rv);
@@ -158,7 +154,7 @@ nsresult gfxSVGGlyphsDocument::SetupPresentation() {
   if (mDocument->HasAnimationController()) {
     mDocument->GetAnimationController()->Resume(SMILTimeContainer::PAUSE_IMAGE);
   }
-  mDocument->ImageTracker()->SetAnimatingState(true);
+  mDocument->SetImageAnimationState(true);
 
   mViewer = viewer;
   mPresShell = presShell;
@@ -285,8 +281,7 @@ gfxSVGGlyphsDocument::gfxSVGGlyphsDocument(const uint8_t* aBuffer,
       if (Z_OK == inflateInit2(&s, 16 + MAX_WBITS)) {
         int result = inflate(&s, Z_FINISH);
         if (Z_STREAM_END == result) {
-          MOZ_ASSERT(size_t(s.next_out - outBuf.Elements()) == origLen);
-          ParseDocument(outBuf.Elements(), outBuf.Length());
+          ParseDocument(outBuf.Elements(), s.total_out);
         } else {
           NS_WARNING("Failed to decompress SVG glyphs document");
         }
@@ -376,9 +371,9 @@ nsresult gfxSVGGlyphsDocument::ParseDocument(const uint8_t* aBuffer,
                          u""_ns,   // aQualifiedName
                          nullptr,  // aDoctype
                          uri, uri, principal,
-                         false,    // aLoadedAsData
-                         nullptr,  // aEventObject
-                         DocumentFlavorSVG);
+                         mozilla::dom::LoadedAsData::No,  // aLoadedAsData
+                         nullptr,                         // aEventObject
+                         DocumentFlavor::SVG);
   NS_ENSURE_SUCCESS(rv, rv);
 
   nsCOMPtr<nsIChannel> channel;

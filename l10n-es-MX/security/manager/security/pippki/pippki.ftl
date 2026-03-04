@@ -48,15 +48,17 @@ download-cert-view-cert =
     .label = Ver
 download-cert-view-text = Examinar certificado de CA
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
     .title = Petición de identificación de usuario
 client-auth-site-description = El siguiente sitio ha pedido que te identifiques con un certificado:
 client-auth-choose-cert = Elige un certificado para presentarlo como identificación:
+client-auth-send-no-certificate =
+    .label = No enviar certificado
+# Variables:
+# $hostname (String) - The domain name of the site requesting the client authentication certificate
+client-auth-site-identification = “{ $hostname }” ha solicitado que te identifiques con un certificado:
 client-auth-cert-details = Detalles del certificado seleccionado:
 # Variables:
 # $issuedTo (String) - The subject common name of the currently-selected client authentication certificate
@@ -80,8 +82,13 @@ client-auth-cert-details-issued-by = Emitido por: { $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = Almacenado en: { $storedOn }
-client-auth-cert-remember-box =
-    .label = Recordar esta decisión
+client-auth-cert-remember-label = Recordar esta decisión:
+client-auth-cert-remember-never =
+    .label = Una vez
+client-auth-cert-remember-always =
+    .label = Permanentemente
+client-auth-cert-remember-temporarily =
+    .label = Para esta sesión
 
 ## Set password (p12) dialog
 

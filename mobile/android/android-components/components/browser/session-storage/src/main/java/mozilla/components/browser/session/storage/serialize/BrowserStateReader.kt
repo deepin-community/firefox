@@ -70,7 +70,6 @@ class BrowserStateReader {
     }
 }
 
-@Suppress("ComplexMethod")
 private fun JsonReader.browsingSession(
     engine: Engine,
     restoreSessionId: Boolean = true,
@@ -164,7 +163,7 @@ private fun JsonReader.tab(
     )
 }
 
-@Suppress("ComplexMethod", "LongMethod")
+@Suppress("LongMethod", "CyclomaticComplexMethod")
 private fun JsonReader.tabSession(): RecoverableTab {
     var id: String? = null
     var parentId: String? = null
@@ -189,6 +188,8 @@ private fun JsonReader.tabSession(): RecoverableTab {
     var sourceId: Int? = null
     var externalSourcePackageId: String? = null
     var externalSourceCategory: Int? = null
+
+    var desktopMode: Boolean? = null
 
     beginObject()
 
@@ -215,6 +216,7 @@ private fun JsonReader.tabSession(): RecoverableTab {
             Keys.SESSION_EXTERNAL_SOURCE_PACKAGE_ID -> externalSourcePackageId = nextStringOrNull()
             Keys.SESSION_EXTERNAL_SOURCE_PACKAGE_CATEGORY -> externalSourceCategory = nextIntOrNull()
             Keys.SESSION_DEPRECATED_SOURCE_KEY -> nextString()
+            Keys.SESSION_DESKTOP_MODE -> desktopMode = nextBoolean()
             else -> throw IllegalArgumentException("Unknown session key: $name")
         }
     }
@@ -253,6 +255,7 @@ private fun JsonReader.tabSession(): RecoverableTab {
                 mediaSessionActive = mediaSessionActive ?: false,
             ),
             source = SessionState.Source.restore(sourceId, externalSourcePackageId, externalSourceCategory),
+            desktopMode = desktopMode ?: false,
         ),
     )
 }

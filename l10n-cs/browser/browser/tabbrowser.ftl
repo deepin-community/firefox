@@ -8,6 +8,19 @@ tabbrowser-menuitem-close-tab =
     .label = Zavřít panel
 tabbrowser-menuitem-close =
     .label = Zavřít
+# Displayed within the tooltip on tabs inside of a tab group.
+# Variables:
+#   $tabGroupName (String): the user-defined name of the current tab group.
+tabbrowser-tab-tooltip-tab-group = { $tabGroupName }
+# Displayed within the tooltip on tabs in a container.
+# Variables:
+#   $containerName (String): the name of the current container.
+tabbrowser-tab-tooltip-container = { $containerName }
+# Displayed within the tooltip on tabs inside of a tab group if the tab is also in a container.
+# Variables:
+#   $tabGroupName (String): the user-defined name of the current tab group.
+#   $containerName (String): the name of the current container.
+tabbrowser-tab-tooltip-tab-group-container = { $tabGroupName } — { $containerName }
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
@@ -34,6 +47,8 @@ tabbrowser-close-tabs-tooltip =
             [few] Zavřít { $tabCount } panely
            *[other] Zavřít { $tabCount } panelů
         }
+tab-splitview-splitter =
+    .aria-label = Změnit velikost panelů v rozděleném zobrazení
 
 ## Tooltips for tab audio control
 ## Variables:
@@ -79,6 +94,16 @@ tabbrowser-unblock-tab-audio-tooltip =
            *[other] Spustit v { $tabCount } panelech přehrávání
         }
 
+## Tooltips for tab audio control
+
+tabbrowser-unmute-tab-audio-aria-label =
+    .aria-label = Zapne zvuk panelu
+tabbrowser-mute-tab-audio-aria-label =
+    .aria-label = Vypne zvuk panelu
+# Used to unblock a tab with audio from autoplaying
+tabbrowser-unblock-tab-audio-aria-label =
+    .aria-label = Spustí v panelu přehrávání
+
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
@@ -92,7 +117,8 @@ tabbrowser-confirm-close-tabs-title =
        *[other] Zavřít { $tabCount } panelů?
     }
 tabbrowser-confirm-close-tabs-button = Zavřít panely
-tabbrowser-confirm-close-tabs-checkbox = Vždy se zeptat při zavírání více panelů
+tabbrowser-ask-close-tabs-checkbox = Zeptat se před zavřením vícera panelů
+tabbrowser-confirm-close-tabs-checkbox = Vždy se zeptat při zavírání vícera panelů
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
 
@@ -127,7 +153,33 @@ tabbrowser-confirm-close-tabs-with-key-button =
     }
 # Variables:
 #   $quitKey (String): the text of the keyboard shortcut for quitting.
+tabbrowser-ask-close-tabs-with-key-checkbox = Zeptat se před ukončením aplikace pomocí zkratky { $quitKey }
+# Variables:
+#   $quitKey (String): the text of the keyboard shortcut for quitting.
 tabbrowser-confirm-close-tabs-with-key-checkbox = Vždy se zeptat při ukončování aplikace zkratkou { $quitKey }
+
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
+
+tabbrowser-confirm-close-warn-shortcut-title =
+    { -brand-short-name.case-status ->
+        [with-cases] Ukončit { -brand-short-name(case: "acc") } nebo zavřít aktuální panel?
+       *[no-cases] Ukončit aplikaci { -brand-short-name } nebo zavřít aktuální panel?
+    }
+tabbrowser-confirm-close-windows-warn-shortcut-button =
+    { PLATFORM() ->
+        [macos]
+            { -brand-short-name.case-status ->
+                [with-cases] Ukončit { -brand-short-name(case: "acc") }
+               *[no-cases] Ukončit aplikaci { -brand-short-name }
+            }
+       *[other]
+            { -brand-short-name.case-status ->
+                [with-cases] Ukončit { -brand-short-name(case: "acc") }
+               *[no-cases] Ukončit aplikaci { -brand-short-name }
+            }
+    }
+tabbrowser-confirm-close-tab-only-button = Zavřít aktuální panel
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
@@ -136,8 +188,8 @@ tabbrowser-confirm-open-multiple-tabs-title = Potvrdit otevření
 #   $tabCount (Number): The number of tabs that will be opened.
 tabbrowser-confirm-open-multiple-tabs-message =
     { -brand-short-name.case-status ->
-        [with-cases] Chystáte se najednou otevřít více panelů ({ $tabCount }), a to může { -brand-short-name(case: "acc") } zpomalit. Opravdu chcete pokračovat?
-       *[no-cases] Chystáte se najednou otevřít více panelů ({ $tabCount }), a to může aplikaci { -brand-short-name } zpomalit. Opravdu chcete pokračovat?
+        [with-cases] Chystáte se otevřít { $tabCount } panelů najednou, a to může { -brand-short-name(case: "acc") } během jejich načítání zpomalit. Opravdu chcete pokračovat?
+       *[no-cases] Chystáte se otevřít { $tabCount } panelů najednou, a to může aplikaci { -brand-short-name } během jejich načítání zpomalit. Opravdu chcete pokračovat?
     }
 tabbrowser-confirm-open-multiple-tabs-button = Otevřít panely
 tabbrowser-confirm-open-multiple-tabs-checkbox =
@@ -148,14 +200,12 @@ tabbrowser-confirm-open-multiple-tabs-checkbox =
 
 ## Confirmation dialog for enabling caret browsing
 
-tabbrowser-confirm-caretbrowsing-title = Procházení stránky
-tabbrowser-confirm-caretbrowsing-message = Stisknutím klávesy F7 zapnete či vypnete funkci Procházení stránky. Ta umístí do stránky pohyblivý textový kurzor, který vám umožní vybírat text pomocí klávesnice. Chcete zapnout funkci Procházení stránky?
+tabbrowser-confirm-caretbrowsing-title = Procházení pomocí kurzoru
+tabbrowser-confirm-caretbrowsing-message = Stisknutím klávesy F7 zapnete či vypnete funkci Procházení pomocí kurzoru. Ta umístí do stránky pohyblivý textový kurzor, který vám umožní vybírat text pomocí klávesnice. Chcete zapnout funkci Procházení pomocí kurzoru?
 tabbrowser-confirm-caretbrowsing-checkbox = Tento dialog příště nezobrazovat.
 
 ## Confirmation dialog for closing all duplicate tabs
 
-tabbrowser-confirm-close-duplicate-tabs-title = Pozor
-tabbrowser-confirm-close-duplicate-tabs-text = Ponecháme otevřený poslední aktivní panel
 tabbrowser-confirm-close-all-duplicate-tabs-title = Zavřít duplicitní panely?
 tabbrowser-confirm-close-all-duplicate-tabs-text = V tomto okně zavřeme duplicitní panely. Poslední aktivní panel zůstane otevřený.
 tabbrowser-confirm-close-all-duplicate-tabs-button-closetabs = Zavřít panely
@@ -204,6 +254,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
         }
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = Vypne zvuk panelu
@@ -211,3 +264,246 @@ tabbrowser-manager-unmute-tab =
     .tooltiptext = Zapne zvuk panelu
 tabbrowser-manager-close-tab =
     .tooltiptext = Zavře panel
+# This is for tab groups that have been "saved and closed" (see tab-group-editor-action-save). It does
+# not include "deleted" tab groups (see tab-group-editor-action-delete).
+tabbrowser-manager-closed-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } — zavřená
+tabbrowser-manager-current-window-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } — aktuální okno
+
+##
+
+tab-group-editor-title-create = Vytvořit skupinu panelů
+tab-group-editor-title-edit = Spravovat skupinu panelů
+tab-group-editor-name-label = Název
+tab-group-editor-name-field =
+    .placeholder = Například: Nakupování
+tab-group-editor-cancel =
+    .label = Zrušit
+    .accesskey = Z
+tab-group-editor-color-selector =
+    .aria-label = Barva skupiny panelů
+tab-group-editor-color-selector2-blue = Modrá
+    .title = Modrá
+tab-group-editor-color-selector2-purple = Fialová
+    .title = Fialová
+tab-group-editor-color-selector2-cyan = Azurová
+    .title = Azurová
+tab-group-editor-color-selector2-orange = Oranžová
+    .title = Oranžová
+tab-group-editor-color-selector2-yellow = Žlutá
+    .title = Žlutá
+tab-group-editor-color-selector2-pink = Růžová
+    .title = Růžová
+tab-group-editor-color-selector2-green = Zelená
+    .title = Zelená
+tab-group-editor-color-selector2-gray = Šedivý
+    .title = Šedivý
+tab-group-editor-color-selector2-red = Červená
+    .title = Červená
+tab-group-description = { $tabGroupName } — Skupina panelů
+tab-group-label-tooltip-collapsed = { $tabGroupName } — sbaleno
+tab-group-label-tooltip-expanded = { $tabGroupName } — rozbaleno
+tab-group-preview-name =
+    .aria-label = Panely ve sbalené skupině
+tab-context-unnamed-group =
+    .label = Nepojmenovaná skupina
+tab-group-name-default = Nepojmenovaná skupina
+
+## When collapsed, the tab group label's aria-description will indicate
+## whether the hover menu is open or closed.
+
+tab-group-preview-open-description = Seznam panelů je otevřen
+tab-group-preview-closed-description = Seznam panelů zavřen
+
+##
+
+tab-context-move-tab-to-new-group =
+    .label =
+        { $tabCount ->
+            [1] Přidat panel do nové skupiny
+            [one] Přidat panel do nové skupiny
+            [few] Přidat panely do nové skupiny
+            [many] Přidat panely do nové skupiny
+           *[other] Přidat panely do nové skupiny
+        }
+    .accesskey = d
+tab-context-move-tab-to-group =
+    .label =
+        { $tabCount ->
+            [1] Přidat panel do skupiny
+            [one] Přidat panel do skupiny
+            [few] Přidat panely do skupiny
+            [many] Přidat panely do skupiny
+           *[other] Přidat panely do skupiny
+        }
+    .accesskey = d
+tab-context-move-split-view-to-new-group =
+    .label =
+        { $splitViewCount ->
+            [1] Přidat rozdělené zobrazení do nové skupiny
+            [one] Přidat rozdělené zobrazení do nové skupiny
+            [few] Přidat rozdělená zobrazení do nové skupiny
+            [many] Přidat rozdělená zobrazení do nové skupiny
+           *[other] Přidat rozdělená zobrazení do nové skupiny
+        }
+    .accesskey = P
+tab-context-move-split-view-to-group =
+    .label =
+        { $splitViewCount ->
+            [1] Přidat rozdělené zobrazení do skupiny
+            [one] Přidat rozdělené zobrazení do skupiny
+            [few] Přidat rozdělená zobrazení do skupiny
+            [many] Přidat rozdělená zobrazení do skupiny
+           *[other] Přidat rozdělená zobrazení do skupiny
+        }
+    .accesskey = P
+tab-context-move-tab-to-group-saved-groups =
+    .label = Zavřené skupiny
+tab-group-editor-action-new-tab =
+    .label = Nový panel ve skupině
+tab-group-editor-action-new-window =
+    .label = Přesunout skupinu do nového okna
+tab-group-editor-action-save =
+    .label = Uložit a zavřít skupinu
+tab-group-editor-action-ungroup =
+    .label = Zrušit seskupení panelů
+tab-group-editor-action-delete =
+    .label = Smazat skupinu
+tab-group-editor-done =
+    .label = Hotovo
+    .accessKey = H
+tab-context-reopen-tab-group =
+    .label = Znovu otevřít skupinu panelů
+# Variables:
+#  $groupCount (Number): the number of tab groups that are affected by the action.
+tab-context-ungroup-tab =
+    .label =
+        { $groupCount ->
+            [1] Odebrat ze skupiny
+            [one] Odebrat ze skupiny
+            [few] Odebrat ze skupin
+            [many] Odebrat ze skupin
+           *[other] Odebrat ze skupin
+        }
+    .accesskey = d
+# When a tab group containing the active tab is collapsed, the active tab
+# remains visible. An indicator appears at the end of the group showing the
+# number of remaining tabs that are hidden by the collapsed group,
+# e.g. "+2" for a group with 3 total tabs.
+tab-group-overflow-count = + { $tabCount }
+tab-group-overflow-count-tooltip =
+    { $tabCount ->
+        [one] { $tabCount } další panel
+        [few] { $tabCount } další panely
+        [many] { $tabCount } dalších panelů
+       *[other] { $tabCount } dalších panelů
+    }
+
+## Open/saved tab group context menu
+
+# For a tab group open in any window, clicking this will create a new
+# window and move this tab group to that new window.
+tab-group-context-move-to-new-window =
+    .label = Přesunout skupinu do nového okna
+# For a tab group open in a different window from the one that the
+# user is using to access the tab group menu, move that tab group into the
+# user's current window.
+tab-group-context-move-to-this-window =
+    .label = Přesunout skupinu do tohoto okna
+# For a tab group that is open in any window, close the tab group and
+# do not save it. For a tab group that is closed but saved by the user, clicking
+# this will forget the saved tab group.
+tab-group-context-delete =
+    .label = Smazat skupinu
+# For a saved tab group that is not open in any window, open the tab group
+# in the user's current window.
+tab-group-context-open-saved-group-in-this-window =
+    .label = Otevřít skupinu v tomto okně
+# For a saved tab group that is not open in any window, create a new window and
+# open the tab group in that window.
+tab-group-context-open-saved-group-in-new-window =
+    .label = Otevřít skupinu v novém okně
+
+## Tab Notes
+
+tab-context-add-note =
+    .label = Přidat poznámku
+    .accesskey = a
+tab-context-update-note =
+    .label = Aktualizovat poznámku
+    .accesskey = A
+tab-context-edit-note =
+    .label = Upravit poznámku
+    .accesskey = r
+tab-context-delete-note =
+    .label = Smazat poznámku
+    .accesskey = S
+tab-note-editor-title-create = Přidání poznámky
+tab-note-editor-title-edit = Úprava poznámky
+tab-note-editor-text-field =
+    .placeholder = Co si chcete zapamatovat u tohoto panelu?
+tab-note-editor-button-cancel =
+    .label = Zrušit
+    .accesskey = Z
+tab-note-editor-button-save =
+    .label = Uložit
+    .accesskey = U
+# Link to show the full tab note in case it was truncated.
+tab-note-preview-expand = Přečíst si více
+# Displayed within the tab note edit dialog box when the user has entered more
+# characters than are allowed.
+# Variables:
+#   $totalCharacters (Number): the number of characters the user has entered.
+#   $maxAllowedCharacters (Number): the maximum number of characters allowed for a tab note.
+tab-note-editor-character-limit =
+    { $maxAllowedCharacters ->
+        [one] { NUMBER($totalCharacters, useGrouping: "false") }/{ NUMBER($maxAllowedCharacters, useGrouping: "false") } znaků
+        [few] { NUMBER($totalCharacters, useGrouping: "false") }/{ NUMBER($maxAllowedCharacters, useGrouping: "false") } znaků
+        [many] { NUMBER($totalCharacters, useGrouping: "false") }/{ NUMBER($maxAllowedCharacters, useGrouping: "false") } znaků
+       *[other] { NUMBER($totalCharacters, useGrouping: "false") }/{ NUMBER($maxAllowedCharacters, useGrouping: "false") } znaků
+    }
+
+## Split View
+
+# Split view tabs display their respective contents side by side
+# Displayed within the tooltip on tabs inside of a tab split view
+tabbrowser-tab-label-tab-split-view = Rozdělené zobrazení
+# Open a new tab next to the current tab and display their contents side by side
+tab-context-add-split-view =
+    .label = Přidat rozdělené zobrazení
+    .accesskey = P
+# Display the two selected tabs' contents side by side
+tab-context-open-in-split-view =
+    .label = Otevřít v rozděleném zobrazení
+    .accesskey = t
+# Separate the two split view tabs and display the tabs and their contents as normal
+tab-context-separate-split-view =
+    .label = Zrušit rozdělené zobrazení
+    .accesskey = t
+tab-context-badge-new = Nové
+# Split view tabs display their respective contents side by side
+# Displayed within the tooltip on the left tab inside of a tab split view
+# "left" corresponds to the visual position. Translate literally; do not swap for RTL languages.
+# Variables:
+#   $label (String): the text label of the tab visible in the tab strip
+tabbrowser-tab-label-tab-split-view-left = { $label }, rozdělené zobrazení vlevo
+# Split view tabs display their respective contents side by side
+# Displayed within the tooltip on the right tab inside of a tab split view
+# "right" corresponds to the visual position. Translate literally; do not swap for RTL languages.
+# Variables:
+#   $label (String): the text label of the tab visible in the tab strip
+tabbrowser-tab-label-tab-split-view-right = { $label }, rozdělené zobrazení vpravo
+
+## Manage Split View (icon in the address bar & three-dot menu in the footer)
+
+# "Separate" is a verb, as in "separate the split view tabs and display them normally".
+split-view-menuitem-separate-tabs =
+    .label = Osamostatnit panely
+# "Reverse" is a verb, as in "reverse the order of split view tabs".
+split-view-menuitem-reverse-tabs =
+    .label = Obrátit panely
+split-view-menuitem-close-both-tabs =
+    .label = Zavřít oba panely

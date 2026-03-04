@@ -43,11 +43,12 @@ function waitForCondition(condition, nextTest, errorMsg) {
 /**
  * An utility function to write some text in the search input box
  * in a content page.
- * @param {Object} browser
+ *
+ * @param {object} browser
  *        The browser that contains the content.
- * @param {String} text
+ * @param {string} text
  *        The string to write in the search field.
- * @param {String} fieldName
+ * @param {string} fieldName
  *        The name of the field to write to.
  */
 let typeInSearchField = async function (browser, text, fieldName) {
@@ -318,14 +319,10 @@ async function promisePageActionViewChildrenVisible(panelViewNode) {
 async function initPageActionsTest() {
   await disableNonReleaseActions();
 
-  // Ensure screenshots is really disabled (bug 1498738)
-  const addon = await AddonManager.getAddonByID("screenshots@mozilla.org");
-  await addon.disable({ allowSystemAddons: true });
-
   // Make the main button visible. It's not unless the window is narrow. This
   // test isn't concerned with that behavior. We have other tests for that.
-  BrowserPageActions.mainButtonNode.style.visibility = "visible";
+  BrowserPageActions.mainButtonNode.style.display = "flex";
   registerCleanupFunction(() => {
-    BrowserPageActions.mainButtonNode.style.removeProperty("visibility");
+    BrowserPageActions.mainButtonNode.style.removeProperty("display");
   });
 }

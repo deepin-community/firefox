@@ -27,6 +27,10 @@ appmenuitem-downloads =
     .label = Nedlastingar
 appmenuitem-passwords =
     .label = Passord
+appmenuitem-extensions-and-themes =
+    .label = Utvidingar og tema
+appmenuitem-extensions =
+    .label = Utvidingar
 appmenuitem-addons-and-themes =
     .label = Tillegg og tema
 appmenuitem-print =
@@ -108,8 +112,11 @@ appmenu-fxa-sync-and-save-data2 = Synkroniser og lagre data
 appmenu-fxa-signed-in-label = Logg inn
 appmenu-fxa-setup-sync =
     .label = Slå på synkronisering…
+appmenu-fxa-setup-sync-new = Slå på
 appmenuitem-save-page =
     .label = Lagre sida som…
+appmenuitem-fxa-sync-off-title = Synkronisering er av
+appmenuitem-fxa-sync-off-description = Vern og få tilgang til bokmerke, passord, med meir, kvar som helst.
 
 ## What's New panel in App menu.
 
@@ -163,6 +170,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Opne profileringsverktøy-panelet
+    .tooltiptext = Opne profileringsverktøy-panelet
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -180,7 +190,7 @@ profiler-popup-capture-shortcut =
 profiler-popup-presets-web-developer-description = Tilrådd førehandsinnstilling for dei fleste feilsøkingar i nettappar, med lite tillegg.
 profiler-popup-presets-web-developer-label =
     .label = Nettsideutvikling
-profiler-popup-presets-firefox-description = Tilrådd førehandsinnstilling for profilering { -brand-shorter-name }.
+profiler-popup-presets-firefox-description = Tilrådd førehandsinnstilling for profilering av { -brand-shorter-name }.
 profiler-popup-presets-firefox-label =
     .label = { -brand-shorter-name }
 profiler-popup-presets-graphics-description = Førehandsinnstilt for å undersøke grafikk-problem i { -brand-shorter-name }.
@@ -189,6 +199,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Førehandsinnstilt for å undersøke lyd- og videoproblem i { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Media
+profiler-popup-presets-ml-description = Førehandsinnstilling for å undersøkje maskinlæringsfeil i { -brand-shorter-name }.
+profiler-popup-presets-ml-label =
+    .label = Maskinlæring
 profiler-popup-presets-networking-description = Førehandsinnstilt for å undersøke nettverksfeil i { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = Nettverk
@@ -199,6 +212,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = Førehandsinnstilt for feilsøking i { -brand-shorter-name }. Høg overhead, ikkje bruk for ytingsarbeid, men bruk for å fokusere på å forstå åtferda til nettlesaren.
 profiler-popup-presets-debug-label =
     .label = Feilsøk
+profiler-popup-presets-web-compat-description = Tilrådd førehandsinnstilling for feilsøking av problem med nettkompatibilitet på nettstadar, i staden for å spore yting.
+profiler-popup-presets-web-compat-label =
+    .label = Webbkompatibilitet
 profiler-popup-presets-custom-label =
     .label = Tilpassa
 
@@ -277,5 +293,27 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Få varsel om datalekkasjar
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Skjul ekte e-postadresse og telefonnummer
+appmenuitem-services-relay-description = Start oversikta for e-postalias
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-description-2 = Få vern for heile eininga
 appmenuitem-vpn-description = Vern nettaktiviteten din
+appmenu-services-header = Mine tenester
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Prøv andre verneverktøy frå Mozilla:
+appmenu-other-protection-header = Prøv andre verneverktøy frå { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-other-profiles = Andre profilar
+appmenu-manage-profiles =
+    .label = Handsam profilar
+appmenu-copy-profile =
+    .label = Kopier denne profilen
+appmenu-create-profile =
+    .label = Ny profil
+appmenu-edit-profile =
+    .aria-label = Rediger profil
+appmenu-profiles-2 =
+    .label = Profilar

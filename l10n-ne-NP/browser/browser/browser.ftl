@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # These are the default window titles everywhere except macOS.
 # .data-title-default and .data-title-private are used when the web content
 # opened has no title:
@@ -281,7 +278,6 @@ quickactions-print2 = पृष्ठ छाप्नुहोस्
 quickactions-cmd-print = छाप्नुहोस्
 # Opens the print dialog at the save to PDF option
 quickactions-savepdf = पृष्ठ PDF को रूपमा बचत गर्नुहोस्
-quickactions-cmd-savepdf = pdf
 # Opens a new private browsing window
 quickactions-private2 = निजी सञ्झ्याल खोल्नुहोस्
 quickactions-cmd-private = निजी ब्राउजिङ्ग
@@ -613,6 +609,14 @@ urlbar-result-action-calculator-result = ={ $result }
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = { $engine } मार्फत खोज्नुहोस्
+urlbar-searchmode-bookmarks =
+    .label = बुकमार्कहरु
+urlbar-searchmode-tabs =
+    .label = ट्याबहरू
+urlbar-searchmode-history =
+    .label = इतिहास
+urlbar-searchmode-actions =
+    .label = कार्य
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -941,9 +945,6 @@ private-browsing-indicator-label = निजी ब्राउजिङ्ग
 content-analysis-indicator-tooltip =
     .tooltiptext = { $agentName } द्वारा डेटा हानि रोकथाम (DLP)। थप जानकारीको लागि क्लिक गर्नुहोस्।
 content-analysis-panel-title = डाटा संरक्षण
-# Variables:
-#   $agentName (String): The name of the DLP agent that is connected
-content-analysis-panel-text = तपाईंको संस्थाले डाटा हराउनबाट जोगाउन { $agentName } प्रयोग गर्छ। <a data-l10n-name="info">थप जान्नुहोस्</a>
 
 ## Unified extensions (toolbar) button
 
@@ -1004,10 +1005,6 @@ firefox-relay-offer-legal-notice = "इमेल मास्क प्रयो
 popup-notification-addon-install-unsigned =
     .value = (अप्रमाणित)
 popup-notification-xpinstall-prompt-learn-more = एड-अनहरू सुरक्षित रूपमा स्थापना गर्ने बारे थप जान्नुहोस्
-# Note: Access key is set to P to match "Private" in the corresponding localized label.
-popup-notification-addon-privatebrowsing-checkbox =
-    .label = निजी विन्डोजमा चलाउनुहोस्
-    .accesskey = P
 
 ## Pop-up warning
 

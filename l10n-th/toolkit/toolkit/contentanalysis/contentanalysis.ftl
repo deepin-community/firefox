@@ -13,6 +13,11 @@ contentanalysis-slow-agent-dialog-header = กำลังสแกน
 contentanalysis-slow-agent-dialog-body-file = { $agent } กำลังตรวจสอบ “{ $filename }” กับนโยบายข้อมูลขององค์กรของคุณ ขั้นตอนนี้อาจจะใช้เวลาสักครู่
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
+#   $filename - Name of a file being analyzed, such as "aFile.txt"
+#   $count (number) - The number of additional items in the request for analysis
+contentanalysis-slow-agent-dialog-body-file-and-more = { $agent } กำลังตรวจสอบ “{ $filename }” และ { $count } รายการเพิ่มเติมว่าสอดคล้องตามนโยบายข้อมูลขององค์กรของคุณหรือไม่ การกระทำนี้จะใช้เวลาสักครู่
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
 contentanalysis-slow-agent-dialog-body-clipboard = { $agent } กำลังตรวจสอบข้อมูลที่คุณวางกับนโยบายข้อมูลขององค์กรของคุณ ขั้นตอนนี้อาจจะใช้เวลาสักครู่
 # Note that this is shown when the user drag and drops text into the browser.
 # Variables:
@@ -25,7 +30,9 @@ contentanalysis-operationtype-clipboard = คลิปบอร์ด
 contentanalysis-operationtype-dropped-text = ข้อความที่ปล่อย
 contentanalysis-operationtype-print = พิมพ์
 #   $filename - The filename associated with the request, such as "aFile.txt"
-contentanalysis-customdisplaystring-description = การอัปโหลด “{ $filename }”
+contentanalysis-upload-description = การอัปโหลด “{ $filename }”
+#   $filename - The filename associated with the request, such as "aFile.txt"
+contentanalysis-download-description = การดาวน์โหลด “{ $filename }”
 contentanalysis-warndialogtitle = เนื้อหานี้อาจไม่ปลอดภัย
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
@@ -58,10 +65,18 @@ contentanalysis-error-message-upload-file = การอัปโหลด “{ 
 contentanalysis-error-message-dropped-text = การลากแล้วปล่อยถูกปฏิเสธ
 contentanalysis-error-message-clipboard = การวางถูกปฏิเสธ
 contentanalysis-error-message-print = การพิมพ์ถูกปฏิเสธ
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $contentName - Description of the content, such as "clipboard" or "aFile.txt"
+contentanalysis-timeout-block-error-message-content = การเชื่อมต่อกับ { $agent } หมดเวลาลงแล้ว { $contentName } ถูกปิดกั้น
 contentanalysis-block-dialog-title-upload-file = คุณไม่ได้รับอนุญาตให้อัปโหลดไฟล์นี้
 # Variables:
 #   $filename - Name of the file that was blocked, such as "aFile.txt"
 contentanalysis-block-dialog-body-upload-file = ภายใต้นโยบายการปกป้องข้อมูลขององค์กรของคุณ คุณไม่ได้รับอนุญาตให้อัปโหลดไฟล์ “{ $filename }” ให้ติดต่อผู้ดูแลระบบของคุณสำหรับข้อมูลเพิ่มเติม
+contentanalysis-block-dialog-title-download-file = คุณไม่ได้รับอนุญาตให้ดาวน์โหลดไฟล์นี้
+# Variables:
+#   $filename - Name of the file that was blocked, such as "aFile.txt"
+contentanalysis-block-dialog-body-download-file = ภายใต้นโยบายการปกป้องข้อมูลขององค์กรของคุณ คุณไม่ได้รับอนุญาตให้ดาวน์โหลดไฟล์ “{ $filename }” ให้ติดต่อผู้ดูแลระบบของคุณสำหรับข้อมูลเพิ่มเติม
 contentanalysis-block-dialog-title-clipboard = คุณไม่ได้รับอนุญาตให้วางเนื้อหานี้
 contentanalysis-block-dialog-body-clipboard = ภายใต้นโยบายการปกป้องข้อมูลขององค์กรของคุณ คุณไม่ได้รับอนุญาตให้วางเนื้อหานี้ ให้ติดต่อผู้ดูแลระบบของคุณสำหรับข้อมูลเพิ่มเติม
 contentanalysis-block-dialog-title-dropped-text = คุณไม่ได้รับอนุญาตให้ปล่อยเนื้อหานี้

@@ -4,12 +4,11 @@
 
 sidebar-menu-bookmarks =
     .label = Záložky
+sidebar-menu-bookmarks-2 = Záložky
 sidebar-menu-history =
     .label = História
 sidebar-menu-synced-tabs =
     .label = Synchronizované karty
-sidebar-menu-megalist =
-    .label = Heslá
 sidebar-menu-close =
     .label = Zavrieť bočný panel
 sidebar-close-button =

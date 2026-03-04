@@ -24,7 +24,7 @@ certificate-viewer-inc-country = Երկրի գրանցում
 certificate-viewer-country = Երկիր
 certificate-viewer-curve = Կոր
 certificate-viewer-distribution-point = Բաշխման կետ
-certificate-viewer-dns-name = DNS Անուն
+certificate-viewer-dns-name = DNS անուն
 certificate-viewer-ip-address = IP հասցե
 certificate-viewer-other-name = Այլ անուն
 certificate-viewer-exponent = Աստիճանացույց
@@ -36,6 +36,7 @@ certificate-viewer-key-size = Ստեղնի չափը
 certificate-viewer-inc-locality = Inc. տեղադրությունը
 certificate-viewer-locality = Տեղադրություն
 certificate-viewer-location = Տեղադրություն
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = Գրանցման ID
 certificate-viewer-method = Եղանակ
 certificate-viewer-modulus = Մոդուլներ
@@ -81,8 +82,7 @@ certificate-viewer-authority-info-aia = Հեղինակային տեղեկատվ�
 certificate-viewer-certificate-policies = Վկայագրի դրույթները
 certificate-viewer-embedded-scts = Ներկառուցված SCTs
 certificate-viewer-crl-endpoints = CRL֊ի վերջնակետերը
-
-# This message is used as a row header in the Miscellaneous section. 
+# This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Ներբեռնել
 # This message is used to replace boolean values (true/false) in several certificate fields, e.g. Certificate Authority
@@ -104,14 +104,11 @@ certificate-viewer-download-pem =
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (chain)
     .download = { $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Այս ընդլայնումը նշվել է որպես կրիտիկական, ինչը նշանակում է, որ հաճախորդները պետք է մերժեն վկայագիրը, եթե նրանք չեն հասկանում դա:
 certificate-viewer-export = Արտահանել
     .download = { $fileName }.pem
-
-##
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

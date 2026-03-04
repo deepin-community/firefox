@@ -149,9 +149,7 @@ main-context-menu-save-link-to-pocket =
     .label = Нигоҳ доштани пайванд дар { -pocket-brand-name }
     .accesskey = Н
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Нусха бардоштани нишонии почтаи электронӣ
@@ -162,10 +160,14 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Нусха бардоштани пайванд
     .accesskey = Н
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Нусха бардоштани пайванд бе пайгирии сомона
+main-context-menu-preview-link =
+    .label = Пайванди пешнамоиш
+    .accesskey = П
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Нусха бардоштани пайванди тоза
     .accesskey = Н
 
 ## Media (video/audio) controls
@@ -268,6 +270,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Дидани тавсиф
     .accesskey = Д
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Ҷустуҷӯи тасвир тавассути { $engine }
+    .accesskey = Ҷ
 main-context-menu-video-save-as =
     .label = Нигоҳ доштани видео ҳамчун…
     .accesskey = Н
@@ -283,6 +290,9 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Ирсоли аудио тавассути почта…
     .accesskey = И
+main-context-menu-send-to-device-2 =
+    .label = Фиристодан ба дастгоҳ
+    .accesskey = д
 main-context-menu-save-to-pocket =
     .label = Нигоҳ доштани саҳифа ба { -pocket-brand-name }
     .accesskey = Н
@@ -290,9 +300,7 @@ main-context-menu-send-to-device =
     .label = Фиристодани саҳифа ба дастгоҳ
     .accesskey = Ф
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Истифода кардани воридшавии нигоҳдошташуда
@@ -318,6 +326,9 @@ main-context-menu-manage-passwords =
     .accesskey = д
 main-context-menu-keyword =
     .label = Илова кардани калимаи калидӣ барои ин ҷустуҷӯ…
+    .accesskey = И
+main-context-menu-add-engine =
+    .label = Илова кардани низоми ҷустуҷӯӣ
     .accesskey = И
 main-context-menu-link-send-to-device =
     .label = Фиристодани пайванд ба дастгоҳ
@@ -389,3 +400,5 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Нишон додани ниҳонвожа
     .accesskey = Н
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Нав

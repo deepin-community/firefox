@@ -21,6 +21,9 @@ permissions-session =
 permissions-allow =
     .label = Разрешить
     .accesskey = з
+permissions-add =
+    .label = Добавить
+    .accesskey = Ф
 permissions-button-off =
     .label = Отключить
     .accesskey = ю
@@ -93,6 +96,13 @@ permissions-exceptions-https-only-window2 =
 permissions-exceptions-https-only-desc = Вы можете отключить Режим «Только HTTPS» для определённых веб-сайтов. { -brand-short-name } не будет пытаться переключать соединение на защищённый HTTPS для этих сайтов. Исключения не распространяются на приватные окна.
 permissions-exceptions-https-only-desc2 = Вы можете отключить режим «Только HTTPS» для определённых веб-сайтов. { -brand-short-name } не будет пытаться переключать соединение на защищённый HTTPS для этих сайтов.
 
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-window3 =
+    .title = Разрешённые веб-сайты — Всплывающие окна и Сторонние перенаправления
+    .style = { permissions-window2.style }
+permissions-exceptions-popup-desc2 = Вы можете указать, каким веб-сайтам разрешено открывать всплывающие окна и перенаправляться сторонними фреймами.
+
 ## Exceptions - Pop-ups
 
 permissions-exceptions-popup-window2 =
@@ -110,7 +120,7 @@ permissions-exceptions-saved-logins-desc = Логины для следующи�
 ## Exceptions - Saved Passwords
 
 permissions-exceptions-saved-passwords-window =
-    .title = Исключения – сохраненные пароли
+    .title = Исключения — сохранённые пароли
     .style = { permissions-window2.style }
 permissions-exceptions-saved-passwords-desc = { -brand-short-name } не сохраняет пароли для перечисленных здесь сайтов.
 
@@ -151,7 +161,7 @@ permissions-site-location-disable-desc = Это не позволит веб-с�
 ## Site Permissions - Virtual Reality
 
 permissions-site-xr-window2 =
-    .title = Настройки - Разрешения виртуальной реальности
+    .title = Параметры — Разрешения виртуальной реальности
     .style = { permissions-window2.style }
 permissions-site-xr-desc = Следующие веб-сайты запросили разрешение на доступ к вашим устройствам виртуальной реальности. Вы можете указать каким веб-сайтам разрешено получать доступ к вашим устройствам виртуальной реальности. Вы также можете блокировать новые запросы с просьбами разрешить доступ к вашим устройствам виртуальной реальности.
 permissions-site-xr-disable-label =
@@ -168,6 +178,26 @@ permissions-site-camera-disable-label =
     .label = Блокировать новые запросы на доступ к вашей камере
 permissions-site-camera-disable-desc = Это не позволит веб-сайтам, кроме перечисленных выше, запрашивать разрешение на доступ к вашей камере. Блокировка доступа к вашей камере может нарушить некоторые функции веб-сайта.
 
+## Site Permissions - Local host
+
+permissions-site-localhost-window =
+    .title = Параметры — Приложения и службы устройства
+    .style = { permissions-window2.style }
+permissions-site-localhost-desc = Следующие веб-сайты запросили доступ к приложениям и службам на этом устройстве. Вы можете разрешить или запретить сайтам это делать.
+permissions-site-localhost-disable-label =
+    .label = Блокировать новые запросы на доступ к приложениям и службам на этом устройстве
+permissions-site-localhost-disable-desc = Это не позволит веб-сайтам, кроме перечисленных выше, запрашивать доступ к приложениям и службам на этом устройстве. Это может нарушить некоторые функции веб-сайтов.
+
+## Site Permissions - Local network
+
+permissions-site-local-network-window =
+    .title = Параметры — Локальные сетевые устройства
+    .style = { permissions-window2.style }
+permissions-site-local-network-desc = Эти веб-сайты запросили доступ к приложениям и службам на устройствах, подключенных к вашему Wi-Fi или локальной сети. Вы можете разрешить или запретить сайтам это делать.
+permissions-site-local-network-disable-label =
+    .label = Запретить новые запросы на доступ к приложениям и службам на устройствах, подключенных к вашему Wi-Fi или локальной сети.
+permissions-site-local-network-disable-desc = Это не позволит веб-сайтам, кроме перечисленных выше, запрашивать доступ к приложениям и службам на устройствах, подключенных к вашему Wi-Fi или локальной сети. Это может нарушить некоторые функции веб-сайтов.
+
 ## Site Permissions - Microphone
 
 permissions-site-microphone-window2 =
@@ -183,7 +213,7 @@ permissions-site-microphone-disable-desc = Это не позволит веб-�
 ## "Speaker" refers to an audio output device.
 
 permissions-site-speaker-window =
-    .title = Настройки — Разрешения на доступ к динамику
+    .title = Параметры — Разрешения на доступ к динамику
     .style = { permissions-window2.style }
 permissions-site-speaker-desc = Следующие сайты запросили выбор устройства вывода звука. Вы можете указать, каким сайтам разрешено выбирать устройство вывода звука.
 permissions-exceptions-doh-window =

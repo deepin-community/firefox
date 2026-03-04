@@ -20,7 +20,6 @@ import { createLocation } from "../../utils/location";
 import actions from "../../actions/index";
 import {
   getSelectedLocation,
-  getCursorPosition,
   getSelectedSourceTextContent,
 } from "../../selectors/index";
 
@@ -75,11 +74,9 @@ export class Outline extends Component {
   static get propTypes() {
     return {
       alphabetizeOutline: PropTypes.bool.isRequired,
-      cursorPosition: PropTypes.object,
-      flashLineRange: PropTypes.func.isRequired,
       onAlphabetizeClick: PropTypes.func.isRequired,
       selectLocation: PropTypes.func.isRequired,
-      selectedLocation: PropTypes.object.isRequired,
+      selectedLocation: PropTypes.object,
       getFunctionSymbols: PropTypes.func.isRequired,
       getClassSymbols: PropTypes.func.isRequired,
       selectedSourceTextContent: PropTypes.object,
@@ -95,10 +92,10 @@ export class Outline extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { cursorPosition, selectedSourceTextContent, canFetchSymbols } =
+    const { selectedLocation, selectedSourceTextContent, canFetchSymbols } =
       this.props;
-    if (cursorPosition && cursorPosition !== prevProps.cursorPosition) {
-      this.setFocus(cursorPosition);
+    if (selectedLocation && selectedLocation !== prevProps.selectedLocation) {
+      this.setFocus(selectedLocation);
     }
 
     if (
@@ -127,7 +124,7 @@ export class Outline extends Component {
     this.setState({ symbols: { functions, classes } });
   }
 
-  async setFocus(cursorPosition) {
+  async setFocus(selectedLocation) {
     const { symbols } = this.state;
 
     let classes = [];
@@ -139,7 +136,7 @@ export class Outline extends Component {
 
     // Find items that enclose the selected location
     const enclosedItems = [...classes, ...functions].filter(({ location }) =>
-      containsPosition(location, cursorPosition)
+      containsPosition(location, selectedLocation)
     );
 
     if (!enclosedItems.length) {
@@ -382,7 +379,6 @@ const mapStateToProps = state => {
     selectedLocation: getSelectedLocation(state),
     canFetchSymbols:
       selectedSourceTextContent && isFulfilled(selectedSourceTextContent),
-    cursorPosition: getCursorPosition(state),
   };
 };
 

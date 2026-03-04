@@ -21,6 +21,9 @@ permissions-session =
 permissions-allow =
     .label = 允許
     .accesskey = A
+permissions-add =
+    .label = 新增
+    .accesskey = A
 permissions-button-off =
     .label = 關閉
     .accesskey = O
@@ -92,6 +95,13 @@ permissions-exceptions-https-only-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-https-only-desc = 您可以針對特定網站關閉純 HTTPS 模式。連線到這些網站時，{ -brand-short-name } 不會嘗試升級為安全的 HTTPS 連線。例外網站不會在隱私保護視窗中生效。
 permissions-exceptions-https-only-desc2 = 您可以針對特定網站關閉純 HTTPS 模式。連線到這些網站時，{ -brand-short-name } 不會嘗試升級為安全的 HTTPS 連線。
+
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-window3 =
+    .title = 允許彈出型視窗與第三方重新導向的網站
+    .style = { permissions-window2.style }
+permissions-exceptions-popup-desc2 = 您可以指定要針對哪些網站允許開啟彈出型視窗，並讓第三方畫框重新導向網頁。
 
 ## Exceptions - Pop-ups
 
@@ -167,6 +177,26 @@ permissions-site-camera-desc = 下列網站要求使用您的攝影機。您可�
 permissions-site-camera-disable-label =
     .label = 封鎖新網站使用您攝影機的請求
 permissions-site-camera-disable-desc = 將防止上列以外的網站請您允許使用攝影機。封鎖使用攝影機的權限可能會影響某些網站的功能。
+
+## Site Permissions - Local host
+
+permissions-site-localhost-window =
+    .title = 設定 - 裝置應用程式與服務
+    .style = { permissions-window2.style }
+permissions-site-localhost-desc = 下列網站曾要求存取此裝置中的應用程式或服務。您可以決定要允許或封鎖網站進行此動作。
+permissions-site-localhost-disable-label =
+    .label = 要在此裝置封鎖要連入應用程式或服務的新請求嗎？
+permissions-site-localhost-disable-desc = 將停止任何未列於上方的網站請求存取本裝置當中的應用程式與服務。這樣做可能會導致某些網站功能故障。
+
+## Site Permissions - Local network
+
+permissions-site-local-network-window =
+    .title = 設定 - 區域網路裝置
+    .style = { permissions-window2.style }
+permissions-site-local-network-desc = 下列網站曾要求存取連結到您 Wi-Fi 或區域網路的裝置當中的應用程式或服務。您可以決定要允許或封鎖網站進行此動作。
+permissions-site-local-network-disable-label =
+    .label = 封鎖存取其他連結到您 Wi-Fi 或區域網路上的其他裝置當中的應用程式與服務的新請求。
+permissions-site-local-network-disable-desc = 將停止任何未列於上方的網站請求存取連結至您 Wi-Fi 或區域網路中的裝置當中的應用程式與服務。這樣做可能會導致某些網站功能故障。
 
 ## Site Permissions - Microphone
 

@@ -12,6 +12,8 @@ menu-tools-firefox-view =
     .label = { -firefoxview-brand-name }
     .accesskey = F
 firefoxview-page-title = { -firefoxview-brand-name }
+firefoxview-page-heading =
+    .heading = { -firefoxview-brand-name }
 firefoxview-page-label =
     .label = { -firefoxview-brand-name }
 firefoxview-close-button =
@@ -28,15 +30,15 @@ firefoxview-tabpickup-progress-label = { $percentValue }% შესრულე�
 firefoxview-tabpickup-step-signin-header = მოქნილად გადაერთეთ მოწყობილობებს შორის
 firefoxview-tabpickup-step-signin-description = თქვენი ტელეფონიდან ჩანართების გადმოსატანად ჯერ შექმენით ან შედით ანგარიშზე.
 firefoxview-tabpickup-step-signin-primarybutton = განაგრძეთ
-firefoxview-syncedtabs-signin-header = წამოიღეთ ჩანართები ნებისმიერი ადგილიდან
-firefoxview-syncedtabs-signin-description = თქვენი ჩანართების სანახავად, სადაც არ უნდა გამოიყენოთ { -brand-product-name }, შედით ანგარიშში. თუ არ გაქვთ ანგარიში, მის შესაქმნელად ნაბიჯ-ნაბიჯ გაგიძღვებით.
-firefoxview-syncedtabs-signin-primarybutton = შედით ან შექმენით ანგარიში
+firefoxview-syncedtabs-signin-header-2 = თქვენი { -brand-product-name } ყველა თქვენს მოწყობილობაზე
+firefoxview-syncedtabs-signin-description-2 = ტელეფონსა და სხვა მოწყობილობებზე გახსნილი ჩანართების სანახავად შედით ან შექმენით ანგარიში. ანგარიშით ასევე შეგიძლიათ დაასინქრონოთ თქვენი პაროლები, ისტორია და სხვ.
+firefoxview-syncedtabs-signin-primarybutton-2 = შესვლა
 firefoxview-tabpickup-adddevice-header = დაასინქრონეთ { -brand-product-name } თქვენს ტელეფონსა და პლანშეტზე
 firefoxview-tabpickup-adddevice-description = ჩამოტვირთეთ { -brand-product-name } მობილურზე და იქიდანაც შედით.
 firefoxview-tabpickup-adddevice-learn-how = იხილეთ, როგორ
 firefoxview-tabpickup-adddevice-primarybutton = გადმოწერეთ { -brand-product-name } მობილურზე
-firefoxview-syncedtabs-adddevice-header = ანგარიშზე შესვლით გამოიყენეთ { -brand-product-name } თქვენს სხვა მოწყობილობებზე
-firefoxview-syncedtabs-adddevice-description = თქვენს ჩანართებთან ნებისმიერი ადგილიდან წვდომისთვის გამოიყენეთ { -brand-product-name } ანგარიშით ყველა მოწყობილობაზე. იხილეთ, როგორ <a data-l10n-name="url">დააკავშიროთ დანარჩენი მოწყობილობები</a>.
+firefoxview-syncedtabs-adddevice-header-2 = წამოიღეთ ჩანართები ნებისმიერი ადგილიდან
+firefoxview-syncedtabs-adddevice-description-2 = შედით ანგარიშით ტელეფონზე ან სხვა კომპიუტერზე, სადაც გიყენიათ { -brand-product-name }, რომ იხილოთ ჩანართები აქ. ვრცლად, თუ როგორ უნდა <a data-l10n-name="url">დააკავშიროთ დამატებითი მოწყობილობები</a>.
 firefoxview-syncedtabs-adddevice-primarybutton = მოსინჯეთ{ -brand-product-name } მობილურზე
 firefoxview-tabpickup-synctabs-header = ჩანართთა დასინქრონების ჩართვა
 firefoxview-tabpickup-synctabs-description = საჭიროა ნებართვა, რომ { -brand-short-name } შეძლებს ჩანართების გაზიარებას.
@@ -44,11 +46,11 @@ firefoxview-tabpickup-synctabs-learn-how = იხილეთ, როგორ
 firefoxview-tabpickup-synctabs-primarybutton = გახსნილი ჩანართების დასინქრონება
 firefoxview-syncedtabs-synctabs-header = სინქრონიზაციის პარამეტრების განახლება
 firefoxview-syncedtabs-synctabs-description = სხვა მოწყობილობების ჩანართების სანახავად საჭიროა გახსნილი ჩანართების დასინქრონება.
-firefoxview-syncedtabs-synctabs-checkbox = გახსნილი ჩანართების დასინქრონების ნებართვა
 firefoxview-syncedtabs-loading-header = სინქრონიზდება
 firefoxview-syncedtabs-loading-description = როგორც კი დასრულდება, იხილავთ გახსნილ ჩანართებს სხვა მოწყობილობებიდან. შეამოწმეთ ცოტა ხანში.
 firefoxview-tabpickup-fxa-admin-disabled-header = თქვენი დაწესებულების დებულებებით გათიშულია დასინქრონება
 firefoxview-tabpickup-fxa-admin-disabled-description = { -brand-short-name } ვერ ახერხებს ჩანართების გაზიარებას, ვინაიდან დებულებების მეშვეობითაა გათიშული აღნიშნული შესაძლებლობა.
+firefoxview-tabpickup-fxa-disabled-by-policy-description = { -brand-short-name } ვერ ახერხებს ჩანართების გაზიარებას, ვინაიდან დაწესებულების დებულებების მეშვეობითაა გათიშული აღნიშნული შესაძლებლობა.
 firefoxview-tabpickup-network-offline-header = შეამოწმეთ ქსელთან კავშირი
 firefoxview-tabpickup-network-offline-description = თუ გიყენიათ ქსელის ფარი ან პროქსი, უნდა გადაამოწმოთ, რომ { -brand-short-name } ინტერნეტთან წვდომის ნებართვის მქონეა.
 firefoxview-tabpickup-network-offline-primarybutton = ხელახლა ცდა
@@ -56,7 +58,7 @@ firefoxview-tabpickup-sync-error-header = სინქრონიზაცი�
 firefoxview-tabpickup-generic-sync-error-description = { -brand-short-name } ამჟამად ვერ ახერხებს სინქრონიზაციის მომსახურებასთან წვდომას. კვლავ სცადეთ მოგვიანებით.
 firefoxview-tabpickup-sync-error-primarybutton = ხელახლა ცდა
 firefoxview-tabpickup-sync-disconnected-header = ჩართეთ სინქრონიზაცია, რომ განაგრძოთ
-firefoxview-tabpickup-sync-disconnected-description = ჩანართების წამოსაღებად, { -brand-short-name } საჭიროებს სინქრონიზაციის ნებართვას.
+firefoxview-tabpickup-sync-disconnected-description = ჩანართების წამოსაღებად { -brand-short-name } საჭიროებს სინქრონიზაციის ნებართვას.
 firefoxview-tabpickup-sync-disconnected-primarybutton = ჩართეთ სინქრონიზაცია პარამეტრებიდან
 firefoxview-tabpickup-password-locked-header = შეიყვანეთ მთავარი პაროლი ჩანართების სანახავად
 firefoxview-tabpickup-password-locked-description = ჩანართების წამოსაღებად { -brand-short-name } ითხოვს მთავარ პაროლს.
@@ -65,7 +67,7 @@ firefoxview-tabpickup-password-locked-primarybutton = შეიყვანე�
 firefoxview-syncedtab-password-locked-link = <a data-l10n-name="syncedtab-password-locked-link">ვრცლად</a>
 firefoxview-tabpickup-signed-out-header = შესვლა ხელახლა დასაკავშირებლად
 firefoxview-tabpickup-signed-out-description = დააკავშირეთ ხელახლა და წამოიღეთ თქვენი ჩანართები ანგარიშიდან { -fxaccount-brand-name }.
-firefoxview-tabpickup-signed-out-description2 = ხელახლა დასაკავშირებლად და ჩანართების წამოსაღებად, შედით თქვენს ანგარიშზე.
+firefoxview-tabpickup-signed-out-description2 = ხელახლა დასაკავშირებლად და ჩანართების წამოსაღებად შედით თქვენს ანგარიშზე.
 firefoxview-tabpickup-signed-out-primarybutton = შესვლა
 firefoxview-tabpickup-syncing = მოკალათდით სინქრონიზაციის დასრულებამდე. ცოტა ხანს გასტანს.
 firefoxview-mobile-promo-header = წამოიღეთ ჩანართები ტელეფონიდან ან პლანშეტიდან
@@ -77,7 +79,6 @@ firefoxview-closed-tabs-title = ბოლოს დახურული
 firefoxview-closed-tabs-description2 = კვლავ გახსენით დახურული გვერდები ამ ფანჯრიდანვე.
 firefoxview-closed-tabs-placeholder-header = ბოლოს დახურული ჩანართები არაა
 firefoxview-closed-tabs-placeholder-body = როდესაც დახურავთ ჩანართს ამ ფანჯარაში, შეგიძლიათ დააბრუნოთ აქედან.
-firefoxview-closed-tabs-placeholder-body2 = ჩანართის დახურვის შემდგომ, აქედან შეძლებთ მის დაბრუნებას.
 # Variables:
 #   $tabTitle (string) - Title of tab being dismissed
 firefoxview-closed-tabs-dismiss-tab =
@@ -131,6 +132,14 @@ firefoxview-synced-tabs-nav = ჩანართები სხვა მოწ
     .title = ჩანართები სხვა მოწყობილობებიდან
 firefoxview-synced-tabs-header = ჩანართები სხვა მოწყობილობებიდან
 
+## Chats in this context refers to chats saved from the AI Window Assistant
+
+firefoxview-chats-nav = სასაუბროები
+    .title = სასაუბროები
+firefoxview-chats-header = სასაუბროები
+firefoxview-chat-context-delete = წაშლა სასაუბროებიდან
+    .accesskey = წ
+
 ##
 
 # Used for a link in collapsible cards, in the ’Recent browsing’ page of Firefox View
@@ -143,18 +152,29 @@ firefoxview-opentabs-window-header =
 #   $winID (Number) - The index of the owner window (which is currently focused) for this set of tabs
 firefoxview-opentabs-current-window-header =
     .title = ფანჯარა { $winID } (მიმდინარე)
-firefoxview-opentabs-focus-tab =
-    .title = ამ ჩანართზე გადართვა
 firefoxview-show-more = ვრცლად
 firefoxview-show-less = მოკლედ
+firefoxview-show-all = ყველას ჩვენება
 firefoxview-search-text-box-clear-button =
     .title = გასუფთავება
+# Placeholder for the input field to search in recent browsing ("search" is a verb).
+firefoxview-search-text-box-recentbrowsing =
+    .placeholder = ძიება
 # Placeholder for the input field to search in history ("search" is a verb).
 firefoxview-search-text-box-history =
-    .placeholder = ძიება მონახულებულ გვერდებში
+    .placeholder = ძიება მონახულებულში გვერდებში
 # Placeholder for the input field to search in recently closed tabs ("search" is a verb).
 firefoxview-search-text-box-recentlyclosed =
-    .placeholder = ძიება ბოლოს დახურული ჩანართებში
+    .placeholder = ძიება ბოლოს დახურულში
+# Placeholder for the input field to search in tabs from other devices ("search" is a verb).
+firefoxview-search-text-box-tabs =
+    .placeholder = ძიება ჩანართებში
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-opentabs =
+    .placeholder = ძიება გახსნილ ჩანართებში
+# Placeholder for the input field to search in open tabs ("search" is a verb).
+firefoxview-search-text-box-chats =
+    .placeholder = ძიება სასაუბროებში
 # "Search" is a noun (as in "Results of the search for")
 # Variables:
 #   $query (String) - The search query used for searching through browser history.
@@ -172,10 +192,8 @@ firefoxview-search-results-count =
 firefoxview-search-results-empty = ვერ მოიძებნა შედეგები ფრაზისთვის „{ $query }“
 firefoxview-sort-history-by-date-label = თარიღის მიხედვით
 firefoxview-sort-history-by-site-label = საიტის მიხედვით
-# Variables:
-#   $url (string) - URL that will be opened in the new tab
-firefoxview-opentabs-tab-row =
-    .title = გაიხსნას { $url }
+firefoxview-sort-open-tabs-by-recency-label = ბოლო მოქმედებებით
+firefoxview-sort-open-tabs-by-order-label = ჩანართების მიმდევრობით
 
 ## Variables:
 ##   $date (string) - Date to be formatted based on locale
@@ -188,16 +206,19 @@ firefoxview-history-date-prev-month = { DATETIME($date, month: "long", year: "nu
 # order to group sites that do not come from an outside host.
 # For example, this would be the heading for all file:/// URLs in history.
 firefoxview-history-site-localhost = (ფაილები ადგილზე)
+firefoxview-chat-date-today = დღეს - { DATETIME($date, dateStyle: "full") }
+firefoxview-chat-date-yesterday = გუშინ - { DATETIME($date, dateStyle: "full") }
+firefoxview-chat-date-this-month = { DATETIME($date, dateStyle: "full") }
+firefoxview-chat-date-prev-month = { DATETIME($date, month: "long", year: "numeric") }
 
 ##
 
 firefoxview-show-all-history = სრული ისტორიის ჩვენება
-firefoxview-view-more-browsing-history = სხვა მონახულებულის ნახვა
 
 ## Message displayed in Firefox View when the user has no history data
 
-firefoxview-history-empty-header = დაბრუნდი, სადაც იყავი
-firefoxview-history-empty-description = თვალიერებისას, მონახულებული გვერდები აქ აღინუსხება.
+firefoxview-history-empty-header = დაბრუნდით, სადაც იყავით
+firefoxview-history-empty-description = თვალიერებისას მონახულებული გვერდები აქ აღინუსხება.
 firefoxview-history-empty-description-two = თქვენს პირადულობაზე ზრუნვა ჩვენი საქმიანობის მთავარი შემადგენელია. სწორედ ამიტომ თავად შეგიძლიათ განსაზღვროთ <a data-l10n-name="history-settings-url">ისტორიის პარამეტრებიდან</a>, რას დაიმახსოვრებს { -brand-short-name }.
 
 ##
@@ -208,9 +229,8 @@ firefoxview-choose-browser-button = ბრაუზერის არჩევ�
 
 ## Message displayed in Firefox View when the user has chosen to never remember History
 
-firefoxview-dont-remember-history-empty-header = არაფერია საჩვენებელი
-firefoxview-dont-remember-history-empty-description = თქვენს პირადულობაზე ზრუნვა ჩვენი საქმიანობის მთავარი შემადგენელია. სწორედ ამიტომ თავად შეგიძლიათ განსაზღვროთ, რას დაიმახსოვრებს { -brand-short-name }.
-firefoxview-dont-remember-history-empty-description-two = თქვენი ამჟამინდელი პარამეტრებით, { -brand-short-name } არ დაიხსომებს თქვენს მოქმედებებს გვერდების მონახულებისას. ცვლილებისთვის <a data-l10n-name="history-settings-url-two">მიუთითეთ ისტორიის პარამეტრებში მონახულებული გვერდების დამახსოვრება</a>.
+firefoxview-dont-remember-history-empty-header-2 = თავად განსაზღვრავთ, რას დაიმახსოვრებს { -brand-short-name }
+firefoxview-dont-remember-history-empty-description-one = ამჟამად { -brand-short-name } არ იმახსოვრებს თქვენ მიერ მონახულებულ გვერდებს. შესაცვლელად <a data-l10n-name="history-settings-url-two">განაახლეთ თქვენი ისტორიის პარამეტრები</a>.
 
 ##
 
@@ -234,3 +254,25 @@ firefoxview-recentlyclosed-empty-description-two = უფრო ადრინ�
 
 firefoxview-syncedtabs-device-notabs = ამ მოწყობილობაზე გახსნილი ჩანართები არაა
 firefoxview-syncedtabs-connect-another-device = სხვა მოწყობილობის დაკავშირება
+firefoxview-pinned-tabs =
+    .title = მიმაგრებული ჩანართები
+firefoxview-tabs =
+    .title = ჩანართები
+
+## These tooltips will be displayed when hovering over a pinned tab on the Open Tabs page
+## Variables:
+##  $tabTitle (string) - Title of pinned tab that will be opened when selected
+
+firefoxview-opentabs-pinned-tab =
+    .title = გადასვლა – { $tabTitle }
+# This tooltip will be shown for a pinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-pinned-tab =
+    .title = გადასვლა (ჩანიშნული) – { $tabTitle }
+
+## These tooltips will be displayed when hovering over an unpinned Open Tab
+## Variables:
+##   $url (string) - URL of tab that will be opened when selected
+
+# This tooltip will be shown for an unpinned tab whose URL is currently bookmarked.
+firefoxview-opentabs-bookmarked-tab =
+    .title = (ჩანიშნული) { $url }

@@ -28,6 +28,7 @@
 #include "mozilla/layers/MemoryPressureObserver.h"
 #include "mozilla/layers/OverlayInfo.h"
 
+class FontVisibilityProvider;
 class gfxASurface;
 class gfxFont;
 class gfxFontGroup;
@@ -39,7 +40,6 @@ class gfxTextRun;
 class nsIURI;
 class nsAtom;
 class nsIObserver;
-class nsPresContext;
 class SRGBOverrideObserver;
 class gfxTextPerfMetrics;
 typedef struct FT_LibraryRec_* FT_Library;
@@ -102,23 +102,30 @@ enum eGfxLog {
 
 // Used during font matching to express a preference, if any, for whether
 // to use a font that will present a color or monochrome glyph.
-enum class eFontPresentation : uint8_t {
+enum class FontPresentation : uint8_t {
   // Character does not have the emoji property, so no special heuristics
   // apply during font selection.
   Any = 0,
+  // Character is potentially emoji, but its default presentation is text.
+  TextDefault,
   // Character is potentially emoji, but Text-style presentation has been
   // explicitly requested using VS15.
-  Text = 1,
+  TextExplicit,
   // Character has Emoji-style presentation by default (but an author-
-  // provided webfont will be used even if it is not color).
-  EmojiDefault = 2,
+  // provided webfont may be used even if it is not color).
+  EmojiDefault,
   // Character explicitly requires Emoji-style presentation due to VS16 or
   // skin-tone codepoint.
-  EmojiExplicit = 3
+  EmojiExplicit,
 };
 
-inline bool PrefersColor(eFontPresentation aPresentation) {
-  return aPresentation >= eFontPresentation::EmojiDefault;
+inline bool PrefersColor(FontPresentation aPresentation) {
+  return aPresentation >= FontPresentation::EmojiDefault;
+}
+
+inline bool IsExplicitPresentation(FontPresentation aPresentation) {
+  return aPresentation == FontPresentation::TextExplicit ||
+         aPresentation == FontPresentation::EmojiExplicit;
 }
 
 // when searching through pref langs, max number of pref langs
@@ -128,16 +135,12 @@ const uint32_t kMaxLenPrefLangList = 32;
 
 inline const char* GetBackendName(mozilla::gfx::BackendType aBackend) {
   switch (aBackend) {
-    case mozilla::gfx::BackendType::DIRECT2D:
-      return "direct2d";
     case mozilla::gfx::BackendType::CAIRO:
       return "cairo";
     case mozilla::gfx::BackendType::SKIA:
       return "skia";
     case mozilla::gfx::BackendType::RECORDING:
       return "recording";
-    case mozilla::gfx::BackendType::DIRECT2D1_1:
-      return "direct2d 1.1";
     case mozilla::gfx::BackendType::WEBRENDER_TEXT:
       return "webrender text";
     case mozilla::gfx::BackendType::NONE:
@@ -177,7 +180,12 @@ class gfxPlatform : public mozilla::layers::MemoryPressureListener {
    * This is a singleton; it contains mostly convenience
    * functions to obtain platform-specific objects.
    */
-  static gfxPlatform* GetPlatform();
+  static gfxPlatform* GetPlatform() {
+    if (MOZ_UNLIKELY(!gPlatform)) {
+      Init();
+    }
+    return gPlatform;
+  }
 
   /**
    * Returns whether or not graphics has been initialized yet. This is
@@ -210,14 +218,14 @@ class gfxPlatform : public mozilla::layers::MemoryPressureListener {
   static int32_t MaxAllocSize();
   static void InitMoz2DLogging();
 
+  static void InitMemoryReportersForGPUProcess();
+
   static bool IsHeadless();
 
   static bool UseRemoteCanvas();
 
   static bool IsBackendAccelerated(
       const mozilla::gfx::BackendType aBackendType);
-
-  static bool CanMigrateMacGPUs();
 
   /**
    * Create an offscreen surface of the given dimensions
@@ -274,7 +282,8 @@ class gfxPlatform : public mozilla::layers::MemoryPressureListener {
 
   static already_AddRefed<DrawTarget> CreateDrawTargetForData(
       unsigned char* aData, const mozilla::gfx::IntSize& aSize, int32_t aStride,
-      mozilla::gfx::SurfaceFormat aFormat, bool aUninitialized = false);
+      mozilla::gfx::SurfaceFormat aFormat, bool aUninitialized = false,
+      bool aIsClear = false);
 
   /**
    * Returns true if we should use Azure to render content with aTarget. For
@@ -384,7 +393,7 @@ class gfxPlatform : public mozilla::layers::MemoryPressureListener {
    * Ownership of the returned gfxFontEntry is passed to the caller,
    * who must either AddRef() or delete.
    */
-  gfxFontEntry* LookupLocalFont(nsPresContext* aPresContext,
+  gfxFontEntry* LookupLocalFont(FontVisibilityProvider* aFontVisibilityProvider,
                                 const nsACString& aFontName,
                                 WeightRange aWeightForEntry,
                                 StretchRange aStretchForEntry,
@@ -481,7 +490,7 @@ class gfxPlatform : public mozilla::layers::MemoryPressureListener {
   // returns a list of commonly used fonts for a given character
   // these are *possible* matches, no cmap-checking is done at this level
   virtual void GetCommonFallbackFonts(uint32_t /*aCh*/, Script /*aRunScript*/,
-                                      eFontPresentation /*aPresentation*/,
+                                      FontPresentation /*aPresentation*/,
                                       nsTArray<const char*>& /*aFontList*/) {
     // platform-specific override, by default do nothing
   }
@@ -491,7 +500,12 @@ class gfxPlatform : public mozilla::layers::MemoryPressureListener {
 
   static bool OffMainThreadCompositingEnabled();
 
-  void UpdateCanUseHardwareVideoDecoding();
+  inline static void EnsureCMSInitialized() {
+    if (MOZ_UNLIKELY(!gCMSInitialized)) {
+      MaybeInitializeCMS();
+      MOZ_ASSERT(gCMSInitialized);
+    }
+  }
 
   /**
    * Are we going to try color management?
@@ -528,48 +542,42 @@ class gfxPlatform : public mozilla::layers::MemoryPressureListener {
    * Return the output device ICC profile.
    */
   static qcms_profile* GetCMSOutputProfile() {
-    EnsureCMSInitialized();
-    return gCMSOutputProfile;
+    return GetPlatform()->mCMSOutputProfile;
   }
 
   /**
    * Return the sRGB ICC profile.
    */
   static qcms_profile* GetCMSsRGBProfile() {
-    EnsureCMSInitialized();
-    return gCMSsRGBProfile;
+    return GetPlatform()->mCMSsRGBProfile;
   }
 
   /**
    * Return sRGB -> output device transform.
    */
   static qcms_transform* GetCMSRGBTransform() {
-    EnsureCMSInitialized();
-    return gCMSRGBTransform;
+    return GetPlatform()->mCMSRGBTransform;
   }
 
   /**
    * Return output -> sRGB device transform.
    */
   static qcms_transform* GetCMSInverseRGBTransform() {
-    MOZ_ASSERT(gCMSInitialized);
-    return gCMSInverseRGBTransform;
+    return GetPlatform()->mCMSInverseRGBTransform;
   }
 
   /**
    * Return sRGBA -> output device transform.
    */
   static qcms_transform* GetCMSRGBATransform() {
-    MOZ_ASSERT(gCMSInitialized);
-    return gCMSRGBATransform;
+    return GetPlatform()->mCMSRGBATransform;
   }
 
   /**
    * Return sBGRA -> output device transform.
    */
   static qcms_transform* GetCMSBGRATransform() {
-    MOZ_ASSERT(gCMSInitialized);
-    return gCMSBGRATransform;
+    return GetPlatform()->mCMSBGRATransform;
   }
 
   /**
@@ -593,13 +601,28 @@ class gfxPlatform : public mozilla::layers::MemoryPressureListener {
    * an effect on layout, such as font rendering settings that influence
    * metrics, or installed fonts.
    *
-   * By default it also broadcast it to child processes, but some callers might
-   * not need it if they implement their own notification.
+   * Normally this is initiated in the parent process, and also broadcast to
+   * child processes, but some callers might not need this if they implement
+   * their own notification.
    */
-  enum class NeedsReframe : bool { No, Yes };
-  enum class BroadcastToChildren : bool { No, Yes };
-  static void ForceGlobalReflow(NeedsReframe,
-                                BroadcastToChildren = BroadcastToChildren::Yes);
+  enum class GlobalReflowFlags : uint8_t {
+    None = 0,
+    // Font data has been updated such that new fonts and/or character coverage
+    // may be available; existing font-lookup caches should be invalidated and
+    // font selection re-done.
+    FontsChanged = (1 << 0),
+    // Content should be fully reframed; this is used when font entry records
+    // may have been invalidated such that existing textruns in the frame tree
+    // are no longer safe to work with. Rather than reflow the existing frame
+    // tree we will discard and re-create it.
+    NeedsReframe = (1 << 1),
+    // (If this is the parent process), broadcast this reflow request to all
+    // child processes.
+    BroadcastToChildren = (1 << 2),
+    // For serialization.
+    ALL_BITS = FontsChanged | NeedsReframe | BroadcastToChildren,
+  };
+  static void ForceGlobalReflow(GlobalReflowFlags aFlags);
 
   static void FlushFontAndWordCaches();
 
@@ -666,6 +689,12 @@ class gfxPlatform : public mozilla::layers::MemoryPressureListener {
   static void ReInitFrameRate(const char* aPrefIgnored, void* aDataIgnored);
 
   /**
+   * Reset the global hardware vsync source. The next call to ReInitFrameRate
+   * will attempt to reestablish it, and fall back to software if needed.
+   */
+  static void ResetHardwareVsyncSource();
+
+  /**
    * Update force subpixel AA quality setting (called after pref
    * changes).
    */
@@ -700,6 +729,13 @@ class gfxPlatform : public mozilla::layers::MemoryPressureListener {
    */
   static bool PerfWarnings();
 
+  static void DisableAcceleratedCanvasForFallback(
+      mozilla::gfx::FeatureStatus aStatus, const char* aMessage,
+      const nsACString& aFailureId);
+
+  static void DisableAllCanvasForFallback(mozilla::gfx::FeatureStatus aStatus,
+                                          const char* aMessage,
+                                          const nsACString& aFailureId);
   static void DisableGPUProcess();
 
   void NotifyCompositorCreated(mozilla::layers::LayersBackend aBackend);
@@ -855,16 +891,6 @@ class gfxPlatform : public mozilla::layers::MemoryPressureListener {
 
  protected:
   /**
-   * If inside a child process and currently being initialized by the
-   * SetXPCOMProcessAttributes message, this can be used by subclasses to
-   * retrieve the ContentDeviceData passed by the message
-   *
-   * If not currently being initialized, will return nullptr. In this case,
-   * child should send a sync message to ask parent for color profile
-   */
-  const mozilla::gfx::ContentDeviceData* GetInitContentDeviceData();
-
-  /**
    * If inside a child process and have ever received a
    * SetXPCOMProcessAttributes message, this contains the cmsOutputProfileData
    * from that message.
@@ -903,8 +929,6 @@ class gfxPlatform : public mozilla::layers::MemoryPressureListener {
    */
   static mozilla::gfx::BackendType BackendTypeForName(const nsCString& aName);
 
-  virtual bool CanUseHardwareVideoDecoding();
-
   int8_t mAllowDownloadableFonts;
 
   // Whether the platform supports rendering OpenType font variations
@@ -935,27 +959,14 @@ class gfxPlatform : public mozilla::layers::MemoryPressureListener {
 
   static void InitOpenGLConfig();
 
-  static mozilla::Atomic<bool, mozilla::MemoryOrdering::ReleaseAcquire>
-      gCMSInitialized;
-  static CMSMode gCMSMode;
+  static void VideoDecodingFailedChangedCallback(const char* aPref, void*);
 
-  // These two may point to the same profile
-  static qcms_profile* gCMSOutputProfile;
-  static qcms_profile* gCMSsRGBProfile;
+  static void HWDRMFailedChangedCallback(const char* aPref, void*);
 
-  static qcms_transform* gCMSRGBTransform;
-  static qcms_transform* gCMSInverseRGBTransform;
-  static qcms_transform* gCMSRGBATransform;
-  static qcms_transform* gCMSBGRATransform;
+  static gfxPlatform* gPlatform;
 
-  inline static void EnsureCMSInitialized() {
-    if (MOZ_UNLIKELY(!gCMSInitialized)) {
-      InitializeCMS();
-    }
-  }
-
-  static void InitializeCMS();
-  static void ShutdownCMS();
+  void InitializeCMS();
+  void ShutdownCMS();
 
   /**
    * This uses nsIScreenManager to determine the primary screen color depth
@@ -965,6 +976,8 @@ class gfxPlatform : public mozilla::layers::MemoryPressureListener {
   void InitCompositorAccelerationPrefs();
   void InitGPUProcessPrefs();
   virtual void InitPlatformGPUProcessPrefs() {}
+  virtual void InitPlatformHardwareVideoConfig() {}
+  virtual void InitPlatformHardwarDRMConfig() {}
 
   // Gather telemetry data about the Gfx Platform and send it
   static void ReportTelemetry();
@@ -973,6 +986,23 @@ class gfxPlatform : public mozilla::layers::MemoryPressureListener {
   static bool IsDXNV12Blocked();
   static bool IsDXP010Blocked();
   static bool IsDXP016Blocked();
+
+  static void MaybeInitializeCMS();
+
+  // We need these to be static because we might call them in the GPU process,
+  // even if we don't do color management there.
+  static mozilla::Atomic<bool, mozilla::ReleaseAcquire> gCMSInitialized;
+  static CMSMode gCMSMode;
+
+  // These two may point to the same profile
+  qcms_profile* mCMSOutputProfile = nullptr;
+  qcms_profile* mCMSsRGBProfile = nullptr;
+
+  qcms_transform* mCMSRGBTransform = nullptr;
+  qcms_transform* mCMSInverseRGBTransform = nullptr;
+  qcms_transform* mCMSRGBATransform = nullptr;
+  qcms_transform* mCMSBGRATransform = nullptr;
+  mozilla::Maybe<nsTArray<uint8_t>> mCMSOutputProfileData;
 
   RefPtr<gfxASurface> mScreenReferenceSurface;
   RefPtr<mozilla::layers::MemoryPressureObserver> mMemoryPressureObserver;
@@ -1010,6 +1040,8 @@ class gfxPlatform : public mozilla::layers::MemoryPressureListener {
   // basis for error-case iterators.
   const gfxSkipChars kEmptySkipChars;
 };
+
+MOZ_MAKE_ENUM_CLASS_BITWISE_OPERATORS(gfxPlatform::GlobalReflowFlags)
 
 CMSMode GfxColorManagementMode();
 

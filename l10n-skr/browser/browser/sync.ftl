@@ -29,5 +29,16 @@ fxa-menu-send-tab-to-device-syncnotready =
 fxa-menu-send-tab-to-device-description = کہیں وی ڈیوائس تے ٹھک پھک ہک ٹیب بھیڄو جیندے اوتے تساں سائن اِن او۔
 fxa-menu-sign-out =
     .label = سائن آؤٹ۔۔۔
-fxa-menu-sync-title = ہم وقت کرو
 fxa-menu-sync-description = کتھاؤں وی آپݨی ویب تئیں رسائی حاصل کرو
+sync-setup-verify-continue = جاری
+sync-setup-verify-title = چتاوݨی ضم کرو
+sync-setup-verify-heading = کیا تساں واقعی مطابقت پذیری کیتے سائن ان کرݨ چاہندے او؟
+# The user was previously signed into sync. This dialog confirms to the user
+# that they will be merging the data from the previously signed in into the newly signed in one
+# Variables:
+#   $email - Email address of a user previously signed into sync.
+sync-setup-verify-description = ایں کمپیوٹر تے مطابقت پذیری کیتے پہلے ہک مختلف صارف تے دستخط کیتے ڳئے ہن۔ سائن ان کرݨ نال ایں براؤزر دے نشانیاں، پاس ورڈز تے ٻیاں ترتیباں کوں { $email } دے نال مل ویسے
+
+## Sync warning strings that support the browser profiles feature, these will be shown when the user might be merging data
+
+sync-button-create-profile = نویں پروفائل بݨاؤ

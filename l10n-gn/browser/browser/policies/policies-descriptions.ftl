@@ -21,6 +21,7 @@ policy-AutofillAddressEnabled = Emyandy myanyhẽha kundaharendápe g̃uarã.
 policy-AutofillCreditCardEnabled = Emyandy myanyhẽha jehepyme’ẽrãme g̃uarã.
 policy-AutoLaunchProtocolsFromOrigins = Ejapo taperekoite rysýi okaygua ojeporukuaáva ñepyrũha guive ojehecháva tysýipe oñemoneĩ’ỹre poruhárape.
 policy-BackgroundAppUpdate2 = Emyandy térã embogue pe ñemboheko mokõihaguáva.
+policy-Backup = Eipe’a ñongatu jey térã eru jey mba’ete mba’ekuaarã.
 policy-BlockAboutAddons = Ejoko Moĩmbaha ñangarekohápe jeike (about: addons).
 policy-BlockAboutConfig = Ejoko about:config kuatiaroguépe jeike.
 policy-BlockAboutProfiles = Ejoko about:profiles-pe jeike.
@@ -79,6 +80,7 @@ policy-ExtensionSettings = Eñangareko opaite mba’e jepysokue ñemohendáre.
 policy-ExtensionUpdate = Embojuruja térã eipe’a ñembohekopyahu ijeheguíva jepysokue rehegua.
 policy-FirefoxHome2 = Emboheko { -firefox-home-brand-name }.
 policy-FirefoxSuggest = Emboheko { -firefox-suggest-brand-name }.
+policy-GenerativeAI = Emboheko IA moheñoiha rembiapoite.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Emohembiapo ñeikundahatee ñanduti rendápe ehekarangue jeikeha peteĩ ñe’ẽmente ojehaíva kundaharape rendápe.
 policy-Handlers = Emboheko tembiporu’i ñangarekoha ypykuegua.
 policy-HardwareAcceleration = Japúramo, eipe’a hardware mbopya’eha.
@@ -97,6 +99,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Ejevy SameSite reko gu
 ##
 
 policy-LocalFileLinks = Emoneĩ ñanduti renda moha’eñopyrépe ojuajúvo marandurenda pypeguáva.
+policy-LocalNetworkAccess = Embojuruja térã eipe’a umi jehechajey ñandutípe jeikerã.
 policy-ManagedBookmarks = Emboheko peteĩ techaukaha rysýi iñangarekohára omoneĩ’ỹva poruhápe ñemoambue.
 policy-ManualAppUpdateOnly = Emoneĩ ñembohekopyahu po rupigua añoite ha ani emomarandu poruhárape ñembohekopyahu rehegua.
 policy-PrimaryPassword = Ejerure térã emboyke ñe’ẽñemi ñepyrũgua jeporu.
@@ -117,6 +120,7 @@ policy-PostQuantumKeyAgreementEnabled = Embojuruja ñe’ẽñemi jokupyty post-
 policy-PDFjs = Eipe’a térã emboheko PDF.js, PDF jehechaha oĩva { -brand-short-name } ryepýpe.
 policy-Permissions2 = Emboheko ñemoneĩ ta’ãnganohẽha, ñe’ẽatãha, tendaite, marandu’í ha ñembohetápe g̃uarã.
 policy-PictureInPicture = Emyandy térã embogue Picture-in-Picture.
+policy-PopupBlocking2 = Eheja peteĩva ñanduti rogue tohechauka ovetã apysẽ ha toñemondo mbohapyha rupive.
 policy-PopupBlocking = Emoneĩ ndahetái ñanduti rendápe ohechaukávo ovetã iñapysẽva ijypykue rupi.
 policy-Preferences = Emboheko ha ejoko tepykue jeguerohoryvéva aty’ípe g̃uarã.
 policy-PrivateBrowsingModeAvailability = Emboheko ñeikundaha ñemiguáva rekópe.
@@ -137,6 +141,9 @@ policy-SupportMenu = Embojuaju mba’eporu poravorãgua ñemomba’epyréva pyty
 policy-TranslateEnabled = Emyandy térã embogue ñanduti rogue moñe’ẽasa.
 policy-UserMessaging = Ani ehechauka heta ñe’ẽmondo poruhárape.
 policy-UseSystemPrintDialog = Eguenohẽ kuatiáre eiporuhápe apopyvusúpe ñe’ẽñemi kuatiáre ñeguenohẽ rehegua.
+policy-VisualSearchEnabled = Embojuruja térã eipe’a pe jehekaha.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Ejoko ñanduti rendápe jeike. Emoñe’ẽ kuatiaita ehechakuaa hag̃ua mba’emimi ko ysaja rehegua.
 policy-Windows10SSO = Emoneĩ tembiapo ñepyrũ Windows rupi Microsoft-pe, mba’apo ha mbo’ehaogua mba’ete.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Emoneĩ tembiapo ñepyrũ Microsoft Entra mba’etépe.

@@ -35,7 +35,7 @@ about-reader-estimated-read-time =
        *[other] { $range } منٹ
     }
 
-## These are used as tooltips in Type Control
+## Reader View text and layout menu
 
 about-reader-toolbar-minus =
     .title = فونٹ دا سائز گھٹاؤ
@@ -74,19 +74,24 @@ about-reader-customtheme-tab = مخصوص
 ## The .title element is used to make the editing functionality
 ## clear and give context for screen reader users.
 
-about-reader-custom-colors-foreground = عبارت
-    .title = رنگ وچ تبدیلی کرو
-about-reader-custom-colors-background = بیک گراؤنڈ
-    .title = رنگ وچ تبدیلی کرو
-about-reader-custom-colors-unvisited-links = ملاحظہ نہ کیتے ڳئے لنکس
-    .title = رنگ وِچ ترمیم کرو
-about-reader-custom-colors-visited-links = ملاحظہ کیتے ڳئے لنکس
-    .title = رنگ وِچ ترمیم کرو
-about-reader-custom-colors-selection-highlight = اُچّی اَواز نال پڑھݨ کِیتے ہائی لائٹر
-    .title = رنگ وِچ ترمیم کرو
 about-reader-reset-button = طے شدہ ولا تازے کرو
+about-reader-custom-colors-foreground2 =
+    .label = عبارت
+    .title = رنگ وچ تبدیلی کرو
+about-reader-custom-colors-background2 =
+    .label = بیک گراؤنڈ
+    .title = رنگ وچ تبدیلی کرو
+about-reader-custom-colors-unvisited-links2 =
+    .label = ملاحظہ نہ کیتے ڳئے لنکس
+    .title = رنگ وِچ ترمیم کرو
+about-reader-custom-colors-visited-links2 =
+    .label = ملاحظہ کیتے ڳئے لنکس
+    .title = رنگ وِچ ترمیم کرو
+about-reader-custom-colors-selection-highlight2 =
+    .label = اُچّی اَواز نال پڑھݨ کِیتے ہائی لائٹر
+    .title = رنگ وِچ ترمیم کرو
 
-## Reader View improved text and layout menu
+## Reader View text and layout menu
 
 about-reader-text-header = متن
 about-reader-text-size-label = عبارت سائز

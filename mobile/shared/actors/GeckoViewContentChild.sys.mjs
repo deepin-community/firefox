@@ -32,8 +32,6 @@ export class GeckoViewContentChild extends GeckoViewActorChild {
   }
 
   actorCreated() {
-    super.actorCreated();
-
     this.pageShow = new Promise(resolve => {
       this.receivedPageShow = resolve;
     });
@@ -119,25 +117,49 @@ export class GeckoViewContentChild extends GeckoViewActorChild {
     debug`receiveMessage: ${name}`;
 
     switch (name) {
-      case "GeckoView:DOMFullscreenEntered":
+      case "GeckoView:DOMFullscreenEntered": {
+        const windowUtils = this.contentWindow?.windowUtils;
+        const actor =
+          this.contentWindow?.windowGlobalChild?.getActor("ContentDelegate");
+        if (!windowUtils) {
+          // If we are not able to enter fullscreen, tell the parent to just
+          // exit.
+          actor?.sendAsyncMessage("GeckoView:DOMFullscreenExit", {});
+          break;
+        }
         this.lastOrientation = this.orientation();
+        let remoteFrameBC = message.data.remoteFrameBC;
+        if (remoteFrameBC) {
+          let remoteFrame = remoteFrameBC.embedderElement;
+          if (!remoteFrame) {
+            // This could happen when the page navigate away and trigger a
+            // process switching during fullscreen transition, tell the parent
+            // to just exit.
+            actor?.sendAsyncMessage("GeckoView:DOMFullscreenExit", {});
+            break;
+          }
+
+          windowUtils.remoteFrameFullscreenChanged(remoteFrame);
+          break;
+        }
+
         if (
-          !this.contentWindow?.windowUtils.handleFullscreenRequests() &&
+          !windowUtils.handleFullscreenRequests() &&
           !this.contentWindow?.document.fullscreenElement
         ) {
           // If we don't actually have any pending fullscreen request
           // to handle, neither we have been in fullscreen, tell the
           // parent to just exit.
-          const actor =
-            this.contentWindow?.windowGlobalChild?.getActor("ContentDelegate");
           actor?.sendAsyncMessage("GeckoView:DOMFullscreenExit", {});
         }
         break;
-      case "GeckoView:DOMFullscreenExited":
+      }
+      case "GeckoView:DOMFullscreenExited": {
         // During fullscreen, window size is changed. So don't restore viewport size.
         const restoreViewSize = this.orientation() == this.lastOrientation;
         this.contentWindow?.windowUtils.exitFullscreen(!restoreViewSize);
         break;
+      }
       case "GeckoView:ZoomToInput": {
         const { contentWindow } = this;
         const dwu = contentWindow.windowUtils;
@@ -311,8 +333,7 @@ export class GeckoViewContentChild extends GeckoViewActorChild {
           aEvent.reason === "presscaret" ||
           aEvent.reason === "releasecaret"
         ) {
-          this.eventDispatcher.sendRequest({
-            type: "GeckoView:PinOnScreen",
+          this.sendAsyncMessage("GeckoView:PinOnScreen", {
             pinned: aEvent.reason === "presscaret",
           });
         }

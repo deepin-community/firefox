@@ -14,7 +14,6 @@ xpinstall-prompt-message = Покушавате да инсталирате до
 
 xpinstall-prompt-header-unknown = Дозволити непознатом сајту да инсталира додатак?
 xpinstall-prompt-message-unknown = Покушавате да инсталирате додатак са непознатог сајта. Пре него што наставите размислите да ли верујете овом сајту.
-
 xpinstall-prompt-dont-allow =
     .label = Блокирај
     .accesskey = Б
@@ -41,11 +40,11 @@ site-permission-install-first-prompt-midi-message = Овај захтев за �
 ##
 
 xpinstall-disabled-locked = Администратор система је онемогућио инсталацију софтвера.
+xpinstall-disabled-by-policy = Инсталирање програма је онемогућила ваша организација.
 xpinstall-disabled = Инсталација софтвера је тренутно онемогућена. Кликните на „Омогући” и покушајте поново.
 xpinstall-disabled-button =
     .label = Омогући
     .accesskey = О
-
 # This message is shown when the installation of an add-on is blocked by enterprise policy.
 # Variables:
 #   $addonName (String): the name of the add-on.
@@ -53,15 +52,20 @@ xpinstall-disabled-button =
 addon-install-blocked-by-policy = Администратор система је блокирао додатак { $addonName } ({ $addonId }).
 # This message is shown when the installation of add-ons from a domain is blocked by enterprise policy.
 addon-domain-blocked-by-policy = Администратор вашег система је спречио овом сајту да тражи дозволу за инсталирање софтвера.
+# This message is shown when the installation of an add-on is blocked by enterprise policy.
+# Variables:
+#   $addonName (String): the name of the add-on.
+#   $addonId (String): the ID of add-on.
+addon-installation-blocked-by-policy = { $addonName } ({ $addonId }) је блокирала ваша организација.
+# This message is shown when the installation of add-ons from a domain is blocked by enterprise policy.
+addon-install-domain-blocked-by-policy = Ваша организација је спречила овај сајт да пита за инсталацију програма на ваш рачунар.
 addon-install-full-screen-blocked = Инсталација додатака није дозвољена у режиму целог екрана.
-
 # Variables:
 #   $addonName (String): the localized name of the sideloaded add-on.
 webext-perms-sideload-menu-item = Додатак { $addonName } је додат у { -brand-short-name }
 # Variables:
 #   $addonName (String): the localized name of the extension which has been updated.
 webext-perms-update-menu-item = { $addonName } захтева новe дозволe
-
 # This message is shown when one or more extensions have been imported from a
 # different browser into Firefox, and the user needs to complete the import to
 # start these extensions. This message is shown in the appmenu.
@@ -77,7 +81,8 @@ addon-removal-title = Уклонити { $name }?
 addon-removal-message = Уклонити { $name } из { -brand-shorter-name }-а?
 addon-removal-button = Обриши
 addon-removal-abuse-report-checkbox = Пријави злоупотребу организацији { -vendor-short-name }
-
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Ако користите функције или додатке који користе овај модел, он ће бити поново додан.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -87,7 +92,6 @@ addon-downloading-and-verifying =
        *[other] Преузимање и провера { $addonCount } додатака…
     }
 addon-download-verifying = Проверавам
-
 addon-install-cancel-button =
     .label = Откажи
     .accesskey = О
@@ -125,16 +129,20 @@ addon-confirm-install-some-unsigned-message =
 
 addon-install-error-network-failure = Додатак не може да буде преузет због проблема са везом.
 addon-install-error-incorrect-hash = Додатак не може да буде инсталиран, јер се не слаже са оним што је додатак { -brand-short-name } очекивао.
-addon-install-error-corrupt-file = Додатак преузет са овог сајта не може да буде инсталиран, јер је неисправан.
+addon-install-error-corrupt-file = Додатак преузет са ове странице није могуће инсталирати јер је оштећен.
 addon-install-error-file-access = { $addonName } не може да буде инсталиран јер { -brand-short-name } не може да измени потребну датотеку.
 addon-install-error-not-signed = { -brand-short-name } је спречио сајт да инсталира непроверен додатак.
 addon-install-error-invalid-domain = Додатак { $addonName } не може да се инсталира са ове локације.
 addon-local-install-error-network-failure = Није могуће инсталирати додатак због грешке у систему датотека.
 addon-local-install-error-incorrect-hash = Додатак не може да буде инсталиран, јер се не слаже са оним што је додатак { -brand-short-name } очекивао.
-addon-local-install-error-corrupt-file = Додатак не може да буде инсталиран, јер је неисправан.
+addon-local-install-error-corrupt-file = Овај додатак није могуће инсталирати јер је оштећен.
 addon-local-install-error-file-access = { $addonName } не може да буде инсталиран јер { -brand-short-name } не може да измени потребну датотеку.
 addon-local-install-error-not-signed = Додатак не може да буде инсталиран, јер није проверен.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = { $addonName } не може да буде инсталиран, јер није компатибилан са { -brand-short-name } { $appVersion } верзијом.
+addon-install-error-hard-blocked = { $addonName } крши Mozilla-ине смернице и не може се инсталирати на { -brand-short-name }.
 addon-install-error-blocklisted = { $addonName } не може да буде инсталиран, јер је велика вероватноћа да ће проузроковати нестабилност или проблеме за безбедношћу.
+addon-install-error-soft-blocked = { $addonName } крши Mozilla-ине смернице и не може се инсталирати на { -brand-short-name }.
+# Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
+addon-install-error-admin-install-only = Не можете инсталирати { $addonName } као крајњи корисник, јер га може инсталирати само организаија користећи смернице предузећа.

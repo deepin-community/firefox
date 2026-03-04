@@ -7,9 +7,9 @@
 #ifndef DOM_SVG_SVGFOREIGNOBJECTELEMENT_H_
 #define DOM_SVG_SVGFOREIGNOBJECTELEMENT_H_
 
-#include "mozilla/dom/SVGGraphicsElement.h"
-#include "nsCSSPropertyID.h"
+#include "NonCustomCSSPropertyId.h"
 #include "SVGAnimatedLength.h"
+#include "mozilla/dom/SVGGraphicsElement.h"
 
 nsresult NS_NewSVGForeignObjectElement(
     nsIContent** aResult, already_AddRefed<mozilla::dom::NodeInfo>&& aNodeInfo);
@@ -32,9 +32,7 @@ class SVGForeignObjectElement final : public SVGGraphicsElement {
 
  public:
   // SVGElement specializations:
-  gfxMatrix PrependLocalTransformsTo(
-      const gfxMatrix& aMatrix,
-      SVGTransformTypes aWhich = eAllTransforms) const override;
+  gfxMatrix ChildToUserSpaceTransform() const override;
   bool HasValidDimensions() const override;
 
   // nsIContent interface
@@ -42,7 +40,7 @@ class SVGForeignObjectElement final : public SVGGraphicsElement {
 
   nsresult Clone(dom::NodeInfo*, nsINode** aResult) const override;
 
-  static nsCSSPropertyID GetCSSPropertyIdForAttrEnum(uint8_t aAttrEnum);
+  static NonCustomCSSPropertyId GetCSSPropertyIdForAttrEnum(uint8_t aAttrEnum);
 
   // WebIDL
   already_AddRefed<DOMSVGAnimatedLength> X();

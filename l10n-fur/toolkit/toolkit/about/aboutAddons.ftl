@@ -174,6 +174,8 @@ extensions-warning-update-security-button = Ative
 extensions-warning-imported-addons2 =
     .message = Finìs la instalazion des estensions impuartadis su { -brand-short-name }.
 extensions-warning-imported-addons-button = Instale estensions
+extensions-warning-safe-mode3 =
+    .message = Ducj i components adizionâi a son stâts disativâts de modalitât risoluzion problemis.
 
 ## Strings connected to add-on updates
 
@@ -209,6 +211,10 @@ addon-updates-manual-updates-found = Viôt i inzornaments disponibii
 ## Add-on install/debug strings for page options menu
 
 addon-install-from-file = Instale component adizionâl di file…
+    .accesskey = I
+# Like `addon-install-from-file` but used when the `extensions.webextensions.prefer-update-over-install-for-existing-addon`
+# pref is set.
+addon-install-or-update-from-file = Instale o inzorne di un file il component adizionâl…
     .accesskey = I
 addon-install-from-file-dialog-title = Sielç i components adizionâi di instalâ
 addon-install-from-file-filter-name = Components adizionâi
@@ -282,6 +288,19 @@ discopane-notice-recommendations2 =
         Cualchidun di chescj conseis al è personalizât. A son basâts su lis altris
         estensions instaladis, preferencis dal profîl e statistichis di utilizazion.
 discopane-notice-learn-more = Plui informazions
+# Notice for the colorway theme removal
+colorway-removal-notice-message =
+    .heading = Lis tonalitâts a son stadis gjavadis.
+    .message =
+        { -brand-product-name } al à inzornât la racuelte di tonalitâts. O vin gjavât
+        lis versions vecjis de tô liste “Temis salvâts”. Oten lis gnovis versions sul
+        sît dai components adizionâi.
+colorway-removal-notice-learn-more = Plui informazions
+colorway-removal-notice-button = Oten tonalitâts inzornadis
+# Notice to make user aware that themes are not applied in forced colors mode.
+# This notice is only visible on Windows.
+forced-colors-theme-notice =
+    .message = Lis impostazions dal contrast di Windows a òn la precedence sui temis di { -brand-short-name }. Disative chestis impostazions par doprâ i temis in { -brand-short-name }.
 privacy-policy = Politiche pe riservatece
 # Refers to the author of an add-on, shown below the name of the add-on.
 # Variables:
@@ -302,6 +321,16 @@ find-more-themes = Cjate plui temis
 # used for screen readers.
 addon-options-button =
     .aria-label = Plui opzions
+# Explanatory introduction to the list of recommended add-ons. The action word
+# ("recommends") in the final sentence is a link to external documentation.
+# We hard code "Firefox" because we do not want to imply that a Firefox fork is
+# making this recommendation.
+discopane-intro3 =
+    Estensions e temis ti permetin di personalizâ { -brand-product-name }. A puedin judâti a potenziâ la tô riservatece,
+    incressi la produtivitât, miorâ la esperience cui contignûts multimediâi, cambiâ l’aspiet di { -brand-product-name } e
+    tant altri. Chestis piçulis aplicazions software a son dispès svilupadis di tierçs. Chi
+    tu cjatis une selezion di elements <a data-l10n-name="learn-more-trigger">conseâts</a> di Firefox
+    par vê sigurece, prestazions e funzionalitâts ecezionâls.
 
 ## Add-on actions
 
@@ -388,6 +417,10 @@ addon-detail-group-label-updates =
     .aria-label = { addon-detail-updates-label }
 # This is the tooltip text for the private browsing badge in about:addons. The
 # badge is the private browsing icon included next to the extension's name.
+addon-badge-private-browsing-allowed3 =
+    .title = Permetût tai barcons privâts
+# This is the tooltip text for the private browsing badge in about:addons. The
+# badge is the private browsing icon included next to the extension's name.
 addon-badge-private-browsing-allowed2 =
     .title = Permetût tai barcons privâts
     .aria-label = { addon-badge-private-browsing-allowed2.title }
@@ -427,6 +460,24 @@ addon-badge-line3 =
 addon-badge-verified2 =
     .title = Cheste estension e je stade verificade pal rispiet dai standards di sigurece e prestazions
     .aria-label = { addon-badge-verified2.title }
+# We hard code "Mozilla" in the string below because the extensions are built
+# by Mozilla and we don't want forks to display "by Fork".
+addon-badge-line4 =
+    .title = Estension uficiâl realizade di Mozilla. E rispiete i standards di sigurece e prestazions
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are performing the
+# security or performance reviews. As such, we avoid personalising language
+# like the words "our" or "we".
+addon-badge-verified4 =
+    .title = Cheste estension e je stade verificade par garantî il rispiet dai standards di sigurece e des prestazions
+# This string needs to work in the context of other forks that are not Firefox
+# or built by Mozilla. In particular, we do not want to imply that an
+# organisation other than Mozilla or the Firefox team are making the
+# recommendation. As such, we hard code "Firefox" and avoid personalising
+# language like the words "our" or "we".
+addon-badge-recommended4 =
+    .title = Firefox al consee dome estensions che a sodisfin i standards di sigurece e di prestazion
 
 ##
 
@@ -434,6 +485,10 @@ available-updates-heading = Inzornaments disponibii
 recent-updates-heading = Inzornaments resints
 release-notes-loading = Daûr a cjamâ…
 release-notes-error = Nus displâs, ma al è sucedût un erôr intant che lis notis di publicazion a vignivin cjamadis.
+addon-permissions-heading = Permès
+addon-permissions-empty2 = Cheste estension no domande nissun permès.
+addon-permissions-required-label = Obligatoris:
+addon-permissions-optional-label = Facoltatîfs:
 addon-permissions-empty = Cheste estension no domande nissun permès
 addon-permissions-required = Permès necessaris pes funzionalitâts fondamentâls:
 addon-permissions-optional = Permès facoltatîfs pes funzionalitâts adizionâls:
@@ -461,6 +516,9 @@ shortcuts-heading = Gjestìs lis scurtis des estensions
 default-heading-search-label = Cjate altris components adizionâi
 addons-heading-search-input =
     .placeholder = Cîr in addons.mozilla.org
+addons-heading-search-button =
+    .title = Cîr in addons.mozilla.org
+    .aria-label = Cîr in addons.mozilla.org
 addon-page-options-button =
     .title = Struments par ducj i components adizionâi
 
@@ -483,14 +541,32 @@ details-notification-unsigned-and-disabled-link = Altris informazions
 details-notification-unsigned = Nol è stât pussibil verificâ { $name } pe utilizazion in { -brand-short-name }. Continue cun cautele.
 details-notification-unsigned2 =
     .message = Nol è stât pussibil verificâ { $name } pe utilizazion in { -brand-short-name }. Continue cun cautele.
+details-notification-hard-blocked-extension =
+    .message = Cheste estension e je blocade parcè che e viole lis politichis di Mozilla e e je stade disativade.
+details-notification-hard-blocked-other =
+    .message = Chest component adizionâl al è blocât parcè che al viole lis politichis di Mozilla e al è stât disativât.
 details-notification-unsigned-link = Altris informazions
 details-notification-blocked = { $name } al è stât disativât par vie di problemis di sigurece o stabilitât.
-details-notification-blocked2 =
-    .message = { $name } al è stât disativât par vie di problemis di sigurece o stabilitât.
+details-notification-blocked-link2 = Viôt i detais
+details-notification-soft-blocked-extension-disabled2 =
+    .message = Cheste estension e je sometude a limitazions e e je stade disativade. Al è pussibil tornâ a ativâle, ma la sô utilizazion e podarès compuartâ risis.
+details-notification-soft-blocked-extension-enabled2 =
+    .message = Cheste estension e je sometude a limitazions. La sô utilizazion e podarès compuartâ risis.
+details-notification-soft-blocked-other-disabled2 =
+    .message = Chest component adizionâl al è sometût a limitazions e al è stât disativât. Tu puedis ativâlu, ma la sô utilizazion e podarès compuartâ pericui.
+details-notification-soft-blocked-other-enabled2 =
+    .message = Chest component adizionâl al è sometût a limitazions. La sô utilizazion e podarès compuartâ pericui.
+details-notification-soft-blocked-extension-disabled =
+    .message = Cheste estension e je limitade parcè che e viole lis politichis di Mozilla e e je stade disativade. Tu puedis tornâ a ativâle, ma al è pussibil che al compuarti cualchi risi.
+details-notification-soft-blocked-extension-enabled =
+    .message = Cheste estension e viole lis politichis di Mozilla. La sô utilizazion e podarès compuartâ cualchi risi.
+details-notification-soft-blocked-other-disabled =
+    .message = Chest component adizionâl al è limitât parcè che al viole lis politichis di Mozilla e al è stât disativât. Tu puedis tornâ a ativâlu, ma al è pussibil che al compuarti cualchi risi.
+details-notification-soft-blocked-other-enabled =
+    .message = Chest component adizionâ al viole lis politichis di Mozilla. La sô utilizazion e podarès compuartâ cualchi risi.
+details-notification-softblocked-link2 = Viôt i detais
 details-notification-blocked-link = Altris informazions
 details-notification-softblocked = Si sa che { $name } al cause problemis di sigurece o stabilitât.
-details-notification-softblocked2 =
-    .message = Si sa che { $name } al cause problemis di sigurece o stabilitât.
 details-notification-softblocked-link = Altris informazions
 details-notification-gmp-pending = Chi di pôc { $name } al vignarà instalât.
 details-notification-gmp-pending2 =
@@ -504,3 +580,45 @@ plugins-openh264-name = Codec Video OpenH264 furnît di Cisco Systems, Inc.
 plugins-openh264-description = Chest plugin al ven instalât in automatic di Mozilla par conformâsi cu lis specifichis WebRTC e abilitâ lis clamadis WebRTC cui dispositîfs che a àn bisugne dal codec video H.264. Visite il sît https://www.openh264.org/ par viodi il codiç sorzint dal codec e scuvierzi di plui su la implementazion.
 plugins-widevine-name = Modul Widevine Content Decryption furnît di Google Inc.
 plugins-widevine-description = Chest plugin al abilite la riproduzion di flus multimediâi cifrâts in conformitât cu lis specifichis Encrypted Media Extensions. Il flus multimediâl cifrât di solit al ven doprât dai sîts par protezi i contignûts multimediâi di cualitât elevade cuintri de copie. Visite il sît https://www.w3.org/TR/encrypted-media/ par vê plui informazions su Encrypted Media Extensions.
+
+## Headings for the Permissions tab in `about:addons` when the data collection
+## feature is enabled.
+
+addon-permissions-required-data-collection = Racuelte di dâts obligatorie:
+addon-permissions-optional-data-collection = Racuelte dâts facoltative:
+# Name of the Permissions tab in `about:addons` when the data collection feature is enabled.
+permissions-data-addon-button = Permès e dâts
+# This is a description for extension that use this AI model
+# Variables:
+#   $extensionName (String) - Name of the extension
+mlmodel-extension-label = Doprât de estension { $extensionName }
+addon-permissions-data-collection-heading = Racuelte dâts
+addon-permissions-data-collection-empty = Il svilupadôr al dîs che cheste estension no à bisugne di tirâ sù dâts.
+addon-data-collection-provided = Informazions dadis dal svilupadôr de estension
+addon-data-collection-learnmore = Altris informazions su la racuelte dâts
+
+## Mapping Engine IDs from AI models to how that feature represented by the engine Id is described in the used by section in local model management
+
+mlmodel-about-inference = { -brand-short-name } al dopre chest model in about:inference
+mlmodel-link-preview = { -brand-short-name } al dopre chest model par gjenerâ ponts clâf cuant che tu visualizis in anteprime i colegaments
+mlmodel-pdfjs = { -brand-short-name } al dopre chest model par creâ test alternatîf pes imagjis che tu zontis ai PDFs
+mlmodel-smart-tab-topic-engine = { -brand-short-name } al dopre chest model par sugjerî nons pai grups di schedis
+mlmodel-smart-tab-embedding-engine = { -brand-short-name } al dopre chest model par sugjerî schedis pai grups di schedis
+# AI Model will be downloaded on the users device and used locally
+addon-category-mlmodel = IA sul dispositîf
+addon-category-mlmodel-title =
+    .title = IA sul dispositîf
+mlmodel-heading = Gjestìs i modei di IA sul dispositîf
+mlmodel-description = Cualchi funzion e estension di { -brand-short-name } e dopre modei di inteligjence artificiâl che a funzionin in locâl sul to dispositîf. Cheste metodiche e protêç la tô riservatece e in tancj câs e sveltìs lis prestazions. <a data-l10n-name="learn-more">Altris informazions</a>
+# Label for button that when clicked removed local model
+mlmodel-remove-addon-button =
+    .aria-label = Gjave
+# Label for the aggregated value of all files for a model
+mlmodel-addon-detail-totalsize-label = Dimension file
+mlmodel-addon-detail-last-used-label = Ultime doprade
+# This is a section label to describe what extensions or features use a specific local AI model
+mlmodel-addon-detail-used-by-label = Doprât di
+# This is a section label to describe the link to the model card on the Hugging Face website
+mlmodel-addon-detail-model-card = Schede model
+# This is a label for the Model Card link to Hugging face
+mlmodel-addon-detail-model-card-link-label = Viôt su Hugging Face

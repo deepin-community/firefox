@@ -143,9 +143,7 @@ main-context-menu-save-link-to-pocket =
     .label = Tiyak Ximonel pa { -pocket-brand-name }
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Tiwachib'ëx rochochib'al taqoya'l
@@ -156,11 +154,6 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Tiwachib'ëx Ximoj
     .accesskey = X
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Tiwachib'ëx Ximoj rik'in majun Rojqanem Ruxaq
-    .accesskey = x
 
 ## Media (video/audio) controls
 ##
@@ -284,13 +277,12 @@ main-context-menu-send-to-device =
     .label = Titaq ruxaq pa Okisaxel
     .accesskey = O
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Tokisäx Yakon Rutikirib'al Molojri'ïl
     .accesskey = u
+# Displayed when there are saved passwords and the user clicks inside a username or password field
 main-context-menu-use-saved-password =
     .label = Tokisäx Yakon Ewan Tzij
     .accesskey = z

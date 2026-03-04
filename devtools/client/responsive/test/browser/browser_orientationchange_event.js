@@ -5,9 +5,6 @@
 
 // Test that the "orientationchange" event is fired when the "rotate button" is clicked.
 
-// TODO: This test should also check that the orientation is set properly on the iframe.
-// This is currently not working and should be worked on in Bug 1704830.
-
 const TEST_DOCUMENT = `doc_with_remote_iframe_and_isolated_cross_origin_capabilities.sjs`;
 const TEST_COM_URL = URL_ROOT_COM_SSL + TEST_DOCUMENT;
 
@@ -45,14 +42,41 @@ addRDMTask(TEST_COM_URL, async function ({ ui }) {
   info(
     "Check that rotating the viewport does trigger an orientationchange event"
   );
+  let iframeBrowsingContext =
+    ui.getViewportBrowser().browsingContext.children[0];
+
   let waitForOrientationChangeEvent = isOrientationChangeEventEmitted(
     ui.getViewportBrowser()
   );
+  let waitForScreenOrientationChangeEvent =
+    isWindowScreenOrientationChangeEventEmitted(ui.getViewportBrowser());
+
+  let waitForOrientationChangeEventInIframe = isOrientationChangeEventEmitted(
+    iframeBrowsingContext
+  );
+  let waitForScreenOrientationChangeEventInIframe =
+    isWindowScreenOrientationChangeEventEmitted(iframeBrowsingContext);
   rotateViewport(ui);
   is(
     await waitForOrientationChangeEvent,
     true,
     "'orientationchange' event fired"
+  );
+  is(
+    await waitForScreenOrientationChangeEvent,
+    true,
+    "'change' event fired on window.screen.orientation"
+  );
+
+  is(
+    await waitForOrientationChangeEventInIframe,
+    true,
+    "'orientationchange' event fired in iframe"
+  );
+  is(
+    await waitForScreenOrientationChangeEventInIframe,
+    true,
+    "'change' event fired on window.screen.orientation in iframe"
   );
 
   is(
@@ -67,8 +91,21 @@ addRDMTask(TEST_COM_URL, async function ({ ui }) {
     "Orientation angle was updated to 90 degrees"
   );
 
+  is(
+    await getScreenOrientationType(iframeBrowsingContext),
+    "landscape-primary",
+    "Orientation state in iframe was updated to landscape-primary"
+  );
+
+  is(
+    await getScreenOrientationAngle(iframeBrowsingContext),
+    90,
+    "Orientation angle in iframe was updated to 90 degrees"
+  );
+
   info("Check that the viewport orientation values persist after reload");
-  await reloadBrowser();
+  await reloadSelectedTab();
+  iframeBrowsingContext = ui.getViewportBrowser().browsingContext.children[0];
 
   is(
     await getScreenOrientationType(ui.getViewportBrowser()),
@@ -91,6 +128,17 @@ addRDMTask(TEST_COM_URL, async function ({ ui }) {
     "orientation angle was set on the page early in its lifecycle"
   );
 
+  is(
+    await getScreenOrientationType(iframeBrowsingContext),
+    "landscape-primary",
+    "Orientation is still landscape-primary in iframe"
+  );
+  is(
+    await getScreenOrientationAngle(iframeBrowsingContext),
+    90,
+    "Orientation angle is still 90 in iframe"
+  );
+
   info(
     "Check that the viewport orientation values persist after navigating to a page that forces the creation of a new browsing context"
   );
@@ -103,6 +151,7 @@ addRDMTask(TEST_COM_URL, async function ({ ui }) {
     URL_ROOT_ORG_SSL + TEST_DOCUMENT + "?crossOriginIsolated=true"
   );
   await waitForReload();
+  iframeBrowsingContext = ui.getViewportBrowser().browsingContext.children[0];
 
   isnot(
     browser.browsingContext.id,
@@ -131,18 +180,59 @@ addRDMTask(TEST_COM_URL, async function ({ ui }) {
     "orientation angle was set on the page early in its lifecycle"
   );
 
+  is(
+    await getScreenOrientationType(iframeBrowsingContext),
+    "landscape-primary",
+    "Orientation in iframe is still landscape-primary after navigating to a new browsing context"
+  );
+  is(
+    await getScreenOrientationAngle(iframeBrowsingContext),
+    90,
+    "Orientation angle in iframe is still 90 after navigating to a new browsing context"
+  );
+
+  waitForOrientationChangeEvent = isOrientationChangeEventEmitted(
+    ui.getViewportBrowser()
+  );
+  rotateViewport(ui);
+  await waitForOrientationChangeEvent;
+
   info(
     "Check the orientationchange event is not dispatched when changing devices."
   );
   waitForOrientationChangeEvent = isOrientationChangeEventEmitted(
     ui.getViewportBrowser()
   );
+  waitForScreenOrientationChangeEvent =
+    isWindowScreenOrientationChangeEventEmitted(ui.getViewportBrowser());
+
+  waitForOrientationChangeEventInIframe = isOrientationChangeEventEmitted(
+    iframeBrowsingContext
+  );
+  waitForScreenOrientationChangeEventInIframe =
+    isWindowScreenOrientationChangeEventEmitted(iframeBrowsingContext);
 
   await selectDevice(ui, testDevice.name);
   is(
     await waitForOrientationChangeEvent,
     false,
     "orientationchange event was not dispatched when changing devices"
+  );
+  is(
+    await waitForScreenOrientationChangeEvent,
+    false,
+    "on window.screen.orientation, change event was not dispatched when changing devices"
+  );
+
+  is(
+    await waitForOrientationChangeEventInIframe,
+    false,
+    "orientationchange event was not dispatched in iframe when changing devices"
+  );
+  is(
+    await waitForScreenOrientationChangeEventInIframe,
+    false,
+    "on window.screen.orientation, change event was not dispatched in iframe when changing devices"
   );
 
   info("Check the new orientation values after selecting device.");
@@ -158,25 +248,60 @@ addRDMTask(TEST_COM_URL, async function ({ ui }) {
     "Orientation angle is 0"
   );
 
+  is(
+    await getScreenOrientationType(iframeBrowsingContext),
+    "portrait-primary",
+    "New orientation type in iframe is portrait-primary"
+  );
+
+  is(
+    await getScreenOrientationAngle(iframeBrowsingContext),
+    0,
+    "Orientation angle in iframe is 0"
+  );
+
   info(
     "Check the orientationchange event is not dispatched when calling the command with the same orientation."
   );
   waitForOrientationChangeEvent = isOrientationChangeEventEmitted(
     ui.getViewportBrowser()
   );
+  waitForScreenOrientationChangeEvent =
+    isWindowScreenOrientationChangeEventEmitted(ui.getViewportBrowser());
+
+  waitForOrientationChangeEventInIframe = isOrientationChangeEventEmitted(
+    iframeBrowsingContext
+  );
+  waitForScreenOrientationChangeEventInIframe =
+    isWindowScreenOrientationChangeEventEmitted(iframeBrowsingContext);
 
   // We're directly calling the command here as there's no way to do such action from the UI.
   await ui.commands.targetConfigurationCommand.updateConfiguration({
     rdmPaneOrientation: {
       type: "portrait-primary",
       angle: 0,
-      isViewportRotated: true,
     },
   });
   is(
     await waitForOrientationChangeEvent,
     false,
     "orientationchange event was not dispatched after trying to set the same orientation again"
+  );
+  is(
+    await waitForScreenOrientationChangeEvent,
+    false,
+    "on window.screen.orientation, change event was not dispatched after trying to set the same orientation again"
+  );
+
+  is(
+    await waitForOrientationChangeEventInIframe,
+    false,
+    "orientationchange event was not dispatched in iframe after trying to set the same orientation again"
+  );
+  is(
+    await waitForScreenOrientationChangeEventInIframe,
+    false,
+    "on window.screen.orientation, change event was not dispatched in iframe after trying to set the same orientation again"
   );
 });
 
@@ -238,6 +363,43 @@ async function isOrientationChangeEventEmitted(browserOrBrowsingContext) {
   await SpecialPowers.spawn(browserOrBrowsingContext, [], () => {
     content.eventController.abort();
     delete content.eventController;
+  });
+
+  return result !== "TIMEOUT";
+}
+
+async function isWindowScreenOrientationChangeEventEmitted(
+  browserOrBrowsingContext
+) {
+  const onTimeout = wait(1000).then(() => "TIMEOUT");
+
+  const onScreenOrientationChangeEvent = SpecialPowers.spawn(
+    browserOrBrowsingContext,
+    [],
+    () => {
+      content.eventController4ScreenOrientationChange =
+        new content.AbortController();
+      return new Promise(resolve => {
+        content.window.screen.orientation.addEventListener(
+          "change",
+          () => resolve(),
+          {
+            signal: content.eventController4ScreenOrientationChange.signal,
+            once: true,
+          }
+        );
+      });
+    }
+  );
+
+  const result = await Promise.race([
+    onTimeout,
+    onScreenOrientationChangeEvent,
+  ]);
+
+  await SpecialPowers.spawn(browserOrBrowsingContext, [], () => {
+    content.eventController4ScreenOrientationChange.abort();
+    delete content.eventController4ScreenOrientationChange;
   });
 
   return result !== "TIMEOUT";

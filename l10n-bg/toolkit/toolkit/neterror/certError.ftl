@@ -18,6 +18,9 @@ cert-error-trust-signature-algorithm-disabled = Сертификатът не е
 cert-error-trust-expired-issuer = Няма увереност в сертификата, защото издателят на сертификата е с изтекла валидност.
 cert-error-trust-self-signed = Няма увереност в сертификата, защото е самоподписан.
 cert-error-trust-symantec = Сертификатите, издадени от GeoTrust, RapidSSL, Symantec, Thawte и VeriSign вече не се считат за безопасни, тъй като тези сертификационни органи не са спазвали практиките за сигурност в миналото.
+# Variables:
+#   $hostname (string) - Hostname of the website with cert error.
+cert-error-trust-certificate-transparency = { -brand-short-name } не се доверява на { $hostname }, защото не може да докаже, че отговаря на изискванията за прозрачност на публичните сертификати.
 cert-error-untrusted-default = Сертификатът идва от недостоверен източник.
 # Variables:
 #   $hostname (string) - Hostname of the website with cert error.
@@ -68,6 +71,28 @@ open-in-new-window-for-csp-or-xfo-error = Отваряне в нов прозо�
 # Variables:
 #   $hostname (string) - Hostname of the website blocked by csp or xfo error.
 csp-xfo-blocked-long-desc = С цел защита на вашата сигурност, { $hostname } няма да позволи { -brand-short-name } да покаже страницата ако друг сайт я е вградил. За да видите тази страница е необходимо да я отворите в нов прозорец.
+fp-certerror-view-certificate-link = Преглед на сертификата на сайта
+fp-certerror-return-to-previous-page-recommended-button = Връщане назад (препоръчително)
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+# Variables:
+#   $hostname (String) - Hostname of the website to which the user was trying to connect.
+#   $validHosts (String) - Valid hostnames.
+fp-certerror-bad-domain-why-dangerous-body = Сайтът е настроен да позволява само защитени връзки, но има проблем със сертификата на сайта. Възможно е злонамерено лице да се опитва да имитира оригиналния сайт. Сайтовете използват сертификати, издадени от удостоверител на сертификати, за да докажат, че наистина са тези, за които се представят. { -brand-short-name } не се доверява на този сайт, защото сертификатът му не е валиден за { $hostname }. Сертификатът е валиден само за: { $validHosts }.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-bad-domain-what-can-you-do-body = По-скоро нищо, тъй като вероятно има проблем със самия сайт. Сайтовете използват сертификати, издадени от удостоверител на сертификати, за да докажат, че наистина са тези, за които се представят. Но ако сте във ведомствена мрежа, вашият екип за поддръжка може да има повече информация. Ако използвате антивирусен софтуер, опитайте да потърсите за потенциални конфликти или известни проблеми.
+# This string appears after the following string: "What makes the site look dangerous?" (fp-certerror-why-site-dangerous)
+fp-certerror-unknown-issuer-why-dangerous-body = Има проблем със сертификата на сайта. Възможно е злонамерено лице да се опитва да имитира сайта. Сайтовете използват сертификати, издадени от удостоверител на сертификати, за да докажат, че наистина са тези, за които се представят. { -brand-short-name } не се доверява на този сайт, защото не можем да определим кой е издал сертификата, дали е самоподписан или дали сайтът не изпраща междинни сертификати, на които може да се има доверие.
+# This string appears after the following string: "What can you do about it?" (fp-certerror-what-can-you-do)
+fp-certerror-self-signed-what-can-you-do-body = Не много. Вероятно има проблем със самия сайт.
+fp-certerror-self-signed-important-note = ВАЖНА ЗАБЕЛЕЖКА: Ако се опитвате да посетите този сайт през служебна интранет мрежа, вашият ИТ персонал може да използва самоподписани сертификати. Те могат да ви помогнат да проверите тяхната автентичност.
+# Variables:
+#   $error (string) - NSS error code string that specifies type of cert error. e.g. unknown issuer, invalid cert, etc.
+fp-cert-error-code = Код на грешка: { $error }
+
+## Variables:
+##   $hostname (string) - Hostname of the website with cert error.
+
+cert-error-unknown-critical-extension = { -brand-short-name } блокира посещението ви на този сайт, защото предоставеният за { $hostname } сертификат съдържа неподдържано критично разширение.
 
 ## Messages used for certificate error titles
 
@@ -76,6 +101,7 @@ deniedPortAccess-title = Този адрес е ограничен
 # "Hmm" is a sound made when considering or puzzling over something.
 # You don't have to include it in your translation if your language does not have a written word like this.
 dnsNotFound-title = Хмм. Страницата не е намерена
+internet-connection-offline-title = Изглежда, че има проблем с интернет връзката ви.
 dns-not-found-trr-only-title2 = Възможен риск за сигурността при търсене на този домейн
 fileNotFound-title = Файлът не е намерен
 fileAccessDenied-title = Достъпът до файла е отказан
@@ -90,7 +116,9 @@ netOffline-title = Работа извън мрежата
 contentEncodingError-title = Грешка в кодировката на съдържанието
 unsafeContentType-title = Опасен вид файл
 netReset-title = Връзката е прекъсната
-netTimeout-title = Времето за изчакване на връзка изтече
+netTimeout-title = Времето за осъществяване на връзка изтече
+httpErrorPage-title = Изглежда, че има проблем с този сайт
+serverError-title = Изглежда, че има проблем с този сайт
 unknownProtocolFound-title = Адресът не е разпознат
 proxyConnectFailure-title = Мрежовият посредник отказва връзката
 proxyResolveFailure-title = Мрежовия посредник не може да бъде открит
@@ -107,3 +135,13 @@ networkProtocolError-title = Нарушение на мрежовия прото
 nssBadCert-title = Внимание: Вероятен риск за сигурността
 nssBadCert-sts-title = Неуспешно свързване: Евентуален проблем със сигурността
 certerror-mitm-title = Софтуер пречи на { -brand-short-name } да осъществи защитена връзка към страницата
+
+## Felt Privacy V1 Strings
+
+fp-certerror-page-title = Предупреждение: Риск за сигурността
+fp-certerror-body-title = Бъдете внимателни. Нещо не изглежда както трябва.
+fp-certerror-why-site-dangerous = Какво прави сайтът да изглежда опасен?
+fp-certerror-what-can-you-do = Какво можете да направите?
+fp-certerror-advanced-title = Разширени
+fp-certerror-advanced-button = Разширени
+fp-certerror-hide-advanced-button = Скриване на разширените настройки

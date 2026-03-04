@@ -22,11 +22,12 @@ text-action-copy =
     .accesskey = п
 text-action-copy-shortcut =
     .key = C
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-text-action-strip-on-share =
-    .label = Копіювати посилання без елементів стеження сайту
-    .accesskey = е
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+text-action-copy-clean-link =
+    .label = Копіювати очищене посилання
+    .accesskey = ч
 text-action-paste =
     .label = Вставити
     .accesskey = т
@@ -38,6 +39,9 @@ text-action-paste-shortcut =
 text-action-delete =
     .label = Видалити
     .accesskey = В
+text-action-reveal-password =
+    .label = Показати пароль
+    .accesskey = з
 text-action-select-all =
     .label = Вибрати все
     .accesskey = В
@@ -64,3 +68,23 @@ text-action-search-text-box-clear =
     .title = Очистити
 text-action-highlight-selection =
     .label = Підсвітити вибране
+# This adds a comment to selected text within the PDF viewer.
+text-action-comment-selection-1 =
+    .label = Додати коментар до вибраного
+# "Copy Link to Highlight" creates a permanent 'Text Fragment' link
+# to the current selection, and copies it into the user's clipboard.
+text-action-copy-link-to-highlight =
+    .label = Копіювати посилання на підсвічення
+# This combines "Copy Link to Highlight" with "Copy Clean Link", ie.
+# it creates a link with a text fragment to the current selection
+# and it strips trackers etc.
+text-action-copy-clean-link-to-highlight =
+    .label = Копіювати чисте посилання на підсвічення
+# If the page has been loaded with a text fragment and text is
+# visibly highlighted, this removes any highlighted sections on the page.
+text-action-remove-highlight =
+    .label = Вилучити підсвічення
+# If the page has been loaded with a text fragment and text is
+# visibly highlighted, this removes any highlighted sections on the page.
+text-action-remove-all-highlights =
+    .label = Вилучити всі підсвічення

@@ -26,6 +26,7 @@ perftools-heading-local-build = 本機編譯版本
 
 perftools-description-intro = 記錄過程將在新分頁開啟 <a>profiler.firefox.com</a>。所有資料都儲存在您的本機上，但您可以決定是否要上傳分享。
 perftools-description-local-build = 若您使用這台電腦上自行編譯的版本進行測量，請將編譯出的目的碼路徑（objdir）放到下方清單，以用於查詢除錯符號資訊。
+perftools-pick-local-build-directory = 挑選編譯目錄
 
 ## The controls for the interval at which the profiler samples the code.
 
@@ -61,6 +62,14 @@ perftools-button-restart = 重新啟動
 perftools-button-add-directory = 新增目錄
 perftools-button-remove-directory = 移除選擇項目
 perftools-button-edit-settings = 編輯設定值…
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = 更多操作
+perftools-menu-more-actions-restart-with-profiling = 重新啟動 { -brand-shorter-name } 並開啟啟動效能檢測
+perftools-menu-more-actions-copy-for-startup = 複製用於啟動效能監測的環境變數
+perftools-menu-more-actions-copy-for-perf-tests = 複製用於效能測試的參數
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -110,7 +119,7 @@ perftools-tools-threads-input-label =
 ## Onboarding UI labels. These labels are displayed in the new performance panel UI, when
 ## devtools.performance.new-panel-onboarding preference is true.
 
-perftools-onboarding-message = <b>全新</b>: 現在起，已將 { -profiler-brand-name } 整合進開發者工具。了解這個全新強大工具的<a>更多資訊</a>。
+perftools-onboarding-message = <b>全新</b>：現在起，已將 { -profiler-brand-name } 整合進開發者工具。了解這個全新強大工具的<a>更多資訊</a>。
 perftools-onboarding-close-button =
     .aria-label = 關閉功能介紹訊息
 
@@ -134,6 +143,8 @@ perftools-presets-graphics-label = 圖形
 perftools-presets-graphics-description = 於 { -brand-shorter-name } 診斷圖形 Bug 時的預設值。
 perftools-presets-media-label = 媒體
 perftools-presets-media-description2 = 於 { -brand-shorter-name } 診斷影音 Bug 時的預設值。
+perftools-presets-ml-label = 機器學習
+perftools-presets-ml-description2 = 於 { -brand-shorter-name } 診斷機器學習 Bug 時的預設值。
 perftools-presets-networking-label = 網路連線
 perftools-presets-networking-description = 於 { -brand-shorter-name } 診斷網路連線 Bug 時的預設值。
 # "Power" is used in the sense of energy (electricity used by the computer).
@@ -141,7 +152,6 @@ perftools-presets-power-label = 電源
 perftools-presets-power-description = 於 { -brand-shorter-name } 診斷耗電量時的預設值，額外負荷較低。
 perftools-presets-debug-label = 除錯
 perftools-presets-debug-description = { -brand-shorter-name } 的預設除錯選項。額外負荷較高，請只在需要了解瀏覽器行為時使用，勿用於需要較高效能的情境。
+perftools-presets-web-compat-label = Web Compat
+perftools-presets-web-compat-description = 對網站相容性進行除錯，而非效能監控的建議預設值。
 perftools-presets-custom-label = 自訂
-
-##
-

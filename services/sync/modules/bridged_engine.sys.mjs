@@ -39,7 +39,7 @@ class BridgedStore {
       throw new Error("Store must be associated with an Engine instance.");
     }
     this.engine = engine;
-    this._log = lazy.Log.repository.getLogger(`Sync.Engine.${name}.Store`);
+    this._log = engine.log;
     this._batchChunkSize = 500;
   }
 
@@ -75,8 +75,8 @@ class BridgedRecord extends RawCryptoWrapper {
   /**
    * Creates an outgoing record from a BSO returned by a bridged engine.
    *
-   * @param  {String} collection The collection name.
-   * @param  {Object} bso   The outgoing bso (ie, a sync15::bso::OutgoingBso) returned from
+   * @param  {string} collection The collection name.
+   * @param  {object} bso   The outgoing bso (ie, a sync15::bso::OutgoingBso) returned from
    *                        `mozIBridgedSyncEngine::apply`.
    * @return {BridgedRecord}     A Sync record ready to encrypt and upload.
    */
@@ -108,11 +108,11 @@ class BridgedRecord extends RawCryptoWrapper {
     return cleartext;
   }
 
-  /*
+  /**
    * Converts this incoming record into an envelope to pass to a bridged engine.
    * This object must be kept in sync with `sync15::IncomingBso`.
    *
-   * @return {Object} The incoming envelope, to pass to
+   * @return {object} The incoming envelope, to pass to
    *                  `mozIBridgedSyncEngine::storeIncoming`.
    */
   toIncomingBso() {
@@ -124,176 +124,11 @@ class BridgedRecord extends RawCryptoWrapper {
   }
 }
 
-class BridgeError extends Error {
-  constructor(code, message) {
-    super(message);
-    this.name = "BridgeError";
-    // TODO: We may want to use a different name for this, since errors with
-    // a `result` property are treated specially by telemetry, discarding the
-    // message...but, unlike other `nserror`s, the message is actually useful,
-    // and we still want to capture it.
-    this.result = code;
-  }
-}
-
-class InterruptedError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "InterruptedError";
-  }
-}
-
-/**
- * Adapts a `Log.sys.mjs` logger to a `mozIServicesLogSink`. This class is copied
- * from `SyncedBookmarksMirror.sys.mjs`.
- */
-export class LogAdapter {
-  constructor(log) {
-    this.log = log;
-  }
-
-  get maxLevel() {
-    let level = this.log.level;
-    if (level <= lazy.Log.Level.All) {
-      return Ci.mozIServicesLogSink.LEVEL_TRACE;
-    }
-    if (level <= lazy.Log.Level.Info) {
-      return Ci.mozIServicesLogSink.LEVEL_DEBUG;
-    }
-    if (level <= lazy.Log.Level.Warn) {
-      return Ci.mozIServicesLogSink.LEVEL_WARN;
-    }
-    if (level <= lazy.Log.Level.Error) {
-      return Ci.mozIServicesLogSink.LEVEL_ERROR;
-    }
-    return Ci.mozIServicesLogSink.LEVEL_OFF;
-  }
-
-  trace(message) {
-    this.log.trace(message);
-  }
-
-  debug(message) {
-    this.log.debug(message);
-  }
-
-  warn(message) {
-    this.log.warn(message);
-  }
-
-  error(message) {
-    this.log.error(message);
-  }
-}
-
-// This converts the XPCOM-defined, callback-based mozIBridgedSyncEngine to
-// a promise-based implementation.
-export class BridgeWrapperXPCOM {
-  constructor(component) {
-    this.comp = component;
-  }
-
-  // A few sync, non-callback based attributes.
-  get storageVersion() {
-    return this.comp.storageVersion;
-  }
-
-  get allowSkippedRecord() {
-    return this.comp.allowSkippedRecord;
-  }
-
-  get logger() {
-    return this.comp.logger;
-  }
-
-  // And the async functions we promisify.
-  // Note this is `lastSync` via uniffi but `getLastSync` via xpcom
-  lastSync() {
-    return BridgeWrapperXPCOM.#promisify(this.comp.getLastSync);
-  }
-
-  setLastSync(lastSyncMillis) {
-    return BridgeWrapperXPCOM.#promisify(this.comp.setLastSync, lastSyncMillis);
-  }
-
-  getSyncId() {
-    return BridgeWrapperXPCOM.#promisify(this.comp.getSyncId);
-  }
-
-  resetSyncId() {
-    return BridgeWrapperXPCOM.#promisify(this.comp.resetSyncId);
-  }
-
-  ensureCurrentSyncId(newSyncId) {
-    return BridgeWrapperXPCOM.#promisify(
-      this.comp.ensureCurrentSyncId,
-      newSyncId
-    );
-  }
-
-  syncStarted() {
-    return BridgeWrapperXPCOM.#promisify(this.comp.syncStarted);
-  }
-
-  storeIncoming(incomingEnvelopesAsJSON) {
-    return BridgeWrapperXPCOM.#promisify(
-      this.comp.storeIncoming,
-      incomingEnvelopesAsJSON
-    );
-  }
-
-  apply() {
-    return BridgeWrapperXPCOM.#promisify(this.comp.apply);
-  }
-
-  setUploaded(newTimestampMillis, uploadedIds) {
-    return BridgeWrapperXPCOM.#promisify(
-      this.comp.setUploaded,
-      newTimestampMillis,
-      uploadedIds
-    );
-  }
-
-  syncFinished() {
-    return BridgeWrapperXPCOM.#promisify(this.comp.syncFinished);
-  }
-
-  reset() {
-    return BridgeWrapperXPCOM.#promisify(this.comp.reset);
-  }
-
-  wipe() {
-    return BridgeWrapperXPCOM.#promisify(this.comp.wipe);
-  }
-
-  // Converts a XPCOM bridged function that takes a callback into one that returns a
-  // promise.
-  static #promisify(func, ...params) {
-    return new Promise((resolve, reject) => {
-      func(...params, {
-        // This object implicitly implements all three callback interfaces
-        // (`mozIBridgedSyncEngine{Apply, Result}Callback`), because they have
-        // the same methods. The only difference is the type of the argument
-        // passed to `handleSuccess`, which doesn't matter in JS.
-        handleSuccess: resolve,
-        handleError(code, message) {
-          reject(transformError(code, message));
-        },
-      });
-    });
-  }
-}
-
 /**
  * A base class used to plug a Rust engine into Sync, and have it work like any
  * other engine. The constructor takes a bridge as its first argument, which is
  * a "bridged sync engine", as defined by UniFFI in the application-services
  * crate.
- * For backwards compatibility, this can also be an instance of an XPCOM
- * component class that implements `mozIBridgedSyncEngine`, wrapped in
- * a `BridgeWrapperXPCOM` wrapper.
- * (Note that at time of writing, the above is slightly aspirational; the
- * actual definition of the UniFFI shared bridged engine is still in flux.)
  *
  * This class inherits from `SyncEngine`, which has a lot of machinery that we
  * don't need, but that's fairly easy to override. It would be harder to
@@ -308,6 +143,10 @@ export class BridgeWrapperXPCOM {
  */
 export function BridgedEngine(name, service) {
   SyncEngine.call(this, name, service);
+  // The store is lazily created, which means we'd miss a number of logs if the store
+  // managed the log like happens for other engines. But we still keep Store in the name for consistency
+  // (but really we should kill all these sub-logs - no-one cares about ".Store" etc!)
+  this.log = lazy.Log.repository.getLogger(`Sync.Engine.${name}.Store`);
 }
 
 BridgedEngine.prototype = {
@@ -366,7 +205,7 @@ BridgedEngine.prototype = {
    * Sync code always calls `resetSyncID()` and `ensureCurrentSyncID()`,
    * not this.
    *
-   * @returns {String?} The sync ID, or `null` if one isn't set.
+   * @returns {string?} The sync ID, or `null` if one isn't set.
    */
   async getSyncID() {
     // Note that all methods on an XPCOM class instance are automatically bound,
@@ -487,13 +326,3 @@ BridgedEngine.prototype = {
   },
 };
 Object.setPrototypeOf(BridgedEngine.prototype, SyncEngine.prototype);
-
-function transformError(code, message) {
-  switch (code) {
-    case Cr.NS_ERROR_ABORT:
-      return new InterruptedError(message);
-
-    default:
-      return new BridgeError(code, message);
-  }
-}

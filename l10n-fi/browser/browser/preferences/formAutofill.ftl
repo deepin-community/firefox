@@ -17,7 +17,9 @@ autofill-manage-remove-button = Poista
 autofill-manage-add-button = Lisää…
 autofill-manage-edit-button = Muokkaa…
 
-## The address capture doorhanger
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 address-capture-save-doorhanger-header = Tallennetaanko osoite?
 address-capture-save-doorhanger-description = Tallenna tiedot { -brand-short-name }iin, jotta voit täyttää lomakkeita nopeasti.
@@ -39,8 +41,6 @@ address-capture-manage-address-button =
     .label = Osoiteasetukset
 address-capture-learn-more-button =
     .label = Lue lisää
-# The dialog title for creating addresses in browser preferences.
-autofill-add-new-address-title = Lisää uusi osoite
 address-capture-open-menu-button =
     .aria-label = Avaa valikko
 address-capture-edit-address-button =
@@ -49,68 +49,78 @@ address-capture-edit-address-button =
 autofill-add-address-title = Lisää osoite
 # The dialog title for editing addresses in browser preferences.
 autofill-edit-address-title = Muokkaa osoitetta
-autofill-address-name = Nimi
 autofill-address-given-name = Etunimi
 autofill-address-additional-name = Toinen nimi
 autofill-address-family-name = Sukunimi
+autofill-address-name = Nimi
 autofill-address-organization = Organisaatio
 autofill-address-street-address = Katuosoite
 autofill-address-street = Katuosoite
 
-## address-level-3 (Sublocality) names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IR, MX
+# Used in Iran (IR), Mexico (MX) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-neighborhood = Naapurusto
-# Used in MY
+# Used in Malaysia (MY) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-village-township = Kylä tai kaupunki
 autofill-address-island = Saari
-# Used in IE
+# Used in Ireland (IE) as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-townland = Alue
 
-## address-level-2 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-city = Kaupunki
-# Used in HK, SD, SY, TR as Address Level-2 and used in KR as Sublocality.
+# Used in Hong Kong (HK), Sudan (SD), Syria (SY), Türkiye (TR) as as secondary address information (2 levels below the country level).
+# Used in Korea as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-district = Alue
-# Used in GB, NO, SE
+# Used in United Kingdom (GB), Norway (NO), Sweden (SE) as as secondary address information (2 levels below the country level).
 autofill-address-post-town = Postitoimipaikka
-# Used in AU as Address Level-2 and used in ZZ as Sublocality.
+# Used in Australia (AU) as as secondary address information (below the country level).
+# Used for international addresses as sublocality (civil entity below a locality, e.g. within a city).
 autofill-address-suburb = Lähiö
 
-## address-level-1 names
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
 autofill-address-province = Maakunta
 autofill-address-state = Osavaltio
 autofill-address-county = Maakunta
-# Used in BB, JM
+# Used in Barbados (BB), Jamaica (JM) as primary address information (1 level below the country level).
 autofill-address-parish = Kirkonkylä
-# Used in JP
+# Used in Japan (JP) as primary address information (1 level below the country level).
 autofill-address-prefecture = Prefektuuri
-# Used in HK
+# Used in Honk Kong (HK) as primary address information (1 level below the country level).
 autofill-address-area = Alue
-# Used in KR
+# Used in Korea (KO) as primary address information (1 level below the country level).
 autofill-address-do-si = Do/Si
-# Used in NI, CO
+# Used in Nicaragua (NI), Colombia (CO) as primary address information (1 level below the country level).
 autofill-address-department = Departementti
-# Used in AE
+# Used in United Arab Emirates (AE) as primary address information (1 level below the country level).
 autofill-address-emirate = Emiirikunta
-# Used in RU and UA
+# Used in Russia (RU), Ukraine (UA) as primary address information (1 level below the country level).
 autofill-address-oblast = Oblasti
 
-## Postal code name types
+## Labels for address fields (e.g. for a mailing address) used as part of the form
+## autofill feature. For more information on the address structure (e.g. levels),
+## see also https://developers.google.com/maps/documentation/javascript/geocoding
 
-# Used in IN
+# Postal code field used in India (IN).
 autofill-address-pin = Postinumero
 autofill-address-postal-code = Postinumero
+# Postal code field.
 autofill-address-zip = Postinumero
-# Used in IE
+# Postal code field used in Ireland (IE).
 autofill-address-eircode = Eircode
 
 ##
 
-
-##
-
+# The dialog title for creating addresses in browser preferences.
+autofill-add-new-address-title = Lisää uusi osoite
 autofill-address-country = Maa tai alue
 autofill-address-country-only = Maa
 autofill-address-tel = Puhelin
@@ -122,11 +132,6 @@ autofill-country-warning-message = Lomakkeiden automaattitäyttö on tällä het
 autofill-add-new-card-title = Lisää uusi luottokortti
 # The dialog title for editing credit cards in browser preferences.
 autofill-edit-card-title = Muokkaa luottokorttia
-autofill-message-tooltip = Näytä automaattista täyttöä koskeva viesti
-# The dialog title for creating credit cards in browser preferences.
-autofill-add-card-title = Lisää kortti
-# The dialog title for editing credit cards in browser preferences.
-autofill-edit-card-title2 = Muokkaa korttia
 # In macOS, this string is preceded by the operating system with "Firefox is trying to ",
 # and has a period added to its end. Make sure to test in your locale.
 autofill-edit-card-password-prompt =
@@ -135,6 +140,11 @@ autofill-edit-card-password-prompt =
         [windows] { -brand-short-name } yrittää näyttää luottokorttitietoja. Vahvista tämän Windows-tilin käyttöoikeus alla.
        *[other] { -brand-short-name } yrittää esittää luottokorttitietoja.
     }
+autofill-message-tooltip = Näytä automaattista täyttöä koskeva viesti
+# The dialog title for creating credit cards in browser preferences.
+autofill-add-card-title = Lisää kortti
+# The dialog title for editing credit cards in browser preferences.
+autofill-edit-card-title2 = Muokkaa korttia
 autofill-card-number = Luottokortti
 autofill-card-invalid-number = Kirjoita kelvollinen luottokortin numero
 autofill-card-name-on-card = Nimi kortissa
@@ -142,6 +152,12 @@ autofill-card-expires-month = Vanhenemiskuukausi
 autofill-card-expires-year = Vanhenemisvuosi
 autofill-card-billing-address = Laskutusosoite
 autofill-card-network = Kortin tyyppi
+# This string is never actually displayed, but is used to make it easier to
+# find the payment methods section of about:settings via the search input. It's
+# simply a comma separated list of additional search keywords for the payment
+# methods section. Localizers should choose terms that make sense for payment
+# methods in their region.
+autofill-card-search-term-credit-cards = maksukortit, luottokortit, luotto, credit, kortit, pankkikortit, debit, lompakko, kassa
 
 ## These are brand names and should only be translated when a locale-specific name for that brand is in common use
 

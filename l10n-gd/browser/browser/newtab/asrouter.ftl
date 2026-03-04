@@ -28,11 +28,13 @@ cfr-doorhanger-extension-author = le { $name }
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
 cfr-doorhanger-extension-notification = Moladh
+# .a11y-announcement is extracted in JS and announced via A11y.announce.
 cfr-doorhanger-extension-notification2 = Moladh
     .tooltiptext = Leudachan a mholamaid
     .a11y-announcement = Tha moladh leudachain ann
 # This is a notification displayed in the address bar.
 # When clicked it opens a panel with a message for the user.
+# .a11y-announcement is extracted in JS and announced via A11y.announce.
 cfr-doorhanger-feature-notification = Moladh
     .tooltiptext = Gleus a mholamaid
     .a11y-announcement = Tha moladh gleus ann
@@ -61,7 +63,7 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } cleachdaiche
     }
 
-## Firefox Accounts Message
+## Mozilla Account messages
 
 cfr-doorhanger-bookmark-fxa-header = Sioncronaich na comharran-lìn agad àite sam bith.
 cfr-doorhanger-bookmark-fxa-body = Abair faodalach! Nise, na bi as aonais a’ chomharra-lìn seo air na h-uidheaman mobile agad. Faigh { -fxaccount-brand-name }.
@@ -237,19 +239,5 @@ fxa-sync-cfr-secondary = Cuir nam chuimhne an ceann greis
 
 ## Device Migration FxA Spotlight
 
-device-migration-fxa-spotlight-header = A bheil uidheam nas sine agad?
-device-migration-fxa-spotlight-body = Dèan lethbhreacan-glèidhidh dhen dàta agad a dhèanamh cinnteach nach caill thu fiosrachadh cudromach mar chomharran-lìn is faclan-faire – gu sònraichte nuair a ghluaiseas tu gu uidheam ùr.
-device-migration-fxa-spotlight-primary-button = Ciamar a nì mi lethbhreac-glèidhidh dhen dàta agam
-device-migration-fxa-spotlight-link = Cuir nam chuimhne an ceann greis
 device-migration-fxa-spotlight-getting-new-device-header-2 = Uidheam ùr gu bhith agad?
 device-migration-fxa-spotlight-getting-new-device-primary-button = Ciamar a nì mi lethbhreac-glèidhidh dhen dàta agam
-
-## Set as Default PDF Reader Infobar
-
-
-## Launch on login infobar notification
-
-
-## These string variants are used when the “launch on login” infobar
-## notification is displayed for a second time.
-

@@ -186,8 +186,7 @@ class XULTreeItemAccessibleBase : public AccessibleWrap {
 
   // LocalAccessible
   MOZ_CAN_RUN_SCRIPT
-  virtual void DispatchClickEvent(nsIContent* aContent,
-                                  uint32_t aActionIndex) const override;
+  virtual void DispatchClickEvent(uint32_t aActionIndex) const override;
   virtual LocalAccessible* GetSiblingAtOffset(
       int32_t aOffset, nsresult* aError = nullptr) const override;
 
@@ -224,7 +223,7 @@ class XULTreeItemAccessible : public XULTreeItemAccessibleBase {
 
   // LocalAccessible
   virtual void Shutdown() override;
-  virtual ENameValueFlag Name(nsString& aName) const override;
+  virtual ENameValueFlag DirectName(nsString& aName) const override;
   virtual a11y::role NativeRole() const override;
 
   // XULTreeItemAccessibleBase

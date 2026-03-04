@@ -41,6 +41,7 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
 
   void AddChildAt(uint32_t aIdx, RemoteAccessible* aChild) {
     mChildren.InsertElementAt(aIdx, aChild);
+    UpdateChildIndexCache(static_cast<int32_t>(aIdx));
     if (IsHyperText()) {
       InvalidateCachedHyperTextOffsets();
     }
@@ -62,7 +63,7 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
   RemoteAccessible* RemotePrevSibling() const {
     if (IsDoc()) {
       // The normal code path doesn't work for documents because the parent
-      // might be a local OuterDoc, but IndexInParent() will return 1.
+      // might be a local OuterDoc, but IndexInParent() will return 0.
       // A document is always a single child of an OuterDoc anyway.
       return nullptr;
     }
@@ -70,12 +71,13 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
     if (idx == -1) {
       return nullptr;  // No parent.
     }
+    MOZ_ASSERT(RemoteParent());
     return idx > 0 ? RemoteParent()->mChildren[idx - 1] : nullptr;
   }
   RemoteAccessible* RemoteNextSibling() const {
     if (IsDoc()) {
       // The normal code path doesn't work for documents because the parent
-      // might be a local OuterDoc, but IndexInParent() will return 1.
+      // might be a local OuterDoc, but IndexInParent() will return 0.
       // A document is always a single child of an OuterDoc anyway.
       return nullptr;
     }
@@ -85,6 +87,7 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
     }
     MOZ_ASSERT(idx >= 0);
     size_t newIdx = idx + 1;
+    MOZ_ASSERT(RemoteParent());
     return newIdx < RemoteParent()->mChildren.Length()
                ? RemoteParent()->mChildren[newIdx]
                : nullptr;
@@ -106,15 +109,12 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
     return RemotePrevSibling();
   }
 
-  // XXX evaluate if this is fast enough.
   virtual int32_t IndexInParent() const override {
-    RemoteAccessible* parent = RemoteParent();
-    if (!parent) {
-      return -1;
-    }
-    return parent->mChildren.IndexOf(
-        static_cast<const RemoteAccessible*>(this));
+    MOZ_ASSERT(mParent || mIndexInParent == -1,
+               "IndexInParent should be -1 if no parent");
+    return mIndexInParent;
   }
+
   virtual uint32_t EmbeddedChildCount() override;
   virtual int32_t IndexOfEmbeddedChild(Accessible* aChild) override;
   virtual Accessible* EmbeddedChildAt(uint32_t aChildIdx) override;
@@ -129,6 +129,9 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
    */
   void RemoveChild(RemoteAccessible* aChild) {
     mChildren.RemoveElement(aChild);
+    MOZ_ASSERT(aChild->mIndexInParent != -1);
+    UpdateChildIndexCache(aChild->mIndexInParent);
+    aChild->mIndexInParent = -1;
     if (IsHyperText()) {
       InvalidateCachedHyperTextOffsets();
     }
@@ -142,9 +145,11 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
   LocalAccessible* OuterDocOfRemoteBrowser() const;
 
   /**
-   * Get the role of the accessible we're proxying.
+   * Get the native role of the accessible we're proxying.
    */
-  virtual role Role() const override { return mRole; }
+  virtual mozilla::a11y::role NativeRole() const override {
+    return mNativeRole;
+  }
 
   /**
    * Return true if this is an embedded object.
@@ -176,8 +181,9 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
 
   // Methods that potentially access a cache.
 
-  virtual ENameValueFlag Name(nsString& aName) const override;
-  virtual void Description(nsString& aDescription) const override;
+  virtual ENameValueFlag Name(nsString& aName) const override final;
+  virtual EDescriptionValueFlag Description(
+      nsString& aDescription) const override;
   virtual void Value(nsString& aValue) const override;
 
   virtual double CurValue() const override;
@@ -202,11 +208,11 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
 
   virtual nsAtom* TagName() const override;
 
-  virtual already_AddRefed<nsAtom> InputType() const override;
-
   virtual already_AddRefed<nsAtom> DisplayStyle() const override;
 
   virtual float Opacity() const override;
+
+  virtual WritingMode GetWritingMode() const override;
 
   virtual void LiveRegionAttributes(nsAString* aLive, nsAString* aRelevant,
                                     Maybe<bool>* aAtomic,
@@ -228,6 +234,14 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
       int32_t aSelectionNum) override;
 
   virtual Maybe<int32_t> GetIntARIAAttr(nsAtom* aAttrName) const override;
+
+  virtual bool GetStringARIAAttr(nsAtom* aAttrName,
+                                 nsAString& aAttrValue) const override;
+
+  virtual bool ARIAAttrValueIs(nsAtom* aAttrName,
+                               nsAtom* aAttrValue) const override;
+
+  virtual bool HasARIAAttr(nsAtom* aAttrName) const override;
 
   virtual void Language(nsAString& aLocale) override;
 
@@ -273,7 +287,6 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
 
   virtual void TakeFocus() const override;
   virtual void ScrollTo(uint32_t aHow) const override;
-  virtual void SetCaretOffset(int32_t aOffset) override;
 
   /**
    * Allow the platform to store a pointers worth of data on us.
@@ -354,7 +367,7 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
   Maybe<const nsTArray<int32_t>&> GetCachedTextLines();
   nsRect GetCachedCharRect(int32_t aOffset);
   RefPtr<const AccAttributes> GetCachedTextAttributes();
-  RefPtr<const AccAttributes> GetCachedARIAAttributes() const;
+  const AccAttributes* GetCachedARIAAttributes() const;
 
   nsString GetCachedHTMLNameAttribute() const;
 
@@ -373,6 +386,15 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
   virtual void ScrollToPoint(uint32_t aScrollType, int32_t aX,
                              int32_t aY) override;
 
+  virtual bool IsScrollable() const override;
+
+  virtual bool IsPopover() const override;
+
+  virtual bool HasPrimaryAction() const override;
+
+  virtual bool HasCustomActions() const override;
+  virtual bool IsEditable() const override;
+
 #if !defined(XP_WIN)
   void Announce(const nsString& aAnnouncement, uint16_t aPriority);
 #endif  // !defined(XP_WIN)
@@ -386,6 +408,9 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
   virtual void ScrollSubstringToPoint(int32_t aStartOffset, int32_t aEndOffset,
                                       uint32_t aCoordinateType, int32_t aX,
                                       int32_t aY) override;
+
+  virtual std::pair<mozilla::LayoutDeviceIntRect, nsIWidget*> GetCaretRect()
+      override;
 
   /**
    * Invalidate cached HyperText offsets. This should be called whenever a
@@ -416,7 +441,7 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
         mWrapper(0),
         mID(aID),
         mCachedFields(nullptr),
-        mRole(aRole) {
+        mNativeRole(aRole) {
     MOZ_COUNT_CTOR(RemoteAccessible);
   }
 
@@ -426,7 +451,7 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
         mWrapper(0),
         mID(0),
         mCachedFields(nullptr),
-        mRole(roles::DOCUMENT) {
+        mNativeRole(roles::DOCUMENT) {
     mGenericTypes = eDocument | eHyperText;
     MOZ_COUNT_CTOR(RemoteAccessible);
   }
@@ -435,8 +460,9 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
   void SetParent(RemoteAccessible* aParent);
   Maybe<nsRect> RetrieveCachedBounds() const;
   bool ApplyTransform(nsRect& aCumulativeBounds) const;
-  bool ApplyScrollOffset(nsRect& aBounds) const;
+  bool ApplyScrollOffset(nsRect& aBounds, float aResolution) const;
   void ApplyCrossDocOffset(nsRect& aBounds) const;
+  void ApplyVisualViewportOffset(nsRect& aBounds) const;
   LayoutDeviceIntRect BoundsWithOffset(
       Maybe<nsRect> aOffset, bool aBoundsAreForHittesting = false) const;
   bool IsFixedPos() const;
@@ -471,14 +497,26 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
 
   virtual void GetPositionAndSetSize(int32_t* aPosInSet,
                                      int32_t* aSetSize) override;
-
-  virtual bool HasPrimaryAction() const override;
-
   nsAtom* GetPrimaryAction() const;
 
   virtual nsTArray<int32_t>& GetCachedHyperTextOffsets() override;
 
+  nsTArray<Accessible*> LegendsOrCaptions() const;
+
+  RemoteAccessible* LegendOrCaptionFor() const;
+
  private:
+  /**
+   * Update mIndexInParent on each child starting at aStartIdx up to the last
+   * child. This should be called when a child is added or removed.
+   */
+  void UpdateChildIndexCache(int32_t aStartIdx) {
+    int32_t count = static_cast<int32_t>(mChildren.Length());
+    for (int32_t idx = aStartIdx; idx < count; ++idx) {
+      mChildren[idx]->mIndexInParent = idx;
+    }
+  }
+
   RemoteAccessible* mParent;
 
   friend DocAccessibleParent;
@@ -494,6 +532,7 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
   DocAccessibleParent* mDoc;
   uintptr_t mWrapper;
   uint64_t mID;
+  int32_t mIndexInParent = -1;
 
  protected:
   virtual const Accessible* Acc() const override { return this; }
@@ -502,7 +541,7 @@ class RemoteAccessible : public Accessible, public HyperTextAccessibleBase {
 
   // XXX DocAccessibleParent gets to change this to change the role of
   // documents.
-  role mRole : 27;
+  role mNativeRole : 27;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

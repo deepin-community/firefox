@@ -38,6 +38,7 @@
 
 enum class SkBlendMode;
 enum class SkClipOp;
+enum class SkTileMode;
 struct SkPoint;
 struct SkRSXform;
 
@@ -191,6 +192,7 @@ RECORD(SaveLayer, kHasPaint_Tag,
        sk_sp<const SkImageFilter> backdrop;
        SkCanvas::SaveLayerFlags saveLayerFlags;
        SkScalar backdropScale;
+       SkTileMode backdropTileMode;
        skia_private::AutoTArray<sk_sp<SkImageFilter>> filters)
 
 RECORD(SaveBehind, 0,
@@ -347,7 +349,7 @@ RECORD(DrawMesh, kDraw_Tag|kHasPaint_Tag|kMultiDraw_Tag,
 RECORD(DrawShadowRec, kDraw_Tag,
        PreCachedPath path;
        SkDrawShadowRec rec)
-RECORD(DrawAnnotation, 0,  // TODO: kDraw_Tag, skia:5548
+RECORD(DrawAnnotation, 0,  // TODO: kDraw_Tag, skbug.com/40036727
        SkRect rect;
        SkString key;
        sk_sp<SkData> value)

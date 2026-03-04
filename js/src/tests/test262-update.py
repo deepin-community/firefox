@@ -1,12 +1,10 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import contextlib
-import io
 import os
 import shutil
 import sys
@@ -16,61 +14,39 @@ from itertools import chain
 from operator import itemgetter
 
 # Skip all tests which use features not supported in SpiderMonkey.
-UNSUPPORTED_FEATURES = set(
-    [
-        "tail-call-optimization",
-        "Intl.Locale-info",  # Bug 1693576
-        "Intl.DurationFormat",  # Bug 1648139
-        "Atomics.waitAsync",  # Bug 1467846
-        "legacy-regexp",  # Bug 1306461
-        "set-methods",  # Bug 1805038
-        "explicit-resource-management",  # Bug 1569081
-        "promise-try",
-        "source-phase-imports",
-        "source-phase-imports-module-source",
-        "Math.sumPrecise",
-        "Atomics.pause",
-    ]
-)
+UNSUPPORTED_FEATURES = set([
+    "tail-call-optimization",
+    "Intl.Locale-info",  # Bug 1693576
+    "source-phase-imports",
+    "source-phase-imports-module-source",
+    "import-defer",
+    "nonextensible-applies-to-private",  # Bug 1991478
+])
 FEATURE_CHECK_NEEDED = {
     "Atomics": "!this.hasOwnProperty('Atomics')",
-    "FinalizationRegistry": "!this.hasOwnProperty('FinalizationRegistry')",
     "SharedArrayBuffer": "!this.hasOwnProperty('SharedArrayBuffer')",
     "Temporal": "!this.hasOwnProperty('Temporal')",
-    "WeakRef": "!this.hasOwnProperty('WeakRef')",
     "decorators": "!(this.hasOwnProperty('getBuildConfiguration')&&getBuildConfiguration('decorators'))",  # Bug 1435869
-    "iterator-helpers": "!this.hasOwnProperty('Iterator')",  # Bug 1568906
-    "Intl.Segmenter": "!Intl.Segmenter",  # Bug 1423593
-    "resizable-arraybuffer": "!ArrayBuffer.prototype.resize",  # Bug 1670026
-    "uint8array-base64": "!Uint8Array.fromBase64",  # Bug 1862220
-    "json-parse-with-source": "!JSON.hasOwnProperty('isRawJSON')",  # Bug 1658310
-    "Float16Array": "!this.hasOwnProperty('Float16Array')",
-    "RegExp.escape": "!RegExp.escape",
+    "uint8array-base64": "!Uint8Array.fromBase64",  # Bug 1985120
+    "explicit-resource-management": "!(this.hasOwnProperty('getBuildConfiguration')&&getBuildConfiguration('explicit-resource-management'))",  # Bug 1569081
+    "Atomics.pause": "!this.hasOwnProperty('Atomics')||!Atomics.pause",  # Bug 1918717
+    "Error.isError": "!Error.isError",  # Bug 1923733
+    "iterator-sequencing": "!Iterator.concat",  # Bug 1923732
+    "Math.sumPrecise": "!Math.sumPrecise",  # Bug 1985121
+    "upsert": "!Map.prototype.getOrInsertComputed",  # Bug 1986668
+    "immutable-arraybuffer": "!ArrayBuffer.prototype.sliceToImmutable",  # Bug 1952253
 }
-RELEASE_OR_BETA = set(
-    [
-        "regexp-modifiers",
-        "symbols-as-weakmap-keys",
-    ]
-)
+RELEASE_OR_BETA = set(["legacy-regexp"])
 SHELL_OPTIONS = {
-    "import-assertions": "--enable-import-assertions",
-    "import-attributes": "--enable-import-attributes",
     "ShadowRealm": "--enable-shadow-realms",
-    "iterator-helpers": "--enable-iterator-helpers",
     "symbols-as-weakmap-keys": "--enable-symbols-as-weakmap-keys",
-    "resizable-arraybuffer": "--enable-arraybuffer-resizable",
-    "uint8array-base64": "--enable-uint8array-base64",
-    "json-parse-with-source": "--enable-json-parse-with-source",
-    "Float16Array": "--enable-float16array",
-    "regexp-duplicate-named-groups": "--enable-regexp-duplicate-named-groups",
-    "RegExp.escape": "--enable-regexp-escape",
-    "regexp-modifiers": "--enable-regexp-modifiers",
+    "explicit-resource-management": "--enable-explicit-resource-management",
+    "iterator-sequencing": "--enable-iterator-sequencing",
+    "Atomics.waitAsync": "--setpref=atomics_wait_async",
+    "immutable-arraybuffer": "--enable-arraybuffer-immutable",
 }
 
-INCLUDE_FEATURE_DETECTED_OPTIONAL_SHELL_OPTIONS = {
-    "testTypedArray.js": "Float16Array",
-}
+INCLUDE_FEATURE_DETECTED_OPTIONAL_SHELL_OPTIONS = {}
 
 
 @contextlib.contextmanager
@@ -202,7 +178,7 @@ def writeTestFile(test262OutDir, testFileName, source):
     Writes the test source to |test262OutDir|.
     """
 
-    with io.open(os.path.join(test262OutDir, testFileName), "wb") as output:
+    with open(os.path.join(test262OutDir, testFileName), "wb") as output:
         output.write(source)
 
 
@@ -237,7 +213,7 @@ def writeShellAndBrowserFiles(
                 yield include
 
     def readIncludeFile(filePath):
-        with io.open(filePath, "rb") as includeFile:
+        with open(filePath, "rb") as includeFile:
             return b"// file: %s\n%s" % (
                 os.path.basename(filePath).encode("utf-8"),
                 includeFile.read(),
@@ -259,15 +235,13 @@ def writeShellAndBrowserFiles(
     )
 
     # Write the concatenated include sources to shell.js.
-    with io.open(os.path.join(test262OutDir, relPath, "shell.js"), "wb") as shellFile:
+    with open(os.path.join(test262OutDir, relPath, "shell.js"), "wb") as shellFile:
         if includeSource:
             shellFile.write(b"// GENERATED, DO NOT EDIT\n")
             shellFile.write(includeSource)
 
     # The browser.js file is always empty for test262 tests.
-    with io.open(
-        os.path.join(test262OutDir, relPath, "browser.js"), "wb"
-    ) as browserFile:
+    with open(os.path.join(test262OutDir, relPath, "browser.js"), "wb") as browserFile:
         browserFile.write(b"")
 
 
@@ -311,7 +285,7 @@ def convertTestFile(test262parser, testSource, testName, includeSet, strictTests
     # currently ignoring the error phase attribute.
     # testRec["negative"] == {type=<error name>, phase=parse|resolution|runtime}
     isNegative = "negative" in testRec
-    assert not isNegative or type(testRec["negative"]) == dict
+    assert not isNegative or type(testRec["negative"]) is dict
     errorType = testRec["negative"]["type"] if isNegative else None
 
     # Async tests are marked with the "async" attribute.
@@ -320,9 +294,15 @@ def convertTestFile(test262parser, testSource, testName, includeSet, strictTests
     # Test262 tests cannot be both "negative" and "async".  (In principle a
     # negative async test is permitted when the error phase is not "parse" or
     # the error type is not SyntaxError, but no such tests exist now.)
-    assert not (isNegative and isAsync), (
-        "Can't have both async and negative attributes: %s" % testName
-    )
+    # assert not (isNegative and isAsync), (
+    #     "Can't have both async and negative attributes: %s" % testName
+    # )
+    # TODO: Print a warning instead of asserting until
+    # <https://github.com/tc39/test262/issues/4638> is fixed.
+    if isNegative and isAsync:
+        print(
+            f"bad isnegative + async: {testName} (https://github.com/tc39/test262/issues/4638)"
+        )
 
     # Only async tests may use the $DONE or asyncTest function. However,
     # negative parse tests may "use" the $DONE (or asyncTest) function (of
@@ -336,7 +316,7 @@ def convertTestFile(test262parser, testSource, testName, includeSet, strictTests
         or isAsync
         or isNegative
         or testName.split(os.path.sep)[0] == "harness"
-    ), ("Missing async attribute in: %s" % testName)
+    ), "Missing async attribute in: %s" % testName
 
     # When the "module" attribute is set, the source code is module code.
     isModule = "module" in testRec
@@ -359,38 +339,29 @@ def convertTestFile(test262parser, testSource, testName, includeSet, strictTests
         else:
             releaseOrBeta = [f for f in testRec["features"] if f in RELEASE_OR_BETA]
             if releaseOrBeta:
-                refTestSkipIf.append(
-                    (
-                        "release_or_beta",
-                        "%s is not released yet" % ",".join(releaseOrBeta),
-                    )
-                )
+                refTestSkipIf.append((
+                    "release_or_beta",
+                    "%s is not released yet" % ",".join(releaseOrBeta),
+                ))
 
             featureCheckNeeded = [
                 f for f in testRec["features"] if f in FEATURE_CHECK_NEEDED
             ]
             if featureCheckNeeded:
-                refTestSkipIf.append(
-                    (
-                        "||".join(
-                            [FEATURE_CHECK_NEEDED[f] for f in featureCheckNeeded]
-                        ),
-                        "%s is not enabled unconditionally"
-                        % ",".join(featureCheckNeeded),
-                    )
-                )
+                refTestSkipIf.append((
+                    "||".join([FEATURE_CHECK_NEEDED[f] for f in featureCheckNeeded]),
+                    "%s is not enabled unconditionally" % ",".join(featureCheckNeeded),
+                ))
 
             if (
                 "Atomics" in testRec["features"]
                 and "SharedArrayBuffer" in testRec["features"]
             ):
-                refTestSkipIf.append(
-                    (
-                        "(this.hasOwnProperty('getBuildConfiguration')"
-                        "&&getBuildConfiguration('arm64-simulator'))",
-                        "ARM64 Simulator cannot emulate atomics",
-                    )
-                )
+                refTestSkipIf.append((
+                    "(this.hasOwnProperty('getBuildConfiguration')"
+                    "&&getBuildConfiguration('arm64-simulator'))",
+                    "ARM64 Simulator cannot emulate atomics",
+                ))
 
             shellOptions = {
                 SHELL_OPTIONS[f] for f in testRec["features"] if f in SHELL_OPTIONS
@@ -398,7 +369,7 @@ def convertTestFile(test262parser, testSource, testName, includeSet, strictTests
             if shellOptions:
                 refTestSkipIf.append(("!xulRuntime.shell", "requires shell-options"))
                 refTestOptions.extend(
-                    ("shell-option({})".format(opt) for opt in sorted(shellOptions))
+                    f"shell-option({opt})" for opt in sorted(shellOptions)
                 )
 
     # Optional shell options. Some tests use feature detection for additional
@@ -411,7 +382,7 @@ def convertTestFile(test262parser, testSource, testName, includeSet, strictTests
             if include in INCLUDE_FEATURE_DETECTED_OPTIONAL_SHELL_OPTIONS
         )
         refTestOptions.extend(
-            ("shell-option({})".format(opt) for opt in sorted(optionalShellOptions))
+            f"shell-option({opt})" for opt in sorted(optionalShellOptions)
         )
 
     # Includes for every test file in a directory is collected in a single
@@ -538,7 +509,10 @@ def process_test262(test262Dir, test262OutDir, strictTests, externManifests):
     explicitIncludes[os.path.join("built-ins", "TypedArrays")] = [
         "detachArrayBuffer.js"
     ]
-    explicitIncludes[os.path.join("built-ins", "Temporal")] = ["temporalHelpers.js"]
+
+    # We can't include "sm/non262.js", because it conflicts with our test harness,
+    # but some definitions from "sm/non262.js" are still needed.
+    localIncludesMap[os.path.join("staging", "sm")] = ["test262-non262.js"]
 
     # Process all test directories recursively.
     for dirPath, dirNames, fileNames in os.walk(testDir):
@@ -574,7 +548,7 @@ def process_test262(test262Dir, test262OutDir, strictTests, externManifests):
             isFixtureFile = fileName.endswith("_FIXTURE.js")
 
             # Read the original test source and preprocess it for the jstests harness.
-            with io.open(filePath, "rb") as testFile:
+            with open(filePath, "rb") as testFile:
                 testSource = testFile.read()
 
             if isFixtureFile:
@@ -592,12 +566,14 @@ def process_test262(test262Dir, test262OutDir, strictTests, externManifests):
                 writeTestFile(test262OutDir, newFileName, newSource)
 
                 if externRefTest is not None:
-                    externManifests.append(
-                        {
-                            "name": newFileName,
-                            "reftest": externRefTest,
-                        }
-                    )
+                    externManifests.append({
+                        "name": newFileName,
+                        "reftest": externRefTest,
+                    })
+
+        # Remove "sm/non262.js" because it overwrites our test harness with stub
+        # functions.
+        includeSet.discard("sm/non262.js")
 
         # Add shell.js and browers.js files for the current directory.
         writeShellAndBrowserFiles(
@@ -756,9 +732,7 @@ def fetch_pr_files(inDir, outDir, prNumber, strictTests):
             if not os.path.isdir(filePathDirs):
                 os.makedirs(filePathDirs)
 
-            with io.open(
-                os.path.join(inDir, *filename.split("/")), "wb"
-            ) as output_file:
+            with open(os.path.join(inDir, *filename.split("/")), "wb") as output_file:
                 output_file.write(fileText.encode("utf8"))
 
         hasNext = False
@@ -797,12 +771,7 @@ def fetch_pr_files(inDir, outDir, prNumber, strictTests):
                 assert pageUrl.startswith("https://api.github.com/")
 
                 # Ensure the relative URL marker has the expected format.
-                assert (
-                    rel == 'rel="prev"'
-                    or rel == 'rel="next"'
-                    or rel == 'rel="first"'
-                    or rel == 'rel="last"'
-                )
+                assert rel in {'rel="prev"', 'rel="next"', 'rel="first"', 'rel="last"'}
 
                 # We only need the URL for the next page.
                 if rel == 'rel="next"':
@@ -840,7 +809,7 @@ def general_update(inDir, outDir, strictTests):
     shutil.copyfile(os.path.join(inDir, "LICENSE"), os.path.join(outDir, "LICENSE"))
 
     # Create the git info file.
-    with io.open(os.path.join(outDir, "GIT-INFO"), "w", encoding="utf-8") as info:
+    with open(os.path.join(outDir, "GIT-INFO"), "w", encoding="utf-8") as info:
         subprocess.check_call(["git", "-C", inDir, "log", "-1"], stdout=info)
 
     # Copy the test files.
@@ -848,7 +817,7 @@ def general_update(inDir, outDir, strictTests):
     process_test262(inDir, outDir, strictTests, externManifests)
 
     # Create the external reftest manifest file.
-    with io.open(os.path.join(outDir, "jstests.list"), "wb") as manifestFile:
+    with open(os.path.join(outDir, "jstests.list"), "wb") as manifestFile:
         manifestFile.write(b"# GENERATED, DO NOT EDIT\n\n")
         for externManifest in sorted(externManifests, key=itemgetter("name")):
             (terms, comments) = externManifest["reftest"]
@@ -891,13 +860,23 @@ def update_test262(args):
             return fetch_local_changes(inDir, outDir, srcDir, strictTests)
 
         if revision == "HEAD":
-            subprocess.check_call(
-                ["git", "clone", "--depth=1", "--branch=%s" % branch, url, inDir]
-            )
+            subprocess.check_call([
+                "git",
+                "clone",
+                "--depth=1",
+                "--branch=%s" % branch,
+                url,
+                inDir,
+            ])
         else:
-            subprocess.check_call(
-                ["git", "clone", "--single-branch", "--branch=%s" % branch, url, inDir]
-            )
+            subprocess.check_call([
+                "git",
+                "clone",
+                "--single-branch",
+                "--branch=%s" % branch,
+                url,
+                inDir,
+            ])
             subprocess.check_call(["git", "-C", inDir, "reset", "--hard", revision])
 
         # If a PR number is provided, fetches only the new and modified files

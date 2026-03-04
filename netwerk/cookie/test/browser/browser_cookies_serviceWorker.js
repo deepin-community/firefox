@@ -20,9 +20,8 @@ add_setup(async function () {
 
 function registerSW(browser) {
   return SpecialPowers.spawn(browser, [], async _ => {
-    let reg = await content.navigator.serviceWorker.register(
-      "serviceWorker.js"
-    );
+    let reg =
+      await content.navigator.serviceWorker.register("serviceWorker.js");
 
     await ContentTaskUtils.waitForCondition(() => {
       return reg.active && reg.active.state === "activated";
@@ -176,8 +175,8 @@ add_task(async function testCookiesWithCrossSiteServiceWorker() {
 
       await new content.Promise(resolve => {
         ifr.onload = resolve;
-        content.document.body.appendChild(ifr);
         ifr.src = url;
+        content.document.body.appendChild(ifr);
       });
 
       return ifr.browsingContext;
@@ -261,8 +260,8 @@ add_task(async function testPartitionedCookiesWithCrossSiteServiceWorker() {
 
       await new content.Promise(resolve => {
         ifr.onload = resolve;
-        content.document.body.appendChild(ifr);
         ifr.src = url;
+        content.document.body.appendChild(ifr);
       });
 
       return ifr.browsingContext;
@@ -361,8 +360,8 @@ add_task(async function testCookiesWithABAServiceWorker() {
 
       await new content.Promise(resolve => {
         ifr.onload = resolve;
-        content.document.body.appendChild(ifr);
         ifr.src = url;
+        content.document.body.appendChild(ifr);
       });
 
       return ifr.browsingContext;
@@ -377,8 +376,8 @@ add_task(async function testCookiesWithABAServiceWorker() {
 
       await new content.Promise(resolve => {
         ifr.onload = resolve;
-        content.document.body.appendChild(ifr);
         ifr.src = url;
+        content.document.body.appendChild(ifr);
       });
 
       return ifr.browsingContext;
@@ -466,8 +465,8 @@ add_task(async function testCookiesWithABAServiceWorker() {
 
       await new content.Promise(resolve => {
         ifr.onload = resolve;
-        content.document.body.appendChild(ifr);
         ifr.src = url;
+        content.document.body.appendChild(ifr);
       });
 
       return ifr.browsingContext;
@@ -482,8 +481,8 @@ add_task(async function testCookiesWithABAServiceWorker() {
 
       await new content.Promise(resolve => {
         ifr.onload = resolve;
-        content.document.body.appendChild(ifr);
         ifr.src = url;
+        content.document.body.appendChild(ifr);
       });
 
       return ifr.browsingContext;

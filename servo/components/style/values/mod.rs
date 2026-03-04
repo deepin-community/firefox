@@ -8,6 +8,7 @@
 
 #![deny(missing_docs)]
 
+use crate::derives::*;
 use crate::parser::{Parse, ParserContext};
 use crate::values::distance::{ComputeSquaredDistance, SquaredDistance};
 use crate::Atom;
@@ -227,7 +228,7 @@ where
 
 /// A generic CSS `<ident>` stored as an `Atom`, for the default atom set.
 #[cfg(feature = "servo")]
-pub type AtomIdent = GenericAtomIdent<servo_atoms::AtomStaticSet>;
+pub type AtomIdent = GenericAtomIdent<stylo_atoms::AtomStaticSet>;
 
 #[cfg(feature = "servo")]
 impl<Set: string_cache::StaticAtomSet> style_traits::SpecifiedValueInfo for GenericAtomIdent<Set> {}
@@ -290,6 +291,16 @@ impl<Set: string_cache::StaticAtomSet> malloc_size_of::MallocSizeOf for GenericA
 #[cfg(feature = "servo")]
 impl<Set: string_cache::StaticAtomSet> cssparser::ToCss for GenericAtomIdent<Set> {
     fn to_css<W>(&self, dest: &mut W) -> fmt::Result
+    where
+        W: Write,
+    {
+        serialize_atom_identifier(&self.0, dest)
+    }
+}
+
+#[cfg(feature = "servo")]
+impl<Set: string_cache::StaticAtomSet> style_traits::ToCss for GenericAtomIdent<Set> {
+    fn to_css<W>(&self, dest: &mut CssWriter<W>) -> fmt::Result
     where
         W: Write,
     {
@@ -593,9 +604,12 @@ impl ToCss for CustomIdent {
     MallocSizeOf,
     PartialEq,
     SpecifiedValueInfo,
+    ToAnimatedValue,
     ToComputedValue,
     ToResolvedValue,
     ToShmem,
+    Serialize,
+    Deserialize,
 )]
 pub struct DashedIdent(pub Atom);
 
@@ -715,16 +729,18 @@ impl ToCss for KeyframesName {
             return dest.write_str("none");
         }
 
-        let serialize = |string: &_| {
+        fn serialize<W: Write>(string: &str, dest: &mut CssWriter<W>) -> fmt::Result {
             if CustomIdent::is_valid(string, &["none"]) {
                 serialize_identifier(string, dest)
             } else {
                 string.to_css(dest)
             }
-        };
+        }
+
         #[cfg(feature = "gecko")]
-        return self.0.with_str(serialize);
+        return self.0.with_str(|s| serialize(s, dest));
+
         #[cfg(feature = "servo")]
-        return serialize(self.0.as_ref());
+        return serialize(self.0.as_ref(), dest);
     }
 }

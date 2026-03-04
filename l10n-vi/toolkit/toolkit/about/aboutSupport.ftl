@@ -15,6 +15,10 @@ support-addons-type = Kiểu
 support-addons-enabled = Đã bật
 support-addons-version = Phiên bản
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Vị trí
 legacy-user-stylesheets-title = Stylesheet của người dùng (cũ)
 legacy-user-stylesheets-enabled = Hoạt động
 legacy-user-stylesheets-stylesheet-types = Stylesheet
@@ -129,6 +133,7 @@ place-database-stats-efficiency-perc = Hiệu quả (%)
 place-database-stats-sequentiality-perc = Tuần tự (%)
 place-database-integrity = Tính toàn vẹn
 place-database-verify-integrity = Xác nhận tính toàn vẹn
+place-database-last-idle-maintenance-data = Ngày bảo trì không hoạt động gần đây nhất
 a11y-title = Trợ năng
 a11y-activated = Được kích hoạt
 a11y-force-disabled = Ngăn các tùy chọn về trợ năng
@@ -181,6 +186,8 @@ media-capabilities-enumerate = Liệt kê cơ sở dữ liệu
 
 media-codec-support-sw-decoding = Giải mã phần mềm
 media-codec-support-hw-decoding = Giải mã phần cứng
+media-codec-support-sw-encoding = Mã hóa phần mềm
+media-codec-support-hw-encoding = Mã hóa phần cứng
 media-codec-support-codec-name = Tên codec
 media-codec-support-supported = Được hỗ trợ
 media-codec-support-unsupported = Không hỗ trợ
@@ -191,7 +198,15 @@ media-codec-support-lack-of-extension = Cài đặt tiện ích mở rộng
 ## See EME Spec for more explanation for following technical terms
 ## https://w3c.github.io/encrypted-media/
 
-media-content-decryption-modules-title = Thông tin module giải mã nội dung
+media-content-decryption-modules-title = Thông tin về module giải mã nội dung - Content Decryption Modules (CDM)
+media-key-system-name = Tên khoá hệ thống
+media-video-robustness = Video Robustness (mức độ bảo vệ video)
+media-audio-robustness = Audio Robustness (mức độ bảo vệ âm thanh)
+media-cdm-capabilities = Khả năng
+# Clear Lead isn't defined in the spec, which means the the first few seconds
+# are not encrypted. It allows playback to start without having to wait for
+# license response, improving video start time and user experience.
+media-cdm-clear-lead = Clear Lead (phần mở đầu không mã hóa)
 # We choose 2.2 as this is the version which the video provider usually want to have in order to stream 4K video securely
 # HDCP version https://w3c.github.io/encrypted-media/#idl-def-hdcpversion
 media-hdcp-22-compatible = Tương thích HDCP 2.2

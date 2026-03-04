@@ -4,7 +4,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "nsPrintSettingsWin.h"
 
-#include "mozilla/ArrayUtils.h"
 #include "nsCRT.h"
 #include "nsDeviceContextSpecWin.h"
 #include "nsPrintSettingsImpl.h"
@@ -166,7 +165,7 @@ nsPrintSettingsWin::nsPrintSettingsWin(const nsPrintSettingsWin& aPS)
 /* static */
 void nsPrintSettingsWin::PaperSizeUnitFromDmPaperSize(short aPaperSize,
                                                       int16_t& aPaperSizeUnit) {
-  if (aPaperSize > 0 && aPaperSize < int32_t(ArrayLength(kPaperSizeUnits))) {
+  if (aPaperSize > 0 && aPaperSize < int32_t(std::size(kPaperSizeUnits))) {
     aPaperSizeUnit = kPaperSizeUnits[aPaperSize];
   }
 }

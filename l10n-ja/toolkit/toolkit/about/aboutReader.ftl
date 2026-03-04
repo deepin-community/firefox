@@ -31,7 +31,7 @@ about-reader-color-contrast-theme = コントラスト
 #   $range (String): The range of minutes as a localised string. Examples: "3-7", "~1".
 about-reader-estimated-read-time = { $range } 分
 
-## These are used as tooltips in Type Control
+## Reader View text and layout menu
 
 about-reader-toolbar-minus =
     .title = フォントサイズを小さくします
@@ -70,19 +70,24 @@ about-reader-customtheme-tab = カスタム
 ## The .title element is used to make the editing functionality
 ## clear and give context for screen reader users.
 
-about-reader-custom-colors-foreground = 文字
-    .title = 文字色を変更します
-about-reader-custom-colors-background = 背景
-    .title = 背景色を変更します
-about-reader-custom-colors-unvisited-links = 未訪問リンク
-    .title = 未訪問リンクの色を変更します
-about-reader-custom-colors-visited-links = 訪問済みリンク
-    .title = 訪問済みリンクの色を変更します
-about-reader-custom-colors-selection-highlight = 読み上げ部分の強調
-    .title = 読み上げ部分の色を変更します
 about-reader-reset-button = 既定に戻す
+about-reader-custom-colors-foreground2 =
+    .label = 文字
+    .title = 文字色を変更します
+about-reader-custom-colors-background2 =
+    .label = 背景
+    .title = 背景色を変更します
+about-reader-custom-colors-unvisited-links2 =
+    .label = 未訪問リンク
+    .title = 未訪問リンクの色を変更します
+about-reader-custom-colors-visited-links2 =
+    .label = 訪問済みリンク
+    .title = 訪問済みリンクの色を変更します
+about-reader-custom-colors-selection-highlight2 =
+    .label = 読み上げ部分の強調
+    .title = 読み上げ部分の色を変更します
 
-## Reader View improved text and layout menu
+## Reader View text and layout menu
 
 about-reader-text-header = テキスト
 about-reader-text-size-label = テキストサイズ
@@ -105,8 +110,10 @@ about-reader-word-spacing-label =
     .label = 単語間隔
 about-reader-text-alignment-label = テキスト配置
 about-reader-text-alignment-left =
-    .title = 左揃え
+    .title = 左そろえ
 about-reader-text-alignment-center =
-    .title = 中央揃え
+    .title = 中央そろえ
 about-reader-text-alignment-right =
-    .title = 右揃え
+    .title = 右そろえ
+about-reader-text-alignment-justify =
+    .title = 両端そろえ

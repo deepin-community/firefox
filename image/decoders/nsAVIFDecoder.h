@@ -17,8 +17,6 @@
 #include <aom/aom_decoder.h>
 #include "dav1d/dav1d.h"
 
-#include "mozilla/Telemetry.h"
-
 namespace mozilla {
 namespace image {
 class RasterImage;
@@ -35,7 +33,7 @@ class nsAVIFDecoder final : public Decoder {
  protected:
   LexerResult DoDecode(SourceBufferIterator& aIterator,
                        IResumable* aOnResume) override;
-  Maybe<Telemetry::HistogramID> SpeedHistogram() const override;
+  Maybe<glean::impl::MemoryDistributionMetric> SpeedMetric() const override;
 
  private:
   friend class DecoderFactory;
@@ -90,16 +88,17 @@ class nsAVIFDecoder final : public Decoder {
 
   bool mIsAnimated = false;
   bool mHasAlpha = false;
+  bool mUsePipeTransform = true;
 };
 
 class AVIFDecoderStream : public ByteStream {
  public:
   explicit AVIFDecoderStream(Vector<uint8_t>* aBuffer) { mBuffer = aBuffer; }
 
-  virtual bool ReadAt(int64_t offset, void* data, size_t size,
-                      size_t* bytes_read) override;
-  virtual bool CachedReadAt(int64_t offset, void* data, size_t size,
-                            size_t* bytes_read) override {
+  virtual nsresult ReadAt(int64_t offset, void* data, size_t size,
+                          size_t* bytes_read) override;
+  virtual nsresult CachedReadAt(int64_t offset, void* data, size_t size,
+                                size_t* bytes_read) override {
     return ReadAt(offset, data, size, bytes_read);
   };
   virtual bool Length(int64_t* size) override;

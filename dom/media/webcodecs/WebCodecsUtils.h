@@ -13,16 +13,131 @@
 #include "js/TypeDecls.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/MozPromise.h"
+#include "mozilla/ProfilerMarkers.h"
 #include "mozilla/Result.h"
 #include "mozilla/TaskQueue.h"
 #include "mozilla/dom/AudioDataBinding.h"
 #include "mozilla/dom/BindingDeclarations.h"
+#include "mozilla/dom/BufferSourceBindingFwd.h"
 #include "mozilla/dom/Nullable.h"
-#include "mozilla/dom/UnionTypes.h"
+#include "mozilla/dom/VideoColorSpaceBinding.h"
 #include "mozilla/dom/VideoEncoderBinding.h"
 #include "mozilla/dom/VideoFrameBinding.h"
+#include "nsIGlobalObject.h"
 
 namespace mozilla {
+
+namespace dom {
+class VideoEncoderConfigInternal;
+class VideoDecoderConfigInternal;
+}  // namespace dom
+
+#define WEBCODECS_MARKER(codecType, desc, options, markerType, ...)    \
+  do {                                                                 \
+    if (profiler_is_collecting_markers()) {                            \
+      nsFmtCString marker(FMT_STRING("{}{}"), codecType, desc);        \
+      PROFILER_MARKER(                                                 \
+          ProfilerString8View::WrapNullTerminatedString(marker.get()), \
+          MEDIA_RT, options, markerType, __VA_ARGS__);                 \
+    }                                                                  \
+  } while (0)
+
+#define WEBCODECS_MARKER_INTERVAL_START(type, desc)                      \
+  WEBCODECS_MARKER(type, desc, {MarkerTiming::IntervalStart()}, Tracing, \
+                   "WebCodecs")
+#define WEBCODECS_MARKER_INTERVAL_END(type, desc)                      \
+  WEBCODECS_MARKER(type, desc, {MarkerTiming::IntervalEnd()}, Tracing, \
+                   "WebCodecs")
+
+class AutoWebCodecsMarker {
+ public:
+  AutoWebCodecsMarker(const char* aType, const char* aDesc)
+      : mType(aType), mDesc(aDesc) {
+    WEBCODECS_MARKER_INTERVAL_START(mType, mDesc);
+  }
+
+  AutoWebCodecsMarker(AutoWebCodecsMarker&& aOther) noexcept {
+    MOZ_ASSERT(!aOther.mEnded, "Ended marker should not be moved");
+    mType = std::move(aOther.mType);
+    mDesc = std::move(aOther.mDesc);
+    mEnded = std::move(aOther.mEnded);
+    aOther.mEnded = true;
+  }
+
+  AutoWebCodecsMarker& operator=(AutoWebCodecsMarker&& aOther) noexcept {
+    if (this != &aOther) {
+      MOZ_ASSERT(!aOther.mEnded, "Ended marker should not be moved");
+      mType = std::move(aOther.mType);
+      mDesc = std::move(aOther.mDesc);
+      mEnded = std::move(aOther.mEnded);
+      aOther.mEnded = true;
+    }
+    return *this;
+  }
+
+  AutoWebCodecsMarker(const AutoWebCodecsMarker& aOther) = delete;
+  AutoWebCodecsMarker& operator=(const AutoWebCodecsMarker& aOther) = delete;
+
+  ~AutoWebCodecsMarker() { End(); }
+
+  void End() {
+    if (!mEnded) {
+      WEBCODECS_MARKER_INTERVAL_END(mType, mDesc);
+      mEnded = true;
+    }
+  }
+
+ private:
+  const char* mType;
+  const char* mDesc;
+  bool mEnded = false;
+};
+
+// Use this macro only when you do not need to call `AutoWebCodecsMarker::End()`
+// manually; it will automatically end the marker when the object goes out of
+// scope.
+#define AUTO_WEBCODECS_MARKER(type, desc) \
+  AutoWebCodecsMarker PROFILER_RAII(type, desc)
+
+class AsyncDurationTracker {
+ public:
+  AsyncDurationTracker() : mOwningThread(GetCurrentSerialEventTarget()) {}
+  ~AsyncDurationTracker() { Clear(); }
+
+  void Start(int64_t aTimestamp, AutoWebCodecsMarker&& aMarker) {
+    MOZ_ASSERT(mOwningThread->IsOnCurrentThread());
+    mEntries.push_back(
+        Entry{.mTimestamp = aTimestamp, .mMarker = std::move(aMarker)});
+  }
+
+  size_t End(int64_t aTimestamp) {
+    MOZ_ASSERT(mOwningThread->IsOnCurrentThread());
+    size_t popped = 0;
+    while (!mEntries.empty() && mEntries.front().mTimestamp <= aTimestamp) {
+      mEntries.front().mMarker.End();
+      popped += 1;
+      mEntries.pop_front();
+    }
+    return popped;
+  }
+
+  void Clear() {
+    MOZ_ASSERT(mOwningThread->IsOnCurrentThread());
+    while (!mEntries.empty()) {
+      mEntries.front().mMarker.End();
+      mEntries.pop_front();
+    }
+  }
+
+ private:
+  struct Entry {
+    int64_t mTimestamp;
+    AutoWebCodecsMarker mMarker;
+  };
+
+  std::deque<Entry> mEntries;
+  const nsCOMPtr<nsISerialEventTarget> mOwningThread;
+};
 
 namespace gfx {
 enum class ColorRange : uint8_t;
@@ -36,7 +151,7 @@ using WebCodecsId = size_t;
 
 extern std::atomic<WebCodecsId> sNextId;
 
-struct EncoderConfigurationChangeList;
+class EncoderConfigurationChangeList;
 
 namespace dom {
 
@@ -88,30 +203,57 @@ Nullable<T> MaybeToNullable(const Maybe<T>& aOptional) {
  * Below are helpers to operate ArrayBuffer or ArrayBufferView.
  */
 
-Result<Ok, nsresult> CloneBuffer(
-    JSContext* aCx,
-    OwningMaybeSharedArrayBufferViewOrMaybeSharedArrayBuffer& aDest,
-    const OwningMaybeSharedArrayBufferViewOrMaybeSharedArrayBuffer& aSrc,
-    ErrorResult& aRv);
+Result<Ok, nsresult> CloneBuffer(JSContext* aCx,
+                                 OwningAllowSharedBufferSource& aDest,
+                                 const OwningAllowSharedBufferSource& aSrc,
+                                 ErrorResult& aRv);
 
 Result<RefPtr<MediaByteBuffer>, nsresult> GetExtraDataFromArrayBuffer(
-    const OwningMaybeSharedArrayBufferViewOrMaybeSharedArrayBuffer& aBuffer);
+    const OwningAllowSharedBufferSource& aBuffer);
 
-bool IsArrayBufferEmpty(
-    const OwningMaybeSharedArrayBufferViewOrMaybeSharedArrayBuffer& aBuffer);
-
-bool CopyExtradataToDescription(
-    JSContext* aCx, Span<const uint8_t>& aSrc,
-    OwningMaybeSharedArrayBufferViewOrMaybeSharedArrayBuffer& aDest);
+bool CopyExtradataToDescription(JSContext* aCx, Span<const uint8_t>& aSrc,
+                                OwningAllowSharedBufferSource& aDest);
 
 /*
  * The following are utilities to convert between VideoColorSpace values to
  * gfx's values.
  */
 
-enum class VideoColorPrimaries : uint8_t;
-enum class VideoMatrixCoefficients : uint8_t;
-enum class VideoTransferCharacteristics : uint8_t;
+struct VideoColorSpaceInternal {
+  explicit VideoColorSpaceInternal(const VideoColorSpaceInit& aColorSpaceInit);
+  VideoColorSpaceInternal() = default;
+  VideoColorSpaceInternal(const bool& aFullRange,
+                          const VideoMatrixCoefficients& aMatrix,
+                          const VideoColorPrimaries& aPrimaries,
+                          const VideoTransferCharacteristics& aTransfer)
+      : mFullRange(Some(aFullRange)),
+        mMatrix(Some(aMatrix)),
+        mPrimaries(Some(aPrimaries)),
+        mTransfer(Some(aTransfer)) {}
+  VideoColorSpaceInternal(const VideoColorSpaceInternal& aOther) = default;
+  VideoColorSpaceInternal(VideoColorSpaceInternal&& aOther) = default;
+
+  VideoColorSpaceInternal& operator=(const VideoColorSpaceInternal& aOther) =
+      default;
+  VideoColorSpaceInternal& operator=(VideoColorSpaceInternal&& aOther) =
+      default;
+
+  bool operator==(const VideoColorSpaceInternal& aOther) const {
+    return mFullRange == aOther.mFullRange && mMatrix == aOther.mMatrix &&
+           mPrimaries == aOther.mPrimaries && mTransfer == aOther.mTransfer;
+  }
+  bool operator!=(const VideoColorSpaceInternal& aOther) const {
+    return !(*this == aOther);
+  }
+
+  VideoColorSpaceInit ToColorSpaceInit() const;
+  nsCString ToString() const;
+
+  Maybe<bool> mFullRange;
+  Maybe<VideoMatrixCoefficients> mMatrix;
+  Maybe<VideoColorPrimaries> mPrimaries;
+  Maybe<VideoTransferCharacteristics> mTransfer;
+};
 
 gfx::ColorRange ToColorRange(bool aIsFullRange);
 
@@ -241,8 +383,8 @@ nsCString ColorSpaceInitToString(
     const dom::VideoColorSpaceInit& aColorSpaceInit);
 
 RefPtr<TaskQueue> GetWebCodecsEncoderTaskQueue();
-VideoColorSpaceInit FallbackColorSpaceForVideoContent();
-VideoColorSpaceInit FallbackColorSpaceForWebContent();
+VideoColorSpaceInternal FallbackColorSpaceForVideoContent();
+VideoColorSpaceInternal FallbackColorSpaceForWebContent();
 
 Maybe<CodecType> CodecStringToCodecType(const nsAString& aCodecString);
 
@@ -259,6 +401,14 @@ nsCString ConvertCodecName(const nsCString& aContainer,
                            const nsCString& aCodec);
 
 uint32_t BytesPerSamples(const mozilla::dom::AudioSampleFormat& aFormat);
+
+// If resisting fingerprinting, remove all hardware/software preference.
+void ApplyResistFingerprintingIfNeeded(
+    const RefPtr<VideoEncoderConfigInternal>& aConfig,
+    nsIGlobalObject* aGlobal);
+void ApplyResistFingerprintingIfNeeded(
+    const RefPtr<VideoDecoderConfigInternal>& aConfig,
+    nsIGlobalObject* aGlobal);
 }  // namespace dom
 }  // namespace mozilla
 

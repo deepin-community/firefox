@@ -172,9 +172,9 @@ void RegExpBytecodeGenerator::AdvanceCurrentPosition(int by) {
   advance_current_end_ = pc_;
 }
 
-void RegExpBytecodeGenerator::CheckGreedyLoop(
+void RegExpBytecodeGenerator::CheckFixedLengthLoop(
     Label* on_tos_equals_current_position) {
-  Emit(BC_CHECK_GREEDY, 0);
+  Emit(BC_CHECK_FIXED_LENGTH, 0);
   EmitOrLink(on_tos_equals_current_position);
 }
 
@@ -191,8 +191,7 @@ void RegExpBytecodeGenerator::LoadCurrentCharacterImpl(int cp_offset,
     check_bounds = false;  // Load below doesn't need to check.
   }
 
-  DCHECK_LE(kMinCPOffset, cp_offset);
-  DCHECK_GE(kMaxCPOffset, cp_offset);
+  CHECK(base::IsInRange(cp_offset, kMinCPOffset, kMaxCPOffset));
   int bytecode;
   if (check_bounds) {
     if (characters == 4) {
@@ -312,10 +311,7 @@ void RegExpBytecodeGenerator::CheckCharacterNotInRange(base::uc16 from,
   EmitOrLink(on_not_in_range);
 }
 
-void RegExpBytecodeGenerator::CheckBitInTable(Handle<ByteArray> table,
-                                              Label* on_bit_set) {
-  Emit(BC_CHECK_BIT_IN_TABLE, 0);
-  EmitOrLink(on_bit_set);
+void RegExpBytecodeGenerator::EmitSkipTable(DirectHandle<ByteArray> table) {
   for (int i = 0; i < kTableSize; i += kBitsPerByte) {
     int byte = 0;
     for (int j = 0; j < kBitsPerByte; j++) {
@@ -323,6 +319,25 @@ void RegExpBytecodeGenerator::CheckBitInTable(Handle<ByteArray> table,
     }
     Emit8(byte);
   }
+}
+
+void RegExpBytecodeGenerator::CheckBitInTable(Handle<ByteArray> table,
+                                              Label* on_bit_set) {
+  Emit(BC_CHECK_BIT_IN_TABLE, 0);
+  EmitOrLink(on_bit_set);
+  EmitSkipTable(table);
+}
+
+void RegExpBytecodeGenerator::SkipUntilBitInTable(
+    int cp_offset, Handle<ByteArray> table, Handle<ByteArray> nibble_table,
+    int advance_by) {
+  Label cont;
+  Emit(BC_SKIP_UNTIL_BIT_IN_TABLE, cp_offset);
+  Emit32(advance_by);
+  EmitSkipTable(table);
+  EmitOrLink(&cont);  // goto_when_match
+  EmitOrLink(&cont);  // goto_on_failure
+  Bind(&cont);
 }
 
 void RegExpBytecodeGenerator::CheckNotBackReference(int start_reg,
@@ -373,11 +388,12 @@ void RegExpBytecodeGenerator::IfRegisterEqPos(int register_index,
   EmitOrLink(on_eq);
 }
 
-Handle<HeapObject> RegExpBytecodeGenerator::GetCode(Handle<String> source) {
+DirectHandle<HeapObject> RegExpBytecodeGenerator::GetCode(
+    DirectHandle<String> source, RegExpFlags flags) {
   Bind(&backtrack_);
   Backtrack();
 
-  Handle<TrustedByteArray> array;
+  DirectHandle<TrustedByteArray> array;
   if (v8_flags.regexp_peephole_optimization) {
     array = RegExpBytecodePeepholeOptimization::OptimizeBytecode(
         isolate_, zone(), source, buffer_.data(), length(), jump_edges_);

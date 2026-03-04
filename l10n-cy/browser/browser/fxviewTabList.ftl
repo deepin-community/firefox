@@ -53,6 +53,8 @@ fxviewtabrow-move-tab-end = Symud i'r Diwedd
     .accesskey = D
 fxviewtabrow-move-tab-window = Symud i Ffenestr Newydd
     .accesskey = N
+fxviewtabrow-send-to-device = Anfon i Ddyfais
+    .accesskey = D
 fxviewtabrow-send-tab = Anfon Tab i Ddyfais
     .accesskey = D
 fxviewtabrow-pin-tab = Pinio Tab
@@ -67,14 +69,6 @@ fxviewtabrow-unmute-tab = Dad-dewi Tab
 #   $tabTitle (string) - Title of the tab to which the context menu is associated
 fxviewtabrow-options-menu-button =
     .title = Dewisiadau ar gyfer { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being muted
-fxviewtabrow-mute-tab-button =
-    .title = Tewi { $tabTitle }
-# Variables:
-#   $tabTitle (string) - Title of tab being unmuted
-fxviewtabrow-unmute-tab-button =
-    .title = Dad-dewi { $tabTitle }
 
 ## Strings below are to be used without context (tab title/URL) on mute/unmute buttons
 

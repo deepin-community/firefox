@@ -5,9 +5,6 @@
 import React, { useEffect, useState } from "react";
 import { Localized } from "./MSLocalized";
 import { AboutWelcomeUtils } from "../lib/aboutwelcome-utils.mjs";
-import { MobileDownloads } from "./MobileDownloads";
-import { MultiSelect } from "./MultiSelect";
-import { Themes } from "./Themes";
 import {
   SecondaryCTA,
   StepsIndicator,
@@ -18,26 +15,63 @@ import { CTAParagraph } from "./CTAParagraph";
 import { HeroImage } from "./HeroImage";
 import { OnboardingVideo } from "./OnboardingVideo";
 import { AdditionalCTA } from "./AdditionalCTA";
-import { EmbeddedMigrationWizard } from "./EmbeddedMigrationWizard";
-import { AddonsPicker } from "./AddonsPicker";
 import { LinkParagraph } from "./LinkParagraph";
+import { ContentTiles } from "./ContentTiles";
+import { InstallButton } from "./InstallButton";
+
+const DEFAULT_AUTO_ADVANCE_MS = 20000;
 
 export const MultiStageProtonScreen = props => {
   const { autoAdvance, handleAction, order } = props;
   useEffect(() => {
     if (autoAdvance) {
+      const value = autoAdvance?.actionEl ?? autoAdvance;
+      const timeout = autoAdvance?.actionTimeMS ?? DEFAULT_AUTO_ADVANCE_MS;
+
       const timer = setTimeout(() => {
         handleAction({
           currentTarget: {
-            value: autoAdvance,
+            value,
           },
           name: "AUTO_ADVANCE",
         });
-      }, 20000);
+      }, timeout);
       return () => clearTimeout(timer);
     }
     return () => {};
   }, [autoAdvance, handleAction, order]);
+
+  // Set narrow on an outer element to allow for use of SCSS outer selector and
+  // consolidation of styles for small screen widths with those for messages
+  // configured to always be narrow
+  if (props.content.narrow) {
+    document
+      .querySelector("#multi-stage-message-root")
+      ?.setAttribute("narrow", "");
+  } else {
+    // Clear narrow attribute in case it was set by a previous screen
+    document
+      .querySelector("#multi-stage-message-root")
+      ?.removeAttribute("narrow");
+  }
+
+  function useMediaQuery(query) {
+    const [doesMatch, setDoesMatch] = useState(
+      () => window.matchMedia(query).matches
+    );
+
+    useEffect(() => {
+      const mediaQueryList = window.matchMedia(query);
+      const onChange = event => setDoesMatch(event.matches);
+
+      mediaQueryList.addEventListener("change", onChange);
+      return () => mediaQueryList.removeEventListener("change", onChange);
+    }, [query]);
+
+    return doesMatch;
+  }
+
+  const isWideScreen = useMediaQuery("(min-width: 800px)");
 
   return (
     <ProtonScreen
@@ -50,6 +84,8 @@ export const MultiStageProtonScreen = props => {
       setScreenMultiSelects={props.setScreenMultiSelects}
       activeMultiSelect={props.activeMultiSelect}
       setActiveMultiSelect={props.setActiveMultiSelect}
+      activeSingleSelectSelections={props.activeSingleSelectSelections}
+      setActiveSingleSelectSelection={props.setActiveSingleSelectSelection}
       totalNumberOfScreens={props.totalNumberOfScreens}
       handleAction={props.handleAction}
       isFirstScreen={props.isFirstScreen}
@@ -58,21 +94,33 @@ export const MultiStageProtonScreen = props => {
       previousOrder={props.previousOrder}
       autoAdvance={props.autoAdvance}
       isRtamo={props.isRtamo}
+      addonId={props.addonId}
+      addonType={props.addonType}
       addonName={props.addonName}
-      isTheme={props.isTheme}
-      iconURL={props.iconURL}
+      addonURL={props.addonURL}
+      addonIconURL={props.addonIconURL}
+      themeScreenshots={props.themeScreenshots}
       messageId={props.messageId}
       negotiatedLanguage={props.negotiatedLanguage}
       langPackInstallPhase={props.langPackInstallPhase}
       forceHideStepsIndicator={props.forceHideStepsIndicator}
       ariaRole={props.ariaRole}
       aboveButtonStepsIndicator={props.aboveButtonStepsIndicator}
+      isWideScreen={isWideScreen}
     />
   );
 };
 
 export const ProtonScreenActionButtons = props => {
-  const { content, addonName, activeMultiSelect } = props;
+  const {
+    content,
+    isRtamo,
+    addonId,
+    addonType,
+    addonName,
+    activeMultiSelect,
+    installedAddons,
+  } = props;
   const defaultValue = content.checkbox?.defaultValue;
 
   const [isChecked, setIsChecked] = useState(defaultValue || false);
@@ -94,12 +142,30 @@ export const ProtonScreenActionButtons = props => {
     return null;
   }
 
+  if (isRtamo) {
+    content.primary_button.label.string_id = addonType?.includes("theme")
+      ? "return-to-amo-add-theme-label"
+      : "mr1-return-to-amo-add-extension-label";
+  }
+
   // If we have a multi-select screen, we want to disable the primary button
   // until the user has selected at least one item.
-  const isPrimaryDisabled = primaryDisabledValue =>
-    primaryDisabledValue === "hasActiveMultiSelect"
-      ? !(activeMultiSelect?.length > 0)
-      : primaryDisabledValue;
+  const isPrimaryDisabled = primaryDisabledValue => {
+    if (primaryDisabledValue === "hasActiveMultiSelect") {
+      if (!activeMultiSelect) {
+        return true;
+      }
+
+      // Check if there's at least one selection in any of the multiselects
+      for (const selectKey in activeMultiSelect) {
+        if (activeMultiSelect[selectKey]?.length > 0) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return primaryDisabledValue;
+  };
 
   return (
     <div
@@ -109,28 +175,42 @@ export const ProtonScreenActionButtons = props => {
       flow={content.additional_button?.flow}
       alignment={content.additional_button?.alignment}
     >
-      <Localized text={content.primary_button?.label}>
-        <button
-          ref={buttonRef}
-          className={`${content.primary_button?.style ?? "primary"}${
-            content.primary_button?.has_arrow_icon ? " arrow-icon" : ""
-          }`}
-          // Whether or not the checkbox is checked determines which action
-          // should be handled. By setting value here, we indicate to
-          // this.handleAction() where in the content tree it should take
-          // the action to execute from.
-          value={isChecked ? "checkbox" : "primary_button"}
-          disabled={isPrimaryDisabled(content.primary_button?.disabled)}
-          onClick={props.handleAction}
-          data-l10n-args={
-            addonName
-              ? JSON.stringify({
-                  "addon-name": addonName,
-                })
-              : ""
-          }
+      {isRtamo ? (
+        <InstallButton
+          key={addonId}
+          addonId={addonId}
+          addonType={addonType}
+          addonName={addonName}
+          index={"primary_button"}
+          handleAction={props.handleAction}
+          installedAddons={installedAddons}
+          install_label={content.primary_button.label}
+          install_complete_label={content.primary_button.install_complete_label}
         />
-      </Localized>
+      ) : (
+        <Localized text={content.primary_button?.label}>
+          <button
+            ref={buttonRef}
+            className={`${content.primary_button?.style ?? "primary"}${
+              content.primary_button?.has_arrow_icon ? " arrow-icon" : ""
+            }`}
+            // Whether or not the checkbox is checked determines which action
+            // should be handled. By setting value here, we indicate to
+            // this.handleAction() where in the content tree it should take
+            // the action to execute from.
+            value={isChecked ? "checkbox" : "primary_button"}
+            disabled={isPrimaryDisabled(content.primary_button?.disabled)}
+            onClick={props.handleAction}
+            data-l10n-args={
+              addonName
+                ? JSON.stringify({
+                    "addon-name": addonName,
+                  })
+                : ""
+            }
+          />
+        </Localized>
+      )}
       {content.additional_button ? (
         <AdditionalCTA content={content} handleAction={props.handleAction} />
       ) : null}
@@ -162,18 +242,15 @@ export const ProtonScreenActionButtons = props => {
 
 export class ProtonScreen extends React.PureComponent {
   componentDidMount() {
+    // Don't focus on main content if it is a feature callout
+    // See Bug 1985939
+    if (this.props.content?.position === "callout") {
+      return;
+    }
     this.mainContentHeader.focus();
   }
 
-  getScreenClassName(
-    isFirstScreen,
-    isLastScreen,
-    includeNoodles,
-    isVideoOnboarding,
-    isAddonsPicker
-  ) {
-    const screenClass = `screen-${this.props.order % 2 !== 0 ? 1 : 2}`;
-
+  getScreenClassName(includeNoodles, isVideoOnboarding, isAddonsPicker) {
     if (isVideoOnboarding) {
       return "with-video";
     }
@@ -182,9 +259,14 @@ export class ProtonScreen extends React.PureComponent {
       return "addons-picker";
     }
 
-    return `${isFirstScreen ? `dialog-initial` : ``} ${
-      isLastScreen ? `dialog-last` : ``
-    } ${includeNoodles ? `with-noodles` : ``} ${screenClass}`;
+    const screenClass = `screen-${this.props.order % 2 !== 0 ? 1 : 2}`;
+    const dialogInitial =
+      this.props.isFirstScreen && this.props.previousOrder < 0
+        ? `dialog-initial`
+        : ``;
+    const dialogLast = this.props.isLastScreen ? `dialog-last` : ``;
+
+    return `${screenClass} ${dialogInitial} ${dialogLast} ${includeNoodles ? `with-noodles` : ``}`;
   }
 
   renderTitle({ title, title_logo }) {
@@ -270,58 +352,6 @@ export class ProtonScreen extends React.PureComponent {
     );
   }
 
-  renderContentTiles() {
-    const { content } = this.props;
-    return (
-      <React.Fragment>
-        {content.tiles &&
-        content.tiles.type === "addons-picker" &&
-        content.tiles.data ? (
-          <AddonsPicker
-            content={content}
-            installedAddons={this.props.installedAddons}
-            message_id={this.props.messageId}
-            handleAction={this.props.handleAction}
-          />
-        ) : null}
-        {content.tiles &&
-        content.tiles.type === "theme" &&
-        content.tiles.data ? (
-          <Themes
-            content={content}
-            activeTheme={this.props.activeTheme}
-            handleAction={this.props.handleAction}
-          />
-        ) : null}
-        {content.tiles &&
-        content.tiles.type === "mobile_downloads" &&
-        content.tiles.data ? (
-          <MobileDownloads
-            data={content.tiles.data}
-            handleAction={this.props.handleAction}
-          />
-        ) : null}
-        {content.tiles &&
-        content.tiles.type === "multiselect" &&
-        content.tiles.data ? (
-          <MultiSelect
-            content={content}
-            screenMultiSelects={this.props.screenMultiSelects}
-            setScreenMultiSelects={this.props.setScreenMultiSelects}
-            activeMultiSelect={this.props.activeMultiSelect}
-            setActiveMultiSelect={this.props.setActiveMultiSelect}
-          />
-        ) : null}
-        {content.tiles && content.tiles.type === "migration-wizard" ? (
-          <EmbeddedMigrationWizard
-            handleAction={this.props.handleAction}
-            content={content}
-          />
-        ) : null}
-      </React.Fragment>
-    );
-  }
-
   renderNoodles() {
     return (
       <React.Fragment>
@@ -347,11 +377,11 @@ export class ProtonScreen extends React.PureComponent {
   }
 
   renderDismissButton() {
-    const { size, marginBlock, marginInline, label } =
+    const { size, marginBlock, marginInline, label, background } =
       this.props.content.dismiss_button;
     return (
       <button
-        className="dismiss-button"
+        className={`dismiss-button ${background ? "with-background" : ""}`}
         onClick={this.props.handleAction}
         value="dismiss_button"
         data-l10n-id={label?.string_id || "spotlight-dialog-close-button"}
@@ -428,17 +458,56 @@ export class ProtonScreen extends React.PureComponent {
         {content.hero_image ? (
           <HeroImage url={content.hero_image.url} />
         ) : (
-          <React.Fragment>
-            <div className="message-text">
-              <div className="spacer-top" />
-              <Localized text={content.hero_text}>
-                <h1 />
-              </Localized>
-              <div className="spacer-bottom" />
-            </div>
-          </React.Fragment>
+          this.renderHeroText(content.hero_text)
         )}
       </div>
+    );
+  }
+
+  renderHeroText(hero_text) {
+    if (!hero_text) {
+      return null;
+    }
+
+    // Check if hero_text is a string or an object with string_id property
+    // essentially checking if we're using old or new design
+    const isSimpleText =
+      typeof hero_text === "string" ||
+      (typeof hero_text === "object" &&
+        hero_text !== null &&
+        "string_id" in hero_text);
+
+    const HeroTextWrapper = ({ children, className = "" }) => (
+      <React.Fragment>
+        <div className={`message-text ${className}`}>
+          <div className="spacer-top" />
+          {children}
+          <div className="spacer-bottom" />
+        </div>
+      </React.Fragment>
+    );
+
+    if (isSimpleText) {
+      return (
+        <HeroTextWrapper>
+          <Localized text={hero_text}>
+            <h1 />
+          </Localized>
+        </HeroTextWrapper>
+      );
+    }
+
+    return (
+      <HeroTextWrapper className="hero-text">
+        <Localized text={hero_text.title}>
+          <h1 />
+        </Localized>
+        {hero_text.subtitle && (
+          <Localized text={hero_text.subtitle}>
+            <h2 />
+          </Localized>
+        )}
+      </HeroTextWrapper>
     );
   }
 
@@ -471,18 +540,97 @@ export class ProtonScreen extends React.PureComponent {
     return <>{elements}</>;
   }
 
+  renderRTAMOIcon(addonType, themeScreenshots, addonIconURL) {
+    return (
+      <div className="rtamo-icon">
+        <img
+          className={`${addonType?.includes("theme") ? "rtamo-theme-icon" : "brand-logo"}`}
+          src={
+            addonType?.includes("theme")
+              ? themeScreenshots[0].url
+              : addonIconURL
+          }
+          loading={AboutWelcomeUtils.getLoadingStrategyFor(addonIconURL)}
+          alt=""
+          role="presentation"
+        />
+      </div>
+    );
+  }
+
+  getCombinedInnerStyles(content, isWideScreen) {
+    const CONFIGURABLE_STYLES = [
+      "overflow",
+      "display",
+      "paddingInline",
+      "paddingInlineStart",
+      "paddingInlineEnd",
+      "paddingBlock",
+      "paddingBlockStart",
+      "paddingBlockEnd",
+    ];
+
+    const innerContentStyles = isWideScreen
+      ? content.main_content_style || {}
+      : content.main_content_style_narrow || {};
+
+    const validInnerStyles =
+      AboutWelcomeUtils.getValidStyle(
+        innerContentStyles,
+        CONFIGURABLE_STYLES
+      ) || {};
+
+    return {
+      ...validInnerStyles,
+      justifyContent: content.split_content_justify_content,
+    };
+  }
+
+  getActionButtonsPosition(content) {
+    const VALID_POSITIONS = [
+      "after_subtitle",
+      "after_supporting_content",
+      "end",
+    ];
+
+    if (VALID_POSITIONS.includes(content.action_buttons_position)) {
+      return content.action_buttons_position;
+    }
+    // Legacy mapping
+    if (content.action_buttons_above_content) {
+      return "after_subtitle";
+    }
+    // Default
+    return "end";
+  }
+
+  renderActionButtons(position, content) {
+    return this.getActionButtonsPosition(content) === position ? (
+      <ProtonScreenActionButtons
+        content={content}
+        isRtamo={this.props.isRtamo}
+        installedAddons={this.props.installedAddons}
+        addonId={this.props.addonId}
+        addonName={this.props.addonName}
+        addonType={this.props.addonType}
+        handleAction={this.props.handleAction}
+        activeMultiSelect={this.props.activeMultiSelect}
+      />
+    ) : null;
+  }
+
+  // eslint-disable-next-line complexity
   render() {
     const {
       autoAdvance,
       content,
       isRtamo,
-      isTheme,
-      isFirstScreen,
-      isLastScreen,
+      addonType,
       isSingleScreen,
       forceHideStepsIndicator,
       ariaRole,
       aboveButtonStepsIndicator,
+      isWideScreen,
     } = this.props;
     const includeNoodles = content.has_noodles;
     // The default screen position is "center"
@@ -499,14 +647,15 @@ export class ProtonScreen extends React.PureComponent {
     // by checking if screen order is even or odd.
     const screenClassName = isCenterPosition
       ? this.getScreenClassName(
-          isFirstScreen,
-          isLastScreen,
           includeNoodles,
           content?.video_container,
           content.tiles?.type === "addons-picker"
         )
       : "";
     const isEmbeddedMigration = content.tiles?.type === "migration-wizard";
+    const isSystemPromptStyleSpotlight =
+      content.isSystemPromptStyleSpotlight === true;
+    const combinedStyles = this.getCombinedInnerStyles(content, isWideScreen);
 
     return (
       <main
@@ -514,6 +663,13 @@ export class ProtonScreen extends React.PureComponent {
           ${screenClassName} ${textColorClass}`}
         reverse-split={content.reverse_split ? "" : null}
         fullscreen={content.fullscreen ? "" : null}
+        style={
+          content.screen_style &&
+          AboutWelcomeUtils.getValidStyle(content.screen_style, [
+            "overflow",
+            "display",
+          ])
+        }
         role={ariaRole ?? "alertdialog"}
         layout={content.layout}
         pos={content.position || "center"}
@@ -528,13 +684,21 @@ export class ProtonScreen extends React.PureComponent {
         <div
           className={`section-main ${
             isEmbeddedMigration ? "embedded-migration" : ""
-          }`}
+          }${isSystemPromptStyleSpotlight ? "system-prompt-spotlight" : ""}`}
           hide-secondary-section={
             content.hide_secondary_section
               ? String(content.hide_secondary_section)
               : null
           }
           role="document"
+          style={
+            content.screen_style &&
+            AboutWelcomeUtils.getValidStyle(content.screen_style, [
+              "width",
+              "padding",
+              "height",
+            ])
+          }
         >
           {content.secondary_button_top ? (
             <SecondaryCTA
@@ -569,32 +733,29 @@ export class ProtonScreen extends React.PureComponent {
             {content.logo && !content.fullscreen
               ? this.renderPicture(content.logo)
               : null}
-
-            {isRtamo ? (
-              <div className="rtamo-icon">
-                <img
-                  className={`${isTheme ? "rtamo-theme-icon" : "brand-logo"}`}
-                  src={this.props.iconURL}
-                  loading={AboutWelcomeUtils.getLoadingStrategyFor(
-                    this.props.iconURL
-                  )}
-                  alt=""
-                  role="presentation"
-                />
-              </div>
-            ) : null}
-
-            <div
-              className="main-content-inner"
-              style={{
-                justifyContent: content.split_content_justify_content,
-              }}
-            >
+            {isRtamo && !content.fullscreen
+              ? this.renderRTAMOIcon(
+                  addonType,
+                  this.props.themeScreenshots,
+                  this.props.addonIconURL
+                )
+              : null}
+            <div className="main-content-inner" style={combinedStyles}>
               {content.logo && content.fullscreen
                 ? this.renderPicture(content.logo)
                 : null}
+              {isRtamo && content.fullscreen
+                ? this.renderRTAMOIcon(
+                    addonType,
+                    this.props.themeScreenshots,
+                    this.props.addonIconURL
+                  )
+                : null}
               {content.title || content.subtitle ? (
-                <div className={`welcome-text ${content.title_style || ""}`}>
+                <div
+                  id="multi-stage-message-welcome-text"
+                  className={`welcome-text ${content.title_style || ""}`}
+                >
                   {content.title ? this.renderTitle(content) : null}
 
                   {content.subtitle ? (
@@ -609,9 +770,11 @@ export class ProtonScreen extends React.PureComponent {
                             ? "steps"
                             : ""
                         }
+                        id="mainContentSubheader"
                       />
                     </Localized>
                   ) : null}
+                  {this.renderActionButtons("after_subtitle", content)}
                   {content.cta_paragraph ? (
                     <CTAParagraph
                       content={content.cta_paragraph}
@@ -626,22 +789,38 @@ export class ProtonScreen extends React.PureComponent {
                   handleAction={this.props.handleAction}
                 />
               ) : null}
-              {this.renderContentTiles()}
               {this.renderLanguageSwitcher()}
+              {content?.tiles_container?.position !==
+              "after_supporting_content" ? (
+                <ContentTiles {...this.props} />
+              ) : null}
               {content.above_button_content
                 ? this.renderOrderedContent(content.above_button_content)
                 : null}
+              {this.renderActionButtons("after_supporting_content", content)}
+              {content?.tiles_container?.position ===
+              "after_supporting_content" ? (
+                <ContentTiles {...this.props} />
+              ) : null}
               {!hideStepsIndicator && aboveButtonStepsIndicator
                 ? this.renderStepsIndicator()
                 : null}
-              <ProtonScreenActionButtons
-                content={content}
-                addonName={this.props.addonName}
-                handleAction={this.props.handleAction}
-                activeMultiSelect={this.props.activeMultiSelect}
-              />
+              {this.renderActionButtons("end", content)}
+              {
+                /* Fullscreen dot-style step indicator should sit inside the
+              main inner content to share its padding, which will be
+              configurable with Bug 1956042 */
+                !hideStepsIndicator &&
+                !aboveButtonStepsIndicator &&
+                !content.progress_bar &&
+                content.fullscreen
+                  ? this.renderStepsIndicator()
+                  : null
+              }
             </div>
-            {!hideStepsIndicator && !aboveButtonStepsIndicator
+            {!hideStepsIndicator &&
+            !aboveButtonStepsIndicator &&
+            !(content.fullscreen && !content.progress_bar)
               ? this.renderStepsIndicator()
               : null}
           </div>

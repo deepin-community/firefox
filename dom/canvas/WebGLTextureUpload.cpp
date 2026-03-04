@@ -4,35 +4,34 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "WebGLTextureUpload.h"
-#include "WebGLTexture.h"
 
 #include <algorithm>
-#include <limits>
 
 #include "CanvasUtils.h"
 #include "ClientWebGLContext.h"
 #include "GLBlitHelper.h"
 #include "GLContext.h"
-#include "mozilla/Casting.h"
-#include "mozilla/gfx/2D.h"
-#include "mozilla/gfx/Logging.h"
-#include "mozilla/dom/HTMLCanvasElement.h"
-#include "mozilla/dom/HTMLVideoElement.h"
-#include "mozilla/dom/ImageBitmap.h"
-#include "mozilla/dom/ImageData.h"
-#include "mozilla/dom/OffscreenCanvas.h"
-#include "mozilla/MathAlgorithms.h"
-#include "mozilla/ScopeExit.h"
-#include "mozilla/StaticPrefs_webgl.h"
-#include "mozilla/Unused.h"
-#include "nsLayoutUtils.h"
 #include "ScopedGLHelpers.h"
 #include "TexUnpackBlob.h"
 #include "WebGLBuffer.h"
 #include "WebGLContext.h"
 #include "WebGLContextUtils.h"
+#include "WebGLFormats.h"
 #include "WebGLFramebuffer.h"
 #include "WebGLTexelConversions.h"
+#include "WebGLTexture.h"
+#include "mozilla/MathAlgorithms.h"
+#include "mozilla/ScopeExit.h"
+#include "mozilla/StaticPrefs_webgl.h"
+#include "mozilla/dom/HTMLCanvasElement.h"
+#include "mozilla/dom/HTMLVideoElement.h"
+#include "mozilla/dom/ImageBitmap.h"
+#include "mozilla/dom/ImageData.h"
+#include "mozilla/dom/OffscreenCanvas.h"
+#include "mozilla/gfx/2D.h"
+#include "mozilla/gfx/Logging.h"
+#include "mozilla/layers/SharedSurfacesChild.h"
+#include "nsLayoutUtils.h"
 
 namespace mozilla {
 namespace webgl {
@@ -69,6 +68,10 @@ Maybe<TexUnpackBlobDesc> FromImageBitmap(const GLenum target, Maybe<uvec3> size,
     size.emplace(imageSize.x, imageSize.y, 1);
   }
 
+  // For SourceSurfaceSharedData, try to get SurfaceDescriptorExternalImage.
+  Maybe<layers::SurfaceDescriptor> sd;
+  layers::SharedSurfacesChild::Share(surf, sd);
+
   // WhatWG "HTML Living Standard" (30 October 2015):
   // "The getImageData(sx, sy, sw, sh) method [...] Pixels must be returned as
   // non-premultiplied alpha values."
@@ -79,7 +82,7 @@ Maybe<TexUnpackBlobDesc> FromImageBitmap(const GLenum target, Maybe<uvec3> size,
                                 {},
                                 Some(imageSize),
                                 nullptr,
-                                {},
+                                sd,
                                 surf,
                                 {},
                                 false});
@@ -192,13 +195,33 @@ Maybe<webgl::TexUnpackBlobDesc> FromSurfaceFromElementResult(
     }
   }
 
-  RefPtr<gfx::DataSourceSurface> dataSurf;
+  RefPtr<gfx::SourceSurface> sourceSurf;
   if (!sd && sfer.GetSourceSurface()) {
     const auto surf = sfer.GetSourceSurface();
     elemSize = *uvec2::FromSize(surf->GetSize());
+    if (surf->GetType() == gfx::SurfaceType::RECORDING) {
+      // If we find a recording surface, then try to create a descriptor for it
+      // to avoid transferring data for it. The underlying Canvas2D commands
+      // have most likely not been processed yet, so trying to access the data
+      // here would cause cross-process synchronization. The descriptor avoids
+      // having to synchronize and then read back Canvas2D data across a process
+      // gap. If CanvasSurface descriptors are unsupported, then the underlying
+      // source surface will be converted to data for transferring later.
+      layers::SurfaceDescriptor desc;
+      if (surf->GetSurfaceDescriptor(desc)) {
+        sd = Some(desc);
+        sourceSurf = surf;
+      }
+    }
+    if (!sd) {
+      // WARNING: OSX can lose our MakeCurrent here.
+      sourceSurf = surf->GetDataSurface();
+    }
+  }
 
-    // WARNING: OSX can lose our MakeCurrent here.
-    dataSurf = surf->GetDataSurface();
+  if (!sd) {
+    // For SourceSurfaceSharedData, try to get SurfaceDescriptorExternalImage.
+    layers::SharedSurfacesChild::Share(sourceSurf, sd);
   }
 
   //////
@@ -209,7 +232,7 @@ Maybe<webgl::TexUnpackBlobDesc> FromSurfaceFromElementResult(
 
   ////
 
-  if (!sd && !dataSurf) {
+  if (!sd && !sourceSurf) {
     webgl.EnqueueWarning("Resource has no data (yet?). Uploading zeros.");
     if (!size) {
       size.emplace(0, 0, 1);
@@ -254,7 +277,7 @@ Maybe<webgl::TexUnpackBlobDesc> FromSurfaceFromElementResult(
                                 Some(elemSize),
                                 layersImage,
                                 sd,
-                                dataSurf});
+                                sourceSurf});
 }
 
 }  // namespace webgl
@@ -528,7 +551,7 @@ static bool EnsureImageDataInitializedForUpload(
       hasUninitialized |= isSliceUninit[z];
     }
     if (!hasUninitialized) {
-      imageInfo->mUninitializedSlices = Nothing();
+      imageInfo->mUninitializedSlices.reset();
     }
     return true;
   }
@@ -903,7 +926,7 @@ void WebGLTexture::TexStorage(TexTarget target, uint32_t levels,
   ////////////////////////////////////
   // Update our specification data.
 
-  auto uninitializedSlices = Some(std::vector<bool>(size.z, true));
+  std::vector<bool> uninitializedSlices(size.z, true);
   const webgl::ImageInfo newInfo{dstUsage, size.x, size.y, size.z,
                                  std::move(uninitializedSlices)};
 
@@ -1052,8 +1075,7 @@ void WebGLTexture::TexImage(uint32_t level, GLenum respecFormat,
     // generally slower.
     newImageInfo = Some(webgl::ImageInfo{dstUsage, size.x, size.y, size.z});
     if (!blob->HasData()) {
-      newImageInfo->mUninitializedSlices =
-          Some(std::vector<bool>(size.z, true));
+      newImageInfo->mUninitializedSlices.emplace(size.z, true);
     }
 
     isRespec = (imageInfo->mWidth != newImageInfo->mWidth ||
@@ -1324,7 +1346,7 @@ void WebGLTexture::CompressedTexImage(bool sub, GLenum imageTarget,
   // Update our specification data?
 
   if (!sub) {
-    const auto uninitializedSlices = Nothing();
+    constexpr auto uninitializedSlices = std::nullopt;
     const webgl::ImageInfo newImageInfo{usage, size.x, size.y, size.z,
                                         uninitializedSlices};
     *imageInfo = newImageInfo;
@@ -1879,7 +1901,7 @@ void WebGLTexture::CopyTexImage(GLenum imageTarget, uint32_t level,
   // Update our specification data?
 
   if (respecFormat) {
-    const auto uninitializedSlices = Nothing();
+    constexpr auto uninitializedSlices = std::nullopt;
     const webgl::ImageInfo newImageInfo{dstUsage, size.x, size.y, size.z,
                                         uninitializedSlices};
     *imageInfo = newImageInfo;

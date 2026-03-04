@@ -18,7 +18,7 @@ certificate-viewer-common-name = Tên gọi chung
 certificate-viewer-email-address = Địa chỉ email
 # Variables:
 #   $firstCertName (String) - Common Name for the displayed certificate
-certificate-viewer-tab-title = Chứng nhận cho { $firstCertName }
+certificate-viewer-tab-title = Chứng chỉ cho { $firstCertName }
 # Inc. means Incorporated, e.g GitHub is incorporated in Delaware
 certificate-viewer-inc-country = Quốc gia hợp nhất
 certificate-viewer-country = Quốc gia
@@ -36,6 +36,9 @@ certificate-viewer-key-size = Kích thước khóa
 certificate-viewer-inc-locality = Địa phương hợp nhất
 certificate-viewer-locality = Thành phố
 certificate-viewer-location = Địa chỉ
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Tên nhật ký
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = ID bản ghi
 certificate-viewer-method = Phương thức
 certificate-viewer-modulus = Mô-đun
@@ -81,7 +84,6 @@ certificate-viewer-authority-info-aia = Thông tin thẩm quyền (AIA)
 certificate-viewer-certificate-policies = Chính sách chứng chỉ
 certificate-viewer-embedded-scts = SCT tích hợp
 certificate-viewer-crl-endpoints = Điểm cuối CRL
-
 # This message is used as a row header in the Miscellaneous section.
 # The associated data cell contains links to download the certificate.
 certificate-viewer-download = Nội dung
@@ -101,7 +103,6 @@ certificate-viewer-download-pem = PEM (chứng chỉ)
     .download = { $fileName }.pem
 certificate-viewer-download-pem-chain = PEM (chain)
     .download = { $fileName }-chain.pem
-
 # The title attribute for Critical Extension icon
 certificate-viewer-critical-extension =
     .title = Tiện ích mở rộng này đã được đánh dấu là nghiêm trọng, có nghĩa là khách hàng phải từ chối chứng chỉ nếu họ không hiểu nó.
@@ -112,10 +113,12 @@ certificate-viewer-export = Xuất
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (không xác định)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = chứng chỉ
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 
-certificate-viewer-tab-mine = Chứng nhận của bạn
+certificate-viewer-tab-mine = Chứng chỉ của bạn
 certificate-viewer-tab-people = Mọi người
 certificate-viewer-tab-servers = Máy chủ
 certificate-viewer-tab-ca = Nhà thẩm định

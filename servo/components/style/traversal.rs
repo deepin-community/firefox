@@ -15,6 +15,8 @@ use crate::style_resolver::{PseudoElementResolution, StyleResolverForElement};
 use crate::stylist::RuleInclusion;
 use crate::traversal_flags::TraversalFlags;
 use selectors::matching::SelectorCaches;
+#[cfg(feature = "gecko")]
+use selectors::parser::PseudoElement as PseudoElementTrait;
 use smallvec::SmallVec;
 use std::collections::HashMap;
 
@@ -217,17 +219,6 @@ pub trait DomTraversal<E: TElement>: Sync {
             el, traversal_flags, data
         );
 
-        // In case of animation-only traversal we need to traverse the element if the element has
-        // animation only dirty descendants bit, animation-only restyle hint.
-        if traversal_flags.for_animation_only() {
-            return data.map_or(false, |d| d.has_styles()) &&
-                (el.has_animation_only_dirty_descendants() ||
-                    data.as_ref()
-                        .unwrap()
-                        .hint
-                        .has_animation_hint_or_recascade());
-        }
-
         // Non-incremental layout visits every node.
         if is_servo_nonincremental_layout() {
             return true;
@@ -238,6 +229,13 @@ pub trait DomTraversal<E: TElement>: Sync {
             Some(d) if d.has_styles() => d,
             _ => return true,
         };
+
+        if traversal_flags.for_animation_only() {
+            // In case of animation-only traversal we need to traverse the element if the element
+            // has animation only dirty descendants bit, or animation-only restyle hint.
+            return el.has_animation_only_dirty_descendants()
+                || data.hint.has_animation_hint_or_recascade();
+        }
 
         // If the dirty descendants bit is set, we need to traverse no matter
         // what. Skip examining the ElementData.
@@ -268,7 +266,7 @@ pub trait DomTraversal<E: TElement>: Sync {
     }
 
     /// Return the shared style context common to all worker threads.
-    fn shared_context(&self) -> &SharedStyleContext;
+    fn shared_context(&self) -> &SharedStyleContext<'_>;
 }
 
 /// Manually resolve style by sequentially walking up the parent chain to the
@@ -286,9 +284,9 @@ where
     E: TElement,
 {
     debug_assert!(
-        rule_inclusion == RuleInclusion::DefaultOnly ||
-            pseudo.map_or(false, |p| p.is_before_or_after()) ||
-            element.borrow_data().map_or(true, |d| !d.has_styles()),
+        rule_inclusion == RuleInclusion::DefaultOnly
+            || pseudo.map_or(false, |p| p.is_before_or_after())
+            || element.borrow_data().map_or(true, |d| !d.has_styles()),
         "Why are we here?"
     );
     debug_assert!(
@@ -408,10 +406,10 @@ pub fn recalc_style_at<E, D, F>(
 
     context.thread_local.statistics.elements_traversed += 1;
     debug_assert!(
-        flags.intersects(TraversalFlags::AnimationOnly) ||
-            is_initial_style ||
-            !element.has_snapshot() ||
-            element.handled_snapshot(),
+        flags.intersects(TraversalFlags::AnimationOnly)
+            || is_initial_style
+            || !element.has_snapshot()
+            || element.handled_snapshot(),
         "Should've handled snapshots here already"
     );
 
@@ -514,9 +512,9 @@ pub fn recalc_style_at<E, D, F>(
     //
     // We only do this if we're not a display: none root, since in that case
     // it's useless to style children.
-    let mut traverse_children = has_dirty_descendants_for_this_restyle ||
-        !propagated_hint.is_empty() ||
-        is_servo_nonincremental_layout();
+    let mut traverse_children = has_dirty_descendants_for_this_restyle
+        || !propagated_hint.is_empty()
+        || is_servo_nonincremental_layout();
 
     traverse_children = traverse_children && !data.styles.is_display_none();
 
@@ -577,9 +575,8 @@ where
     let new_styles = match kind {
         MatchAndCascade => {
             debug_assert!(
-                !context.shared.traversal_flags.for_animation_only(),
-                "MatchAndCascade shouldn't be processed during \
-                 animation-only traversal"
+                !context.shared.traversal_flags.for_animation_only() || !data.has_styles(),
+                "MatchAndCascade shouldn't normally be processed during animation-only traversal"
             );
             // Ensure the bloom filter is up to date.
             context
@@ -762,8 +759,8 @@ fn note_children<E, D, F>(
         let child = match child_node.as_element() {
             Some(el) => el,
             None => {
-                if is_servo_nonincremental_layout() ||
-                    D::text_node_needs_traversal(child_node, data)
+                if is_servo_nonincremental_layout()
+                    || D::text_node_needs_traversal(child_node, data)
                 {
                     note_child(child_node);
                 }

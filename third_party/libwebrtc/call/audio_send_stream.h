@@ -11,11 +11,11 @@
 #ifndef CALL_AUDIO_SEND_STREAM_H_
 #define CALL_AUDIO_SEND_STREAM_H_
 
-#include <memory>
+#include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
-#include "absl/types/optional.h"
 #include "api/audio/audio_processing_statistics.h"
 #include "api/audio_codecs/audio_codec_pair_id.h"
 #include "api/audio_codecs/audio_encoder.h"
@@ -25,11 +25,12 @@
 #include "api/crypto/crypto_options.h"
 #include "api/crypto/frame_encryptor_interface.h"
 #include "api/frame_transformer_interface.h"
+#include "api/rtp_headers.h"
 #include "api/rtp_parameters.h"
 #include "api/rtp_sender_setparameters_callback.h"
 #include "api/scoped_refptr.h"
+#include "api/units/time_delta.h"
 #include "call/audio_sender.h"
-#include "call/rtp_config.h"
 #include "modules/rtp_rtcp/include/report_block_data.h"
 #include "modules/rtp_rtcp/include/rtcp_statistics.h"
 
@@ -48,6 +49,8 @@ class AudioSendStream : public AudioSender {
     // https://w3c.github.io/webrtc-stats/#dom-rtcoutboundrtpstreamstats-retransmittedbytessent
     uint64_t retransmitted_bytes_sent = 0;
     int32_t packets_sent = 0;
+    // https://w3c.github.io/webrtc-stats/#dom-rtcoutboundrtpstreamstats-packetssentwithect1
+    int32_t packets_sent_with_ect1 = 0;
     // https://w3c.github.io/webrtc-stats/#dom-rtcoutboundrtpstreamstats-totalpacketsenddelay
     TimeDelta total_packet_send_delay = TimeDelta::Zero();
     // https://w3c.github.io/webrtc-stats/#dom-rtcoutboundrtpstreamstats-retransmittedpacketssent
@@ -55,7 +58,7 @@ class AudioSendStream : public AudioSender {
     int32_t packets_lost = -1;
     float fraction_lost = -1.0f;
     std::string codec_name;
-    absl::optional<int> codec_payload_type;
+    std::optional<int> codec_payload_type;
     int32_t jitter_ms = -1;
     int64_t rtt_ms = -1;
     int16_t audio_level = 0;
@@ -100,6 +103,9 @@ class AudioSendStream : public AudioSender {
       // included in the list of extensions.
       std::string mid;
 
+      // The list of CSRCs to be included in the RTP header.
+      std::vector<uint32_t> csrcs;
+
       // Corresponds to the SDP attribute extmap-allow-mixed.
       bool extmap_allow_mixed = false;
 
@@ -128,10 +134,13 @@ class AudioSendStream : public AudioSender {
 
     double bitrate_priority = 1.0;
     bool has_dscp = false;
+    // If true, the stream will allocate bandwidth from the bandwidth estimate
+    // created by the congestion controller.
+    bool include_in_congestion_control_allocation = false;
 
     // Defines whether to turn on audio network adaptor, and defines its config
     // string.
-    absl::optional<std::string> audio_network_adaptor_config;
+    std::optional<std::string> audio_network_adaptor_config;
 
     struct SendCodecSpec {
       SendCodecSpec(int payload_type, const SdpAudioFormat& format);
@@ -146,17 +155,16 @@ class AudioSendStream : public AudioSender {
       int payload_type;
       SdpAudioFormat format;
       bool nack_enabled = false;
-      bool transport_cc_enabled = false;
       bool enable_non_sender_rtt = false;
-      absl::optional<int> cng_payload_type;
-      absl::optional<int> red_payload_type;
+      std::optional<int> cng_payload_type;
+      std::optional<int> red_payload_type;
       // If unset, use the encoder's default target bitrate.
-      absl::optional<int> target_bitrate_bps;
+      std::optional<int> target_bitrate_bps;
     };
 
-    absl::optional<SendCodecSpec> send_codec_spec;
-    rtc::scoped_refptr<AudioEncoderFactory> encoder_factory;
-    absl::optional<AudioCodecPairId> codec_pair_id;
+    std::optional<SendCodecSpec> send_codec_spec;
+    scoped_refptr<AudioEncoderFactory> encoder_factory;
+    std::optional<AudioCodecPairId> codec_pair_id;
 
     // Track ID as specified during track creation.
     std::string track_id;
@@ -167,11 +175,11 @@ class AudioSendStream : public AudioSender {
     // An optional custom frame encryptor that allows the entire frame to be
     // encryptor in whatever way the caller choses. This is not required by
     // default.
-    rtc::scoped_refptr<webrtc::FrameEncryptorInterface> frame_encryptor;
+    scoped_refptr<webrtc::FrameEncryptorInterface> frame_encryptor;
 
     // An optional frame transformer used by insertable streams to transform
     // encoded frames.
-    rtc::scoped_refptr<webrtc::FrameTransformerInterface> frame_transformer;
+    scoped_refptr<webrtc::FrameTransformerInterface> frame_transformer;
   };
 
   virtual ~AudioSendStream() = default;

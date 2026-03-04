@@ -5,20 +5,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "WindowsLocationProvider.h"
-#include "WindowsLocationParent.h"
-#include "mozilla/dom/WindowsUtilsParent.h"
-#include "mozilla/glean/GleanMetrics.h"
+
 #include "GeolocationPosition.h"
-#include "nsComponentManagerUtils.h"
+#include "MLSFallback.h"
+#include "WindowsLocationParent.h"
+#include "mozilla/Logging.h"
+#include "mozilla/dom/GeolocationPositionErrorBinding.h"
+#include "mozilla/dom/WindowsUtilsParent.h"
+#include "mozilla/glean/DomGeolocationMetrics.h"
 #include "mozilla/ipc/UtilityProcessManager.h"
 #include "mozilla/ipc/UtilityProcessSandboxing.h"
+#include "nsComponentManagerUtils.h"
 #include "prtime.h"
-#include "MLSFallback.h"
-#include "mozilla/Attributes.h"
-#include "mozilla/Logging.h"
-#include "mozilla/FloatingPoint.h"
-#include "mozilla/Telemetry.h"
-#include "mozilla/dom/GeolocationPositionErrorBinding.h"
 
 namespace mozilla::dom {
 
@@ -50,7 +48,6 @@ MLSUpdate::Update(nsIDOMGeoPosition* aPosition) {
   if (!coords) {
     return NS_ERROR_FAILURE;
   }
-  Telemetry::Accumulate(Telemetry::GEOLOCATION_WIN8_SOURCE_IS_MLS, true);
   return mCallback->Update(aPosition);
 }
 NS_IMETHODIMP
@@ -143,7 +140,7 @@ bool WindowsLocationProvider::WhenActorIsReady(Fn&& fn) {
     mActorPromise->Then(
         GetCurrentSerialEventTarget(), __func__,
         [fn](const RefPtr<WindowsLocationParent>& actor) {
-          Unused << fn(actor.get());
+          (void)fn(actor.get());
           return actor;
         },
         [](bool) { return false; });
@@ -218,7 +215,6 @@ void WindowsLocationProvider::RecvUpdate(
 
   mCallback->Update(aGeoPosition.get());
 
-  Telemetry::Accumulate(Telemetry::GEOLOCATION_WIN8_SOURCE_IS_MLS, false);
   if (!mEverUpdated) {
     mEverUpdated = true;
     // Saw signal without MLS fallback

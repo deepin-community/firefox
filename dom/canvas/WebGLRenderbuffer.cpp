@@ -6,12 +6,12 @@
 #include "WebGLRenderbuffer.h"
 
 #include "GLContext.h"
-#include "mozilla/dom/WebGLRenderingContextBinding.h"
 #include "ScopedGLHelpers.h"
 #include "WebGLContext.h"
 #include "WebGLFormats.h"
 #include "WebGLStrongTypes.h"
 #include "WebGLTexture.h"
+#include "mozilla/dom/WebGLRenderingContextBinding.h"
 
 namespace mozilla {
 
@@ -184,7 +184,7 @@ void WebGLRenderbuffer::RenderbufferStorage(uint32_t samples,
   mContext->OnDataAllocCall();
 
   const uint32_t depth = 1;
-  auto uninitializedSlices = Some(std::vector<bool>(depth, true));
+  std::vector<bool> uninitializedSlices(depth, true);
   mImageInfo = {
       usage,           width, height, depth, std::move(uninitializedSlices),
       uint8_t(samples)};

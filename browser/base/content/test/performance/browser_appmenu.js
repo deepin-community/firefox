@@ -18,7 +18,7 @@ let gCUITestUtils = new CustomizableUITestUtils(window);
 const EXPECTED_APPMENU_OPEN_REFLOWS = [
   {
     stack: [
-      "openPopup/this._openPopupPromise<@resource:///modules/PanelMultiView.sys.mjs",
+      "openPopup/this._openPopupPromise<@moz-src:///browser/components/customizableui/PanelMultiView.sys.mjs",
     ],
   },
 ];
@@ -27,6 +27,19 @@ add_task(async function () {
   await ensureNoPreloadedBrowser();
   await ensureAnimationsFinished();
   await disableFxaBadge();
+
+  // Ensure updating Unified Search Button icon by user interaction before
+  // appmenu test.
+  if (
+    Services.prefs.getBoolPref("browser.urlbar.scotchBonnet.enableOverride")
+  ) {
+    let tab = await BrowserTestUtils.openNewForegroundTab(gBrowser);
+    BrowserTestUtils.removeTab(tab);
+    await BrowserTestUtils.waitForCondition(
+      () =>
+        gURLBar.querySelector(".searchmode-switcher-icon").style.listStyleImage
+    );
+  }
 
   let textBoxRect = gURLBar
     .querySelector("moz-input-box")
@@ -73,7 +86,9 @@ add_task(async function () {
       async function openSubViewsRecursively(currentView) {
         let navButtons = Array.from(
           // Ensure that only enabled buttons are tested
-          currentView.querySelectorAll(".subviewbutton-nav:not([disabled])")
+          currentView.querySelectorAll(
+            ".subviewbutton-nav:not([disabled]):not([hidden])"
+          )
         );
         if (!navButtons) {
           return;

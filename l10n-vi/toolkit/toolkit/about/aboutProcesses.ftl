@@ -52,6 +52,7 @@ about-processes-remote-sandbox-broker-process = Remote Sandbox Broker ({ $pid })
 about-processes-fork-server-process = Máy chủ Fork ({ $pid })
 about-processes-preallocated-process = Được tải trước ({ $pid })
 about-processes-utility-process = Tiện ích ({ $pid })
+about-processes-inference-process = Suy luận ({ $pid })
 # Unknown process names
 # Variables:
 #    $pid (String) The process id of this process, assigned by the OS.
@@ -127,6 +128,7 @@ about-processes-utility-actor-mf-media-engine = Windows Media Foundation Media E
 about-processes-utility-actor-js-oracle = JavaScript Oracle
 about-processes-utility-actor-windows-utils = Tiện ích Windows
 about-processes-utility-actor-windows-file-dialog = Hộp thoại tập tin Windows
+about-processes-utility-actor-pkcs11-module = Security Module Helper
 
 ## Displaying CPU (percentage and total)
 ## Variables:

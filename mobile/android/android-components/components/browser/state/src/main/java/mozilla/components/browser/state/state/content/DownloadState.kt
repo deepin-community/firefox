@@ -53,9 +53,25 @@ data class DownloadState(
     val createdTime: Long = System.currentTimeMillis(),
     val response: Response? = null,
     val notificationId: Int? = null,
+    val etag: String? = null,
 ) {
     val filePath: String
         get() = directoryPath + File.separatorChar + fileName
+
+    val isPdf: Boolean
+        get() =
+            if (contentType == null) {
+                fileName?.let { File(it).extension } == "pdf"
+            } else {
+                contentType == "application/pdf"
+            }
+
+    val progress: Float?
+        get() = if (contentLength == null || contentLength == 0L) {
+            null
+        } else {
+            currentBytesCopied.toFloat() / contentLength.toFloat()
+        }
 
     /**
      * Status that represents every state that a download can be in.
@@ -77,7 +93,7 @@ data class DownloadState(
         PAUSED(PAUSED_ID),
 
         /**
-         * Indicates that the download that has been [DOWNLOADING] has been cancelled.
+         * Indicates that the download has been cancelled.
          */
         CANCELLED(CANCELLED_ID),
 

@@ -225,11 +225,13 @@ function resetExperimental() {
 }
 
 function enableTesting() {
+  SpecialPowers.setBoolPref("dom.quotaManager.testing", true);
   SpecialPowers.setBoolPref("dom.indexedDB.testing", true);
 }
 
 function resetTesting() {
   SpecialPowers.clearUserPref("dom.indexedDB.testing");
+  SpecialPowers.clearUserPref("dom.quotaManager.testing");
 }
 
 function gc() {
@@ -265,30 +267,12 @@ function resetOrClearAllDatabases(callback, clear) {
     throw new Error("clearAllDatabases not implemented for child processes!");
   }
 
-  const quotaPref = "dom.quotaManager.testing";
-
-  let oldPrefValue;
-  if (Services.prefs.prefHasUserValue(quotaPref)) {
-    oldPrefValue = SpecialPowers.getBoolPref(quotaPref);
-  }
-
-  SpecialPowers.setBoolPref(quotaPref, true);
-
   let request;
 
-  try {
-    if (clear) {
-      request = Services.qms.clear();
-    } else {
-      request = Services.qms.reset();
-    }
-  } catch (e) {
-    if (oldPrefValue !== undefined) {
-      SpecialPowers.setBoolPref(quotaPref, oldPrefValue);
-    } else {
-      SpecialPowers.clearUserPref(quotaPref);
-    }
-    throw e;
+  if (clear) {
+    request = Services.qms.clear();
+  } else {
+    request = Services.qms.reset();
   }
 
   request.callback = callback;
@@ -477,7 +461,6 @@ function verifyBlob(blob1, blob2) {
 function verifyView(view1, view2) {
   is(view1.byteLength, view2.byteLength, "Correct byteLength");
   verifyBuffers(view1, view2);
-  continueToNextStep();
 }
 
 function grabFileUsageAndContinueHandler(request) {
@@ -510,6 +493,11 @@ function setDataThreshold(threshold) {
 function resetDataThreshold() {
   info("Clearing data threshold pref");
   SpecialPowers.clearUserPref("dom.indexedDB.dataThreshold");
+}
+
+function setMaxStructuredCloneSize(aSize) {
+  info("Setting maximal structured clone size to " + aSize);
+  SpecialPowers.setIntPref("dom.indexedDB.maxStructuredCloneSize", aSize);
 }
 
 function setMaxSerializedMsgSize(aSize) {
@@ -593,13 +581,16 @@ function expectingUpgrade(request) {
   });
 }
 
-function requestSucceeded(request) {
+function requestSucceeded(request, optionalSyncSuccessCallback) {
   return new Promise(function (resolve, reject) {
     request.onerror = function (event) {
       ok(false, "indexedDB error, '" + event.target.error.name + "'");
       reject(event);
     };
     request.onsuccess = function (event) {
+      if (optionalSyncSuccessCallback) {
+        optionalSyncSuccessCallback();
+      }
       resolve(event);
     };
   });
@@ -715,11 +706,11 @@ var SpecialPowers = {
         outStream.close();
       }
       promises.push(
-        File.createFromFileName(testFile.path, request.options).then(function (
-          file
-        ) {
-          filePaths.push(file);
-        })
+        File.createFromFileName(testFile.path, request.options).then(
+          function (file) {
+            filePaths.push(file);
+          }
+        )
       );
       createdFiles.push(testFile);
     });

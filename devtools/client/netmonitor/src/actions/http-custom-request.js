@@ -31,6 +31,7 @@ const {
 
 /**
  * Open the entire HTTP Custom Request panel
+ *
  * @returns {Function}
  */
 function openHTTPCustomRequest(isOpen) {
@@ -94,6 +95,7 @@ function sendHTTPCustomRequest(request) {
       url: request.url,
       method: request.method,
       httpVersion: request.httpVersion,
+      securityFlags: request.securityFlags,
     };
 
     if (request.requestHeaders) {

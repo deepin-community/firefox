@@ -5,20 +5,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "GetAddrInfo.h"
-#include "mozilla/glean/GleanMetrics.h"
+#include "mozilla/glean/NetwerkMetrics.h"
 #include "mozilla/net/DNSPacket.h"
 #include "nsIDNSService.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/Atomics.h"
 #include "mozilla/StaticPrefs_network.h"
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <netinet/in.h>
 #include <resolv.h>
 #include <poll.h>
-#include <dlfcn.h>
 #include <android/multinetwork.h>
 
 namespace mozilla::net {
@@ -37,7 +34,8 @@ static Atomic<android_res_nquery_ptr> sAndroidResNQuery;
 #define LOG(msg, ...) \
   MOZ_LOG(gGetAddrInfoLog, LogLevel::Debug, ("[DNS]: " msg, ##__VA_ARGS__))
 
-nsresult ResolveHTTPSRecordImpl(const nsACString& aHost, uint16_t aFlags,
+nsresult ResolveHTTPSRecordImpl(const nsACString& aHost,
+                                nsIDNSService::DNSFlags aFlags,
                                 TypeRecordResultType& aResult, uint32_t& aTTL) {
   DNSPacket packet;
   nsAutoCString host(aHost);
@@ -51,18 +49,11 @@ nsresult ResolveHTTPSRecordImpl(const nsACString& aHost, uint16_t aFlags,
 
   if (!sLibLoading.exchange(true)) {
     // We're the first call here, load the library and symbols.
-    void* handle = dlopen("libandroid.so", RTLD_LAZY | RTLD_LOCAL);
-    if (!handle) {
-      LOG("Error loading libandroid_net %s", dlerror());
-      return NS_ERROR_UNKNOWN_HOST;
-    }
-
-    auto x = dlsym(handle, "android_res_nquery");
-    if (!x) {
+    if (__builtin_available(android 29, *)) {
+      sAndroidResNQuery = android_res_nquery;  // API 29
+    } else {
       LOG("No android_res_nquery symbol");
     }
-
-    sAndroidResNQuery = (android_res_nquery_ptr)x;
   }
 
   if (!sAndroidResNQuery) {

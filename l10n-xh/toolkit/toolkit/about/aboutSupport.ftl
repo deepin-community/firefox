@@ -4,7 +4,6 @@
 
 page-title = Inkcazelo yesisombululi-ngxaki
 page-subtitle = Eli phepha liqulethe inkcazelo yobuchwepheshe enokuba luncedo xa uzama ukusombulula ingxaki. Ukuba ufuna iimpendulo kwimibuzo eqhelekileyo ye-{ -brand-short-name }, khangela kwisayithi yethu <a data-l10n-name="support-link">support website</a>.
-
 crashes-title = Iingxelo zomonakalo
 crashes-id = Isazisi sengxelo
 crashes-send-date = Ithunyelwe
@@ -35,7 +34,6 @@ app-basics-service-workers = Abasebenzisi beNkonzo Ababhalisiweyo
 app-basics-profiles = Iiprofayile
 app-basics-multi-process-support = IWindows yeenkqubo ezininzi
 app-basics-safe-mode = IMowudi Ekhuselekileyo
-
 show-dir-label =
     { PLATFORM() ->
         [macos] Bonisa kwisifumanisi
@@ -74,21 +72,6 @@ sandbox-title = Ibhokisi yesanti
 
 audio-backend = I-Audio Backend
 
-## Codec support table
-
-##
-
-
-## Remote Debugging
-##
-## The Firefox remote protocol provides low-level debugging interfaces
-## used to inspect state and control execution of documents,
-## browser instrumentation, user interaction simulation,
-## and for subscribing to browser-internal events.
-##
-## See also https://firefox-source-docs.mozilla.org/remote/
-
-
 ##
 
 # Variables
@@ -98,7 +81,6 @@ report-crash-for-days =
         [one] Iingxelo zokonakala kolu Suku { $days } lugqithileyo
        *[other] iNgxelo zokonakala kwezu Ntsuku zi{ $days } zigqithileyo
     }
-
 # Variables
 # $minutes (integer) - Number of minutes since crash
 crashes-time-minutes =
@@ -106,7 +88,6 @@ crashes-time-minutes =
         [one] umzuzu om-{ $minutes } ogqithileyo
        *[other] imizuzu e-{ $minutes } egqithileyo
     }
-
 # Variables
 # $hours (integer) - Number of hours since crash
 crashes-time-hours =
@@ -114,7 +95,6 @@ crashes-time-hours =
         [one] iyure e{ $hours } egqithileyo
        *[other] iiyure ezi{ $hours } ezigqithileyo
     }
-
 # Variables
 # $days (integer) - Number of days since crash
 crashes-time-days =
@@ -122,7 +102,6 @@ crashes-time-days =
         [one] usuku olu{ $days } olugqithileyo
        *[other] iintsuku ezi{ $days } ezigqithileyo
     }
-
 # Variables
 # $reports (integer) - Number of pending reports
 pending-reports =
@@ -130,7 +109,6 @@ pending-reports =
         [one] Zonke iiNgxelo zoKonakala (kuquka ukonakala oku{ $reports } okusaseleyo kweli xesha)
        *[other] Zonke iiNgxelo zoKonakala (kuquka ukonakala oku{ $reports } okusaseleyo kweli xesha)
     }
-
 raw-data-copied = Iingcombolo ezingahlelwanga zikhutshelwe kwiklipbhodi
 text-copied = Umbhalo ukhutshelwe kwiklipbhodi
 
@@ -143,11 +121,9 @@ blocked-mismatched-version = Ithintelwe kwinguqulelo yedrayiva yeegrafikhi zakho
 # Variables
 # $driverVersion - The graphics driver version string
 try-newer-driver = Ithintelwe kwinguqulelo yedrayiva yeegrafikhi zakho. Zama ukuhlaziya idrayiva yeegrafikhi zakho kwinguqulelo { $driverVersion } okanye.
-
 # "ClearType" is a proper noun and should not be translated. Feel free to leave English strings if
 # there are no good translations, these are only used in about:support
 clear-type-parameters = Iiparamitha zefonti ecacileyo
-
 compositing = Ukuyila
 hardware-h264 = Ihadwe H264 Isusa Ikhowudi
 main-thread-no-omtc = Ithredi eyintloko, akukho OMTC
@@ -167,20 +143,15 @@ gpu-ram = i-RAM
 gpu-driver-version = Inguqulelo yedrayiva
 gpu-driver-date = Umhla wedrayiva
 gpu-active = Esebenzayo
-
 # Variables
 # $failureCode (string) - String that can be searched in the source tree.
 unknown-failure = Ibhlokiwe, ikhowudi yokusilela { $failureCode }
-
 d3d11layers-crash-guard = D3D11 Umyili
 glcontext-crash-guard = I-OpenGL
-
 reset-on-next-restart = Seta kwakhona Xa Uphinda Uqala
 gpu-process-kill-button = Yekisa iNkqubo yeGPU
-
 min-lib-versions = Inguqulelo encinane elindelekileyo
 loaded-lib-versions = Inguqulelo esetyenziswayo
-
 has-seccomp-bpf = Seccomp-BPF (System Call Filtering)
 has-seccomp-tsync = Ungqamaniso lwe-Seccomp Thread
 has-user-namespaces = Izithuba zamaGama oMsebenzisi
@@ -188,12 +159,10 @@ has-privileged-user-namespaces = Izithuba zamaGama oMsebenzisi ngeenkqubo ezisel
 can-sandbox-content = Inkqubo yesiqulatho yebhokisi yesanti
 can-sandbox-media = Ukhuseleko olwahlula iinkqubo ezinesoftwe eyongeza ifitsha ethile yemidiya
 content-sandbox-level = Umlinganiselo weNkqubo yeSiqulatho yeBhokisi yeSanti
-
 # Variables
 # $remoteWindows (integer) - Number of remote windows
 # $totalWindows (integer) - Number of total windows
 multi-process-windows = { $remoteWindows }/{ $totalWindows }
-
 async-pan-zoom = Asynchronous Pan/Zoom
 apz-none = nakanye
 wheel-enabled = ufakelo lwevili lwenziwe alwasebenza
@@ -205,10 +174,3 @@ drag-enabled = utsalo lweskrolbha luvuliwe
 
 wheel-warning = ufakelo lwevili lwe-async lwenziwe alwasebenza ngenxa yento ekhethwayo engaxhaswayo: { $preferenceKey }
 touch-warning = ufakelo lwe-touch lwe-async lwenziwe alwasebenza ngenxa yento ekhethwayo engaxhaswayo: { $preferenceKey }
-
-## Strings representing the status of the Enterprise Policies engine.
-
-## Printing section
-
-## Normandy sections
-

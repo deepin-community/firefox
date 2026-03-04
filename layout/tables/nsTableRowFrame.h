@@ -5,11 +5,10 @@
 #ifndef nsTableRowFrame_h__
 #define nsTableRowFrame_h__
 
-#include "mozilla/Attributes.h"
-#include "nscore.h"
+#include "mozilla/WritingModes.h"
 #include "nsContainerFrame.h"
 #include "nsTableRowGroupFrame.h"
-#include "mozilla/WritingModes.h"
+#include "nscore.h"
 
 class nsTableCellFrame;
 namespace mozilla {
@@ -116,9 +115,8 @@ class nsTableRowFrame : public nsContainerFrame {
   nsresult GetFrameName(nsAString& aResult) const override;
 #endif
 
-  void UpdateBSize(nscoord aBSize, nscoord aAscent, nscoord aDescent,
-                   nsTableFrame* aTableFrame = nullptr,
-                   nsTableCellFrame* aCellFrame = nullptr);
+  void UpdateBSize(nscoord aBSize, nsTableFrame* aTableFrame,
+                   nsTableCellFrame* aCellFrame);
 
   void ResetBSize();
 

@@ -3,7 +3,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/Base64.h"
 #include "mozilla/MemoryReporting.h"
 
@@ -32,7 +31,9 @@
 #include "gfxUserFontSet.h"
 #include "gfxFontUtils.h"
 #include "SharedFontList-impl.h"
+#define StandardFonts
 #include "StandardFonts-android.inc"
+#undef StandardFonts
 #include "harfbuzz/hb-ot.h"  // for name ID constants
 
 #include "nsServiceManagerUtils.h"
@@ -53,15 +54,15 @@
 #include "mozilla/EndianUtils.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/scache/StartupCache.h"
-#include "mozilla/Telemetry.h"
+#include "mozilla/glean/GfxMetrics.h"
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 
 #ifdef MOZ_WIDGET_ANDROID
 #  include "AndroidBuild.h"
+#  include "AndroidSystemFontIterator.h"
 #  include "mozilla/jni/Utils.h"
-#  include <dlfcn.h>
 #endif
 
 using namespace mozilla;
@@ -103,7 +104,7 @@ already_AddRefed<SharedFTFace> FT2FontEntry::GetFTFace(bool aCommit) {
   RefPtr<SharedFTFace> face;
   if (mFilename[0] != '/') {
     RefPtr<nsZipArchive> reader = Omnijar::GetReader(Omnijar::Type::GRE);
-    nsZipItem* item = reader->GetItem(mFilename.get());
+    nsZipItem* item = reader->GetItem(mFilename);
     NS_ASSERTION(item, "failed to find zip entry");
 
     uint32_t bufSize = item->RealSize();
@@ -136,7 +137,7 @@ already_AddRefed<SharedFTFace> FT2FontEntry::GetFTFace(bool aCommit) {
   if (aCommit) {
     if (mFTFace.compareExchange(nullptr, face.get())) {
       // The reference we created is now owned by mFTFace.
-      Unused << face.forget();
+      face.forget().leak();
     } else {
       // We lost a race! Just discard our new face and use the existing one.
     }
@@ -317,7 +318,7 @@ static void SetPropertiesFromFace(gfxFontEntry* aFontEntry,
     const OS2Table* os2 = reinterpret_cast<const OS2Table*>(data);
     os2weight = os2->usWeightClass;
     uint16_t os2width = os2->usWidthClass;
-    if (os2width < ArrayLength(kOS2WidthToStretch)) {
+    if (os2width < std::size(kOS2WidthToStretch)) {
       stretch = kOS2WidthToStretch[os2width];
     }
   }
@@ -378,7 +379,7 @@ nsresult FT2FontEntry::ReadCMAP(FontInfoData* aFontInfoData) {
     return NS_OK;
   }
 
-  RefPtr<gfxCharacterMap> charmap = new gfxCharacterMap();
+  RefPtr<gfxCharacterMap> charmap = new gfxCharacterMap(256);
 
   nsresult rv = NS_ERROR_NOT_AVAILABLE;
   uint32_t uvsOffset = 0;
@@ -414,9 +415,20 @@ nsresult FT2FontEntry::ReadCMAP(FontInfoData* aFontInfoData) {
         charmap->ClearRange(sr->rangeStart, sr->rangeEnd);
       }
     }
+
+    // Bug 1980258: the Cutive Mono font, widely present on Android, has
+    // spurious blank glyphs for several codepoints. Mask them out, to avoid
+    // the risk of font fallback using it (resulting in blank characters).
+    if (FamilyName().EqualsLiteral("Cutive Mono")) {
+      charmap->ClearRange(0x0080, 0x009f);  // C1 controls: not all present,
+                                            // but let's just mask the block.
+      charmap->clear(0x2074);               // superscript four
+      charmap->clear(0xfb00);               // ff ligature
+      charmap->ClearRange(0xfb03, 0xfb04);  // ffi, ffl
+    }
   }
 
-#ifdef MOZ_WIDGET_ANDROID
+#if defined(MOZ_WIDGET_ANDROID) && !defined(NIGHTLY_BUILD)
   // Hack for the SamsungDevanagari font, bug 1012365:
   // pretend the font supports U+0972.
   if (!charmap->test(0x0972) && charmap->test(0x0905) &&
@@ -440,13 +452,13 @@ nsresult FT2FontEntry::ReadCMAP(FontInfoData* aFontInfoData) {
     mHasCmapTable = true;
   } else {
     // if error occurred, initialize to null cmap
-    charmap = new gfxCharacterMap();
+    charmap = new gfxCharacterMap(0);
     mHasCmapTable = false;
   }
   if (setCharMap) {
     if (mCharacterMap.compareExchange(nullptr, charmap.get())) {
       // We forget rather than addref because we don't use the charmap below.
-      Unused << charmap.forget();
+      charmap.forget().leak();
     }
   }
 
@@ -468,7 +480,7 @@ hb_face_t* FT2FontEntry::CreateHBFace() const {
     // A relative path means an omnijar resource, which we may need to
     // decompress to a temporary buffer.
     RefPtr<nsZipArchive> reader = Omnijar::GetReader(Omnijar::Type::GRE);
-    nsZipItem* item = reader->GetItem(mFilename.get());
+    nsZipItem* item = reader->GetItem(mFilename);
     MOZ_ASSERT(item, "failed to find zip entry");
     if (item) {
       // TODO(jfkthame):
@@ -702,13 +714,13 @@ void gfxFT2FontList::CollectInitData(const FontListEntry& aFLE,
   nsAutoCString psname(aPSName), fullname(aFullName);
   if (!psname.IsEmpty()) {
     ToLowerCase(psname);
-    mLocalNameTable.InsertOrUpdate(
+    MaybeAddToLocalNameTable(
         psname, fontlist::LocalFaceRec::InitData(key, aFLE.filepath()));
   }
   if (!fullname.IsEmpty()) {
     ToLowerCase(fullname);
     if (fullname != psname) {
-      mLocalNameTable.InsertOrUpdate(
+      MaybeAddToLocalNameTable(
           fullname, fontlist::LocalFaceRec::InitData(key, aFLE.filepath()));
     }
   }
@@ -1207,15 +1219,18 @@ void gfxFT2FontList::AppendFacesFromFontFile(const nsCString& aFileName,
       uint32_t(s.st_mtime) == timestamp && s.st_size == filesize) {
     CollectFunc unshared =
         [](const FontListEntry& aFLE, const nsCString& aPSName,
-           const nsCString& aFullName, StandardFile aStdFile) {
-          auto* pfl = PlatformFontList();
-          pfl->mLock.AssertCurrentThreadIn();
-          pfl->AppendFaceFromFontListEntry(aFLE, aStdFile);
-        };
+           const nsCString& aFullName, StandardFile aStdFile)
+            MOZ_REQUIRES(PlatformFontList()->mLock) {
+              auto* pfl = PlatformFontList();
+              pfl->mLock.AssertCurrentThreadIn();
+              pfl->AppendFaceFromFontListEntry(aFLE, aStdFile);
+            };
     CollectFunc shared = [](const FontListEntry& aFLE, const nsCString& aPSName,
-                            const nsCString& aFullName, StandardFile aStdFile) {
-      PlatformFontList()->CollectInitData(aFLE, aPSName, aFullName, aStdFile);
-    };
+                            const nsCString& aFullName, StandardFile aStdFile)
+                             MOZ_REQUIRES(PlatformFontList()->mLock) {
+                               PlatformFontList()->CollectInitData(
+                                   aFLE, aPSName, aFullName, aStdFile);
+                             };
     if (AppendFacesFromCachedFaceList(SharedFontList() ? shared : unshared,
                                       aFileName, cachedFaceList, aStdFile)) {
       LOG(("using cached font info for %s", aFileName.get()));
@@ -1254,7 +1269,7 @@ void gfxFT2FontList::FindFontsInOmnijar(FontNameCache* aCache) {
       "res/fonts/*.ttf$",
   };
   RefPtr<nsZipArchive> reader = Omnijar::GetReader(Omnijar::Type::GRE);
-  for (unsigned i = 0; i < ArrayLength(sJarSearchPaths); i++) {
+  for (unsigned i = 0; i < std::size(sJarSearchPaths); i++) {
     nsZipFind* find;
     if (NS_SUCCEEDED(reader->FindInit(sJarSearchPaths[i], &find))) {
       const char* path;
@@ -1331,7 +1346,7 @@ gfxFT2FontList::GetFilteredPlatformFontLists() {
   static Device fontVisibilityDevice = Device::Unassigned;
   if (fontVisibilityDevice == Device::Unassigned) {
     nsCOMPtr<nsIGfxInfo> gfxInfo = components::GfxInfo::Service();
-    Unused << gfxInfo->GetFontVisibilityDetermination(&fontVisibilityDevice);
+    (void)gfxInfo->GetFontVisibilityDetermination(&fontVisibilityDevice);
   }
 
   nsTArray<std::pair<const char**, uint32_t>> fontLists;
@@ -1353,25 +1368,24 @@ gfxFT2FontList::GetFilteredPlatformFontLists() {
   }
 
   fontLists.AppendElement(
-      std::make_pair(kBaseFonts_Android, ArrayLength(kBaseFonts_Android)));
+      std::make_pair(kBaseFonts_Android, std::size(kBaseFonts_Android)));
 
   if (fontVisibilityDevice == Device::Android_sub_9) {
     fontLists.AppendElement(std::make_pair(kBaseFonts_Android5_8,
-                                           ArrayLength(kBaseFonts_Android5_8)));
+                                           std::size(kBaseFonts_Android5_8)));
   } else {
     fontLists.AppendElement(std::make_pair(
-        kBaseFonts_Android9_Higher, ArrayLength(kBaseFonts_Android9_Higher)));
+        kBaseFonts_Android9_Higher, std::size(kBaseFonts_Android9_Higher)));
 
     if (fontVisibilityDevice == Device::Android_9_11) {
       fontLists.AppendElement(std::make_pair(
-          kBaseFonts_Android9_11, ArrayLength(kBaseFonts_Android9_11)));
+          kBaseFonts_Android9_11, std::size(kBaseFonts_Android9_11)));
     } else {
-      fontLists.AppendElement(
-          std::make_pair(kBaseFonts_Android12_Higher,
-                         ArrayLength(kBaseFonts_Android12_Higher)));
+      fontLists.AppendElement(std::make_pair(
+          kBaseFonts_Android12_Higher, std::size(kBaseFonts_Android12_Higher)));
       fontLists.AppendElement(
           std::make_pair(kLangPack_MFR_Android12_Higher,
-                         ArrayLength(kLangPack_MFR_Android12_Higher)));
+                         std::size(kLangPack_MFR_Android12_Higher)));
     }
   }
 
@@ -1496,10 +1510,11 @@ void gfxFT2FontList::AppendFacesFromOmnijarEntry(nsZipArchive* aArchive,
           };
       CollectFunc shared = [](const FontListEntry& aFLE,
                               const nsCString& aPSName,
-                              const nsCString& aFullName,
-                              StandardFile aStdFile) {
-        PlatformFontList()->CollectInitData(aFLE, aPSName, aFullName, aStdFile);
-      };
+                              const nsCString& aFullName, StandardFile aStdFile)
+                               MOZ_REQUIRES(PlatformFontList()->mLock) {
+                                 PlatformFontList()->CollectInitData(
+                                     aFLE, aPSName, aFullName, aStdFile);
+                               };
       if (AppendFacesFromCachedFaceList(SharedFontList() ? shared : unshared,
                                         aEntryName, faceList, kStandard)) {
         return;
@@ -1507,7 +1522,7 @@ void gfxFT2FontList::AppendFacesFromOmnijarEntry(nsZipArchive* aArchive,
     }
   }
 
-  nsZipItem* item = aArchive->GetItem(aEntryName.get());
+  nsZipItem* item = aArchive->GetItem(aEntryName);
   NS_ASSERTION(item, "failed to find zip entry");
 
   uint32_t bufSize = item->RealSize();
@@ -1556,19 +1571,6 @@ void gfxFT2FontList::FindFonts() {
 
 #if defined(MOZ_WIDGET_ANDROID)
   // Android API 29+ provides system font and font matcher API for native code.
-  typedef void* (*_ASystemFontIterator_open)();
-  typedef void* (*_ASystemFontIterator_next)(void*);
-  typedef void (*_ASystemFontIterator_close)(void*);
-  typedef const char* (*_AFont_getFontFilePath)(const void*);
-  typedef void (*_AFont_close)(void*);
-
-  static _ASystemFontIterator_open systemFontIterator_open = nullptr;
-  static _ASystemFontIterator_next systemFontIterator_next = nullptr;
-  static _ASystemFontIterator_close systemFontIterator_close = nullptr;
-  static _AFont_getFontFilePath font_getFontFilePath = nullptr;
-  static _AFont_close font_close = nullptr;
-
-  static bool firstTime = true;
 
   nsAutoCString androidFontsRoot = [&] {
     // ANDROID_ROOT is the root of the android system, typically /system;
@@ -1584,70 +1586,33 @@ void gfxFT2FontList::FindFonts() {
     return root;
   }();
 
-  if (firstTime) {
-    if (jni::GetAPIVersion() >= 29) {
-      void* handle = dlopen("libandroid.so", RTLD_LAZY | RTLD_LOCAL);
-      MOZ_ASSERT(handle);
-
-      systemFontIterator_open =
-          (_ASystemFontIterator_open)dlsym(handle, "ASystemFontIterator_open");
-      systemFontIterator_next =
-          (_ASystemFontIterator_next)dlsym(handle, "ASystemFontIterator_next");
-      systemFontIterator_close = (_ASystemFontIterator_close)dlsym(
-          handle, "ASystemFontIterator_close");
-      font_getFontFilePath =
-          (_AFont_getFontFilePath)dlsym(handle, "AFont_getFontFilePath");
-      font_close = (_AFont_close)dlsym(handle, "AFont_close");
-
-      if (NS_WARN_IF(!systemFontIterator_next) ||
-          NS_WARN_IF(!systemFontIterator_close) ||
-          NS_WARN_IF(!font_getFontFilePath) || NS_WARN_IF(!font_close)) {
-        // Since any functions aren't resolved, use old way to enumerate fonts.
-        systemFontIterator_open = nullptr;
-      }
-    }
-    firstTime = false;
-  }
-
-  bool useSystemFontAPI = !!systemFontIterator_open;
-
-  if (useSystemFontAPI &&
-      !StaticPrefs::
-          gfx_font_list_use_font_match_api_force_enabled_AtStartup()) {
-    // OPPO, realme and OnePlus device seem to crash when using font match API
-    // (Bug 1787551).
-    nsCString manufacturer = java::sdk::Build::MANUFACTURER()->ToCString();
-    if (manufacturer.EqualsLiteral("OPPO") ||
-        manufacturer.EqualsLiteral("realme") ||
-        manufacturer.EqualsLiteral("OnePlus")) {
-      useSystemFontAPI = false;
-    }
-  }
+  bool useSystemFontAPI = !gfxAndroidPlatform::IsFontAPIDisabled();
 
   if (useSystemFontAPI) {
-    void* iter = systemFontIterator_open();
-    if (iter) {
-      void* font = systemFontIterator_next(iter);
-      while (font) {
-        nsDependentCString path(font_getFontFilePath(font));
-        AppendFacesFromFontFile(path, mFontNameCache.get(), kStandard);
-        font_close(font);
-        font = systemFontIterator_next(iter);
+    bool noFontByFontAPI = true;
+    if (__builtin_available(android 29, *)) {
+      gfxAndroidPlatform::WaitForInitializeFontAPI();
+      AndroidSystemFontIterator iter;
+      while (Maybe<AndroidFont> androidFont = iter.Next()) {
+        const char* _Nonnull fontPath = androidFont->GetFontFilePath();
+        noFontByFontAPI = false;
+        AppendFacesFromFontFile(nsDependentCString(fontPath),
+                                mFontNameCache.get(), kStandard);
       }
+    }
 
-      if (!StaticPrefs::gfx_font_rendering_colr_v1_enabled()) {
-        // We turn off COLRv1 fonts support. Newer android versions have
-        // COLRv1 emoji font, and a legacy and hidden CBDT font we understand,
-        // so try to find NotoColorEmojiLegacy.ttf explicitly for now.
-        nsAutoCString legacyEmojiFont(androidFontsRoot);
-        legacyEmojiFont.Append("/NotoColorEmojiLegacy.ttf");
-        AppendFacesFromFontFile(legacyEmojiFont, mFontNameCache.get(),
-                                kStandard);
-      }
-
-      systemFontIterator_close(iter);
-    } else {
+    if (noFontByFontAPI) {
+      // Font API doesn't seem to work. Use legacy way.
       useSystemFontAPI = false;
+    }
+
+    if (!StaticPrefs::gfx_font_rendering_colr_v1_enabled()) {
+      // We turn off COLRv1 fonts support. Newer android versions have
+      // COLRv1 emoji font, and a legacy and hidden CBDT font we understand,
+      // so try to find NotoColorEmojiLegacy.ttf explicitly for now.
+      nsAutoCString legacyEmojiFont(androidFontsRoot);
+      legacyEmojiFont.Append("/NotoColorEmojiLegacy.ttf");
+      AppendFacesFromFontFile(legacyEmojiFont, mFontNameCache.get(), kStandard);
     }
   }
 
@@ -1663,11 +1628,8 @@ void gfxFT2FontList::FindFonts() {
   if (StaticPrefs::gfx_bundled_fonts_activate_AtStartup() > 0 ||
       (StaticPrefs::gfx_bundled_fonts_activate_AtStartup() < 0 &&
        !nsMemory::IsLowMemoryPlatform())) {
-    TimeStamp start = TimeStamp::Now();
+    auto timer = glean::fontlist::bundledfonts_activate.Measure();
     FindFontsInOmnijar(mFontNameCache.get());
-    TimeStamp end = TimeStamp::Now();
-    Telemetry::Accumulate(Telemetry::FONTLIST_BUNDLEDFONTS_ACTIVATE,
-                          (end - start).ToMilliseconds());
   }
 
   // Look for downloaded fonts in a profile-agnostic "fonts" directory.
@@ -1761,7 +1723,7 @@ void gfxFT2FontList::FindFontsInDir(const nsCString& aDir,
     if (strcasecmp(ext, ".ttf") == 0 || strcasecmp(ext, ".otf") == 0 ||
         strcasecmp(ext, ".woff") == 0 || strcasecmp(ext, ".ttc") == 0) {
       bool isStdFont = false;
-      for (unsigned int i = 0; i < ArrayLength(sStandardFonts) && !isStdFont;
+      for (unsigned int i = 0; i < std::size(sStandardFonts) && !isStdFont;
            i++) {
         isStdFont = strcmp(sStandardFonts[i], ent->d_name) == 0;
       }
@@ -1907,22 +1869,23 @@ gfxFontEntry* gfxFT2FontList::CreateFontEntry(fontlist::Face* aFace,
 // called for each family name, based on the assumption that the
 // first part of the full name is the family name
 
-gfxFontEntry* gfxFT2FontList::LookupLocalFont(nsPresContext* aPresContext,
-                                              const nsACString& aFontName,
-                                              WeightRange aWeightForEntry,
-                                              StretchRange aStretchForEntry,
-                                              SlantStyleRange aStyleForEntry) {
+gfxFontEntry* gfxFT2FontList::LookupLocalFont(
+    FontVisibilityProvider* aFontVisibilityProvider,
+    const nsACString& aFontName, WeightRange aWeightForEntry,
+    StretchRange aStretchForEntry, SlantStyleRange aStyleForEntry) {
   AutoLock lock(mLock);
 
   if (SharedFontList()) {
-    return LookupInSharedFaceNameList(aPresContext, aFontName, aWeightForEntry,
-                                      aStretchForEntry, aStyleForEntry);
+    return LookupInSharedFaceNameList(aFontVisibilityProvider, aFontName,
+                                      aWeightForEntry, aStretchForEntry,
+                                      aStyleForEntry);
   }
 
   // walk over list of names
   FT2FontEntry* fontEntry = nullptr;
-  FontVisibility level =
-      aPresContext ? aPresContext->GetFontVisibility() : FontVisibility::User;
+  FontVisibility level = aFontVisibilityProvider
+                             ? aFontVisibilityProvider->GetFontVisibility()
+                             : FontVisibility::User;
 
   for (const RefPtr<gfxFontFamily>& fontFamily : mFontFamilies.Values()) {
     if (!IsVisibleToCSS(*fontFamily, level)) {
@@ -1977,13 +1940,13 @@ searchDone:
 }
 
 FontFamily gfxFT2FontList::GetDefaultFontForPlatform(
-    nsPresContext* aPresContext, const gfxFontStyle* aStyle,
+    FontVisibilityProvider* aFontVisibilityProvider, const gfxFontStyle* aStyle,
     nsAtom* aLanguage) {
   FontFamily ff;
 #if defined(MOZ_WIDGET_ANDROID)
-  ff = FindFamily(aPresContext, "Roboto"_ns);
+  ff = FindFamily(aFontVisibilityProvider, "Roboto"_ns);
   if (ff.IsNull()) {
-    ff = FindFamily(aPresContext, "Droid Sans"_ns);
+    ff = FindFamily(aFontVisibilityProvider, "Droid Sans"_ns);
   }
 #endif
   /* TODO: what about Qt or other platforms that may use this? */

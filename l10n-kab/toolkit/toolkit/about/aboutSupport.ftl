@@ -178,6 +178,12 @@ media-capabilities-enumerate = Snirem taffa n yisefka
 media-codec-support-supported = Yettusefrek
 media-codec-support-unsupported = ur ttwasefraken ara
 
+## Media Content Decryption Modules (CDM)
+## See EME Spec for more explanation for following technical terms
+## https://w3c.github.io/encrypted-media/
+
+media-key-system-name = Isem n unagraw n tsarut
+
 ##
 
 intl-title = Asegreɣlen & Asideg
@@ -384,6 +390,13 @@ support-printing-clear-settings-button = Sfeḍ iɣewwaren n usiggez yettuskelse
 support-printing-modified-settings = Iɣewwaren n usiggez yettusneflen
 support-printing-prefs-name = Isem
 support-printing-prefs-value = Azal
+
+## Remote Settings sections
+
+support-remote-settings-status = Addad
+support-remote-settings-status-ok = IH
+# Status when synchronization is not working.
+support-remote-settings-status-broken = Ur iteddu ara
 
 ## Normandy sections
 

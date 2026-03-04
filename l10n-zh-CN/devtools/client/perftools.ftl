@@ -26,6 +26,7 @@ perftools-heading-local-build = 本地构建版本
 
 perftools-description-intro = 记录器将新建标签页打开 <a>profiler.firefox.com</a>。所有数据存储在本地，您到时也可以选择上传以便分享。
 perftools-description-local-build = 若您要对本机自行编译的构建版本进行测量，请将其 objdir 路径添加至下方列表，以便查询调试符号信息。
+perftools-pick-local-build-directory = 选择构建目录
 
 ## The controls for the interval at which the profiler samples the code.
 
@@ -61,6 +62,14 @@ perftools-button-restart = 重新启动
 perftools-button-add-directory = 添加路径
 perftools-button-remove-directory = 移除选中项
 perftools-button-edit-settings = 编辑设置…
+
+## More actions menu
+
+perftools-menu-more-actions-button =
+    .title = 更多操作
+perftools-menu-more-actions-restart-with-profiling = 重启 { -brand-shorter-name }（启用“启动分析”）
+perftools-menu-more-actions-copy-for-startup = 复制启动分析的环境变量
+perftools-menu-more-actions-copy-for-perf-tests = 复制性能测试参数
 
 ## These messages are descriptions of the threads that can be enabled for the profiler.
 
@@ -134,6 +143,8 @@ perftools-presets-graphics-label = 图形
 perftools-presets-graphics-description = 排查 { -brand-shorter-name } 图形（显卡、显示）Bug 时使用。
 perftools-presets-media-label = 媒体
 perftools-presets-media-description2 = 排查 { -brand-shorter-name } 音视频 Bug 时使用。
+perftools-presets-ml-label = 机器学习
+perftools-presets-ml-description2 = 排查 { -brand-shorter-name } 机器学习 Bug 时使用。
 perftools-presets-networking-label = 网络
 perftools-presets-networking-description = 排查 { -brand-shorter-name } 网络 Bug 时使用。
 # "Power" is used in the sense of energy (electricity used by the computer).
@@ -141,7 +152,6 @@ perftools-presets-power-label = 功耗
 perftools-presets-power-description = 排查 { -brand-shorter-name } 功耗 Bug 时使用，开销较低。
 perftools-presets-debug-label = 调试
 perftools-presets-debug-description = 在 { -brand-shorter-name } 中调试时使用。开销较高，请勿用于性能用途，仅应用于了解浏览器行为。
+perftools-presets-web-compat-label = Web Compat
+perftools-presets-web-compat-description = 适合用于在网站中调试 Web 兼容性问题（非性能跟踪用途）。
 perftools-presets-custom-label = 自定义
-
-##
-

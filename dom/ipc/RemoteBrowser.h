@@ -7,11 +7,11 @@
 #ifndef mozilla_dom_ipc_RemoteBrowser_h
 #define mozilla_dom_ipc_RemoteBrowser_h
 
+#include "Units.h"
 #include "mozilla/dom/ipc/IdType.h"
 #include "mozilla/layers/LayersTypes.h"
 #include "nsISupports.h"
 #include "nsRect.h"
-#include "Units.h"
 
 class nsDocShellLoadState;
 class nsFrameLoader;
@@ -61,8 +61,8 @@ class RemoteBrowser : public nsISupports {
   virtual void DestroyComplete() = 0;
 
   virtual bool Show(const OwnerShowInfo&) = 0;
-  virtual void UpdateDimensions(const nsIntRect& aRect,
-                                const ScreenIntSize& aSize) = 0;
+  virtual void UpdateDimensions(const LayoutDeviceIntRect& aRect,
+                                const LayoutDeviceIntSize& aSize) = 0;
 
   virtual void UpdateEffects(EffectsInfo aInfo) = 0;
 };

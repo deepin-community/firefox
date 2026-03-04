@@ -78,7 +78,7 @@ webrtc-indicator-sharing-browser =
 ## These strings are only used on Mac for menus attached to icons
 ## near the clock on the mac menubar.
 ## Variables:
-##   $streamTitle (String): the title of the tab using the share.
+##   $streamTitle (String): the host of the tab using the share.
 ##   $tabCount (Number): the title of the tab using the share.
 
 webrtc-indicator-menuitem-control-sharing =
@@ -232,6 +232,9 @@ webrtc-action-not-now =
 ##
 
 webrtc-remember-allow-checkbox = Derc'hel soñj en diviz-mañ
+webrtc-remember-allow-checkbox-camera = Derc’hel soñj evit an holl gameraoù
+webrtc-remember-allow-checkbox-microphone = Derc’hel soñj evit an holl glevelloù
+webrtc-remember-allow-checkbox-camera-and-microphone = Derc’hel soñj evit an holl gameraoù ha klevelloù
 webrtc-mute-notifications-checkbox = Mudañ ar rebuzadurioù lec’hienn pa vezit ho rannañ
 webrtc-reason-for-no-permanent-allow-screen = { -brand-short-name } n'hall ket aotren un haeziñ diastal d'ho skramm.
 webrtc-reason-for-no-permanent-allow-audio = N'hall ket { -brand-short-name } aotren haeziñ aodio hoc'h ivinell en un doare peurzalc'hus hep goulenn pehini rannañ.

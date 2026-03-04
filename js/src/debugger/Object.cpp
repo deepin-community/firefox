@@ -12,9 +12,8 @@
 #include "mozilla/Vector.h"  // for Vector
 
 #include <algorithm>
-#include <string.h>     // for size_t, strlen
-#include <type_traits>  // for remove_reference<>::type
-#include <utility>      // for move
+#include <string.h>  // for size_t, strlen
+#include <utility>   // for move
 
 #include "jsapi.h"  // for CallArgs, RootedObject, Rooted
 
@@ -168,6 +167,7 @@ struct MOZ_STACK_CLASS DebuggerObject::CallData {
   bool boundArgumentsGetter();
   bool allocationSiteGetter();
   bool isErrorGetter();
+  bool isMutedErrorGetter();
   bool errorMessageNameGetter();
   bool errorNotesGetter();
   bool errorLineNumberGetter();
@@ -505,6 +505,11 @@ bool DebuggerObject::CallData::errorMessageNameGetter() {
 
 bool DebuggerObject::CallData::isErrorGetter() {
   args.rval().setBoolean(object->isError());
+  return true;
+}
+
+bool DebuggerObject::CallData::isMutedErrorGetter() {
+  args.rval().setBoolean(object->isMutedError(cx));
   return true;
 }
 
@@ -1272,46 +1277,56 @@ bool DebuggerObject::CallData::createSource() {
 
   bool isScriptElement = ToBoolean(v);
 
-  JS::CompileOptions compileOptions(cx);
-  compileOptions.lineno = startLine;
-  compileOptions.column = JS::ColumnNumberOneOrigin(startColumn);
-
-  if (!JS::StringHasLatin1Chars(url)) {
-    JS_ReportErrorASCII(cx, "URL must be a narrow string");
+  if (!JS_GetProperty(cx, options, "forceEnableAsmJS", &v)) {
     return false;
   }
 
-  UniqueChars urlChars = JS_EncodeStringToUTF8(cx, url);
-  if (!urlChars) {
-    return false;
-  }
-  compileOptions.setFile(urlChars.get());
-
-  Vector<char16_t> sourceMapURLChars(cx);
-  if (sourceMapURL) {
-    if (!CopyStringToVector(cx, sourceMapURL, sourceMapURLChars)) {
-      return false;
-    }
-    compileOptions.setSourceMapURL(sourceMapURLChars.begin());
-  }
-
-  if (isScriptElement) {
-    // The introduction type must be a statically allocated string.
-    compileOptions.setIntroductionType("inlineScript");
-  }
-
-  AutoStableStringChars linearChars(cx);
-  if (!linearChars.initTwoByte(cx, text)) {
-    return false;
-  }
-  JS::SourceText<char16_t> srcBuf;
-  if (!srcBuf.initMaybeBorrowed(cx, linearChars)) {
-    return false;
-  }
+  bool forceEnableAsmJS = ToBoolean(v);
 
   RootedScript script(cx);
   {
     AutoRealm ar(cx, referent);
+
+    JS::CompileOptions compileOptions(cx);
+    compileOptions.lineno = startLine;
+    compileOptions.column = JS::ColumnNumberOneOrigin(startColumn);
+    if (forceEnableAsmJS) {
+      compileOptions.setAsmJSOption(JS::AsmJSOption::Enabled);
+    }
+
+    if (!JS::StringHasLatin1Chars(url)) {
+      JS_ReportErrorASCII(cx, "URL must be a narrow string");
+      return false;
+    }
+
+    UniqueChars urlChars = JS_EncodeStringToUTF8(cx, url);
+    if (!urlChars) {
+      return false;
+    }
+    compileOptions.setFile(urlChars.get());
+
+    Vector<char16_t> sourceMapURLChars(cx);
+    if (sourceMapURL) {
+      if (!CopyStringToVector(cx, sourceMapURL, sourceMapURLChars)) {
+        return false;
+      }
+      compileOptions.setSourceMapURL(sourceMapURLChars.begin());
+    }
+
+    if (isScriptElement) {
+      // The introduction type must be a statically allocated string.
+      compileOptions.setIntroductionType("inlineScript");
+    }
+
+    AutoStableStringChars linearChars(cx);
+    if (!linearChars.initTwoByte(cx, text)) {
+      return false;
+    }
+    JS::SourceText<char16_t> srcBuf;
+    if (!srcBuf.initMaybeBorrowed(cx, linearChars)) {
+      return false;
+    }
+
     script = JS::Compile(cx, compileOptions, srcBuf);
     if (!script) {
       return false;
@@ -1504,6 +1519,7 @@ const JSPropertySpec DebuggerObject::properties_[] = {
     JS_DEBUG_PSG("boundArguments", boundArgumentsGetter),
     JS_DEBUG_PSG("allocationSite", allocationSiteGetter),
     JS_DEBUG_PSG("isError", isErrorGetter),
+    JS_DEBUG_PSG("isMutedError", isMutedErrorGetter),
     JS_DEBUG_PSG("errorMessageName", errorMessageNameGetter),
     JS_DEBUG_PSG("errorNotes", errorNotesGetter),
     JS_DEBUG_PSG("errorLineNumber", errorLineNumberGetter),
@@ -1678,6 +1694,31 @@ bool DebuggerObject::isError() const {
   }
 
   return referent->is<ErrorObject>();
+}
+
+bool DebuggerObject::isMutedError(JSContext* cx) const {
+  JS::Rooted<JSObject*> referent(cx, this->referent());
+
+  if (IsCrossCompartmentWrapper(referent)) {
+    // We only check for error classes, so CheckedUnwrapStatic is OK.
+    referent = CheckedUnwrapStatic(referent);
+    if (!referent) {
+      return false;
+    }
+  }
+
+  if (!referent->is<ErrorObject>()) {
+    return false;
+  }
+
+  JSErrorReport* report = referent->as<ErrorObject>().getErrorReport();
+  if (!report) {
+    // If the error report was missing, isMuted field can never be true,
+    // and just returning false is OK.
+    return false;
+  }
+
+  return report->isMuted;
 }
 
 /* static */

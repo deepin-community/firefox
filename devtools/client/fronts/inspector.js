@@ -4,7 +4,6 @@
 
 "use strict";
 
-const Telemetry = require("resource://devtools/client/shared/telemetry.js");
 const {
   FrontClassWithSpec,
   registerFront,
@@ -25,13 +24,8 @@ ChromeUtils.defineESModuleGetters(lazy, {
   TYPES: "resource://devtools/shared/highlighters.mjs",
 });
 
-const TELEMETRY_EYEDROPPER_OPENED = "DEVTOOLS_EYEDROPPER_OPENED_COUNT";
-const TELEMETRY_EYEDROPPER_OPENED_MENU =
-  "DEVTOOLS_MENU_EYEDROPPER_OPENED_COUNT";
 const SHOW_ALL_ANONYMOUS_CONTENT_PREF =
   "devtools.inspector.showAllAnonymousContent";
-
-const telemetry = new Telemetry();
 
 /**
  * Client side of the inspector actor, which is used to create
@@ -75,12 +69,7 @@ class InspectorFront extends FrontClassWithSpec(inspectorSpec) {
     }
 
     const promises = [this._getWalker(), this._getPageStyle()];
-    if (
-      this.targetFront.commands.descriptorFront.isTabDescriptor &&
-      // @backward-compat { version 130 } Support for VIEWPORT_SIZE_ON_RESIZE highlighter,
-      // can be removed once release is 130.
-      this.targetFront.targetForm?.traits?.viewportSizeOnResizeHighlighter
-    ) {
+    if (this.targetFront.commands.descriptorFront.isTabDescriptor) {
       promises.push(this._enableViewportSizeOnResizeHighlighter());
     }
 
@@ -184,7 +173,7 @@ class InspectorFront extends FrontClassWithSpec(inspectorSpec) {
    * comes in before that promise is resolved, wait for it to resolve and return the
    * highlighter instance it resolved with instead of creating a new request.
    *
-   * @param  {String} type
+   * @param  {string} type
    *         Highlighter type
    * @return {Promise}
    *         Promise which resolves with a highlighter instance of the given type
@@ -245,16 +234,16 @@ class InspectorFront extends FrontClassWithSpec(inspectorSpec) {
     });
 
     if (options?.fromMenu) {
-      telemetry.getHistogramById(TELEMETRY_EYEDROPPER_OPENED_MENU).add(true);
+      Glean.devtools.menuEyedropperOpenedCount.add(1);
     } else {
-      telemetry.getHistogramById(TELEMETRY_EYEDROPPER_OPENED).add(true);
+      Glean.devtools.eyedropperOpenedCount.add(1);
     }
   }
 
   /**
    * Given a node grip, return a NodeFront on the right context.
    *
-   * @param {Object} grip: The node grip.
+   * @param {object} grip: The node grip.
    * @returns {Promise<NodeFront|null>} A promise that resolves with  a NodeFront or null
    *                                    if the NodeFront couldn't be created/retrieved.
    */
@@ -297,5 +286,4 @@ class InspectorFront extends FrontClassWithSpec(inspectorSpec) {
   }
 }
 
-exports.InspectorFront = InspectorFront;
 registerFront(InspectorFront);

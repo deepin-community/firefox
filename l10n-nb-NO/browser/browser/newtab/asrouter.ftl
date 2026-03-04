@@ -59,7 +59,7 @@ cfr-doorhanger-extension-total-users =
        *[other] { $total } brukere
     }
 
-## Firefox Accounts Message
+## Mozilla Account messages
 
 cfr-doorhanger-bookmark-fxa-header = Synkroniser bokmerkene dine overalt.
 cfr-doorhanger-bookmark-fxa-body = Bra funn! Mangler du bokmerket på dine mobile enheter. Få en { -fxaccount-brand-name }.
@@ -68,6 +68,13 @@ cfr-doorhanger-bookmark-fxa-link-text = Synkroniser bokmerker nå…
 cfr-doorhanger-bookmark-fxa-close-btn-tooltip =
     .aria-label = Lukk-knapp
     .title = Lukk
+fxa-adoption-addresses-backup-title = La oss sikkerhetskopiere de lagrede adressene dine
+fxa-adoption-addresses-backup-subtitle = Beskytt de lagrede adressene dine ved å synkronisere dem med enhetene dine med kryptering.
+fxa-adoption-credit-cards-backup-title = La oss sikkerhetskopiere betalingsmåtene dine
+fxa-adoption-credit-cards-backup-subtitle = Beskytt betalingsmåtene dine ved å synkronisere dem med enhetene dine med kryptering.
+fxa-adoption-bookmarks-treatment-backup-title = La oss sikkerhetskopiere dine bokmerker
+fxa-adoption-bookmarks-treatment-backup-subtitle = Beskytt dine bokmerker ved å synkronisere dem med dine enheter med kryptering.
+fxa-adoption-primary-button-label = Registrer deg
 
 ## Protections panel
 
@@ -83,7 +90,7 @@ cfr-badge-reader-label-newfeature = Ny funksjon:
 cfr-whatsnew-button =
     .label = Hva er nytt
     .tooltiptext = Hva er nytt
-cfr-whatsnew-release-notes-link-text = Les utgivelsesnotatene
+cfr-whatsnew-release-notes-link-text = Les versjonsnotatene
 
 ## Enhanced Tracking Protection Milestones
 
@@ -166,7 +173,7 @@ mr2022-background-update-toast-primary-button-label = Åpne { -brand-shorter-nam
 # Windows. Try to not exceed the width of the English text (compare it using a
 # variable font like Arial): the button can only fit 1-2 additional characters,
 # exceeding characters will be truncated.
-mr2022-background-update-toast-secondary-button-label = Påminn senere
+mr2022-background-update-toast-secondary-button-label = Minn meg på det senere
 
 ## Firefox View CFR
 
@@ -225,14 +232,32 @@ fox-doodle-pin-secondary = Ikke nå
 set-default-pdf-handler-headline = <strong>PDF-filene dine åpnes nå i { -brand-short-name }.</strong> Rediger eller fyll ut skjemaer direkte i nettleseren din. For å endre, søk etter «PDF» i innstillingene.
 set-default-pdf-handler-primary = Jeg forstår
 
+## PDF Annotations strings
+
+# “Sign on the dotted line” is an idiomatic English expression about
+# where to place your signature.
+# If this expression doesn’t have a direct translation, please
+# translate this alternative string: "Add your signature anywhere!"
+annotations-default-pdf-handler-headline = Skriv under på den stiplede linjen — eller hvor som helst!
+# “Go-to” is an idiomatic English expression referring to something that is used often.
+annotations-default-pdf-handler-body = Tegn, skriv eller last opp signaturen din, og plasser den nøyaktig der du vil. Lagre signaturene du bruker ofte til neste gang.
+annotations-make-default-pdf-handler-title = Bruke { -brand-short-name } som standard PDF-redigeringsprogram?
+annotations-make-default-pdf-handler-subtitle = Du får tilgang til verktøyene våre hver gang du åpner en PDF.
+annotations-make-default-pdf-primary-cta-label = Bruk som standard
+annotations-make-default-pdf-next-label = Neste
+annotations-make-default-pdf-primary-cta =
+    .label = Bruk som standard
+annotations-make-default-pdf-next =
+    .label = Neste
+
 ## FxA sync CFR
 
 fxa-sync-cfr-header = Planlegger du å kjøpe en ny enhet i fremtiden?
 fxa-sync-cfr-body = Sørg for at de nyeste bokmerkene, passordene og fanene dine følger med deg hver gang du åpner en ny { -brand-product-name }-nettleser.
 fxa-sync-cfr-primary = Les mer
     .accesskey = L
-fxa-sync-cfr-secondary = Påminn senere
-    .accesskey = P
+fxa-sync-cfr-secondary = Minn meg på det senere
+    .accesskey = p
 
 ## Device Migration FxA Spotlight
 
@@ -245,6 +270,9 @@ device-migration-fxa-spotlight-older-device-primary-button = Opprett en konto
 device-migration-fxa-spotlight-getting-new-device-header-2 = Planlegger du å kjøpe en ny enhet i fremtiden?
 device-migration-fxa-spotlight-getting-new-device-body-2 = Følg noen få enkle trinn for å ta med deg bokmerkene, historikken og passordene dine når du tar i bruk en ny enhet.
 device-migration-fxa-spotlight-getting-new-device-primary-button = Hvordan sikkerhetskopiere mine data
+device-migration-fxa-spotlight-sync-header = Surf uten å gå glipp av noe viktig
+device-migration-fxa-spotlight-sync-body = Synkroniser all viktig informasjon med kryptering — som bokmerker og passord. Du kan hente alt hvor som helst du bruker { -brand-product-name }.
+device-migration-fxa-spotlight-sync-primary-button = Kom i gang
 
 ## Set as Default PDF Reader Infobar
 
@@ -281,3 +309,134 @@ tail-fox-spotlight-title = Hold irriterende sporings-tjenester på avstand
 tail-fox-spotlight-subtitle = Si farvel til irriterende annonse-sporere og opplev en sikrere, raskere internettopplevelse.
 tail-fox-spotlight-primary-button = Åpne lenkene mine med { -brand-short-name }
 tail-fox-spotlight-secondary-button = Ikke nå
+
+## Root Certificate Succession Infobar
+
+root-certificate-succession-infobar-january-message = <strong>Eldre versjoner av { -brand-short-name } kan begynne å få problemer 14. januar 2025.</strong>
+root-certificate-succession-infobar-march-message = <strong>Oppdater for å fortsette å bruke { -brand-short-name } etter 14. mars 2025.</strong>
+root-certificate-succession-infobar-link = Hvorfor må jeg oppdatere?
+root-certificate-succession-infobar-primary-button =
+    .label = Oppdater nå
+    .accesskey = O
+root-certificate-succession-infobar-secondary-button =
+    .label = Senere
+    .accesskey = S
+
+## Root Certificate Succession Windows Background Notification
+
+root-certificate-windows-background-notification-title = Du gikk glipp av en viktig { -brand-short-name }-oppdatering
+root-certificate-windows-background-notification-subtitle = Deler av nettleseren slutter snart å fungere hvis du ikke oppdaterer. Nå er en flott tid for å få de nyeste beskyttelsene og funksjonene våre.
+root-certificate-windows-background-notification-learn-more-button = Les mer
+root-certificate-windows-background-notification-update-button = Oppdater { -brand-short-name }
+
+## FxA Menu Message variants
+
+fxa-menu-message-close-button =
+    .title = Lukk
+    .aria-label = Lukk
+fxa-menu-message-sign-up-button = Registrer deg
+fxa-menu-message-sign-in-button = Logg inn
+fxa-menu-message-sync-button = Start synkronisering
+fxa-menu-message-sync-devices-primary-text = Synkroniser alle dine enheter
+fxa-menu-message-sync-devices-secondary-text = Få informasjonen din umiddelbart — som bokmerker og passord — overalt hvor du bruker { -brand-short-name }.
+fxa-menu-message-sync-devices-secondary-text2 = Få umiddelbart tilgang til bokmerker, passord og mer — overalt der du er logget inn i { -brand-short-name }.
+fxa-menu-message-sync-devices-collapsed-text = Synkroniser alle dine enheter
+fxa-menu-message-backup-data-primary-text = Sikkerhetskopier din nettleserdata
+fxa-menu-message-backup-data-secondary-text = Beskytt bokmerker, passord og annen informasjon automatisk på alle enhetene dine.
+fxa-menu-message-backup-data-collapsed-text = Sikkerhetskopier nettleserdata
+fxa-menu-message-backup-sync-primary-text = Hold dine data trygg og synkronisert
+fxa-menu-message-backup-sync-secondary-text = Synkronisering sikkerhetskopierer de fleste dataene dine slik at du kan få tilgang til dem overalt hvor du bruker { -brand-short-name }.
+fxa-menu-message-backup-sync-collapsed-text = Synkroniser og sikkerhetskopier data
+fxa-menu-message-mobile-primary-text = Send faner til telefonen din
+fxa-menu-message-mobile-secondary-text = Fortsett der du sluttet umiddelbart når du synkroniserer fanene dine med en mobilenhet.
+fxa-menu-message-mobile-collapsed-text = Synkroniser med telefonen din
+
+## Multi-CTA Fox Doodle Spotlight
+
+multi-cta-fox-doodle-title = Velkommen tilbake
+multi-cta-fox-doodle-set-default-checkbox = Gjør { -brand-short-name } til standard
+multi-cta-fox-doodle-pin-startmenu-checkbox = Fest { -brand-short-name } til Start-menyen
+multi-cta-fox-doodle-pin-checkbox =
+    { PLATFORM() ->
+        [macos] Behold { -brand-short-name } i Dock
+       *[other] Fest { -brand-short-name } til oppgavelinjen
+    }
+multi-cta-fox-doodle-start-browsing-primary-button-label = Begynn å surfe
+multi-cta-fox-doodle-main-browser-primary-button-label = Gjør { -brand-short-name } til min hovednettleser
+multi-cta-fox-doodle-quick-reminder-subtitle = Her er en rask påminnelse om at du kan ha din favorittnettleser med fokus på personvern kun ett klikk unna.
+multi-cta-fox-doodle-privacy-focused-subtitle =
+    { PLATFORM() ->
+        [macos] Ha din favorittnettleser med fokus på personvern bare ett klikk unna. Angi { -brand-short-name } som standardnettleser for å åpne lenker og behold den i Dock.
+       *[other] Ha din favorittnettleser med fokus på personvern bare ett klikk unna. Angi { -brand-short-name } som standardnettleser for å åpne lenker og fest den til oppgavelinjen.
+    }
+multi-cta-fox-doodle-msix-privacy-focused-subtitle = Ha din favorittnettleser med fokus på personvern bare ett klikk unna. Angi { -brand-short-name } som standardnettleser for å åpne lenker, og fest den til oppgavelinjen og Start-menyen.
+
+## Windows 10 EoS Sync messages group 1 spotlight
+
+windows-10-eos-sync-spotlight-title = Skal du snart oppgradere fra Windows 10?
+windows-10-eos-sync-spotlight-subtitle = Ta sikkerhetskopi av passordene og bokmerkene dine, så du er klar til å ta spranget til hvilken som helst enhet.
+windows-10-eos-sync-spotlight-primary-label = Sikkerhetskopier din { -brand-short-name }
+
+## Windows 10 EoS Sync messages group 1 toast notification
+
+windows-10-eos-sync-toast-title = Oppgraderer du til Windows 11? Ikke mist bokmerker og passord.
+windows-10-eos-sync-toast-subtitle = Sikkerhetskopier dataene dine slik at { -brand-short-name } er klar til bruk når som helst, på denne PC-en eller den neste.
+windows-10-eos-sync-toast-primary-label = Kom i gang
+windows-10-eos-sync-toast-secondary-label = Minn meg på det senere
+
+## Windows 10 EoS sync messages group 2 feature callouts
+
+windows-10-eos-challenger-callout-title = { -brand-product-name } er ikke forhåndsinstallert slik som andre nettlesere fra de store teknologigigantene. Det er poenget.
+windows-10-eos-challenger-sync-callout-subtitle = Når du sikkerhetskopierer bokmerkene og passordene dine fra { -brand-product-name }, er det enklere å ta med deg nettleseren du valgte til den neste enheten din.
+windows-10-eos-challenger-pin-callout-subtitle = Fest { -brand-shorter-name } til oppgavelinjen, slik at nettleseren du valgte alltid er der når du trenger den.
+windows-10-eos-challenger-sync-primary-button = Sikkerhetskopier { -brand-shorter-name }
+windows-10-eos-challenger-pin-primary-button = Fest { -brand-shorter-name }
+windows-10-eos-sync-callout-privacy-screen-1-title = { -brand-product-name } blokkerer kryptoutvinnere, sporere for sosiale medier og fingeravtrykksporere.
+windows-10-eos-sync-callout-privacy-screen-1-subtitle = Sporere kan ikke identifisere enheten din eller følge deg på nettet — fordi vi ikke lar dem gjøre det.
+windows-10-eos-sync-callout-privacy-screen-2-title = Sikre passordene og bokmerkene dine for den neste enheten din.
+windows-10-eos-sync-callout-privacy-screen-2-subtitle = Sikkerhetskopiering av { -brand-shorter-name } gjør det enkelt å ta med seg dataene og personverninnstillingene dine.
+windows-10-eos-sync-callout-privacy-info-button = Se hva som er blokkert
+windows-10-eos-callout-addons-title = Prøv tillegg: enkle oppgraderinger, stor effekt
+windows-10-eos-callout-addons-subtitle = Disse utvidelsene ble valgt for å hjelpe deg med å holde deg produktiv, beskyttet og distraksjonsfri.
+windows-10-eos-callout-addons-primary-button = Se våre valg
+windows-10-eos-sync-callout-addons-title = Ikke mist tilleggene dine når du oppgraderer fra Windows 10.
+windows-10-eos-sync-callout-addons-subtitle = Synkroniser nå, slik at { -brand-product-name }-tilleggene dine alltid er tilgjengelige, selv etter at du har byttet enhet.
+windows-10-eos-sync-callout-next-button = Neste
+windows-10-eos-sync-callout-get-started-button = Kom i gang
+
+## Windows 10 EoS Sync messages group 2 toast notification
+
+windows-10-eos-feature-toast-title = Vertikale faner og fanegrupper er her!
+# In English, "dropped" is a colloquial form for released.
+windows-10-eos-feature-toast-subtitle = Etter populær forespørsel har { -brand-product-name } nettopp lansert nye funksjoner for å gjøre nettlesingen din strømlinjeformet og fokusert.
+windows-10-eos-feature-toast-whats-new-button = Se hva som er nytt
+windows-10-eos-feature-toast-dismiss-button = Ignorer
+
+## ETP (Enhanced Tracking Protection) Strict exceptions infobar
+##
+## These strings are displayed in an infobar notification that appears when
+## Enhanced Tracking Protection's Strict mode is causing website functionality
+## issues. The infobar offers users the option to apply automatic exceptions
+## to fix common site breakage by unblocking essential elements.
+
+etp-strict-exceptions-infobar-message = <strong>Streng sporingsbeskyttelse kan føre til at nettsteder slutter å virke.</strong> Løs vanlige problemer ved å oppheve blokkeringen av nødvendige elementer som kan inneholde sporere.
+etp-strict-exceptions-infobar-learn-more = Les mer
+etp-strict-exceptions-infobar-button = Bruk fikser
+    .accesskey = B
+etp-strict-exceptions-infobar-not-now = Ikke nå
+    .accesskey = k
+
+## 'Set to default' messaging displayed within the App menu
+
+set-default-menu-message-simple-layout-title = { -brand-short-name } er ikke valgt som standard nettleser
+set-default-menu-message-simple-layout-title-variant = { -brand-short-name } er ikke din primære nettleser
+set-default-menu-message-row-layout-title = Gjør { -brand-short-name } til din primærnettleser
+set-default-menu-message-row-layout-title-variant = Gjør { -brand-short-name } til din standardnettleser
+set-default-menu-message-row-layout-subtitle = Få hastighet, sikkerhet og personvern hver gang du surfer.
+set-default-menu-message-row-layout-subtitle-variant =
+    { PLATFORM() ->
+        [macos] Ha { -brand-short-name } lett tilgjengelig – gjør den til standard og behold den i Dock.
+       *[other] Ha { -brand-short-name } lett tilgjengelig – gjør den til standard og behold den på oppgavelinjen.
+    }
+set-default-menu-message-primary-button = Bruk som standard
+set-default-menu-message-primary-button-variant = Bruk som primær nettleser

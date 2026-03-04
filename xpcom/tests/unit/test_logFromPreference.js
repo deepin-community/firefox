@@ -1,11 +1,12 @@
 /* Any copyright is dedicated to the Public Domain.
    http://creativecommons.org/publicdomain/zero/1.0/ */
 
-const kModulesPref = "logging.config.modules";
+const kPrefName = "logging.prof";
+const kPrefValue = 5;
 add_task(async () => {
-  Services.prefs.setStringPref(kModulesPref, "prof:5");
+  Services.prefs.setIntPref(kPrefName, kPrefValue);
   registerCleanupFunction(() => {
-    Services.prefs.clearUserPref(kModulesPref);
+    Services.prefs.clearUserPref(kPrefName);
   });
 
   const entries = 10000;
@@ -13,6 +14,10 @@ add_task(async () => {
   const threads = ["GeckoMain"];
   const features = ["nostacksampling"];
   await Services.profiler.StartProfiler(entries, interval, features, threads);
+  // We need to pause the profiler here, otherwise we get crashes.
+  // This seems to be a combination of json streaming + markers from Rust.
+  // See Bug 1920704 for more details.
+  await Services.profiler.Pause();
   const profileData = await Services.profiler.getProfileDataAsync();
   await Services.profiler.StopProfiler();
   const { markers, stringTable } = profileData.threads[0];

@@ -72,6 +72,13 @@ ChromeUtils.defineESModuleGetters(this, {
     "F10",
     "F11",
     "F12",
+    "F13",
+    "F14",
+    "F15",
+    "F16",
+    "F17",
+    "F18",
+    "F19",
   ];
   const functionKeys = new Set(_functionKeys);
   const validKeys = new Set([
@@ -401,7 +408,7 @@ ChromeUtils.defineESModuleGetters(this, {
 
     let validation = ShortcutUtils.validate(shortcutString);
     switch (validation) {
-      case ShortcutUtils.IS_VALID:
+      case ShortcutUtils.IS_VALID: {
         // Show an error if this is already a system shortcut.
         let chromeWindow = window.windowRoot.ownerGlobal;
         if (ShortcutUtils.isSystem(chromeWindow, shortcutString)) {
@@ -419,6 +426,7 @@ ChromeUtils.defineESModuleGetters(this, {
           assignShortcutToInput(input, shortcutString);
         }
         break;
+      }
       case ShortcutUtils.MODIFIER_REQUIRED:
         if (AppConstants.platform == "macosx") {
           setError(input, "shortcuts-modifier-mac");
@@ -481,7 +489,7 @@ ChromeUtils.defineESModuleGetters(this, {
     return fragment;
   }
 
-  async function renderAddons(addons) {
+  async function renderAddons(addons, focusedExtensionId) {
     let frag = document.createDocumentFragment();
     let noShortcutAddons = [];
 
@@ -511,6 +519,9 @@ ChromeUtils.defineESModuleGetters(this, {
         let icon = AddonManager.getPreferredIconURL(addon, 24, window);
         card.setAttribute("addon-id", addon.id);
         card.setAttribute("addon-name", addon.name);
+        if (focusedExtensionId && addon.id === focusedExtensionId) {
+          card.classList.add("focused-extension");
+        }
         card.querySelector(".addon-icon").src = icon || FALLBACK_ICON;
         card.querySelector(".addon-name").textContent = addon.name;
 
@@ -625,12 +636,22 @@ ChromeUtils.defineESModuleGetters(this, {
     return frag;
   }
 
+  // focusExtension() is called from the view-loaded listener so that it doesn't
+  // interfere with ScrollOffsets.restore() in view-controller.js.
+  function focusExtension() {
+    document
+      .querySelector(".shortcut.card.focused-extension")
+      ?.scrollIntoView({ block: "center" });
+  }
+
   class AddonShortcuts extends HTMLElement {
     connectedCallback() {
+      document.addEventListener("view-loaded", focusExtension);
       setDuplicateWarnings();
     }
 
     disconnectedCallback() {
+      document.removeEventListener("view-loaded", focusExtension);
       error = null;
     }
 
@@ -640,10 +661,11 @@ ChromeUtils.defineESModuleGetters(this, {
       let addons = allAddons
         .filter(addon => addon.isActive)
         .sort((a, b) => a.name.localeCompare(b.name));
+      let extensionId = this.getAttribute("extension-id");
       let frag;
 
       if (addons.length) {
-        frag = await renderAddons(addons);
+        frag = await renderAddons(addons, extensionId);
       } else {
         frag = document.importNode(templates.noAddons.content, true);
       }

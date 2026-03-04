@@ -4,6 +4,9 @@
 
 "use strict";
 
+/* import-globals-from ../../mochitest/states.js */
+loadScripts({ name: "states.js", dir: MOCHITESTS_DIR });
+
 async function testEditable(browser, acc, aBefore = "", aAfter = "") {
   async function resetInput() {
     if (acc.childCount <= 1) {
@@ -105,6 +108,19 @@ addAccessibleTask(
 );
 
 addAccessibleTask(
+  `<div id="input" contenteditable="true" role="textbox"></div>`,
+  async function (browser, docAcc) {
+    await testEditable(
+      browser,
+      findAccessibleChildByID(docAcc, "input"),
+      "",
+      ""
+    );
+  },
+  { chrome: true, topLevel: false /* bug 1834129 */ }
+);
+
+addAccessibleTask(
   `<style>
   #input::after {
     content: "pseudo element";
@@ -161,6 +177,45 @@ addAccessibleTask(
 );
 
 addAccessibleTask(
+  `<style>
+  br {
+    position: fixed;
+  }
+</style>
+<div id="input" contenteditable="true" role="textbox"></div>`,
+  async function (browser, docAcc) {
+    document.execCommand("insertText", false, "a");
+    document.execCommand("delete");
+    await testEditable(browser, findAccessibleChildByID(docAcc, "input"));
+  },
+  { chrome: true, topLevel: false /* bug 1834129 */ }
+);
+
+addAccessibleTask(
+  `<style>
+  #input {
+    white-space: pre;
+  }
+  #input::before {
+    content: "before";
+  }
+  #input::after {
+    content: "after";
+  }
+</style>
+<div id="input" contenteditable="plaintext-only" role="textbox"></div>`,
+  async function (browser, docAcc) {
+    await testEditable(
+      browser,
+      findAccessibleChildByID(docAcc, "input"),
+      "before",
+      "after"
+    );
+  },
+  { chrome: true, topLevel: false /* bug 1834129 */ }
+);
+
+addAccessibleTask(
   ``,
   async function (browser, docAcc) {
     await testEditable(browser, docAcc);
@@ -169,5 +224,84 @@ addAccessibleTask(
     chrome: true,
     topLevel: true,
     contentDocBodyAttrs: { contentEditable: "true" },
+  }
+);
+
+/**
+ * Test PasteText replacement of selected text.
+ */
+addAccessibleTask(
+  `<input id="input" value="abcdef">`,
+  async function testPasteTextReplace(browser, docAcc) {
+    const input = findAccessibleChildByID(docAcc, "input");
+    let focused = waitForEvent(EVENT_FOCUS, input);
+    info("Focusing input");
+    input.takeFocus();
+    await focused;
+    info("Copying ef");
+    input.QueryInterface(nsIAccessibleEditableText);
+    let selected = waitForEvent(EVENT_TEXT_SELECTION_CHANGED, input);
+    input.copyText(4, 6);
+    await selected;
+    info("Selecting bc");
+    selected = waitForEvent(EVENT_TEXT_SELECTION_CHANGED, input);
+    await invokeContentTask(browser, [], () => {
+      const inputDom = content.document.getElementById("input");
+      inputDom.selectionStart = 1;
+      inputDom.selectionEnd = 3;
+    });
+    await selected;
+    info("Pasting at caret");
+    let changed = waitForEvents([
+      [EVENT_TEXT_REMOVED, input],
+      [EVENT_TEXT_INSERTED, input],
+      [EVENT_TEXT_VALUE_CHANGE, input],
+    ]);
+    input.pasteText(nsIAccessibleText.TEXT_OFFSET_CARET);
+    await changed;
+    is(input.value, "aefdef", "input value correct after pasting");
+  }
+);
+
+addAccessibleTask(
+  `<div id="editable" contenteditable="true"><p id="p">one</p></div>`,
+  async function testNoRoleEditable(browser, docAcc) {
+    const editable = findAccessibleChildByID(docAcc, "editable");
+    is(editable.value, "one", "initial value correct");
+    ok(true, "Set initial text");
+    await invokeContentTask(browser, [], () => {
+      content.document.getElementById("p").firstChild.data = "two";
+    });
+    await untilCacheIs(() => editable.value, "two", "value changed correctly");
+
+    function isMultiline() {
+      let extState = {};
+      editable.getState({}, extState);
+      return (
+        !!(extState.value & EXT_STATE_MULTI_LINE) &&
+        !(extState.value & EXT_STATE_SINGLE_LINE)
+      );
+    }
+
+    ok(isMultiline(), "Editable is in multiline state");
+    await invokeSetAttribute(browser, "editable", "aria-multiline", "false");
+    await untilCacheOk(() => !isMultiline(), "editable is in singleline state");
+
+    await invokeSetAttribute(browser, "editable", "aria-multiline");
+    await untilCacheOk(() => isMultiline(), "editable is in multi-line again");
+
+    await invokeSetAttribute(browser, "editable", "contenteditable");
+    await untilCacheOk(() => {
+      let extState = {};
+      editable.getState({}, extState);
+      return (
+        !(extState.value & EXT_STATE_MULTI_LINE) &&
+        !(extState.value & EXT_STATE_SINGLE_LINE)
+      );
+    }, "editable should have neither multi-line nor single-line state");
+  },
+  {
+    chrome: true,
+    topLevel: true,
   }
 );

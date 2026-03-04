@@ -7,11 +7,10 @@
 #ifndef DOM_SVG_SVGANIMATEDPATHSEGLIST_H_
 #define DOM_SVG_SVGANIMATEDPATHSEGLIST_H_
 
-#include "mozilla/Attributes.h"
+#include "SVGPathData.h"
 #include "mozilla/MemoryReporting.h"
 #include "mozilla/SMILAttr.h"
 #include "mozilla/UniquePtr.h"
-#include "SVGPathData.h"
 
 namespace mozilla {
 
@@ -20,6 +19,8 @@ class SMILValue;
 namespace dom {
 class SVGAnimationElement;
 class SVGElement;
+class SVGPathSegment;
+struct SVGPathSegmentInit;
 }  // namespace dom
 
 /**
@@ -58,6 +59,9 @@ class SVGAnimatedPathSegList final {
   const SVGPathData& GetBaseValue() const { return mBaseVal; }
 
   nsresult SetBaseValueString(const nsAString& aValue);
+
+  void SetBaseValueFromPathSegments(
+      const dom::Sequence<dom::SVGPathSegmentInit>& aValues);
 
   void ClearBaseValue();
 

@@ -17,10 +17,11 @@ policy-AppAutoUpdate = Activar o disactivar le actualisation automatic del appli
 policy-AppUpdatePin = Impedi a { -brand-short-name } de esser actualisate ultra un certe version
 policy-AppUpdateURL = Definir un URL de actualisation personalisate pro le application.
 policy-Authentication = Configurar authentication integrate pro sitos web que lo supporta.
-policy-AutofillAddressEnabled = Activar compilation automatic pro adresses.
-policy-AutofillCreditCardEnabled = Activar compilation automatic pro methodos de pagamento.
+policy-AutofillAddressEnabled = Activar le completamento automatic de adresses.
+policy-AutofillCreditCardEnabled = Activar le completamento automatic de methodos de pagamento.
 policy-AutoLaunchProtocolsFromOrigins = Defini un lista de protocollos externe que pote esser usate, a partir de origines listate, sin demandar confirmation del usator.
 policy-BackgroundAppUpdate2 = Activar o disactivar le actualisator in fundo.
+policy-Backup = Disactivar le copia de securitate o le restauration del datos de profilo.
 policy-BlockAboutAddons = Blocar accesso al Gestor de additivos (circa:additivos).
 policy-BlockAboutConfig = Blocar accesso al pagina about:config.
 policy-BlockAboutProfiles = Blocar accesso al pagina about:profiles.
@@ -55,6 +56,7 @@ policy-DisablePocket2 = Disactivar le function pro salvar paginas web in { -pock
 policy-DisablePrivateBrowsing = Disactivar le Navigation private.
 policy-DisableProfileImport = Disactivar le commando del menu pro importar datos ab un altere navigator.
 policy-DisableProfileRefresh = Disactivar le button Refrescar { -brand-short-name } in le pagina about:support.
+policy-DisableRemoteImprovements = Impedir a { -brand-short-name } de applicar modificationes de prestation, stabilitate, e functionalitate inter actualisationes.
 policy-DisableSafeMode = Disactivar le function pro reinitiar in modo secur. Nota: le clave Shift pro entrar in modo secur pote solmente esser disactivate sur Windows usante le politicas de gruppo.
 policy-DisableSecurityBypass = Impedir al usator de ignorar certe avisos de securitate.
 policy-DisableSetAsDesktopBackground = Disactivar le commando de menu Definir como Fundo del scriptorio pro le imagines.
@@ -79,6 +81,7 @@ policy-ExtensionSettings = Gerer tote le aspectos del installation de extensione
 policy-ExtensionUpdate = Activar o disactivar le actualisation automatic de extensiones.
 policy-FirefoxHome2 = Configurar { -firefox-home-brand-name }.
 policy-FirefoxSuggest = Configurar { -firefox-suggest-brand-name }.
+policy-GenerativeAI = Configurar functiones de IA generative.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Fortiar le navigation directe del sito intranet in vice de cercar quando on scribe singule entratas de parolas in le barra de adresses.
 policy-Handlers = Configurar gestores de application predefinite.
 policy-HardwareAcceleration = Si false, disactivar le acceleration hardware.
@@ -97,6 +100,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Usar le comportamento 
 ##
 
 policy-LocalFileLinks = Permitter a sitos web specific de ligar a files local.
+policy-LocalNetworkAccess = Activar o disactivar controlos de accesso al rete local.
 policy-ManagedBookmarks = Configura un lista de marcapaginas, gerite per un administrator, que non pote esser cambiate per le usator.
 policy-ManualAppUpdateOnly = Solo consentir actualisationes manual e non allertar le usator re actualisationes.
 policy-PrimaryPassword = Requirer o impedir usar un contrasigno primari.
@@ -117,6 +121,7 @@ policy-PostQuantumKeyAgreementEnabled = Activar le acceptation de clave post-qua
 policy-PDFjs = Disactivar o configurar PDF.js, le visor de PDF integrate in { -brand-short-name }.
 policy-Permissions2 = Configurar le permissiones pro camera, microphono, position, notificationes e autoreproduction.
 policy-PictureInPicture = Activar o disactivar Imagine annidate
+policy-PopupBlocking2 = Permitter a certe sitos web de monstrar quadros resaltante e esser re-dirigite per quadros de tertie-partes.
 policy-PopupBlocking = Permitter a certe sitos web de monstrar fenestras emergente per predefinition.
 policy-Preferences = Defini e bloca le valor de un sub-ensemble de preferentias.
 policy-PrivateBrowsingModeAvailability = Predefini le disponibilitate del modalitate Navigation private.
@@ -130,6 +135,8 @@ policy-SearchSuggestEnabled = Activar o disactivar suggestiones de recerca.
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = Adder o deler modulos PKCS #11.
 policy-ShowHomeButton = Monstrar le button casa sur le barra de utensiles.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = Non monstrar le Conditiones de uso e le Aviso de confidentialitate al lanceamento initial. Tu declara que tu accepta e ha le autoritate pro acceptar le Conditiones de uso in nomine de tote le personas a qui tu forni le accesso a iste navigator.
 policy-SSLVersionMax = Stabilir le version SSL maxime.
 policy-SSLVersionMin = Stabilir le version SSL minime.
 policy-StartDownloadsInTempDirectory = Fortiar que le discargamentos comencia in un directorio local temporari e non in le directorio de discargamento predefinite.
@@ -137,6 +144,9 @@ policy-SupportMenu = Adder un selection de supporto personalisate al menu de adj
 policy-TranslateEnabled = Activar o disactivar le traduction del pagina web.
 policy-UserMessaging = Non monstrar al usator certe messages.
 policy-UseSystemPrintDialog = Imprimer usante le fenestra de impression del systema…
+policy-VisualSearchEnabled = Activar o disactivar recerca visual.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Blocar le accesso a sitos web. Vider documentation pro plus detalios sur le formato.
 policy-Windows10SSO = Permitter le autorisation unic de Windows pro le contos de labor e schola de Microsoft.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Permitter authentication singule pro le conto Microsoft Entra.

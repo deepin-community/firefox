@@ -7,12 +7,11 @@
 #ifndef mozilla_dom_cache_Manager_h
 #define mozilla_dom_cache_Manager_h
 
-#include "mozilla/RefPtr.h"
+#include "CacheCommon.h"
 #include "mozilla/dom/SafeRefPtr.h"
 #include "mozilla/dom/cache/Types.h"
 #include "mozilla/dom/quota/Client.h"
 #include "mozilla/dom/quota/StringifyUtils.h"
-#include "CacheCommon.h"
 #include "nsCOMPtr.h"
 #include "nsISupportsImpl.h"
 #include "nsString.h"
@@ -29,7 +28,7 @@ namespace dom {
 
 namespace quota {
 
-class DirectoryLock;
+class ClientDirectoryLock;
 
 }  // namespace quota
 
@@ -75,7 +74,7 @@ class StreamList;
 // Cache DOM objects during shutdown, then all operations will begin rejecting.
 class Manager final : public SafeRefCounted<Manager>, public Stringifyable {
   using Client = quota::Client;
-  using DirectoryLock = quota::DirectoryLock;
+  using ClientDirectoryLock = quota::ClientDirectoryLock;
 
  public:
   // Callback interface implemented by clients of Manager, such as CacheParent
@@ -174,7 +173,7 @@ class Manager final : public SafeRefCounted<Manager>, public Stringifyable {
 
   const ManagerId& GetManagerId() const;
 
-  Maybe<DirectoryLock&> MaybeDirectoryLockRef() const;
+  Maybe<ClientDirectoryLock&> MaybeDirectoryLockRef() const;
 
   // Methods to allow a StreamList to register themselves with the Manager.
   // StreamList objects must call RemoveStreamList() before they are destroyed.
@@ -199,8 +198,9 @@ class Manager final : public SafeRefCounted<Manager>, public Stringifyable {
                               nsCOMPtr<nsIInputStream>&& aBodyStream);
 
 #ifdef MOZ_DIAGNOSTIC_ASSERT_ENABLED
-  void RecordMayNotDeleteCSCP(int32_t aCacheStreamControlParentId);
-  void RecordHaveDeletedCSCP(int32_t aCacheStreamControlParentId);
+  void RecordMayNotDeleteCSCP(
+      mozilla::ipc::ActorId aCacheStreamControlParentId);
+  void RecordHaveDeletedCSCP(mozilla::ipc::ActorId aCacheStreamControlParentId);
 #endif
 
  private:

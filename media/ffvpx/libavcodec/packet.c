@@ -23,6 +23,7 @@
 
 #include "libavutil/avassert.h"
 #include "libavutil/avutil.h"
+#include "libavutil/container_fifo.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/mathematics.h"
 #include "libavutil/mem.h"
@@ -305,6 +306,8 @@ const char *av_packet_side_data_name(enum AVPacketSideDataType type)
     case AV_PKT_DATA_IAMF_MIX_GAIN_PARAM:        return "IAMF Mix Gain Parameter Data";
     case AV_PKT_DATA_IAMF_DEMIXING_INFO_PARAM:   return "IAMF Demixing Info Parameter Data";
     case AV_PKT_DATA_IAMF_RECON_GAIN_INFO_PARAM: return "IAMF Recon Gain Info Parameter Data";
+    case AV_PKT_DATA_FRAME_CROPPING:             return "Frame Cropping";
+    case AV_PKT_DATA_LCEVC:                      return "LCEVC NAL data";
     }
     return NULL;
 }
@@ -387,6 +390,32 @@ int av_packet_shrink_side_data(AVPacket *pkt, enum AVPacketSideDataType type,
     return AVERROR(ENOENT);
 }
 
+static void av_packet_free_moz_crypto_info(AVPacket *pkt) {
+  if (pkt->moz_crypto_info_release && pkt->moz_crypto_info) {
+    (*pkt->moz_crypto_info_release)(pkt->moz_crypto_info);
+  }
+  pkt->moz_ndk_crypto_info        = NULL;
+  pkt->moz_crypto_info            = NULL;
+  pkt->moz_crypto_info_addref     = NULL;
+  pkt->moz_crypto_info_release    = NULL;
+}
+
+static int av_packet_copy_moz_crypto_info(AVPacket *dst, const AVPacket *src) {
+  av_packet_free_moz_crypto_info(dst);
+  if (!src->moz_ndk_crypto_info) {
+    return 0;
+  }
+  if (!src->moz_crypto_info || !src->moz_crypto_info_addref || !src->moz_crypto_info_release) {
+    return AVERROR(EINVAL);
+  }
+  dst->moz_ndk_crypto_info        = src->moz_ndk_crypto_info;
+  dst->moz_crypto_info            = src->moz_crypto_info;
+  dst->moz_crypto_info_addref     = src->moz_crypto_info_addref;
+  dst->moz_crypto_info_release    = src->moz_crypto_info_release;
+  (*dst->moz_crypto_info_addref)(dst->moz_crypto_info);
+  return 0;
+}
+
 int av_packet_copy_props(AVPacket *dst, const AVPacket *src)
 {
     int i, ret;
@@ -403,9 +432,15 @@ int av_packet_copy_props(AVPacket *dst, const AVPacket *src)
     dst->side_data            = NULL;
     dst->side_data_elems      = 0;
 
-    ret = av_buffer_replace(&dst->opaque_ref, src->opaque_ref);
+    ret = av_packet_copy_moz_crypto_info(dst, src);
     if (ret < 0)
         return ret;
+
+    ret = av_buffer_replace(&dst->opaque_ref, src->opaque_ref);
+    if (ret < 0) {
+        av_packet_free_moz_crypto_info(dst);
+        return ret;
+    }
 
     for (i = 0; i < src->side_data_elems; i++) {
         enum AVPacketSideDataType type = src->side_data[i].type;
@@ -414,6 +449,7 @@ int av_packet_copy_props(AVPacket *dst, const AVPacket *src)
         uint8_t *dst_data = av_packet_new_side_data(dst, type, size);
 
         if (!dst_data) {
+            av_packet_free_moz_crypto_info(dst);
             av_buffer_unref(&dst->opaque_ref);
             av_packet_free_side_data(dst);
             return AVERROR(ENOMEM);
@@ -426,6 +462,7 @@ int av_packet_copy_props(AVPacket *dst, const AVPacket *src)
 
 void av_packet_unref(AVPacket *pkt)
 {
+    av_packet_free_moz_crypto_info(pkt);
     av_packet_free_side_data(pkt);
     av_buffer_unref(&pkt->opaque_ref);
     av_buffer_unref(&pkt->buf);
@@ -749,4 +786,36 @@ void av_packet_side_data_free(AVPacketSideData **psd, int *pnb_sd)
 
     av_freep(psd);
     *pnb_sd = 0;
+}
+
+static void *container_packet_alloc(void *opaque)
+{
+    return av_packet_alloc();
+}
+
+static void container_packet_reset(void *opaque, void *obj)
+{
+    av_packet_unref(obj);
+}
+
+static void container_packet_free(void *opaque, void *obj)
+{
+    AVPacket *pkt = obj;
+    av_packet_free(&pkt);
+}
+
+static int container_packet_transfer(void *opaque, void *dst, void *src, unsigned flags)
+{
+    if (flags & AV_CONTAINER_FIFO_FLAG_REF)
+        return av_packet_ref(dst, src);
+
+    av_packet_move_ref(dst, src);
+    return 0;
+}
+
+AVContainerFifo *av_container_fifo_alloc_avpacket(unsigned flags)
+{
+    return av_container_fifo_alloc(NULL, container_packet_alloc,
+                                   container_packet_reset, container_packet_free,
+                                   container_packet_transfer, 0);
 }

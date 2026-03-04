@@ -36,6 +36,7 @@ class nsAccUtils {
    */
   static void SetAccGroupAttrs(AccAttributes* aAttributes, int32_t aLevel,
                                int32_t aSetSize, int32_t aPosInSet);
+  static void SetAccGroupAttrs(AccAttributes* aAttributes, Accessible* aAcc);
 
   /**
    * Compute group level for nsIDOMXULContainerItemElement node.
@@ -103,7 +104,7 @@ class nsAccUtils {
    */
   static HyperTextAccessible* GetTextContainer(nsINode* aNode);
 
-  static Accessible* TableFor(Accessible* aRow);
+  static Accessible* TableFor(const Accessible* aRow);
   static LocalAccessible* TableFor(LocalAccessible* aRow);
 
   static const LocalAccessible* TableFor(const LocalAccessible* aAcc) {
@@ -288,6 +289,8 @@ class nsAccUtils {
                           nsAString& aResult);
   static const nsAttrValue* GetARIAAttr(dom::Element* aElement,
                                         const nsAtom* aName);
+  static bool GetARIAElementsAttr(dom::Element* aElement, nsAtom* aName,
+                                  nsTArray<dom::Element*>& aElements);
   static bool ARIAAttrValueIs(dom::Element* aElement, const nsAtom* aName,
                               const nsAString& aValue,
                               nsCaseTreatment aCaseSensitive);
@@ -298,6 +301,15 @@ class nsAccUtils {
                                      const nsAtom* aName,
                                      AttrArray::AttrValuesArray* aValues,
                                      nsCaseTreatment aCaseSensitive);
+
+  static bool IsEditableARIACombobox(const LocalAccessible* aAccessible);
+
+  /**
+   * Return true if the CSS positioned target of an anchor is a valid details
+   * related accessible.
+   */
+  static bool IsValidDetailsTargetForAnchor(const Accessible* aDetails,
+                                            const Accessible* aTarget);
 };
 
 }  // namespace a11y

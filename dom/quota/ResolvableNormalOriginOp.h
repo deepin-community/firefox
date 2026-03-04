@@ -8,8 +8,8 @@
 #define DOM_QUOTA_RESOLVABLENORMALORIGINOP_H_
 
 #include "NormalOriginOperationBase.h"
-
 #include "mozilla/MozPromise.h"
+#include "mozilla/dom/FlippedOnce.h"
 
 namespace mozilla::dom::quota {
 
@@ -35,7 +35,11 @@ class ResolvableNormalOriginOp : public NormalOriginOperationBase {
 
   virtual ~ResolvableNormalOriginOp() = default;
 
-  virtual ResolveValueT GetResolveValue() = 0;
+  virtual ResolveValueT UnwrapResolveValue() = 0;
+
+#ifdef DEBUG
+  bool ResolveValueConsumed() { return mResolveValueConsumed; }
+#endif
 
  private:
   void SendResults() override {
@@ -44,13 +48,19 @@ class ResolvableNormalOriginOp : public NormalOriginOperationBase {
     }
 
     if (NS_SUCCEEDED(mResultCode)) {
-      mPromiseHolder.ResolveIfExists(GetResolveValue(), __func__);
+      mPromiseHolder.ResolveIfExists(UnwrapResolveValue(), __func__);
+#ifdef DEBUG
+      mResolveValueConsumed.Flip();
+#endif
     } else {
       mPromiseHolder.RejectIfExists(mResultCode, __func__);
     }
   }
 
   MozPromiseHolder<PromiseType> mPromiseHolder;
+#ifdef DEBUG
+  FlippedOnce<false> mResolveValueConsumed;
+#endif
 };
 
 }  // namespace mozilla::dom::quota

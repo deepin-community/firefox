@@ -1,6 +1,6 @@
-use std::{borrow::Cow, slice};
+use alloc::{borrow::Cow, string::String};
 
-use parking_lot::{lock_api::RawMutex, Mutex};
+use parking_lot::Mutex;
 use windows::Win32::{Foundation, System::Diagnostics::Debug};
 
 // This is a mutex as opposed to an atomic as we need to completely
@@ -9,7 +9,7 @@ use windows::Win32::{Foundation, System::Diagnostics::Debug};
 //
 // By routing all the registration through these functions we can guarantee
 // there is either 1 or 0 exception handlers registered, not multiple.
-static EXCEPTION_HANDLER_COUNT: Mutex<usize> = Mutex::const_new(parking_lot::RawMutex::INIT, 0);
+static EXCEPTION_HANDLER_COUNT: Mutex<usize> = Mutex::new(0);
 
 pub fn register_exception_handler() {
     let mut count_guard = EXCEPTION_HANDLER_COUNT.lock();
@@ -31,8 +31,10 @@ const MESSAGE_PREFIXES: &[(&str, log::Level)] = &[
     ("CORRUPTION", log::Level::Error),
     ("ERROR", log::Level::Error),
     ("WARNING", log::Level::Warn),
-    ("INFO", log::Level::Info),
-    ("MESSAGE", log::Level::Debug),
+    // We intentionally suppress "INFO" messages down to debug
+    // so that users are not innundated with info messages from the runtime.
+    ("INFO", log::Level::Debug),
+    ("MESSAGE", log::Level::Trace),
 ];
 
 unsafe extern "system" fn output_debug_string_handler(
@@ -44,18 +46,12 @@ unsafe extern "system" fn output_debug_string_handler(
         return Debug::EXCEPTION_CONTINUE_SEARCH;
     }
     let message = match record.ExceptionCode {
-        Foundation::DBG_PRINTEXCEPTION_C => String::from_utf8_lossy(unsafe {
-            slice::from_raw_parts(
-                record.ExceptionInformation[1] as *const u8,
-                record.ExceptionInformation[0],
-            )
-        }),
-        Foundation::DBG_PRINTEXCEPTION_WIDE_C => Cow::Owned(String::from_utf16_lossy(unsafe {
-            slice::from_raw_parts(
-                record.ExceptionInformation[1] as *const u16,
-                record.ExceptionInformation[0],
-            )
-        })),
+        Foundation::DBG_PRINTEXCEPTION_C => {
+            String::from_utf8_lossy(bytemuck::cast_slice(&record.ExceptionInformation))
+        }
+        Foundation::DBG_PRINTEXCEPTION_WIDE_C => Cow::Owned(String::from_utf16_lossy(
+            bytemuck::cast_slice(&record.ExceptionInformation),
+        )),
         _ => return Debug::EXCEPTION_CONTINUE_SEARCH,
     };
 
@@ -86,10 +82,13 @@ unsafe extern "system" fn output_debug_string_handler(
     }
 
     let _ = std::panic::catch_unwind(|| {
-        log::log!(level, "{}", message);
+        log::log!(level, "{message}");
     });
 
+    #[cfg(feature = "validation_canary")]
     if cfg!(debug_assertions) && level == log::Level::Error {
+        use alloc::string::ToString as _;
+
         // Set canary and continue
         crate::VALIDATION_CANARY.add(message.to_string());
     }

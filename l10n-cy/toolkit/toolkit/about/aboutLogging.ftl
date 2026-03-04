@@ -15,6 +15,8 @@ about-logging-set-log-file = Gosod Ffeil Cofnodi
 about-logging-set-log-modules = Gosod Modiwlau Cofnodi
 about-logging-start-logging = Cychwyn Cofnodi
 about-logging-stop-logging = Peidio Cofnodi
+about-logging-copy-as-url = Copïo'r gosodiadau cyfredol fel URL
+about-logging-url-copied = Gosodiadau logio wedi'u copïo i'r clipfwrdd fel URL rhagosodedig
 about-logging-buttons-disabled = Mae'r cofnodi wedi'i ffurfweddu trwy newidynnau amgylcheddol, nid yw ffurfweddu deinamig ar gael.
 about-logging-some-elements-disabled = Mae'r cofnodi wedi'i ffurfweddu trwy URL, nid oes rhai dewisiadau ffurfweddu ar gael
 about-logging-info = Gwybodaeth:
@@ -27,6 +29,9 @@ about-logging-no-log-modules = Dim
 about-logging-no-log-file = Dim
 about-logging-logging-preset-selector-text = Rhagosodiad cofnodi:
 about-logging-with-profiler-stacks-checkbox = Galluogi olion stac ar gyfer negeseuon cofnodion
+about-logging-with-javascript-tracing-checkbox = Galluogi trasio JavaScript
+about-logging-menu =
+    .title = Dewisiadau uwch
 
 ## Logging presets
 
@@ -44,6 +49,14 @@ about-logging-preset-media-playback-label = Chwarae cyfryngau
 about-logging-preset-media-playback-description = Cofnodi modiwlau i ddatrys materion chwarae cyfryngau (nid materion fideo-gynadledda)
 about-logging-preset-webrtc-label = WebRTC
 about-logging-preset-webrtc-description = Cofnodi modiwlau er mwyn datrys materion galwadau WebRTC
+about-logging-preset-webcodecs-label = WebCodecs
+about-logging-preset-webcodecs-description = Cofnodi modiwlau i wneud diagnosis o broblemau gyda datgodyddion sain/fideo ac amgodyddion, a datgodyddion delwedd WebCodecs
+about-logging-preset-ml-label = Dysgu Peirianyddol
+about-logging-preset-ml-description = Modiwlau cofnodi i wneud diagnosis o faterion dysgu peirianyddol
+about-logging-preset-web-compat-label = Compat Gwe
+about-logging-preset-web-compat-description = Cofnodi modiwlau i wneud diagnosis o faterion cydweddoldeb gwe
+about-logging-preset-navigation = Llywio
+about-logging-preset-navigation-description = Cofnodi modiwlau i wneud diagnosis o faterion llywio a hanes sesiynau
 about-logging-preset-webgpu-label = WebGPU
 about-logging-preset-webgpu-description = Modiwlau cofnodi i wneud diagnosis o faterion WebGPU
 about-logging-preset-gfx-label = Graffigau
@@ -56,9 +69,7 @@ about-logging-preset-custom-description = Modiwlau cofnodion wedi'u dewis â lla
 # Error handling
 about-logging-error = Gwall:
 
-## Variables:
-##   $k (String) - Variable name
-##   $v (String) - Variable value
+##
 
 about-logging-invalid-output = Gwerth annilys “{ $v }“ ar gyfer allwedd “{ $k }“
 about-logging-unknown-logging-preset = Rhagosodiad cofnodi anhysbys “{ $v }“
@@ -66,4 +77,53 @@ about-logging-unknown-profiler-preset = Rhagosodiad proffiliwr anhysbys “{ $v 
 about-logging-unknown-option = Dewis about:logging anhysbys “{ $k }“
 about-logging-configuration-url-ignored = Anwybyddwyd URL ffurfweddiad
 about-logging-file-and-profiler-override = Methu â gorfodi allbwn ffeil a diystyru dewisiadau proffiliwr ar yr un pryd
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-unknown-error = Digwyddodd gwall: { $errorText }
 about-logging-configured-via-url = Dewis wedi'i ffurfweddu trwy URL
+
+## The upload interface is shown only with the preference toolkit.aboutLogging.uploadProfileToCloud
+## set to true. It is false by default, except on Android.
+
+about-logging-upload-question = Mae'r data proffil wedi'i gasglu. Ydych chi am ei gadw neu ei lwytho i fyny?
+about-logging-save-button = Cadw
+about-logging-upload-button = Llwytho i fyny
+# Variables:
+#   $path (string) - The path where the profile can be found.
+about-logging-saved = Cadwyd i { $path }
+# Variables:
+#   $percent (number) - The upload completion progress, to be displayed as a percentage. This is a value between 0 and 1.
+about-logging-uploading-progress = Wrthi'n llwytho data proffil i fyny: { NUMBER($percent, maximumSignificantDigits: 2, style: "percent") }
+# Variables:
+#   $url (string) - The URL where the profile can be found
+about-logging-uploaded = Llwythwyd i <a data-l10n-name="uploaded-message-url">{ $url }</a>
+about-logging-share-uploaded-url = <img data-l10n-name="share-image"/> Rhannu URL
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-upload-error = Digwyddodd gwall wrth lwytho'r proffil i fyny: { $errorText }
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-profile-storage-error = Digwyddodd gwall wrth gadw'r proffil wedi'i lwytho: { $errorText }
+# Variables:
+#   $errorText (string) - The received error message, inserted as is.
+about-logging-save-error = Digwyddodd gwall wrth gadw'r ffeil: { $errorText }
+
+## Uploaded Profiles section
+
+# This string is used as the default name for performance profiles when they are
+# uploaded from about:logging and saved to the local database. The generated
+# name will appear in the "Uploaded Profiles" section list, allowing users to
+# identify when each profile was captured.
+# Variables:
+#   $date (date) - The date and time when the profile was uploaded
+about-logging-uploaded-profile-name = Proffil { DATETIME($date, dateStyle: "short", timeStyle: "medium") }
+about-logging-uploaded-profiles-title = Proffiliau Wedi'u Llwytho
+about-logging-no-uploaded-profiles = Heb lwytho unrhyw broffiliau eto.
+about-logging-delete-uploaded-profile = Dileu
+about-logging-view-uploaded-profile = Gweld Proffil
+about-logging-delete-profile-confirm-title = Dileu Proffil
+# Confirmation message shown when deleting an uploaded profile.
+# Variables:
+#   $profileName (string) - The name of the profile being deleted.
+about-logging-delete-profile-confirm = Ydych chi'n siŵr eich bod am ddileu proffil " { $profileName } "? Does dim modd dadwneud hyn.
+about-logging-deleting-profile = Wrthi'n dileu…

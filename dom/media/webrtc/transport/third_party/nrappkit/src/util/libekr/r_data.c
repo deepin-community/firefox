@@ -84,10 +84,7 @@
 #include <r_data.h>
 #include <string.h>
 
-int r_data_create(dp,d,l)
-  Data **dp;
-  const UCHAR *d;
-  size_t l;
+int r_data_create(Data **dp, const UCHAR *d, size_t l)
   {
     Data *d_=0;
     int _status;
@@ -112,25 +109,7 @@ int r_data_create(dp,d,l)
     return(_status);
   }
 
-
-int r_data_alloc_mem(d,l)
-  Data *d;
-  size_t l;
-  {
-    int _status;
-
-    if(!(d->data=(UCHAR *)RMALLOC(l)))
-      ABORT(R_NO_MEMORY);
-    d->len=l;
-
-    _status=0;
-  abort:
-    return(_status);
-  }
-
-int r_data_alloc(dp,l)
-  Data **dp;
-  size_t l;
+int r_data_alloc(Data **dp, size_t l)
   {
     Data *d_=0;
     int _status;
@@ -151,10 +130,7 @@ int r_data_alloc(dp,l)
     return(_status);
   }
 
-int r_data_make(dp,d,l)
-  Data *dp;
-  const UCHAR *d;
-  size_t l;
+int r_data_make(Data *dp, const UCHAR *d, size_t l)
   {
     if(!(dp->data=(UCHAR *)RMALLOC(l)))
       ERETURN(R_NO_MEMORY);
@@ -165,8 +141,7 @@ int r_data_make(dp,d,l)
     return(0);
   }
 
-int r_data_destroy(dp)
-  Data **dp;
+int r_data_destroy(Data **dp)
   {
     if(!dp || !*dp)
       return(0);
@@ -180,42 +155,7 @@ int r_data_destroy(dp)
     return(0);
   }
 
-int r_data_destroy_v(v)
-  void *v;
-  {
-    Data *d = 0;
-
-    if(!v)
-      return(0);
-
-    d=(Data *)v;
-    r_data_zfree(d);
-
-    RFREE(d);
-
-    return(0);
-  }
-
-int r_data_destroy_vp(v)
-  void **v;
-  {
-    Data *d = 0;
-
-    if(!v || !*v)
-      return(0);
-
-    d=(Data *)*v;
-    r_data_zfree(d);
-
-    *v=0;
-    RFREE(d);
-
-    return(0);
-  }
-
-int r_data_copy(dst,src)
-  Data *dst;
-  Data *src;
+int r_data_copy(Data *dst, Data *src)
   {
     if(!(dst->data=(UCHAR *)RMALLOC(src->len)))
       ERETURN(R_NO_MEMORY);
@@ -223,8 +163,7 @@ int r_data_copy(dst,src)
     return(0);
   }
 
-int r_data_zfree(d)
-  Data *d;
+int r_data_zfree(Data *d)
   {
     if(!d)
       return(0);
@@ -234,15 +173,3 @@ int r_data_zfree(d)
     RFREE(d->data);
     return(0);
   }
-
-int r_data_compare(d1,d2)
-  Data *d1;
-  Data *d2;
-  {
-    if(d1->len<d2->len)
-      return(-1);
-    if(d2->len<d1->len)
-      return(-1);
-    return(memcmp(d1->data,d2->data,d1->len));
-  }
-

@@ -1,6 +1,8 @@
 import logging
 from datetime import datetime
 
+from taskcluster.exceptions import TaskclusterRestFailure
+
 from taskgraph.optimize.base import OptimizationStrategy, register_strategy
 from taskgraph.util.path import match as match_path
 from taskgraph.util.taskcluster import find_task_id, status_task
@@ -48,14 +50,15 @@ class IndexSearch(OptimizationStrategy):
                     status = status_task(task_id)
                 # status can be `None` if we're in `testing` mode
                 # (e.g. test-action-callback)
-                if not status or status.get("state") in ("exception", "failed"):
+                if not status or status.get("state") in ("exception", "failed"):  # type: ignore
                     logger.debug(
                         f"not replacing {task.label} with {task_id} because it is in failed or exception state"
                     )
                     continue
 
                 if deadline and datetime.strptime(
-                    status["expires"], self.fmt
+                    status["expires"],  # type: ignore
+                    self.fmt,
                 ) < datetime.strptime(deadline, self.fmt):
                     logger.debug(
                         f"not replacing {task.label} with {task_id} because it expires before {deadline}"
@@ -63,7 +66,7 @@ class IndexSearch(OptimizationStrategy):
                     continue
 
                 return task_id
-            except KeyError:
+            except (KeyError, TaskclusterRestFailure):
                 # go on to the next index path
                 pass
 
@@ -72,7 +75,6 @@ class IndexSearch(OptimizationStrategy):
 
 @register_strategy("skip-unless-changed")
 class SkipUnlessChanged(OptimizationStrategy):
-
     def check(self, files_changed, patterns):
         for pattern in patterns:
             for path in files_changed:
@@ -81,8 +83,9 @@ class SkipUnlessChanged(OptimizationStrategy):
         return False
 
     def should_remove_task(self, task, params, file_patterns):
-        # pushlog_id == -1 - this is the case when run from a cron.yml job or on a git repository
-        if params.get("repository_type") == "hg" and params.get("pushlog_id") == -1:
+        # skip-unless-changed should not apply when there is no commit delta,
+        # such as for cron and action tasks (there will never be file changes)
+        if params.get("base_rev") and params.get("head_rev") == params.get("base_rev"):
             return False
 
         changed = self.check(params["files_changed"], file_patterns)

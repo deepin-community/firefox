@@ -8,7 +8,6 @@
 #define mozilla_dom_mediakeys_h__
 
 #include "DecoderDoctorLogger.h"
-#include "mozilla/Attributes.h"
 #include "mozilla/DetailedPromise.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/WeakPtr.h"
@@ -169,6 +168,8 @@ class MediaKeys final : public nsIObserver,
   // The topic used for requests related to mediakeys -- observe this to be
   // notified of such requests.
   constexpr static const char* kMediaKeysRequestTopic = "mediakeys-request";
+
+  nsCString GetMediaKeySystemConfigurationString() const;
 
  private:
   // Instantiate CDMProxy instance.

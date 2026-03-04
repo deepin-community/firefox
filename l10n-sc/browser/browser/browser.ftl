@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # These are the default window titles everywhere except macOS.
 # .data-title-default and .data-title-private are used when the web content
 # opened has no title:
@@ -51,6 +48,84 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = Navigatzione privada de { -brand-shortcut-name }
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = Navigatzione privada de { -brand-full-name }
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — Navigatzione privada de { -brand-full-name }
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — Navigatzione privada de { -brand-full-name }
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Navigatzione privada de { -brand-full-name }
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — Navigatzione privada
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — Navigatzione privada de { -brand-full-name }
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — Navigatzione privada
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Navigatzione privada
+# This is the initial default title for the browser window.
+# It gets updated based on loaded tabs or private browsing state.
+browser-main-window-default-title = { -brand-full-name }
+# Note: only on macOS do we use a `-` separator between the brand name and the
+# "Private Browsing" suffix.
+browser-main-private-window-title =
+    { PLATFORM() ->
+        [macos] { -brand-full-name } — Navigatzione privada
+       *[other] Navigatzione privada de { -brand-full-name }
+    }
+# This is only used on macOS; on other OSes we use the full private window
+# title (so including the brand name) as a suffix
+browser-main-private-suffix-for-content = Navigatzione privada
+popups-infobar-dont-show-message2 =
+    .label = No ammustres custu messàgiu cando si blocant ventanas emergentes o rediretziones de àteras partes.
+    .accesskey = N
+edit-popup-settings2 =
+    .label = Gesti is cunfiguratziones de ventanas emergentes e rediretziones de àteras partes…
+    .accesskey = G
 
 ##
 
@@ -77,6 +152,10 @@ urlbar-default-notification-anchor =
     .tooltiptext = Aberi pannellu de messàgios
 urlbar-geolocation-notification-anchor =
     .tooltiptext = Aberi su pannellu de rechesta de positzione
+urlbar-localhost-notification-anchor =
+    .tooltiptext = Gesti s’atzessu a is dispositivos locales pro custu situ
+urlbar-local-network-notification-anchor =
+    .tooltiptext = Gesti sa cumpartzidura de s’atzessu a sa rete locale cun custu situ
 urlbar-xr-notification-anchor =
     .tooltiptext = Aberi su pannellu de permissos de realidade virtuale
 urlbar-storage-access-anchor =
@@ -123,6 +202,35 @@ urlbar-result-menu-remove-from-history =
 urlbar-result-menu-tip-get-help =
     .label = Otene agiudu
     .accesskey = a
+urlbar-result-menu-dismiss-suggestion =
+    .label = Iscarta custu cussìgiu
+    .accesskey = I
+urlbar-result-menu-learn-more-about-firefox-suggest =
+    .label = Àteras informatziones de { -firefox-suggest-brand-name }
+    .accesskey = A
+urlbar-result-menu-manage-firefox-suggest =
+    .label = Gesti { -firefox-suggest-brand-name }
+    .accesskey = G
+# Some urlbar suggestions show the user's approximate location as automatically
+# detected by Firefox (e.g., weather suggestions), and this menu item lets the
+# user tell Firefox that the location is not accurate. Typically the location
+# will be a city name, or a city name combined with the name of its parent
+# administrative division (e.g., a province, prefecture, or state).
+urlbar-result-menu-report-inaccurate-location =
+    .label = Sinnala una positzione non pretzisa
+urlbar-result-menu-show-less-frequently =
+    .label = Ammustra prus pagu a s’ispissu
+urlbar-result-menu-dont-show-weather-suggestions =
+    .label = No ammustres cussìgios de su tempus
+# Used for Split Button.
+urlbar-splitbutton-dropmarker =
+    .title = Aberi su menù
+# A message shown in the urlbar when the user submits feedback on a suggestion
+# (e.g., it shows an inaccurate location, it's shown too often, etc.).
+urlbar-feedback-acknowledgment = Gràtzias de s’opinione tua
+# A message shown in the urlbar when the user dismisses weather suggestions.
+# Weather suggestions won't be shown at all anymore.
+urlbar-dismissal-acknowledgment-weather = Gràtzias de s’opinione tua. No as a bìdere prus cussìgios de su tempus.
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -148,6 +256,10 @@ urlbar-search-mode-actions = Atziones
 
 urlbar-geolocation-blocked =
     .tooltiptext = As blocadu is informatziones de sa positzione pro custu situ.
+urlbar-localhost-blocked =
+    .tooltiptext = As blocadu is connessiones a dispositivos locales pro custu situ web.
+urlbar-local-network-blocked =
+    .tooltiptext = As blocadu is connessiones a sa rete locale pro custu situ web.
 urlbar-xr-blocked =
     .tooltiptext = As blocadu s'atzessu a is dispositivos de realidade virtuale pro custu situ.
 urlbar-web-notifications-blocked =
@@ -160,6 +272,8 @@ urlbar-screen-blocked =
     .tooltiptext = As blocadu sa cumpartzidura de s'ischermu pro custu situ.
 urlbar-persistent-storage-blocked =
     .tooltiptext = As blocadu s'archiviatzione permanente pro custu situ.
+urlbar-popup-blocked2 =
+    .tooltiptext = As blocadu ventanas emergentes e rediretziones de àteras partes pro custu situ.
 urlbar-popup-blocked =
     .tooltiptext = As blocadu is ventanas a cumparsa pro custu situ.
 urlbar-autoplay-media-blocked =
@@ -178,6 +292,9 @@ urlbar-star-edit-bookmark =
 #   $shortcut (String) - A keyboard shortcut for the add bookmark command.
 urlbar-star-add-bookmark =
     .tooltiptext = Pone custa pàgina in sinnalibros ({ $shortcut })
+urlbar-split-view-button =
+    .tooltiptext = Visualizatzione partzida
+    .aria-label = Visualizatzione partzida
 
 ## Page Action Context Menu
 
@@ -254,10 +371,17 @@ search-one-offs-actions =
 
 # Opens the about:addons page in the home / recommendations section
 quickactions-addons = Ammustra is cumplementos
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-addons3 = estensiones, temas, cumplementos
 quickactions-cmd-addons2 = cumplementos
 # Opens the bookmarks library window
 quickactions-bookmarks2 = Gesti is sinnalibros
 quickactions-cmd-bookmarks = sinnalibros
+# Opens a SUMO article explaining how to clear history
+quickactions-clearrecenthistory = Lìmpia sa cronologia reghente
+quickactions-cmd-clearrecenthistory = lìmpia sa cronologia reghente, cronologia
 # Opens a SUMO article explaining how to clear history
 quickactions-clearhistory = Isbòida sa cronologia
 quickactions-cmd-clearhistory = isbòida sa cronologia
@@ -266,9 +390,20 @@ quickactions-downloads2 = Ammustra is iscarrigamentos
 quickactions-cmd-downloads = iscarrigamentos
 # Opens about:addons page in the extensions section
 quickactions-extensions = Gesti is estensiones
+quickactions-cmd-extensions2 = estensiones, cumplementos
 quickactions-cmd-extensions = estensiones
+# Opens Firefox View
+quickactions-firefoxview = Aberi { -firefoxview-brand-name }
+# English is using "view" and "open view", since the feature name is
+# "Firefox View". If you have translated the name in your language, you
+# should use a word related to the existing translation.
+quickactions-cmd-firefoxview = aberi { -firefoxview-brand-name }, { -firefoxview-brand-name }, aberi view, view
+# Opens SUMO home page
+quickactions-help = Agiudu de { -brand-product-name }
+quickactions-cmd-help = agiudu, suportu
 # Opens the devtools web inspector
 quickactions-inspector2 = Aberis is ainas de isvilupu
+quickactions-cmd-inspector2 = analizadore, devtools, dev tools
 quickactions-cmd-inspector = analizadore, devtools
 # Opens about:logins
 quickactions-logins2 = Gesti is craes
@@ -281,7 +416,7 @@ quickactions-print2 = Imprenta sa pàgina
 quickactions-cmd-print = imprenta
 # Opens the print dialog at the save to PDF option
 quickactions-savepdf = Sarva sa pàgina comente PDF
-quickactions-cmd-savepdf = pdf
+quickactions-cmd-savepdf2 = pdf, sarva pàgina
 # Opens a new private browsing window
 quickactions-private2 = Aberi una ventana privada
 quickactions-cmd-private = navigatzione privada
@@ -293,22 +428,37 @@ quickactions-restart = Torra a aviare { -brand-short-name }
 quickactions-cmd-restart = torra a aviare
 # Opens the screenshot tool
 quickactions-screenshot3 = Faghe una catura de s'ischermu
+quickactions-cmd-screenshot2 = catura, faghe una catura, screenshot
+# Opens about:translations
+quickactions-translate = Tradue
+quickactions-cmd-translate = tradue
 quickactions-cmd-screenshot = Catura de s'ischermu
 # Opens about:preferences
 quickactions-settings2 = Gesti sa cunfiguratzione
+# "manage" should match the corresponding command, which is “Manage settings” in English.
+quickactions-cmd-settings2 = cunfiguratziones, preferèntzias, optziones, gesti
 quickactions-cmd-settings = cunfiguratziones, preferèntzias, optziones
 # Opens about:addons page in the themes section
 quickactions-themes = Gesti is temas
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-themes2 = temas, cumplementos
 quickactions-cmd-themes = temas
 # Opens a SUMO article explaining how to update the browser
 quickactions-update = Atualiza { -brand-short-name }
 quickactions-cmd-update = atualiza
 # Opens the view-source UI with current pages source
 quickactions-viewsource2 = Visualiza su còdighe de sa pàgina
+quickactions-cmd-viewsource2 = Ammustra su còdighe de orìgine, orìgine, orìgine de sa pàgina
 quickactions-cmd-viewsource = ammustra su còdighe, còdighe
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = Àteras informatziones subra de is atziones ràpidas
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = Incarca tab pro seberare:
 
 ## Bookmark Panel
 
@@ -384,7 +534,7 @@ identity-connection-verified = Sa connessione a custu situ est segura.
 identity-ev-owner-label = Tzertificadu emìtidu pro:
 identity-description-custom-root2 = Mozilla non reconnoschet custu emitente de tzertificatzione. Diat pòdere èssere istadu agiuntu dae su sistema operativu o dae s'amministratzione.
 identity-remove-cert-exception =
-    .label = Boga s'etzetzione
+    .label = Boga s’etzetzione
     .accesskey = B
 identity-description-insecure = Sa connessione a custu situ no est privada. Is informatziones chi pones (craes, messàgios, cartas de crèditu, etc.) ddas diant pòdere bìdere àteras persones.
 identity-description-insecure-login-forms = Is credentziales chi as insertadu in custa pàgina non sunt seguras e podent èssere cumpromìtidas.
@@ -478,7 +628,7 @@ popup-all-windows-shared = S'ant a cumpartzire totu is ventanas visìbiles in s'
 sharing-warning-window = Ses cumpartzende { -brand-short-name }. Àtera gente podet bìdere cando passas a un'àtera ischeda.
 sharing-warning-screen = Ses cumpartzende totu s'ischermu tuo. Àtera gente podet bìdere cando passas a un'àtera ischeda.
 sharing-warning-proceed-to-tab =
-    .label = Bae a s'ischeda
+    .label = Bae a s’ischeda
 sharing-warning-disable-for-session =
     .label = Disativa sa protetzione de cumpartzidura pro custa sessione
 
@@ -495,6 +645,10 @@ urlbar-search-mode-indicator-close =
 # engine is unknown.
 urlbar-placeholder =
     .placeholder = Chirca o inserta·nche un'indiritzu
+# This placeholder is used when not in search mode and searching in the urlbar
+# is disabled via the keyword.enabled pref.
+urlbar-placeholder-keyword-disabled =
+    .placeholder = Inserta un’indiritzu
 # This placeholder is used in search mode with search engines that search the
 # entire web.
 # Variables
@@ -539,7 +693,7 @@ urlbar-remote-control-notification-anchor2 =
 urlbar-permissions-granted =
     .tooltiptext = As cuntzèdidu is permissos agiuntivos a custu situ web.
 urlbar-switch-to-tab =
-    .value = Bae a s'ischeda:
+    .value = Bae a s’ischeda:
 # Used to indicate that a selected autocomplete entry is provided by an extension.
 urlbar-extension =
     .value = Agiunta:
@@ -547,6 +701,8 @@ urlbar-go-button =
     .tooltiptext = Bae a s'indiritzu in sa barra de positzione
 urlbar-page-action-button =
     .tooltiptext = Atziones de sa pàgina
+urlbar-revert-button =
+    .tooltiptext = Ammustra s’indiritzu in sa barra de indiritzos
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -565,13 +721,15 @@ urlbar-result-action-search-in-private = Chirca in una ventana privada
 #  $engine (String): the name of a search engine
 urlbar-result-action-search-w-engine = Chirca cun { $engine }
 urlbar-result-action-sponsored = Patrotzinadu
-urlbar-result-action-switch-tab = Passa a s'ischeda
+urlbar-result-action-switch-tab = Passa a s’ischeda
 urlbar-result-action-visit = Bìsita
 # "Switch to tab with container" is used when the target tab is located in a
 # different container.
 # Variables
 # $container (String): the name of the target container
 urlbar-result-action-switch-tab-with-container = Càmbia a s’ischeda · <span>{ $container }</span>
+# Used when the target tab is in a tab group that doesn't have a label.
+urlbar-result-action-tab-group-unnamed = Grupu chene nòmine
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Aberi dae sa punta de billete
 # Directs a user to press the Tab key to perform a search with the specified
@@ -601,12 +759,180 @@ urlbar-result-action-copy-to-clipboard = Còpia
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+# The string returned for an undefined calculator result such as when dividing by 0
+urlbar-result-action-undefined-calculator-result = indefinidu
+# Shows the result of a formula expression being calculated, in scientific notation.
+# The last = sign will be shown as part of the result (e.g. "= 1.0e17").
+# Variables
+#  $result (String): the string representation for a result in scientific notation
+#  (e.g. "1.0e17").
+urlbar-result-action-calculator-result-scientific-notation = = { $result }
+# Shows the result of a formula expression being calculated, this is used for numbers >= 1.
+# The last = sign will be shown as part of the result (e.g. "= 2").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-3 = = { NUMBER($result, useGrouping: "false", maximumFractionDigits: 8) }
+# Shows the result of a formula expression being calculated, to a maximum of 9 significant
+# digits. This is used for numbers < 1.
+# The last = sign will be shown as part of the result (e.g. "= 0.333333333").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-decimal = = { NUMBER($result, maximumSignificantDigits: 9) }
+# The title of a weather suggestion in the urlbar. The temperature and unit
+# substring should be inside a <strong> tag. If the temperature and unit are not
+# adjacent in the localization, it's OK to include only the temperature in the
+# tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name of the city's region or country. Depending on
+#       the user's location in relation to the city, this may be the name or
+#       abbreviation of one of the city's administrative divisions like a
+#       province or state, or it may be the name of the city's country.
+urlbar-result-weather-title = <strong>{ $temperature }°{ $unit }</strong> in { $city }, { $region }
+# The title of a weather suggestion in the urlbar including a region and
+# country. The temperature and unit substring should be inside a <strong> tag.
+# If the temperature and unit are not adjacent in the localization, it's OK to
+# include only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name or abbreviation of one of the city's
+#       administrative divisions like a province or state.
+#   $country (String) - The name of the city's country.
+urlbar-result-weather-title-with-country = <strong>{ $temperature }°{ $unit }</strong> in { $city }, { $region }, { $country }
+# The title of a weather suggestion in the urlbar only including the city. The
+# temperature and unit substring should be inside a <strong> tag. If the
+# temperature and unit are not adjacent in the localization, it's OK to include
+# only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+urlbar-result-weather-title-city-only = <strong>{ $temperature }°{ $unit }</strong> in { $city }
+# Shows the name of the provider of weather data in a weather suggestion in the
+# urlbar.
+# Variables:
+#   $provider (String) - The name of the weather-data provider. It will be the
+#       name of a company, organization, or service.
+urlbar-result-weather-provider-sponsored = { $provider } · Patrotzinadu
+
+## These strings are used for Realtime suggestions in the urlbar.
+## Market refers to stocks, indexes, and funds.
+
+# This string is shown as title when Market suggestion are disabled.
+urlbar-result-market-opt-in-title = Otene datos de mercadu deretu in sa barra de chirca
+# This string is shown as description when Market suggestion are disabled.
+urlbar-result-market-opt-in-description = Ammustra is atualizatziones de mercadu e àteras informatziones de is persones assotziadas cun nois cando cumpartzis datos de chirca cun { -vendor-short-name }. <a data-l10n-name="learn-more-link">Àteras informatziones</a>
+# This string is shown as button to activate online when realtime suggestion are disabled.
+urlbar-result-realtime-opt-in-allow = Ammustra cussìgios
+# This string is shown in split button to dismiss activation the Realtime suggestion.
+urlbar-result-realtime-opt-in-not-now = Immoe nono
+urlbar-result-realtime-opt-in-dismiss = Iscarta
+urlbar-result-realtime-opt-in-dismiss-all =
+    .label = No ammustres custos cussìgios
+# This string is shown in the result menu.
+urlbar-result-menu-dont-show-market =
+    .label = No ammustres cussìgios de mercados
+# A message that replaces a result when the user dismisses Market suggestions.
+urlbar-result-dismissal-acknowledgment-market = Gràtzias de s’opinione tua. No as a bìdere prus cussìgios de is mercados.
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-result-dismissal-acknowledgment-all = Gràtzias de s’opinione tua. No as a bìdere prus custos cussìgios.
+
+## These strings are used for suggestions of important dates in the urlbar.
+
+# The name of an event and the number of days until it starts separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown =
+    { $daysUntilStart ->
+        [one] { $name } · Dae oe a { $daysUntilStart } die
+       *[other] { $name } · Dae oe a { $daysUntilStart } dies
+    }
+# The name of a multiple day long event and the number of days until it starts
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown-range =
+    { $daysUntilStart ->
+        [one] { $name } · Cumintzat dae oe a { $daysUntilStart } die
+       *[other] { $name } · Cumintzat dae oe a { $daysUntilStart } dies
+    }
+# The name of a multiple day long event and the number of days until it ends
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilEnd (integer) - The number of days until the event ends.
+urlbar-result-dates-ongoing =
+    { $daysUntilEnd ->
+        [one] { $name } · Acabbat dae oe a { $daysUntilEnd } die
+       *[other] { $name } · Acabbat dae oe a { $daysUntilEnd } dies
+    }
+# The name of an event and a note that it is happening today separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-today = { $name } · Oe
+# The name of multiple day long event and a note that it is ends today
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-ends-today = { $name } · Acabbat oe
 
 ## Strings used for buttons in the urlbar
 
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = Chirca cun { $engine }
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - Chirca { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - Chirca cun { $engine }
+urlbar-searchmode-dropmarker =
+    .tooltiptext = Sèbera unu motore de chirca
+urlbar-searchmode-bookmarks =
+    .label = Sinnalibros
+urlbar-searchmode-tabs =
+    .label = Ischedas
+urlbar-searchmode-history =
+    .label = Cronologia
+urlbar-searchmode-actions =
+    .label = Atziones
+urlbar-searchmode-exit-button =
+    .tooltiptext = Serra
+urlbar-searchmode-default =
+    .tooltiptext = Motore de chirca predefinidu
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = Custa borta chirca cun:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = Cunfiguratzione de chirca
+# Label shown next to a new search engine in the Searchmode Switcher popup to promote it.
+urlbar-searchmode-new = Nou
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, sèbera unu motore de chirca
+    .tooltiptext = { $engine }, sèbera unu motore de chirca
+urlbar-searchmode-button-no-engine =
+    .label = Nissunu curtzadòrgiu seletzionadu, sèbera·nde unu
+    .tooltiptext = Nissunu curtzadòrgiu seletzionadu, sèbera·nde unu
+# Refers to the ability to search using keywords in the address bar
+urlbar-searchmode-no-keyword =
+    .label = Sa chirca pro faeddu-crae est istudada
+    .tooltiptext = Sa chirca pro faeddu-crae est istudada
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -616,6 +942,12 @@ urlbar-result-action-search-bookmarks = Chirca in sinnalibros
 urlbar-result-action-search-history = Chirca in sa cronologia
 urlbar-result-action-search-tabs = Chirca in ischedas
 urlbar-result-action-search-actions = Chirca in is atziones
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = Passa a { $group }
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = Aberi { $group }
 
 ## Labels shown above groups of urlbar results
 
@@ -642,6 +974,9 @@ urlbar-group-recent-searches =
 #  $engine (String): the name of the search engine providing the trending suggestions
 urlbar-group-trending =
     .label = Tendèntzia in { $engine }
+# Label shown above sponsored suggestions in the urlbar results.
+urlbar-group-sponsored =
+    .label = Patrotzinadu
 # The result menu labels shown next to trending results.
 urlbar-result-menu-trending-dont-show =
     .label = No ammustres is chircas de tendèntzias
@@ -760,7 +1095,7 @@ bookmarks-toolbar-placeholder-button =
     .label = Elementos de sa barra de sinnalibros
 # "Bookmark" is a verb, as in "Add current tab to bookmarks".
 bookmarks-subview-bookmark-tab =
-    .label = Agiunghe s'ischeda atuale a is sinnalibros...
+    .label = Agiunghe s’ischeda atuale a is sinnalibros...
 
 ## Library Panel items
 
@@ -838,6 +1173,9 @@ panel-save-update-password = Crae
 # "More" item in macOS share menu
 menu-share-more =
     .label = Àteru...
+menu-share-copy-link =
+    .label = Còpia su ligòngiu
+    .accesskey = C
 ui-tour-info-panel-close =
     .tooltiptext = Serra
 
@@ -850,6 +1188,9 @@ popups-infobar-allow =
 popups-infobar-block =
     .label = Bloca ventanas a cumparsa pro { $uriHost }
     .accesskey = B
+popups-infobar-allow2 =
+    .label = Permite ventanas a cumparsa e rediretziones de àteras partes pro { $uriHost }
+    .accesskey = P
 
 ##
 
@@ -885,6 +1226,8 @@ navbar-accessible =
     .aria-label = Navigatzione
 navbar-downloads =
     .label = Iscarrigamentos
+navbar-overflow-2 =
+    .tooltiptext = Àteros istrumentos
 navbar-overflow =
     .tooltiptext = Àteros istrumentos...
 # Variables:
@@ -911,6 +1254,10 @@ tabs-toolbar-list-all-tabs =
     .label = Elenca totu is ischedas
     .tooltiptext = Elenca totu is ischedas
 
+## Drop indicator text for pinned tabs when no tabs are pinned.
+
+pinned-tabs-drop-indicator = Trìsina un’ischeda inoghe pro dd’apicare
+
 ## Infobar shown at startup to suggest session-restore
 
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
@@ -929,6 +1276,9 @@ data-reporting-notification-button =
     .accesskey = S
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Navigatzione privada
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = Navigatzione privada
 # Tooltip for the indicator shown in the window titlebar when content analysis is active.
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
@@ -937,7 +1287,7 @@ content-analysis-indicator-tooltip =
 content-analysis-panel-title = Protetzione datos
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
-content-analysis-panel-text = S'organizatzione tua impreat { $agentName } pro protègere dae sa pèrdida de datos. <a data-l10n-name="info">Àteras informatziones</a>
+content-analysis-panel-text-styled = S’organizatzione tua impreat <b>{ $agentName }</b> pro t’amparare de sa pèrdida de datos. <a data-l10n-name="info">Àteras informatziones</a>
 
 ## Unified extensions (toolbar) button
 
@@ -962,6 +1312,15 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Estensiones
         Ddoe at carchi estensione non permìtida
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = Estensiones
+    .tooltiptext =
+        Estensiones
+        Unas cantas estensiones sunt disativadas
 
 ## Private browsing reset button
 
@@ -996,16 +1355,23 @@ firefox-relay-offer-why-to-use-relay = Is alias de posta eletrònica nostros, se
 #  $useremail (String): user email that will receive messages
 firefox-relay-offer-what-relay-provides = Totu is messàgios imbiados a s’alias tuo ant a èssere imbiados a <strong>{ $useremail }</strong> (si non detzides de ddos blocare).
 firefox-relay-offer-legal-notice = Faghende clic subra “Imprea alias de posta”, atzetas is <label data-l10n-name="tos-url">Acòrdios de servìtziu</label> e s’<label data-l10n-name="privacy-url">Avisu de riservadesa</label>.
+firefox-relay-offer-legal-notice-1 = Registrende·ti e creende un’alias de posta eletrònica, atzetas is <label data-l10n-name="tos-url">Cunditziones de servìtziu</label> e s’<label data-l10n-name="privacy-url">Avisu de riservadesa</label>.
 
 ## Add-on Pop-up Notifications
 
 popup-notification-addon-install-unsigned =
     .value = (No averiguadu)
 popup-notification-xpinstall-prompt-learn-more = Àteras informatziones subra de s'installatzione segura de cumplementos
-# Note: Access key is set to P to match "Private" in the corresponding localized label.
-popup-notification-addon-privatebrowsing-checkbox =
-    .label = Imprea in is ventanas privadas
+popup-notification-xpinstall-prompt-block-url = Ammustra detàllios
+# Note: Access key is set to p to match "private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox2 =
+    .label = Permite chi custa estensione funtzionet in ventanas privadas
     .accesskey = p
+# This string is similar to `webext-perms-description-data-long-technicalAndInteraction`
+# but it is used in the install prompt, and it needs an access key.
+popup-notification-addon-technical-and-interaction-checkbox =
+    .label = Cumpartzire datos tècnicos e de interatziones cun s’iscuadra de isvilupu de s’estensione
+    .accesskey = C
 
 ## Pop-up warning
 
@@ -1013,13 +1379,29 @@ popup-notification-addon-privatebrowsing-checkbox =
 #   $popupCount (Number): the number of pop-ups blocked.
 popup-warning-message =
     { $popupCount ->
-        [one] { -brand-short-name } at impedidu a custu situ de abèrrere una ventana emergente.
-       *[other] { -brand-short-name } at impedidu a custu situ de abèrrere { $popupCount } ventanas emergentes.
+        [one] { -brand-short-name } at impedidu a custu situ de abèrrere una ventana a cumparsa.
+       *[other] { -brand-short-name } at impedidu a custu situ de abèrrere { $popupCount } ventanas a cumparsa.
+    }
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+redirect-warning-with-popup-message =
+    { $popupCount ->
+        [0] { -brand-short-name } at impedidu rediretziones a custu situ
+        [1] { -brand-short-name } at impedidu a custu situ de abèrrere una ventana a cumparsa e de cambiare indiritzu.
+        [one] { -brand-short-name } at impedidu a custu situ de abèrrere una ventana a cumparsa e de cambiare indiritzu.
+       *[other] { -brand-short-name } at impedidu a custu situ de abèrrere { $popupCount } ventanas a cumparsa e de cambiare indiritzu.
     }
 # The singular form is left out for English, since the number of blocked pop-ups is always greater than 1.
 # Variables:
 #   $popupCount (Number): the number of pop-ups blocked.
-popup-warning-exceeded-message = { -brand-short-name } at impedidu a custu situ de abèrrere prus de { $popupCount } ventanas emergentes.
+popup-warning-exceeded-message = { -brand-short-name } at impedidu a custu situ de abèrrere prus de { $popupCount } ventanas a cumparsa.
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-exceeded-with-redirect-message =
+    { $popupCount ->
+        [one] { -brand-short-name } at impedidu a custu situ de abèrrere prus de una ventana a cumparsa e de cambiare indiritzu.
+       *[other] { -brand-short-name } at impedidu a custu situ de abèrrere prus de { $popupCount } ventanas a cumparsa e de cambiare indiritzu.
+    }
 popup-warning-button =
     .label =
         { PLATFORM() ->
@@ -1035,9 +1417,21 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Ammustra “{ $popupURI }”
+# Variables:
+#   $redirectURI (String): the URI for the redirect
+popup-trigger-redirect-menuitem =
+    .label = Ammustra “{ $redirectURI }”
 
 ## File-picker crash notification ("FilePickerCrashed.sys.mjs")
 
+file-picker-failed-open = Impossìbile abèrrere sa ventana de seletzione de archìvios de Windows. Nissunu archìviu nen cartella seletzionadu.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-failed-save-somewhere = Impossìbile abèrrere sa ventana de seletzione de archìvios de Windows. S’archìviu at a èssere sarvadu in { $path }.
+file-picker-failed-save-nowhere = Impossìbile abèrrere sa ventana de seletzione de archìvios de Windows. Impossìbile agatare sa cartella predefinida; s’archìviu no at a èssere sarvadu.
+file-picker-crashed-open = Sa ventana de seletzione de archìvios de Windows s’est serrada. Nissunu archìviu nen cartella sunt istados seletzionados.
+#   $path (string): The full path to which the file will be saved (e.g., 'C:\Users\Default User\Downloads\readme.txt').
+file-picker-crashed-save-somewhere = Sa ventana de seletzione de archìvios de Windows s’est serrada. S’archìviu at a èssere sarvadu in { $path }.
+file-picker-crashed-save-nowhere = Sa ventana de seletzione de archìvios de Windows s’est serrada. Impossìbile agatare sa cartella predefinida; s’archìviu no at a èssere sarvadu.
 
 # Button used with file-picker-crashed-save-default. Opens the folder in Windows
 # Explorer, with the saved file selected and in focus.
@@ -1048,3 +1442,153 @@ popup-show-popup-menuitem =
 file-picker-crashed-show-in-folder =
     .label = Ammustra in sa cartella
     .accessKey = A
+
+## Onboarding Finish Setup checklist
+
+onboarding-checklist-button-label = Cumpleta sa cunfiguratzione
+onboarding-aw-finish-setup-button =
+    .label = Cumpleta sa cunfiguratzione
+    .tooltiptext = Cumpleta sa cunfiguratzione de { -brand-short-name }
+
+## The urlbar trust icon & panel
+
+trustpanel-etp-label-enabled = Amparu megioradu contra sa sighidura ativadu
+trustpanel-etp-label-disabled = Amparu megioradu contra sa sighidura disativadu
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-on =
+    .aria-label = Amparu megioradu contra sa sighidura: ativadu pro { $host }
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-off =
+    .aria-label = Amparu megioradu contra sa sighidura: disativadu pro { $host }
+trustpanel-etp-description-enabled = Si ti paret chi custu situ no est funtzionende bene, proa a disativare is ainas de amparu.
+trustpanel-etp-description-disabled = { -brand-product-name } pensat chi is aziendas ti diant dèpere sighire prus pagu. Blocamus totu is sighiduras chi podimus cando tue ativas is protetziones.
+trustpanel-connection-label-secure = Connessione segura
+trustpanel-connection-label-insecure = Connessione non segura
+trustpanel-header-enabled = { -brand-product-name } est in alerta
+trustpanel-description-enabled2 = Ses a suta de s’amparu nostru. Si rilevamus calicuna cosa, ti dd’amus a fàghere ischire.
+trustpanel-header-enabled-insecure = Tene contu in custu situ
+trustpanel-description-enabled-insecure = { -brand-product-name } at rilevadu calicuna cosa de istranu.
+trustpanel-header-disabled = As disativadu is protetziones
+trustpanel-description-disabled = { -brand-product-name } no est funtzionende. Ti cussigiamus de torrare a ativare is protetziones.
+trustpanel-clear-cookies-button = Isbòida is testimòngios e is datos de is sitos
+trustpanel-privacy-link = Cunfiguratziones de riservadesa
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-clear-cookies-header =
+    .title = Isbòida is testimòngios e is datos de is sitos pro { $host }
+trustpanel-clear-cookies-description = Bogare is testimòngios e is datos de su situ ti diat pòdere serrare is sessiones e boidare is carrellos de còmporas.
+trustpanel-clear-cookies-subview-button-clear = Isbòida
+trustpanel-clear-cookies-subview-button-cancel = Annulla
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-site-information-header =
+    .title = Protetziones pro sa connessione a { $host }
+trustpanel-siteinformation-morelink = Àteras informatziones de su situ
+trustpanel-blocker-see-all = Ammustra totu
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-blocker-header =
+    .title = Amparu contra sa sighidura pro { $host }
+
+## The urlbar trust icon & panel
+
+# LOCALIZATION NOTE (trustpanel-urlbar-notsecure-label):
+# Keep this string as short as possible, this is displayed in the URL bar
+# use a synonym for "safe" or "private" if "secure" is too long.
+urlbar-trust-icon-notsecure-label = Non seguru
+
+## Variables
+##  $count (String): the number of trackers blocked.
+
+trustpanel-blocker-section-header =
+    { $count ->
+        [one] <span>{ $count }</span> sighidura blocada in custu situ
+       *[other] <span>{ $count }</span> sighiduras blocadas in custu situ
+    }
+trustpanel-blocker-description = { -brand-product-name } pensat chi is aziendas ti diant dèpere sighire prus pagu. E duncas nde blocamus cantu podimus.
+trustpanel-blocked-header = { -brand-product-name } at blocadu custas cosas pro tie:
+trustpanel-tracking-header = { -brand-product-name } at permìtidu custas cosas pro chi is sitos funtzionent:
+trustpanel-tracking-description = Chene is sighidores, podet èssere chi tzertos butones, formulàrios e campos de identificatzione non funtzionent.
+trustpanel-insecure-section-header = Sa connessione tua no est segura
+trustpanel-insecure-description = Is datos chi ses imbiende a custu situ no sunt tzifrados. Diant pòdere èssere bidos, furados o modificados.
+trustpanel-list-label-tracking-cookies =
+    { $count ->
+        [one] { $count } testimòngiu de sighidura intre sitos
+       *[other] { $count } testimòngios de sighidura intre sitos
+    }
+trustpanel-list-label-tracking-content = Cuntenutu chi ti sighit
+trustpanel-list-label-fingerprinter =
+    { $count ->
+        [one] { $count } generadore de imprentas digitales
+       *[other] { $count } generadores de imprentas digitales
+    }
+trustpanel-list-label-social-tracking =
+    { $count ->
+        [one] { $count } sighidura de is retes sotziales
+       *[other] { $count } sighiduras de is retes sotziales
+    }
+trustpanel-list-label-cryptominer =
+    { $count ->
+        [one] { $count } cripto-minadore
+       *[other] { $count } cripto-minadores
+    }
+trustpanel-social-tracking-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } at blocadu { $count } sighidura de retes sotziales
+       *[other] { -brand-product-name } at blocadu { $count } sighiduras de retes sotziales
+    }
+trustpanel-social-tracking-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } at permìtidu { $count } sighidura de retes sotziales
+       *[other] { -brand-product-name } at permìtidu { $count } sighiduras de retes sotziales
+    }
+trustpanel-tracking-cookies-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } at blocadu { $count } testimòngiu de sighidura intre sitos
+       *[other] { -brand-product-name } at blocadu { $count } testimòngios de sighidura intre sitos
+    }
+trustpanel-tracking-cookies-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } at permìtidu { $count } testimòngiu de sighidura intre sitos
+       *[other] { -brand-product-name } at permìtidu { $count } testimòngios de sighidura intre sitos
+    }
+trustpanel-tracking-content-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } at blocadu { $count } sighidura
+       *[other] { -brand-product-name } at blocadu { $count } sighiduras
+    }
+trustpanel-tracking-content-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } at permìtidu { $count } sighidura
+       *[other] { -brand-product-name } at permìtidu { $count } sighiduras
+    }
+trustpanel-tracking-content-tab-list-header = Custos sitos sunt chirchende de ti sighire:
+trustpanel-fingerprinter-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } at blocadu { $count } generadore de imprentas digitales
+       *[other] { -brand-product-name } at blocadu { $count } generadores de imprentas digitales
+    }
+trustpanel-fingerprinter-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } at permìtidu { $count } generadore de imprentas digitales
+       *[other] { -brand-product-name } at permìtidu { $count } generadores de imprentas digitales
+    }
+trustpanel-fingerprinter-list-header = Custos sitos sunt chirchende de generare s’imprenta digitale tua:
+trustpanel-cryptominer-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } at blocadu { $count } cripto-minadore
+       *[other] { -brand-product-name } at blocadu { $count } cripto-minadores
+    }
+trustpanel-cryptominer-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } at permìtidu { $count } cripto-minadore
+       *[other] { -brand-product-name } at permìtidu { $count } cripto-minadores
+    }
+trustpanel-cryptominer-tab-list-header = Custos sitos sunt chirchende de minare cripto-monedas:
+trustpanel-blocker-section-header2 =
+    { $count ->
+        [one] <span data-l10n-name="count">{ $count }</span> sighidore blocadu in custu situ
+       *[other] <span data-l10n-name="count">{ $count }</span> sighidores blocados in custu situ
+    }

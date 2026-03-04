@@ -4,10 +4,6 @@
 
 addons-page-title = एडअन प्रबन्धक
 
-## Variables
-##   $domain - Domain name where add-ons are available (e.g. addons.mozilla.org)
-
-
 ##
 
 list-empty-installed =
@@ -160,29 +156,6 @@ addon-install-from-file-filter-name = एड-अनहरू
 addon-open-about-debugging = एडअनहरू डिबग गर्नुहोस्
     .accesskey = b
 
-## Extension shortcut management
-
-
-## Recommended add-ons page
-
-
-## Add-on actions
-
-
-## Pending uninstall message bar
-
-
-## "sites with restrictions" (internally called "quarantined") are special domains
-## where add-ons are normally blocked for security reasons.
-
-
-## This is the tooltip text for the recommended badges for an extension in about:addons. The
-## badge is a small icon displayed next to an extension when it is recommended on AMO.
-
-
-##
-
-
 ## Page headings
 
 addon-page-options-button =
@@ -193,7 +166,7 @@ addon-page-options-button =
 ##   $name (string) - Name of the add-on.
 
 # Variables:
-#   $version (String): application version.
+#   $version (string) - Application version.
 details-notification-incompatible = { $name } { -brand-short-name } { $version } सगँ असंगत छ।
 # Variables:
 #   $version (string) - Application version.
@@ -208,12 +181,8 @@ details-notification-unsigned2 =
     .message = { $name } { -brand-short-name } मा प्रयोग को लागि प्रमाणित गर्न सकिएन। सावधानीसंग अगाडि बढ्नुहोस्।
 details-notification-unsigned-link = थप जानकारी
 details-notification-blocked = { $name } सुरक्षाको कारण वा स्थिरता कारण अक्षम भएको छ।
-details-notification-blocked2 =
-    .message = { $name } सुरक्षाको कारण वा स्थिरता कारण अक्षम भएको छ।
 details-notification-blocked-link = थप जानकारी
 details-notification-softblocked = { $name } ले सुरक्षा वा स्थिरता मुद्दाहरू ल्याउँछ।
-details-notification-softblocked2 =
-    .message = { $name } ले सुरक्षा वा स्थिरता मुद्दाहरू ल्याउँछ।
 details-notification-softblocked-link = थप जानकारी
 details-notification-gmp-pending = { $name } छिट्टै स्थापना गरिनेछ।
 details-notification-gmp-pending2 =

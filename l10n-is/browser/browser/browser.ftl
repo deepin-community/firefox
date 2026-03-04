@@ -2,9 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-## The main browser window's title
-
 # These are the default window titles everywhere except macOS.
 # .data-title-default and .data-title-private are used when the web content
 # opened has no title:
@@ -51,6 +48,84 @@ browser-main-window-title = { -brand-full-name }
 # The non-variable portion of this MUST match the translation of
 # "PRIVATE_BROWSING_SHORTCUT_TITLE" in custom.properties
 private-browsing-shortcut-text-2 = Huliðsvafur { -brand-shortcut-name }
+# These are the default window titles everywhere except macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+# default - "Mozilla Firefox"
+# private - "Mozilla Firefox (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } huliðsvafur
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } huliðsvafur
+    .data-content-title-default = { $content-title } — { -brand-full-name }
+    .data-content-title-private = { $content-title } — { -brand-full-name } huliðsvafur
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — { -brand-full-name } huliðsvafur
+# These are the default window titles on macOS.
+# .data-title-default and .data-title-private are used when the web content
+# opened has no title:
+#
+#
+# "default" - "Mozilla Firefox"
+# "private" - "Mozilla Firefox — (Private Browsing)"
+#
+# .data-content-title-default and .data-content-title-private are for use when
+# there *is* a content title.
+# Do not use the brand name in these, as we do on non-macOS.
+#
+# .data-title-default-with-profile, .data-title-private-with-profile,
+# .data-content-title-default-with-profile,
+# .data-content-title-private-with-profile are used when there a
+# SelectableProfileService.current profile exists.
+#
+# Also note the other subtle difference here: we use a `-` to separate the
+# brand name from `(Private Browsing)`, which does not happen on other OSes.
+#
+# Variables:
+#  $content-title (String): the title of the web content.
+#  $profile-name (String): the name of the current profile.
+browser-main-window-titles-mac =
+    .data-title-default = { -brand-full-name }
+    .data-title-private = { -brand-full-name } — huliðsvafur
+    .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
+    .data-title-private-with-profile = { $profile-name } — { -brand-full-name } huliðsvafur
+    .data-content-title-default = { $content-title }
+    .data-content-title-private = { $content-title } — huliðsvafur
+    .data-content-title-default-with-profile = { $content-title } — { $profile-name }
+    .data-content-title-private-with-profile = { $content-title } — { $profile-name } — huliðsvafur
+# This is the initial default title for the browser window.
+# It gets updated based on loaded tabs or private browsing state.
+browser-main-window-default-title = { -brand-full-name }
+# Note: only on macOS do we use a `-` separator between the brand name and the
+# "Private Browsing" suffix.
+browser-main-private-window-title =
+    { PLATFORM() ->
+        [macos] { -brand-full-name } — huliðsvafur
+       *[other] { -brand-full-name } huliðsvafur
+    }
+# This is only used on macOS; on other OSes we use the full private window
+# title (so including the brand name) as a suffix
+browser-main-private-suffix-for-content = Huliðsvafur
+popups-infobar-dont-show-message2 =
+    .label = Ekki birta þessi skilaboð þegar lokað er á sprettglugga eða utanaðkomandi endurbeiningar
+    .accesskey = b
+edit-popup-settings2 =
+    .label = Sýsla með stillingar sprettglugga og utanaðkomandi endurbeiningar…
+    .accesskey = m
 
 ##
 
@@ -77,6 +152,10 @@ urlbar-default-notification-anchor =
     .tooltiptext = Opna skilaboðaflipa
 urlbar-geolocation-notification-anchor =
     .tooltiptext = Opna staðsetningarbeiðnaflipa
+urlbar-localhost-notification-anchor =
+    .tooltiptext = Stýrðu aðgangi staðbundinna tækja að þessu vefsvæði
+urlbar-local-network-notification-anchor =
+    .tooltiptext = Stýrðu deilingu á aðgangi að staðarneti þínu með þessu vefsvæði
 urlbar-xr-notification-anchor =
     .tooltiptext = Opnaðu heimildaspjald fyrir sýndarveruleika
 urlbar-storage-access-anchor =
@@ -123,6 +202,35 @@ urlbar-result-menu-remove-from-history =
 urlbar-result-menu-tip-get-help =
     .label = Fá aðstoð
     .accesskey = a
+urlbar-result-menu-dismiss-suggestion =
+    .label = Vísa þessari tillögu frá
+    .accesskey = V
+urlbar-result-menu-learn-more-about-firefox-suggest =
+    .label = Frekari upplýsingar um { -firefox-suggest-brand-name }
+    .accesskey = F
+urlbar-result-menu-manage-firefox-suggest =
+    .label = Sýsla með { -firefox-suggest-brand-name }
+    .accesskey = m
+# Some urlbar suggestions show the user's approximate location as automatically
+# detected by Firefox (e.g., weather suggestions), and this menu item lets the
+# user tell Firefox that the location is not accurate. Typically the location
+# will be a city name, or a city name combined with the name of its parent
+# administrative division (e.g., a province, prefecture, or state).
+urlbar-result-menu-report-inaccurate-location =
+    .label = Tilkynna ónákvæma staðsetningu
+urlbar-result-menu-show-less-frequently =
+    .label = Sýna sjaldnar
+urlbar-result-menu-dont-show-weather-suggestions =
+    .label = Ekki sýna tillögur um veður
+# Used for Split Button.
+urlbar-splitbutton-dropmarker =
+    .title = Opna valmynd
+# A message shown in the urlbar when the user submits feedback on a suggestion
+# (e.g., it shows an inaccurate location, it's shown too often, etc.).
+urlbar-feedback-acknowledgment = Takk fyrir álit þitt
+# A message shown in the urlbar when the user dismisses weather suggestions.
+# Weather suggestions won't be shown at all anymore.
+urlbar-dismissal-acknowledgment-weather = Takk fyrir álit þitt. Þú munt ekki lengur sjá tillögur um veðurupplýsingar.
 
 ## Prompts users to use the Urlbar when they open a new tab or visit the
 ## homepage of their default search engine.
@@ -148,6 +256,10 @@ urlbar-search-mode-actions = Aðgerðir
 
 urlbar-geolocation-blocked =
     .tooltiptext = Þú hefur lokað fyrir staðsetningarupplýsingar á þessu vefsvæði.
+urlbar-localhost-blocked =
+    .tooltiptext = Þú hefur lokað fyrir tengingar staðbundinna tækja á þessu vefsvæði.
+urlbar-local-network-blocked =
+    .tooltiptext = Þú hefur lokað fyrir tengingar staðbundins nets á þessu vefsvæði.
 urlbar-xr-blocked =
     .tooltiptext = Þú hefur lokað fyrir aðgang sýndarveruleikatækja á þessu vefsvæði.
 urlbar-web-notifications-blocked =
@@ -160,6 +272,8 @@ urlbar-screen-blocked =
     .tooltiptext = Þú hefur lokað fyrir að deila skjáum á þessu vefsvæði.
 urlbar-persistent-storage-blocked =
     .tooltiptext = Þú hefur lokað fyrir gagna geymslu á þessu vefsvæði.
+urlbar-popup-blocked2 =
+    .tooltiptext = Þú hefur lokað á sprettglugga og utanaðkomandi endurbeiningar fyrir þetta vefsvæði.
 urlbar-popup-blocked =
     .tooltiptext = Þú hefur lokað á sprettiglugga fyrir þetta vefsvæði.
 urlbar-autoplay-media-blocked =
@@ -254,10 +368,17 @@ search-one-offs-actions =
 
 # Opens the about:addons page in the home / recommendations section
 quickactions-addons = Skoða viðbætur
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-addons3 = forritsaukar, þemu, viðbætur
 quickactions-cmd-addons2 = viðbætur
 # Opens the bookmarks library window
 quickactions-bookmarks2 = Sýsla með bókamerki
 quickactions-cmd-bookmarks = bókamerki
+# Opens a SUMO article explaining how to clear history
+quickactions-clearrecenthistory = Hreinsa nýlega ferla
+quickactions-cmd-clearrecenthistory = Hreinsa nýlega ferla, vafurferill, ferlar
 # Opens a SUMO article explaining how to clear history
 quickactions-clearhistory = Hreinsa feril
 quickactions-cmd-clearhistory = hreinsa feril
@@ -266,9 +387,20 @@ quickactions-downloads2 = Skoða sóttar skrár
 quickactions-cmd-downloads = sóttar skrár
 # Opens about:addons page in the extensions section
 quickactions-extensions = Sýsla með forritsauka
+quickactions-cmd-extensions2 = forritsaukar, viðbætur
 quickactions-cmd-extensions = forritsaukar
+# Opens Firefox View
+quickactions-firefoxview = Opna { -firefoxview-brand-name }
+# English is using "view" and "open view", since the feature name is
+# "Firefox View". If you have translated the name in your language, you
+# should use a word related to the existing translation.
+quickactions-cmd-firefoxview = opna { -firefoxview-brand-name }, { -firefoxview-brand-name }, opna sýn, skoða
+# Opens SUMO home page
+quickactions-help = { -brand-product-name } hjálp
+quickactions-cmd-help = hjálp, aðstoð
 # Opens the devtools web inspector
 quickactions-inspector2 = Opna forritunarverkfæri
+quickactions-cmd-inspector2 = skoðunaverkfæri, þróunartól, verkfæri fyrir forritara
 quickactions-cmd-inspector = inspector, devtools
 # Opens about:logins
 quickactions-logins2 = Sýsla með lykilorð
@@ -281,7 +413,7 @@ quickactions-print2 = Prenta síðu
 quickactions-cmd-print = prenta
 # Opens the print dialog at the save to PDF option
 quickactions-savepdf = Vista síðu sem PDF
-quickactions-cmd-savepdf = pdf
+quickactions-cmd-savepdf2 = pdf, vista síðu
 # Opens a new private browsing window
 quickactions-private2 = Opna huliðsglugga
 quickactions-cmd-private = huliðsvafur
@@ -293,22 +425,37 @@ quickactions-restart = Endurræsa { -brand-short-name }
 quickactions-cmd-restart = endurræsa
 # Opens the screenshot tool
 quickactions-screenshot3 = Taka skjámynd
+quickactions-cmd-screenshot2 = skjámynd, taka skjámynd
+# Opens about:translations
+quickactions-translate = Þýða
+quickactions-cmd-translate = þýða
 quickactions-cmd-screenshot = skjámynd
 # Opens about:preferences
 quickactions-settings2 = Sýsla með stillingar
+# "manage" should match the corresponding command, which is “Manage settings” in English.
+quickactions-cmd-settings2 = stillingar, kjörstillingar, valkostir, sýsla með, breyta
 quickactions-cmd-settings = stillingar, kjörstillingar, valkostir
 # Opens about:addons page in the themes section
 quickactions-themes = Sýsla með þemu
+# In English we provide multiple spellings for "add-ons". If that's not
+# applicable to your language, only use the correct spelling (don't repeat the
+# same word).
+quickactions-cmd-themes2 = þemu, forritsaukar, viðbætur
 quickactions-cmd-themes = þemu
 # Opens a SUMO article explaining how to update the browser
 quickactions-update = Uppfæra { -brand-short-name }
 quickactions-cmd-update = uppfærsla
 # Opens the view-source UI with current pages source
 quickactions-viewsource2 = Skoða frumkóða síðu
+quickactions-cmd-viewsource2 = skoða frumkóða, frumkóði, frumkóði síðu
 quickactions-cmd-viewsource = skoða frumkóða, frumkóði
 # Tooltip text for the help button shown in the result.
 quickactions-learn-more =
     .title = Fræðast meira um flýtiaðgerðir
+# Will be shown to users the first configurable number of times
+# they experience actions giving them instructions on how to
+# select the action shown by pressing the tab key.
+press-tab-label = Ýttu á Tab-dálklykil til að velja:
 
 ## Bookmark Panel
 
@@ -375,7 +522,7 @@ identity-https-only-info-turn-off3 = Ef síðan virðist biluð gætirðu vilja�
 identity-https-only-info-no-upgrade = Ekki er hægt að uppfæra tengingu úr HTTP.
 identity-permissions-storage-access-header = Vefkökur á milli vefsvæða
 identity-permissions-storage-access-hint = Þessir aðilar geta notað vefkökur milli vefsvæða og vefgögn á meðan þú ert á þessu vefsvæði.
-identity-permissions-storage-access-learn-more = Fræðast meira
+identity-permissions-storage-access-learn-more = Kanna nánar
 identity-permissions-reload-hint = Þú gætir þurft að endurhlaða síðuna til að virkja breytingar.
 identity-clear-site-data =
     .label = Hreinsa vefkökur og síðugögn…
@@ -497,7 +644,11 @@ urlbar-search-mode-indicator-close =
 # This placeholder is used when not in search mode and the user's default search
 # engine is unknown.
 urlbar-placeholder =
-    .placeholder = Leita eða sláðu inn veffang
+    .placeholder = Leitaðu eða settu inn vistfang
+# This placeholder is used when not in search mode and searching in the urlbar
+# is disabled via the keyword.enabled pref.
+urlbar-placeholder-keyword-disabled =
+    .placeholder = Settu inn vistfang
 # This placeholder is used in search mode with search engines that search the
 # entire web.
 # Variables
@@ -533,7 +684,7 @@ urlbar-placeholder-search-mode-other-actions =
 # Variables
 #  $name (String): the name of the user's default search engine
 urlbar-placeholder-with-name =
-    .placeholder = Leitaðu með { $name } eða sláðu inn vistfang
+    .placeholder = Leitaðu með { $name } eða settu inn vistfang
 # Variables
 #  $component (String): the name of the component which forces remote control.
 #    Example: "DevTools", "Marionette", "RemoteAgent".
@@ -552,8 +703,6 @@ urlbar-page-action-button =
     .tooltiptext = Síðu aðgerðir
 urlbar-revert-button =
     .tooltiptext = Birta vistfangið í staðsetningarstikunni
-urlbar-show-page-actions-button =
-    .tooltiptext = Sýna allar síðuaðgerðir
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -579,6 +728,8 @@ urlbar-result-action-visit = Heimsækja
 # Variables
 # $container (String): the name of the target container
 urlbar-result-action-switch-tab-with-container = Skipta á flipann · <span>{ $container }</span>
+# Used when the target tab is in a tab group that doesn't have a label.
+urlbar-result-action-tab-group-unnamed = Ónefndur hópur
 # Allows the user to visit a URL that was previously copied to the clipboard.
 urlbar-result-action-visit-from-clipboard = Heimsækja af klippispjaldinu
 # Directs a user to press the Tab key to perform a search with the specified
@@ -608,12 +759,187 @@ urlbar-result-action-copy-to-clipboard = Afrita
 # Variables
 #  $result (String): the string representation for a formula result
 urlbar-result-action-calculator-result = = { $result }
+# The string returned for an undefined calculator result such as when dividing by 0
+urlbar-result-action-undefined-calculator-result = óskilgreint
+# The sub title of a mdn suggestion in the urlbar.
+urlbar-result-mdn-subtitle = { -mdn-brand-name }
+# The sub title of a Yelp suggestion in the urlbar.
+urlbar-result-yelp-subtitle = { -yelp-brand-name }
+# This string explaining that the suggestion is a recommendation.
+urlbar-result-suggestion-recommended = Mælt með
+# Shows the result of a formula expression being calculated, in scientific notation.
+# The last = sign will be shown as part of the result (e.g. "= 1.0e17").
+# Variables
+#  $result (String): the string representation for a result in scientific notation
+#  (e.g. "1.0e17").
+urlbar-result-action-calculator-result-scientific-notation = = { $result }
+# Shows the result of a formula expression being calculated, this is used for numbers >= 1.
+# The last = sign will be shown as part of the result (e.g. "= 2").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-3 = = { NUMBER($result, useGrouping: "false", maximumFractionDigits: 8) }
+# Shows the result of a formula expression being calculated, to a maximum of 9 significant
+# digits. This is used for numbers < 1.
+# The last = sign will be shown as part of the result (e.g. "= 0.333333333").
+# Variables
+#  $result (String): the string representation for a formula result
+urlbar-result-action-calculator-result-decimal = = { NUMBER($result, maximumSignificantDigits: 9) }
+# The title of a weather suggestion in the urlbar. The temperature and unit
+# substring should be inside a <strong> tag. If the temperature and unit are not
+# adjacent in the localization, it's OK to include only the temperature in the
+# tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name of the city's region or country. Depending on
+#       the user's location in relation to the city, this may be the name or
+#       abbreviation of one of the city's administrative divisions like a
+#       province or state, or it may be the name of the city's country.
+urlbar-result-weather-title = <strong>{ $temperature }°{ $unit }</strong> í { $city }, { $region }
+# The title of a weather suggestion in the urlbar including a region and
+# country. The temperature and unit substring should be inside a <strong> tag.
+# If the temperature and unit are not adjacent in the localization, it's OK to
+# include only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+#   $region (String) - The name or abbreviation of one of the city's
+#       administrative divisions like a province or state.
+#   $country (String) - The name of the city's country.
+urlbar-result-weather-title-with-country = <strong>{ $temperature }°{ $unit }</strong> í { $city }, { $region }, { $country }
+# The title of a weather suggestion in the urlbar only including the city. The
+# temperature and unit substring should be inside a <strong> tag. If the
+# temperature and unit are not adjacent in the localization, it's OK to include
+# only the temperature in the tag.
+# Variables:
+#   $temperature (number) - The temperature value
+#   $unit (String) - The unit for the temperature, either "C" or "F"
+#   $city (String) - The name of the city the weather data is for
+urlbar-result-weather-title-city-only = <strong>{ $temperature }°{ $unit }</strong> í { $city }
+# Shows the name of the provider of weather data in a weather suggestion in the
+# urlbar.
+# Variables:
+#   $provider (String) - The name of the weather-data provider. It will be the
+#       name of a company, organization, or service.
+urlbar-result-weather-provider-sponsored = { $provider }∙Kostað
+# Used for asking AI assistant chat.
+urlbar-result-action-ai-chat = Spyrja
+
+## These strings are used for Realtime suggestions in the urlbar.
+## Market refers to stocks, indexes, and funds.
+
+# This string is shown as title when Market suggestion are disabled.
+urlbar-result-market-opt-in-title = Fáðu upplýsingar um hlutabréfamarkaðinn beint í leitarstikuna þína
+# This string is shown as description when Market suggestion are disabled.
+urlbar-result-market-opt-in-description = Sýna markaðsfréttir og fleira frá samstarfsaðilum okkar þegar þú deilir leitarfyrirspurnargögnum með { -vendor-short-name }. <a data-l10n-name="learn-more-link">Frekari upplýsingar</a>
+# This string is shown as button to activate online when realtime suggestion are disabled.
+urlbar-result-realtime-opt-in-allow = Sýna tillögur
+# This string is shown in split button to dismiss activation the Realtime suggestion.
+urlbar-result-realtime-opt-in-not-now = Ekki núna
+urlbar-result-realtime-opt-in-dismiss = Afgreiða
+urlbar-result-realtime-opt-in-dismiss-all =
+    .label = Ekki sýna þessar tillögur
+# This string is shown in the result menu.
+urlbar-result-menu-dont-show-market =
+    .label = Ekki sýna tillögur um fjármálamarkaði
+# A message that replaces a result when the user dismisses Market suggestions.
+urlbar-result-dismissal-acknowledgment-market = Takk fyrir álit þitt. Þú munt ekki lengur sjá tillögur um fjármálamarkaði.
+# A message that replaces a result when the user dismisses all suggestions of a
+# particular type.
+urlbar-result-dismissal-acknowledgment-all = Takk fyrir álit þitt. Þú munt ekki lengur sjá þessar tillögur.
+
+## These strings are used for suggestions of important dates in the urlbar.
+
+# The name of an event and the number of days until it starts separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown =
+    { $daysUntilStart ->
+        [one] { $name } · Eftir { $daysUntilStart } dag
+       *[other] { $name } · Eftir { $daysUntilStart } daga
+    }
+# The name of a multiple day long event and the number of days until it starts
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilStart (integer) - The number of days until the event starts.
+urlbar-result-dates-countdown-range =
+    { $daysUntilStart ->
+        [one] { $name } · Byrjar eftir { $daysUntilStart } dag
+       *[other] { $name } · Byrjar eftir { $daysUntilStart } daga
+    }
+# The name of a multiple day long event and the number of days until it ends
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+#   $daysUntilEnd (integer) - The number of days until the event ends.
+urlbar-result-dates-ongoing =
+    { $daysUntilEnd ->
+        [one] { $name } · Lýkur eftir { $daysUntilEnd } dag
+       *[other] { $name } · Lýkur eftir { $daysUntilEnd } daga
+    }
+# The name of an event and a note that it is happening today separated by a
+# middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-today = { $name } · Í dag
+# The name of multiple day long event and a note that it is ends today
+# separated by a middot.
+# Variables:
+#   $name (string) - The name of the event.
+urlbar-result-dates-ends-today = { $name } · Lýkur í dag
 
 ## Strings used for buttons in the urlbar
 
 # Label prompting user to search with a particular search engine.
 #  $engine (String): the name of a search engine that searches a specific site
 urlbar-result-search-with = Leita með { $engine }
+# Label for the urlbar result row, prompting the user to use a local keyword to enter search mode.
+#  $keywords (String): the restrict keyword to enter search mode.
+#  $localSearchMode (String): the local search mode (history, tabs, bookmarks,
+#  or actions) to search with.
+urlbar-result-search-with-local-search-mode = { $keywords } - Leita í { $localSearchMode }
+# Label for the urlbar result row, prompting the user to use engine keywords to enter search mode.
+#  $keywords (String): the default keyword and user's set keyword if available
+#  $engine (String): the name of a search engine
+urlbar-result-search-with-engine-keywords = { $keywords } - Leita með { $engine }
+urlbar-searchmode-dropmarker =
+    .tooltiptext = Veldu leitarvél
+urlbar-searchmode-bookmarks =
+    .label = Bókamerki
+urlbar-searchmode-tabs =
+    .label = Flipar
+urlbar-searchmode-history =
+    .label = Ferill
+urlbar-searchmode-actions =
+    .label = Aðgerðir
+urlbar-searchmode-exit-button =
+    .tooltiptext = Loka
+urlbar-searchmode-default =
+    .tooltiptext = Sjálfgefin leitarvél
+# Label shown on the top of Searchmode Switcher popup. After this label, the
+# available search engines will be listed.
+urlbar-searchmode-popup-description = Að þessu sinni leita með:
+# Label shown on the top of Searchmode Switcher popup when the search engine won't automatically
+# reset after submitting.
+urlbar-searchmode-popup-sticky-description = Leita með:
+urlbar-searchmode-popup-search-settings-menuitem =
+    .label = Leitarstillingar
+# Label shown next to a new search engine in the Searchmode Switcher popup to promote it.
+urlbar-searchmode-new = Nýtt
+# Searchmode Switcher button
+# Variables:
+#   $engine (String): the current default search engine.
+urlbar-searchmode-button2 =
+    .label = { $engine }, veldu leitarvél
+    .tooltiptext = { $engine }, veldu leitarvél
+urlbar-searchmode-button-no-engine =
+    .label = Engin flýtileið valin, veldu flýtileið
+    .tooltiptext = Engin flýtileið valin, veldu flýtileið
 
 ## Action text shown in urlbar results, usually appended after the search
 ## string or the url, like "result value - action text".
@@ -623,6 +949,12 @@ urlbar-result-action-search-bookmarks = Leita í bókamerkjum
 urlbar-result-action-search-history = Leita í vafurferli
 urlbar-result-action-search-tabs = Leita í flipum
 urlbar-result-action-search-actions = Leitaraðgerðir
+# Label for a quickaction result used to switch to an open tab group.
+#  $group (String): the name of the tab group to switch to
+urlbar-result-action-switch-to-tabgroup = Skipta yfir í { $group }
+# Label for a quickaction result used to re-opan a saved tab group.
+#  $group (String): the name of the tab group to re-open
+urlbar-result-action-open-saved-tabgroup = Opna { $group }
 
 ## Labels shown above groups of urlbar results
 
@@ -649,6 +981,9 @@ urlbar-group-recent-searches =
 #  $engine (String): the name of the search engine providing the trending suggestions
 urlbar-group-trending =
     .label = Vinsælt á { $engine }
+# Label shown above sponsored suggestions in the urlbar results.
+urlbar-group-sponsored =
+    .label = Kostað
 # The result menu labels shown next to trending results.
 urlbar-result-menu-trending-dont-show =
     .label = Ekki sýna vinsælar leitir
@@ -722,8 +1057,8 @@ bookmarks-mobile-bookmarks-menu =
 bookmarks-tools-sidebar-visibility =
     .label =
         { $isVisible ->
-            [true] Fela bókamerki á hliðarspjaldi
-           *[other] Birta bókamerki á hliðarspjaldi
+            [true] Fela bókamerki á hliðarstiku
+           *[other] Birta bókamerki á hliðarstiku
         }
 bookmarks-tools-toolbar-visibility-menuitem =
     .label =
@@ -845,6 +1180,9 @@ panel-save-update-password = Lykilorð
 # "More" item in macOS share menu
 menu-share-more =
     .label = Meira…
+menu-share-copy-link =
+    .label = Afrita tengil
+    .accesskey = l
 ui-tour-info-panel-close =
     .tooltiptext = Loka
 
@@ -856,6 +1194,9 @@ popups-infobar-allow =
     .accesskey = p
 popups-infobar-block =
     .label = Loka sprettigluggum frá { $uriHost }
+    .accesskey = p
+popups-infobar-allow2 =
+    .label = Leyfa sprettglugga og utanaðkomandi endurbeiningar fyrir { $uriHost }
     .accesskey = p
 
 ##
@@ -892,6 +1233,8 @@ navbar-accessible =
     .aria-label = Flakk
 navbar-downloads =
     .label = Niðurhal
+navbar-overflow-2 =
+    .tooltiptext = Fleiri verkfæri
 navbar-overflow =
     .tooltiptext = Fleiri verkfæri…
 # Variables:
@@ -918,6 +1261,10 @@ tabs-toolbar-list-all-tabs =
     .label = Sýna alla flipa
     .tooltiptext = Sýna alla flipa
 
+## Drop indicator text for pinned tabs when no tabs are pinned.
+
+pinned-tabs-drop-indicator = Slepptu flipanum hér til að festa hann
+
 ## Infobar shown at startup to suggest session-restore
 
 # <img data-l10n-name="icon"/> will be replaced by the application menu icon
@@ -936,6 +1283,9 @@ data-reporting-notification-button =
     .accesskey = V
 # Label for the indicator shown in the private browsing window titlebar.
 private-browsing-indicator-label = Huliðsvafur
+# Tooltip for the indicator shown in the private browsing window titlebar.
+private-browsing-indicator-tooltip =
+    .tooltiptext = Huliðsvafur
 # Tooltip for the indicator shown in the window titlebar when content analysis is active.
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
@@ -944,7 +1294,7 @@ content-analysis-indicator-tooltip =
 content-analysis-panel-title = Gagnavarnir
 # Variables:
 #   $agentName (String): The name of the DLP agent that is connected
-content-analysis-panel-text = Stofnunin þín notar { $agentName } til að verjast gagnatapi. <a data-l10n-name="info">Frekari upplýsingar</a>
+content-analysis-panel-text-styled = Stofnunin þín notar <b>{ $agentName }</b> til að verjast gagnatapi. <a data-l10n-name="info">Frekari upplýsingar</a>
 
 ## Unified extensions (toolbar) button
 
@@ -969,6 +1319,15 @@ unified-extensions-button-quarantined =
     .tooltiptext =
         Forritsaukar
         Sumir forritsaukar eru ekki leyfðir
+
+## Unified extensions button when some extensions are disabled (e.g. through add-ons blocklist).
+## Note that the new line is intentionally part of the tooltip.
+
+unified-extensions-button-blocklisted =
+    .label = Forritsaukar
+    .tooltiptext =
+        Forritsaukar
+        Sumir forritsaukar eru óvirkir
 
 ## Private browsing reset button
 
@@ -1003,16 +1362,23 @@ firefox-relay-offer-why-to-use-relay = Öruggar og einfaldar pósthulur okkar ve
 #  $useremail (String): user email that will receive messages
 firefox-relay-offer-what-relay-provides = Allur tölvupóstur sem sendur er á tölvupósthulurnar þínar verða sendar til <strong>{ $useremail }</strong> (nema þú ákveðir að loka á viðkomandi).
 firefox-relay-offer-legal-notice = Með því að smella á „Nota tölvupósthulu“ samþykkir þú <label data-l10n-name="tos-url">þjónustuskilmála</label> og <label data-l10n-name="privacy-url">persónuverndarstefnu </label> okkar.
+firefox-relay-offer-legal-notice-1 = Með því að skrá þig og búa til tölvupósthulu samþykkir þú <label data-l10n-name="tos-url">þjónustuskilmála</label> og <label data-l10n-name="privacy-url">persónuverndarstefnu</label> okkar.
 
 ## Add-on Pop-up Notifications
 
 popup-notification-addon-install-unsigned =
     .value = (Óstaðfest)
 popup-notification-xpinstall-prompt-learn-more = Sjáðu meira um að setja upp viðbætur á öruggan hátt
-# Note: Access key is set to P to match "Private" in the corresponding localized label.
-popup-notification-addon-privatebrowsing-checkbox =
-    .label = Keyra í huliðsgluggum
-    .accesskey = h
+popup-notification-xpinstall-prompt-block-url = Sjá nánar
+# Note: Access key is set to p to match "private" in the corresponding localized label.
+popup-notification-addon-privatebrowsing-checkbox2 =
+    .label = Leyfa forritsaukum að keyra í huliðsgluggum
+    .accesskey = y
+# This string is similar to `webext-perms-description-data-long-technicalAndInteraction`
+# but it is used in the install prompt, and it needs an access key.
+popup-notification-addon-technical-and-interaction-checkbox =
+    .label = Deildu tæknilegum gögnum og gagnvirknigögnum með höfundi forritsaukans
+    .accesskey = k
 
 ## Pop-up warning
 
@@ -1023,10 +1389,26 @@ popup-warning-message =
         [one] { -brand-short-name } kom í veg fyrir að þetta vefsvæði opnaði { $popupCount } sprettiglugga.
        *[other] { -brand-short-name } kom í veg fyrir að þetta vefsvæði opnaði { $popupCount } sprettiglugga.
     }
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+redirect-warning-with-popup-message =
+    { $popupCount ->
+        [0] { -brand-short-name } kom í veg fyrir að þetta vefsvæði endurbeindi.
+        [1] { -brand-short-name } kom í veg fyrir að þetta vefsvæði opnaði sprettglugga og endurbeiningar.
+        [one] { -brand-short-name } kom í veg fyrir að þetta vefsvæði opnaði sprettglugga og endurbeiningar.
+       *[other] { -brand-short-name } kom í veg fyrir að þetta vefsvæði opnaði { $popupCount } sprettglugga og endurbeiningar.
+    }
 # The singular form is left out for English, since the number of blocked pop-ups is always greater than 1.
 # Variables:
 #   $popupCount (Number): the number of pop-ups blocked.
 popup-warning-exceeded-message = { -brand-short-name } kom í veg fyrir að þetta vefsvæði opnaði fleiri en { $popupCount } sprettiglugga.
+# Variables:
+#   $popupCount (Number): the number of pop-ups blocked.
+popup-warning-exceeded-with-redirect-message =
+    { $popupCount ->
+        [one] { -brand-short-name } kom í veg fyrir að þetta vefsvæði opnaði fleiri en { $popupCount } sprettiglugga og endurbeiningar.
+       *[other] { -brand-short-name } kom í veg fyrir að þetta vefsvæði opnaði fleiri en { $popupCount } sprettiglugga og endurbeiningar.
+    }
 popup-warning-button =
     .label =
         { PLATFORM() ->
@@ -1042,6 +1424,10 @@ popup-warning-button =
 #   $popupURI (String): the URI for the pop-up window
 popup-show-popup-menuitem =
     .label = Sýna “{ $popupURI }”
+# Variables:
+#   $redirectURI (String): the URI for the redirect
+popup-trigger-redirect-menuitem =
+    .label = Sýna „{ $redirectURI }“
 
 ## File-picker crash notification ("FilePickerCrashed.sys.mjs")
 
@@ -1063,3 +1449,148 @@ file-picker-crashed-save-nowhere = Windows-skráaglugginn hefur hrunið. Engin s
 file-picker-crashed-show-in-folder =
     .label = Sýna í möppu
     .accessKey = m
+
+## Onboarding Finish Setup checklist
+
+onboarding-checklist-button-label = Ljúka uppsetningu
+onboarding-aw-finish-setup-button =
+    .label = Ljúka uppsetningu
+    .tooltiptext = Ljúka uppsetningu á { -brand-short-name }
+
+## The urlbar trust icon & panel
+
+trustpanel-etp-label-enabled = Aukin rakningarvörn er virk
+trustpanel-etp-label-disabled = Aukin rakningarvörn er óvirk
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-on =
+    .aria-label = Aukin rakningarvörn: Virk fyrir { $host }
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-etp-toggle-off =
+    .aria-label = Aukin rakningarvörn: Óvirk fyrir { $host }
+trustpanel-etp-description-enabled = Ef eitthvað virðist bilað á þessu vefsvæði, skaltu prófa að slökkva á vörnum.
+trustpanel-etp-description-disabled = { -brand-product-name } telur að fyrirtæki ættu að fylgjast minna með þér. Við lokum á eins mörg rakningarforrit ogauðið er þegar þú kveikir á vörnum.
+trustpanel-connection-label-secure = Tenging er örugg
+trustpanel-connection-label-insecure = Tenging er ekki örugg
+trustpanel-header-enabled = { -brand-product-name } er á verði
+trustpanel-description-enabled2 = Þú ert varin/n. Ef við komum auga á eitthvað látum við þig vita.
+trustpanel-header-enabled-insecure = Farðu varlega á þessum vef
+trustpanel-description-enabled-insecure = { -brand-product-name } tók eftir einhverju grunsamlegu.
+trustpanel-header-disabled = Þú slökktir á vörnum
+trustpanel-description-disabled = { -brand-product-name } er ekki á vakt. Við mælum með að kveikja aftur á vörnum.
+trustpanel-clear-cookies-button = Hreinsa vefkökur og gögn vefsvæðis
+trustpanel-privacy-link = Persónuverndarstillingar
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-clear-cookies-header =
+    .title = Hreinsa vefkökur og vefgögn fyrir { $host }
+trustpanel-clear-cookies-description = Ef þú fjarlægir vefkökur og vefgögn gætirðu skráðst út af vefsvæðum og hreinsað innkaupakörfur.
+trustpanel-clear-cookies-subview-button-clear = Hreinsa
+trustpanel-clear-cookies-subview-button-cancel = Hætta við
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-site-information-header =
+    .title = Tengivarnir fyrir { $host }
+trustpanel-siteinformation-morelink = Meiri upplýsingar um vefsvæði
+trustpanel-blocker-see-all = Sjá allt
+# Variables
+#  $host (String): the hostname of the site that is being displayed.
+trustpanel-blocker-header =
+    .title = Rakningarvarnir fyrir { $host }
+
+## The urlbar trust icon & panel
+
+# LOCALIZATION NOTE (trustpanel-urlbar-notsecure-label):
+# Keep this string as short as possible, this is displayed in the URL bar
+# use a synonym for "safe" or "private" if "secure" is too long.
+urlbar-trust-icon-notsecure-label = Ekki öruggt
+
+## Variables
+##  $count (String): the number of trackers blocked.
+
+trustpanel-blocker-section-header =
+    { $count ->
+        [one] Lokað á <span>{ $count }</span> rekjara á þessu vefsvæði
+       *[other] Lokað á <span>{ $count }</span> rekjara á þessu vefsvæði
+    }
+trustpanel-blocker-description = { -brand-product-name } telur að fyrirtæki ættu að fylgjast minna með þér. Þess vegna lokum við á eins marga og auðið er.
+trustpanel-blocked-header = { -brand-product-name } lokaði á þetta fyrir þig:
+trustpanel-tracking-header = { -brand-product-name } leyfði þetta svo vefsvæði birtist rétt:
+trustpanel-tracking-description = Án rekjara gætu sumir hnappar, innfyllingaform og innskráningarreitir ekki virkað rétt.
+trustpanel-insecure-section-header = Tengingin þín er ekki örugg
+trustpanel-insecure-description = Gögnin sem þú sendir á þetta vefsvæði eru ekki dulrituð. Þau gætu verið skoðuð af óviðkomandi, þeim stolið eða breytt.
+trustpanel-list-label-tracking-cookies =
+    { $count ->
+        [one] { $count } vefaka til rakningar á milli vefsvæða
+       *[other] { $count } vefökur til rakningar á milli vefsvæða
+    }
+trustpanel-list-label-tracking-content = Rakning efnis
+trustpanel-list-label-fingerprinter =
+    { $count ->
+        [one] { $count } fingrafarasöfnun
+       *[other] { $count } fingrafarasöfnun
+    }
+trustpanel-list-label-social-tracking =
+    { $count ->
+        [one] { $count } rekjari fyrir samfélagsmiðla
+       *[other] { $count } rekjarar fyrir samfélagsmiðla
+    }
+trustpanel-list-label-cryptominer =
+    { $count ->
+        [one] { $count } rafmyntagrafari
+       *[other] { $count } rafmyntagrafarar
+    }
+trustpanel-social-tracking-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } lokaði á { $count } samfélagsmiðlarekjara
+       *[other] { -brand-product-name } lokaði á { $count } samfélagsmiðlarekjara
+    }
+trustpanel-social-tracking-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } leyfði { $count } samfélagsmiðlarekjara
+       *[other] { -brand-product-name } leyfði { $count } samfélagsmiðlarekjara
+    }
+trustpanel-tracking-cookies-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } lokaði á { $count } rekjara þvert á vefsvæði
+       *[other] { -brand-product-name } lokaði á { $count } rekjara þvert á vefsvæði
+    }
+trustpanel-tracking-cookies-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } leyfði { $count } rekjara þvert á vefsvæði
+       *[other] { -brand-product-name } leyfði { $count } rekjara þvert á vefsvæði
+    }
+trustpanel-tracking-content-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } lokaði á { $count } rekjara
+       *[other] { -brand-product-name } lokaði á { $count } rekjara
+    }
+trustpanel-tracking-content-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } leyfði { $count } rekjara
+       *[other] { -brand-product-name } leyfði { $count } rekjara
+    }
+trustpanel-tracking-content-tab-list-header = Þessi vefsvæði eru að reyna að rekja ferðir þínar:
+trustpanel-fingerprinter-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } lokaði á { $count } fingrafarasafnara
+       *[other] { -brand-product-name } lokaði á { $count } fingrafarasafnara
+    }
+trustpanel-fingerprinter-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } leyfði { $count } fingrafarasafnara
+       *[other] { -brand-product-name } leyfði { $count } fingrafarasafnara
+    }
+trustpanel-fingerprinter-list-header = Þessi vefsvæði eru að reyna að gera fingrafar af þér:
+trustpanel-cryptominer-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } lokaði á { $count } rafmyntagrafara
+       *[other] { -brand-product-name } lokaði á { $count } rafmyntagrafara
+    }
+trustpanel-cryptominer-not-blocking-tab-header =
+    { $count ->
+        [one] { -brand-product-name } leyfði { $count } rafmyntagrafara
+       *[other] { -brand-product-name } leyfði { $count } rafmyntagrafara
+    }
+trustpanel-cryptominer-tab-list-header = Þessi vefsvæði eru að reyna að grafa eftir rafmyntum hjá þér:

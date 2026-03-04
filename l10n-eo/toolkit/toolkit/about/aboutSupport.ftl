@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 page-title = Informoj por solvado de problemoj
-page-subtitle = Tiu ĉi paĝo enhavas teĥnikajn informojn kiuj povas esti utilaj kiam vi klopodas solvi problemon. Se vi serĉas respondojn al oftaj demandoj pri  { -brand-short-name }, bonvolu viziti nian <a data-l10n-name="support-link">helporetejon</a>.
+page-subtitle = Tiu ĉi paĝo enhavas teknikajn informojn kiuj povas esti utilaj kiam vi klopodas solvi problemon. Se vi serĉas respondojn al oftaj demandoj pri  { -brand-short-name }, bonvolu viziti nian <a data-l10n-name="support-link">helporetejon</a>.
 crashes-title = Raportoj pri paneoj
 crashes-id = Identigilo de raporto
 crashes-send-date = Sendita
@@ -15,6 +15,10 @@ support-addons-type = Tipo
 support-addons-enabled = Aktiva
 support-addons-version = Versio
 support-addons-id = ID
+# In the add-on world, locations are where the addon files are stored. Each
+# location has name. For instance: app-system-addons, app-builtin,
+# app-temporary, etc.
+support-addons-location-name = Loko
 legacy-user-stylesheets-title = Kadukaj stilfolioj de uzanto
 legacy-user-stylesheets-enabled = Aktiva
 legacy-user-stylesheets-stylesheet-types = Stilfolioj
@@ -129,6 +133,10 @@ place-database-stats-efficiency-perc = Efikeco (%)
 place-database-stats-sequentiality-perc = Sekvenceco (%)
 place-database-integrity = Integreco
 place-database-verify-integrity = Kontroli integrecon
+place-database-last-idle-maintenance-data = Dato de la lasta bonteno dum senokupeco
+# Vacuum refers to a type of database maintenance process
+place-database-last-vacuum-date = Dato de lasta purigo
+place-database-last-integrity-corruption-date = Dato de la lasta integreca korupto
 a11y-title = Alirebleco
 a11y-activated = Aktiva
 a11y-force-disabled = Eviti alireblon
@@ -148,9 +156,9 @@ sandbox-sys-call-number = Sistema voko
 sandbox-sys-call-args = Parametroj
 troubleshoot-mode-title = Diagnozi problemojn
 restart-in-troubleshoot-mode-label = Problemsolva reĝimo…
-clear-startup-cache-title = Provu viŝi la startan staplon
-clear-startup-cache-label = Viŝi startan staplon…
-startup-cache-dialog-title2 = Ĉu restartigi { -brand-short-name } por viŝi la startan staplon?
+clear-startup-cache-title = Provu viŝi la startan stokejon
+clear-startup-cache-label = Viŝi startan stokejon…
+startup-cache-dialog-title2 = Ĉu restartigi { -brand-short-name } por viŝi la startan stokejon?
 startup-cache-dialog-body2 = Tio ĉi ne ŝanĝos viajn agordojn nek forigos etendaĵojn.
 restart-button-label = Restartigi
 
@@ -181,6 +189,8 @@ media-capabilities-enumerate = Listigi datumbazon
 
 media-codec-support-sw-decoding = Programa malkodado
 media-codec-support-hw-decoding = Aparata malkodado
+media-codec-support-sw-encoding = Programa kodado
+media-codec-support-hw-encoding = Aparata kodado
 media-codec-support-codec-name = Nomo de kodeko
 media-codec-support-supported = Subtenata
 media-codec-support-unsupported = Ne subtenata
@@ -357,11 +367,11 @@ sandbox-proc-type-content = enhavo
 sandbox-proc-type-file = enhavo de dosiero
 sandbox-proc-type-media-plugin = aŭdvida kromprogramo
 sandbox-proc-type-data-decoder = malkodilo de datumoj
-startup-cache-title = Starta staplo
-startup-cache-disk-cache-path = Vojo al la diska staplo
-startup-cache-ignore-disk-cache = Ignori diskan staplon
-startup-cache-found-disk-cache-on-init = Diska staplo trovita je starto
-startup-cache-wrote-to-disk-cache = Skribado al diska staplo
+startup-cache-title = Starta stokejo
+startup-cache-disk-cache-path = Vojo al la diska stokejo
+startup-cache-ignore-disk-cache = Ignori diskan stokejon
+startup-cache-found-disk-cache-on-init = Diska stokejo trovita je starto
+startup-cache-wrote-to-disk-cache = Skribado al diska stokejo
 launcher-process-status-0 = Aktiva
 launcher-process-status-1 = Malaktiva pro paneo
 launcher-process-status-2 = Devigite malaktiva

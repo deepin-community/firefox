@@ -1,4 +1,5 @@
 """Functions to download, install, setup, and use the mitmproxy playback tool"""
+
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -121,7 +122,7 @@ class MitmproxyDesktop(Mitmproxy):
         policies_file = os.path.join(location, "policies.json")
         LOG.info("reading: %s" % policies_file)
 
-        with open(policies_file, "r") as fd:
+        with open(policies_file) as fd:
             return fd.read()
 
     def is_mitmproxy_cert_installed(self):
@@ -145,7 +146,7 @@ class MitmproxyDesktop(Mitmproxy):
 
     def stop(self):
         LOG.info("MitmproxyDesktop stop!!")
-        super(MitmproxyDesktop, self).stop()
+        super().stop()
         self.turn_off_browser_proxy()
 
     def turn_off_browser_proxy(self):

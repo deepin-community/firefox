@@ -83,10 +83,11 @@
 #include <r_time.h>
 
 /*Note that t1 must be > t0 */
-int r_timeval_diff(t1,t0,diff)
-  struct timeval *t1;
-  struct timeval *t0;
-  struct timeval *diff;
+int r_timeval_diff(
+  struct timeval *t1,
+  struct timeval *t0,
+  struct timeval *diff
+  )
   {
     long d;
 
@@ -112,33 +113,8 @@ int r_timeval_diff(t1,t0,diff)
     return(0);
   }
 
-int r_timeval_add(t1,t2,sum)
-  struct timeval *t1;
-  struct timeval *t2;
-  struct timeval *sum;
-  {
-    long tv_sec,tv_usec,d;
 
-    tv_sec=t1->tv_sec + t2->tv_sec;
-
-    d=t1->tv_usec + t2->tv_usec;
-    if(d>1000000){
-      tv_sec++;
-      tv_usec=d-1000000;
-    }
-    else{
-      tv_usec=d;
-    }
-
-    sum->tv_sec=tv_sec;
-    sum->tv_usec=tv_usec;
-
-    return(0);
-  }
-
-int r_timeval_cmp(t1,t2)
-  struct timeval *t1;
-  struct timeval *t2;
+int r_timeval_cmp(struct timeval *t1, struct timeval *t2)
   {
     if(t1->tv_sec>t2->tv_sec)
       return(1);
@@ -152,8 +128,7 @@ int r_timeval_cmp(t1,t2)
   }
 
 
-UINT8 r_timeval2int(tv)
-  struct timeval *tv;
+UINT8 r_timeval2int(struct timeval *tv)
   {
     UINT8 r=0;
 
@@ -232,4 +207,3 @@ int r_timeval_diff_ms(struct timeval *t1, struct timeval *t0, INT8 *diff)
   abort:
     return(_status);
   }
-

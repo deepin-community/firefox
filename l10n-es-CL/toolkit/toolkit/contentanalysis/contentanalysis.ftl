@@ -13,6 +13,15 @@ contentanalysis-slow-agent-dialog-header = Escaneo en proceso
 contentanalysis-slow-agent-dialog-body-file = { $agent } está revisando “{ $filename }” según las políticas de datos de su organización. Esto puede tomar un tiempo.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
+#   $filename - Name of a file being analyzed, such as "aFile.txt"
+#   $count (number) - The number of additional items in the request for analysis
+contentanalysis-slow-agent-dialog-body-file-and-more =
+    { $count ->
+        [one] { $agent } está revisando “{ $filename }” y { $count } archivo adicional según las políticas de datos de tu organización. Esto puede tomar un tiempo.
+       *[other] { $agent } está revisando “{ $filename }” y { $count } archivos adicionales según las políticas de datos de tu organización. Esto puede tomar un tiempo.
+    }
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
 contentanalysis-slow-agent-dialog-body-clipboard = { $agent } está revisando lo que has pegado según las políticas de datos de tu organización. Esto puede tomar un tiempo.
 # Note that this is shown when the user drag and drops text into the browser.
 # Variables:
@@ -25,7 +34,9 @@ contentanalysis-operationtype-clipboard = portapapeles
 contentanalysis-operationtype-dropped-text = texto descartado
 contentanalysis-operationtype-print = imprimir
 #   $filename - The filename associated with the request, such as "aFile.txt"
-contentanalysis-customdisplaystring-description = carga de “{ $filename }”
+contentanalysis-upload-description = carga de “{ $filename }”
+#   $filename - The filename associated with the request, such as "aFile.txt"
+contentanalysis-download-description = descarga de “{ $filename }”
 contentanalysis-warndialogtitle = Este contenido puede no ser seguro
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
@@ -40,21 +51,6 @@ contentanalysis-genericresponse-message = Análisis de contenido respondió con 
 # Variables:
 #   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
 contentanalysis-block-message = Tu organización utiliza software de prevención de pérdida de datos que ha bloqueado este contenido: { $content }.
-# Variables:
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-error-message = Se produjo un error al comunicarse con el software de prevención de pérdida de datos. Transferencia denegada para el recurso: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-unspecified-error-message = Se produjo un error al comunicarse con { $agent }. Transferencia denegada para el recurso: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-no-agent-connected-message = No se pudo conectar con { $agent }. Transferencia denegada para el recurso: { $content }.
-# Variables:
-#   $agent - The name of the DLP agent doing the analysis
-#   $content - Description of the content being blocked, such as "clipboard" or "aFile.txt"
-contentanalysis-invalid-agent-signature-message = Verificación de firma fallida para { $agent }. Transferencia denegada para el recurso: { $content }.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
 #   $content - Localized text describing the content being blocked, such as "Paste denied."
@@ -73,10 +69,18 @@ contentanalysis-error-message-upload-file = Carga de “{ $filename }” denegad
 contentanalysis-error-message-dropped-text = Arrastrar y soltar denegado.
 contentanalysis-error-message-clipboard = Pegar denegado.
 contentanalysis-error-message-print = Imprimir denegado.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $contentName - Description of the content, such as "clipboard" or "aFile.txt"
+contentanalysis-timeout-block-error-message-content = Se agotó el tiempo de conexión a { $agent }. { $contentName } ha sido bloqueado.
 contentanalysis-block-dialog-title-upload-file = No tienes permiso para subir este archivo
 # Variables:
 #   $filename - Name of the file that was blocked, such as "aFile.txt"
 contentanalysis-block-dialog-body-upload-file = Según las políticas de protección de datos de tu organización, no tienes permitido subir el archivo "{ $filename }". Ponte en contacto con tu administrador para obtener más información.
+contentanalysis-block-dialog-title-download-file = No tienes permiso para bajar este archivo
+# Variables:
+#   $filename - Name of the file that was blocked, such as "aFile.txt"
+contentanalysis-block-dialog-body-download-file = Según las políticas de protección de datos de tu organización, no tienes permitido bajar el archivo "{ $filename }". Ponte en contacto con tu administrador para obtener más información.
 contentanalysis-block-dialog-title-clipboard = No tienes permitido pegar este contenido.
 contentanalysis-block-dialog-body-clipboard = Según las políticas de protección de datos de tu organización, no tienes permitido pegar este contenido. Ponte en contacto con tu administrador para obtener más información.
 contentanalysis-block-dialog-title-dropped-text = No tienes permitido soltar este contenido.

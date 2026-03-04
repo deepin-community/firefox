@@ -13,6 +13,15 @@ contentanalysis-slow-agent-dialog-header = Skanning i framdrift
 contentanalysis-slow-agent-dialog-body-file = { $agent } granskar «{ $filename }» mot organisasjonens dataretningslinjer. Dette kan ta ein liten augneblink.
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
+#   $filename - Name of a file being analyzed, such as "aFile.txt"
+#   $count (number) - The number of additional items in the request for analysis
+contentanalysis-slow-agent-dialog-body-file-and-more =
+    { $count ->
+        [one] { $agent } går gjennom «{ $filename }» og { $count } ekstra element i samsvar med retningslinjene i organisasjonen for data. Dette kan ta litt tid.
+       *[other] { $agent } går gjennom «{ $filename }» og { $count } ekstra element i samsvar med retningslinjene i organisasjonen for data. Dette kan ta litt tid.
+    }
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
 contentanalysis-slow-agent-dialog-body-clipboard = { $agent } granskar det du limte inn mot dataretningslinjene til organisasjonen. Dette kan ta ein liten augneblink.
 # Note that this is shown when the user drag and drops text into the browser.
 # Variables:
@@ -25,7 +34,9 @@ contentanalysis-operationtype-clipboard = utklippstavle
 contentanalysis-operationtype-dropped-text = sleppt tekst
 contentanalysis-operationtype-print = skriv ut
 #   $filename - The filename associated with the request, such as "aFile.txt"
-contentanalysis-customdisplaystring-description = opplasting av «{ $filename }»
+contentanalysis-upload-description = opplasting av «{ $filename }»
+#   $filename - The filename associated with the request, such as "aFile.txt"
+contentanalysis-download-description = nedlasting av «{ $filename }»
 contentanalysis-warndialogtitle = Dette innhaldet kan vere utrygt
 # Variables:
 #   $content - Description of the content being warned about, such as "clipboard" or "aFile.txt"
@@ -43,7 +54,7 @@ contentanalysis-block-message = Organisasjonen din brukar programvare for å hin
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
 #   $content - Localized text describing the content being blocked, such as "Paste denied."
-contentanalysis-unspecified-error-message-content = Det oppsto ein feil under kommunikasjonen med { $agent }. { $content }
+contentanalysis-unspecified-error-message-content = Det oppstod ein feil under kommunikasjonen med { $agent }. { $content }
 # Variables:
 #   $agent - The name of the DLP agent doing the analysis
 #   $content - Localized text describing the content being blocked, such as "Paste denied."
@@ -58,10 +69,18 @@ contentanalysis-error-message-upload-file = Opplasting av «{ $filename }» vart
 contentanalysis-error-message-dropped-text = Drag og slepp nekta.
 contentanalysis-error-message-clipboard = Lim inn nekta.
 contentanalysis-error-message-print = Utskrift nekta.
+# Variables:
+#   $agent - The name of the DLP agent doing the analysis
+#   $contentName - Description of the content, such as "clipboard" or "aFile.txt"
+contentanalysis-timeout-block-error-message-content = Tilkoplinga til { $agent } vart tidsavbroten. { $contentName } er blokkert.
 contentanalysis-block-dialog-title-upload-file = Du har ikkje løyve til å laste opp denne fila
 # Variables:
 #   $filename - Name of the file that was blocked, such as "aFile.txt"
 contentanalysis-block-dialog-body-upload-file = I samsvar med retningslinjene til organisasjonen for datavern har du ikkje løyve til å laste opp fila «{ $filename }». Kontakt administratoren din for meir informasjon.
+contentanalysis-block-dialog-title-download-file = Du har ikkje løyve til å laste ned denne fila
+# Variables:
+#   $filename - Name of the file that was blocked, such as "aFile.txt"
+contentanalysis-block-dialog-body-download-file = I samsvar med retningslinjene i organisasjonen for datavern har du ikkje løyve til å laste ned fila «{ $filename }». Kontakt administratoren din for meir informasjon.
 contentanalysis-block-dialog-title-clipboard = Du har ikkje løyve til å lime inn dette innhaldet
 contentanalysis-block-dialog-body-clipboard = I samsvar med retningslinjene til organisasjonen for datavern har du ikkje løyve til å lime inn dette innhaldet. Kontakt administratoren din for meir informasjon.
 contentanalysis-block-dialog-title-dropped-text = Du har ikkje løyve til å dra og sleppe dette innhaldet

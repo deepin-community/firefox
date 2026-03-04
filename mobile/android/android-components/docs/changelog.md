@@ -4,9 +4,284 @@ title: Changelog
 permalink: /changelog/
 ---
 
-# 131.0 (In Development)
+# 148.0 (In Development)
+* **support-utils**
+  * 🆕 New `keyboardAsState` available to use in Jetpack Compose code to know when the IME is shown or hidden. This works more reliably on older Android versions than the frameworks `isImeVisible` API. [Bug 1988730](https://bugzilla.mozilla.org/show_bug.cgi?id=1988730).
+* **browser-engine-gecko** and **concept-engine**
+  * Add optional link text support to HitResult.UNKNOWN to allow getting the text associated with a link in response to a long click
+* **feature-contextmenu**
+  * 🆕 New: "Copy link text" context menu candidate to allow for the ability to copy link text [Bug 1809303](https://bugzilla.mozilla.org/show_bug.cgi?id=1809303)
+* **lib-state**
+  * ⚠️ **Breaking change**: Removed `MiddlewareContext`. You can now pass in a `Store` directly when invoking a `Middleware`. [Bug 2005443](https://bugzilla.mozilla.org/show_bug.cgi?id=2005443).
+* **lib-crash**
+  * 🆕 New `CrashReporter.registerDeferredInitializer()` allows registering a lazy initializer for CrashReporter that is evaluated only when `requireInstance` is accessed, avoiding immediate initialization of dependencies [Bug 2005839](https://bugzilla.mozilla.org/show_bug.cgi?id=2005839)
+
+# 147.0
+* **browser-state**:
+  * ⚠️ **Breaking change**: New `Unknown` third state for the `SecurityStatus` of the connection used in a tab. The `secure` property has been migrated to `isSecure`. [Bug 2000617](https://bugzilla.mozilla.org/show_bug.cgi?id=2000617).
+* **lib-state**
+    * ⚠️ **Breaking change**: Removed thread marshalling from Stores [Bug 1980348](https://bugzilla.mozilla.org/show_bug.cgi?id=1980348).
+        * `Store.dispatch` is now invoked on the calling thread.
+        * `Store.dispatch` no longer spawns a new `Job` (it now returns `Unit`).
+    * ⚠️ **Breaking change**: Removed UIStore [Bug 1980350](https://bugzilla.mozilla.org/show_bug.cgi?id=1980350)
+* **ui-widgets**
+  * 🆕 New `EngineViewScrollingDataBehavior` meant to only be used to animate a bottom toolbar/banner in sync with the current webpage [Bug 1991654](https://bugzilla.mozilla.org/show_bug.cgi?id=1991654).
+* **concept-engine** and **browser-engine-gecko**
+  * 🆕 New `verticalScrollPosition` and `verticalScrollDelta` APIs exposing the current scroll position and delta of the webpage [Bug 1990215](https://bugzilla.mozilla.org/show_bug.cgi?id=1990215).
+* **lib-state**
+  * 🆕 New `fragmentStore`, `activityStore`, `composableStore` and `navBackStackStore` APIs available to build a new Store and persist its State in a ViewModel ensuring that it survives Activity recreations. These APIs supersede the existing ones and avoid the possibility of memory leaks. [Bug 1996676](https://bugzilla.mozilla.org/show_bug.cgi?id=1996676).
+  * ⚠️ **Breaking change**: The `lazyStore` API was removed in favor of the new `fragmentStore`, `activityStore` and `composableStore` APIs. [Bug 1996676](https://bugzilla.mozilla.org/show_bug.cgi?id=1996676).
+
+# 146.0
+
+# 145.0
+* **support-ktx**
+  * 🚒 Bug fixed [Bug 1979064](https://bugzilla.mozilla.org/show_bug.cgi?id=1979064). Added back the API checks for `Window.setupPersistentInsets` and `ImeInsetsSynchronizer.setup` as on Android <13 the insets framework is not reliable.
+* **support-appservices**
+  * ⚠️ **Breaking change**: Updated the `AppServicesInitializer.init` to take in a configuration object instead of individual components.
+* **feature-framebusting**
+  * 🆕 New `GeckoSession.PromptDelegate.RedirectPrompt` prompt that is displayed when a third-party redirect is blocked. [Bug 1988107](https://bugzilla.mozilla.org/show_bug.cgi?id=1988107)
+* **feature-sitepermissions**
+  * 🚒 Bug fixed [Bug 1986429](https://bugzilla.mozilla.org/show_bug.cgi?id=1986429). Ensure that when accepting website notification permission, the user is prompted for system-level notification opt-in, if the system permission was not enabled.
+
+# 144.0
+* **feature-customtabs**
+  * 🚒 Bug fixed [Bug 1983103](https://bugzilla.mozilla.org/show_bug.cgi?id=1983103). Fixed issues with system status bars not being correctly themed for custom tabs and PWAs when used on devices with edge-to-edge enabled.
+* **support-ktx**
+  * 🆕 New `Window.setSystemBarsBackground()` allows to still theme the status bar, navigation bar and other insets background in landscape mode even when edge-to-edge is enabled and Android doesn't theme these anymore. [Bug 1981861](https://bugzilla.mozilla.org/show_bug.cgi?id=1981861)
+* **feature-sitepermissions**
+  * 🆕 New `SitePermissionsLearnMoreUrlProvider` interface that allows customizing whether to show "learn more" links in permission prompts and what URl to link to. [Bug 1985629](https://bugzilla.mozilla.org/show_bug.cgi?id=1985629)
+
+# 143.0
+* **feature-downloads**:
+  * `AbstractFetchDownloadService.onDestroy` will now cancel all non-completed downloads. [Bug 1977393](https://bugzilla.mozilla.org/show_bug.cgi?id=1977393)
+* **concept-engine** and **browser-engine-gecko**
+  * Added methods to get and set multiple browser preferences. [Bug 1974800](https://bugzilla.mozilla.org/show_bug.cgi?id=1974800)
+  * 🌟️ Added a mechanism to observe browser preferences changing. Use `registerPrefObserverDelegate` to register the delegate on the engine and `registerPrefForObservation` to register a specific pref for observation. Alternatively, use `BrowserPrefObserverFeature` which handles registration and broadcasts the events using an `ObserverRegistery`.
+  * Added new LNA content permissions - `ContentLocalDeviceAccess` and `ContentLocalNetworkAccess` and map to respective `GeckoSession.PermissionDelegate` permission. [Bug 1971500](https://bugzilla.mozilla.org/show_bug.cgi?id=1971500)
+  * Added `localDeviceAccess` and `localNetworkAccess` to `SitePermissions`
+* **feature-sitepermissions**
+    * Added two new columns - `local_device_access` and `local_network_access` to `site_permissions` db table
+    * Migrated `SitePermissionsDatabase` to version 9
+
+# 142.0
+* **feature-tabs**:
+  * Updated `LastTabFeature` to not close the current tab when there's no history. [Bug 1813413](https://bugzilla.mozilla.org/show_bug.cgi?id=1813413).
+* **feature-downloads**:
+  * `DownloadAction.RemoveDeletedDownloads` will now only remove downloads that are cancelled or completed. [Bug 1971848](https://bugzilla.mozilla.org/show_bug.cgi?id=1971848).
+* **concept-engine** and **browser-engine-gecko**
+  * 🌟️ Added `TrackingProtectionPolicy.bounceTrackingProtectionMode` it allows configuring the Bounce Tracking Protection feature, disabled by default. [Bug 1963445](https://bugzilla.mozilla.org/show_bug.cgi?id=1963445)
+  * ⚠️ Options to get, set, and clear browser preferences now require opt in for additional safety.
+  * 🌟️ Added `TrackingProtectionPolicy.allowListBaselineTrackingProtection` and `TrackingProtectionPolicy.allowListConvenienceTrackingProtection`.  Url-classifier(tracking-protection, tracking-annotation, etc) exception entries are categorized into baseline and convenience. The new member variables specify whether exception entries from the corresponding categories are applied. [Bug 1970632](https://bugzilla.mozilla.org/show_bug.cgi?id=1970632)
+* **browser-state**
+  * Removed `ContentState.isProductUrl` and related internal changes.
+* **support-ktx**
+  * Remove API level check for `setupPersistentInsets` and add a new option to consume insets; the default is the same current behaviour. [Bug 1977270](https://bugzilla.mozilla.org/show_bug.cgi?id=1977270) and [Bug 1976746](https://bugzilla.mozilla.org/show_bug.cgi?id=1976746).
+  * Remove API level check for `ImeInsetsSynchronizer`. [Bug 1977270](https://bugzilla.mozilla.org/show_bug.cgi?id=1977270)
+* **All components**
+  * ⚠️ Introduced `@ExperimentalAndroidComponentsApi` to indicate an API requires special care. Opt in via `@OptIn(ExperimentalAndroidComponentsApi::class)`.
+* **service-firefox-accounts**
+  * Renamed `withConstellation` to `withConstellationIfExists` to signify the block execution is dependant on the account being authenticated first. [Bug 1794207](https://bugzilla.mozilla.org/show_bug.cgi?id=1794207)
+
+# 141.0
+=======
+* **feature-accounts**:
+  * Respond to FxA with an error response when unknown web channel messages are sent to the client.
+* **concept-engine**, **browser-engine-gecko**: Added methods to get, set, and clear browser preferences. [Bug 1949876](https://bugzilla.mozilla.org/show_bug.cgi?id=1949876)
+* **ui-widgets**
+  * Updated EngineViewClippingBehavior to support top and bottom toolbars at the same time.
+
+* **feature-downloads**
+  * ⚠️ **Breaking change**: Changed constructor of `DownloadEstimator`. [Bug 1970176](https://bugzilla.mozilla.org/show_bug.cgi?id=1970176).
+  * ⚠️ **Breaking change**: Changed parameters of `DownloadEstimator.estimatedRemainingTime`. [Bug 1970176](https://bugzilla.mozilla.org/show_bug.cgi?id=1970176).
+  * ⚠️ **Breaking change**: Added new `downloadEstimator` abstract val to `AbstractFetchDownloadService`. [Bug 1970176](https://bugzilla.mozilla.org/show_bug.cgi?id=1970176).
+  * ⚠️ **Breaking change**: Removed `dateTimeProvider` abstract val from `AbstractFetchDownloadService`. [Bug 1970176](https://bugzilla.mozilla.org/show_bug.cgi?id=1970176).
+  * ⚠️ **Breaking change**: Changed function signature of `DownloadNotification.createOngoingDownloadNotification`. [Bug 1970176](https://bugzilla.mozilla.org/show_bug.cgi?id=1970176).
+  * ⚠️ **Breaking change**: Changed behavior and constructor signatures of `TemporaryDownloadFeature`, `CopyDownloadFeature` and `ShareResourceFeature`. [Bug 1958367](https://bugzilla.mozilla.org/show_bug.cgi?id=1958367).
+    * Renamed `cleanupCacheCoroutineDispatcher` to `ioDispatcher`
+    * The new `ioDispatcher` param is now also used for the download operation.
+
+# 140.0
+* **feature-downloads**
+  * `DownloadNotification.createOngoingDownloadNotification` will now show the download time remaining instead of the percentage completed in the notification summary. [Bug 1956577](https://bugzilla.mozilla.org/show_bug.cgi?id=1956577).
+  * Added `DateTimeProvider` to provide date and time information. [Bug 1956577](https://bugzilla.mozilla.org/show_bug.cgi?id=1956577).
+  * Added `DownloadEstimator` to estimate download time remaining. [Bug 1956577](https://bugzilla.mozilla.org/show_bug.cgi?id=1956577).
+  * ⚠️ **Breaking change**: Added `downloadEstimator` property to `DownloadJobState`. [Bug 1956577](https://bugzilla.mozilla.org/show_bug.cgi?id=1956577).
+  * ⚠️ **Breaking change**: Added new 'dateTimeProvider' abstract val to `AbstractFetchDownloadService`. [Bug 1956577](https://bugzilla.mozilla.org/show_bug.cgi?id=1956577).
+  * ⚠️ **Breaking change**: Removed Deprecated `Long.toMegabyteOrKilobyteString` in v140. [Bug 1955689](https://bugzilla.mozilla.org/show_bug.cgi?id=1955689).
+* **feature-app-links**
+  * Added `alwaysOpenCheckboxAction` parameter to `AppLinksFeature`, this was moved from `AppLinksInterceptor`.
+  * ⚠️ **Breaking change**: Moved prompt functionality back to `AppLinksFeature`.
+  * ⚠️ **Breaking change**: Removed `interceptLinkClicks` parameter from `AppLinksInterceptor` since no usage sets this to false.
+
+* **support-rusterrors**:
+  * ⚠️ **Breaking change**: Deprecated in place of `support-appservices`. See below.
+
+* **support-rusthttp**:
+  * ⚠️ **Breaking change**: Deprecated in place of `support-appservices`. See below.
+
+* **support-rustlog**:
+  * ⚠️ **Breaking change**: Deprecated in place of `support-appservices`. See below.
+
+* **support-appservices**:
+  * 🆕 New component that components the individual rust ones.
+  * Adds a `AppServicesInitializer.init` that preserves the sequence for individual component initialization.
+  * Namespacing has been preserved from previous components, so only the dependency package needs updating.
+
+# 140.0
+* **feature-downloads**
+  * `DownloadNotification.createOngoingDownloadNotification` will now show the download time remaining instead of the percentage completed in the notification summary. [Bug 1956577](https://bugzilla.mozilla.org/show_bug.cgi?id=1956577).
+  * Added `DateTimeProvider` to provide date and time information. [Bug 1956577](https://bugzilla.mozilla.org/show_bug.cgi?id=1956577).
+  * Added `DownloadEstimator` to estimate download time remaining. [Bug 1956577](https://bugzilla.mozilla.org/show_bug.cgi?id=1956577).
+  * ⚠️ **Breaking change**: Added `downloadEstimator` property to `DownloadJobState`. [Bug 1956577](https://bugzilla.mozilla.org/show_bug.cgi?id=1956577).
+  * ⚠️ **Breaking change**: Added new 'dateTimeProvider' abstract val to `AbstractFetchDownloadService`. [Bug 1956577](https://bugzilla.mozilla.org/show_bug.cgi?id=1956577).
+  * ⚠️ **Breaking change**: Removed Deprecated `Long.toMegabyteOrKilobyteString` in v140. [Bug 1955689](https://bugzilla.mozilla.org/show_bug.cgi?id=1955689).
+* **feature-app-links**
+  * Added `alwaysOpenCheckboxAction` parameter to `AppLinksFeature`, this was moved from `AppLinksInterceptor`.
+  * ⚠️ **Breaking change**: Moved prompt functionality back to `AppLinksFeature`.
+  * ⚠️ **Breaking change**: Removed `interceptLinkClicks` parameter from `AppLinksInterceptor` since no usage sets this to false.
+* **feature-accounts**:
+  * Add support for `WebChannelCommand.SYNC_PREFERENCES` web channel messages.
+
+# 139.0
+* **feature-downloads**
+  * ⚠️ **Breaking change**: Added new `fileSizeFormatter` abstract val to `AbstractFetchDownloadService`. [Bug 1956580](https://bugzilla.mozilla.org/show_bug.cgi?id=1956580).
+  * ⚠️ **Breaking change**: Added new `fileSizeFormatter` parameter to `DownloadNotification.createDownloadGroupNotification`. [Bug 1956580](https://bugzilla.mozilla.org/show_bug.cgi?id=1956580).
+    * Changed download notification group to display the size downloaded so far and the total file size, instead of the download percentage completed.
+  * ⚠️ **Breaking change**: Added new `fileSizeFormatter` parameter to `DownloadNotification.createOngoingDownloadNotification`. [Bug 1956580](https://bugzilla.mozilla.org/show_bug.cgi?id=1956580).
+    * Removed the download percentage completed in the notification summary.
+    * Changed the content text to display the size downloaded so far and the total file size, instead of the download percentage completed.
+  * ⚠️ **Breaking change**: Added new `fileSizeFormatter` parameter to `DownloadNotification.getSummaryList`. [Bug 1956580](https://bugzilla.mozilla.org/show_bug.cgi?id=1956580).
+    * Changed download notification group to display the size downloaded so far and the total file size, instead of the download percentage completed.
+  * ⚠️ **Breaking change**: Added new `fileSizeFormatter` parameter to `DownloadNotification.getProgress`. [Bug 1956580](https://bugzilla.mozilla.org/show_bug.cgi?id=1956580).
+    * Changed the function to return the size downloaded so far and the total file size, instead of the download percentage completed.
+  * ⚠️ **Breaking change**: Added new `fileSizeFormatter` parameter to `DownloadNotification.getStatusDescription`. [Bug 1956580](https://bugzilla.mozilla.org/show_bug.cgi?id=1956580).
+    * Changed the return of `DOWNLOADING` status to display the size downloaded so far and the total file size, instead of the download percentage completed.
+* **All components**
+  * ⚠️Increased `compileSdkVersion` to 36 (Android 16)
+* **support-remotesettings**
+  * Added `RemoteSettingsSyncWorker` and `RemoteSettingsSyncScheduler` to schedule periodic sync with remote settings. [Bug 1947538](https://bugzilla.mozilla.org/show_bug.cgi?id=1947538)
+
+# 138.0
+* **support-ktx**
+  * ⚠️ **Breaking change**: `Window.setupPersistentInsets()` will only work on Android 13+ to avoid framework insets inconsistencies on lower versions of Android. [Bug 1946404](https://bugzilla.mozilla.org/show_bug.cgi?id=1946404)
+  * ⚠️ **Breaking change**: `ImeInsetsSynchronizer` will only work on Android 13+ to avoid framework insets inconsistencies on lower versions of Android. [Bug 1946404](https://bugzilla.mozilla.org/show_bug.cgi?id=1946404)
+
+* **browser-state**, **concept-engine**
+  * ⚠️ **Breaking change**: Added new `origins` parameter to `WebExtensionDelegate.onOptionalPermissionsRequest` and `WebExtensionPromptRequest.AfterInstallation.Permissions.Optional`. [Bug 1935680](https://bugzilla.mozilla.org/show_bug.cgi?id=1935680).
+* **support-webextensions**
+  * Renamed `WebExtensionController` to `BuiltInWebExtensionController`. [Bug 1950422](https://bugzilla.mozilla.org/show_bug.cgi?id=1950422).
+
+* **browser-toolbar**
+  * Rename `securityIconSecure` and `securityIconInsecure` to `siteIconSecure` and `siteIconInsecure`. See [Bug 1920085](https://bugzilla.mozilla.org/show_bug.cgi?id=1920085).
+  * Adds `siteIconLocalPdf` ColorInt to to `DisplayToolbar.Colors`. See [Bug 1920085](https://bugzilla.mozilla.org/show_bug.cgi?id=1920085).
+
+* **concept-toolbar**
+  * Rename `Toolbar.siteSecure` property to `Toolbar.siteInfo`. See [Bug 1920085](https://bugzilla.mozilla.org/show_bug.cgi?id=1920085).
+  * Rename `Toolbar.SiteSecurity` enum to `Toolbar.SiteInfo` and adds `LOCAL_PDF` enum value. See [Bug 1920085](https://bugzilla.mozilla.org/show_bug.cgi?id=1920085).
+  * Rename `DisplayToolbarViews.securityIndicator` and `DisplayToolbarViews.setOnSiteSecurityClickedListener` to `DisplayToolbarViews.siteInfoIndicator` and `DisplayToolbarViews.setOnSiteInfoClickedListener`. See [Bug 1920085](https://bugzilla.mozilla.org/show_bug.cgi?id=1920085).
+
+* **feature-search**
+  * Adds `SearchEngineSelectorRepository` and `SearchEngineRepository` to `SearchMiddleware` See [Bug 1944964](https://bugzilla.mozilla.org/show_bug.cgi?id=1944964).
+
+* **feature-toolbar**
+  * When showing a local PDF, the site security icon will display the `mozac_ic_page_portrait_24` icon. See [Bug 1920085](https://bugzilla.mozilla.org/show_bug.cgi?id=1920085).
+
+* **ui-icons**
+  * Adds a `mozac_ic_page_portrait_24` icon to be used as a security icon when browsing a local pdf. See [Bug 1920085](https://bugzilla.mozilla.org/show_bug.cgi?id=1920085).
+
+* **feature-addons**
+  * Added `AddonManager.getAddonByID` method to allow querying a specific add-on. This is more efficient than calling `AddonManager.getAddons()` and selecting a specific result. See [Bug 1949963](https://bugzilla.mozilla.org/show_bug.cgi?id=1949963).
+
+* **feature-prompts**
+  * Added support for selecting a client authentication certificate using `CertificatePicker`. [Bug 1813930](https://bugzilla.mozilla.org/show_bug.cgi?id=1813930).
+
+* **feature-downloads**
+  * Added `FileSizeFormatter` to help with displaying file sizes in a localized manner. See [Bug 1951907](https://bugzilla.mozilla.org/show_bug.cgi?id=1951907).
+  * Deprecated `Long.toMegabyteOrKilobyteString`. Use `FileSizeFormatter` instead. See [Bug 1951907](https://bugzilla.mozilla.org/show_bug.cgi?id=1951907).
+
+# 137.0
+* **support-ktx**
+  * 🌟 Added `String.isContentUrl` method that checks if the string is a content URL. [Bug 1944084](https://bugzilla.mozilla.org/show_bug.cgi?id=1944084).
+  * 🌟 Added `String.isAboutUrl` method that checks if the string is an about URL. [Bug 1944084](https://bugzilla.mozilla.org/show_bug.cgi?id=1944084).
+* **browser-state**, **concept-engine**, **feature-addons**
+  * ⚠️ **Breaking change**: Added new `origins` parameter to `PermissionsDialogFragment.newInstance`. [Bug 1911999](https://bugzilla.mozilla.org/show_bug.cgi?id=1911999).
+  * ⚠️ **Breaking change**: Added new `origins` parameter to `WebExtensionDelegate.onInstallPermissionsRequest` and `WebExtensionPromptRequest.AfterInstallation.Permissions.Required`. [Bug 1911999](https://bugzilla.mozilla.org/show_bug.cgi?id=1911999).
+
+# 136.0
+* **support-ktx**
+    * 🆕 New `ExpandablePrompt` interface implemented by `AddressSelectBar`, `CreditCardSelectBar` to inform when it is expanded or collapsed. [Bug 19010409](https://bugzilla.mozilla.org/show_bug.cgi?id=19010409).
+
+# 135.0
+* **support-ktx**
+    * 🆕 `Context.setApplicationNightMode()` will apply the provided night mode on all API levels and persist it on Android 31+ so that on new launches the splashscreen matches. [Bug 1919488](https://bugzilla.mozilla.org/show_bug.cgi?id=1919488)
+* **feature-downloads**
+    * `AbstractFetchDownloadService.createOpenFileIntent` will no longer create an intent to open PDF files from the caller application if it can open PDFs. The user will be prompted to choose an application. See [Bug 1941609](https://bugzilla.mozilla.org/show_bug.cgi?id=1941609).
+* **feature-prompts**
+    * 🆕 New `ToggleablePrompt` interface implemented by `AddressSelectBar`, `CreditCardSelectBar` `LoginSelectBar` and `SuggestStrongPasswordBar` to inform when these are shown or hidden. [Bug 1909746](https://bugzilla.mozilla.org/show_bug.cgi?id=1909746).
+    * 🆕 New `ExpandablePrompt` interface implemented by `LoginSelectBar` to inform when it is expanded or collapsed. [Bug 1909746](https://bugzilla.mozilla.org/show_bug.cgi?id=1909746).
+
+# 134.0
+* **browser-state**
+  * 🌟 Added `DownloadState.isPdf` property to indicate whether the file associated with the download is a PDF. See [Bug 1920092](https://bugzilla.mozilla.org/show_bug.cgi?id=1920092).
+
+* **concept-storage**
+  * 🆕 Exposed `lastModified` property for `BookmarkNode`s that includes timestamp data for the last time the node was modified. [Bug 1928444](https://bugzilla.mozilla.org/show_bug.cgi?id=1928444)
+
+* **feature-downloads**
+  * `AbstractFetchDownloadService.createOpenFileIntent` will create an intent to open PDF files from the caller application if it can open PDFs. See [Bug 1920092](https://bugzilla.mozilla.org/show_bug.cgi?id=1920092).
+  * `AbstractFetchDownloadService.openFile` will open PDF files from the caller application if it can open PDFs. See [Bug 1920092](https://bugzilla.mozilla.org/show_bug.cgi?id=1920092).
+
+* **browser-toolbar**
+    * Added internal data class `DisplayMargins` in `DisplayToolbar` class that can be used to specify margins for `DisplayToolbar`'s views
+    * Added `setUrlBackgroundMargins` method in `DisplayToolbar` class that client apps can use to specify custom `DisplayMargins` for the `background` view. [Bug 1927778](https://bugzilla.mozilla.org/show_bug.cgi?id=1927778)
+
+* **lib-crash**
+  * ⚠️ **Breaking change**: Crash database functions dealing with unsent crashes have been renamed and now require a timestamp parameter as the start of the range to search for unsent crashes.
+
+# 133.0
+* **browser-store**
+    * Adds `desktopMode` property to the `BrowserStore` to know whether or not browsing is in desktop mode. The pre-existing Action to update a tab's desktop mode has been renamed to disambiguate its intended use case. [Bug 1910768](https://bugzilla.mozilla.org/show_bug.cgi?id=1910768)
+
+* **browser-errorpages**
+  * 🌟 Vertically center content of all error pages. Update image and text of no internet connection error page. [Bug 1921460](https://bugzilla.mozilla.org/show_bug.cgi?id=1921460)
+
+* **browser-engine-gecko**
+  * Added `WebExtensionInstallException.SoftBlocked` to handle the `ERROR_SOFT_BLOCKED` error returned by Gecko.
+  * Adds support for enabling desktop mode browsing at the time of the engine session's creation.  [Bug 1910768](https://bugzilla.mozilla.org/show_bug.cgi?id=1910768)
+
+* **support-ktx**
+  * 🆕 `Window.setupPersistentInsets()` will setup handling persistent insets instead of the framework to allow for custom handling of dynamic insets [Bug 1911042](https://bugzilla.mozilla.org/show_bug.cgi?id=1911042)
+  * 🆕 `ImeInsetsSynchronizer` allows synchronizing the resize animation for any View which should be shown at the top of the keyboard while this is showing or hiding. [Bug 1911042](https://bugzilla.mozilla.org/show_bug.cgi?id=1911042)
+
+* **ui-widgets**
+  * 🆕 New `mozac_material_ripple_minimum_interaction_size` drawable for a 48dp ripple to be used when `selectableItemBackgroundBorderless` is too big and `selectableItemBackground` is too small. [Bug 1920554](https://bugzilla.mozilla.org/show_bug.cgi?id=1920554).
+
+# 132.0
+* **feature-awesomebar**
+  * The `onCancelEditing` now returns a result based on the `onStartEditing` and `onStopEditing` callback. [Bug 1917496](https://bugzilla.mozilla.org/show_bug.cgi?id=1917496)
+
+* **support-ktx**:
+    * ⚠️ `Int.dpToPx` will round the values to the nearest integer, instead of always rounding down. [Bug 1912988](https://bugzilla.mozilla.org/show_bug.cgi?id=1912988)
+
+* **support-utils**
+  * Added a `ColorUtils.calculateAlphaFromPercentage()` helper function to calculate the alpha value based on opacity. [Bug 1906795](https://bugzilla.mozilla.org/show_bug.cgi?id=1906795)
+
+* **lib-crash**
+  * Adds `CrashReporter.hasUnsentCrashReports()` method, allowing the caller to find out if there is unsent crashes. [Bug 1904974](https://bugzilla.mozilla.org/show_bug.cgi?id=1904974)
+  * Adds `CrashReporter.unsentCrashReports()` method, allowing the caller to fetch all unsent crashes. [Bug 1904974](https://bugzilla.mozilla.org/show_bug.cgi?id=1904974)
+  * Adds Store primitives (State, Action, Middleware) to be able to drive the crash reporter UI. [Bug 1905774](https://bugzilla.mozilla.org/show_bug.cgi?id=1905774)
+  * Adds new parameter `useLegacyReporting` when initializing a `CrashReporter`. [Bug 1905774](https://bugzilla.mozilla.org/show_bug.cgi?id=1905774)
+
+* **feature-session**:
+  * 🚒 `FullscreenFeature.isFullscreen` now reports the new value if evaluated in the `fullScreenChanged` callback. [Bug 1918757](https://bugzilla.mozilla.org/show_bug.cgi?id=1918757)
+
+# 131.0
 * **All components**
   * ⚠️Increased `compileSdkVersion` to 35 (Android 15)
+
+* **browser-state**
+  * 🆕 New `isPdf` property for `ContentState` to inform whether the current page is a pdf or not. [Bug 1817810](https://bugzilla.mozilla.org/show_bug.cgi?id=1817810)
 
 # 130.0
 
@@ -162,9 +437,6 @@ permalink: /changelog/
 
 * **feature-customtabs**
   * Fallback behaviour when failing to open a new window in custom tab will now be loading the URL directly in the same custom tab. [Bug 1832357](https://bugzilla.mozilla.org/show_bug.cgi?id=1832357)
-
-* **feature-session**
-  * Update URL in the store immediately when using the optimized load URL code path.
 
 * **tooling-lint**
   * Added a lint rule to detect when `Response#close` may not have been called. Note: Currently, this rule only runs on Android Components.

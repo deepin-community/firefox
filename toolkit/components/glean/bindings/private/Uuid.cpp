@@ -7,11 +7,13 @@
 #include "mozilla/glean/bindings/Uuid.h"
 
 #include "jsapi.h"
+#include "mozilla/ErrorResult.h"
 #include "mozilla/ResultVariant.h"
 #include "mozilla/dom/GleanMetricsBinding.h"
 #include "mozilla/glean/bindings/ScalarGIFFTMap.h"
 #include "mozilla/glean/fog_ffi_generated.h"
 #include "nsString.h"
+#include "GIFFTFwd.h"
 
 namespace mozilla::glean {
 
@@ -20,7 +22,7 @@ namespace impl {
 void UuidMetric::Set(const nsACString& aValue) const {
   auto scalarId = ScalarIdForMetric(mId);
   if (scalarId) {
-    Telemetry::ScalarSet(scalarId.extract(), NS_ConvertUTF8toUTF16(aValue));
+    TelemetryScalar::Set(scalarId.extract(), NS_ConvertUTF8toUTF16(aValue));
   }
   fog_uuid_set(mId, &aValue);
 }

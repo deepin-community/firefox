@@ -65,6 +65,10 @@ startup-header = Permulaan
 always-check-default =
     .label = Sentiasa semak samada { -brand-short-name } adalah pelayar piawai anda
     .accesskey = y
+is-default-browser =
+    .message = { -brand-short-name } kini adalah pelayar piawai anda
+is-not-default-browser =
+    .message = { -brand-short-name } bukan pelayar piawai anda
 is-default = { -brand-short-name } kini adalah pelayar piawai anda
 is-not-default = { -brand-short-name } bukan pelayar piawai anda
 set-as-my-default-browser =
@@ -72,6 +76,8 @@ set-as-my-default-browser =
     .accesskey = P
 disable-extension =
     .label = Nyahdayakan Ekstensi
+tabs-group-header2 =
+    .label = Tab
 tabs-group-header = Tab
 ctrl-tab-recently-used-order =
     .label = Pusingan Ctrl+Tab mengikut tertib tab yang baru digunakan
@@ -93,6 +99,8 @@ browser-containers-settings =
     .label = Tetapan…
     .accesskey = p
 containers-disable-alert-title = Tutup Semua Tab Penyimpan?
+startup-group =
+    .label = Permulaan
 
 ## Variables:
 ##   $tabCount (number) - Number of tabs
@@ -105,7 +113,7 @@ containers-disable-alert-ok-button = Tutup { $tabCount } Tab Penyimpan
 containers-disable-alert-cancel-button = Sentiasa didayakan
 containers-remove-alert-title = Buang Penyimpan Ini?
 # Variables:
-#   $count (Number) - Number of tabs that will be closed.
+#   $count (number) - Number of tabs that will be closed.
 containers-remove-alert-msg = Jika anda mengalih keluar Penyimpan ini sekarang, { $count } tab penyimpan akan ditutup. Adakah anda pasti mahu mengalih keluar Penyimpan ini?
 containers-remove-ok-button = Buang Penyimpan Ini
 containers-remove-cancel-button = Jangan buang Penyimpan Ini
@@ -113,6 +121,12 @@ containers-remove-cancel-button = Jangan buang Penyimpan Ini
 ## General Section - Language & Appearance
 
 language-and-appearance-header = Bahasa dan Penampilan
+default-font-2 =
+    .label = Fon piawai
+    .accesskey = F
+default-font-size-2 =
+    .label = Saiz
+    .accesskey = S
 default-font = Fon piawai
     .accesskey = F
 default-font-size = Saiz
@@ -147,6 +161,11 @@ check-user-spelling =
 ## General Section - Files and Applications
 
 files-and-applications-title = Fail dan Aplikasi
+downloads-header-2 =
+    .label = Muat turun
+download-save-where-2 =
+    .label = Simpan fail ke
+    .accesskey = n
 download-header = Muat turun
 download-save-where = Simpan fail ke
     .accesskey = n
@@ -195,11 +214,11 @@ applications-manage-app =
 applications-always-ask =
     .label = Sentiasa tanya
 # Variables:
-#   $type-description (String) - Description of the type (e.g "Portable Document Format")
-#   $type (String) - the MIME type (e.g application/binary)
+#   $type-description (string) - Description of the type (e.g "Portable Document Format")
+#   $type (string) - The MIME type (e.g application/binary)
 applications-type-description-with-type = { $type-description } ({ $type })
 # Variables:
-#   $plugin-name (String) - Name of a plugin (e.g Adobe Flash)
+#   $plugin-name (string) - Name of a plugin (e.g Adobe Flash)
 applications-use-plugin-in =
     .label = Guna { $plugin-name } (dalam { -brand-short-name })
 
@@ -222,6 +241,8 @@ applications-use-other-label =
 
 ##
 
+drm-group =
+    .label = Kandungan Digital Rights Management (DRM)
 drm-content-header = Kandungan Digital Rights Management (DRM)
 play-drm-content =
     .label = Mainkan kandungan kawalan-DRM
@@ -229,6 +250,8 @@ play-drm-content =
 play-drm-content-learn-more = Ketahui selanjutnya
 update-application-title = Kemaskini { -brand-short-name }
 update-application-description = Pastikan { -brand-short-name } sentiasa dikemaskini untuk mendapatkan prestasi, kestabilan dan keselamatan yang terbaik.
+# Variables:
+# $version (string) - Firefox version
 update-application-version = Versi { $version } <a data-l10n-name="learn-more">Perkembangan terbaru</a>
 update-history =
     .label = Papar Sejarah Kemaskini…
@@ -263,9 +286,11 @@ performance-limit-content-process-option = Had proses kandungan
 performance-limit-content-process-enabled-desc = Proses kandungan tambahan boleh memperbaiki prestasi apabila menggunakan berbilang tab, tetapi juga akan menggunakan lebih banyak memori.
 performance-limit-content-process-blocked-desc = Mengubah bilangan proses kandungan hanya boleh dilakukan dengan multi proses { -brand-short-name }. <a data-l10n-name="learn-more">Ketahui cara untuk menyemak samada multi proses didayakan</a>
 # Variables:
-#   $num - default value of the `dom.ipc.processCount` pref.
+#   $num (number) - Default value of the `dom.ipc.processCount` pref.
 performance-default-content-process-count =
     .label = { $num } (piawai)
+performance-group =
+    .label = Prestasi
 
 ## General Section - Browsing
 
@@ -289,6 +314,8 @@ browsing-cfr-recommendations =
     .label = Cadangkan ekstensi semasa melayar
     .accesskey = C
 browsing-cfr-recommendations-learn-more = Ketahui Selanjutnya
+browsing-group =
+    .label = Menyemak
 
 ## General Section - Proxy
 
@@ -298,16 +325,27 @@ network-proxy-connection-learn-more = Ketahui Selanjutnya
 network-proxy-connection-settings =
     .label = Tetapan…
     .accesskey = t
+network-proxy-group =
+    .label = Tetapan Rangkaian
+    .description = Tetapkan cara { -brand-short-name } menyambung ke internet.
 
 ## Home Section
 
 home-new-windows-tabs-header = Tetingkap dan Tab Baru
 home-new-windows-tabs-description2 = Pilih apa yang anda mahu lihat apabila anda buka laman, tetingkap dan tab baru.
 
-## Home Section - Home Page Customization
+## Home Section - Default Browser
+
+set-as-my-default-browser-2 =
+    .label = Jadikan Piawai
+    .accesskey = P
+
+## Custom Homepage subpage
 
 home-homepage-mode-label = Laman dan tetingkap baru
 home-newtabs-mode-label = Tab baru
+home-homepage-new-tabs =
+    .label = Tab baru
 home-restore-defaults =
     .label = Pulih Piawai
     .accesskey = P
@@ -337,11 +375,8 @@ choose-bookmark =
 home-prefs-search-header =
     .label = Carian Web
 
-## Variables:
-##  $provider (string) - Name of the corresponding content provider, e.g "Pocket".
+## Home Section - Firefox Home Content Customization
 
-# Variables:
-#  $provider (String): Name of the corresponding content provider, e.g "Pocket".
 home-prefs-recommended-by-header =
     .label = Disyorkan oleh { $provider }
 
@@ -364,6 +399,8 @@ home-prefs-highlights-option-saved-to-pocket =
 # and non-essential but also not entirely trivial and useless.
 home-prefs-snippets-header =
     .label = Cebisan
+# Variables:
+#   $num (number) - Number of rows displayed
 home-prefs-sections-rows-option =
     .label = { $num } baris
 
@@ -381,6 +418,8 @@ search-suggestions-option =
 search-show-suggestions-url-bar-option =
     .label = Papar cadangan carian dalam keputusan bar alamat
     .accesskey = P
+search-suggestions-cant-show-2 =
+    .message = Cadangan carian tidak akan dipaparkan dalam keputusan bar lokasi kerana anda telah mengkonfigurasi { -brand-short-name } untuk tidak mengingati sejarah.
 # This string describes what the user will observe when the system
 # prioritizes search suggestions over browsing history in the results
 # that extend down from the address bar. In the original English string,
@@ -405,13 +444,19 @@ search-find-more-link = Cari lebih banyak enjin carian
 # ('Duplicate' is an adjective)
 search-keyword-warning-title = Kata kunci Duplikasi
 # Variables:
-#   $name (String) - Name of a search engine.
+#   $name (string) - Name of a search engine.
 search-keyword-warning-engine = Anda telah memilih kata kunci yang sedang digunakan oleh "{ $name }". Sila pilih yang lain.
 search-keyword-warning-bookmark = Anda telah memilih kata kunci yang sedang digunakan oleh tandabuku. Sila pilih yang lain.
+search-engine-group =
+    .label = Enjin Carian Piawai
+search-default-engine =
+    .aria-label = Enjin Carian Piawai
 
 ## Containers Section
 
 containers-header = Tab Penyimpan
+containers-section-header =
+    .heading = Tab Penyimpan
 containers-add-button =
     .label = Tambah Penyimpan Baru
     .accesskey = A
@@ -441,9 +486,13 @@ sync-profile-picture-with-alt =
     .alt = Tukar gambar profil
 sync-manage-account = Urus Akaun
     .accesskey = s
+sync-manage-account2 =
+    .label = Urus Akaun
+    .accesskey = s
 
 ## Variables
 ## $email (string) - Email used for Firefox account
+## $name (string) - Name used for Firefox account
 
 sync-signedin-unverified = { $email } tidak disahkan.
 sync-signedin-login-failure = Sila daftar masuk untuk menyambung semula { $email }
@@ -459,12 +508,6 @@ sync-remove-account =
 sync-sign-in =
     .label = Daftar masuk
     .accesskey = d
-
-## Sync section - enabling or disabling sync.
-
-
-## The list of things currently syncing.
-
 
 ## The "Choose what to sync" dialog.
 
@@ -494,6 +537,16 @@ sync-engine-addons =
 ## The device name controls.
 
 sync-device-name-header = Nama Peranti
+sync-device-name-header-2 =
+    .label = Nama Peranti
+# Variables:
+#   $placeholder (string) - The placeholder text of the input
+sync-device-name-input =
+    .aria-label = Nama Peranti
+    .placeholder = { $placeholder }
+sync-device-name-change-2 =
+    .label = Tukar Nama Peranti
+    .accesskey = u
 sync-device-name-change =
     .label = Tukar Nama Peranti…
     .accesskey = u
@@ -523,6 +576,7 @@ privacy-header = Privasi Pelayar
 # The search keyword isn't shown to users but is used to find relevant settings in about:preferences.
 pane-privacy-logins-and-passwords-header = Log masuk & Kata laluan
     .searchkeywords = { -lockwise-brand-short-name }
+# Checkbox to control whether UI is shown to users to save or fill logins/passwords.
 forms-ask-to-save-logins =
     .label = Tanya untuk simpan log masuk dan kata laluan laman web
     .accesskey = l
@@ -535,20 +589,27 @@ forms-exceptions =
 forms-saved-logins =
     .label = Log masuk Tersimpan…
     .accesskey = L
+# This string uses the former name of the Primary Password feature
+# ("Master Password" in English) so that the preferences can be found
+# when searching for the old name. The accesskey is unused.
 forms-master-pw-change =
     .label = Tukar Kata laluan Induk…
     .accesskey = T
 forms-master-pw-fips-desc = Kata laluan Gagal Ditukar
 
-## OS Authentication dialog
-
-
-## Privacy section - Autofill
-
-
 ## Privacy Section - History
 
 history-header = Sejarah
+# This label is followed, on the same line, by a dropdown list of options
+# (Remember history, etc.).
+# In English it visually creates a full sentence, e.g.
+# "Firefox will" + "Remember history".
+#
+# If this doesn't work for your language, you can translate this message:
+#   - Simply as "Firefox", moving the verb into each option.
+#     This will result in "Firefox" + "Will remember history", etc.
+#   - As a stand-alone message, for example "Firefox history settings:".
+history-remember-label2 = { -brand-short-name } akan
 # This label is followed, on the same line, by a dropdown list of options
 # (Remember history, etc.).
 # In English it visually creates a full sentence, e.g.
@@ -566,6 +627,18 @@ history-remember-option-never =
     .label = Jangan ingat sejarah
 history-remember-option-custom =
     .label = Guna tetapan penyesuaian untuk sejarah
+history-remember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } akan mengingati sejarah pelayaran, muat turun, borang dan carian.
+history-dontremember-description4 =
+    .aria-label = { history-group.label }
+    .description = { -brand-short-name } akan menggunakan tetapan yang sama untuk pelayaran peribadi dan tidak akan mengingati sejarah pelayaran semasa anda melayari Web.
+history-remember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } akan mengingati sejarah pelayaran, muat turun, borang dan carian.
+history-dontremember-description3 =
+    .aria-label = { history-remember-label2 }
+    .description = { -brand-short-name } akan menggunakan tetapan yang sama untuk pelayaran peribadi dan tidak akan mengingati sejarah pelayaran semasa anda melayari Web.
 history-remember-description = { -brand-short-name } akan mengingati sejarah pelayaran, muat turun, borang dan carian.
 history-dontremember-description = { -brand-short-name } akan menggunakan tetapan yang sama untuk pelayaran peribadi dan tidak akan mengingati sejarah pelayaran semasa anda melayari Web.
 history-private-browsing-permanent =
@@ -586,14 +659,16 @@ history-clear-on-close-settings =
 history-clear-button =
     .label = Buang Sejarah…
     .accesskey = j
+history-group =
+    .label = Sejarah
 
 ## Privacy Section - Site Data
 
 sitedata-header = Kuki dan Data Laman
 sitedata-total-size-calculating = Mengira saiz data dan cache laman…
 # Variables:
-#   $value (Number) - Value of the unit (for example: 4.6, 500)
-#   $unit (String) - Name of the unit (for example: "bytes", "KB")
+#   $value (number) - Value of the unit (for example: 4.6, 500)
+#   $unit (string) - Name of the unit (for example: "bytes", "KB")
 sitedata-total-size = Kuki, data laman dan cache yang disimpan kini menggunakan { $value } { $unit } daripada ruang cakera.
 sitedata-learn-more = Ketahui selanjutnya
 sitedata-delete-on-close =
@@ -615,14 +690,10 @@ sitedata-clear =
 sitedata-settings =
     .label = Urus Data…
     .accesskey = U
+cookies-site-data-group =
+    .label = Kuki dan Data Laman
 
-## Privacy Section - Cookie Banner Handling
-
-
-## Privacy Section - Cookie Banner Blocking
-
-
-## Privacy Section - Address Bar
+## Search Section
 
 addressbar-header = Bar Alamat
 addressbar-suggest = Apabila menggunakan bar alamat, syorkan
@@ -703,6 +774,14 @@ permissions-addon-install-warning =
 permissions-addon-exceptions =
     .label = Pengecualian…
     .accesskey = E
+permissions-location2 =
+    .label = Lokasi
+permissions-camera2 =
+    .label = Kamera
+permissions-microphone2 =
+    .label = Mikrofon
+permissions-notification2 =
+    .label = Notifikasi
 
 ## Privacy Section - Data Collection
 
@@ -720,15 +799,14 @@ collection-studies-link = Papar kajian { -brand-short-name }
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Laporan data dinyahdayakan bagi konfigurasi binaan ini
 
-## Privacy Section - Website Advertising Preferences
-
-
 ## Privacy Section - Security
 ##
 ## It is important that wording follows the guidelines outlined on this page:
 ## https://developers.google.com/safe-browsing/developers_guide_v2#AcceptableUsage
 
 security-header = Keselamatan
+browsing-protection-group =
+    .label = Perlindungan Kandungan Mengelirukan dan Perisian Berbahaya
 security-browsing-protection = Perlindungan Kandungan Mengelirukan dan Perisian Berbahaya
 security-enable-safe-browsing =
     .label = Sekat isi kandung berbahaya dan memperdayakan
@@ -753,12 +831,7 @@ certs-view =
 certs-devices =
     .label = Peranti Keselamatan…
     .accesskey = P
-
-## Privacy Section - HTTPS-Only
-
-
-## DoH Section
-
+certs-devices-enable-fips = Dayakan FIPS
 
 ## The following strings are used in the Download section of settings
 

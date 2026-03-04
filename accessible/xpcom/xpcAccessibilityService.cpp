@@ -90,7 +90,7 @@ xpcAccessibilityService::Release(void) {
   if (count == 1 && !mShutdownTimer) {
     NS_NewTimerWithFuncCallback(
         getter_AddRefs(mShutdownTimer), ShutdownCallback, this, 100,
-        nsITimer::TYPE_ONE_SHOT, "xpcAccessibilityService::Release");
+        nsITimer::TYPE_ONE_SHOT, "xpcAccessibilityService::Release"_ns);
   }
 
   return count;
@@ -226,6 +226,17 @@ xpcAccessibilityService::GetAccessibleFromCache(nsINode* aNode,
   }
 
   NS_IF_ADDREF(*aAccessible = ToXPC(accessible));
+  return NS_OK;
+}
+
+NS_IMETHODIMP
+xpcAccessibilityService::SetCacheDomains(uint64_t aCacheDomains) {
+  nsAccessibilityService* accService = GetAccService();
+  if (!accService) {
+    return NS_ERROR_SERVICE_NOT_AVAILABLE;
+  }
+
+  accService->SetCacheDomains(aCacheDomains);
   return NS_OK;
 }
 

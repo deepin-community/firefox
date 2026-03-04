@@ -2,7 +2,7 @@ use super::{
     CompositeInnerType, Elements, FuncType, Instruction, InstructionKind::*, InstructionKinds,
     Module, ValType,
 };
-use crate::{unique_string, MemoryOffsetChoices};
+use crate::{MemoryOffsetChoices, unique_string};
 use arbitrary::{Result, Unstructured};
 use std::collections::{BTreeMap, BTreeSet};
 use std::rc::Rc;
@@ -126,62 +126,62 @@ instructions! {
     (Some(global_get_valid), global_get, Variable),
     (Some(global_set_valid), global_set, Variable),
     // Memory instructions.
-    (Some(have_memory_and_offset), i32_load, Memory),
-    (Some(have_memory_and_offset), i64_load, Memory),
+    (Some(have_memory_and_offset), i32_load, MemoryInt),
+    (Some(have_memory_and_offset), i64_load, MemoryInt),
     (Some(have_memory_and_offset), f32_load, Memory),
     (Some(have_memory_and_offset), f64_load, Memory),
-    (Some(have_memory_and_offset), i32_load_8_s, Memory),
-    (Some(have_memory_and_offset), i32_load_8_u, Memory),
-    (Some(have_memory_and_offset), i32_load_16_s, Memory),
-    (Some(have_memory_and_offset), i32_load_16_u, Memory),
-    (Some(have_memory_and_offset), i64_load_8_s, Memory),
-    (Some(have_memory_and_offset), i64_load_16_s, Memory),
-    (Some(have_memory_and_offset), i64_load_32_s, Memory),
-    (Some(have_memory_and_offset), i64_load_8_u, Memory),
-    (Some(have_memory_and_offset), i64_load_16_u, Memory),
-    (Some(have_memory_and_offset), i64_load_32_u, Memory),
-    (Some(i32_store_valid), i32_store, Memory),
-    (Some(i64_store_valid), i64_store, Memory),
+    (Some(have_memory_and_offset), i32_load_8_s, MemoryInt),
+    (Some(have_memory_and_offset), i32_load_8_u, MemoryInt),
+    (Some(have_memory_and_offset), i32_load_16_s, MemoryInt),
+    (Some(have_memory_and_offset), i32_load_16_u, MemoryInt),
+    (Some(have_memory_and_offset), i64_load_8_s, MemoryInt),
+    (Some(have_memory_and_offset), i64_load_16_s, MemoryInt),
+    (Some(have_memory_and_offset), i64_load_32_s, MemoryInt),
+    (Some(have_memory_and_offset), i64_load_8_u, MemoryInt),
+    (Some(have_memory_and_offset), i64_load_16_u, MemoryInt),
+    (Some(have_memory_and_offset), i64_load_32_u, MemoryInt),
+    (Some(i32_store_valid), i32_store, MemoryInt),
+    (Some(i64_store_valid), i64_store, MemoryInt),
     (Some(f32_store_valid), f32_store, Memory),
     (Some(f64_store_valid), f64_store, Memory),
-    (Some(i32_store_valid), i32_store_8, Memory),
-    (Some(i32_store_valid), i32_store_16, Memory),
-    (Some(i64_store_valid), i64_store_8, Memory),
-    (Some(i64_store_valid), i64_store_16, Memory),
-    (Some(i64_store_valid), i64_store_32, Memory),
-    (Some(have_memory), memory_size, Memory),
-    (Some(memory_grow_valid), memory_grow, Memory),
-    (Some(memory_init_valid), memory_init, Memory),
-    (Some(data_drop_valid), data_drop, Memory),
-    (Some(memory_copy_valid), memory_copy, Memory),
-    (Some(memory_fill_valid), memory_fill, Memory),
+    (Some(i32_store_valid), i32_store_8, MemoryInt),
+    (Some(i32_store_valid), i32_store_16, MemoryInt),
+    (Some(i64_store_valid), i64_store_8, MemoryInt),
+    (Some(i64_store_valid), i64_store_16, MemoryInt),
+    (Some(i64_store_valid), i64_store_32, MemoryInt),
+    (Some(have_memory), memory_size, MemoryInt),
+    (Some(memory_grow_valid), memory_grow, MemoryInt),
+    (Some(memory_init_valid), memory_init, MemoryInt),
+    (Some(data_drop_valid), data_drop, MemoryInt),
+    (Some(memory_copy_valid), memory_copy, MemoryInt),
+    (Some(memory_fill_valid), memory_fill, MemoryInt),
     // Numeric instructions.
-    (None, i32_const, Numeric),
-    (None, i64_const, Numeric),
+    (None, i32_const, NumericInt),
+    (None, i64_const, NumericInt),
     (None, f32_const, Numeric),
     (None, f64_const, Numeric),
-    (Some(i32_on_stack), i32_eqz, Numeric),
-    (Some(i32_i32_on_stack), i32_eq, Numeric),
-    (Some(i32_i32_on_stack), i32_ne, Numeric),
-    (Some(i32_i32_on_stack), i32_lt_s, Numeric),
-    (Some(i32_i32_on_stack), i32_lt_u, Numeric),
-    (Some(i32_i32_on_stack), i32_gt_s, Numeric),
-    (Some(i32_i32_on_stack), i32_gt_u, Numeric),
-    (Some(i32_i32_on_stack), i32_le_s, Numeric),
-    (Some(i32_i32_on_stack), i32_le_u, Numeric),
-    (Some(i32_i32_on_stack), i32_ge_s, Numeric),
-    (Some(i32_i32_on_stack), i32_ge_u, Numeric),
-    (Some(i64_on_stack), i64_eqz, Numeric),
-    (Some(i64_i64_on_stack), i64_eq, Numeric),
-    (Some(i64_i64_on_stack), i64_ne, Numeric),
-    (Some(i64_i64_on_stack), i64_lt_s, Numeric),
-    (Some(i64_i64_on_stack), i64_lt_u, Numeric),
-    (Some(i64_i64_on_stack), i64_gt_s, Numeric),
-    (Some(i64_i64_on_stack), i64_gt_u, Numeric),
-    (Some(i64_i64_on_stack), i64_le_s, Numeric),
-    (Some(i64_i64_on_stack), i64_le_u, Numeric),
-    (Some(i64_i64_on_stack), i64_ge_s, Numeric),
-    (Some(i64_i64_on_stack), i64_ge_u, Numeric),
+    (Some(i32_on_stack), i32_eqz, NumericInt),
+    (Some(i32_i32_on_stack), i32_eq, NumericInt),
+    (Some(i32_i32_on_stack), i32_ne, NumericInt),
+    (Some(i32_i32_on_stack), i32_lt_s, NumericInt),
+    (Some(i32_i32_on_stack), i32_lt_u, NumericInt),
+    (Some(i32_i32_on_stack), i32_gt_s, NumericInt),
+    (Some(i32_i32_on_stack), i32_gt_u, NumericInt),
+    (Some(i32_i32_on_stack), i32_le_s, NumericInt),
+    (Some(i32_i32_on_stack), i32_le_u, NumericInt),
+    (Some(i32_i32_on_stack), i32_ge_s, NumericInt),
+    (Some(i32_i32_on_stack), i32_ge_u, NumericInt),
+    (Some(i64_on_stack), i64_eqz, NumericInt),
+    (Some(i64_i64_on_stack), i64_eq, NumericInt),
+    (Some(i64_i64_on_stack), i64_ne, NumericInt),
+    (Some(i64_i64_on_stack), i64_lt_s, NumericInt),
+    (Some(i64_i64_on_stack), i64_lt_u, NumericInt),
+    (Some(i64_i64_on_stack), i64_gt_s, NumericInt),
+    (Some(i64_i64_on_stack), i64_gt_u, NumericInt),
+    (Some(i64_i64_on_stack), i64_le_s, NumericInt),
+    (Some(i64_i64_on_stack), i64_le_u, NumericInt),
+    (Some(i64_i64_on_stack), i64_ge_s, NumericInt),
+    (Some(i64_i64_on_stack), i64_ge_u, NumericInt),
     (Some(f32_f32_on_stack), f32_eq, Numeric),
     (Some(f32_f32_on_stack), f32_ne, Numeric),
     (Some(f32_f32_on_stack), f32_lt, Numeric),
@@ -194,42 +194,42 @@ instructions! {
     (Some(f64_f64_on_stack), f64_gt, Numeric),
     (Some(f64_f64_on_stack), f64_le, Numeric),
     (Some(f64_f64_on_stack), f64_ge, Numeric),
-    (Some(i32_on_stack), i32_clz, Numeric),
-    (Some(i32_on_stack), i32_ctz, Numeric),
-    (Some(i32_on_stack), i32_popcnt, Numeric),
-    (Some(i32_i32_on_stack), i32_add, Numeric),
-    (Some(i32_i32_on_stack), i32_sub, Numeric),
-    (Some(i32_i32_on_stack), i32_mul, Numeric),
-    (Some(i32_i32_on_stack), i32_div_s, Numeric),
-    (Some(i32_i32_on_stack), i32_div_u, Numeric),
-    (Some(i32_i32_on_stack), i32_rem_s, Numeric),
-    (Some(i32_i32_on_stack), i32_rem_u, Numeric),
-    (Some(i32_i32_on_stack), i32_and, Numeric),
-    (Some(i32_i32_on_stack), i32_or, Numeric),
-    (Some(i32_i32_on_stack), i32_xor, Numeric),
-    (Some(i32_i32_on_stack), i32_shl, Numeric),
-    (Some(i32_i32_on_stack), i32_shr_s, Numeric),
-    (Some(i32_i32_on_stack), i32_shr_u, Numeric),
-    (Some(i32_i32_on_stack), i32_rotl, Numeric),
-    (Some(i32_i32_on_stack), i32_rotr, Numeric),
-    (Some(i64_on_stack), i64_clz, Numeric),
-    (Some(i64_on_stack), i64_ctz, Numeric),
-    (Some(i64_on_stack), i64_popcnt, Numeric),
-    (Some(i64_i64_on_stack), i64_add, Numeric),
-    (Some(i64_i64_on_stack), i64_sub, Numeric),
-    (Some(i64_i64_on_stack), i64_mul, Numeric),
-    (Some(i64_i64_on_stack), i64_div_s, Numeric),
-    (Some(i64_i64_on_stack), i64_div_u, Numeric),
-    (Some(i64_i64_on_stack), i64_rem_s, Numeric),
-    (Some(i64_i64_on_stack), i64_rem_u, Numeric),
-    (Some(i64_i64_on_stack), i64_and, Numeric),
-    (Some(i64_i64_on_stack), i64_or, Numeric),
-    (Some(i64_i64_on_stack), i64_xor, Numeric),
-    (Some(i64_i64_on_stack), i64_shl, Numeric),
-    (Some(i64_i64_on_stack), i64_shr_s, Numeric),
-    (Some(i64_i64_on_stack), i64_shr_u, Numeric),
-    (Some(i64_i64_on_stack), i64_rotl, Numeric),
-    (Some(i64_i64_on_stack), i64_rotr, Numeric),
+    (Some(i32_on_stack), i32_clz, NumericInt),
+    (Some(i32_on_stack), i32_ctz, NumericInt),
+    (Some(i32_on_stack), i32_popcnt, NumericInt),
+    (Some(i32_i32_on_stack), i32_add, NumericInt),
+    (Some(i32_i32_on_stack), i32_sub, NumericInt),
+    (Some(i32_i32_on_stack), i32_mul, NumericInt),
+    (Some(i32_i32_on_stack), i32_div_s, NumericInt),
+    (Some(i32_i32_on_stack), i32_div_u, NumericInt),
+    (Some(i32_i32_on_stack), i32_rem_s, NumericInt),
+    (Some(i32_i32_on_stack), i32_rem_u, NumericInt),
+    (Some(i32_i32_on_stack), i32_and, NumericInt),
+    (Some(i32_i32_on_stack), i32_or, NumericInt),
+    (Some(i32_i32_on_stack), i32_xor, NumericInt),
+    (Some(i32_i32_on_stack), i32_shl, NumericInt),
+    (Some(i32_i32_on_stack), i32_shr_s, NumericInt),
+    (Some(i32_i32_on_stack), i32_shr_u, NumericInt),
+    (Some(i32_i32_on_stack), i32_rotl, NumericInt),
+    (Some(i32_i32_on_stack), i32_rotr, NumericInt),
+    (Some(i64_on_stack), i64_clz, NumericInt),
+    (Some(i64_on_stack), i64_ctz, NumericInt),
+    (Some(i64_on_stack), i64_popcnt, NumericInt),
+    (Some(i64_i64_on_stack), i64_add, NumericInt),
+    (Some(i64_i64_on_stack), i64_sub, NumericInt),
+    (Some(i64_i64_on_stack), i64_mul, NumericInt),
+    (Some(i64_i64_on_stack), i64_div_s, NumericInt),
+    (Some(i64_i64_on_stack), i64_div_u, NumericInt),
+    (Some(i64_i64_on_stack), i64_rem_s, NumericInt),
+    (Some(i64_i64_on_stack), i64_rem_u, NumericInt),
+    (Some(i64_i64_on_stack), i64_and, NumericInt),
+    (Some(i64_i64_on_stack), i64_or, NumericInt),
+    (Some(i64_i64_on_stack), i64_xor, NumericInt),
+    (Some(i64_i64_on_stack), i64_shl, NumericInt),
+    (Some(i64_i64_on_stack), i64_shr_s, NumericInt),
+    (Some(i64_i64_on_stack), i64_shr_u, NumericInt),
+    (Some(i64_i64_on_stack), i64_rotl, NumericInt),
+    (Some(i64_i64_on_stack), i64_rotr, NumericInt),
     (Some(f32_on_stack), f32_abs, Numeric),
     (Some(f32_on_stack), f32_neg, Numeric),
     (Some(f32_on_stack), f32_ceil, Numeric),
@@ -258,13 +258,13 @@ instructions! {
     (Some(f64_f64_on_stack), f64_min, Numeric),
     (Some(f64_f64_on_stack), f64_max, Numeric),
     (Some(f64_f64_on_stack), f64_copysign, Numeric),
-    (Some(i64_on_stack), i32_wrap_i64, Numeric),
+    (Some(i64_on_stack), i32_wrap_i64, NumericInt),
     (Some(f32_on_stack), i32_trunc_f32_s, Numeric),
     (Some(f32_on_stack), i32_trunc_f32_u, Numeric),
     (Some(f64_on_stack), i32_trunc_f64_s, Numeric),
     (Some(f64_on_stack), i32_trunc_f64_u, Numeric),
-    (Some(i32_on_stack), i64_extend_i32_s, Numeric),
-    (Some(i32_on_stack), i64_extend_i32_u, Numeric),
+    (Some(i32_on_stack), i64_extend_i32_s, NumericInt),
+    (Some(i32_on_stack), i64_extend_i32_u, NumericInt),
     (Some(f32_on_stack), i64_trunc_f32_s, Numeric),
     (Some(f32_on_stack), i64_trunc_f32_u, Numeric),
     (Some(f64_on_stack), i64_trunc_f64_s, Numeric),
@@ -283,11 +283,11 @@ instructions! {
     (Some(f64_on_stack), i64_reinterpret_f64, Numeric),
     (Some(i32_on_stack), f32_reinterpret_i32, Numeric),
     (Some(i64_on_stack), f64_reinterpret_i64, Numeric),
-    (Some(extendable_i32_on_stack), i32_extend_8_s, Numeric),
-    (Some(extendable_i32_on_stack), i32_extend_16_s, Numeric),
-    (Some(extendable_i64_on_stack), i64_extend_8_s, Numeric),
-    (Some(extendable_i64_on_stack), i64_extend_16_s, Numeric),
-    (Some(extendable_i64_on_stack), i64_extend_32_s, Numeric),
+    (Some(extendable_i32_on_stack), i32_extend_8_s, NumericInt),
+    (Some(extendable_i32_on_stack), i32_extend_16_s, NumericInt),
+    (Some(extendable_i64_on_stack), i64_extend_8_s, NumericInt),
+    (Some(extendable_i64_on_stack), i64_extend_16_s, NumericInt),
+    (Some(extendable_i64_on_stack), i64_extend_32_s, NumericInt),
     (Some(nontrapping_f32_on_stack), i32_trunc_sat_f32_s, Numeric),
     (Some(nontrapping_f32_on_stack), i32_trunc_sat_f32_u, Numeric),
     (Some(nontrapping_f64_on_stack), i32_trunc_sat_f64_s, Numeric),
@@ -334,93 +334,93 @@ instructions! {
     (Some(any_convert_extern_valid), any_convert_extern, Aggregate),
     (Some(extern_convert_any_valid), extern_convert_any, Aggregate),
     // SIMD instructions.
-    (Some(simd_have_memory_and_offset), v128_load, Vector),
-    (Some(simd_have_memory_and_offset), v128_load8x8s, Vector),
-    (Some(simd_have_memory_and_offset), v128_load8x8u, Vector),
-    (Some(simd_have_memory_and_offset), v128_load16x4s, Vector),
-    (Some(simd_have_memory_and_offset), v128_load16x4u, Vector),
-    (Some(simd_have_memory_and_offset), v128_load32x2s, Vector),
-    (Some(simd_have_memory_and_offset), v128_load32x2u, Vector),
-    (Some(simd_have_memory_and_offset), v128_load8_splat, Vector),
-    (Some(simd_have_memory_and_offset), v128_load16_splat, Vector),
-    (Some(simd_have_memory_and_offset), v128_load32_splat, Vector),
-    (Some(simd_have_memory_and_offset), v128_load64_splat, Vector),
-    (Some(simd_have_memory_and_offset), v128_load32_zero, Vector),
-    (Some(simd_have_memory_and_offset), v128_load64_zero, Vector),
-    (Some(simd_v128_store_valid), v128_store, Vector),
-    (Some(simd_load_lane_valid), v128_load8_lane, Vector),
-    (Some(simd_load_lane_valid), v128_load16_lane, Vector),
-    (Some(simd_load_lane_valid), v128_load32_lane, Vector),
-    (Some(simd_load_lane_valid), v128_load64_lane, Vector),
-    (Some(simd_store_lane_valid), v128_store8_lane, Vector),
-    (Some(simd_store_lane_valid), v128_store16_lane, Vector),
-    (Some(simd_store_lane_valid), v128_store32_lane, Vector),
-    (Some(simd_store_lane_valid), v128_store64_lane, Vector),
-    (Some(simd_enabled), v128_const, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_shuffle, Vector),
-    (Some(simd_v128_on_stack), i8x16_extract_lane_s, Vector),
-    (Some(simd_v128_on_stack), i8x16_extract_lane_u, Vector),
-    (Some(simd_v128_i32_on_stack), i8x16_replace_lane, Vector),
-    (Some(simd_v128_on_stack), i16x8_extract_lane_s, Vector),
-    (Some(simd_v128_on_stack), i16x8_extract_lane_u, Vector),
-    (Some(simd_v128_i32_on_stack), i16x8_replace_lane, Vector),
-    (Some(simd_v128_on_stack), i32x4_extract_lane, Vector),
-    (Some(simd_v128_i32_on_stack), i32x4_replace_lane, Vector),
-    (Some(simd_v128_on_stack), i64x2_extract_lane, Vector),
-    (Some(simd_v128_i64_on_stack), i64x2_replace_lane, Vector),
+    (Some(simd_have_memory_and_offset), v128_load, VectorInt),
+    (Some(simd_have_memory_and_offset), v128_load8x8s, VectorInt),
+    (Some(simd_have_memory_and_offset), v128_load8x8u, VectorInt),
+    (Some(simd_have_memory_and_offset), v128_load16x4s, VectorInt),
+    (Some(simd_have_memory_and_offset), v128_load16x4u, VectorInt),
+    (Some(simd_have_memory_and_offset), v128_load32x2s, VectorInt),
+    (Some(simd_have_memory_and_offset), v128_load32x2u, VectorInt),
+    (Some(simd_have_memory_and_offset), v128_load8_splat, VectorInt),
+    (Some(simd_have_memory_and_offset), v128_load16_splat, VectorInt),
+    (Some(simd_have_memory_and_offset), v128_load32_splat, VectorInt),
+    (Some(simd_have_memory_and_offset), v128_load64_splat, VectorInt),
+    (Some(simd_have_memory_and_offset), v128_load32_zero, VectorInt),
+    (Some(simd_have_memory_and_offset), v128_load64_zero, VectorInt),
+    (Some(simd_v128_store_valid), v128_store, VectorInt),
+    (Some(simd_load_lane_valid), v128_load8_lane, VectorInt),
+    (Some(simd_load_lane_valid), v128_load16_lane, VectorInt),
+    (Some(simd_load_lane_valid), v128_load32_lane, VectorInt),
+    (Some(simd_load_lane_valid), v128_load64_lane, VectorInt),
+    (Some(simd_store_lane_valid), v128_store8_lane, VectorInt),
+    (Some(simd_store_lane_valid), v128_store16_lane, VectorInt),
+    (Some(simd_store_lane_valid), v128_store32_lane, VectorInt),
+    (Some(simd_store_lane_valid), v128_store64_lane, VectorInt),
+    (Some(simd_enabled), v128_const, VectorInt),
+    (Some(simd_v128_v128_on_stack), i8x16_shuffle, VectorInt),
+    (Some(simd_v128_on_stack), i8x16_extract_lane_s, VectorInt),
+    (Some(simd_v128_on_stack), i8x16_extract_lane_u, VectorInt),
+    (Some(simd_v128_i32_on_stack), i8x16_replace_lane, VectorInt),
+    (Some(simd_v128_on_stack), i16x8_extract_lane_s, VectorInt),
+    (Some(simd_v128_on_stack), i16x8_extract_lane_u, VectorInt),
+    (Some(simd_v128_i32_on_stack), i16x8_replace_lane, VectorInt),
+    (Some(simd_v128_on_stack), i32x4_extract_lane, VectorInt),
+    (Some(simd_v128_i32_on_stack), i32x4_replace_lane, VectorInt),
+    (Some(simd_v128_on_stack), i64x2_extract_lane, VectorInt),
+    (Some(simd_v128_i64_on_stack), i64x2_replace_lane, VectorInt),
     (Some(simd_v128_on_stack), f32x4_extract_lane, Vector),
     (Some(simd_v128_f32_on_stack), f32x4_replace_lane, Vector),
     (Some(simd_v128_on_stack), f64x2_extract_lane, Vector),
     (Some(simd_v128_f64_on_stack), f64x2_replace_lane, Vector),
-    (Some(simd_i32_on_stack), i8x16_splat, Vector),
-    (Some(simd_i32_on_stack), i16x8_splat, Vector),
-    (Some(simd_i32_on_stack), i32x4_splat, Vector),
-    (Some(simd_i64_on_stack), i64x2_splat, Vector),
+    (Some(simd_i32_on_stack), i8x16_splat, VectorInt),
+    (Some(simd_i32_on_stack), i16x8_splat, VectorInt),
+    (Some(simd_i32_on_stack), i32x4_splat, VectorInt),
+    (Some(simd_i64_on_stack), i64x2_splat, VectorInt),
     (Some(simd_f32_on_stack), f32x4_splat, Vector),
     (Some(simd_f64_on_stack), f64x2_splat, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_swizzle, Vector),
-    (Some(simd_v128_v128_on_stack_relaxed), i8x16_relaxed_swizzle, Vector),
-    (Some(simd_v128_v128_v128_on_stack), v128_bitselect, Vector),
-    (Some(simd_v128_v128_v128_on_stack_relaxed), i8x16_relaxed_laneselect, Vector),
-    (Some(simd_v128_v128_v128_on_stack_relaxed), i16x8_relaxed_laneselect, Vector),
-    (Some(simd_v128_v128_v128_on_stack_relaxed), i32x4_relaxed_laneselect, Vector),
-    (Some(simd_v128_v128_v128_on_stack_relaxed), i64x2_relaxed_laneselect, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_eq, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_ne, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_lt_s, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_lt_u, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_gt_s, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_gt_u, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_le_s, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_le_u, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_ge_s, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_ge_u, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_eq, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_ne, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_lt_s, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_lt_u, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_gt_s, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_gt_u, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_le_s, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_le_u, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_ge_s, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_ge_u, Vector),
-    (Some(simd_v128_v128_on_stack), i32x4_eq, Vector),
-    (Some(simd_v128_v128_on_stack), i32x4_ne, Vector),
-    (Some(simd_v128_v128_on_stack), i32x4_lt_s, Vector),
-    (Some(simd_v128_v128_on_stack), i32x4_lt_u, Vector),
-    (Some(simd_v128_v128_on_stack), i32x4_gt_s, Vector),
-    (Some(simd_v128_v128_on_stack), i32x4_gt_u, Vector),
-    (Some(simd_v128_v128_on_stack), i32x4_le_s, Vector),
-    (Some(simd_v128_v128_on_stack), i32x4_le_u, Vector),
-    (Some(simd_v128_v128_on_stack), i32x4_ge_s, Vector),
-    (Some(simd_v128_v128_on_stack), i32x4_ge_u, Vector),
-    (Some(simd_v128_v128_on_stack), i64x2_eq, Vector),
-    (Some(simd_v128_v128_on_stack), i64x2_ne, Vector),
-    (Some(simd_v128_v128_on_stack), i64x2_lt_s, Vector),
-    (Some(simd_v128_v128_on_stack), i64x2_gt_s, Vector),
-    (Some(simd_v128_v128_on_stack), i64x2_le_s, Vector),
-    (Some(simd_v128_v128_on_stack), i64x2_ge_s, Vector),
+    (Some(simd_v128_v128_on_stack), i8x16_swizzle, VectorInt),
+    (Some(simd_v128_v128_on_stack_relaxed), i8x16_relaxed_swizzle, VectorInt),
+    (Some(simd_v128_v128_v128_on_stack), v128_bitselect, VectorInt),
+    (Some(simd_v128_v128_v128_on_stack_relaxed), i8x16_relaxed_laneselect, VectorInt),
+    (Some(simd_v128_v128_v128_on_stack_relaxed), i16x8_relaxed_laneselect, VectorInt),
+    (Some(simd_v128_v128_v128_on_stack_relaxed), i32x4_relaxed_laneselect, VectorInt),
+    (Some(simd_v128_v128_v128_on_stack_relaxed), i64x2_relaxed_laneselect, VectorInt),
+    (Some(simd_v128_v128_on_stack), i8x16_eq, VectorInt),
+    (Some(simd_v128_v128_on_stack), i8x16_ne, VectorInt),
+    (Some(simd_v128_v128_on_stack), i8x16_lt_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i8x16_lt_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i8x16_gt_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i8x16_gt_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i8x16_le_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i8x16_le_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i8x16_ge_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i8x16_ge_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_eq, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_ne, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_lt_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_lt_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_gt_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_gt_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_le_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_le_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_ge_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_ge_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i32x4_eq, VectorInt),
+    (Some(simd_v128_v128_on_stack), i32x4_ne, VectorInt),
+    (Some(simd_v128_v128_on_stack), i32x4_lt_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i32x4_lt_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i32x4_gt_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i32x4_gt_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i32x4_le_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i32x4_le_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i32x4_ge_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i32x4_ge_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i64x2_eq, VectorInt),
+    (Some(simd_v128_v128_on_stack), i64x2_ne, VectorInt),
+    (Some(simd_v128_v128_on_stack), i64x2_lt_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i64x2_gt_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i64x2_le_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i64x2_ge_s, VectorInt),
     (Some(simd_v128_v128_on_stack), f32x4_eq, Vector),
     (Some(simd_v128_v128_on_stack), f32x4_ne, Vector),
     (Some(simd_v128_v128_on_stack), f32x4_lt, Vector),
@@ -433,108 +433,108 @@ instructions! {
     (Some(simd_v128_v128_on_stack), f64x2_gt, Vector),
     (Some(simd_v128_v128_on_stack), f64x2_le, Vector),
     (Some(simd_v128_v128_on_stack), f64x2_ge, Vector),
-    (Some(simd_v128_on_stack), v128_not, Vector),
-    (Some(simd_v128_v128_on_stack), v128_and, Vector),
-    (Some(simd_v128_v128_on_stack), v128_and_not, Vector),
-    (Some(simd_v128_v128_on_stack), v128_or, Vector),
-    (Some(simd_v128_v128_on_stack), v128_xor, Vector),
-    (Some(simd_v128_v128_on_stack), v128_any_true, Vector),
-    (Some(simd_v128_on_stack), i8x16_abs, Vector),
-    (Some(simd_v128_on_stack), i8x16_neg, Vector),
-    (Some(simd_v128_on_stack), i8x16_popcnt, Vector),
-    (Some(simd_v128_on_stack), i8x16_all_true, Vector),
-    (Some(simd_v128_on_stack), i8x16_bitmask, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_narrow_i16x8s, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_narrow_i16x8u, Vector),
-    (Some(simd_v128_i32_on_stack), i8x16_shl, Vector),
-    (Some(simd_v128_i32_on_stack), i8x16_shr_s, Vector),
-    (Some(simd_v128_i32_on_stack), i8x16_shr_u, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_add, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_add_sat_s, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_add_sat_u, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_sub, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_sub_sat_s, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_sub_sat_u, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_min_s, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_min_u, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_max_s, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_max_u, Vector),
-    (Some(simd_v128_v128_on_stack), i8x16_avgr_u, Vector),
-    (Some(simd_v128_on_stack), i16x8_extadd_pairwise_i8x16s, Vector),
-    (Some(simd_v128_on_stack), i16x8_extadd_pairwise_i8x16u, Vector),
-    (Some(simd_v128_on_stack), i16x8_abs, Vector),
-    (Some(simd_v128_on_stack), i16x8_neg, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8q15_mulr_sat_s, Vector),
-    (Some(simd_v128_on_stack), i16x8_all_true, Vector),
-    (Some(simd_v128_on_stack), i16x8_bitmask, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_narrow_i32x4s, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_narrow_i32x4u, Vector),
-    (Some(simd_v128_on_stack), i16x8_extend_low_i8x16s, Vector),
-    (Some(simd_v128_on_stack), i16x8_extend_high_i8x16s, Vector),
-    (Some(simd_v128_on_stack), i16x8_extend_low_i8x16u, Vector),
-    (Some(simd_v128_on_stack), i16x8_extend_high_i8x16u, Vector),
-    (Some(simd_v128_i32_on_stack), i16x8_shl, Vector),
-    (Some(simd_v128_i32_on_stack), i16x8_shr_s, Vector),
-    (Some(simd_v128_i32_on_stack), i16x8_shr_u, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_add, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_add_sat_s, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_add_sat_u, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_sub, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_sub_sat_s, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_sub_sat_u, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_mul, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_min_s, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_min_u, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_max_s, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_max_u, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_avgr_u, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_extmul_low_i8x16s, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_extmul_high_i8x16s, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_extmul_low_i8x16u, Vector),
-    (Some(simd_v128_v128_on_stack), i16x8_extmul_high_i8x16u, Vector),
-    (Some(simd_v128_on_stack), i32x4_extadd_pairwise_i16x8s, Vector),
-    (Some(simd_v128_on_stack), i32x4_extadd_pairwise_i16x8u, Vector),
-    (Some(simd_v128_on_stack), i32x4_abs, Vector),
-    (Some(simd_v128_on_stack), i32x4_neg, Vector),
-    (Some(simd_v128_on_stack), i32x4_all_true, Vector),
-    (Some(simd_v128_on_stack), i32x4_bitmask, Vector),
-    (Some(simd_v128_on_stack), i32x4_extend_low_i16x8s, Vector),
-    (Some(simd_v128_on_stack), i32x4_extend_high_i16x8s, Vector),
-    (Some(simd_v128_on_stack), i32x4_extend_low_i16x8u, Vector),
-    (Some(simd_v128_on_stack), i32x4_extend_high_i16x8u, Vector),
-    (Some(simd_v128_i32_on_stack), i32x4_shl, Vector),
-    (Some(simd_v128_i32_on_stack), i32x4_shr_s, Vector),
-    (Some(simd_v128_i32_on_stack), i32x4_shr_u, Vector),
-    (Some(simd_v128_v128_on_stack), i32x4_add, Vector),
-    (Some(simd_v128_v128_on_stack), i32x4_sub, Vector),
-    (Some(simd_v128_v128_on_stack), i32x4_mul, Vector),
-    (Some(simd_v128_v128_on_stack), i32x4_min_s, Vector),
-    (Some(simd_v128_v128_on_stack), i32x4_min_u, Vector),
-    (Some(simd_v128_v128_on_stack), i32x4_max_s, Vector),
-    (Some(simd_v128_v128_on_stack), i32x4_max_u, Vector),
-    (Some(simd_v128_v128_on_stack), i32x4_dot_i16x8s, Vector),
-    (Some(simd_v128_v128_on_stack), i32x4_extmul_low_i16x8s, Vector),
-    (Some(simd_v128_v128_on_stack), i32x4_extmul_high_i16x8s, Vector),
-    (Some(simd_v128_v128_on_stack), i32x4_extmul_low_i16x8u, Vector),
-    (Some(simd_v128_v128_on_stack), i32x4_extmul_high_i16x8u, Vector),
-    (Some(simd_v128_on_stack), i64x2_abs, Vector),
-    (Some(simd_v128_on_stack), i64x2_neg, Vector),
-    (Some(simd_v128_on_stack), i64x2_all_true, Vector),
-    (Some(simd_v128_on_stack), i64x2_bitmask, Vector),
-    (Some(simd_v128_on_stack), i64x2_extend_low_i32x4s, Vector),
-    (Some(simd_v128_on_stack), i64x2_extend_high_i32x4s, Vector),
-    (Some(simd_v128_on_stack), i64x2_extend_low_i32x4u, Vector),
-    (Some(simd_v128_on_stack), i64x2_extend_high_i32x4u, Vector),
-    (Some(simd_v128_i32_on_stack), i64x2_shl, Vector),
-    (Some(simd_v128_i32_on_stack), i64x2_shr_s, Vector),
-    (Some(simd_v128_i32_on_stack), i64x2_shr_u, Vector),
-    (Some(simd_v128_v128_on_stack), i64x2_add, Vector),
-    (Some(simd_v128_v128_on_stack), i64x2_sub, Vector),
-    (Some(simd_v128_v128_on_stack), i64x2_mul, Vector),
-    (Some(simd_v128_v128_on_stack), i64x2_extmul_low_i32x4s, Vector),
-    (Some(simd_v128_v128_on_stack), i64x2_extmul_high_i32x4s, Vector),
-    (Some(simd_v128_v128_on_stack), i64x2_extmul_low_i32x4u, Vector),
-    (Some(simd_v128_v128_on_stack), i64x2_extmul_high_i32x4u, Vector),
+    (Some(simd_v128_on_stack), v128_not, VectorInt),
+    (Some(simd_v128_v128_on_stack), v128_and, VectorInt),
+    (Some(simd_v128_v128_on_stack), v128_and_not, VectorInt),
+    (Some(simd_v128_v128_on_stack), v128_or, VectorInt),
+    (Some(simd_v128_v128_on_stack), v128_xor, VectorInt),
+    (Some(simd_v128_v128_on_stack), v128_any_true, VectorInt),
+    (Some(simd_v128_on_stack), i8x16_abs, VectorInt),
+    (Some(simd_v128_on_stack), i8x16_neg, VectorInt),
+    (Some(simd_v128_on_stack), i8x16_popcnt, VectorInt),
+    (Some(simd_v128_on_stack), i8x16_all_true, VectorInt),
+    (Some(simd_v128_on_stack), i8x16_bitmask, VectorInt),
+    (Some(simd_v128_v128_on_stack), i8x16_narrow_i16x8s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i8x16_narrow_i16x8u, VectorInt),
+    (Some(simd_v128_i32_on_stack), i8x16_shl, VectorInt),
+    (Some(simd_v128_i32_on_stack), i8x16_shr_s, VectorInt),
+    (Some(simd_v128_i32_on_stack), i8x16_shr_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i8x16_add, VectorInt),
+    (Some(simd_v128_v128_on_stack), i8x16_add_sat_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i8x16_add_sat_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i8x16_sub, VectorInt),
+    (Some(simd_v128_v128_on_stack), i8x16_sub_sat_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i8x16_sub_sat_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i8x16_min_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i8x16_min_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i8x16_max_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i8x16_max_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i8x16_avgr_u, VectorInt),
+    (Some(simd_v128_on_stack), i16x8_extadd_pairwise_i8x16s, VectorInt),
+    (Some(simd_v128_on_stack), i16x8_extadd_pairwise_i8x16u, VectorInt),
+    (Some(simd_v128_on_stack), i16x8_abs, VectorInt),
+    (Some(simd_v128_on_stack), i16x8_neg, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8q15_mulr_sat_s, VectorInt),
+    (Some(simd_v128_on_stack), i16x8_all_true, VectorInt),
+    (Some(simd_v128_on_stack), i16x8_bitmask, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_narrow_i32x4s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_narrow_i32x4u, VectorInt),
+    (Some(simd_v128_on_stack), i16x8_extend_low_i8x16s, VectorInt),
+    (Some(simd_v128_on_stack), i16x8_extend_high_i8x16s, VectorInt),
+    (Some(simd_v128_on_stack), i16x8_extend_low_i8x16u, VectorInt),
+    (Some(simd_v128_on_stack), i16x8_extend_high_i8x16u, VectorInt),
+    (Some(simd_v128_i32_on_stack), i16x8_shl, VectorInt),
+    (Some(simd_v128_i32_on_stack), i16x8_shr_s, VectorInt),
+    (Some(simd_v128_i32_on_stack), i16x8_shr_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_add, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_add_sat_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_add_sat_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_sub, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_sub_sat_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_sub_sat_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_mul, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_min_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_min_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_max_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_max_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_avgr_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_extmul_low_i8x16s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_extmul_high_i8x16s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_extmul_low_i8x16u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i16x8_extmul_high_i8x16u, VectorInt),
+    (Some(simd_v128_on_stack), i32x4_extadd_pairwise_i16x8s, VectorInt),
+    (Some(simd_v128_on_stack), i32x4_extadd_pairwise_i16x8u, VectorInt),
+    (Some(simd_v128_on_stack), i32x4_abs, VectorInt),
+    (Some(simd_v128_on_stack), i32x4_neg, VectorInt),
+    (Some(simd_v128_on_stack), i32x4_all_true, VectorInt),
+    (Some(simd_v128_on_stack), i32x4_bitmask, VectorInt),
+    (Some(simd_v128_on_stack), i32x4_extend_low_i16x8s, VectorInt),
+    (Some(simd_v128_on_stack), i32x4_extend_high_i16x8s, VectorInt),
+    (Some(simd_v128_on_stack), i32x4_extend_low_i16x8u, VectorInt),
+    (Some(simd_v128_on_stack), i32x4_extend_high_i16x8u, VectorInt),
+    (Some(simd_v128_i32_on_stack), i32x4_shl, VectorInt),
+    (Some(simd_v128_i32_on_stack), i32x4_shr_s, VectorInt),
+    (Some(simd_v128_i32_on_stack), i32x4_shr_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i32x4_add, VectorInt),
+    (Some(simd_v128_v128_on_stack), i32x4_sub, VectorInt),
+    (Some(simd_v128_v128_on_stack), i32x4_mul, VectorInt),
+    (Some(simd_v128_v128_on_stack), i32x4_min_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i32x4_min_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i32x4_max_s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i32x4_max_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i32x4_dot_i16x8s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i32x4_extmul_low_i16x8s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i32x4_extmul_high_i16x8s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i32x4_extmul_low_i16x8u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i32x4_extmul_high_i16x8u, VectorInt),
+    (Some(simd_v128_on_stack), i64x2_abs, VectorInt),
+    (Some(simd_v128_on_stack), i64x2_neg, VectorInt),
+    (Some(simd_v128_on_stack), i64x2_all_true, VectorInt),
+    (Some(simd_v128_on_stack), i64x2_bitmask, VectorInt),
+    (Some(simd_v128_on_stack), i64x2_extend_low_i32x4s, VectorInt),
+    (Some(simd_v128_on_stack), i64x2_extend_high_i32x4s, VectorInt),
+    (Some(simd_v128_on_stack), i64x2_extend_low_i32x4u, VectorInt),
+    (Some(simd_v128_on_stack), i64x2_extend_high_i32x4u, VectorInt),
+    (Some(simd_v128_i32_on_stack), i64x2_shl, VectorInt),
+    (Some(simd_v128_i32_on_stack), i64x2_shr_s, VectorInt),
+    (Some(simd_v128_i32_on_stack), i64x2_shr_u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i64x2_add, VectorInt),
+    (Some(simd_v128_v128_on_stack), i64x2_sub, VectorInt),
+    (Some(simd_v128_v128_on_stack), i64x2_mul, VectorInt),
+    (Some(simd_v128_v128_on_stack), i64x2_extmul_low_i32x4s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i64x2_extmul_high_i32x4s, VectorInt),
+    (Some(simd_v128_v128_on_stack), i64x2_extmul_low_i32x4u, VectorInt),
+    (Some(simd_v128_v128_on_stack), i64x2_extmul_high_i32x4u, VectorInt),
     (Some(simd_v128_on_stack), f32x4_ceil, Vector),
     (Some(simd_v128_on_stack), f32x4_floor, Vector),
     (Some(simd_v128_on_stack), f32x4_trunc, Vector),
@@ -587,9 +587,81 @@ instructions! {
     (Some(simd_v128_v128_on_stack_relaxed), f32x4_relaxed_max, Vector),
     (Some(simd_v128_v128_on_stack_relaxed), f64x2_relaxed_min, Vector),
     (Some(simd_v128_v128_on_stack_relaxed), f64x2_relaxed_max, Vector),
-    (Some(simd_v128_v128_on_stack_relaxed), i16x8_relaxed_q15mulr_s, Vector),
-    (Some(simd_v128_v128_on_stack_relaxed), i16x8_relaxed_dot_i8x16_i7x16_s, Vector),
-    (Some(simd_v128_v128_v128_on_stack_relaxed), i32x4_relaxed_dot_i8x16_i7x16_add_s, Vector),
+    (Some(simd_v128_v128_on_stack_relaxed), i16x8_relaxed_q15mulr_s, VectorInt),
+    (Some(simd_v128_v128_on_stack_relaxed), i16x8_relaxed_dot_i8x16_i7x16_s, VectorInt),
+    (Some(simd_v128_v128_v128_on_stack_relaxed), i32x4_relaxed_dot_i8x16_i7x16_add_s, VectorInt),
+    (Some(wide_arithmetic_binop128_on_stack), i64_add128, NumericInt),
+    (Some(wide_arithmetic_binop128_on_stack), i64_sub128, NumericInt),
+    (Some(wide_arithmetic_mul_wide_on_stack), i64_mul_wide_s, NumericInt),
+    (Some(wide_arithmetic_mul_wide_on_stack), i64_mul_wide_u, NumericInt),
+    // Atomic instructions
+    (Some(atomic_load_valid), i32_atomic_load, MemoryInt),
+    (Some(atomic_load_valid), i64_atomic_load, MemoryInt),
+    (Some(atomic_load_valid), i32_atomic_load8_u,MemoryInt),
+    (Some(atomic_load_valid), i64_atomic_load8_u, MemoryInt),
+    (Some(atomic_load_valid), i32_atomic_load16_u, MemoryInt),
+    (Some(atomic_load_valid), i64_atomic_load16_u, MemoryInt),
+    (Some(atomic_load_valid), i64_atomic_load32_u, MemoryInt),
+    (Some(i32_atomic_store_valid), i32_atomic_store, MemoryInt),
+    (Some(i64_atomic_store_valid), i64_atomic_store, MemoryInt),
+    (Some(i32_atomic_store_valid), i32_atomic_store8, MemoryInt),
+    (Some(i64_atomic_store_valid), i64_atomic_store8, MemoryInt),
+    (Some(i32_atomic_store_valid), i32_atomic_store16, MemoryInt),
+    (Some(i64_atomic_store_valid), i64_atomic_store16, MemoryInt),
+    (Some(i64_atomic_store_valid), i64_atomic_store32, MemoryInt),
+    (Some(i32_atomic_rmw_atop_valid), i32_atomic_rmw_add, MemoryInt),
+    (Some(i32_atomic_rmw_atop_valid), i32_atomic_rmw_sub, MemoryInt),
+    (Some(i32_atomic_rmw_atop_valid), i32_atomic_rmw_and, MemoryInt),
+    (Some(i32_atomic_rmw_atop_valid), i32_atomic_rmw_or, MemoryInt),
+    (Some(i32_atomic_rmw_atop_valid), i32_atomic_rmw_xor, MemoryInt),
+    (Some(i32_atomic_rmw_atop_valid), i32_atomic_rmw_xchg, MemoryInt),
+    (Some(i64_atomic_rmw_atop_valid), i64_atomic_rmw_add, MemoryInt),
+    (Some(i64_atomic_rmw_atop_valid), i64_atomic_rmw_sub, MemoryInt),
+    (Some(i64_atomic_rmw_atop_valid), i64_atomic_rmw_and, MemoryInt),
+    (Some(i64_atomic_rmw_atop_valid), i64_atomic_rmw_or, MemoryInt),
+    (Some(i64_atomic_rmw_atop_valid), i64_atomic_rmw_xor, MemoryInt),
+    (Some(i64_atomic_rmw_atop_valid), i64_atomic_rmw_xchg, MemoryInt),
+    (Some(i32_atomic_rmw_atop_valid), i32_atomic_rmw8_add_u, MemoryInt),
+    (Some(i32_atomic_rmw_atop_valid), i32_atomic_rmw8_sub_u, MemoryInt),
+    (Some(i32_atomic_rmw_atop_valid), i32_atomic_rmw8_and_u, MemoryInt),
+    (Some(i32_atomic_rmw_atop_valid), i32_atomic_rmw8_or_u, MemoryInt),
+    (Some(i32_atomic_rmw_atop_valid), i32_atomic_rmw8_xor_u, MemoryInt),
+    (Some(i32_atomic_rmw_atop_valid), i32_atomic_rmw8_xchg_u, MemoryInt),
+    (Some(i64_atomic_rmw_atop_valid), i64_atomic_rmw8_add_u, MemoryInt),
+    (Some(i64_atomic_rmw_atop_valid), i64_atomic_rmw8_sub_u, MemoryInt),
+    (Some(i64_atomic_rmw_atop_valid), i64_atomic_rmw8_and_u, MemoryInt),
+    (Some(i64_atomic_rmw_atop_valid), i64_atomic_rmw8_or_u, MemoryInt),
+    (Some(i64_atomic_rmw_atop_valid), i64_atomic_rmw8_xor_u, MemoryInt),
+    (Some(i64_atomic_rmw_atop_valid), i64_atomic_rmw8_xchg_u, MemoryInt),
+    (Some(i32_atomic_rmw_atop_valid), i32_atomic_rmw16_add_u, MemoryInt),
+    (Some(i32_atomic_rmw_atop_valid), i32_atomic_rmw16_sub_u, MemoryInt),
+    (Some(i32_atomic_rmw_atop_valid), i32_atomic_rmw16_and_u, MemoryInt),
+    (Some(i32_atomic_rmw_atop_valid), i32_atomic_rmw16_or_u, MemoryInt),
+    (Some(i32_atomic_rmw_atop_valid), i32_atomic_rmw16_xor_u, MemoryInt),
+    (Some(i32_atomic_rmw_atop_valid), i32_atomic_rmw16_xchg_u, MemoryInt),
+    (Some(i64_atomic_rmw_atop_valid), i64_atomic_rmw16_add_u, MemoryInt),
+    (Some(i64_atomic_rmw_atop_valid), i64_atomic_rmw16_sub_u, MemoryInt),
+    (Some(i64_atomic_rmw_atop_valid), i64_atomic_rmw16_and_u, MemoryInt),
+    (Some(i64_atomic_rmw_atop_valid), i64_atomic_rmw16_or_u, MemoryInt),
+    (Some(i64_atomic_rmw_atop_valid), i64_atomic_rmw16_xor_u, MemoryInt),
+    (Some(i64_atomic_rmw_atop_valid), i64_atomic_rmw16_xchg_u, MemoryInt),
+    (Some(i64_atomic_rmw_atop_valid), i64_atomic_rmw32_add_u, MemoryInt),
+    (Some(i64_atomic_rmw_atop_valid), i64_atomic_rmw32_sub_u, MemoryInt),
+    (Some(i64_atomic_rmw_atop_valid), i64_atomic_rmw32_and_u, MemoryInt),
+    (Some(i64_atomic_rmw_atop_valid), i64_atomic_rmw32_or_u, MemoryInt),
+    (Some(i64_atomic_rmw_atop_valid), i64_atomic_rmw32_xor_u, MemoryInt),
+    (Some(i64_atomic_rmw_atop_valid), i64_atomic_rmw32_xchg_u, MemoryInt),
+    (Some(i32_atomic_rmw_cmpxchg_valid), i32_atomic_rmw_cmpxchg, MemoryInt),
+    (Some(i64_atomic_rmw_cmpxchg_valid), i64_atomic_rmw_cmpxchg, MemoryInt),
+    (Some(i32_atomic_rmw_cmpxchg_valid), i32_atomic_rmw8_cmpxchg_u, MemoryInt),
+    (Some(i64_atomic_rmw_cmpxchg_valid), i64_atomic_rmw8_cmpxchg_u, MemoryInt),
+    (Some(i32_atomic_rmw_cmpxchg_valid), i32_atomic_rmw16_cmpxchg_u, MemoryInt),
+    (Some(i64_atomic_rmw_cmpxchg_valid), i64_atomic_rmw16_cmpxchg_u, MemoryInt),
+    (Some(i64_atomic_rmw_cmpxchg_valid), i64_atomic_rmw32_cmpxchg_u, MemoryInt),
+    (Some(atomic_notify_valid), atomic_notify, MemoryInt),
+    (Some(atomic_wait32_valid), atomic_wait32, MemoryInt),
+    (Some(atomic_wait64_valid), atomic_wait64, MemoryInt),
+    (Some(atomic_instruction_valid), atomic_fence, MemoryInt),
 }
 
 pub(crate) struct CodeBuilderAllocations {
@@ -664,6 +736,8 @@ pub(crate) struct CodeBuilderAllocations {
 }
 
 pub(crate) struct CodeBuilder<'a> {
+    #[allow(dead_code)]
+    shared: bool,
     func_ty: &'a FuncType,
     locals: &'a mut Vec<ValType>,
     allocs: &'a mut CodeBuilderAllocations,
@@ -899,6 +973,7 @@ impl CodeBuilderAllocations {
         &'a mut self,
         func_ty: &'a FuncType,
         locals: &'a mut Vec<ValType>,
+        shared: bool,
     ) -> CodeBuilder<'a> {
         self.controls.clear();
         self.controls.push(Control {
@@ -912,6 +987,7 @@ impl CodeBuilderAllocations {
         self.options.clear();
 
         CodeBuilder {
+            shared,
             func_ty,
             locals,
             allocs: self,
@@ -1225,7 +1301,7 @@ impl CodeBuilder<'_> {
         if module.config.multi_value_enabled {
             for (i, ty) in module.func_types() {
                 if self.types_on_stack(module, &ty.params) {
-                    options.push(Box::new(move |_| Ok(BlockType::FunctionType(i as u32))));
+                    options.push(Box::new(move |_| Ok(BlockType::FunctionType(i))));
                 }
             }
         }
@@ -1239,7 +1315,11 @@ impl CodeBuilder<'_> {
         module: &Module,
     ) -> Result<Vec<Instruction>> {
         let max_instructions = module.config.max_instructions;
-        let allowed_instructions = module.config.allowed_instructions;
+        let allowed_instructions = if module.config.allow_floats {
+            module.config.allowed_instructions
+        } else {
+            module.config.allowed_instructions.without_floats()
+        };
         let mut instructions = vec![];
 
         while !self.allocs.controls.is_empty() {
@@ -1367,8 +1447,8 @@ impl CodeBuilder<'_> {
         const CANON_64BIT_NAN: u64 =
             0b0111111111111000000000000000000000000000000000000000000000000000;
         ins.push(match ty {
-            Float::F32 => Instruction::F32Const(f32::from_bits(CANON_32BIT_NAN)),
-            Float::F64 => Instruction::F64Const(f64::from_bits(CANON_64BIT_NAN)),
+            Float::F32 => Instruction::F32Const(f32::from_bits(CANON_32BIT_NAN).into()),
+            Float::F64 => Instruction::F64Const(f64::from_bits(CANON_64BIT_NAN).into()),
             Float::F32x4 => {
                 let nan = CANON_32BIT_NAN as i128;
                 let nan = nan | (nan << 32) | (nan << 64) | (nan << 96);
@@ -1717,7 +1797,7 @@ fn try_table(
     let mut catches = Vec::new();
     if catch_options.len() > 0 {
         for _ in 0..u.int_in_range(0..=10)? {
-            catches.push(u.choose(&mut catch_options)?(u, builder)?);
+            catches.push(u.choose(&catch_options)?(u, builder)?);
         }
     }
 
@@ -1992,7 +2072,7 @@ fn call(
     let (func_idx, ty) = module.funcs().nth(candidates[i] as usize).unwrap();
     builder.pop_operands(module, &ty.params);
     builder.push_operands(&ty.results);
-    instructions.push(Instruction::Call(func_idx as u32));
+    instructions.push(Instruction::Call(func_idx));
     Ok(())
 }
 
@@ -2093,7 +2173,7 @@ fn call_indirect(
     builder.pop_operands(module, &ty.params);
     builder.push_operands(&ty.results);
     instructions.push(Instruction::CallIndirect {
-        type_index: *type_idx as u32,
+        type_index: { *type_idx },
         table_index: table,
     });
     Ok(())
@@ -2147,7 +2227,7 @@ fn return_call(
     let (func_idx, ty) = module.funcs().nth(candidates[i] as usize).unwrap();
     builder.pop_operands(module, &ty.params);
     builder.push_operands(&ty.results);
-    instructions.push(Instruction::ReturnCall(func_idx as u32));
+    instructions.push(Instruction::ReturnCall(func_idx));
     Ok(())
 }
 
@@ -2230,7 +2310,7 @@ fn return_call_indirect(
     builder.pop_operands(module, &ty.params);
     builder.push_operands(&ty.results);
     instructions.push(Instruction::ReturnCallIndirect {
-        type_index: *type_idx as u32,
+        type_index: { *type_idx },
         table_index: table,
     });
     Ok(())
@@ -2265,7 +2345,7 @@ fn throw(
     // Tags have no results, throwing cannot return
     assert!(tag_type.func_type.results.len() == 0);
     builder.pop_operands(module, &tag_type.func_type.params);
-    instructions.push(Instruction::Throw(tag_idx as u32));
+    instructions.push(Instruction::Throw(tag_idx));
     Ok(())
 }
 
@@ -2315,8 +2395,8 @@ fn br_on_null(
                 let ty = *u.choose(&[
                     Func, Extern, Any, None, NoExtern, NoFunc, Eq, Struct, Array, I31,
                 ])?;
-                // TODO: handle shared
-                HeapType::Abstract { shared: false, ty }
+                let shared = module.arbitrary_shared(u)?;
+                HeapType::Abstract { shared, ty }
             }
         }
     };
@@ -5389,25 +5469,26 @@ fn ref_null(
     }
     if module.config.gc_enabled {
         use AbstractHeapType::*;
-        let r = |heap_type| RefType {
-            nullable: true,
-            heap_type,
-        };
-        let a = |abstract_heap_type| HeapType::Abstract {
-            shared: false, // TODO: handle shared
-            ty: abstract_heap_type,
-        };
-        choices.push(r(a(Any)));
-        choices.push(r(a(Eq)));
-        choices.push(r(a(Array)));
-        choices.push(r(a(Struct)));
-        choices.push(r(a(I31)));
-        choices.push(r(a(None)));
-        choices.push(r(a(NoFunc)));
-        choices.push(r(a(NoExtern)));
+        let abs_ref_types = [Any, Eq, Array, Struct, I31, None, NoFunc, NoExtern];
+        choices.extend(
+            abs_ref_types
+                .iter()
+                .map(|&ty| RefType::new_abstract(ty, true, false)),
+        );
+        if module.config().shared_everything_threads_enabled {
+            choices.extend(
+                abs_ref_types
+                    .iter()
+                    .map(|&ty| RefType::new_abstract(ty, true, true)),
+            );
+        }
+
         for i in 0..module.types.len() {
             let i = u32::try_from(i).unwrap();
-            choices.push(r(HeapType::Concrete(i)));
+            choices.push(RefType {
+                nullable: true,
+                heap_type: HeapType::Concrete(i),
+            });
         }
     }
     let ty = *u.choose(&choices)?;
@@ -5672,7 +5753,7 @@ fn table_get(
     let idx = *u.choose(candidates)?;
     let ty = module.tables[idx as usize].element_type;
     builder.push_operands(&[ty.into()]);
-    instructions.push(Instruction::TableGet(idx as u32));
+    instructions.push(Instruction::TableGet(idx));
     Ok(())
 }
 
@@ -7262,3 +7343,318 @@ simd_ternop!(
     I32x4RelaxedDotI8x16I7x16AddS,
     i32x4_relaxed_dot_i8x16_i7x16_add_s
 );
+
+#[inline]
+fn wide_arithmetic_binop128_on_stack(module: &Module, builder: &mut CodeBuilder) -> bool {
+    module.config.wide_arithmetic_enabled && builder.types_on_stack(module, &[ValType::I64; 4])
+}
+
+#[inline]
+fn wide_arithmetic_mul_wide_on_stack(module: &Module, builder: &mut CodeBuilder) -> bool {
+    module.config.wide_arithmetic_enabled && builder.types_on_stack(module, &[ValType::I64; 2])
+}
+
+fn i64_add128(
+    _: &mut Unstructured,
+    module: &Module,
+    builder: &mut CodeBuilder,
+    instructions: &mut Vec<Instruction>,
+) -> Result<()> {
+    builder.pop_operands(module, &[ValType::I64; 4]);
+    builder.push_operands(&[ValType::I64; 2]);
+    instructions.push(Instruction::I64Add128);
+    Ok(())
+}
+
+fn i64_sub128(
+    _: &mut Unstructured,
+    module: &Module,
+    builder: &mut CodeBuilder,
+    instructions: &mut Vec<Instruction>,
+) -> Result<()> {
+    builder.pop_operands(module, &[ValType::I64; 4]);
+    builder.push_operands(&[ValType::I64; 2]);
+    instructions.push(Instruction::I64Sub128);
+    Ok(())
+}
+
+fn i64_mul_wide_s(
+    _: &mut Unstructured,
+    module: &Module,
+    builder: &mut CodeBuilder,
+    instructions: &mut Vec<Instruction>,
+) -> Result<()> {
+    builder.pop_operands(module, &[ValType::I64; 2]);
+    builder.push_operands(&[ValType::I64; 2]);
+    instructions.push(Instruction::I64MulWideS);
+    Ok(())
+}
+
+fn i64_mul_wide_u(
+    _: &mut Unstructured,
+    module: &Module,
+    builder: &mut CodeBuilder,
+    instructions: &mut Vec<Instruction>,
+) -> Result<()> {
+    builder.pop_operands(module, &[ValType::I64; 2]);
+    builder.push_operands(&[ValType::I64; 2]);
+    instructions.push(Instruction::I64MulWideU);
+    Ok(())
+}
+
+#[inline]
+fn atomic_instruction_valid(module: &Module, _builder: &mut CodeBuilder) -> bool {
+    module.config.threads_enabled
+}
+
+#[inline]
+fn atomic_load_valid(module: &Module, builder: &mut CodeBuilder) -> bool {
+    atomic_instruction_valid(module, builder) && have_memory_and_offset(module, builder)
+}
+
+#[inline]
+fn i32_atomic_store_valid(module: &Module, builder: &mut CodeBuilder) -> bool {
+    atomic_instruction_valid(module, builder) && i32_store_valid(module, builder)
+}
+
+#[inline]
+fn i64_atomic_store_valid(module: &Module, builder: &mut CodeBuilder) -> bool {
+    atomic_instruction_valid(module, builder) && i64_store_valid(module, builder)
+}
+
+#[inline]
+fn atomic_stack_op_valid(
+    module: &Module,
+    builder: &mut CodeBuilder,
+    stack_types: &[ValType],
+) -> bool {
+    atomic_instruction_valid(module, builder)
+        && builder.types_on_stack(module, stack_types)
+        && ((builder.allocs.memory32.len() > 0
+            && builder.type_on_stack_at(module, stack_types.len(), ValType::I32))
+            || (builder.allocs.memory64.len() > 0
+                && builder.type_on_stack_at(module, stack_types.len(), ValType::I64)))
+}
+
+#[inline]
+fn i32_atomic_rmw_atop_valid(module: &Module, builder: &mut CodeBuilder) -> bool {
+    atomic_stack_op_valid(module, builder, &[ValType::I32])
+}
+
+#[inline]
+fn i64_atomic_rmw_atop_valid(module: &Module, builder: &mut CodeBuilder) -> bool {
+    atomic_stack_op_valid(module, builder, &[ValType::I64])
+}
+
+#[inline]
+fn i32_atomic_rmw_cmpxchg_valid(module: &Module, builder: &mut CodeBuilder) -> bool {
+    atomic_stack_op_valid(module, builder, &[ValType::I32, ValType::I32])
+}
+
+#[inline]
+fn i64_atomic_rmw_cmpxchg_valid(module: &Module, builder: &mut CodeBuilder) -> bool {
+    atomic_stack_op_valid(module, builder, &[ValType::I64, ValType::I64])
+}
+
+#[inline]
+fn atomic_notify_valid(module: &Module, builder: &mut CodeBuilder) -> bool {
+    atomic_stack_op_valid(module, builder, &[ValType::I32])
+}
+
+#[inline]
+fn atomic_wait32_valid(module: &Module, builder: &mut CodeBuilder) -> bool {
+    atomic_stack_op_valid(module, builder, &[ValType::I32, ValType::I64])
+}
+
+#[inline]
+fn atomic_wait64_valid(module: &Module, builder: &mut CodeBuilder) -> bool {
+    atomic_stack_op_valid(module, builder, &[ValType::I64, ValType::I64])
+}
+
+macro_rules! atomic_load {
+    ($instr:ident, $valtype:ident, $fn_name:ident, [$($memarg_align:expr),*]) => {
+        fn $fn_name(
+            u: &mut Unstructured,
+            module: &Module,
+            builder: &mut CodeBuilder,
+            instructions: &mut Vec<Instruction>,
+        ) -> Result<()> {
+            let memarg = mem_arg(u, module, builder, &[$($memarg_align),*])?;
+            builder.push_operands(&[ValType::$valtype]);
+            instructions.push(Instruction::$instr(memarg));
+            Ok(())
+        }
+    };
+}
+
+macro_rules! atomic_store {
+    ($instr:ident, $valtype:ident, $fn_name:ident, [$($memarg_align:expr),*]) => {
+        fn $fn_name(
+            u: &mut Unstructured,
+            module: &Module,
+            builder: &mut CodeBuilder,
+            instructions: &mut Vec<Instruction>,
+        ) -> Result<()> {
+            builder.pop_operands(module, &[ValType::$valtype]);
+            let memarg = mem_arg(u, module, builder, &[$($memarg_align),*])?;
+            instructions.push(Instruction::$instr(memarg));
+            Ok(())
+        }
+    };
+}
+
+macro_rules! atomic_rmw_atop {
+    ($valtype:ident, $instr:ident, $fn_name:ident, [$($memarg_align:expr),*]) => {
+        fn $fn_name(
+            u: &mut Unstructured,
+            module: &Module,
+            builder: &mut CodeBuilder,
+            instructions: &mut Vec<Instruction>,
+        ) -> Result<()> {
+            builder.pop_operands(module, &[ValType::$valtype]);
+            let memarg = mem_arg(u, module, builder, &[$($memarg_align),*])?;
+            builder.push_operands(&[ValType::$valtype]);
+            instructions.push(Instruction::$instr(memarg));
+            Ok(())
+        }
+    };
+}
+
+macro_rules! atomic_rmw_cmpxchg {
+    ($valtype:ident, $instr:ident, $fn_name:ident, [$($memarg_align:expr),*]) => {
+        fn $fn_name(
+            u: &mut Unstructured,
+            module: &Module,
+            builder: &mut CodeBuilder,
+            instructions: &mut Vec<Instruction>,
+        ) -> Result<()> {
+            builder.pop_operands(module, &[ValType::$valtype, ValType::$valtype]);
+            let memarg = mem_arg(u, module, builder, &[$($memarg_align),*])?;
+            builder.push_operands(&[ValType::$valtype]);
+            instructions.push(Instruction::$instr(memarg));
+            Ok(())
+        }
+    };
+}
+
+atomic_load!(I32AtomicLoad, I32, i32_atomic_load, [2]);
+atomic_load!(I64AtomicLoad, I64, i64_atomic_load, [3]);
+atomic_load!(I32AtomicLoad8U, I32, i32_atomic_load8_u, [0]);
+atomic_load!(I64AtomicLoad8U, I64, i64_atomic_load8_u, [0]);
+atomic_load!(I32AtomicLoad16U, I32, i32_atomic_load16_u, [1]);
+atomic_load!(I64AtomicLoad16U, I64, i64_atomic_load16_u, [1]);
+atomic_load!(I64AtomicLoad32U, I64, i64_atomic_load32_u, [2]);
+
+atomic_store!(I32AtomicStore, I32, i32_atomic_store, [2]);
+atomic_store!(I64AtomicStore, I64, i64_atomic_store, [3]);
+atomic_store!(I32AtomicStore8, I32, i32_atomic_store8, [0]);
+atomic_store!(I64AtomicStore8, I64, i64_atomic_store8, [0]);
+atomic_store!(I32AtomicStore16, I32, i32_atomic_store16, [1]);
+atomic_store!(I64AtomicStore16, I64, i64_atomic_store16, [1]);
+atomic_store!(I64AtomicStore32, I64, i64_atomic_store32, [2]);
+
+atomic_rmw_atop!(I32, I32AtomicRmwAdd, i32_atomic_rmw_add, [2]);
+atomic_rmw_atop!(I32, I32AtomicRmwSub, i32_atomic_rmw_sub, [2]);
+atomic_rmw_atop!(I32, I32AtomicRmwAnd, i32_atomic_rmw_and, [2]);
+atomic_rmw_atop!(I32, I32AtomicRmwOr, i32_atomic_rmw_or, [2]);
+atomic_rmw_atop!(I32, I32AtomicRmwXor, i32_atomic_rmw_xor, [2]);
+atomic_rmw_atop!(I32, I32AtomicRmwXchg, i32_atomic_rmw_xchg, [2]);
+
+atomic_rmw_atop!(I64, I64AtomicRmwAdd, i64_atomic_rmw_add, [3]);
+atomic_rmw_atop!(I64, I64AtomicRmwSub, i64_atomic_rmw_sub, [3]);
+atomic_rmw_atop!(I64, I64AtomicRmwAnd, i64_atomic_rmw_and, [3]);
+atomic_rmw_atop!(I64, I64AtomicRmwOr, i64_atomic_rmw_or, [3]);
+atomic_rmw_atop!(I64, I64AtomicRmwXor, i64_atomic_rmw_xor, [3]);
+atomic_rmw_atop!(I64, I64AtomicRmwXchg, i64_atomic_rmw_xchg, [3]);
+
+atomic_rmw_atop!(I32, I32AtomicRmw8AddU, i32_atomic_rmw8_add_u, [0]);
+atomic_rmw_atop!(I32, I32AtomicRmw8SubU, i32_atomic_rmw8_sub_u, [0]);
+atomic_rmw_atop!(I32, I32AtomicRmw8AndU, i32_atomic_rmw8_and_u, [0]);
+atomic_rmw_atop!(I32, I32AtomicRmw8OrU, i32_atomic_rmw8_or_u, [0]);
+atomic_rmw_atop!(I32, I32AtomicRmw8XorU, i32_atomic_rmw8_xor_u, [0]);
+atomic_rmw_atop!(I32, I32AtomicRmw8XchgU, i32_atomic_rmw8_xchg_u, [0]);
+
+atomic_rmw_atop!(I64, I64AtomicRmw8AddU, i64_atomic_rmw8_add_u, [0]);
+atomic_rmw_atop!(I64, I64AtomicRmw8SubU, i64_atomic_rmw8_sub_u, [0]);
+atomic_rmw_atop!(I64, I64AtomicRmw8AndU, i64_atomic_rmw8_and_u, [0]);
+atomic_rmw_atop!(I64, I64AtomicRmw8OrU, i64_atomic_rmw8_or_u, [0]);
+atomic_rmw_atop!(I64, I64AtomicRmw8XorU, i64_atomic_rmw8_xor_u, [0]);
+atomic_rmw_atop!(I64, I64AtomicRmw8XchgU, i64_atomic_rmw8_xchg_u, [0]);
+
+atomic_rmw_atop!(I32, I32AtomicRmw16AddU, i32_atomic_rmw16_add_u, [1]);
+atomic_rmw_atop!(I32, I32AtomicRmw16SubU, i32_atomic_rmw16_sub_u, [1]);
+atomic_rmw_atop!(I32, I32AtomicRmw16AndU, i32_atomic_rmw16_and_u, [1]);
+atomic_rmw_atop!(I32, I32AtomicRmw16OrU, i32_atomic_rmw16_or_u, [1]);
+atomic_rmw_atop!(I32, I32AtomicRmw16XorU, i32_atomic_rmw16_xor_u, [1]);
+atomic_rmw_atop!(I32, I32AtomicRmw16XchgU, i32_atomic_rmw16_xchg_u, [1]);
+
+atomic_rmw_atop!(I64, I64AtomicRmw16AddU, i64_atomic_rmw16_add_u, [1]);
+atomic_rmw_atop!(I64, I64AtomicRmw16SubU, i64_atomic_rmw16_sub_u, [1]);
+atomic_rmw_atop!(I64, I64AtomicRmw16AndU, i64_atomic_rmw16_and_u, [1]);
+atomic_rmw_atop!(I64, I64AtomicRmw16OrU, i64_atomic_rmw16_or_u, [1]);
+atomic_rmw_atop!(I64, I64AtomicRmw16XorU, i64_atomic_rmw16_xor_u, [1]);
+atomic_rmw_atop!(I64, I64AtomicRmw16XchgU, i64_atomic_rmw16_xchg_u, [1]);
+
+atomic_rmw_atop!(I64, I64AtomicRmw32AddU, i64_atomic_rmw32_add_u, [2]);
+atomic_rmw_atop!(I64, I64AtomicRmw32SubU, i64_atomic_rmw32_sub_u, [2]);
+atomic_rmw_atop!(I64, I64AtomicRmw32AndU, i64_atomic_rmw32_and_u, [2]);
+atomic_rmw_atop!(I64, I64AtomicRmw32OrU, i64_atomic_rmw32_or_u, [2]);
+atomic_rmw_atop!(I64, I64AtomicRmw32XorU, i64_atomic_rmw32_xor_u, [2]);
+atomic_rmw_atop!(I64, I64AtomicRmw32XchgU, i64_atomic_rmw32_xchg_u, [2]);
+
+atomic_rmw_cmpxchg!(I32, I32AtomicRmwCmpxchg, i32_atomic_rmw_cmpxchg, [2]);
+atomic_rmw_cmpxchg!(I64, I64AtomicRmwCmpxchg, i64_atomic_rmw_cmpxchg, [3]);
+atomic_rmw_cmpxchg!(I32, I32AtomicRmw8CmpxchgU, i32_atomic_rmw8_cmpxchg_u, [0]);
+atomic_rmw_cmpxchg!(I64, I64AtomicRmw8CmpxchgU, i64_atomic_rmw8_cmpxchg_u, [0]);
+atomic_rmw_cmpxchg!(I32, I32AtomicRmw16CmpxchgU, i32_atomic_rmw16_cmpxchg_u, [1]);
+atomic_rmw_cmpxchg!(I64, I64AtomicRmw16CmpxchgU, i64_atomic_rmw16_cmpxchg_u, [1]);
+atomic_rmw_cmpxchg!(I64, I64AtomicRmw32CmpxchgU, i64_atomic_rmw32_cmpxchg_u, [2]);
+
+fn atomic_notify(
+    u: &mut Unstructured,
+    module: &Module,
+    builder: &mut CodeBuilder,
+    instructions: &mut Vec<Instruction>,
+) -> Result<()> {
+    builder.pop_operands(module, &[ValType::I32]);
+    let memarg = mem_arg(u, module, builder, &[2])?;
+    builder.push_operands(&[ValType::I32]);
+    instructions.push(Instruction::MemoryAtomicNotify(memarg));
+    Ok(())
+}
+
+fn atomic_wait32(
+    u: &mut Unstructured,
+    module: &Module,
+    builder: &mut CodeBuilder,
+    instructions: &mut Vec<Instruction>,
+) -> Result<()> {
+    builder.pop_operands(module, &[ValType::I32, ValType::I64]);
+    let memarg = mem_arg(u, module, builder, &[2])?;
+    builder.push_operands(&[ValType::I32]);
+    instructions.push(Instruction::MemoryAtomicWait32(memarg));
+    Ok(())
+}
+
+fn atomic_wait64(
+    u: &mut Unstructured,
+    module: &Module,
+    builder: &mut CodeBuilder,
+    instructions: &mut Vec<Instruction>,
+) -> Result<()> {
+    builder.pop_operands(module, &[ValType::I64, ValType::I64]);
+    let memarg = mem_arg(u, module, builder, &[3])?;
+    builder.push_operands(&[ValType::I32]);
+    instructions.push(Instruction::MemoryAtomicWait64(memarg));
+    Ok(())
+}
+
+fn atomic_fence(
+    _u: &mut Unstructured,
+    _module: &Module,
+    _builder: &mut CodeBuilder,
+    instructions: &mut Vec<Instruction>,
+) -> Result<()> {
+    instructions.push(Instruction::AtomicFence);
+    Ok(())
+}

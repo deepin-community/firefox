@@ -40,7 +40,7 @@ async function withTestPage(popupCount, optionsOrCallback, callback) {
 
   await SpecialPowers.pushPrefEnv({
     set: [
-      ["dom.block_multiple_popups", true],
+      // Enable popup blocker
       ["dom.disable_open_during_load", true],
     ],
   });
@@ -62,7 +62,11 @@ async function withTestPage(popupCount, optionsOrCallback, callback) {
   let windows = await obs;
   ok(true, `We had ${popupCount} windows.`);
   for (let win of windows) {
-    if (win.document.readyState !== "complete") {
+    // wait for browser.xhtml being loaded to prevent shutdown hang
+    if (
+      win.document.readyState !== "complete" ||
+      win.location.href == "about:blank"
+    ) {
       await BrowserTestUtils.waitForEvent(win, "load");
     }
     await BrowserTestUtils.closeWindow(win);
@@ -91,20 +95,6 @@ function startOpeningTwoPopups(browser) {
     content.document.body.appendChild(p);
   });
 }
-
-add_task(async _ => {
-  info("All opened if the pref is off");
-  await withTestPage(2, async function (browser) {
-    await SpecialPowers.pushPrefEnv({
-      set: [
-        ["dom.block_multiple_popups", false],
-        ["dom.disable_open_during_load", true],
-      ],
-    });
-
-    await BrowserTestUtils.synthesizeMouseAtCenter("#openPopups", {}, browser);
-  });
-});
 
 add_task(async _ => {
   info("2 window.open()s in a click event allowed because whitelisted domain.");

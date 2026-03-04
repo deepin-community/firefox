@@ -17,9 +17,9 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mozilla.fenix.databinding.QuicksettingsClearSiteDataBinding
-import org.mozilla.fenix.helpers.FenixRobolectricTestRunner
+import org.robolectric.RobolectricTestRunner
 
-@RunWith(FenixRobolectricTestRunner::class)
+@RunWith(RobolectricTestRunner::class)
 class ClearSiteDataViewTest {
     private lateinit var view: ClearSiteDataView
     private lateinit var binding: QuicksettingsClearSiteDataBinding
@@ -49,7 +49,7 @@ class ClearSiteDataViewTest {
         val state = WebsiteInfoState(
             websiteUrl = "https://developers.mozilla.org",
             websiteTitle = "Mozilla",
-            websiteSecurityUiValues = WebsiteSecurityUiValues.SECURE,
+            websiteInfoUiValues = WebsiteInfoUiValues.SECURE,
             certificateName = "Certificate",
         )
 

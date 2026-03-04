@@ -48,9 +48,6 @@ download-cert-view-cert =
     .label = 檢視
 download-cert-view-text = 檢查憑證機構的憑證
 
-## Client Authorization Ask dialog
-
-
 ## Client Authentication Ask dialog
 
 client-auth-window =
@@ -85,8 +82,13 @@ client-auth-cert-details-issued-by = 簽發者：{ $issuedBy }
 # Variables:
 # $storedOn (String) - The name of the token holding the certificate (for example, "OS Client Cert Token (Modern)")
 client-auth-cert-details-stored-on = 儲存於：{ $storedOn }
-client-auth-cert-remember-box =
-    .label = 記住此決定
+client-auth-cert-remember-label = 記住此決定：
+client-auth-cert-remember-never =
+    .label = 一次
+client-auth-cert-remember-always =
+    .label = 永久
+client-auth-cert-remember-temporarily =
+    .label = 只有本次瀏覽階段
 
 ## Set password (p12) dialog
 

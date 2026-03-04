@@ -3,33 +3,22 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-## These strings are used to define the different levels of
-## Enhanced Tracking Protection.
-
-
-##
-
-
-## The "Allowed" header also includes a "Why?" link that, when hovered, shows
-## a tooltip explaining why these items were not blocked in the page.
-
-
-##
-
-
 ## In the protections panel, Content Blocking category items are in three sections:
 ##   "Blocked" for categories being blocked in the current page,
 ##   "Allowed" for categories detected but not blocked in the current page, and
 ##   "None Detected" for categories not detected in the current page.
 ##   These strings are used in the header labels of each of these sections.
 
+protections-panel-not-blocking-label = បាន​អនុញ្ញាត
 
-##
+## Smartblock strings
 
-
-## In the Site Not Working? view, we suggest turning off protections if
-## the user is experiencing issues with any of a variety of functionality.
-
+# Variables
+#  $trackername (String): the name of the tracker that is currently being blocked.
+protections-panel-smartblock-blocking-toggle =
+    .label = អនុញ្ញាត { $trackername }
+#  $websitehost (String): host of website with blocked content.
+smartblock-placeholder-button-text = អនុញ្ញាត​នៅ​លើ { $websitehost }
 
 ##
 
@@ -40,3 +29,6 @@ protections-panel-content-blocking-breakage-report-view-send-report =
 
 # Cookie Banner Handling
 
+protections-panel-cookie-banner-view-cancel = បោះបង់
+protections-panel-cookie-banner-view-cancel-label =
+    .label = បោះបង់

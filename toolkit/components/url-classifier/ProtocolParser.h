@@ -8,6 +8,7 @@
 
 #include "HashStore.h"
 #include "chromium/safebrowsing.pb.h"
+#include "chromium/safebrowsing_v5.pb.h"
 
 namespace mozilla {
 namespace safebrowsing {
@@ -26,10 +27,6 @@ class ProtocolParser {
   virtual ~ProtocolParser();
 
   nsresult Status() const { return mUpdateStatus; }
-
-#ifdef MOZ_SAFEBROWSING_DUMP_FAILED_UPDATES
-  virtual nsCString GetRawTableUpdates() const { return mPending; }
-#endif
 
   virtual void SetCurrentTable(const nsACString& aTable) = 0;
 
@@ -100,12 +97,6 @@ class ProtocolParserV2 final : public ProtocolParser {
     return mForwards;
   }
 
-#ifdef MOZ_SAFEBROWSING_DUMP_FAILED_UPDATES
-  // Unfortunately we have to override to return mRawUpdate which
-  // will not be modified during the parsing, unlike mPending.
-  virtual nsCString GetRawTableUpdates() const override { return mRawUpdate; }
-#endif
-
  private:
   virtual RefPtr<TableUpdate> CreateTableUpdate(
       const nsACString& aTableName) const override;
@@ -163,10 +154,6 @@ class ProtocolParserV2 final : public ProtocolParser {
 
   // Updates to apply to the current table being parsed.
   RefPtr<TableUpdateV2> mTableUpdate;
-
-#ifdef MOZ_SAFEBROWSING_DUMP_FAILED_UPDATES
-  nsCString mRawUpdate;  // Keep a copy of mPending before it's processed.
-#endif
 };
 
 // Helpers to parse the "proto" list format.
@@ -207,6 +194,45 @@ class ProtocolParserProtobuf final : public ProtocolParser {
 
   nsresult ProcessEncodedRemoval(TableUpdateV4& aTableUpdate,
                                  const ThreatEntrySet& aRemoval);
+};
+
+class ProtocolParserProtobufV5 final : public ProtocolParser {
+ public:
+  ProtocolParserProtobufV5();
+
+  virtual void SetCurrentTable(const nsACString& aTable) override;
+  virtual nsresult AppendStream(const nsACString& aData) override;
+  virtual void End() override;
+
+ private:
+  virtual ~ProtocolParserProtobufV5();
+
+  virtual RefPtr<TableUpdate> CreateTableUpdate(
+      const nsACString& aTableName) const override;
+
+  // Process a single hash list in the response.
+  nsresult ProcessOneResponse(const v5::HashList& aHashList,
+                              nsACString& aListName);
+
+  // Process the additions for a 4-byte encoded prefixes.
+  nsresult ProcessAddition4Bytes(TableUpdateV4& aTableUpdate,
+                                 const v5::RiceDeltaEncoded32Bit& aAddition);
+
+  // Process the additions for a 8-byte encoded prefixes.
+  nsresult ProcessAddition8Bytes(TableUpdateV4& aTableUpdate,
+                                 const v5::RiceDeltaEncoded64Bit& aAddition);
+
+  // Process the additions for a 16-byte encoded prefixes.
+  nsresult ProcessAddition16Bytes(TableUpdateV4& aTableUpdate,
+                                  const v5::RiceDeltaEncoded128Bit& aAddition);
+
+  // Process the additions for a 32-byte encoded prefixes.
+  nsresult ProcessAddition32Bytes(TableUpdateV4& aTableUpdate,
+                                  const v5::RiceDeltaEncoded256Bit& aAddition);
+
+  // Process the removals for a encoded prefixes.
+  nsresult ProcessRemoval(TableUpdateV4& aTableUpdate,
+                          const v5::RiceDeltaEncoded32Bit& aRemoval);
 };
 
 }  // namespace safebrowsing

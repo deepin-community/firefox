@@ -11,34 +11,19 @@ import { ExtensionUtils } from "resource://gre/modules/ExtensionUtils.sys.mjs";
 
 var { DefaultMap, DefaultWeakMap } = ExtensionUtils;
 
-/** @type {Lazy} */
-const lazy = {};
-
-ChromeUtils.defineESModuleGetters(lazy, {
-  ExtensionParent: "resource://gre/modules/ExtensionParent.sys.mjs",
+const lazy = XPCOMUtils.declareLazy({
   NetUtil: "resource://gre/modules/NetUtil.sys.mjs",
   ShortcutUtils: "resource://gre/modules/ShortcutUtils.sys.mjs",
+  StartupCache: "resource://gre/modules/ExtensionParent.sys.mjs",
+  contentPolicyService: {
+    service: "@mozilla.org/addons/content-policy;1",
+    iid: Ci.nsIAddonContentPolicy,
+  },
+  treatWarningsAsErrors: {
+    pref: "extensions.webextensions.warnings-as-errors",
+    default: false,
+  },
 });
-
-XPCOMUtils.defineLazyServiceGetter(
-  lazy,
-  "contentPolicyService",
-  "@mozilla.org/addons/content-policy;1",
-  "nsIAddonContentPolicy"
-);
-
-ChromeUtils.defineLazyGetter(
-  lazy,
-  "StartupCache",
-  () => lazy.ExtensionParent.StartupCache
-);
-
-XPCOMUtils.defineLazyPreferenceGetter(
-  lazy,
-  "treatWarningsAsErrors",
-  "extensions.webextensions.warnings-as-errors",
-  false
-);
 
 const KEY_CONTENT_SCHEMAS = "extensions-framework/schemas/content";
 const KEY_PRIVILEGED_SCHEMAS = "extensions-framework/schemas/privileged";
@@ -291,29 +276,50 @@ const POSTPROCESSORS = {
 
     return string;
   },
-  requireBackgroundServiceWorkerEnabled(value, context) {
-    if (WebExtensionPolicy.backgroundServiceWorkerEnabled) {
+  checkRequiredManifestBackgroundKeys(value, context) {
+    if (value.scripts) {
+      if (value.scripts.length === 0) {
+        context.logWarning(`background.scripts is empty.`);
+      }
       return value;
     }
 
-    // Add an error to the manifest validations and throw the
-    // same error.
-    const msg = "background.service_worker is currently disabled";
-    context.logError(context.makeError(msg));
-    throw new Error(msg);
+    if (value.page) {
+      return value;
+    }
+
+    if (value.service_worker) {
+      if (WebExtensionPolicy.backgroundServiceWorkerEnabled) {
+        return value;
+      }
+
+      // throw if serviceWorker is disabled and is the only specified environment
+      const msg =
+        "background.service_worker is currently disabled. Add background.scripts.";
+      context.logError(context.makeError(msg));
+      throw new Error(msg);
+    }
+
+    // no valid environment found, raise a warning and ignore background property
+    const msg = `background requires at least one of ${
+      WebExtensionPolicy.backgroundServiceWorkerEnabled
+        ? '"service_worker", '
+        : ""
+    }"scripts" or "page".`;
+    context.logWarning(msg);
+    return null;
   },
 
-  manifestVersionCheck(value, context) {
-    if (
-      value == 2 ||
-      (value == 3 &&
-        Services.prefs.getBoolPref("extensions.manifestV3.enabled", false))
-    ) {
-      return value;
+  checkValidRequiredDataCollection(value, context) {
+    if (value.length > 1 && value.includes("none")) {
+      const normalizedValue = value.filter(perm => perm !== "none");
+      context.logWarning(
+        `Data collection permission "none" is ignored because other data collection permissions have been specified. ` +
+          `Either remove "none" from the required list, or do not include other required data collection permissions.`
+      );
+      return normalizedValue;
     }
-    const msg = `Unsupported manifest version: ${value}`;
-    context.logError(context.makeError(msg));
-    throw new Error(msg);
+    return value;
   },
 
   webAccessibleMatching(value, context) {
@@ -426,6 +432,9 @@ class Context {
       localize(value) {
         return value;
       },
+      stringToLowerCase(value) {
+        return value.toLowerCase();
+      },
       ...params.preprocessors,
     };
 
@@ -435,6 +444,7 @@ class Context {
 
     this.currentChoices = new Set();
     this.choicePathIndex = 0;
+    this.suppressedWarnings = null;
 
     for (let method of overridableMethods) {
       if (method in params) {
@@ -458,6 +468,10 @@ class Context {
 
   get ignoreUnrecognizedProperties() {
     return !!this.params.ignoreUnrecognizedProperties;
+  }
+
+  get temporarilyInstalled() {
+    return !!this.params.temporarilyInstalled;
   }
 
   get principal() {
@@ -570,7 +584,7 @@ class Context {
    * @param {string} message
    * @param {object} [options]
    * @param {boolean} [options.warning = false]
-   * @returns {Error}
+   * @returns {Error|string}
    */
   makeError(message, { warning = false } = {}) {
     let error = forceString(this.error(message, null, warning).error);
@@ -605,13 +619,28 @@ class Context {
   }
 
   /**
-   * Logs a warning. An error might be thrown when we treat warnings as errors.
+   * Logs a warning message. An error might be thrown when we treat warnings as
+   * errors.
    *
    * @param {string} warningMessage
    */
   logWarning(warningMessage) {
     let error = this.makeError(warningMessage, { warning: true });
-    this.logError(error);
+    this._logNormalizedWarning(error);
+  }
+
+  /**
+   * Logs a normalized warning object. An error might be thrown when we treat
+   * warnings as errors.
+   *
+   * @param {Error|string} warningObject
+   */
+  _logNormalizedWarning(warningObject) {
+    if (this.suppressedWarnings) {
+      this.suppressedWarnings.push(warningObject);
+      return;
+    }
+    this.logError(warningObject);
 
     if (lazy.treatWarningsAsErrors) {
       // This pref is false by default, and true by default in tests to
@@ -622,10 +651,35 @@ class Context {
         "Treating warning as error because the preference " +
           "extensions.webextensions.warnings-as-errors is set to true"
       );
-      if (typeof error === "string") {
-        error = new Error(error);
+      if (typeof warningObject === "string") {
+        warningObject = new Error(warningObject);
       }
-      throw error;
+      throw warningObject;
+    }
+  }
+
+  /**
+   * Suppresses warnings logged during the execution of `callback` and returns
+   * them along with the callback's result. Any warnings that would normally be
+   * logged by `this.logWarning()` are instead collected and returned to the
+   * caller.
+   *
+   * @param {Function} callback - A function whose execution may log warnings.
+   * @returns {object}
+   * @property {any} result - The return value of the callback.
+   * @property {string[]} suppressedWarnings - An array of suppressed warnings.
+   */
+  suppressWarnings(callback) {
+    let oldWarnings = this.suppressedWarnings;
+    let suppressedWarnings = [];
+    this.suppressedWarnings = suppressedWarnings;
+    try {
+      return {
+        result: callback(),
+        suppressedWarnings,
+      };
+    } finally {
+      this.suppressedWarnings = oldWarnings;
     }
   }
 
@@ -645,7 +699,7 @@ class Context {
 
   /**
    * Executes the given callback, and returns an array of choice strings
-   * passed to {@see #error} during its execution.
+   * passed to {@link #error} during its execution.
    *
    * @param {Function} callback
    * @returns {object}
@@ -1087,21 +1141,13 @@ class InjectionContext extends Context {
  *
  * Each method either returns a normalized version of the original
  * value, or throws an error if the value is not valid for the given
- * format.
+ * format. The original input is always a string.
  */
 const FORMATS = {
   hostname(string) {
     // TODO bug 1797376: Despite the name, this format is NOT a "hostname",
     // but hostname + port and may fail with IPv6. Use canonicalDomain instead.
-    let valid = true;
-
-    try {
-      valid = new URL(`http://${string}`).host === string;
-    } catch (e) {
-      valid = false;
-    }
-
-    if (!valid) {
+    if (URL.parse(`http://${string}`)?.host !== string) {
       throw new Error(`Invalid hostname ${string}`);
     }
 
@@ -1109,15 +1155,7 @@ const FORMATS = {
   },
 
   canonicalDomain(string) {
-    let valid;
-
-    try {
-      valid = new URL(`http://${string}`).hostname === string;
-    } catch (e) {
-      valid = false;
-    }
-
-    if (!valid) {
+    if (URL.parse(`http://${string}`)?.hostname !== string) {
       // Require the input to be a canonical domain.
       // Rejects obvious non-domains such as URLs,
       // but also catches non-IDN (punycode) domains.
@@ -1137,10 +1175,8 @@ const FORMATS = {
   },
 
   origin(string, context) {
-    let url;
-    try {
-      url = new URL(string);
-    } catch (e) {
+    let url = URL.parse(string);
+    if (!url) {
       throw new Error(`Invalid origin: ${string}`);
     }
     if (!/^https?:/.test(url.protocol)) {
@@ -1164,9 +1200,7 @@ const FORMATS = {
     if (!context.url) {
       // If there's no context URL, return relative URLs unresolved, and
       // skip security checks for them.
-      try {
-        new URL(string);
-      } catch (e) {
+      if (!URL.canParse(string)) {
         return string;
       }
     }
@@ -1185,12 +1219,8 @@ const FORMATS = {
   },
 
   unresolvedRelativeUrl(string) {
-    if (!string.startsWith("//")) {
-      try {
-        new URL(string);
-      } catch (e) {
-        return string;
-      }
+    if (!string.startsWith("//") && !URL.canParse(string)) {
+      return string;
     }
 
     throw new SyntaxError(
@@ -1231,11 +1261,37 @@ const FORMATS = {
     // Manifest V3 extension_pages allows WASM.  When sandbox is
     // implemented, or any other V3 or later directive, the flags
     // logic will need to be updated.
+
     let flags =
       context.manifestVersion < 3
         ? Ci.nsIAddonContentPolicy.CSP_ALLOW_ANY
         : Ci.nsIAddonContentPolicy.CSP_ALLOW_WASM;
+
     let error = lazy.contentPolicyService.validateAddonCSP(string, flags);
+
+    if (
+      error &&
+      context.manifestVersion === 3 &&
+      !lazy.contentPolicyService.validateAddonCSP(
+        string,
+        flags | Ci.nsIAddonContentPolicy.CSP_ALLOW_LOCALHOST
+      )
+    ) {
+      error =
+        `Using localhost in the Content Security Policy is invalid, ` +
+        `and is only permitted during development with temporarily ` +
+        `loaded add-ons`;
+
+      // The error occurred due to the presence of localhost CSP settings, which should be allowed
+      // when an MV3 extension is loaded as a temporary add-on for debugging purposes.
+      if (context.temporarilyInstalled) {
+        context.logWarning(
+          `Warning processing ${context.currentTarget}: ${error}`
+        );
+        return string;
+      }
+    }
+
     if (error != null) {
       // The CSP validation error is not reported as part of the "choices" error message,
       // we log the CSP validation error explicitly here to make it easier for the addon developers
@@ -1262,21 +1318,41 @@ const FORMATS = {
     return string;
   },
 
-  manifestShortcutKey(string) {
-    if (lazy.ShortcutUtils.validate(string) == lazy.ShortcutUtils.IS_VALID) {
+  manifestShortcutKey(string, { extensionManifest = true } = {}) {
+    const result = lazy.ShortcutUtils.validate(string, { extensionManifest });
+    if (result == lazy.ShortcutUtils.IS_VALID) {
       return string;
     }
-    let errorMessage =
-      `Value "${string}" must consist of ` +
-      `either a combination of one or two modifiers, including ` +
-      `a mandatory primary modifier and a key, separated by '+', ` +
-      `or a media key. For details see: ` +
+
+    const SEE_DETAILS =
+      `For details see: ` +
       `https://developer.mozilla.org/en-US/Add-ons/WebExtensions/manifest.json/commands#Key_combinations`;
+    let errorMessage;
+
+    switch (result) {
+      case lazy.ShortcutUtils.INVALID_KEY_IN_EXTENSION_MANIFEST:
+        errorMessage =
+          `Value "${string}" must not include extended F13-F19 keys. ` +
+          `F13-F19 keys can only be used for user-defined keyboard shortcuts in about:addons ` +
+          `"Manage Extension Shortcuts". ${SEE_DETAILS}`;
+        break;
+      default:
+        errorMessage =
+          `Value "${string}" must consist of ` +
+          `either a combination of one or two modifiers, including ` +
+          `a mandatory primary modifier and a key, separated by '+', ` +
+          `or a media key. ${SEE_DETAILS}`;
+    }
     throw new Error(errorMessage);
   },
 
   manifestShortcutKeyOrEmpty(string) {
-    return string === "" ? "" : FORMATS.manifestShortcutKey(string);
+    // manifestShortcutKey is the formatter applied to the manifest keys assigned
+    // through the manifest, while manifestShortcutKeyOrEmpty is the formatter
+    // used by the commands.update API method JSONSchema.
+    return string === ""
+      ? ""
+      : FORMATS.manifestShortcutKey(string, { extensionManifest: false });
   },
 
   versionString(string, context) {
@@ -1624,8 +1700,13 @@ class ChoiceType extends Type {
           continue;
         }
 
-        let r = choice.normalize(value, context);
+        let { result: r, suppressedWarnings } = context.suppressWarnings(() =>
+          choice.normalize(value, context)
+        );
         if (!r.error) {
+          for (let w of suppressedWarnings) {
+            context._logNormalizedWarning(w);
+          }
           return r;
         }
 
@@ -2457,6 +2538,13 @@ class ArrayType extends Type {
     }
     value = v.value;
 
+    // eslint-disable-next-line no-use-before-define
+    if (value && this.itemType instanceof FunctionType) {
+      // This needs special handling if we're expecting an array of functions,
+      // because iterating over (wrapped) callable items fails otherwise.
+      value = this.extractItems(value, context);
+    }
+
     let result = [];
     for (let [i, element] of value.entries()) {
       element = context.withPath(String(i), () =>
@@ -2488,6 +2576,29 @@ class ArrayType extends Type {
     }
 
     return this.postprocess({ value: result }, context);
+  }
+
+  /**
+   * Extracts all items of the given array, including callable
+   * ones which would normally be omitted by X-ray wrappers.
+   *
+   * @see ObjectType.extractProperties for more details.
+   *
+   * @param {Array} value
+   * @param {Context} context
+   * @returns {Array}
+   */
+  extractItems(value, context) {
+    let klass = ChromeUtils.getClassName(value, true);
+    if (klass !== "Array") {
+      throw context.error(
+        `Expected a plain JavaScript array, got a ${klass}`,
+        `be a plain JavaScript array`
+      );
+    }
+    let obj = ChromeUtils.shallowClone(value);
+    obj.length = value.length;
+    return Array.from(obj);
   }
 
   checkBaseType(baseType) {
@@ -3919,7 +4030,7 @@ export var Schemas = {
       return;
     }
 
-    const startTime = Cu.now();
+    const startTime = ChromeUtils.now();
     let schemaCache = await this.loadCachedSchemas();
     const fromCache = schemaCache.has(url);
 
@@ -3965,6 +4076,7 @@ export var Schemas = {
   getPermissionNames(
     types = [
       "Permission",
+      "OptionalOnlyPermission",
       "OptionalPermission",
       "PermissionNoPrompt",
       "OptionalPermissionNoPrompt",

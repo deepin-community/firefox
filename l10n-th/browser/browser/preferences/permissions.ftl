@@ -21,6 +21,9 @@ permissions-session =
 permissions-allow =
     .label = อนุญาต
     .accesskey = อ
+permissions-add =
+    .label = เพิ่ม
+    .accesskey = พ
 permissions-button-off =
     .label = ปิด
     .accesskey = ด
@@ -92,6 +95,13 @@ permissions-exceptions-https-only-window2 =
     .style = { permissions-window2.style }
 permissions-exceptions-https-only-desc = คุณสามารถปิดโหมด HTTPS-Only สำหรับแต่ละเว็บไซต์ได้ { -brand-short-name } จะไม่พยายามอัปเกรดการเชื่อมต่อเป็น HTTPS แบบปลอดภัยสำหรับไซต์เหล่านั้น ข้อยกเว้นจะไม่นำไปใช้กับหน้าต่างส่วนตัว
 permissions-exceptions-https-only-desc2 = คุณสามารถปิดโหมด HTTPS-Only สำหรับแต่ละเว็บไซต์ได้ { -brand-short-name } จะไม่พยายามอัปเกรดการเชื่อมต่อเป็น HTTPS แบบปลอดภัยสำหรับไซต์เหล่านั้น
+
+## Exceptions - Pop-ups And Third-Party Redirects
+
+permissions-exceptions-popup-window3 =
+    .title = เว็บไซต์ที่อนุญาต - ป๊อปอัปและการเปลี่ยนทางจากบุคคลที่สาม
+    .style = { permissions-window2.style }
+permissions-exceptions-popup-desc2 = คุณสามารถระบุเว็บไซต์ที่จะอนุญาตให้เปิดหน้าต่างป๊อปอัปและเปลี่ยนเส้นทางด้วยเฟรมจากบุคคลที่สามได้
 
 ## Exceptions - Pop-ups
 
@@ -168,6 +178,26 @@ permissions-site-camera-disable-label =
     .label = ปิดกั้นคำร้องขอใหม่ที่ขอเข้าถึงกล้องของคุณ
 permissions-site-camera-disable-desc = นี่จะป้องกันไม่ให้เว็บไซต์ใดๆ ที่ไม่ได้ระบุไว้ด้านบนขออนุญาตเพื่อเข้าถึงกล้องของคุณ การปิดกั้นการเข้าถึงกล้องของคุณอาจทำให้คุณลักษณะบางอย่างของเว็บไซต์ไม่สมบูรณ์
 
+## Site Permissions - Local host
+
+permissions-site-localhost-window =
+    .title = การตั้งค่า - แอปและบริการบนอุปกรณ์
+    .style = { permissions-window2.style }
+permissions-site-localhost-desc = เว็บไซต์เหล่านี้ได้ขอเข้าถึงแอปและบริการต่าง ๆ บนอุปกรณ์นี้ คุณสามารถเลือกที่จะอนุญาตหรือปิดกั้นไม่ให้ไซต์ทำเช่นนี้ได้
+permissions-site-localhost-disable-label =
+    .label = ปิดกั้นคำขอใหม่ที่ขอเข้าถึงแอปและบริการต่าง ๆ บนอุปกรณ์นี้
+permissions-site-localhost-disable-desc = นี่จะหยุดเว็บไซต์ใด ๆ ที่ไม่ได้ระบุไว้ด้านบนขออนุญาตเข้าถึงแอปและบริการต่าง ๆ บนอุปกรณ์นี้ การทำเช่นนี้อาจทำให้คุณลักษณะเว็บไซต์บางอย่างใช้งานไม่ได้
+
+## Site Permissions - Local network
+
+permissions-site-local-network-window =
+    .title = การตั้งค่า - อุปกรณ์เครือข่ายเฉพาะที่
+    .style = { permissions-window2.style }
+permissions-site-local-network-desc = เว็บไซต์เหล่านี้ได้ขอเข้าถึงแอปและบริการต่าง ๆ บนอุปกรณ์ที่เชื่อมต่อกับ Wi-Fi หรือเครือข่ายเฉพาะที่ของคุณ คุณสามารถเลือกที่จะอนุญาตหรือปิดกั้นไม่ให้ไซต์ทำเช่นนี้ได้
+permissions-site-local-network-disable-label =
+    .label = ปิดกั้นคำขอใหม่ที่ขอเข้าถึงแอปและบริการต่าง ๆ บนอุปกรณ์ที่เชื่อมต่อกับ Wi-Fi หรือเครือข่ายเฉพาะที่ของคุณ
+permissions-site-local-network-disable-desc = นี่จะหยุดเว็บไซต์ใด ๆ ที่ไม่ได้ระบุไว้ด้านบนขออนุญาตเข้าถึงแอปและบริการต่าง ๆ บนอุปกรณ์ที่เชื่อมต่อกับ Wi-Fi หรืออุปกรณ์เครือข่ายเฉพาะที่ของคุณ การทำเช่นนี้อาจทำให้คุณลักษณะเว็บไซต์บางอย่างใช้งานไม่ได้
+
 ## Site Permissions - Microphone
 
 permissions-site-microphone-window2 =
@@ -176,7 +206,7 @@ permissions-site-microphone-window2 =
 permissions-site-microphone-desc = เว็บไซต์ดังต่อไปนี้ได้ขอเข้าถึงไมโครโฟนของคุณ คุณสามารถระบุเว็บไซต์ที่อนุญาตให้เข้าถึงไมโครโฟนของคุณ คุณยังสามารถปิดกั้นคำขอใหม่ที่ขอเข้าถึงไมโครโฟนของคุณ
 permissions-site-microphone-disable-label =
     .label = ปิดกั้นคำร้องขอใหม่ที่ขอเข้าถึงไมโครโฟนของคุณ
-permissions-site-microphone-disable-desc = นี่จะป้องกันไม่ให้เว็บไซต์ใดๆ ที่ไม่ได้ระบุไว้ด้านบนขออนุญาตเพื่อเข้าถึงไมโครโฟนของคุณ การปิดกั้นการเข้าถึงไมโครโฟนของคุณอาจทำให้คุณลักษณะบางอย่างของเว็บไซต์ไม่สมบูรณ์
+permissions-site-microphone-disable-desc = นี่จะป้องกันไม่ให้เว็บไซต์ใด ๆ ที่ไม่ได้ระบุไว้ด้านบนขออนุญาตเพื่อเข้าถึงไมโครโฟนของคุณ การปิดกั้นการเข้าถึงไมโครโฟนของคุณอาจทำให้คุณลักษณะบางอย่างของเว็บไซต์ไม่สมบูรณ์
 
 ## Site Permissions - Speaker
 ##

@@ -27,6 +27,10 @@ appmenuitem-downloads =
     .label = Discjamâts
 appmenuitem-passwords =
     .label = Passwords
+appmenuitem-extensions-and-themes =
+    .label = Estensions e temis
+appmenuitem-extensions =
+    .label = Estensions
 appmenuitem-addons-and-themes =
     .label = Estensions e temis
 appmenuitem-print =
@@ -108,8 +112,11 @@ appmenu-fxa-sync-and-save-data2 = Sincronize e salve i dâts
 appmenu-fxa-signed-in-label = Jentre
 appmenu-fxa-setup-sync =
     .label = Ative la sincronizazion…
+appmenu-fxa-setup-sync-new = Ative
 appmenuitem-save-page =
     .label = Salve pagjine come…
+appmenuitem-fxa-sync-off-title = La sincronizazion e je disativade
+appmenuitem-fxa-sync-off-description = Protêç e dopre i tiei segnelibris, lis passwords e altris dâts dapardut là che tu ti cjatis.
 
 ## What's New panel in App menu.
 
@@ -163,6 +170,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Maiusc+2
     }
+profiler-button-dropmarker =
+    .label = Vierç il panel dal profiladôr
+    .tooltiptext = Vierç il panel dal profiladôr
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +199,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Preconfigurazion par investigâ su erôrs audio e video in { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Multimediâl
+profiler-popup-presets-ml-description = Preconfigurazion pe diagnosi di problemis relatîfs al machine learning in { -brand-shorter-name }.
+profiler-popup-presets-ml-label =
+    .label = Machine Learning
 profiler-popup-presets-networking-description = Preconfigurazion par investigâ su erôrs di rêt in { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = Rêt
@@ -199,6 +212,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = Impostazion prestabilide pal debug in { -brand-shorter-name }. Overhead elevât, no sta doprâlu pes analisis des prestazions, ma dome par capî il compuartament dal navigadôr.
 profiler-popup-presets-debug-label =
     .label = Debug
+profiler-popup-presets-web-compat-description = Preconfigurazion conseade pal debug dai problemis di compatibilitât tai sîts web, no par monitorâ lis prestazions.
+profiler-popup-presets-web-compat-label =
+    .label = Compatibilitât web
 profiler-popup-presets-custom-label =
     .label = Personalizât
 
@@ -277,5 +293,26 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Oten i avîs su lis violazions di dâts
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Mascare la tô direzion e-mail e il telefon
+appmenuitem-services-relay-description = Vierç il cruscot pes mascaris di pueste eletroniche
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Protêç la tô ativitât in linie
+appmenu-services-header = I miei servizis
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Prove altris struments di protezion di Mozilla:
+appmenu-other-protection-header = Prove altris struments di protezion di { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-other-profiles = Altris profîi
+appmenu-manage-profiles =
+    .label = Gjestìs i profîi
+appmenu-copy-profile =
+    .label = Copie chest profîl
+appmenu-create-profile =
+    .label = Gnûf profîl
+appmenu-edit-profile =
+    .aria-label = Modifiche profîl
+appmenu-profiles-2 =
+    .label = Profîi

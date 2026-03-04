@@ -12,9 +12,6 @@ about-webrtc-document-title = WebRTC Internals
 # translated. This string is used as a title for a file save dialog box.
 about-webrtc-save-page-dialog-title = vista about:webrtc sem
 
-## These labels are for a disclosure which contains the information for closed PeerConnection sections
-
-
 ## AEC is an abbreviation for Acoustic Echo Cancellation.
 
 about-webrtc-aec-logging-msg-label = AEC atvikaskráning
@@ -157,20 +154,6 @@ about-webrtc-time-elapsed = Tími liðinn (s)
 about-webrtc-estimated-framerate = Áætluð rammatíðni
 about-webrtc-rotation-degrees = Snúningur (gráður)
 
-## SSRCs are identifiers that represent endpoints in an RTP stream
-
-
-## These are displayed on the button that shows or hides the
-## PeerConnection configuration disclosure
-
-
-##
-
-
-## These are displayed on the button that shows or hides the
-## user modified configuration disclosure
-
-
 ##
 
 # Section header for estimated bandwidths of WebRTC media flows
@@ -184,10 +167,7 @@ about-webrtc-round-trip-time-ms = RTT ms
 #   $track-identifier (String) - The unique identifier for the MediaStreamTrack.
 about-webrtc-frame-stats-heading = Tölfræði myndramma - MediaStreamTrack ID: { $track-identifier }
 
-## These are paths used for saving the about:webrtc page or log files so
-## they can be attached to bug reports.
-## Variables:
-##  $path (String) - The path to which the file is saved.
+##
 
 about-webrtc-save-page-msg = síða vistuð á: { $path }
 about-webrtc-debug-mode-off-state-msg = rakningarskrá er að finna á: { $path }
@@ -224,19 +204,7 @@ about-webrtc-jitter-label = Flökt { $jitter }
 # table with light blue background.
 about-webrtc-trickle-caption-msg = Leka umsækjendur (sem er sent eftir svar) eru undirstrikaðir með blár
 
-## "SDP" is an abbreviation for Session Description Protocol, an IETF standard.
-## See http://wikipedia.org/wiki/Session_Description_Protocol
-
-
 ## These are displayed on the button that shows or hides the SDP information disclosure
 
 about-webrtc-show-msg-sdp = Sýna SDP
 about-webrtc-hide-msg-sdp = Fela SDP
-
-## These are displayed on the button that shows or hides the Media Context information disclosure.
-## The Media Context is the set of preferences and detected capabilities that informs
-## the negotiated CODEC settings.
-
-
-##
-

@@ -58,12 +58,15 @@ for patch in \
  bug-1636984-append-item-dayperiod-fractional-seconds.diff \
  bug-1706949-wasi-workaround.diff \
  bug-1790071-ICU-22132-standardize-vtzone-output.diff \
- bug-1838173-ICU-22412-start-time-iso8601.diff \
- bug-1814862-ICU-22260.diff \
  double-conversion.diff \
- bug-1856428-ICU-22541.diff \
  bug-1856290-ICU-20548-dateinterval-timezone.diff \
- bug-1856291-ICU-22526-calendar-timezone-offset-limit.diff \
+ bug-1954138-dtitvfmt-adopt-calendar.diff \
+ bug-1972781-chinese-based-calendar.diff \
+ bug-2000225-ICU-23264-increase-measure-unit-capacity.diff \
+ bug-2000225-ICU-23262-missing-resource-error-for-iso8601-era.diff \
+ bug-2002735-ICU-23277-coptic-single-era.diff \
+ bug-2002997-ICU-23278-metazone-with-offset.diff \
+ bug-2010411-patch-cldr-hv-en-root.diff \
 ; do
   echo "Applying local patch $patch"
   patch -d ${icu_dir}/../../ -p1 --no-backup-if-mismatch < ${icu_dir}/../icu-patches/$patch

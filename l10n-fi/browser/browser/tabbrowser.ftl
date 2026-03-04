@@ -8,6 +8,19 @@ tabbrowser-menuitem-close-tab =
     .label = Sulje välilehti
 tabbrowser-menuitem-close =
     .label = Sulje
+# Displayed within the tooltip on tabs inside of a tab group.
+# Variables:
+#   $tabGroupName (String): the user-defined name of the current tab group.
+tabbrowser-tab-tooltip-tab-group = { $tabGroupName }
+# Displayed within the tooltip on tabs in a container.
+# Variables:
+#   $containerName (String): the name of the current container.
+tabbrowser-tab-tooltip-container = { $containerName }
+# Displayed within the tooltip on tabs inside of a tab group if the tab is also in a container.
+# Variables:
+#   $tabGroupName (String): the user-defined name of the current tab group.
+#   $containerName (String): the name of the current container.
+tabbrowser-tab-tooltip-tab-group-container = { $tabGroupName } — { $containerName }
 # Displayed as a tooltip on container tabs
 # Variables:
 #   $title (String): the title of the current tab.
@@ -32,6 +45,8 @@ tabbrowser-close-tabs-tooltip =
             [one] Sulje välilehti
            *[other] Sulje { $tabCount } välilehteä
         }
+tab-splitview-splitter =
+    .aria-label = Muuta jaetun näkymän välilehtien kokoa
 
 ## Tooltips for tab audio control
 ## Variables:
@@ -72,6 +87,16 @@ tabbrowser-unblock-tab-audio-tooltip =
            *[other] Toista { $tabCount } välilehden äänet
         }
 
+## Tooltips for tab audio control
+
+tabbrowser-unmute-tab-audio-aria-label =
+    .aria-label = Palauta ääni
+tabbrowser-mute-tab-audio-aria-label =
+    .aria-label = Vaimenna välilehti
+# Used to unblock a tab with audio from autoplaying
+tabbrowser-unblock-tab-audio-aria-label =
+    .aria-label = Toista välilehden äänet
+
 ## Confirmation dialog when closing a window with more than one tab open,
 ## or when quitting when only one window is open.
 
@@ -80,6 +105,7 @@ tabbrowser-unblock-tab-audio-tooltip =
 #   $tabCount (Number): The number of tabs that will be closed.
 tabbrowser-confirm-close-tabs-title = Suljetaanko { $tabCount } välilehteä?
 tabbrowser-confirm-close-tabs-button = Sulje välilehdet
+tabbrowser-ask-close-tabs-checkbox = Kysy ennen useiden välilehtien sulkemista
 tabbrowser-confirm-close-tabs-checkbox = Vahvista ennen kuin useat välilehdet suljetaan
 
 ## Confirmation dialog when quitting using the menu and multiple windows are open.
@@ -102,7 +128,21 @@ tabbrowser-confirm-close-tabs-with-key-title = Suljetaanko ikkuna ja lopetetaank
 tabbrowser-confirm-close-tabs-with-key-button = Lopeta { -brand-short-name }
 # Variables:
 #   $quitKey (String): the text of the keyboard shortcut for quitting.
+tabbrowser-ask-close-tabs-with-key-checkbox = Kysy ennen pikanäppäimellä { $quitKey } lopettamista
+# Variables:
+#   $quitKey (String): the text of the keyboard shortcut for quitting.
 tabbrowser-confirm-close-tabs-with-key-checkbox = Vahvista ennen pikanäppäimellä { $quitKey } lopettamista
+
+## Confirmation dialog when quitting using the keyboard shortcut (Ctrl/Cmd+Q)
+## and browser.warnOnQuitShortcut is true.
+
+tabbrowser-confirm-close-warn-shortcut-title = Lopetetaanko { -brand-short-name } vai suljetaanko nykyinen välilehti?
+tabbrowser-confirm-close-windows-warn-shortcut-button =
+    { PLATFORM() ->
+        [windows] Lopeta { -brand-short-name }
+       *[other] Lopeta { -brand-short-name }
+    }
+tabbrowser-confirm-close-tab-only-button = Sulje avoin välilehti
 
 ## Confirmation dialog when opening multiple tabs simultaneously
 
@@ -124,8 +164,6 @@ tabbrowser-confirm-caretbrowsing-checkbox = Älä näytä tätä ikkunaa uudesta
 
 ## Confirmation dialog for closing all duplicate tabs
 
-tabbrowser-confirm-close-duplicate-tabs-title = Huomio
-tabbrowser-confirm-close-duplicate-tabs-text = Pidämme viimeisen aktiivisen välilehden avoinna
 tabbrowser-confirm-close-all-duplicate-tabs-title = Suljetaanko välilehtien kaksoiskappaleet?
 tabbrowser-confirm-close-all-duplicate-tabs-text =
     Välilehtien kaksoiskappaleet suljetaan tässä ikkunassa. Viimeinen aktiivinen
@@ -167,6 +205,9 @@ tabbrowser-ctrl-tab-list-all-tabs =
     .label = Näytä kaikki { $tabCount } välilehteä
 
 ## Tab manager menu buttons
+## Variables:
+##  $tabGroupName (String): The name of the tab group. See also tab-group-name-default, which will be
+##                          used when the group's name is empty.
 
 tabbrowser-manager-mute-tab =
     .tooltiptext = Vaimenna välilehti
@@ -174,3 +215,229 @@ tabbrowser-manager-unmute-tab =
     .tooltiptext = Palauta ääni
 tabbrowser-manager-close-tab =
     .tooltiptext = Sulje välilehti
+# This is for tab groups that have been "saved and closed" (see tab-group-editor-action-save). It does
+# not include "deleted" tab groups (see tab-group-editor-action-delete).
+tabbrowser-manager-closed-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } — Suljettu
+tabbrowser-manager-current-window-tab-group =
+    .label = { $tabGroupName }
+    .tooltiptext = { $tabGroupName } — Nykyinen ikkuna
+
+##
+
+tab-group-editor-title-create = Luo välilehtiryhmä
+tab-group-editor-title-edit = Hallinnoi välilehtiryhmää
+tab-group-editor-name-label = Nimi
+tab-group-editor-name-field =
+    .placeholder = Esimerkki: Ostokset
+tab-group-editor-cancel =
+    .label = Peruuta
+    .accesskey = P
+tab-group-editor-color-selector =
+    .aria-label = Välilehtiryhmän väri
+tab-group-editor-color-selector2-blue = Sininen
+    .title = Sininen
+tab-group-editor-color-selector2-purple = Violetti
+    .title = Violetti
+tab-group-editor-color-selector2-cyan = Syaani
+    .title = Syaani
+tab-group-editor-color-selector2-orange = Oranssi
+    .title = Oranssi
+tab-group-editor-color-selector2-yellow = Keltainen
+    .title = Keltainen
+tab-group-editor-color-selector2-pink = Pinkki
+    .title = Pinkki
+tab-group-editor-color-selector2-green = Vihreä
+    .title = Vihreä
+tab-group-editor-color-selector2-gray = Harmaa
+    .title = Harmaa
+tab-group-editor-color-selector2-red = Punainen
+    .title = Punainen
+tab-group-description = { $tabGroupName } — Välilehtiryhmä
+tab-group-label-tooltip-collapsed = { $tabGroupName } — Supistettu
+tab-group-label-tooltip-expanded = { $tabGroupName } — Laajennettu
+tab-group-preview-name =
+    .aria-label = Välilehdet supistetussa ryhmässä
+tab-context-unnamed-group =
+    .label = Nimetön ryhmä
+tab-group-name-default = Nimetön ryhmä
+
+## When collapsed, the tab group label's aria-description will indicate
+## whether the hover menu is open or closed.
+
+tab-group-preview-open-description = Välilehtilista avoinna
+tab-group-preview-closed-description = Välilehtilista suljettu
+
+##
+
+tab-context-move-tab-to-new-group =
+    .label =
+        { $tabCount ->
+            [1] Lisää välilehti uuteen ryhmään
+            [one] Lisää välilehti uuteen ryhmään
+           *[other] Lisää välilehdet uuteen ryhmään
+        }
+    .accesskey = u
+tab-context-move-tab-to-group =
+    .label =
+        { $tabCount ->
+            [1] Lisää välilehti ryhmään
+            [one] Lisää välilehti ryhmään
+           *[other] Lisää välilehdet ryhmään
+        }
+    .accesskey = ä
+tab-context-move-split-view-to-new-group =
+    .label =
+        { $splitViewCount ->
+            [1] Lisää jaettu näkymä uuteen ryhmään
+           *[other] Add Split Views to New Group
+        }
+    .accesskey = j
+tab-context-move-split-view-to-group =
+    .label =
+        { $splitViewCount ->
+            [1] Lisää jaettu näkymä ryhmään
+           *[other] Add Split Views to Group
+        }
+    .accesskey = j
+tab-context-move-tab-to-group-saved-groups =
+    .label = Suljetut ryhmät
+tab-group-editor-action-new-tab =
+    .label = Uusi välilehti ryhmässä
+tab-group-editor-action-new-window =
+    .label = Siirrä ryhmä uuteen ikkunaan
+tab-group-editor-action-save =
+    .label = Tallenna ja sulje ryhmä
+tab-group-editor-action-ungroup =
+    .label = Pura välilehtien ryhmittely
+tab-group-editor-action-delete =
+    .label = Poista ryhmä
+tab-group-editor-done =
+    .label = Valmis
+    .accessKey = V
+tab-context-reopen-tab-group =
+    .label = Avaa välilehtiryhmä uudelleen
+# Variables:
+#  $groupCount (Number): the number of tab groups that are affected by the action.
+tab-context-ungroup-tab =
+    .label =
+        { $groupCount ->
+            [1] Poista ryhmästä
+            [one] Poista ryhmästä
+           *[other] Poista ryhmistä
+        }
+    .accesskey = r
+# When a tab group containing the active tab is collapsed, the active tab
+# remains visible. An indicator appears at the end of the group showing the
+# number of remaining tabs that are hidden by the collapsed group,
+# e.g. "+2" for a group with 3 total tabs.
+tab-group-overflow-count = +{ $tabCount }
+tab-group-overflow-count-tooltip =
+    { $tabCount ->
+        [one] { $tabCount } välilehti lisää
+       *[other] { $tabCount } välilehteä lisää
+    }
+
+## Open/saved tab group context menu
+
+# For a tab group open in any window, clicking this will create a new
+# window and move this tab group to that new window.
+tab-group-context-move-to-new-window =
+    .label = Siirrä ryhmä uuteen ikkunaan
+# For a tab group open in a different window from the one that the
+# user is using to access the tab group menu, move that tab group into the
+# user's current window.
+tab-group-context-move-to-this-window =
+    .label = Siirrä ryhmä tähän ikkunaan
+# For a tab group that is open in any window, close the tab group and
+# do not save it. For a tab group that is closed but saved by the user, clicking
+# this will forget the saved tab group.
+tab-group-context-delete =
+    .label = Poista ryhmä
+# For a saved tab group that is not open in any window, open the tab group
+# in the user's current window.
+tab-group-context-open-saved-group-in-this-window =
+    .label = Avaa ryhmä tässä ikkunassa
+# For a saved tab group that is not open in any window, create a new window and
+# open the tab group in that window.
+tab-group-context-open-saved-group-in-new-window =
+    .label = Avaa ryhmä uudessa ikkunassa
+
+## Tab Notes
+
+tab-context-add-note =
+    .label = Lisää muistiinpano
+    .accesskey = a
+tab-context-update-note =
+    .label = Päivitä muistiinpano
+    .accesskey = u
+tab-context-edit-note =
+    .label = Muokkaa muistiinpanoa
+    .accesskey = M
+tab-context-delete-note =
+    .label = Poista muistiinpano
+    .accesskey = n
+tab-note-editor-title-create = Lisää muistiinpano
+tab-note-editor-title-edit = Muokkaa muistiinpanoa
+tab-note-editor-text-field =
+    .placeholder = Mitä haluat muistaa tästä välilehdestä?
+tab-note-editor-button-cancel =
+    .label = Peruuta
+    .accesskey = P
+tab-note-editor-button-save =
+    .label = Tallenna
+    .accesskey = T
+# Link to show the full tab note in case it was truncated.
+tab-note-preview-expand = Lue lisää
+# Displayed within the tab note edit dialog box when the user has entered more
+# characters than are allowed.
+# Variables:
+#   $totalCharacters (Number): the number of characters the user has entered.
+#   $maxAllowedCharacters (Number): the maximum number of characters allowed for a tab note.
+tab-note-editor-character-limit =
+    { $maxAllowedCharacters ->
+       *[other] { NUMBER($totalCharacters, useGrouping: "false") }/{ NUMBER($maxAllowedCharacters, useGrouping: "false") } merkkiä
+    }
+
+## Split View
+
+# Split view tabs display their respective contents side by side
+# Displayed within the tooltip on tabs inside of a tab split view
+tabbrowser-tab-label-tab-split-view = Jaettu näkymä
+# Open a new tab next to the current tab and display their contents side by side
+tab-context-add-split-view =
+    .label = Lisää jaettu näkymä
+    .accesskey = t
+# Display the two selected tabs' contents side by side
+tab-context-open-in-split-view =
+    .label = Avaa jaetussa näkymässä
+    .accesskey = t
+# Separate the two split view tabs and display the tabs and their contents as normal
+tab-context-separate-split-view =
+    .label = Erillinen jaettu näkymä
+    .accesskey = t
+tab-context-badge-new = Uusi
+# Split view tabs display their respective contents side by side
+# Displayed within the tooltip on the left tab inside of a tab split view
+# "left" corresponds to the visual position. Translate literally; do not swap for RTL languages.
+# Variables:
+#   $label (String): the text label of the tab visible in the tab strip
+tabbrowser-tab-label-tab-split-view-left = { $label }, jaettu näkymä vasen
+# Split view tabs display their respective contents side by side
+# Displayed within the tooltip on the right tab inside of a tab split view
+# "right" corresponds to the visual position. Translate literally; do not swap for RTL languages.
+# Variables:
+#   $label (String): the text label of the tab visible in the tab strip
+tabbrowser-tab-label-tab-split-view-right = { $label }, jaettu näkymä oikea
+
+## Manage Split View (icon in the address bar & three-dot menu in the footer)
+
+# "Separate" is a verb, as in "separate the split view tabs and display them normally".
+split-view-menuitem-separate-tabs =
+    .label = Erilliset välilehdet
+# "Reverse" is a verb, as in "reverse the order of split view tabs".
+split-view-menuitem-reverse-tabs =
+    .label = Käänteiset välilehdet
+split-view-menuitem-close-both-tabs =
+    .label = Sulje molemmat välilehdet

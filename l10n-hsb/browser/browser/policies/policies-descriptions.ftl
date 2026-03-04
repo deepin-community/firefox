@@ -21,6 +21,7 @@ policy-AutofillAddressEnabled = Awtomatiske wupjelnjenje za adresy zmóžnić.
 policy-AutofillCreditCardEnabled = Awtomatiske wupjelnjenje za płaćenske metody zmóžnić.
 policy-AutoLaunchProtocolsFromOrigins = Definujće lisćinu protokolow, kotrež dadźa so z nalistowanych žórłow wužiwać, bjeztoho zo by so dyrbjało wužiwarja prašeć.
 policy-BackgroundAppUpdate2 = Pozadkowe aktualizowanje zmóžnić abo znjemóžnić.
+policy-Backup = Znjemóžńće zawěsćenje abo wobnowjenje profilowych datow.
 policy-BlockAboutAddons = Přistup k zrjadowakej přidatkow (about:addons) blokować.
 policy-BlockAboutConfig = Přistup k stronje about:config blokować.
 policy-BlockAboutProfiles = Přistup k stronje about:profiles blokować.
@@ -55,6 +56,7 @@ policy-DisablePocket2 = Funkciju składowanja webstronow do { -pocket-brand-name
 policy-DisablePrivateBrowsing = Priwatny modus znjemóžnić.
 policy-DisableProfileImport = Menijowy přikaz za importowanje datow z druheho wobhladowaka znjemóžnić.
 policy-DisableProfileRefresh = Tłóčatko { -brand-short-name } wobnowić na stronje about:support znjemóžnić.
+policy-DisableRemoteImprovements = Zadźěwajće tomu, zo { -brand-short-name } změny wukona, stabilnosće a funkcijow mjez aktualizacijemi nałožuje.
 policy-DisableSafeMode = Funkciju za znowastartowanje we wěstym modusu znjemóžnić. Kedźbu: Tasta Umsch, z kotrejž k wěstemu modusej přeńdźeće, da so jenož pod Windowsom z pomocu skupinskich prawidłow znjemóžnić.
 policy-DisableSecurityBypass = Wužiwarjej zakazać, wěste wěstotne warnowanja wobeńć.
 policy-DisableSetAsDesktopBackground = Menijowy přikaz Jako desktopowy pozadk za wobrazy nastajić znjemóžnić.
@@ -79,6 +81,7 @@ policy-ExtensionSettings = Wšě aspekty instalacije rozšěrjenjow rjadować.
 policy-ExtensionUpdate = Awtomatiske aktualizacije rozšěrjenjow zmóžnić abo znjemóžnić.
 policy-FirefoxHome2 = { -firefox-home-brand-name } konfigurować.
 policy-FirefoxSuggest = { -firefox-suggest-brand-name } konfigurować.
+policy-GenerativeAI = Konfigurujće generatiwne funkcije KI.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Wunuzujće direktnu nawigaciju do intranetneho sydła, město toho zo byšće pytał, hdyž jednotliwe słowne zapiski do adresoweho pola zapodawaće.
 policy-Handlers = Standardne nałoženske předźěłaki konfigurować
 policy-HardwareAcceleration = Jeli njewěrno, hardwarowe pospěšenje znjemóžnić.
@@ -97,6 +100,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Zestarjene zadźeržen
 ##
 
 policy-LocalFileLinks = Wěstym websydłam dowolić, na lokalne dataje wotkazać.
+policy-LocalNetworkAccess = Zmóžńće abo znjemóžńće lokalne kontrole syćoweho přistupa.
 policy-ManagedBookmarks = Konfiguruje lisćinu zapołožkow, kotrež administrator rjaduje a kotrež wužiwar njemóže změnić.
 policy-ManualAppUpdateOnly = Jenož manuelne aktualizacije dowolić a wužiwarja wo aktualizacijach njeinformować.
 policy-PrimaryPassword = Hłowne hesło požadać abo jeho wužiwanju zadźěwać
@@ -117,6 +121,7 @@ policy-PostQuantumKeyAgreementEnabled = Dojednanje wo postkwantowym kluču za TL
 policy-PDFjs = PDF.js znjemóžnić abo konfigurować, zatwarjeny PDF-wobhladowak w { -brand-short-name }.
 policy-Permissions2 = Prawa za kameru, mikrofon, adresu, zdźělenki a awtomatiske wothraće konfigurować.
 policy-PictureInPicture = Wobraz-we-wobrazu zmóžnić abo znjemóžnić.
+policy-PopupBlocking2 = Wěstym websydłam dowolić, wuskakowace wokna pokazać a so přez wobłuki třećich poskićowarjow dale posrědkuja.
 policy-PopupBlocking = Wěstym websydłam dowolić, wuskakowace wokna po standardźe pokazać.
 policy-Preferences = Hódnotu za podsadźbu nastajenjow stajić a zawrěć
 policy-PrivateBrowsingModeAvailability = Nastajće disponujomnosć priwatneho modusa.
@@ -130,6 +135,8 @@ policy-SearchSuggestEnabled = Pytanske namjety zmóžnić abo znjemóžnić.
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = Přidajće abo zhašejće module PKCS #11.
 policy-ShowHomeButton = Tłóčatko startoweje strony na symbolowej lajsće pokazać.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = Njepokazujće wužiwanske wuměnjenja a zdźělenku priwatnosće při startowanju. Deklarujeće, zo wužiwanske wuměnjenja akceptujeće a maće awtoritu je akceptować, w mjenje wšěch wosobow, kotrymž přistup k tutomu wobhladowakej dawaće.
 policy-SSLVersionMax = Nastajće maksimalnu SSL-wersiju.
 policy-SSLVersionMin = Nastajće minimalnu SSL-wersiju.
 policy-StartDownloadsInTempDirectory = Sćehnjenja nućić, zo bychu w lokalnym, nachwilnym městnje město w standardnym zapisu sćehnjenjow započeli.
@@ -137,6 +144,9 @@ policy-SupportMenu = Swójski menijowy zapisk pomocy menijej pomocy přidać.
 policy-TranslateEnabled = Přełožowanje webstronow zmóžnić abo znjemóžnić.
 policy-UserMessaging = Wužiwarjej wěste powěsće njepokazać
 policy-UseSystemPrintDialog = Z pomocu systemoweho ćišćerskeho dialoga ćišćeć.
+policy-VisualSearchEnabled = Zmóžńće abo znjemóžńće wizuelne pytanje.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Wopytowanju websydłow zadźěwać. Hlejće dokumentaciju za dalše podrobnosće wo formaće.
 policy-Windows10SSO = Jednotne přizjewjenje za konta Microsoft, dźěłowe konta a šulske konta zmóžnić
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Jednotliwe přizjewjenje za konta Microsoft Entra dowolić.

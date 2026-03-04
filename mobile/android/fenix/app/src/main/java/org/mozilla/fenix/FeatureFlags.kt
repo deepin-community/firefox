@@ -4,10 +4,6 @@
 
 package org.mozilla.fenix
 
-import android.content.Context
-import mozilla.components.support.locale.LocaleManager
-import mozilla.components.support.locale.LocaleManager.getSystemDefault
-
 /**
  * A single source for setting feature flags that are mostly based on build type.
  */
@@ -21,70 +17,46 @@ object FeatureFlags {
     val customExtensionCollectionFeature = Config.channel.isNightlyOrDebug || Config.channel.isBeta
 
     /**
+     * Controls whether the "Choose download location" feature is enabled or not.
+     */
+    val downloadsDefaultLocation = Config.channel.isDebug
+
+    /**
      * Pull-to-refresh allows you to pull the web content down far enough to have the page to
      * reload.
      */
-    const val pullToRefreshEnabled = true
-
-    /**
-     * Enables the Sync Addresses feature.
-     */
-    const val syncAddressesFeature = false
-
-    /**
-     * Show Pocket recommended stories on home.
-     */
-    fun isPocketRecommendationsFeatureEnabled(context: Context): Boolean {
-        val langTag = LocaleManager.getCurrentLocale(context)
-            ?.toLanguageTag() ?: getSystemDefault().toLanguageTag()
-        return listOf("en-US", "en-CA").contains(langTag)
-    }
-
-    /**
-     * Show Pocket sponsored stories in between Pocket recommended stories on home.
-     */
-    fun isPocketSponsoredStoriesFeatureEnabled(context: Context): Boolean {
-        return isPocketRecommendationsFeatureEnabled(context)
-    }
-
-    /**
-     * Enables compose on the tabs tray items.
-     */
-    const val composeTabsTray = true
-
-    /**
-     * Enables compose on the top sites.
-     */
-    const val composeTopSites = false
-
-    /**
-     * Enables new search settings UI with two extra fragments, for managing the default engine
-     * and managing search shortcuts in the quick search menu.
-     */
-    const val unifiedSearchSettings = true
+    const val PULL_TO_REFRESH_ENABLED = true
 
     /**
      * Allows users to enable Firefox Suggest.
      */
-    const val fxSuggest = true
+    const val FX_SUGGEST = true
 
     /**
      * Enable Meta attribution.
      */
-    const val metaAttributionEnabled = true
+    const val META_ATTRIBUTION_ENABLED = true
 
     /**
-     * Enables Navigation Toolbar.
+     * Disables the Onboarding feature for debug builds by default. Set this to `true` if you need
+     * to access the Onboarding feature for development purposes.
+     *
+     * ⚠️ DO NOT MODIFY THIS FLAG IN PRODUCTION.
      */
-    val navigationToolbarEnabled = Config.channel.isNightlyOrDebug
+    val onboardingFeatureEnabled = !Config.channel.isDebug
 
     /**
-     * Enables the Compose Homepage.
+     * Enables the "Discover more" stories screen.
      */
-    const val composeHomepage = false
+    const val DISCOVER_MORE_STORIES = true
 
     /**
-     * Enables Homepage as a New Tab.
+     * Enables the Mozilla Ads Client.
      */
-    const val homepageAsNewTab = false
+    const val MOZILLA_ADS_CLIENT_ENABLED = false
+
+    /**
+     * Enables Firefox Labs.
+     */
+    const val FIREFOX_LABS = false
 }

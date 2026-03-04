@@ -55,8 +55,8 @@ impl VisitedHandlingMode {
     pub fn matches_visited(&self) -> bool {
         matches!(
             *self,
-            VisitedHandlingMode::RelevantLinkVisited |
-                VisitedHandlingMode::AllLinksVisitedAndUnvisited
+            VisitedHandlingMode::RelevantLinkVisited
+                | VisitedHandlingMode::AllLinksVisitedAndUnvisited
         )
     }
 
@@ -64,8 +64,8 @@ impl VisitedHandlingMode {
     pub fn matches_unvisited(&self) -> bool {
         matches!(
             *self,
-            VisitedHandlingMode::AllLinksUnvisited |
-                VisitedHandlingMode::AllLinksVisitedAndUnvisited
+            VisitedHandlingMode::AllLinksUnvisited
+                | VisitedHandlingMode::AllLinksVisitedAndUnvisited
         )
     }
 }
@@ -176,6 +176,9 @@ where
     /// Whether there are any rules inside @starting-style.
     pub has_starting_style: bool,
 
+    /// Whether we're currently matching a featureless element.
+    pub featureless: bool,
+
     /// The current nesting level of selectors that we're matching.
     nesting_level: usize,
 
@@ -253,6 +256,7 @@ where
             matching_for_invalidation,
             scope_element: None,
             current_host: None,
+            featureless: false,
             nesting_level: 0,
             in_negation: false,
             pseudo_element_matching_fn: None,
@@ -328,7 +332,10 @@ where
     where
         F: FnOnce(&mut Self) -> R,
     {
-        debug_assert!(self.matching_for_invalidation(), "Not matching for invalidation?");
+        debug_assert!(
+            self.matching_for_invalidation(),
+            "Not matching for invalidation?"
+        );
         let prev = self.matching_for_invalidation;
         self.matching_for_invalidation = MatchingForInvalidation::YesForComparison;
         let result = f(self);
@@ -362,7 +369,7 @@ where
         F: FnOnce(&mut Self) -> R,
     {
         let old_in_negation = self.in_negation;
-        self.in_negation = true;
+        self.in_negation = !self.in_negation;
         let result = self.nest(f);
         self.in_negation = old_in_negation;
         result
@@ -371,6 +378,27 @@ where
     #[inline]
     pub fn visited_handling(&self) -> VisitedHandlingMode {
         self.visited_handling
+    }
+
+    /// Runs F with a different featureless element flag.
+    #[inline]
+    pub fn with_featureless<F, R>(&mut self, featureless: bool, f: F) -> R
+    where
+        F: FnOnce(&mut Self) -> R,
+    {
+        let orig = self.featureless;
+        self.featureless = featureless;
+        let result = f(self);
+        self.featureless = orig;
+        result
+    }
+
+    /// Returns whether the currently matching element is acting as a featureless element (e.g.,
+    /// because we've crossed a shadow boundary). This is used to implement the :host selector
+    /// rules properly.
+    #[inline]
+    pub fn featureless(&self) -> bool {
+        self.featureless
     }
 
     /// Runs F with a different VisitedHandlingMode.

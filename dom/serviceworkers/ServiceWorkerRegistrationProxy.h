@@ -7,11 +7,13 @@
 #ifndef moz_dom_ServiceWorkerRegistrationProxy_h
 #define moz_dom_ServiceWorkerRegistrationProxy_h
 
-#include "mozilla/dom/PServiceWorkerRegistrationParent.h"
-#include "nsProxyRelease.h"
 #include "ServiceWorkerRegistrationDescriptor.h"
 #include "ServiceWorkerRegistrationListener.h"
 #include "ServiceWorkerUtils.h"
+#include "mozilla/dom/ClientInfo.h"
+#include "mozilla/dom/PServiceWorkerRegistrationParent.h"
+#include "mozilla/dom/notification/NotificationUtils.h"
+#include "nsProxyRelease.h"
 
 namespace mozilla::dom {
 
@@ -28,6 +30,7 @@ class ServiceWorkerRegistrationProxy final
 
   // Main thread only
   ServiceWorkerRegistrationDescriptor mDescriptor;
+  ClientInfo mListeningClientInfo;
   nsMainThreadPtrHandle<ServiceWorkerRegistrationInfo> mReg;
 
   ~ServiceWorkerRegistrationProxy();
@@ -65,8 +68,9 @@ class ServiceWorkerRegistrationProxy final
       const ServiceWorkerRegistrationDescriptor& aDescriptor) override;
 
  public:
-  explicit ServiceWorkerRegistrationProxy(
-      const ServiceWorkerRegistrationDescriptor& aDescriptor);
+  ServiceWorkerRegistrationProxy(
+      const ServiceWorkerRegistrationDescriptor& aDescriptor,
+      const ClientInfo& aForClient);
 
   void Init(ServiceWorkerRegistrationParent* aActor);
 
@@ -82,6 +86,9 @@ class ServiceWorkerRegistrationProxy final
   RefPtr<GenericPromise> SetNavigationPreloadHeader(const nsACString& aHeader);
 
   RefPtr<NavigationPreloadStatePromise> GetNavigationPreloadState();
+
+  RefPtr<notification::NotificationsPromise> GetNotifications(
+      const nsAString& aTag);
 
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(ServiceWorkerRegistrationProxy,
                                         override);

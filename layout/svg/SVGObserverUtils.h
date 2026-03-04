@@ -7,16 +7,15 @@
 #ifndef LAYOUT_SVG_SVGOBSERVERUTILS_H_
 #define LAYOUT_SVG_SVGOBSERVERUTILS_H_
 
-#include "mozilla/Attributes.h"
+#include "FrameProperties.h"
 #include "mozilla/SVGIntegrationUtils.h"
 #include "mozilla/dom/IDTracker.h"
-#include "FrameProperties.h"
 #include "nsID.h"
 #include "nsIFrame.h"  // only for LayoutFrameType
 #include "nsIMutationObserver.h"
+#include "nsIReferrerInfo.h"
 #include "nsISupports.h"
 #include "nsISupportsImpl.h"
-#include "nsIReferrerInfo.h"
 #include "nsStringFwd.h"
 #include "nsStubMutationObserver.h"
 #include "nsStyleStruct.h"
@@ -29,6 +28,7 @@ class nsIURI;
 namespace mozilla {
 class SVGClipPathFrame;
 class SVGFilterFrame;
+class SVGFilterObserver;
 class SVGMarkerFrame;
 class SVGMaskFrame;
 class SVGPaintServerFrame;
@@ -36,43 +36,29 @@ class SVGPaintServerFrame;
 namespace dom {
 class CanvasRenderingContext2D;
 class Element;
+class SVGFEImageElement;
 class SVGGeometryElement;
+class SVGGraphicsElement;
 class SVGMPathElement;
 }  // namespace dom
 }  // namespace mozilla
 
+#define MOZILLA_ICANVASFILTEROBSERVER_IID \
+  {0xd1c85f93, 0xd1ed, 0x4ea9, {0xa0, 0x39, 0x71, 0x62, 0xe4, 0x41, 0xf1, 0xa1}}
+
 namespace mozilla {
 
-/*
- * This class contains URL and referrer information (referrer and referrer
- * policy).
- * We use it to pass to svg system instead of nsIURI. The object brings referrer
- * and referrer policy so we can send correct Referer headers.
- */
-class URLAndReferrerInfo {
+class ISVGFilterObserverList : public nsISupports {
  public:
-  URLAndReferrerInfo(nsIURI* aURI, nsIReferrerInfo* aReferrerInfo)
-      : mURI(aURI), mReferrerInfo(aReferrerInfo) {
-    MOZ_ASSERT(aURI);
-  }
+  NS_INLINE_DECL_STATIC_IID(MOZILLA_ICANVASFILTEROBSERVER_IID)
+  NS_DECL_CYCLE_COLLECTING_ISUPPORTS
+  NS_DECL_CYCLE_COLLECTION_CLASS(ISVGFilterObserverList)
 
-  URLAndReferrerInfo(nsIURI* aURI, const URLExtraData& aExtraData)
-      : mURI(aURI), mReferrerInfo(aExtraData.ReferrerInfo()) {
-    MOZ_ASSERT(aURI);
-  }
+  virtual const nsTArray<RefPtr<SVGFilterObserver>>& GetObservers() const = 0;
+  virtual void Detach() {}
 
-  NS_INLINE_DECL_REFCOUNTING(URLAndReferrerInfo)
-
-  nsIURI* GetURI() const { return mURI; }
-  nsIReferrerInfo* GetReferrerInfo() const { return mReferrerInfo; }
-
-  bool operator==(const URLAndReferrerInfo& aRHS) const;
-
- private:
-  ~URLAndReferrerInfo() = default;
-
-  nsCOMPtr<nsIURI> mURI;
-  nsCOMPtr<nsIReferrerInfo> mReferrerInfo;
+ protected:
+  virtual ~ISVGFilterObserverList() = default;
 };
 
 /**
@@ -105,7 +91,7 @@ class SVGRenderingObserver : public nsStubMutationObserver {
   SVGRenderingObserver(uint32_t aCallbacks = kAttributeChanged |
                                              kContentAppended |
                                              kContentInserted |
-                                             kContentRemoved) {
+                                             kContentWillBeRemoved) {
     SetEnabledCallbacks(aCallbacks);
   }
 
@@ -175,6 +161,7 @@ class SVGObserverUtils {
   using CanvasRenderingContext2D = dom::CanvasRenderingContext2D;
   using Element = dom::Element;
   using SVGGeometryElement = dom::SVGGeometryElement;
+  using SVGGraphicsElement = dom::SVGGraphicsElement;
   using HrefToTemplateCallback = const std::function<void(nsAString&)>&;
 
   /**
@@ -238,7 +225,7 @@ class SVGObserverUtils {
    */
   static void InvalidateRenderingObservers(nsIFrame* aFrame);
 
-  enum { INVALIDATE_REFLOW = 1 };
+  enum { INVALIDATE_REFLOW = 0x1, INVALIDATE_DESTROY = 0x2 };
 
   enum ReferenceState {
     /// Has no references to SVG filters (may still have CSS filter functions!)
@@ -260,7 +247,7 @@ class SVGObserverUtils {
    * Get the paint server for aPaintedFrame.
    */
   static SVGPaintServerFrame* GetAndObservePaintServer(
-      nsIFrame* aPaintedFrame, mozilla::StyleSVGPaint nsStyleSVG::*aPaint);
+      nsIFrame* aPaintedFrame, mozilla::StyleSVGPaint nsStyleSVG::* aPaint);
 
   /**
    * Get the start/mid/end-markers for the given frame, and add the frame as
@@ -296,7 +283,8 @@ class SVGObserverUtils {
    * parameter.
    */
   static ReferenceState GetAndObserveFilters(
-      nsISupports* aObserverList, nsTArray<SVGFilterFrame*>* aFilterFrames);
+      ISVGFilterObserverList* aObserverList,
+      nsTArray<SVGFilterFrame*>* aFilterFrames);
 
   /**
    * If the given frame is already observing SVG filters, this function gets
@@ -319,22 +307,10 @@ class SVGObserverUtils {
    * objects separately.  It would be better to refactor things so that we only
    * do that work once.
    */
-  static already_AddRefed<nsISupports> ObserveFiltersForCanvasContext(
-      CanvasRenderingContext2D* aContext, Element* aCanvasElement,
-      Span<const StyleFilter> aFilters);
-
-  /**
-   * Called when cycle collecting CanvasRenderingContext2D, and requires the
-   * RAII object returned from ObserveFiltersForCanvasContext to be passed in.
-   *
-   * XXXjwatt: I don't think this is doing anything useful.  All we do under
-   * this function is clear a raw C-style (i.e. not strong) pointer.  That's
-   * clearly not helping in breaking any cycles.  The fact that we MOZ_CRASH
-   * in OnRenderingChange if that pointer is null indicates that this isn't
-   * even doing anything useful in terms of preventing further invalidation
-   * from any observed filters.
-   */
-  static void DetachFromCanvasContext(nsISupports* aAutoObserver);
+  static already_AddRefed<ISVGFilterObserverList>
+  ObserveFiltersForCanvasContext(CanvasRenderingContext2D* aContext,
+                                 Element* aCanvasElement,
+                                 Span<const StyleFilter> aFilters);
 
   /**
    * Get the frame of the SVG clipPath applied to aClippedFrame, if any, and
@@ -393,6 +369,17 @@ class SVGObserverUtils {
    * SVGGeometryElement that it references, if any.
    */
   static void RemoveTextPathObserver(nsIFrame* aTextPathFrame);
+
+  /**
+   * Get the SVGGraphicsElement that is referenced by aSVGFEImageElement, and
+   * make aSVGFEImageElement start observing rendering changes to that element.
+   */
+  static SVGGraphicsElement* GetAndObserveFEImageContent(
+      dom::SVGFEImageElement* aSVGFEImagrElement);
+
+  static void TraverseFEImageObserver(
+      dom::SVGFEImageElement* aSVGFEImageElement,
+      nsCycleCollectionTraversalCallback* aCB);
 
   /**
    * Get the SVGGeometryElement that is referenced by aSVGMPathElement, and

@@ -52,6 +52,15 @@ migration-imported-edge-reading-list = ᱯᱟᱲᱦᱟᱣ ᱥᱩᱪᱤ  (Edge �
 ## In practice, this tends to only occur on Linux when Firefox
 ## is installed as a Snap.
 
+migration-no-permissions-message = { -brand-short-name } ᱫᱚ ᱱᱚᱶᱟ ᱥᱟᱫᱷᱚᱱ ᱨᱮ ᱵᱚᱦᱟᱞ ᱟᱠᱟᱱ ᱮᱴᱟᱜ ᱵᱽᱨᱟᱣᱩᱡᱚᱨ ᱠᱚᱣᱟᱜ ᱯᱨᱚᱯᱷᱟᱭᱤᱞ ᱟᱫᱮᱨ ᱵᱟᱹᱱᱩᱜᱼᱟ ᱾
+migration-no-permissions-instructions = ᱮᱴᱟᱜ ᱵᱽᱨᱟᱣᱩᱡᱟᱨ ᱠᱷᱚᱱ ᱰᱟᱴᱟ ᱟᱹᱜᱩ ᱞᱟᱹᱜᱤᱫ, { -brand-short-name } ᱱᱚᱣᱟ ᱨᱮᱭᱟᱜ ᱯᱨᱚᱯᱷᱟᱭᱤᱞ ᱯᱷᱚᱞᱰᱟᱨ ᱨᱮ ᱟᱫᱮᱨ ᱮᱢᱚᱜ ᱢᱮ ᱾
+migration-no-permissions-instructions-step1 = “ᱞᱟᱦᱟ” ᱵᱟᱪᱷᱟᱣ ᱢᱮ
+# The second step in getting permissions to read data for the selected
+# browser type.
+#
+# Variables:
+#  $permissionsPath (String): the file system path that the user will need to grant read permission to.
+migration-no-permissions-instructions-step2 = ᱨᱮᱫ ᱵᱟᱪᱷᱟᱣᱤᱡ ᱨᱮ, <code>{ $permissionsPath }</code> ᱨᱮ ᱥᱮᱱᱚᱜ ᱢᱮ ᱟᱨ “ᱵᱟᱪᱷᱟᱣ” ᱵᱟᱪᱷᱟᱣ ᱢᱮ
 
 ## These strings will be displayed based on how many resources are selected to import
 
@@ -67,6 +76,7 @@ migration-bookmarks-option-label = ᱵᱩᱠᱢᱟᱨᱠ ᱠᱚ
 # Edge, as this is the terminology for bookmarks on those browsers.
 migration-favorites-option-label = ᱠᱩᱥᱤ ᱠᱚ
 migration-logins-and-passwords-option-label = ᱞᱚᱜᱤᱱ ᱠᱚ ᱟᱨ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱽ ᱠᱚ ᱥᱟᱺᱪᱟᱣ ᱮᱱᱟ
+migration-passwords-option-label = ᱥᱟᱧᱪᱟᱣ ᱠᱟᱱ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫᱠᱚ
 migration-history-option-label = ᱱᱟᱜᱟᱢ ᱯᱟᱱᱛᱮ
 migration-extensions-option-label = ᱮᱠᱥᱴᱮᱱᱥᱚᱱ ᱠᱚ
 migration-form-autofill-option-label = ᱟᱡ ᱛᱮ ᱯᱟᱨᱮᱡ ᱯᱷᱚᱨᱢ
@@ -189,6 +199,8 @@ migration-safari-password-import-step1 = Safari ᱨᱮ, “Safari” ᱢᱮᱱ�
 migration-safari-password-import-step2 = <img data-l10n-name="safari-icon-3dots"/> ᱵᱩᱛᱟᱹᱢ ᱵᱟᱪᱷᱟᱣ ᱢᱮ ᱟᱨ “ᱡᱷᱚᱛᱚ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫ ᱵᱷᱮᱡᱟᱭ ᱢᱮ” ᱵᱟᱪᱷᱟᱣ ᱢᱮ
 migration-safari-password-import-step3 = ᱫᱟᱱᱟᱝ ᱥᱟᱦᱟᱫ ᱨᱮᱫ ᱥᱟᱺᱪᱟᱣ ᱢᱮ
 migration-safari-password-import-step4 = ᱞᱟᱛᱟᱨ ᱨᱮ ᱢᱮᱱᱟᱜ “ᱨᱮᱫ ᱵᱟᱪᱷᱟᱣ” ᱵᱮᱵᱷᱟᱨ ᱛᱮ ᱥᱟᱸᱪᱷᱟᱣ ᱠᱟᱱ ᱫᱟᱱᱟᱝ ᱥᱟᱵᱟᱫ ᱨᱮᱫ ᱟᱢ ᱵᱮᱵᱷᱟᱨ ᱢᱮ
+migration-manual-password-import-skip-button = ᱟᱲᱟᱜ
+migration-manual-password-import-select-button = ᱨᱮᱫ ᱵᱟᱪᱷᱟᱣ ᱢᱮ
 migration-safari-password-import-skip-button = ᱟᱲᱟᱜ
 migration-safari-password-import-select-button = ᱨᱮᱫ ᱵᱟᱪᱷᱟᱣ ᱢᱮ
 # Shown in the migration wizard after importing bookmarks from another

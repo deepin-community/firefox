@@ -8,32 +8,32 @@
 
 #include "XULButtonElement.h"
 #include "XULTreeElement.h"
-#include "nsXULElement.h"
-#include "mozilla/dom/Document.h"
-#include "nsGkAtoms.h"
-#include "nsMenuPopupFrame.h"
-#include "nsIContentInlines.h"
-#include "nsIDragService.h"
-#include "nsIDragSession.h"
-#include "nsITreeView.h"
-#include "nsIScriptContext.h"
-#include "nsPIDOMWindow.h"
-#include "nsXULPopupManager.h"
-#include "nsIPopupContainer.h"
-#include "nsServiceManagerUtils.h"
-#include "nsTreeColumns.h"
-#include "nsContentUtils.h"
 #include "mozilla/ErrorResult.h"
 #include "mozilla/LookAndFeel.h"
 #include "mozilla/PresShell.h"
 #include "mozilla/ScopeExit.h"
 #include "mozilla/StaticPrefs_browser.h"
+#include "mozilla/TextEvents.h"
+#include "mozilla/dom/Document.h"
 #include "mozilla/dom/Element.h"
 #include "mozilla/dom/Event.h"  // for Event
 #include "mozilla/dom/MouseEvent.h"
 #include "mozilla/dom/TreeColumnBinding.h"
 #include "mozilla/dom/XULTreeElementBinding.h"
-#include "mozilla/TextEvents.h"
+#include "nsContentUtils.h"
+#include "nsGkAtoms.h"
+#include "nsIContentInlines.h"
+#include "nsIDragService.h"
+#include "nsIDragSession.h"
+#include "nsIPopupContainer.h"
+#include "nsIScriptContext.h"
+#include "nsITreeView.h"
+#include "nsMenuPopupFrame.h"
+#include "nsPIDOMWindow.h"
+#include "nsServiceManagerUtils.h"
+#include "nsTreeColumns.h"
+#include "nsXULElement.h"
+#include "nsXULPopupManager.h"
 
 using namespace mozilla;
 using namespace mozilla::dom;
@@ -198,7 +198,7 @@ void nsXULTooltipListener::MouseMove(Event* aEvent) {
       nsresult rv = NS_NewTimerWithFuncCallback(
           getter_AddRefs(mTooltipTimer), sTooltipCallback, this,
           StaticPrefs::ui_tooltip_delay_ms(), nsITimer::TYPE_ONE_SHOT,
-          "sTooltipCallback", GetMainThreadSerialEventTarget());
+          "sTooltipCallback"_ns, GetMainThreadSerialEventTarget());
       if (NS_FAILED(rv)) {
         mTargetNode = nullptr;
         mSourceNode = nullptr;
@@ -319,7 +319,9 @@ void nsXULTooltipListener::RemoveTooltipSupport(nsIContent* aNode) {
 
 void nsXULTooltipListener::CheckTreeBodyMove(MouseEvent* aMouseEvent) {
   nsCOMPtr<nsIContent> sourceNode = do_QueryReferent(mSourceNode);
-  if (!sourceNode) return;
+  if (!sourceNode) {
+    return;
+  }
 
   // get the documentElement of the document the tree is in
   Document* doc = sourceNode->GetComposedDoc();
@@ -327,7 +329,8 @@ void nsXULTooltipListener::CheckTreeBodyMove(MouseEvent* aMouseEvent) {
   RefPtr<XULTreeElement> tree = GetSourceTree();
   Element* root = doc ? doc->GetRootElement() : nullptr;
   if (root && root->GetPrimaryFrame() && tree) {
-    CSSIntPoint pos = aMouseEvent->ScreenPoint(CallerType::System);
+    CSSIntPoint pos =
+        RoundedToInt(aMouseEvent->ScreenPoint(CallerType::System));
 
     // subtract off the documentElement's position
     // XXX Isn't this just converting to client points?
@@ -653,7 +656,9 @@ void nsXULTooltipListener::KillTooltipTimer() {
 
 void nsXULTooltipListener::sTooltipCallback(nsITimer* aTimer, void* aListener) {
   RefPtr<nsXULTooltipListener> instance = sInstance;
-  if (instance) instance->ShowTooltip();
+  if (instance) {
+    instance->ShowTooltip();
+  }
 }
 
 XULTreeElement* nsXULTooltipListener::GetSourceTree() {

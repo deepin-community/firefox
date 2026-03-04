@@ -14,6 +14,7 @@
 
 class nsAtom;
 class nsAttrValue;
+struct BatchRemovalState;
 
 namespace mozilla::dom {
 class Animation;
@@ -49,7 +50,8 @@ class MutationObservers {
    */
   static void NotifyAttributeWillChange(mozilla::dom::Element* aElement,
                                         int32_t aNameSpaceID,
-                                        nsAtom* aAttribute, int32_t aModType);
+                                        nsAtom* aAttribute,
+                                        AttrModType aModType);
 
   /**
    * Send AttributeChanged notifications to nsIMutationObservers.
@@ -63,7 +65,7 @@ class MutationObservers {
    */
   static void NotifyAttributeChanged(mozilla::dom::Element* aElement,
                                      int32_t aNameSpaceID, nsAtom* aAttribute,
-                                     int32_t aModType,
+                                     AttrModType aModType,
                                      const nsAttrValue* aOldValue);
 
   /**
@@ -81,27 +83,33 @@ class MutationObservers {
    * Send ContentAppended notifications to nsIMutationObservers
    * @param aContainer           Node into which new child/children were added
    * @param aFirstNewContent     First new child
+   * @param aInfo                Struct with information details about the
+   *                             change
    * @see nsIMutationObserver::ContentAppended
    */
   static void NotifyContentAppended(nsIContent* aContainer,
-                                    nsIContent* aFirstNewContent);
+                                    nsIContent* aFirstNewContent,
+                                    const ContentAppendInfo&);
 
   /**
    * Send ContentInserted notifications to nsIMutationObservers
    * @param aContainer        Node into which new child was inserted
    * @param aChild            Newly inserted child
+   * @param aInfo             Struct with information details about the change
    * @see nsIMutationObserver::ContentInserted
    */
-  static void NotifyContentInserted(nsINode* aContainer, nsIContent* aChild);
+  static void NotifyContentInserted(nsINode* aContainer, nsIContent* aChild,
+                                    const ContentInsertInfo&);
   /**
-   * Send ContentRemoved notifications to nsIMutationObservers
+   * Send ContentWillBeRemoved notifications to nsIMutationObservers
    * @param aContainer        Node from which child was removed
    * @param aChild            Removed child
-   * @param aPreviousSibling  Previous sibling of the removed child
-   * @see nsIMutationObserver::ContentRemoved
+   * @param aInfo             Struct with information details about the change
+   * @see nsIMutationObserver::ContentWillBeRemoved
    */
-  static void NotifyContentRemoved(nsINode* aContainer, nsIContent* aChild,
-                                   nsIContent* aPreviousSibling);
+  static void NotifyContentWillBeRemoved(nsINode* aContainer,
+                                         nsIContent* aChild,
+                                         const ContentRemoveInfo&);
 
   /**
    * Send ParentChainChanged notifications to nsIMutationObservers
@@ -121,10 +129,11 @@ class MutationObservers {
   }
 
   static void NotifyARIAAttributeDefaultWillChange(
-      mozilla::dom::Element* aElement, nsAtom* aAttribute, int32_t aModType);
+      mozilla::dom::Element* aElement, nsAtom* aAttribute,
+      AttrModType aModType);
   static void NotifyARIAAttributeDefaultChanged(mozilla::dom::Element* aElement,
                                                 nsAtom* aAttribute,
-                                                int32_t aModType);
+                                                AttrModType aModType);
 
   /**
    * Notify that an animation is added/changed/removed.

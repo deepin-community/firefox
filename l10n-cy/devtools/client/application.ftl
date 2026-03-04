@@ -5,8 +5,7 @@
 
 ### These strings are used inside the Application panel which is available
 ### by setting the preference `devtools-application-enabled` to true.
-
-
+###
 ### The correct localization of this file might be to keep it in English, or another
 ### language commonly spoken among web developers. You want to make that choice consistent
 ### across the developer tools. A good criteria is the language in which you'd find the
@@ -111,6 +110,13 @@ sidebar-item-manifest = Maniffest
 sidebar-item-service-workers = Gweithwyr Gwasanaeth
     .alt = Eicon Gweithwyr Gwasanaeth
     .title = Gweithwyr Gwasanaeth
+# Sidebar navigation item for Session History sidebar item section
+sidebar-item-session-history = Hanes Sesiwn
+    .alt = Eicon Hanes Sesiwn
+    .title = Hanes Sesiwn
+# Entry in the Session History diagram
+session-history-entry-info-button-title =
+    .title = Dangos data hanes sesiwn
 # Text for the ALT and TITLE attributes of the warning icon
 icon-warning =
     .alt = Eicon rhybuddio

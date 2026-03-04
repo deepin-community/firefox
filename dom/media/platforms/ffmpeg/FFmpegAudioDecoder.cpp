@@ -5,28 +5,35 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "FFmpegAudioDecoder.h"
-#include "FFmpegUtils.h"
+
 #include "AudioSampleFormat.h"
+#include "BufferReader.h"
 #include "FFmpegLog.h"
+#include "FFmpegUtils.h"
 #include "TimeUnits.h"
 #include "VideoUtils.h"
-#include "BufferReader.h"
 #include "libavutil/dict.h"
 #include "libavutil/samplefmt.h"
 #if defined(FFVPX_VERSION)
 #  include "libavutil/channel_layout.h"
 #endif
 #include "mozilla/StaticPrefs_media.h"
-#include "mozilla/Telemetry.h"
+
+#ifdef MOZ_WIDGET_ANDROID
+#  include "ffvpx/hwcontext_mediacodec.h"
+#  include "ffvpx/mediacodec.h"
+#endif
 
 namespace mozilla {
 
 using TimeUnit = media::TimeUnit;
 
 FFmpegAudioDecoder<LIBAV_VER>::FFmpegAudioDecoder(
-    FFmpegLibWrapper* aLib, const CreateDecoderParams& aDecoderParams)
-    : FFmpegDataDecoder(aLib, GetCodecId(aDecoderParams.AudioConfig().mMimeType,
-                                         aDecoderParams.AudioConfig())),
+    const FFmpegLibWrapper* aLib, const CreateDecoderParams& aDecoderParams)
+    : FFmpegDataDecoder(aLib,
+                        GetCodecId(aDecoderParams.AudioConfig().mMimeType,
+                                   aDecoderParams.AudioConfig()),
+                        aDecoderParams.mCDM),
       mAudioInfo(aDecoderParams.AudioConfig()) {
   MOZ_COUNT_CTOR(FFmpegAudioDecoder);
 
@@ -48,8 +55,6 @@ FFmpegAudioDecoder<LIBAV_VER>::FFmpegAudioDecoder(
   }
 
   if (mCodecID == AV_CODEC_ID_FLAC) {
-    MOZ_DIAGNOSTIC_ASSERT(
-        mAudioInfo.mCodecSpecificConfig.is<FlacCodecSpecificData>());
     // Gracefully handle bad data. If don't hit the preceding assert once this
     // has been shipped for awhile, we can remove it and make the following code
     // non-conditional.
@@ -70,7 +75,8 @@ FFmpegAudioDecoder<LIBAV_VER>::FFmpegAudioDecoder(
     }
   }
 
-  // Vorbis and Opus are handled by this case.
+  // Vorbis, Opus are handled by this case, as well as any codec that has
+  // non-tagged variant, because the data comes from Web Codecs.
   RefPtr<MediaByteBuffer> audioCodecSpecificBinaryBlob =
       GetAudioCodecSpecificBlob(mAudioInfo.mCodecSpecificConfig);
   if (audioCodecSpecificBinaryBlob && audioCodecSpecificBinaryBlob->Length()) {
@@ -87,6 +93,7 @@ FFmpegAudioDecoder<LIBAV_VER>::FFmpegAudioDecoder(
 }
 
 RefPtr<MediaDataDecoder::InitPromise> FFmpegAudioDecoder<LIBAV_VER>::Init() {
+  AUTO_PROFILER_LABEL("FFmpegAudioDecoder::Init", MEDIA_PLAYBACK);
   AVDictionary* options = nullptr;
   if (mCodecID == AV_CODEC_ID_OPUS) {
     // Opus has a special feature for stereo coding where it represent wide
@@ -98,9 +105,33 @@ RefPtr<MediaDataDecoder::InitPromise> FFmpegAudioDecoder<LIBAV_VER>::Init() {
         DecideAudioPlaybackChannels(mAudioInfo) == 1) {
       mLib->av_dict_set(&options, "apply_phase_inv", "false", 0);
     }
+    // extradata is required for Opus when the number of channels is > 2.
+    // FFmpeg will happily (but incorrectly) initialize a decoder without a
+    // description, but it will have only two channels.
+    if (mAudioInfo.mChannels > 2 &&
+        (!mExtraData || mExtraData->Length() < 10)) {
+      FFMPEG_LOG(
+          "Cannot initialize decoder with %d channels without extradata of at "
+          "least 10 bytes",
+          mAudioInfo.mChannels);
+      return InitPromise::CreateAndReject(NS_ERROR_FAILURE, __func__);
+    }
   }
 
-  MediaResult rv = InitDecoder(&options);
+  MediaResult rv(NS_ERROR_NOT_AVAILABLE);
+#if defined(MOZ_WIDGET_ANDROID) && defined(USING_MOZFFVPX)
+  if (XRE_IsRDDProcess() || XRE_IsUtilityProcess()) {
+    AVCodec* codec = FindHardwareAVCodec(mLib, mCodecID, AV_HWDEVICE_TYPE_NONE);
+    if (codec) {
+      rv = InitDecoder(codec, &options);
+    }
+  }
+
+  if (NS_FAILED(rv))
+#endif
+  {
+    rv = InitSWDecoder(&options);
+  }
 
   mLib->av_dict_free(&options);
 
@@ -406,6 +437,13 @@ MediaResult FFmpegAudioDecoder<LIBAV_VER>::DoDecode(MediaRawData* aSample,
   mLib->av_init_packet(packet);
 #endif
 
+#if defined(MOZ_WIDGET_ANDROID) && defined(USING_MOZFFVPX)
+  MediaResult ret = MaybeAttachCryptoInfo(aSample, packet);
+  if (NS_FAILED(ret)) {
+    return ret;
+  }
+#endif
+
   FFMPEG_LOG("FFmpegAudioDecoder::DoDecode: %d bytes, [%s,%s] (Duration: %s)",
              aSize, aSample->mTime.ToString().get(),
              aSample->GetEndTime().ToString().get(),
@@ -413,6 +451,7 @@ MediaResult FFmpegAudioDecoder<LIBAV_VER>::DoDecode(MediaRawData* aSample,
 
   packet->data = const_cast<uint8_t*>(aData);
   packet->size = aSize;
+  packet->pts = aSample->mTime.ToMicroseconds();
 
   if (aGotFrame) {
     *aGotFrame = false;

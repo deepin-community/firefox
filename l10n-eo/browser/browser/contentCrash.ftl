@@ -6,7 +6,6 @@
 ## Subframe crash notification
 
 crashed-subframe-message = <strong>Parto de tiu ĉi paĝo paneis.</strong> Por permesi al { -brand-product-name } scii pri tiu ĉi problemo kaj havi pli rapidan solvon, bonvolu sendi raporton.
-
 # The string for crashed-subframe-title.title should match crashed-subframe-message,
 # but without any markup.
 crashed-subframe-title =
@@ -32,3 +31,20 @@ pending-crash-reports-send =
     .label = Sendi
 pending-crash-reports-always-send =
     .label = Ĉiam sendi
+# Variables:
+#   $reportCount (Number): the number of pending crash reports
+requested-crash-reports-message-new =
+    { $reportCount ->
+        [one] Vi havas { $reportCount } nesenditan raporton pri paneo, kiu rilatas pristudatajn paneojn. Se vi sendas ĝin, ĝi helpos nin plibonigi { -brand-product-name }. La raporto estos ignorita se vi fermas tiun ĉi sciigon.
+       *[other] Vi havas { $reportCount } nesenditajn raportojn pri paneo, kiuj rilatas pristudatajn paneojn. Se vi sendas ilin, ili helpos nin plibonigi { -brand-product-name }. La raportoj estos ignoritaj se vi fermas tiun ĉi sciigon.
+    }
+# Variables:
+#   $reportCount (Number): the number of pending crash reports
+requested-crash-reports-message =
+    { $reportCount ->
+        [one] Vi havas nesenditan raporton pri paneo kiu kongruas kun pristudataj paneoj. Se vi sendas ĝin, ĝi helpus nin plibonigi { -brand-product-name }. La raporto estos ignorita se vi fermas tiun ĉi sciigon.
+       *[other] Vi havas { $reportCount } nesenditajn raportojn pri paneo kiu kongruas kun pristudataj paneoj. Se vi sendas ĝin, ĝi helpus nin plibonigi { -brand-product-name }. La raporto estos ignorita se vi fermas tiun ĉi sciigon.
+    }
+requested-crash-reports-dont-show-again =
+    .label = Ne montri denove
+    .accesskey = N

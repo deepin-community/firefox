@@ -115,7 +115,10 @@ export class PromiseWorker extends ChromeWorker {
    *
    * @private
    */
-  onFailure({ msgId, error }) {
+  onFailure({ msgId, error, errorCode }) {
+    if (error !== undefined) {
+      error.errorCode = errorCode;
+    }
     this.pendingResponses.get(msgId).reject(error);
     this.pendingResponses.delete(msgId);
   }
@@ -633,6 +636,16 @@ export class BaseProcess {
     return worker.call("spawn", [options]).then(({ processId, fds, pid }) => {
       return new this(worker, processId, fds, pid);
     });
+  }
+
+  static fromRunning(options) {
+    let worker = this.getWorker();
+
+    return worker
+      .call("connectRunning", [options])
+      .then(({ processId, fds }) => {
+        return new this(worker, processId, fds, null);
+      });
   }
 
   static get WORKER_URL() {

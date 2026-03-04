@@ -4,10 +4,6 @@
 
 pictureinpicture-player-title = تصویر وِچ تصویر
 
-## Variables:
-##   $shortcut (String) - Keyboard shortcut to execute the command.
-
-
 ## Note that this uses .tooltip rather than the standard '.title'
 ## or '.tooltiptext' -  but it has the same effect. Code in the
 ## picture-in-picture window will read and copy this to an in-document
@@ -22,30 +18,24 @@ pictureinpicture-pause-btn =
 pictureinpicture-play-btn =
     .aria-label = چلاؤ
     .tooltip = چلاؤ (سپیس بار)
-
 pictureinpicture-mute-btn =
     .aria-label = خاموش کرو
     .tooltip = خاموش کرو ({ $shortcut })
 pictureinpicture-unmute-btn =
     .aria-label = خاموشی ختم کرو
     .tooltip = خاموشی ختم کرو ({ $shortcut })
-
 pictureinpicture-unpip-btn =
     .aria-label = ٹیب تے واپس بھیڄو
     .tooltip = ٹیب تے واپس
-
 pictureinpicture-close-btn =
     .aria-label = بند کرو
     .tooltip = بند کرو ({ $shortcut })
-
 pictureinpicture-subtitles-btn =
     .aria-label = سب ٹائٹلز
     .tooltip = سب ٹائٹلز
-
 pictureinpicture-fullscreen-btn2 =
     .aria-label = پوری سکرین
     .tooltip = پوری سکرین (ڈبل کلک یا { $shortcut })
-
 pictureinpicture-exit-fullscreen-btn2 =
     .aria-label = پوری سکرین کنوں نکلو
     .tooltip = پوری سکرین کنوں نکلو (ڈبل کلک یا { $shortcut })
@@ -64,7 +54,6 @@ pictureinpicture-toggle-fullscreen-shortcut =
 pictureinpicture-seekbackward-btn =
     .aria-label = پچھوں تے
     .tooltip = پچھوں تے (←)
-
 pictureinpicture-seekforward-btn =
     .aria-label = اڳوں تے
     .tooltip = اڳوں تے (→)
@@ -75,13 +64,8 @@ pictureinpicture-seekforward-btn =
 # a screen reader whenever a user opens the subtitles settings panel
 # after selecting the subtitles button.
 pictureinpicture-subtitles-panel-accessible = ذیلی عنوانات ترتیباں
-
 pictureinpicture-subtitles-label = سب ٹائٹلز
-
 pictureinpicture-font-size-label = فونٹ سائز
-
 pictureinpicture-font-size-small = چھوٹا
-
 pictureinpicture-font-size-medium = درمیانہ
-
 pictureinpicture-font-size-large = وݙا

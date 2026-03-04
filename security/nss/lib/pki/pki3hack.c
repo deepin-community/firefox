@@ -575,7 +575,7 @@ get_nss3trust_from_nss4trust(nssTrustLevel t)
         rt |= CERTDB_TERMINAL_RECORD | CERTDB_TRUSTED;
     }
     if (t == nssTrustLevel_TrustedDelegator) {
-        rt |= CERTDB_VALID_CA | CERTDB_TRUSTED_CA;
+        rt |= CERTDB_VALID_CA | CERTDB_TRUSTED_CA | CERTDB_NS_TRUSTED_CA;
     }
     if (t == nssTrustLevel_NotTrusted) {
         rt |= CERTDB_TERMINAL_RECORD;
@@ -607,6 +607,25 @@ cert_trust_from_stan_trust(NSSTrust *t, PLArenaPool *arena)
     rvTrust->emailFlags = get_nss3trust_from_nss4trust(t->emailProtection);
     rvTrust->objectSigningFlags = get_nss3trust_from_nss4trust(t->codeSigning);
     return rvTrust;
+}
+
+PRBool
+nssTrust_HandleTrustForCERTCert(CERTCertificate *cert, CERTCertTrust *trustPtr)
+{
+    NSSCertificate *c = cert->nssCertificate;
+    NSSTrustDomain *td = STAN_GetDefaultTrustDomain();
+    NSSTrust *t;
+    t = nssTrustDomain_FindTrustForCertificate(td, c);
+    if (t) {
+        CERTCertTrust *rvTrust;
+        rvTrust = cert_trust_from_stan_trust(t, cert->arena);
+        nssTrust_Destroy(t);
+        if (rvTrust) {
+            *trustPtr = *rvTrust;
+            return PR_TRUE;
+        }
+    }
+    return PR_FALSE;
 }
 
 CERTCertTrust *
@@ -1057,8 +1076,8 @@ STAN_GetNSSCertificate(CERTCertificate *cc)
     nssItem_Create(arena,
                    &c->subject, cc->derSubject.len, cc->derSubject.data);
     /* CERTCertificate stores serial numbers decoded.  I need the DER
-    * here.  sigh.
-    */
+     * here.  sigh.
+     */
     SECItem derSerial;
     SECStatus secrv;
     secrv = CERT_SerialNumberFromDERCert(&cc->derCert, &derSerial);

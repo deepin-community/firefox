@@ -6,27 +6,31 @@
 ## App Menu
 
 appmenuitem-banner-update-downloading =
-    .label = Ներբեռնվում է { -brand-shorter-name }-ի արդիացումը
+    .label = Ներբեռնվում է { -brand-shorter-name }-ի թարմացումը
 appmenuitem-banner-update-available =
-    .label = Արդիացում է մատչելի՝ ներբեռնեք հիմա
+    .label = Հասանելի է թարմացում․ ներբեռնել հիմա
 appmenuitem-banner-update-manual =
-    .label = Արդիացում է մատչելի՝ ներբեռնեք հիմա
+    .label = Հասանելի է թարմացում․ ներբեռնել հիմա
 appmenuitem-banner-update-unsupported =
-    .label = Անհնար է արդիացնել՝ համակարգը անհամատեղելի է
+    .label = Չստացվեց թարմացնել․ անհամատեղելի համակարգ
 appmenuitem-banner-update-restart =
-    .label = Մատչելի է արդիացում՝ վերագործարկեք
+    .label = Հասանելի է թարմացում․ վերամեկնարկել հիմա
 appmenuitem-new-tab =
     .label = Նոր ներդիր
 appmenuitem-new-window =
     .label = Նոր պատուհան
 appmenuitem-new-private-window =
-    .label = Սկսել գաղտնի դիտարկում
+    .label = Նոր գաղտնի պատուհան
 appmenuitem-history =
     .label = Պատմություն
 appmenuitem-downloads =
     .label = Ներբեռնումներ
 appmenuitem-passwords =
     .label = Գաղտնաբառեր
+appmenuitem-extensions-and-themes =
+    .label = Ընդլայնումներ և ոճեր
+appmenuitem-extensions =
+    .label = Ընդլայնումներ
 appmenuitem-addons-and-themes =
     .label = Հավելումներ և ոճեր
 appmenuitem-print =
@@ -70,23 +74,13 @@ appmenuitem-fullscreen =
 ## Firefox Account toolbar button and Sync panel in App menu.
 
 appmenu-remote-tabs-sign-into-sync =
-    .label = Մուտք գործեք՝ համաժամեցնելու համար…
+    .label = Մուտք գործել համաժամեցնելու համար…
 appmenu-remote-tabs-turn-on-sync =
     .label = Միացնել համաժամեցումը…
 # This is shown after the tabs list if we can display more tabs by clicking on the button
 appmenu-remote-tabs-showmore =
     .label = Ցուցադրել ավելի շատ ներդիրներ
     .tooltiptext = Ցուցադրել ավելի շատ ներդիրներ այս սարքի համար
-# This is shown when there are inactive tabs which are not being shown.
-# Variables
-# $count (Number) - The number of inactive tabs which are not being shown (at least 1)
-appmenu-remote-tabs-showinactive =
-    .label =
-        { $count ->
-            [one] Ցուցադրել մեկ ոչ ակտիվ ներդիր
-           *[other] Ցուցադրել { $count } ոչ ակտիվ ներդիրներ
-        }
-    .tooltiptext = Ցուցադրել ոչ ակտիվ ներդիրներն այս սարքում
 # This is shown as the label for an element to show inactive tabs from this device.
 appmenu-remote-tabs-show-inactive-tabs =
     .label = Չգործող ներդիրներ
@@ -118,8 +112,11 @@ appmenu-fxa-sync-and-save-data2 = Համաժամեցնել և պահել տվյ�
 appmenu-fxa-signed-in-label = Մուտք գործել
 appmenu-fxa-setup-sync =
     .label = Միացնել համաժամացումը…
+appmenu-fxa-setup-sync-new = Միացնել
 appmenuitem-save-page =
-    .label = Պահպանել Էջը որպես…
+    .label = Պահել Էջը որպես…
+appmenuitem-fxa-sync-off-title = Համաժամեցումն անջատված է
+appmenuitem-fxa-sync-off-description = Պաշտպանեք և մատչեք ձեր էջանիշները, գաղտնաբառերը և ավելին ամենուր:
 
 ## What's New panel in App menu.
 
@@ -140,6 +137,9 @@ profiler-popup-button-idle =
 profiler-popup-button-recording =
     .label = Հատկագրիչ
     .tooltiptext = Հատկագրիչը գրանցում է պրոֆիլը
+profiler-popup-button-capturing =
+    .label = Հատկագրիչ
+    .tooltiptext = Հատկագրիչը լրացնում է հատկագիրը
 profiler-popup-header-text = { -profiler-brand-name }
 profiler-popup-reveal-description-button =
     .aria-label = Ցուցադրել առավել շատ տեղեկություն
@@ -191,22 +191,26 @@ profiler-popup-presets-graphics-label =
     .label = Գրաֆիկա
 profiler-popup-presets-media-label =
     .label = Մեդիա
+profiler-popup-presets-ml-label =
+    .label = Մեքենայական ուսուցում
 profiler-popup-presets-networking-label =
     .label = Ցանցարկում
 # "Power" is used in the sense of energy (electricity used by the computer).
 profiler-popup-presets-power-label =
     .label = Հոսանք
+profiler-popup-presets-debug-label =
+    .label = Վրիպազերծել
 profiler-popup-presets-custom-label =
     .label = Հարմարեցված
 
 ## History panel
 
 appmenu-manage-history =
-    .label = Կառավարեք պատմությունը
+    .label = Կառավարել պատմությունը
 appmenu-restore-session =
     .label = Վերականգնել նախորդ աշխատաշրջանը
 appmenu-clear-history =
-    .label = Մաքրել Վերջին Պատմությունը...
+    .label = Մաքրել վերջին պատմությունը...
 appmenu-recent-history-subheader = Վերջին պատմությունը
 appmenu-recently-closed-tabs =
     .label = Վերջին փակված ներդիրները
@@ -219,13 +223,13 @@ appmenu-search-history =
 ## Help panel
 
 appmenu-help-header =
-    .title = { -brand-shorter-name }-ի օգնությունը
+    .title = { -brand-shorter-name } օգնություն
 appmenu-about =
     .label = { -brand-shorter-name }-ի մասին
     .accesskey = մ
 appmenu-get-help =
     .label = Ստանալ օգնություն
-    .accesskey = H
+    .accesskey = օ
 appmenu-help-more-troubleshooting-info =
     .label = Անսարքության տեղեկատվություն
     .accesskey = t
@@ -235,7 +239,7 @@ appmenu-help-share-ideas =
     .label = Կիսվեք գաղափարներով և կարծիքներով…
     .accesskey = S
 appmenu-help-switch-device =
-    .label = Անցում նոր սարքի
+    .label = Փոխարկվում է նոր սարքին
 
 ## appmenu-help-enter-troubleshoot-mode and appmenu-help-exit-troubleshoot-mode
 ## are mutually exclusive, so it's possible to use the same accesskey for both.
@@ -260,8 +264,8 @@ appmenu-help-not-deceptive =
 ## More Tools
 
 appmenu-customizetoolbar =
-    .label = Հարմարեցնել Գործիքագոտին...
-appmenu-developer-tools-subheader = Զննիչի գործիքներ
+    .label = Հարմարեցնել գործիքագոտին...
+appmenu-developer-tools-subheader = Դիտարկչի գործիքներ
 appmenu-developer-tools-extensions =
     .label = Ընդլայնումներ մշակողների համար
 appmenuitem-report-broken-site =
@@ -274,5 +278,23 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Ստացեք ծանուցումներ տվյալների արտահոսման մասին
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Քողարկեք ձեր իրական էլ. փոստը և հեռախոսը
-appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
+appmenuitem-vpn-title = { -mozilla-vpn-brand-name }-ով
 appmenuitem-vpn-description = Պաշտպանեք ձեր առցանց գործունեությունը
+appmenu-services-header = Իմ ծառայությունները
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Փորձեք այլ պաշտպանության գործիքներ Mozilla-ից՝
+appmenu-other-protection-header = Փորձեք պաշտպանության այլ գործիքներ { -vendor-short-name }-ից.
+
+## Profiles panel
+
+appmenu-other-profiles = Այլ հատկագրեր
+appmenu-manage-profiles =
+    .label = Կառավարել հատկագրերը
+appmenu-create-profile =
+    .label = Նոր հատկագիր
+appmenu-edit-profile =
+    .aria-label = Խմբագրել հատկագիրը
+appmenu-profiles-2 =
+    .label = Հատկագրեր

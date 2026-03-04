@@ -21,6 +21,7 @@
 #include "nsString.h"
 #include "nsCOMPtr.h"
 #include "nsWeakReference.h"
+#include "mozilla/net/Dictionary.h"
 
 #include "nsIHttpProtocolHandler.h"
 #include "nsIObserver.h"
@@ -116,10 +117,14 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
 
   static already_AddRefed<nsHttpHandler> GetInstance();
 
+  [[nodiscard]] nsresult AddAcceptAndDictionaryHeaders(
+      nsIURI* aURI, ExtContentPolicyType aType, nsHttpRequestHead* aRequest,
+      bool aSecure, nsHttpChannel* aChan, void (*aSuspend)(nsHttpChannel*),
+      const std::function<bool(bool, DictionaryCacheEntry*)>& aCallback);
   [[nodiscard]] nsresult AddStandardRequestHeaders(
-      nsHttpRequestHead*, bool isSecure,
-      ExtContentPolicyType aContentPolicyType,
-      bool aShouldResistFingerprinting);
+      nsHttpRequestHead*, nsIURI* aURI, bool aIsHTTPS,
+      ExtContentPolicyType aContentPolicyType, bool aShouldResistFingerprinting,
+      const nsCString& aLanguageOverride);
   [[nodiscard]] nsresult AddConnectionHeader(nsHttpRequestHead*, uint32_t caps);
   bool IsAcceptableEncoding(const char* encoding, bool isSecure);
 
@@ -137,7 +142,6 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
   uint32_t NetworkChangedTimeout() { return mNetworkChangedTimeout; }
   uint16_t MaxRequestAttempts() { return mMaxRequestAttempts; }
   const nsCString& DefaultSocketType() { return mDefaultSocketType; }
-  uint32_t PhishyUserPassLength() { return mPhishyUserPassLength; }
   uint8_t GetQoSBits() { return mQoSBits; }
   uint16_t GetIdleSynTimeout() { return mIdleSynTimeout; }
   uint16_t GetFallbackSynTimeout() { return mFallbackSynTimeout; }
@@ -187,9 +191,7 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
   uint32_t TailBlockingDelayMax() { return mTailDelayMax; }
   uint32_t TailBlockingTotalMax() { return mTailTotalMax; }
 
-  uint32_t ThrottlingReadLimit() {
-    return mThrottleVersion == 1 ? 0 : mThrottleReadLimit;
-  }
+  uint32_t ThrottlingReadLimit() { return 0; }
   int32_t SendWindowSize() { return mSendWindowSize * 1024; }
 
   // TCP Keepalive configuration values.
@@ -224,7 +226,7 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
   FrameCheckLevel GetEnforceH1Framing() { return mEnforceH1Framing; }
 
   nsHttpAuthCache* AuthCache(bool aPrivate) {
-    return aPrivate ? &mPrivateAuthCache : &mAuthCache;
+    return aPrivate ? mPrivateAuthCache : mAuthCache;
   }
   nsHttpConnectionMgr* ConnMgr() {
     MOZ_ASSERT_IF(nsIOService::UseSocketProcess(), XRE_IsSocketProcess());
@@ -241,6 +243,10 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
   // cache support
   uint32_t GenerateUniqueID() { return ++mLastUniqueID; }
   uint32_t SessionStartTime() { return mSessionStartTime; }
+
+  void GenerateIdempotencyKeyForPost(const uint32_t aPostId,
+                                     nsILoadInfo* aLoadInfo,
+                                     nsACString& aOutKey);
 
   //
   // Connection management methods:
@@ -296,14 +302,13 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
     return mConnMgr->GetSocketThreadTarget(target);
   }
 
-  [[nodiscard]] nsresult SpeculativeConnect(nsHttpConnectionInfo* ci,
-                                            nsIInterfaceRequestor* callbacks,
-                                            uint32_t caps = 0,
-                                            bool aFetchHTTPSRR = false) {
+  [[nodiscard]] nsresult MaybeSpeculativeConnectWithHTTPSRR(
+      nsHttpConnectionInfo* ci, nsIInterfaceRequestor* callbacks, uint32_t caps,
+      bool aFetchHTTPSRR) {
     TickleWifi(callbacks);
     RefPtr<nsHttpConnectionInfo> clone = ci->Clone();
     return mConnMgr->SpeculativeConnect(clone, callbacks, caps, nullptr,
-                                        aFetchHTTPSRR | EchConfigEnabled());
+                                        aFetchHTTPSRR);
   }
 
   [[nodiscard]] nsresult SpeculativeConnect(nsHttpConnectionInfo* ci,
@@ -433,8 +438,7 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
                                                  int32_t port,
                                                  nsACString& hostLine);
 
-  static uint8_t UrgencyFromCoSFlags(uint32_t cos,
-                                     int32_t aSupportsPriority = 0);
+  static uint8_t UrgencyFromCoSFlags(uint32_t cos, int32_t aSupportsPriority);
 
   SpdyInformation* SpdyInfo() { return &mSpdyInfo; }
   bool IsH2MandatorySuiteEnabled() { return mH2MandatorySuiteEnabled; }
@@ -465,8 +469,6 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
     return mFocusedWindowTransactionRatio;
   }
 
-  bool ActiveTabPriority() const { return mActiveTabPriority; }
-
   // Called when an optimization feature affecting active vs background tab load
   // took place.  Called only on the parent process and only updates
   // mLastActiveTabLoadOptimizationHit timestamp to now.
@@ -488,7 +490,7 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
                                 nsIInterfaceRequestor* aCallbacks,
                                 const OriginAttributes& aOriginAttributes);
 
-  bool EchConfigEnabled(bool aIsHttp3 = false) const;
+  static bool EchConfigEnabled(bool aIsHttp3 = false);
   // When EchConfig is enabled and all records with echConfig are failed, this
   // functon indicate whether we can fallback to the origin server.
   // In the case an HTTPS RRSet contains some RRs with echConfig and some
@@ -528,7 +530,8 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
   void PrefsChanged(const char* pref);
 
   [[nodiscard]] nsresult SetAcceptLanguages();
-  [[nodiscard]] nsresult SetAcceptEncodings(const char*, bool mIsSecure);
+  [[nodiscard]] nsresult SetAcceptEncodings(const char*, bool aIsSecure,
+                                            bool aDictionary);
 
   [[nodiscard]] nsresult InitConnectionMgr();
 
@@ -557,13 +560,16 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
   nsMainThreadPtrHandle<nsISiteSecurityService> mSSService;
 
   // the authentication credentials cache
-  nsHttpAuthCache mAuthCache;
-  nsHttpAuthCache mPrivateAuthCache;
+  RefPtr<nsHttpAuthCache> mAuthCache;
+  RefPtr<nsHttpAuthCache> mPrivateAuthCache;
 
   // the connection manager
   RefPtr<HttpConnectionMgrShell> mConnMgr;
 
   UniquePtr<AltSvcCache> mAltSvcCache;
+
+  // Pointer to DictionaryCache singleton
+  RefPtr<DictionaryCache> mDictionaryCache;
 
   //
   // prefs
@@ -591,11 +597,8 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
   uint8_t mMaxPersistentConnectionsPerProxy{4};
 
   bool mThrottleEnabled{true};
-  uint32_t mThrottleVersion{2};
   uint32_t mThrottleSuspendFor{3000};
   uint32_t mThrottleResumeFor{200};
-  uint32_t mThrottleReadLimit{8000};
-  uint32_t mThrottleReadInterval{500};
   uint32_t mThrottleHoldTime{600};
   uint32_t mThrottleMaxTime{3000};
 
@@ -612,12 +615,6 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
 
   bool mBeConservativeForProxy{true};
 
-  // we'll warn the user if we load an URL containing a userpass field
-  // unless its length is less than this threshold.  this warning is
-  // intended to protect the user against spoofing attempts that use
-  // the userpass field of the URL to obscure the actual origin server.
-  uint8_t mPhishyUserPassLength{1};
-
   uint8_t mQoSBits{0x00};
 
   bool mEnforceAssocReq{false};
@@ -628,6 +625,7 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
   nsCString mAcceptLanguages;
   nsCString mHttpAcceptEncodings;
   nsCString mHttpsAcceptEncodings;
+  nsCString mDictionaryAcceptEncodings;
 
   nsCString mDefaultSocketType;
 
@@ -638,6 +636,8 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
   // useragent components
   nsCString mLegacyAppName{"Mozilla"};
   nsCString mLegacyAppVersion{"5.0"};
+  uint64_t mIdempotencyKeySeed;
+  uint64_t mPrivateBrowsingIdempotencyKeySeed;
   nsCString mPlatform;
   nsCString mOscpu;
   nsCString mMisc;
@@ -742,9 +742,6 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
   // The ratio for dispatching transactions from the focused window.
   float mFocusedWindowTransactionRatio{0.9f};
 
-  // If true, the transactions from active tab will be dispatched first.
-  bool mActiveTabPriority{true};
-
   HttpTrafficAnalyzer mHttpTrafficAnalyzer;
 
  private:
@@ -812,7 +809,7 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
   Mutex mHttpExclusionLock MOZ_UNANNOTATED{"nsHttpHandler::HttpExclusion"};
 
  public:
-  [[nodiscard]] nsresult NewChannelId(uint64_t& channelId);
+  [[nodiscard]] uint64_t NewChannelId();
   void AddHttpChannel(uint64_t aId, nsISupports* aChannel);
   void RemoveHttpChannel(uint64_t aId);
   nsWeakPtr GetWeakHttpChannel(uint64_t aId);

@@ -13,10 +13,7 @@
 #include "EventLog.h"
 #include "Registry.h"
 
-#include "mozilla/ArrayUtils.h"
 #include "mozilla/RefPtr.h"
-#include "mozilla/Unused.h"
-#include "mozilla/Try.h"
 #include "mozilla/WinHeaderOnlyUtils.h"
 
 namespace mozilla::default_agent {
@@ -42,7 +39,7 @@ constexpr std::pair<std::string_view, Browser> kStringBrowserMap[]{
     {"duckduckgo", Browser::DuckDuckGo},
 };
 
-static_assert(mozilla::ArrayLength(kStringBrowserMap) == kBrowserCount);
+static_assert(std::size(kStringBrowserMap) == kBrowserCount);
 
 std::string GetStringForBrowser(Browser browser) {
   for (const auto& [mapString, mapBrowser] : kStringBrowserMap) {
@@ -127,8 +124,7 @@ BrowserResult TryGetDefaultBrowser() {
   // Unknown - not a real browser.
   // EdgeWithEdgeHTML - duplicate friendly name with EdgeWithBlink with special
   //   handling below.
-  static_assert(mozilla::ArrayLength(kFriendlyNamePrefixes) ==
-                kBrowserCount - 3);
+  static_assert(std::size(kFriendlyNamePrefixes) == kBrowserCount - 3);
 
   for (const auto& [prefix, browser] : kFriendlyNamePrefixes) {
     // Find matching Friendly Name prefix.
@@ -178,8 +174,8 @@ BrowserResult TryGetReplacePreviousDefaultBrowser(Browser currentDefault) {
           .unwrapOr(mozilla::Some(currentDefaultStr))
           .valueOr(currentDefaultStr);
 
-  mozilla::Unused << RegistrySetValueString(
-      IsPrefixed::Unprefixed, L"CurrentDefault", currentDefaultStr.c_str());
+  (void)RegistrySetValueString(IsPrefixed::Unprefixed, L"CurrentDefault",
+                               currentDefaultStr.c_str());
 
   return GetBrowserFromString(previousDefault);
 }
@@ -205,7 +201,7 @@ void MaybeMigrateCurrentDefault() {
   }
   std::string value = maybeValue.value();
 
-  mozilla::Unused << RegistryDeleteValue(IsPrefixed::Prefixed, valueName);
+  (void)RegistryDeleteValue(IsPrefixed::Prefixed, valueName);
 
   // Only migrate the value if no value is in the new location yet.
   valueResult = RegistryGetValueString(IsPrefixed::Unprefixed, valueName);
@@ -213,8 +209,8 @@ void MaybeMigrateCurrentDefault() {
     return;
   }
   if (valueResult.unwrap().isNothing()) {
-    mozilla::Unused << RegistrySetValueString(IsPrefixed::Unprefixed, valueName,
-                                              value.c_str());
+    (void)RegistrySetValueString(IsPrefixed::Unprefixed, valueName,
+                                 value.c_str());
   }
 }
 

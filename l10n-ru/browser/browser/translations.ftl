@@ -44,7 +44,7 @@ translations-panel-settings-about2 =
 # Variables:
 #   $language (string) - The localized display name of the detected language
 translations-panel-settings-always-translate-language =
-    .label = Всегда переводить с { $language }
+    .label = Всегда переводить { $language }
 translations-panel-settings-always-translate-unknown-language =
     .label = Всегда переводить с этого языка
 translations-panel-settings-always-offer-translation =
@@ -53,7 +53,7 @@ translations-panel-settings-always-offer-translation =
 # Variables:
 #   $language (string) - The localized display name of the detected language
 translations-panel-settings-never-translate-language =
-    .label = Никогда не переводить с { $language }
+    .label = Никогда не переводить { $language }
 translations-panel-settings-never-translate-unknown-language =
     .label = Никогда не переводить с этого языка
 # Text displayed for the option to never translate this website
@@ -124,28 +124,20 @@ translations-manage-settings-button =
     .accesskey = а
 translations-manage-description = Загрузка языков для перевода без связи с Интернетом.
 translations-manage-all-language = Все языки
-translations-manage-download-button = Загрузить
+translations-manage-download-button = Скачать
 translations-manage-delete-button = Удалить
-translations-manage-intro = Задайте настройки языка и перевода сайта и управляйте языками, установленными для автономного перевода.
-translations-manage-install-description = Установите языки для автономного перевода
-translations-manage-language-install-button =
-    .label = Установить
-translations-manage-language-install-all-button =
-    .label = Установить все
-    .accesskey = е
-translations-manage-intro-2 = Задайте настройки языка и перевода сайта и управляйте языками, загруженными для автономного перевода.
+translations-manage-intro-2 = Задайте настройки языка и перевода сайта и управляйте языками, скачанными для автономного перевода.
 translations-manage-download-description = Загрузка языков для автономного перевода
 translations-manage-language-download-button =
-    .label = Загрузить
+    .label = Скачать
 translations-manage-language-download-all-button =
-    .label = Загрузить все
+    .label = Скачать все
     .accesskey = В
 translations-manage-language-remove-button =
     .label = Удалить
 translations-manage-language-remove-all-button =
     .label = Удалить все
     .accesskey = и
-translations-manage-error-install = Возникла проблема с установкой языковых файлов. Пожалуйста, попробуйте ещё раз.
 translations-manage-error-download = При загрузке языковых файлов возникла проблема, пожалуйста, попробуйте ещё раз.
 translations-manage-error-delete = При удалении языковых файлов произошла ошибка, пожалуйста, попробуйте ещё раз.
 translations-manage-error-remove = Произошла ошибка при удалении языковых файлов. Пожалуйста, попробуйте ещё раз.

@@ -20,11 +20,20 @@ fxa-menu-connect-another-device =
     .label = Басқа құрылғыны байланыстыру…
 # Variables:
 #   $tabCount (Number): The number of tabs sent to the device.
+# The following string intentionally omits the word "tab" from the singular and includes it in the plural.
+fxa-menu-send-to-device =
+    .label =
+        { $tabCount ->
+            [1] Құрылғыға жіберу
+           *[other] Send { $tabCount } tabs to device
+        }
+# Variables:
+#   $tabCount (Number): The number of tabs sent to the device.
 fxa-menu-send-tab-to-device =
     .label =
         { $tabCount ->
             [one] Бетті құрылғыға жіберу
-           *[other] Бетті { $tabCount } құрылғыға жіберу
+           *[other] { $tabCount } бетті құрылғыға жіберу
         }
 # This is shown dynamically within "Send tab to device" in fxa menu.
 fxa-menu-send-tab-to-device-syncnotready =
@@ -33,5 +42,53 @@ fxa-menu-send-tab-to-device-syncnotready =
 fxa-menu-send-tab-to-device-description = Бетті сіз кірген кез келген құрылғыға лезде жіберіңіз.
 fxa-menu-sign-out =
     .label = Шығу…
-fxa-menu-sync-title = Синхрондау
 fxa-menu-sync-description = Интернетке кез келген жерден қол жеткізіңіз
+fxa-avatar-sign-in = Кіру
+fxa-avatar-sign-up = Тіркелгіні жасау
+fxa-avatar-tooltip =
+    .tooltiptext = Тіркелгіге кіру
+sync-setup-verify-continue = Жалғастыру
+sync-setup-verify-title = Біріктіру ескертуі
+sync-setup-verify-heading = Синхрондау ішіне кіруді қалайсыз ба?
+# The user was previously signed into sync. This dialog confirms to the user
+# that they will be merging the data from the previously signed in into the newly signed in one
+# Variables:
+#   $email - Email address of a user previously signed into sync.
+sync-setup-verify-description = Бұл компьютерде басқа пайдаланушы Sync ішіне кірген. Оның ішіне кіру нәтижесінде бұл браузердің бетбелгілер, парольдер және басқа да баптаулары { $email } нұсқасымен біріктіріледі
+
+## Sync warning strings that support the browser profiles feature, these will be shown when the user might be merging data
+
+# Dialog 1 - different account signing in without option to merge
+sync-profile-different-account-title = Бұл профиль үшін тіркелгілер саны шегіне жетті
+sync-profile-different-account-header = Бұл профиль бұрын басқа тіркелгімен синхрондалған
+# Variables:
+#   $acctEmail (String) - Email of the account signing into sync.
+sync-profile-different-account-description = Деректеріңізді реттелген және қауіпсіз түрде сақтау үшін әрбір { -brand-product-name } профилін тек бір тіркелгімен синхрондауға болады. { $acctEmail } арқылы кіру үшін жаңа профиль жасаңыз.
+# Dialog 1 - different account signing in with merge option
+sync-profile-different-account-title-merge = Профиль басқа тіркегімен синхрондалған
+# Variables:
+#   $acctEmail (String) - Email of the account signing into sync.
+#   $profileName (String) - Name of the current profile
+sync-profile-different-account-description-merge = Деректеріңізді реттелген және қауіпсіз түрде сақтау үшін { $acctEmail } арқылы кіру үшін жаңа профиль жасауды ұсынамыз. Осы профильде синхрондауды жалғастыруды таңдасаңыз, екі тіркелгі деректері "{ $profileName }" ішінде біржола біріктіріледі.
+# Dialog 2 - account signed in on another profile without option to merge
+sync-account-in-use-header = Тіркелгі қолдануда болып тұр
+# Variables:
+#   $acctEmail (String) - Email of the account signing into sync.
+#   $otherProfile (String) - Name of the other profile that is associated with the account
+sync-account-in-use-header-merge = { $acctEmail } поштасы “{ $otherProfile }” профиліне ағымдағы уақытта кіріп тұр
+sync-account-in-use-description = Бұл тіркелгіні осы компьютердегі тек бір профильмен байланыстыра аласыз.
+# Dialog 2 - account signed in on another profile with merge option
+sync-account-already-signed-in-header = Бұл тіркелгі басқа профильге кіріп тұр. Екі профильді де синхрондау керек пе?
+# Variables:
+#   $acctEmail (String) - Email of the account signing into sync.
+#   $currentProfile (String): Name of the current profile signing in
+#   $otherProfile (String): Name of the profile that is already signed in
+sync-account-in-use-description-merge = { $acctEmail } тіркелгісі осы компьютердегі “{ $otherProfile }” профиліне кіріп тұр. “{ $currentProfile }” профилін синхрондау екі профильдегі деректерді (мысалы, парольдер мен бетбелгілерді) біржола біріктіреді.
+# Variables:
+#   $profileName (String) - Name of the profile to switch to
+sync-button-switch-profile = "{ $profileName }" профиліне ауысу
+sync-button-create-profile = Жаңа профильді жасау
+sync-button-sync-and-merge = Синхрондау және деректерді біріктіру
+# Variables:
+#   $profileName (String) - Name of the profile to switch to
+sync-button-sync-profile = "{ $profileName }" синхрондау

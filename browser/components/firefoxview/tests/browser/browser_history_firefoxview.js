@@ -302,12 +302,12 @@ add_task(async function test_empty_states() {
     await TestUtils.waitForCondition(() => historyComponent.fullyUpdated);
     emptyStateCard = historyComponent.emptyState;
     ok(
-      emptyStateCard.headerEl.textContent.includes("Nothing to show"),
+      emptyStateCard.headerEl.textContent.includes("You’re in control"),
       "Empty state with never remember history header has the expected text."
     );
     ok(
-      emptyStateCard.descriptionEls[1].textContent.includes(
-        "remember your activity as you browse. To change that"
+      emptyStateCard.descriptionEls[0].textContent.includes(
+        "does not remember your browsing activity"
       ),
       "Empty state with never remember history description has the expected text."
     );
@@ -471,7 +471,8 @@ add_task(async function test_search_history() {
     }, "There are no matching search results.");
 
     info("Clear the search query.");
-    EventUtils.synthesizeMouseAtCenter(searchTextbox.clearButton, {}, content);
+    searchTextbox.select();
+    EventUtils.synthesizeKey("VK_BACK_SPACE");
     await BrowserTestUtils.waitForMutationCondition(
       historyComponent.shadowRoot,
       { childList: true, subtree: true },
@@ -495,12 +496,13 @@ add_task(async function test_search_history() {
       searchTextbox,
       "Search input is focused"
     );
-    EventUtils.synthesizeKey("KEY_Tab", {}, content);
-    ok(
-      searchTextbox.clearButton.matches(":focus-visible"),
-      "Clear Search button is focused"
+    let inputChildren = SpecialPowers.InspectorUtils.getChildrenForNode(
+      searchTextbox.inputEl,
+      true,
+      false
     );
-    EventUtils.synthesizeKey("KEY_Enter", {}, content);
+    let clearButton = inputChildren.find(e => e.localName == "button");
+    EventUtils.synthesizeMouseAtCenter(clearButton, {}, content);
     await BrowserTestUtils.waitForMutationCondition(
       historyComponent.shadowRoot,
       { childList: true, subtree: true },
@@ -550,7 +552,13 @@ add_task(async function test_search_ignores_stale_queries() {
     await TestUtils.waitForCondition(() => bogusQueryInProgress);
 
     info("Clear the bogus query.");
-    EventUtils.synthesizeMouseAtCenter(searchTextbox.clearButton, {}, content);
+    let inputChildren = SpecialPowers.InspectorUtils.getChildrenForNode(
+      searchTextbox.inputEl,
+      true,
+      false
+    );
+    let clearButton = inputChildren.find(e => e.localName == "button");
+    EventUtils.synthesizeMouseAtCenter(clearButton, {}, content);
     await searchTextbox.updateComplete;
 
     info("Input a real search query.");

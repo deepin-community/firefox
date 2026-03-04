@@ -149,9 +149,7 @@ main-context-menu-save-link-to-pocket =
     .label = Сілтемені { -pocket-brand-name }-ке сақтау
     .accesskey = o
 
-## The access keys for "Copy Link" and "Copy Email Address"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-copy-email =
     .label = Электронды пошта адресін көшіріп алу
@@ -162,11 +160,15 @@ main-context-menu-copy-phone =
 main-context-menu-copy-link-simple =
     .label = Сілтемені көшіріп алу
     .accesskey = л
-# This command copies the link, removing additional
-# query parameters used to track users across sites.
-main-context-menu-strip-on-share-link =
-    .label = Сайт бақылаусыз сілтемені көшіру
+main-context-menu-preview-link =
+    .label = Сілтемені алдын ала қарау
     .accesskey = р
+# "Copy Clean Link" means that Firefox will remove things from the link you
+# copied, like items that identify you for advertising purposes, and other items
+# sites add into URLs to help them deliver a certain browsing experience.
+main-context-menu-copy-clean-link =
+    .label = Таза сілтемені көшіру
+    .accesskey = у
 
 ## Media (video/audio) controls
 ##
@@ -268,6 +270,11 @@ main-context-menu-image-info =
 main-context-menu-image-desc =
     .label = Анықтамасын қарау
     .accesskey = н
+# Variables
+#   $engine (String) - Name of the search engine that will perform the search.
+main-context-menu-visual-search-2 =
+    .label = Суретті { $engine } көмегімен іздеу
+    .accesskey = е
 main-context-menu-video-save-as =
     .label = Видеоны қалайша сақтау…
     .accesskey = В
@@ -283,6 +290,9 @@ main-context-menu-video-email =
 main-context-menu-audio-email =
     .label = Аудионы эл. поштамен жіберу…
     .accesskey = А
+main-context-menu-send-to-device-2 =
+    .label = Құрылғыға жіберу
+    .accesskey = б
 main-context-menu-save-to-pocket =
     .label = Бетті { -pocket-brand-name }-ке сақтау
     .accesskey = k
@@ -290,9 +300,7 @@ main-context-menu-send-to-device =
     .label = Парақты құрылғыға жіберу
     .accesskey = ы
 
-## The access keys for "Use Saved Login" and "Use Saved Password"
-## should be the same if possible; the two context menu items
-## are mutually exclusive.
+##
 
 main-context-menu-use-saved-login =
     .label = Сақталған логинді қолдану
@@ -319,6 +327,9 @@ main-context-menu-manage-passwords =
 main-context-menu-keyword =
     .label = Осы ізденісті белгілейтін кілт сөзін енгізу…
     .accesskey = к
+main-context-menu-add-engine =
+    .label = Іздеу жүйесін қосу
+    .accesskey = с
 main-context-menu-link-send-to-device =
     .label = Сілтемені құрылғыға жіберу
     .accesskey = ы
@@ -389,3 +400,5 @@ main-context-menu-open-link-in-container-tab =
 main-context-menu-reveal-password =
     .label = Парольді көрсету
     .accesskey = с
+# The label of a badge shown in menu items to call out new features.
+main-context-menu-new-feature-badge = Жаңа

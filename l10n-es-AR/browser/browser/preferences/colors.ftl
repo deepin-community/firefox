@@ -5,40 +5,41 @@
 colors-dialog2 =
     .title = Colores
     .style = min-width: 41em;
-
 colors-close-key =
     .key = w
-
 colors-page-override = Sobreescribir los colores especificados por la página con las opciones que están debajo
     .accesskey = O
-
 colors-page-override-option-always =
     .label = Siempre
 colors-page-override-option-auto =
     .label = Solamente con temas de alto contraste
 colors-page-override-option-never =
     .label = Nunca
-
 colors-text-and-background = Texto y fondo
-
+colors-text =
+    .label = Texto
+    .accesskey = T
+colors-text-background =
+    .label = Fondo de pantalla
+    .accesskey = F
 colors-text-header = Texto
     .accesskey = T
-
 colors-background = Fondo de pantalla
     .accesskey = F
-
 colors-use-system =
     .label = Usar colores del sistema
     .accesskey = s
-
 colors-underline-links =
     .label = Subrayar enlaces
     .accesskey = u
-
 colors-links-header = Colores de los enlaces
-
+colors-links-unvisited =
+    .label = Enlaces no visitados
+    .accesskey = L
+colors-links-visited =
+    .label = Enlaces visitados
+    .accesskey = V
 colors-unvisited-links = Enlaces no visitados
     .accesskey = L
-
 colors-visited-links = Enlaces visitados
     .accesskey = V

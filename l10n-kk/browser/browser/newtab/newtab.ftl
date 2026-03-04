@@ -8,11 +8,24 @@
 newtab-page-title = Жаңа бет
 newtab-settings-button =
     .title = Жаңа бетті баптаңыз
+newtab-customize-panel-icon-button =
+    .title = Бұл бетті баптау
+newtab-customize-panel-icon-button-label = Баптау
+newtab-personalize-settings-icon-label =
+    .title = Жаңа бетті жекелендіру
+    .aria-label = Баптаулар
+newtab-settings-dialog-label =
+    .aria-label = Баптаулар
 newtab-personalize-icon-label =
     .title = Жаңа бетті жекелендіру
     .aria-label = Жаңа бетті жекелендіру
 newtab-personalize-dialog-label =
     .aria-label = Жекелендіру
+newtab-logo-and-wordmark =
+    .aria-label = { -brand-full-name }
+newtab-card-dismiss-button =
+    .title = Елемеу
+    .aria-label = Елемеу
 
 ## Search box component.
 
@@ -46,6 +59,9 @@ newtab-topsites-add-shortcut-header = Жаңа жарлық
 newtab-topsites-edit-topsites-header = Топ сайтын түзету
 newtab-topsites-edit-shortcut-header = Жарлықты түзету
 newtab-topsites-add-shortcut-label = Жарлықты қосу
+newtab-topsites-add-shortcut-title =
+    .title = Жарлықты қосу
+    .aria-label = Жарлықты қосу
 newtab-topsites-title-label = Атауы
 newtab-topsites-title-input =
     .placeholder = Атауын енгізіңіз
@@ -74,6 +90,14 @@ newtab-confirm-delete-history-p2 = Бұл әрекетті болдырмау м
 ## Top Sites - Sponsored label
 
 newtab-topsite-sponsored = Демеуленген
+
+## Label used by screen readers for pinned top sites
+
+# Variables:
+#   $title (string) - The label or hostname of the site.
+topsite-label-pinned =
+    .aria-label = { $title } (бекітілген)
+    .title = { $title }
 
 ## Context Menu - Action Tooltips.
 
@@ -109,6 +133,21 @@ newtab-menu-save-to-pocket = { -pocket-brand-name } ішіне сақтау
 newtab-menu-delete-pocket = { -pocket-brand-name }-тен өшіру
 newtab-menu-archive-pocket = { -pocket-brand-name }-те архивтеу
 newtab-menu-show-privacy-info = Біздің демеушілеріміз және сіздің жекелігіңіз
+newtab-menu-about-fakespot = { -fakespot-brand-name } туралы
+# Report is a verb (i.e. report issue with the content).
+newtab-menu-report = Хабарлау
+# Context menu option to personalize New Tab recommended stories by blocking a section of stories,
+# e.g. "Sports". "Block" is a verb here.
+newtab-menu-section-block = Блоктау
+# "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+# e.g. Following the travel section of stories.
+newtab-menu-section-unfollow = Тақырыпқа жазылудан бас тарту
+
+## Context menu options for sponsored stories and new ad formats on New Tab.
+
+newtab-menu-manage-sponsored-content = Демеуші мазмұнын басқару
+newtab-menu-our-sponsors-and-your-privacy = Біздің демеушілеріміз және сіздің жекелігіңіз
+newtab-menu-report-this-ad = Бұл жарнаманы хабарлау
 
 ## Message displayed in a modal window to explain privacy and provide context for sponsored content.
 
@@ -170,6 +209,8 @@ newtab-label-sponsored-by = { $sponsor } демеушісінен
 #   $source (string) - The name of a company or their domain
 #   $timeToRead (number) - The estimated number of minutes to read this story
 newtab-label-source-read-time = { $source } · { $timeToRead } мин
+# This string is used under fixed size ads to indicate sponsored content
+newtab-label-sponsored-fixed = Демеуленген
 
 ## Section Menu: These strings are displayed in the section context menu and are
 ## meant as a call to action for the given section.
@@ -232,7 +273,6 @@ newtab-pocket-learn-more = Көбірек білу
 newtab-pocket-cta-button = { -pocket-brand-name }-ті алу
 newtab-pocket-cta-text = Өзіңіз ұнатқан хикаяларды { -pocket-brand-name } ішіне сақтап, миіңізді тамаша оқумен толықтырыңыз.
 newtab-pocket-pocket-firefox-family = { -pocket-brand-name } өнімі { -brand-product-name } отбасының мүшесі болып табылады
-# A save to Pocket button that shows over the card thumbnail on hover.
 newtab-pocket-save = Сақтау
 newtab-pocket-saved = Сақталған
 
@@ -244,7 +284,9 @@ newtab-pocket-thumbs-up-tooltip =
 # Clicking the thumbs down button for this story informs us that the user does not feel like the story is interesting for them
 newtab-pocket-thumbs-down-tooltip =
     .title = Мен үшін емес
-newtab-toast-thumbs-up-or-down = Рахмет. Сіздің пікіріңіз бізге арнаңызды жақсартуға көмектеседі.
+# Used to show the user a message upon clicking the thumbs up or down buttons
+newtab-toast-thumbs-up-or-down2 =
+    .message = Рахмет. Сіздің пікіріңіз бізге арнаңызды жақсартуға көмектеседі.
 newtab-toast-dismiss-button =
     .title = Елемеу
     .aria-label = Елемеу
@@ -279,16 +321,32 @@ newtab-custom-pocket-subtitle = { -brand-product-name } отбасының мү�
 newtab-custom-stories-toggle =
     .label = Ұсынылатын оқиғалар
     .description = { -brand-product-name } жетекшілік ететін тамаша құрама
+newtab-custom-stories-personalized-toggle =
+    .label = Әңгімелер
+newtab-custom-stories-personalized-checkbox-label = Әрекетіңізге негізделген жекелендірілген хикаялар
 newtab-custom-pocket-sponsored = Демеушілер мақалалары
 newtab-custom-pocket-show-recent-saves = Соңғы сақтауларды көрсету
 newtab-custom-recent-title = Жуырдағы белсенділік
 newtab-custom-recent-subtitle = Жуырдағы сайттар мен құрама таңдауы
-newtab-custom-recent-toggle =
-    .label = Жуырдағы белсенділік
-    .description = Жуырдағы сайттар мен құрама таңдауы
 newtab-custom-weather-toggle =
     .label = Ауа райы
     .description = Бүгінге қысқа болжам
+newtab-custom-widget-weather-toggle =
+    .label = Ауа райы
+newtab-custom-widget-lists-toggle =
+    .label = Тізімдер
+newtab-custom-widget-timer-toggle =
+    .label = Таймер
+newtab-custom-widget-section-title = Виджеттер
+newtab-custom-widget-section-toggle =
+    .label = Виджеттер
+newtab-widget-manage-title = Виджеттер
+newtab-widget-manage-widget-button =
+    .label = Виджеттерді басқару
+# Tooltip for close button
+newtab-custom-close-menu-button =
+    .title = Жабу
+    .aria-label = Мәзірді жабу
 newtab-custom-close-button = Жабу
 newtab-custom-settings = Көбірек баптауларды басқару
 
@@ -296,6 +354,13 @@ newtab-custom-settings = Көбірек баптауларды басқару
 
 newtab-wallpaper-title = Түсқағаздар
 newtab-wallpaper-reset = Бастапқы түріне тастау
+newtab-wallpaper-upload-image = Суретті жүктеп жіберу
+newtab-wallpaper-custom-color = Түсті таңдау
+# Variables
+#   $file_size (number) - The number of the maximum image file size (in MB) that may be uploaded
+newtab-wallpaper-error-max-file-size = Сурет файл өлшемі шегінен { $file_size } МБ асып кетті. Шағындау файлды жүктеп салып көріңіз.
+newtab-wallpaper-error-upload-file-type = Файлыңызды жүктеп жіберу мүмкін болмады. Сурет файлымен әрекетті қайталаңыз.
+newtab-wallpaper-error-file-type = Файлыңызды жүктеп жіберу мүмкін болмады. Басқа файл түрімен әрекетті қайталаңыз.
 newtab-wallpaper-light-red-panda = Қызыл панда
 newtab-wallpaper-light-mountain = Ақ тау
 newtab-wallpaper-light-sky = Күлгін және қызғылт бұлттары бар аспан
@@ -308,6 +373,8 @@ newtab-wallpaper-dark-panda = Орманда жасырылған қызыл п�
 newtab-wallpaper-dark-sky = Түнгі аспаны бар қала пейзажы
 newtab-wallpaper-dark-mountain = Таулы пейзаж
 newtab-wallpaper-dark-city = Күлгін қала пейзажы
+newtab-wallpaper-dark-fox-anniversary = Орман жанындағы тротуардағы түлкі
+newtab-wallpaper-light-fox-anniversary = Тұманды тау пейзажы бар шөпті алқаптағы түлкі
 
 ## Solid Colors
 
@@ -337,8 +404,12 @@ newtab-wallpaper-abstract-purple = Күлгін пішіндер
 newtab-wallpaper-abstract-orange = Қызғылт сары пішіндер
 newtab-wallpaper-gradient-orange = Градиент қызғылт сары және қызғылт
 newtab-wallpaper-abstract-blue-purple = Көк және күлгін пішіндер
+newtab-wallpaper-abstract-white-curves = Көлеңкелі қисықтары бар ақ
+newtab-wallpaper-abstract-purple-green = Күлгін және жасыл жарық градиенті
+newtab-wallpaper-abstract-blue-purple-waves = Көк және күлгін толқынды пішіндер
+newtab-wallpaper-abstract-black-waves = Қара толқынды пішіндер
 
-## Photographs
+## Firefox
 
 newtab-wallpaper-category-title-photographs = Фотосуреттер
 newtab-wallpaper-beach-at-sunrise = Күн шыққанда жағажай
@@ -347,6 +418,12 @@ newtab-wallpaper-storm-sky = Дауылды аспан
 newtab-wallpaper-sky-with-pink-clouds = Қызғылт бұлттары бар аспан
 newtab-wallpaper-red-panda-yawns-in-a-tree = Қызыл панда ағашта есінейді
 newtab-wallpaper-white-mountains = Ақ таулар
+newtab-wallpaper-hot-air-balloons = Күндізгі ауа шарларының әртүрлі түсі
+newtab-wallpaper-starry-canyon = Көк жұлдызды түн
+newtab-wallpaper-suspension-bridge = Сұр түсті толық аспалы көпірдің күндізгі фотосуреті
+newtab-wallpaper-sand-dunes = Ақ құмды төбелер
+newtab-wallpaper-palm-trees = Алтын сағатта кокос пальмаларының сұлбасы
+newtab-wallpaper-blue-flowers = Гүлдеп тұрған көк жапырақты гүлдердің жақын пландағы фотосуреті
 # Variables
 #   $author_string (String) - The name of the creator of the photo.
 #   $webpage_string (String) - The name of the webpage where the photo is located.
@@ -362,6 +439,23 @@ feature-highlight-wallpaper =
     .title = { -newtab-wallpaper-feature-highlight-header }
     .aria-label = { -newtab-wallpaper-feature-highlight-content }
 
+## Firefox
+
+newtab-wallpaper-category-title-firefox = { -brand-product-name }
+
+## Celestial
+
+# “Celestial” referring to astronomy; positioned in or relating to the sky,
+# or outer space as observed in astronomy.
+# Not to be confused with religious definition of the word.
+newtab-wallpaper-category-title-celestial = Аспан
+newtab-wallpaper-celestial-lunar-eclipse = Айдың тұтылуы
+newtab-wallpaper-celestial-earth-night = Төменгі Жер орбитасынан түнгі сурет
+newtab-wallpaper-celestial-starry-sky = Жұлдызды аспан
+newtab-wallpaper-celestial-eclipse-time-lapse = Ай тұтылуының таймлапсы
+newtab-wallpaper-celestial-black-hole = Қара құрдымы бар галактика суреті
+newtab-wallpaper-celestial-river = Өзеннің жерсеріктік суреті
+
 ## New Tab Weather
 
 # Variables:
@@ -372,8 +466,12 @@ newtab-weather-see-forecast =
 #   $provider (string) - Service provider for weather data
 newtab-weather-sponsored = { $provider } ∙ Демеушілік
 newtab-weather-menu-change-location = Орналасуды ауыстыру
-newtab-weather-change-location-search-input = Орналасуды іздеу
+newtab-weather-change-location-search-input-placeholder =
+    .placeholder = Орналасуды іздеу
+    .aria-label = Орналасуды іздеу
 newtab-weather-menu-weather-display = Ауа райын көрсету
+newtab-weather-todays-forecast = Бүгінгі ауа райы болжамы
+newtab-weather-see-full-forecast = Толық ауа райы болжамын қарау
 # Display options are:
 # - Simple: Displays a current weather condition icon and the current temperature
 # - Detailed: Include simple information plus a short text summary: e.g. "Mostly cloudy"
@@ -386,10 +484,24 @@ newtab-weather-menu-temperature-option-fahrenheit = Фаренгейт
 newtab-weather-menu-temperature-option-celsius = Цельсий
 newtab-weather-menu-change-temperature-units-fahrenheit = Фаренгейтке ауысу
 newtab-weather-menu-change-temperature-units-celsius = Цельсийге ауысу
+newtab-weather-menu-hide-weather-v2 = Ауа райын жасыру
 newtab-weather-menu-hide-weather = Жаңа бетте ауа райын жасыру
 newtab-weather-menu-learn-more = Көбірек білу
+newtab-weather-menu-detect-my-location = Менің орналасуымды анықтау
 # This message is shown if user is working offline
 newtab-weather-error-not-available = Ауа-райы деректері қазір қолжетімді емес.
+newtab-weather-opt-in-see-weather = Орналасқан жеріңіздің ауа райын көргіңіз келе ме?
+newtab-weather-opt-in-not-now =
+    .label = Қазір емес
+newtab-weather-opt-in-yes =
+    .label = Иә
+# We'll be showing static (fake) weather data if the user has not opted in to using their location
+newtab-weather-static-city = Нью-Йорк
+# Variables:
+#   $provider (string) - Service provider for weather data
+newtab-weather-see-forecast-description =
+    .title = { $provider } ішінде болжамды қарау
+    .aria-description = { $provider } ∙ Демеушілік
 
 ## Topic Labels
 
@@ -430,3 +542,201 @@ newtab-topic-selection-button-maybe-later = Мүмкін, кейінірек
 newtab-topic-selection-privacy-link = Деректерді қалай қорғайтынымызды және басқаратынымызды біліңіз
 newtab-topic-selection-button-update-interests = Қызығушылықтарыңызды жаңартыңыз
 newtab-topic-selection-button-pick-interests = Қызығушылықтарыңызды таңдаңыз
+
+## Content Feed Sections
+## "Follow", "unfollow", and "following" are social media terms that refer to subscribing to or unsubscribing from a section of stories.
+## e.g. Following the travel section of stories.
+
+newtab-section-follow-button = Жазылу
+newtab-section-following-button = Жазылғандар
+newtab-section-unfollow-button = Жазылудан бас тарту
+# A modal may appear next to the Follow button, directing users to try out the feature
+newtab-section-follow-highlight-title = Таспаңызды дәл баптаңыз
+newtab-section-follow-highlight-subtitle = Өзіңізге ұнайтын нәрселерді көбірек көру үшін қызығушылықтарыңызға жазылыңыз.
+
+## Button to block/unblock listed topics
+## "Block", "unblocked", and "blocked" are social media terms that refer to hiding a section of stories.
+## e.g. Blocked the politics section of stories.
+
+newtab-section-block-button = Бұғаттау
+newtab-section-blocked-button = Бұғатталған
+newtab-section-unblock-button = Бұғаттаудан шығару
+
+## Confirmation modal for blocking a section
+
+newtab-section-cancel-button = Қазір емес
+newtab-section-confirm-block-topic-p1 = Бұл тақырыпты шынымен блоктағыңыз келе ме?
+newtab-section-confirm-block-topic-p2 = Блокталған тақырыптар сіздің таспаңызда енді көрсетілмейді.
+# Variables:
+#   $topic (string) - Name of topic that user is blocking
+newtab-section-block-topic-button = { $topic } блоктау
+
+## Strings for custom wallpaper highlight
+
+newtab-section-mangage-topics-title = Тақырыптар
+newtab-section-manage-topics-button-v2 =
+    .label = Темаларды басқару
+newtab-section-mangage-topics-followed-topics = Жазылған
+newtab-section-mangage-topics-followed-topics-empty-state = Сіз әлі ешқандай тақырыпқа жазылмадыңыз.
+newtab-section-mangage-topics-blocked-topics = Бұғатталған
+newtab-section-mangage-topics-blocked-topics-empty-state = Сіз әлі ешбір тақырыпты бұғаттаған жоқсыз.
+newtab-custom-wallpaper-title = Жеке тұсқағаздар осында
+# 'Make firefox yours" means to customize or personalize
+newtab-custom-wallpaper-subtitle = { -brand-product-name } өз қалауыңызша баптау үшін жеке тұсқағазыңызды жүктеңіз немесе арнайы түс таңдаңыз.
+newtab-custom-wallpaper-cta = Қолданып көру
+
+## Strings for new user activation custom wallpaper highlight
+
+newtab-new-user-custom-wallpaper-title = { -brand-product-name } өз қалауыңызша баптау үшін тұсқағаз таңдаңыз
+newtab-new-user-custom-wallpaper-subtitle = Арнайы тұсқағаздар мен түстердің көмегімен әрбір жаңа бетті өз үйіңіздей жайлы етіңіз.
+newtab-new-user-custom-wallpaper-cta = Қазір қолданып көру
+
+## Strings for download mobile highlight
+
+newtab-download-mobile-highlight-title = Мобильді { -brand-product-name } жүктеп алу
+# "Scan the code" refers to scanning the QR code that appears above the body text that leads to Firefox for mobile download.
+newtab-download-mobile-highlight-body-variant-a = Интернетте қауіпсіз шолу үшін кодты сканерлеңіз.
+newtab-download-mobile-highlight-body-variant-b = Беттерді, парольдерді және басқа да деректерді синхрондап, жұмысты үзілген жерінен жалғастырыңыз.
+newtab-download-mobile-highlight-body-variant-c = { -brand-product-name } браузерін өзіңізбен бірге алып жүре алатыныңызды білдіңіз бе? Дәл сол браузер. Қалтаңызда.
+newtab-download-mobile-highlight-image =
+    .aria-label = Мобильді { -brand-product-name } жүктеп алу үшін QR коды
+
+## Strings for shortcuts highlight
+
+newtab-shortcuts-highlight-title = Таңдаулыларыңыз әрқашан қол астында
+newtab-shortcuts-highlight-subtitle = Таңдаулы сайттарыңызға бір рет басу арқылы кіру үшін жарлық қосыңыз.
+
+## Strings for reporting issues with ads and content
+
+newtab-report-content-why-reporting-this =
+    .label = Бұл туралы неге хабарлап отырсыз?
+newtab-report-ads-reason-not-interested =
+    .label = Маған бұл қызықты емес
+newtab-report-ads-reason-inappropriate =
+    .label = Бұл орынсыз
+newtab-report-ads-reason-seen-it-too-many-times =
+    .label = Мен оны тым көп рет көрдім
+newtab-report-content-wrong-category =
+    .label = Қате санат
+newtab-report-content-outdated =
+    .label = Ескірген
+newtab-report-content-inappropriate-offensive =
+    .label = Орынсыз немесе қорлайтын
+newtab-report-content-spam-misleading =
+    .label = Спам немесе жаңылыстыру
+newtab-report-content-requires-payment-subscription =
+    .label = Төлем немесе жазылым қажет
+newtab-report-content-requires-payment-subscription-learn-more = Көбірек білу
+newtab-report-cancel = Бас тарту
+newtab-report-submit = Жіберу
+newtab-toast-thanks-for-reporting =
+    .message = Бұл туралы хабарлағаныңыз үшін рахмет.
+
+## Strings for task / to-do list productivity widget
+
+# "Add one" means adding a new task to the list (e.g., "Walk the dog")
+newtab-widget-lists-empty-cta = Мүмкіндіктер шексіз. Біреуін қосыңыз.
+# A simple label next to the default list name letting users know this is a new / beta feature
+newtab-widget-lists-label-new =
+    .label = Жаңа
+newtab-widget-lists-label-beta =
+    .label = Бета
+# When tasks have been previous marked as complete, they will appear in their own separate list beneath incomplete items
+# Variables:
+#   $number (number) - Amount of list items marked complete
+newtab-widget-lists-completed-list = Аяқталған ({ $number })
+newtab-widget-task-list-menu-copy = Көшіріп алу
+newtab-widget-lists-menu-edit = Тізім атауын түзету
+newtab-widget-lists-menu-create = Жаңа тізімді жасау
+newtab-widget-lists-menu-delete = Бұл тізімді өшіру
+newtab-widget-lists-menu-copy = Тізімді алмасу буферіне көшіру
+newtab-widget-lists-menu-hide = Барлық тізімдерді жасыру
+newtab-widget-lists-menu-learn-more = Көбірек білу
+newtab-widget-lists-input-add-an-item =
+    .placeholder = Элементті қосу
+newtab-widget-lists-input-error = Элемент қосу үшін мәтінді қосыңыз.
+newtab-widget-lists-input-menu-open-link = Сілтемені ашу
+newtab-widget-lists-input-menu-move-up = Жоғары жылжыту
+newtab-widget-lists-input-menu-move-down = Төмен жылжыту
+newtab-widget-lists-input-menu-delete = Өшіру
+newtab-widget-lists-input-menu-edit = Түзету
+# the + symbol emphasises the functionality of adding a new list
+newtab-widget-lists-dropdown-create =
+    .label = + Жаңа тізімді жасау
+newtab-widget-lists-name-label-default =
+    .label = Тапсырмалар тізімі
+newtab-widget-lists-name-placeholder-default =
+    .placeholder = Тапсырмалар тізімі
+# The placeholder value of the name field for a newly created list
+newtab-widget-lists-name-placeholder-new =
+    .placeholder = Жаңа тізім
+newtab-widget-section-title = Виджеттер
+# Tooltip for hide all widgets button
+newtab-widget-section-hide-all-button =
+    .title = Виджеттерді жасыру
+    .aria-label = Барлық виджеттерді жасыру
+newtab-widget-section-maximize =
+    .title = Виджеттерді жаю
+    .aria-label = Барлық виджеттерді толық өлшеміне жаю
+newtab-widget-section-minimize =
+    .title = Виджеттерді ықшамдау
+    .aria-label = Барлық виджеттерді ықшам өлшеміне дейін жинау
+
+## Strings for timer productivity widget
+## When the timer ends, a system notification may be shown. Depending on which mode the timer is in, that message would be shown
+
+newtab-widget-timer-notification-title = Таймер
+newtab-widget-timer-notification-focus = Фокустау уақыты аяқталды. Жақсы жұмыс. Үзіліс керек пе?
+newtab-widget-timer-notification-break = Сіздің үзілісіңіз аяқталды. Фокустауға дайынсыз ба?
+newtab-widget-timer-notification-warning = Хабарламалар сөндірулі
+newtab-widget-timer-mode-focus =
+    .label = Фокустау
+newtab-widget-timer-mode-break =
+    .label = Үзіліс
+newtab-widget-timer-label-play =
+    .label = Ойнату
+newtab-widget-timer-label-pause =
+    .label = Аялдату
+newtab-widget-timer-reset =
+    .title = Тастау
+newtab-widget-timer-menu-notifications = Хабарламаларды сөндіру
+newtab-widget-timer-menu-notifications-on = Хабарламаларды іске қосу
+newtab-widget-timer-menu-hide = Таймерді жасыру
+newtab-widget-timer-menu-learn-more = Көбірек білу
+# The title displays above a set of top news headlines.
+newtab-daily-briefing-card-title = Басты жаңалықтар
+newtab-daily-briefing-card-menu-dismiss = Елемеу
+# Variables:
+#   $minutes (number) - Time since the feed has been refreshed
+newtab-daily-briefing-card-timestamp = { $minutes } минут бұрын жаңартылды
+newtab-widget-message-title = Тізімдер мен кірістірілген таймер арқылы назарыңызды сақтаңыз
+# to-dos stands for "things to do".
+newtab-widget-message-copy = Жылдам еске салғыштардан күнделікті істер тізіміне дейін, зейін қою сессияларынан бой жазу үзілістеріне дейін — жұмыстан ауытқымай, уақытыңызды тиімді пайдаланыңыз.
+newtab-promo-card-title = { -brand-product-name } қолдау
+newtab-promo-card-body = Біздің демеушілеріміз жақсырақ интернет құру миссиямызға қолдау көрсетеді
+newtab-promo-card-cta = Көбірек білу
+newtab-promo-card-dismiss-button =
+    .title = Елемеу
+    .aria-label = Елемеу
+
+## Strings for activation window message variants. In certain experiment configurations,
+## the strings from these variants may be displayed in a message below the search input
+## for the first 48 hours of a new profile's lifetime. Some messages include buttons with
+## labels, but not all.
+
+newtab-activation-window-message-dismiss-button =
+    .title = Елемеу
+    .aria-label = Елемеу
+# "This space" refers to about:newtab. The call to action here ("make it your own")
+# is to customize newtab with a background image or colour, or by tweaking the
+# existing widgetry that appears on it.
+newtab-activation-window-message-customization-focus-header = Бұл кеңістікті өзіңіздікі етіңіз
+newtab-activation-window-message-customization-focus-message = Жаңа тұсқағаз таңдаңыз, таңдамалы сайттарыңызға сілтемелер қосыңыз және сізді қызықтыратын оқиғалардан хабардар болып отырыңыз.
+newtab-activation-window-message-customization-focus-primary-button =
+    .label = Баптауды бастау
+# "This space" refers to about:newtab. The sentiment of "plays by your rules" is
+# meant to evoke the idea that newtab is malleable and customizable. The call to
+# action is to customize newtab with a background image or colour, or by tweaking
+# the existing widgetry that appears on it.
+newtab-activation-window-message-values-focus-header = Бұл кеңістік сіздің ережелеріңіз бойынша ойнайды
+newtab-activation-window-message-values-focus-message = { -brand-product-name } көмегімен интернеттегі жұмысыңызды өзіңізге ыңғайлы стильде бастаңыз. { -brand-product-name } интерфейсін өзіңізге бейімдеп, оны бірегей етіңіз.

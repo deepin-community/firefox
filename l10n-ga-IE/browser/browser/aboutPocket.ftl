@@ -11,7 +11,6 @@
 # Placeholder text for tag input
 pocket-panel-saved-add-tags =
     .placeholder = Cuir Clibeanna Leis
-
 pocket-panel-saved-error-generic = Tharla earráid le linn na sábhála i b{ -pocket-brand-name }.
 pocket-panel-saved-error-tag-length = Ní cheadaítear níos mó ná 25 carachtar i gclib
 pocket-panel-saved-error-only-links = Ní féidir ach nascanna a shábháil
@@ -37,10 +36,3 @@ pocket-panel-signup-signup-firefox = Cláraigh trí { -brand-product-name }
 pocket-panel-signup-tagline = Sábháil ailt agus físeáin ó { -brand-product-name } chun breathnú orthu i b{ -pocket-brand-name } ar aon ghléas, am ar bith.
 pocket-panel-signup-tagline-story-one = Cliceáil an cnaipe { -pocket-brand-name } chun aon alt, físeán, nó leathanach a shábháil ó { -brand-product-name }.
 pocket-panel-signup-tagline-story-two = Féach orthu i b{ -pocket-brand-name } ar aon ghléas, am ar bith.
-
-## about:pocket-home panel
-
-## Pocket panel header component
-
-## Pocket panel buttons
-

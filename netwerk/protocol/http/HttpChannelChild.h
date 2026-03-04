@@ -10,7 +10,6 @@
 
 #include "mozilla/Mutex.h"
 #include "mozilla/StaticPrefsBase.h"
-#include "mozilla/UniquePtr.h"
 #include "mozilla/extensions/StreamFilterParent.h"
 #include "mozilla/net/HttpBaseChannel.h"
 #include "mozilla/net/NeckoTargetHolder.h"
@@ -38,12 +37,8 @@ class nsISerialEventTarget;
 class nsITransportSecurityInfo;
 class nsInputStreamPump;
 
-#define HTTP_CHANNEL_CHILD_IID                       \
-  {                                                  \
-    0x321bd99e, 0x2242, 0x4dc6, {                    \
-      0xbb, 0xec, 0xd5, 0x06, 0x29, 0x7c, 0x39, 0x83 \
-    }                                                \
-  }
+#define HTTP_CHANNEL_CHILD_IID \
+  {0x321bd99e, 0x2242, 0x4dc6, {0xbb, 0xec, 0xd5, 0x06, 0x29, 0x7c, 0x39, 0x83}}
 
 namespace mozilla::net {
 
@@ -71,7 +66,7 @@ class HttpChannelChild final : public PHttpChannelChild,
   NS_DECL_NSIHTTPCHANNELCHILD
   NS_DECL_NSIMULTIPARTCHANNEL
   NS_DECL_NSITHREADRETARGETABLEREQUEST
-  NS_DECLARE_STATIC_IID_ACCESSOR(HTTP_CHANNEL_CHILD_IID)
+  NS_INLINE_DECL_STATIC_IID(HTTP_CHANNEL_CHILD_IID)
 
   HttpChannelChild();
 
@@ -88,12 +83,22 @@ class HttpChannelChild final : public PHttpChannelChild,
   // nsIChannel
   NS_IMETHOD GetSecurityInfo(nsITransportSecurityInfo** aSecurityInfo) override;
   NS_IMETHOD AsyncOpen(nsIStreamListener* aListener) override;
+  NS_IMETHOD GetDecompressDictionary(
+      DictionaryCacheEntry** aDictionary) override {
+    *aDictionary = nullptr;
+    return NS_OK;
+  }
+  NS_IMETHOD SetDecompressDictionary(
+      DictionaryCacheEntry* aDictionary) override {
+    return NS_OK;
+  }
 
   // HttpBaseChannel::nsIHttpChannel
   NS_IMETHOD SetRequestHeader(const nsACString& aHeader,
                               const nsACString& aValue, bool aMerge) override;
   NS_IMETHOD SetEmptyRequestHeader(const nsACString& aHeader) override;
   NS_IMETHOD RedirectTo(nsIURI* newURI) override;
+  NS_IMETHOD TransparentRedirectTo(nsIURI* newURI) override;
   NS_IMETHOD UpgradeToSecure() override;
   NS_IMETHOD GetProtocolVersion(nsACString& aProtocolVersion) override;
   void DoDiagnosticAssertWhenOnStopNotCalledOnDestroy() override;
@@ -138,6 +143,11 @@ class HttpChannelChild final : public PHttpChannelChild,
   void RegisterStreamFilter(
       RefPtr<extensions::StreamFilterParent>& aStreamFilter);
 
+  // Get the captured JavaScript call stack for LNA console logging
+  const char* GetCallStack() const {
+    return mCallStack ? mCallStack.get() : nullptr;
+  }
+
  protected:
   mozilla::ipc::IPCResult RecvOnStartRequestSent() override;
   mozilla::ipc::IPCResult RecvFailedAsyncOpen(const nsresult& status) override;
@@ -145,9 +155,8 @@ class HttpChannelChild final : public PHttpChannelChild,
       const uint32_t& registrarId, nsIURI* newOriginalURI,
       const uint32_t& newLoadFlags, const uint32_t& redirectFlags,
       const ParentLoadInfoForwarderArgs& loadInfoForwarder,
-      const nsHttpResponseHead& responseHead,
-      nsITransportSecurityInfo* securityInfo, const uint64_t& channelId,
-      const NetAddr& oldPeerAddr,
+      nsHttpResponseHead&& responseHead, nsITransportSecurityInfo* securityInfo,
+      const uint64_t& channelId, const NetAddr& oldPeerAddr,
       const ResourceTimingStructArgs& aTiming) override;
   mozilla::ipc::IPCResult RecvRedirect3Complete() override;
   mozilla::ipc::IPCResult RecvRedirectFailed(const nsresult& status) override;
@@ -155,6 +164,11 @@ class HttpChannelChild final : public PHttpChannelChild,
 
   mozilla::ipc::IPCResult RecvReportSecurityMessage(
       const nsAString& messageTag, const nsAString& messageCategory) override;
+
+  mozilla::ipc::IPCResult RecvReportLNAToConsole(
+      const NetAddr& aPeerAddr, const nsACString& aMessageType,
+      const nsACString& aPromptAction,
+      const nsACString& aTopLevelSite) override;
 
   mozilla::ipc::IPCResult RecvSetPriority(const int16_t& aPriority) override;
 
@@ -316,12 +330,15 @@ class HttpChannelChild final : public PHttpChannelChild,
 
   // Target thread for delivering ODA.
   nsCOMPtr<nsISerialEventTarget> mODATarget MOZ_GUARDED_BY(mEventTargetMutex);
+  Atomic<bool, mozilla::Relaxed> mGotDataAvailable{false};
   // Used to ensure atomicity of mNeckoTarget / mODATarget;
   Mutex mEventTargetMutex{"HttpChannelChild::EventTargetMutex"};
 
   TimeStamp mLastStatusReported;
 
   uint64_t mCacheEntryId{0};
+  nsICacheInfoChannel::CacheDisposition mCacheDisposition{
+      nsICacheInfoChannel::kCacheUnknown};
 
   uint32_t mCacheKey{0};
   int32_t mCacheFetchCount{0};
@@ -413,6 +430,9 @@ class HttpChannelChild final : public PHttpChannelChild,
   // get stuck in a loop.
   uint8_t mAlreadyReleased : 1;
 
+  // JavaScript stack captured during AsyncOpen for LNA console logging
+  mozilla::UniquePtr<char[]> mCallStack;
+
   void CleanupRedirectingChannel(nsresult rv);
 
   // Calls OnStartRequest and/or OnStopRequest on our listener in case we didn't
@@ -470,8 +490,6 @@ class HttpChannelChild final : public PHttpChannelChild,
   friend class HttpBackgroundChannelChild;
   friend class NeckoTargetChannelFunctionEvent;
 };
-
-NS_DEFINE_STATIC_IID_ACCESSOR(HttpChannelChild, HTTP_CHANNEL_CHILD_IID)
 
 //-----------------------------------------------------------------------------
 // inline functions

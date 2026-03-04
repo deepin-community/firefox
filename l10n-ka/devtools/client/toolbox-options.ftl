@@ -30,6 +30,10 @@ options-context-inspector = Inspector
 options-show-user-agent-styles-label = Show Browser Styles
 options-show-user-agent-styles-tooltip =
     .title = Turning this on will show default styles that are loaded by the browser.
+# The label for the checkbox option to show all anonymous content
+options-show-user-agent-shadow-dom-label = Show Browser Shadow DOM
+options-show-user-agent-shadow-dom-tooltip =
+    .title = Turning this on will show Shadow DOM elements handled by the browser.
 # The label for the checkbox option to enable collapse attributes
 options-collapse-attrs-label = Truncate DOM attributes
 options-collapse-attrs-tooltip =
@@ -43,6 +47,11 @@ options-inspector-draggable-properties-tooltip =
 options-inspector-simplified-highlighters-label = Use simpler highlighters with prefers-reduced-motion
 options-inspector-simplified-highlighters-tooltip =
     .title = Enables simplified highlighters when prefers-reduced-motion is enabled. Draws lines instead of filled rectangles around highlighted elements to avoid flashing effects.
+# The label for the checkbox option to make the Enter key move the focus to the next input
+# when editing a property name or value in the Inspector rules view
+options-inspector-rules-focus-next-on-enter-label = Focus next input on <kbd>Enter</kbd>
+options-inspector-rules-focus-next-on-enter-tooltip =
+    .title = When enabled, hitting the Enter key when editing a selector, a property name or value will move the focus to the next input.
 
 ## "Default Color Unit" options for the Inspector
 
@@ -53,6 +62,15 @@ options-default-color-unit-hsl = HSL(A)
 options-default-color-unit-rgb = RGB(A)
 options-default-color-unit-hwb = HWB
 options-default-color-unit-name = Color Names
+
+## Web Console section
+
+# The heading
+options-webconsole-label = Web Console
+# The label for the checkbox that toggle whether the Split console is enabled
+options-webconsole-split-console-label = Enable Split Console
+options-webconsole-split-console-tooltip =
+    .title = Open Split Console with the Escape Key
 
 ## Style Editor section
 
@@ -102,6 +120,8 @@ options-disable-http-cache-label = Disable HTTP Cache (when toolbox is open)
 options-disable-http-cache-tooltip =
     .title = Turning this option on will disable the HTTP cache for all tabs that have the toolbox open. Service Workers are not affected by this option.
 # The label for checkbox that toggles JavaScript on or off
+options-disable-javascript-label-2 = Disable JavaScript
+# The label for checkbox that toggles JavaScript on or off
 options-disable-javascript-label = Disable JavaScript *
 options-disable-javascript-tooltip =
     .title = Turning this option on will disable JavaScript for the current tab. If the tab or the toolbox is closed then this setting will be forgotten.
@@ -129,5 +149,11 @@ options-enable-service-workers-http-tooltip =
 options-source-maps-label = Enable Source Maps
 options-source-maps-tooltip =
     .title = If you enable this option sources will be mapped in the tools.
-# The message shown for settings that trigger page reload
+# The message shown for settings that trigger page reload and will only apply to the current session
+# This appears underneath the applicable options (e.g. options-disable-javascript-label-2).
+options-context-triggers-page-refresh-temporary = (current session only, reloads the page)
+# The message shown for settings that trigger page reload and will only apply to the current session
 options-context-triggers-page-refresh = * Current session only, reloads the page
+# The message shown for settings that trigger page reload
+# This appears underneath the applicable options (e.g. options-show-user-agent-shadow-dom-label).
+options-context-triggers-page-refresh-persists = (reloads the page)

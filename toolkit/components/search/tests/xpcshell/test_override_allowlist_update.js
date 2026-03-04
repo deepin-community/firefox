@@ -67,6 +67,7 @@ add_setup(async function () {
 
   registerCleanupFunction(async () => {
     await extension.unload();
+    sinon.restore();
   });
 
   const settings = await RemoteSettings(SearchUtils.SETTINGS_ALLOWLIST_KEY);
@@ -79,7 +80,7 @@ add_task(async function update_allowlist_and_addon() {
   let result = await Services.search.maybeSetAndOverrideDefault(extensionInfo);
 
   Assert.equal(
-    result.canChangeToAppProvided,
+    result.canChangeToConfigEngine,
     true,
     "Should have returned the correct value for allowing switch to default or not."
   );

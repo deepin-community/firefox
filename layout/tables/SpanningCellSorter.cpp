@@ -9,8 +9,9 @@
  */
 
 #include "SpanningCellSorter.h"
-#include "nsTArray.h"
+
 #include "mozilla/HashFunctions.h"
+#include "nsTArray.h"
 
 using namespace mozilla;
 
@@ -92,8 +93,9 @@ SpanningCellSorter::Item* SpanningCellSorter::GetNext(int32_t* aColSpan) {
       mEnumerationIndex = 0;
       [[fallthrough]];
     case ENUMERATING_ARRAY:
-      while (mEnumerationIndex < ARRAY_SIZE && !mArray[mEnumerationIndex])
+      while (mEnumerationIndex < ARRAY_SIZE && !mArray[mEnumerationIndex]) {
         ++mEnumerationIndex;
+      }
       if (mEnumerationIndex < ARRAY_SIZE) {
         Item* result = mArray[mEnumerationIndex];
         *aColSpan = IndexToSpan(mEnumerationIndex);

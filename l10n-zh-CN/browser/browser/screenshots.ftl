@@ -37,7 +37,7 @@ screenshots-request-error-details = 很抱歉，我们无法为您保存截图�
 screenshots-connection-error-title = 我们无法连接到您的截图。
 screenshots-connection-error-details = 请检查您的互联网连接。如果您正常连接到互联网，可能是 { -screenshots-brand-name } 的服务器临时出了问题。
 screenshots-login-error-details = { -screenshots-brand-name } 服务遇到问题，我们现在无法保存您的截图。请稍后再试。
-screenshots-unshootable-page-error-title = 我们无法截图此页面。
+screenshots-unshootable-page-error-title = 无法为此页面截图。
 screenshots-unshootable-page-error-details = 这不是一个标准的网页，所以无法截图。
 screenshots-empty-selection-error-title = 您选择的范围太小
 screenshots-private-window-error-title = 隐私浏览模式下 { -screenshots-brand-name } 已被禁用
@@ -66,6 +66,11 @@ screenshots-component-copy-button-2 = 复制
 screenshots-component-download-button-2 = 下载
     .title = 下载 ({ $shortcut })
     .aria-label = 下载
+# Variables
+#   $shortcut (String) - A keyboard shortcut for the screenshot command.
+screenshot-toolbar-button =
+    .label = 截图
+    .tooltiptext = 截图（{ $shortcut }）
 
 ## The below strings are used to capture keydown events so the strings should
 ## not be changed unless the keyboard layout in the locale requires it.

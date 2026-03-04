@@ -5,32 +5,21 @@
 
 ##
 ## Localization for remote types defined in RemoteType.h
-##
 
 process-type-web = ویب مواد
-
 # process used to run privileged about pages,
 # such as about:home
 process-type-privilegedabout = امتیاز شدہ کے بارے میں
-
 # process used to run privileged mozilla pages,
 # such as accounts.firefox.com
 process-type-privilegedmozilla = امتیاز شدہ Mozilla مواد
-
 process-type-extension = ایکسٹینشن
-
 # process used to open file:// URLs
 process-type-file = مقامی فائل
 
 ##
 ## Localization for Gecko process types defined in GeckoProcessTypes.h
-##
 
 # process used to communicate with the GPU for
 # graphics acceleration
 process-type-gpu = GPU
-
-##
-## Other
-##
-

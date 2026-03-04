@@ -3,18 +3,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't re-use these strings outside of the menubar.
-
-
-# NOTE: For English locales, strings in this file should be in APA-style Title Case.
-# See https://apastyle.apa.org/style-grammar-guidelines/capitalization/title-case
-#
-# NOTE: For Engineers, please don't reuse these strings outside of the menubar.
-
-
 ## Application Menu (macOS only)
 
 menu-application-preferences =
@@ -148,8 +136,6 @@ menu-view-history-button =
     .label = Historija
 menu-view-synced-tabs-sidebar =
     .label = Synchronizowane rajtarki
-menu-view-megalist-sidebar =
-    .label = Hesła
 menu-view-full-zoom =
     .label = Skalować
     .accesskey = k
@@ -257,6 +243,22 @@ menu-bookmarks-other =
 menu-bookmarks-mobile =
     .label = Mobilne zapołožki
 
+## Profiles Menu
+
+menu-profiles =
+    .label = Profile
+menu-profiles-manage-profiles =
+    .label = Profile rjadować
+menu-profiles-new-profile =
+    .label = Nowy profil
+# Variables:
+#  $profileName (String): the name of the users profile
+menu-profiles-current =
+    .label = { $profileName } (aktualny)
+menu-profiles-menu =
+    .label = Profile
+    .accesskey = P
+
 ## Tools Menu
 
 menu-tools =
@@ -265,6 +267,9 @@ menu-tools =
 menu-tools-downloads =
     .label = Sćehnjenja
     .accesskey = h
+menu-tools-extensions-and-themes =
+    .label = Rozšěrjenja a drasty
+    .accesskey = R
 menu-tools-addons-and-themes =
     .label = Přidatki a drasty
     .accesskey = P

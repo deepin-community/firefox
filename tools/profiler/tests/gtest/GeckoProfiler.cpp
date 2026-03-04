@@ -20,6 +20,8 @@
 #include "nsIThread.h"
 #include "nsThreadUtils.h"
 #include "prthread.h"
+#include "nsHttp.h"
+#include "nsIClassOfService.h"
 
 #include "gtest/gtest.h"
 #include "mozilla/gtest/MozAssertions.h"
@@ -474,12 +476,12 @@ static void TestLockedRWOnThread(
   TestLockedRWFromAnyThread(aData, aBeforeRegistration, aAfterRegistration,
                             aOnStackObject, aThreadId);
 
-  // We don't want to really call SetJSContext here, so just verify that
-  // the call would compile and return the expected type.
-  static_assert(
-      std::is_same_v<decltype(aData.SetJSContext(std::declval<JSContext*>())),
-                     void>);
-  aData.ClearJSContext();
+  // We don't want to really call SetCycleCollectedJSContext here, so just
+  // verify that the call would compile and return the expected type.
+  static_assert(std::is_same_v<decltype(aData.SetCycleCollectedJSContext(
+                                   std::declval<CycleCollectedJSContext*>())),
+                               void>);
+  aData.ClearCycleCollectedJSContext();
   aData.PollJSSampling();
 };
 
@@ -1612,7 +1614,7 @@ TEST(GeckoProfiler, FeaturesAndParams)
 
 #  define PROFILER_DEFAULT_DURATION 20 /* seconds, for tests only */
     profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL,
-                   features, filters, MOZ_ARRAY_LENGTH(filters), 100,
+                   features, filters, std::size(filters), 100,
                    Some(PROFILER_DEFAULT_DURATION));
 
     ASSERT_TRUE(profiler_is_active());
@@ -1621,8 +1623,7 @@ TEST(GeckoProfiler, FeaturesAndParams)
 
     ActiveParamsCheck(PROFILER_DEFAULT_ENTRIES.Value(),
                       PROFILER_DEFAULT_INTERVAL, features, filters,
-                      MOZ_ARRAY_LENGTH(filters), 100,
-                      Some(PROFILER_DEFAULT_DURATION));
+                      std::size(filters), 100, Some(PROFILER_DEFAULT_DURATION));
 
     profiler_stop();
 
@@ -1638,14 +1639,14 @@ TEST(GeckoProfiler, FeaturesAndParams)
     // Testing with some arbitrary buffer size (as could be provided by
     // external code), which we convert to the appropriate power of 2.
     profiler_start(PowerOfTwo32(999999), 3, features, filters,
-                   MOZ_ARRAY_LENGTH(filters), 123, Some(25.0));
+                   std::size(filters), 123, Some(25.0));
 
     ASSERT_TRUE(profiler_is_active());
     ASSERT_TRUE(profiler_feature_active(ProfilerFeature::MainThreadIO));
     ASSERT_TRUE(profiler_feature_active(ProfilerFeature::IPCMessages));
 
     ActiveParamsCheck(int(PowerOfTwo32(999999).Value()), 3, features, filters,
-                      MOZ_ARRAY_LENGTH(filters), 123, Some(25.0));
+                      std::size(filters), 123, Some(25.0));
 
     profiler_stop();
 
@@ -1659,14 +1660,14 @@ TEST(GeckoProfiler, FeaturesAndParams)
     const char* filters[] = {"GeckoMain", "Foo", "Bar"};
 
     profiler_start(PowerOfTwo32(999999), 3, features, filters,
-                   MOZ_ARRAY_LENGTH(filters), 0, Nothing());
+                   std::size(filters), 0, Nothing());
 
     ASSERT_TRUE(profiler_is_active());
     ASSERT_TRUE(profiler_feature_active(ProfilerFeature::MainThreadIO));
     ASSERT_TRUE(profiler_feature_active(ProfilerFeature::IPCMessages));
 
     ActiveParamsCheck(int(PowerOfTwo32(999999).Value()), 3, features, filters,
-                      MOZ_ARRAY_LENGTH(filters), 0, Nothing());
+                      std::size(filters), 0, Nothing());
 
     profiler_stop();
 
@@ -1678,15 +1679,18 @@ TEST(GeckoProfiler, FeaturesAndParams)
     uint32_t availableFeatures = profiler_get_available_features();
     const char* filters[] = {""};
 
+    // Turn off tracing because it mucks with other features
+    availableFeatures &= ~ProfilerFeature::Tracing;
+
     profiler_start(PowerOfTwo32(88888), 10, availableFeatures, filters,
-                   MOZ_ARRAY_LENGTH(filters), 0, Some(15.0));
+                   std::size(filters), 0, Some(15.0));
 
     ASSERT_TRUE(profiler_is_active());
     ASSERT_TRUE(profiler_feature_active(ProfilerFeature::MainThreadIO));
     ASSERT_TRUE(profiler_feature_active(ProfilerFeature::IPCMessages));
 
     ActiveParamsCheck(PowerOfTwo32(88888).Value(), 10, availableFeatures,
-                      filters, MOZ_ARRAY_LENGTH(filters), 0, Some(15.0));
+                      filters, std::size(filters), 0, Some(15.0));
 
     // Don't call profiler_stop() here.
   }
@@ -1698,8 +1702,8 @@ TEST(GeckoProfiler, FeaturesAndParams)
 
     // Second profiler_start() call in a row without an intervening
     // profiler_stop(); this will do an implicit profiler_stop() and restart.
-    profiler_start(PowerOfTwo32(0), 0, features, filters,
-                   MOZ_ARRAY_LENGTH(filters), 0, Some(0.0));
+    profiler_start(PowerOfTwo32(0), 0, features, filters, std::size(filters), 0,
+                   Some(0.0));
 
     ASSERT_TRUE(profiler_is_active());
     ASSERT_TRUE(!profiler_feature_active(ProfilerFeature::MainThreadIO));
@@ -1708,7 +1712,7 @@ TEST(GeckoProfiler, FeaturesAndParams)
     // Entries and intervals go to defaults if 0 is specified.
     ActiveParamsCheck(PROFILER_DEFAULT_ENTRIES.Value(),
                       PROFILER_DEFAULT_INTERVAL, features, filters,
-                      MOZ_ARRAY_LENGTH(filters), 0, Nothing());
+                      std::size(filters), 0, Nothing());
 
     profiler_stop();
 
@@ -1731,12 +1735,12 @@ TEST(GeckoProfiler, EnsureStarted)
   {
     // Inactive -> Active
     profiler_ensure_started(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL,
-                            features, filters, MOZ_ARRAY_LENGTH(filters), 0,
+                            features, filters, std::size(filters), 0,
                             Some(PROFILER_DEFAULT_DURATION));
 
-    ActiveParamsCheck(
-        PROFILER_DEFAULT_ENTRIES.Value(), PROFILER_DEFAULT_INTERVAL, features,
-        filters, MOZ_ARRAY_LENGTH(filters), 0, Some(PROFILER_DEFAULT_DURATION));
+    ActiveParamsCheck(PROFILER_DEFAULT_ENTRIES.Value(),
+                      PROFILER_DEFAULT_INTERVAL, features, filters,
+                      std::size(filters), 0, Some(PROFILER_DEFAULT_DURATION));
   }
 
   {
@@ -1754,12 +1758,12 @@ TEST(GeckoProfiler, EnsureStarted)
     // Call profiler_ensure_started with the same settings as before.
     // This operation must not clear our buffer!
     profiler_ensure_started(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL,
-                            features, filters, MOZ_ARRAY_LENGTH(filters), 0,
+                            features, filters, std::size(filters), 0,
                             Some(PROFILER_DEFAULT_DURATION));
 
-    ActiveParamsCheck(
-        PROFILER_DEFAULT_ENTRIES.Value(), PROFILER_DEFAULT_INTERVAL, features,
-        filters, MOZ_ARRAY_LENGTH(filters), 0, Some(PROFILER_DEFAULT_DURATION));
+    ActiveParamsCheck(PROFILER_DEFAULT_ENTRIES.Value(),
+                      PROFILER_DEFAULT_INTERVAL, features, filters,
+                      std::size(filters), 0, Some(PROFILER_DEFAULT_DURATION));
 
     // Check that our position in the buffer stayed the same or advanced, but
     // not by much, and the range-start after profiler_ensure_started shouldn't
@@ -1781,12 +1785,11 @@ TEST(GeckoProfiler, EnsureStarted)
     // profiler, thereby discarding the buffer contents.
     uint32_t differentFeatures = features | ProfilerFeature::CPUUtilization;
     profiler_ensure_started(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL,
-                            differentFeatures, filters,
-                            MOZ_ARRAY_LENGTH(filters), 0);
+                            differentFeatures, filters, std::size(filters), 0);
 
     ActiveParamsCheck(PROFILER_DEFAULT_ENTRIES.Value(),
                       PROFILER_DEFAULT_INTERVAL, differentFeatures, filters,
-                      MOZ_ARRAY_LENGTH(filters), 0);
+                      std::size(filters), 0);
 
     // Check the the buffer was cleared, so its range-start should be at/after
     // its range-end before.
@@ -1873,7 +1876,7 @@ TEST(GeckoProfiler, DifferentThreads)
             "GeckoProfiler_DifferentThreads_Test::TestBody", [&]() {
               profiler_start(PROFILER_DEFAULT_ENTRIES,
                              PROFILER_DEFAULT_INTERVAL, features, filters,
-                             MOZ_ARRAY_LENGTH(filters), 0);
+                             std::size(filters), 0);
             }));
 
     ASSERT_TRUE(profiler_is_active());
@@ -1882,7 +1885,7 @@ TEST(GeckoProfiler, DifferentThreads)
 
     ActiveParamsCheck(PROFILER_DEFAULT_ENTRIES.Value(),
                       PROFILER_DEFAULT_INTERVAL, features, filters,
-                      MOZ_ARRAY_LENGTH(filters), 0);
+                      std::size(filters), 0);
 
     NS_DispatchAndSpinEventLoopUntilComplete(
         "GeckoProfiler_DifferentThreads_Test::TestBody"_ns, thread,
@@ -1899,7 +1902,7 @@ TEST(GeckoProfiler, DifferentThreads)
     const char* filters[] = {"GeckoMain", "Compositor"};
 
     profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL,
-                   features, filters, MOZ_ARRAY_LENGTH(filters), 0);
+                   features, filters, std::size(filters), 0);
 
     NS_DispatchAndSpinEventLoopUntilComplete(
         "GeckoProfiler_DifferentThreads_Test::TestBody"_ns, thread,
@@ -1913,7 +1916,7 @@ TEST(GeckoProfiler, DifferentThreads)
 
               ActiveParamsCheck(PROFILER_DEFAULT_ENTRIES.Value(),
                                 PROFILER_DEFAULT_INTERVAL, features, filters,
-                                MOZ_ARRAY_LENGTH(filters), 0);
+                                std::size(filters), 0);
             }));
 
     profiler_stop();
@@ -1936,7 +1939,7 @@ TEST(GeckoProfiler, GetBacktrace)
     const char* filters[] = {"GeckoMain"};
 
     profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL,
-                   features, filters, MOZ_ARRAY_LENGTH(filters), 0);
+                   features, filters, std::size(filters), 0);
 
     // These will be destroyed while the profiler is active.
     static const int N = 100;
@@ -2025,7 +2028,7 @@ TEST(GeckoProfiler, Pause)
   }}.join();
 
   profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL, features,
-                 filters, MOZ_ARRAY_LENGTH(filters), 0);
+                 filters, std::size(filters), 0);
 
   ASSERT_TRUE(!profiler_is_paused());
   for (ThreadProfilingFeatures features : scEachAndAnyThreadProfilingFeatures) {
@@ -2282,13 +2285,84 @@ TEST(GeckoProfiler, Pause)
   }}.join();
 }
 
+// Mock nsIClassOfService for network marker tests
+class MockClassOfService final : public nsIClassOfService {
+ public:
+  NS_DECL_ISUPPORTS
+
+  explicit MockClassOfService(uint32_t aClassFlags, bool aIncremental = false,
+                              nsIClassOfService::FetchPriority aFetchPriority =
+                                  nsIClassOfService::FETCHPRIORITY_UNSET)
+      : mClassFlags(aClassFlags),
+        mIncremental(aIncremental),
+        mFetchPriority(aFetchPriority) {}
+
+  NS_IMETHOD GetClassFlags(uint32_t* aFlags) override {
+    *aFlags = mClassFlags;
+    return NS_OK;
+  }
+
+  NS_IMETHOD SetClassFlags(uint32_t aFlags) override {
+    mClassFlags = aFlags;
+    return NS_OK;
+  }
+
+  NS_IMETHOD ClearClassFlags(uint32_t aFlags) override {
+    mClassFlags &= ~aFlags;
+    return NS_OK;
+  }
+
+  NS_IMETHOD AddClassFlags(uint32_t aFlags) override {
+    mClassFlags |= aFlags;
+    return NS_OK;
+  }
+
+  NS_IMETHOD GetIncremental(bool* aIncremental) override {
+    *aIncremental = mIncremental;
+    return NS_OK;
+  }
+
+  NS_IMETHOD SetIncremental(bool aIncremental) override {
+    mIncremental = aIncremental;
+    return NS_OK;
+  }
+
+  NS_IMETHOD GetFetchPriority(
+      nsIClassOfService::FetchPriority* aFetchPriority) override {
+    *aFetchPriority = mFetchPriority;
+    return NS_OK;
+  }
+
+  NS_IMETHOD SetFetchPriority(
+      nsIClassOfService::FetchPriority aFetchPriority) override {
+    mFetchPriority = aFetchPriority;
+    return NS_OK;
+  }
+
+  NS_IMETHOD SetClassOfService(mozilla::net::ClassOfService s) override {
+    return NS_ERROR_NOT_IMPLEMENTED;
+  }
+
+  NS_IMETHOD_(void)
+  SetFetchPriorityDOM(mozilla::dom::FetchPriority aPriority) override {}
+
+ private:
+  ~MockClassOfService() = default;
+
+  uint32_t mClassFlags;
+  bool mIncremental;
+  nsIClassOfService::FetchPriority mFetchPriority;
+};
+
+NS_IMPL_ISUPPORTS(MockClassOfService, nsIClassOfService)
+
 TEST(GeckoProfiler, Markers)
 {
   uint32_t features = ProfilerFeature::StackWalk;
   const char* filters[] = {"GeckoMain"};
 
   profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL, features,
-                 filters, MOZ_ARRAY_LENGTH(filters), 0);
+                 filters, std::size(filters), 0);
 
   PROFILER_MARKER("tracing event", OTHER, {}, Tracing, "A");
   PROFILER_MARKER("tracing start", OTHER, MarkerTiming::IntervalStart(),
@@ -2300,7 +2374,13 @@ TEST(GeckoProfiler, Markers)
   PROFILER_MARKER("tracing event with stack", OTHER,
                   MarkerStack::TakeBacktrace(std::move(bt)), Tracing, "B");
 
-  { AUTO_PROFILER_TRACING_MARKER("C", "auto tracing", OTHER); }
+  {
+    AUTO_PROFILER_MARKER("auto tracing", OTHER);
+  }
+
+  {
+    AUTO_PROFILER_MARKER_UNTYPED("D", OTHER, {});
+  }
 
   PROFILER_MARKER_UNTYPED("M1", OTHER, {});
   PROFILER_MARKER_UNTYPED("M3", OTHER, {});
@@ -2413,12 +2493,10 @@ TEST(GeckoProfiler, Markers)
       schema.AddKeyFormat("key with url", MS::Format::Url);
       schema.AddKeyLabelFormat("key with label filePath", "label filePath",
                                MS::Format::FilePath);
-      schema.AddKeyFormatSearchable("key with string not-searchable",
-                                    MS::Format::String,
-                                    MS::Searchable::NotSearchable);
-      schema.AddKeyLabelFormatSearchable("key with label duration searchable",
-                                         "label duration", MS::Format::Duration,
-                                         MS::Searchable::Searchable);
+      schema.AddKeyFormat("key with string not-searchable", MS::Format::String);
+      schema.AddKeyLabelFormat("key with label duration searchable",
+                               "label duration", MS::Format::Duration,
+                               MS::PayloadFlags::Searchable);
       schema.AddKeyFormat("key with time", MS::Format::Time);
       schema.AddKeyFormat("key with seconds", MS::Format::Seconds);
       schema.AddKeyFormat("key with milliseconds", MS::Format::Milliseconds);
@@ -2430,9 +2508,19 @@ TEST(GeckoProfiler, Markers)
       schema.AddKeyFormat("key with decimal", MS::Format::Decimal);
       schema.AddStaticLabelValue("static label", "static value");
       schema.AddKeyFormat("key with unique string", MS::Format::UniqueString);
-      schema.AddKeyFormatSearchable("key with sanitized string",
-                                    MS::Format::SanitizedString,
-                                    MS::Searchable::Searchable);
+      schema.AddKeyFormat("key with sanitized string",
+                          MS::Format::SanitizedString,
+                          MS::PayloadFlags::Searchable);
+      schema.AddKeyLabelFormat("key with label hidden", "label",
+                               MS::Format::String, MS::PayloadFlags::Hidden);
+      schema.AddKeyFormat("key hidden", MS::Format::String,
+                          MS::PayloadFlags::Hidden);
+
+      schema.AddKeyFormat(
+          "key hidden and searchable", MS::Format::String,
+          MS::PayloadFlags(uint32_t(MS::PayloadFlags::Hidden) |
+                           uint32_t(MS::PayloadFlags::Searchable)));
+
       return schema;
     }
   };
@@ -2470,7 +2558,22 @@ TEST(GeckoProfiler, Markers)
   };
 
   // Make sure the compiler doesn't complain about this unused struct.
-  mozilla::Unused << GtestUnusedMarker{};
+  (void)GtestUnusedMarker{};
+
+  // Test PROFILER_MARKER_SIMPLE_PAYLOAD with various data types.
+  int testInt = 42;
+  double testDouble = 3.14;
+  bool testBool = true;
+  nsCString testString("test_string");
+
+  PROFILER_MARKER_SIMPLE_PAYLOAD("SimplePayload with int", OTHER, testInt);
+  PROFILER_MARKER_SIMPLE_PAYLOAD("SimplePayload with double", OTHER,
+                                 testDouble);
+  PROFILER_MARKER_SIMPLE_PAYLOAD("SimplePayload with bool", OTHER, testBool);
+  PROFILER_MARKER_SIMPLE_PAYLOAD("SimplePayload with string", OTHER,
+                                 testString);
+  PROFILER_MARKER_SIMPLE_PAYLOAD("SimplePayload with multiple", OTHER, testInt,
+                                 testDouble, testBool);
 
   // Other markers in alphabetical order of payload class names.
 
@@ -2478,6 +2581,8 @@ TEST(GeckoProfiler, Markers)
   ASSERT_TRUE(
       NS_SUCCEEDED(NS_NewURI(getter_AddRefs(uri), "http://mozilla.org/"_ns)));
   // The marker name will be "Load <aChannelId>: <aURI>".
+  RefPtr<MockClassOfService> classOfService1 =
+      new MockClassOfService(nsIClassOfService::Leader);
   profiler_add_network_marker(
       /* nsIURI* aURI */ uri,
       /* const nsACString& aRequestMethod */ "GET"_ns,
@@ -2487,19 +2592,26 @@ TEST(GeckoProfiler, Markers)
       /* mozilla::TimeStamp aStart */ ts1,
       /* mozilla::TimeStamp aEnd */ ts2,
       /* int64_t aCount */ 56,
-      /* mozilla::net::CacheDisposition aCacheDisposition */
-      net::kCacheHit,
+      /* nsICacheInfoChannel::CacheDisposition aCacheDisposition */
+      nsICacheInfoChannel::kCacheHit,
       /* uint64_t aInnerWindowID */ 78,
-      /* bool aIsPrivateBrowsing */ false
+      /* bool aIsPrivateBrowsing */ false,
+      /* nsIClassOfService* aClassOfService */ classOfService1,
+      /* nsresult aRequestStatus */ NS_OK
       /* const mozilla::net::TimingStruct* aTimings = nullptr */
       /* mozilla::UniquePtr<mozilla::ProfileChunkedBuffer> aSource =
          nullptr */
+      /* const mozilla::Maybe<mozilla::net::HttpVersion> aHttpVersion =
+         mozilla::Nothing() */
+      /* const mozilla::Maybe<uint32_t> aResponseStatus = mozilla::Nothing() */
       /* const mozilla::Maybe<nsDependentCString>& aContentType =
          mozilla::Nothing() */
       /* nsIURI* aRedirectURI = nullptr */
       /* uint64_t aRedirectChannelId = 0 */
   );
 
+  RefPtr<MockClassOfService> classOfService2 =
+      new MockClassOfService(nsIClassOfService::Follower);
   profiler_add_network_marker(
       /* nsIURI* aURI */ uri,
       /* const nsACString& aRequestMethod */ "GET"_ns,
@@ -2509,14 +2621,21 @@ TEST(GeckoProfiler, Markers)
       /* mozilla::TimeStamp aStart */ ts1,
       /* mozilla::TimeStamp aEnd */ ts2,
       /* int64_t aCount */ 56,
-      /* mozilla::net::CacheDisposition aCacheDisposition */
-      net::kCacheUnresolved,
+      /* nsICacheInfoChannel::CacheDisposition aCacheDisposition */
+      nsICacheInfoChannel::kCacheUnresolved,
       /* uint64_t aInnerWindowID */ 78,
       /* bool aIsPrivateBrowsing */ false,
+      /* nsIClassOfService* aClassOfService */ classOfService2,
+      /* nsresult aRequestStatus */ NS_BINDING_ABORTED,
       /* const mozilla::net::TimingStruct* aTimings = nullptr */ nullptr,
       /* mozilla::UniquePtr<mozilla::ProfileChunkedBuffer> aSource =
          nullptr */
       nullptr,
+      /* const mozilla::Maybe<mozilla::net::HttpVersion> aHttpVersion =
+         mozilla::Nothing() */
+      Some(net::HttpVersion::v3_0),
+      /* const mozilla::Maybe<uint32_t> aResponseStatus = mozilla::Nothing() */
+      Some(200),
       /* const mozilla::Maybe<nsDependentCString>& aContentType =
          mozilla::Nothing() */
       Some(nsDependentCString("text/html")),
@@ -2526,6 +2645,8 @@ TEST(GeckoProfiler, Markers)
   nsCOMPtr<nsIURI> redirectURI;
   ASSERT_TRUE(NS_SUCCEEDED(
       NS_NewURI(getter_AddRefs(redirectURI), "http://example.com/"_ns)));
+  RefPtr<MockClassOfService> classOfService3 =
+      new MockClassOfService(nsIClassOfService::Speculative);
   profiler_add_network_marker(
       /* nsIURI* aURI */ uri,
       /* const nsACString& aRequestMethod */ "GET"_ns,
@@ -2535,14 +2656,21 @@ TEST(GeckoProfiler, Markers)
       /* mozilla::TimeStamp aStart */ ts1,
       /* mozilla::TimeStamp aEnd */ ts2,
       /* int64_t aCount */ 56,
-      /* mozilla::net::CacheDisposition aCacheDisposition */
-      net::kCacheUnresolved,
+      /* nsICacheInfoChannel::CacheDisposition aCacheDisposition */
+      nsICacheInfoChannel::kCacheUnresolved,
       /* uint64_t aInnerWindowID */ 78,
       /* bool aIsPrivateBrowsing */ false,
+      /* nsIClassOfService* aClassOfService */ classOfService3,
+      /* nsresult aRequestStatus */ NS_ERROR_UNEXPECTED,
       /* const mozilla::net::TimingStruct* aTimings = nullptr */ nullptr,
       /* mozilla::UniquePtr<mozilla::ProfileChunkedBuffer> aSource =
          nullptr */
       nullptr,
+      /* const mozilla::Maybe<mozilla::net::HttpVersion> aHttpVersion =
+         mozilla::Nothing() */
+      mozilla::Nothing(),
+      /* const mozilla::Maybe<uint32_t> aResponseStatus = mozilla::Nothing() */
+      Some(0),
       /* const mozilla::Maybe<nsDependentCString>& aContentType =
          mozilla::Nothing() */
       mozilla::Nothing(),
@@ -2551,6 +2679,8 @@ TEST(GeckoProfiler, Markers)
       nsIChannelEventSink::REDIRECT_TEMPORARY,
       /* uint64_t aRedirectChannelId = 0 */ 103);
 
+  RefPtr<MockClassOfService> classOfService4 =
+      new MockClassOfService(nsIClassOfService::Background);
   profiler_add_network_marker(
       /* nsIURI* aURI */ uri,
       /* const nsACString& aRequestMethod */ "GET"_ns,
@@ -2560,14 +2690,21 @@ TEST(GeckoProfiler, Markers)
       /* mozilla::TimeStamp aStart */ ts1,
       /* mozilla::TimeStamp aEnd */ ts2,
       /* int64_t aCount */ 56,
-      /* mozilla::net::CacheDisposition aCacheDisposition */
-      net::kCacheUnresolved,
+      /* nsICacheInfoChannel::CacheDisposition aCacheDisposition */
+      nsICacheInfoChannel::kCacheUnresolved,
       /* uint64_t aInnerWindowID */ 78,
       /* bool aIsPrivateBrowsing */ false,
+      /* nsIClassOfService* aClassOfService */ classOfService4,
+      /* nsresult aRequestStatus */ NS_ERROR_DOCSHELL_DYING,
       /* const mozilla::net::TimingStruct* aTimings = nullptr */ nullptr,
       /* mozilla::UniquePtr<mozilla::ProfileChunkedBuffer> aSource =
          nullptr */
       nullptr,
+      /* const mozilla::Maybe<mozilla::net::HttpVersion> aHttpVersion =
+         mozilla::Nothing() */
+      mozilla::Nothing(),
+      /* const mozilla::Maybe<uint32_t> aResponseStatus = mozilla::Nothing() */
+      mozilla::Nothing(),
       /* const mozilla::Maybe<nsDependentCString>& aContentType =
          mozilla::Nothing() */
       mozilla::Nothing(),
@@ -2576,6 +2713,8 @@ TEST(GeckoProfiler, Markers)
       nsIChannelEventSink::REDIRECT_PERMANENT,
       /* uint64_t aRedirectChannelId = 0 */ 104);
 
+  RefPtr<MockClassOfService> classOfService5 = new MockClassOfService(
+      nsIClassOfService::Unblocked | nsIClassOfService::TailForbidden);
   profiler_add_network_marker(
       /* nsIURI* aURI */ uri,
       /* const nsACString& aRequestMethod */ "GET"_ns,
@@ -2585,14 +2724,21 @@ TEST(GeckoProfiler, Markers)
       /* mozilla::TimeStamp aStart */ ts1,
       /* mozilla::TimeStamp aEnd */ ts2,
       /* int64_t aCount */ 56,
-      /* mozilla::net::CacheDisposition aCacheDisposition */
-      net::kCacheUnresolved,
+      /* nsICacheInfoChannel::CacheDisposition aCacheDisposition */
+      nsICacheInfoChannel::kCacheUnresolved,
       /* uint64_t aInnerWindowID */ 78,
       /* bool aIsPrivateBrowsing */ false,
+      /* nsIClassOfService* aClassOfService */ classOfService5,
+      /* nsresult aRequestStatus */ NS_ERROR_DOM_CORP_FAILED,
       /* const mozilla::net::TimingStruct* aTimings = nullptr */ nullptr,
       /* mozilla::UniquePtr<mozilla::ProfileChunkedBuffer> aSource =
          nullptr */
       nullptr,
+      /* const mozilla::Maybe<mozilla::net::HttpVersion> aHttpVersion =
+         mozilla::Nothing() */
+      mozilla::Nothing(),
+      /* const mozilla::Maybe<uint32_t> aResponseStatus = mozilla::Nothing() */
+      mozilla::Nothing(),
       /* const mozilla::Maybe<nsDependentCString>& aContentType =
          mozilla::Nothing() */
       mozilla::Nothing(),
@@ -2600,6 +2746,9 @@ TEST(GeckoProfiler, Markers)
       /* uint32_t aRedirectFlags = 0 */ nsIChannelEventSink::REDIRECT_INTERNAL,
       /* uint64_t aRedirectChannelId = 0 */ 105);
 
+  RefPtr<MockClassOfService> classOfService6 = new MockClassOfService(
+      nsIClassOfService::Unblocked | nsIClassOfService::Throttleable |
+      nsIClassOfService::TailForbidden);
   profiler_add_network_marker(
       /* nsIURI* aURI */ uri,
       /* const nsACString& aRequestMethod */ "GET"_ns,
@@ -2609,14 +2758,21 @@ TEST(GeckoProfiler, Markers)
       /* mozilla::TimeStamp aStart */ ts1,
       /* mozilla::TimeStamp aEnd */ ts2,
       /* int64_t aCount */ 56,
-      /* mozilla::net::CacheDisposition aCacheDisposition */
-      net::kCacheUnresolved,
+      /* nsICacheInfoChannel::CacheDisposition aCacheDisposition */
+      nsICacheInfoChannel::kCacheUnresolved,
       /* uint64_t aInnerWindowID */ 78,
       /* bool aIsPrivateBrowsing */ false,
+      /* nsIClassOfService* aClassOfService */ classOfService6,
+      /* nsresult aRequestStatus */ NS_ERROR_BLOCKED_BY_POLICY,
       /* const mozilla::net::TimingStruct* aTimings = nullptr */ nullptr,
       /* mozilla::UniquePtr<mozilla::ProfileChunkedBuffer> aSource =
          nullptr */
       nullptr,
+      /* const mozilla::Maybe<mozilla::net::HttpVersion> aHttpVersion =
+         mozilla::Nothing() */
+      mozilla::Nothing(),
+      /* const mozilla::Maybe<uint32_t> aResponseStatus = mozilla::Nothing() */
+      mozilla::Nothing(),
       /* const mozilla::Maybe<nsDependentCString>& aContentType =
          mozilla::Nothing() */
       mozilla::Nothing(),
@@ -2624,6 +2780,9 @@ TEST(GeckoProfiler, Markers)
       /* uint32_t aRedirectFlags = 0 */ nsIChannelEventSink::REDIRECT_INTERNAL |
           nsIChannelEventSink::REDIRECT_STS_UPGRADE,
       /* uint64_t aRedirectChannelId = 0 */ 106);
+
+  RefPtr<MockClassOfService> classOfService7 =
+      new MockClassOfService(nsIClassOfService::Tail);
   profiler_add_network_marker(
       /* nsIURI* aURI */ uri,
       /* const nsACString& aRequestMethod */ "GET"_ns,
@@ -2633,18 +2792,43 @@ TEST(GeckoProfiler, Markers)
       /* mozilla::TimeStamp aStart */ ts1,
       /* mozilla::TimeStamp aEnd */ ts2,
       /* int64_t aCount */ 56,
-      /* mozilla::net::CacheDisposition aCacheDisposition */
-      net::kCacheUnresolved,
+      /* nsICacheInfoChannel::CacheDisposition aCacheDisposition */
+      nsICacheInfoChannel::kCacheUnresolved,
       /* uint64_t aInnerWindowID */ 78,
-      /* bool aIsPrivateBrowsing */ true
+      /* bool aIsPrivateBrowsing */ true,
+      /* nsIClassOfService* aClassOfService */ classOfService7,
+      /* nsresult aRequestStatus */ NS_BINDING_REDIRECTED
       /* const mozilla::net::TimingStruct* aTimings = nullptr */
       /* mozilla::UniquePtr<mozilla::ProfileChunkedBuffer> aSource =
          nullptr */
+      /* const mozilla::Maybe<mozilla::net::HttpVersion> aHttpVersion =
+         mozilla::Nothing() */
+      /* const mozilla::Maybe<uint32_t> aResponseStatus = mozilla::Nothing() */
       /* const mozilla::Maybe<nsDependentCString>& aContentType =
          mozilla::Nothing() */
       /* nsIURI* aRedirectURI = nullptr */
       /* uint64_t aRedirectChannelId = 0 */
   );
+
+  // Test network marker with FetchPriority to verify priorityHeader
+  RefPtr<MockClassOfService> classOfService8 =
+      new MockClassOfService(nsIClassOfService::Leader, /* incremental */ true,
+                             nsIClassOfService::FETCHPRIORITY_HIGH);
+  profiler_add_network_marker(
+      /* nsIURI* aURI */ uri,
+      /* const nsACString& aRequestMethod */ "GET"_ns,
+      /* int32_t aPriority */ 34,
+      /* uint64_t aChannelId */ 8,
+      /* NetworkLoadType aType */ net::NetworkLoadType::LOAD_START,
+      /* mozilla::TimeStamp aStart */ ts1,
+      /* mozilla::TimeStamp aEnd */ ts2,
+      /* int64_t aCount */ 56,
+      /* nsICacheInfoChannel::CacheDisposition aCacheDisposition */
+      nsICacheInfoChannel::kCacheHit,
+      /* uint64_t aInnerWindowID */ 78,
+      /* bool aIsPrivateBrowsing */ false,
+      /* nsIClassOfService* aClassOfService */ classOfService8,
+      /* nsresult aRequestStatus */ NS_OK);
 
   EXPECT_TRUE(profiler_add_marker_impl(
       "Text in main thread with stack", geckoprofiler::category::OTHER,
@@ -2723,6 +2907,7 @@ TEST(GeckoProfiler, Markers)
     S_tracing_event_with_stack,
     S_tracing_auto_tracing_start,
     S_tracing_auto_tracing_end,
+    S_D,
     S_M1,
     S_M3,
     S_Markers2DefaultEmptyOptions,
@@ -2732,6 +2917,11 @@ TEST(GeckoProfiler, Markers)
     S_FirstMarker,
     S_CustomMarker,
     S_SpecialMarker,
+    S_SimplePayload_int,
+    S_SimplePayload_double,
+    S_SimplePayload_bool,
+    S_SimplePayload_string,
+    S_SimplePayload_multiple,
     S_NetworkMarkerPayload_start,
     S_NetworkMarkerPayload_stop,
     S_NetworkMarkerPayload_redirect_temporary,
@@ -2739,6 +2929,7 @@ TEST(GeckoProfiler, Markers)
     S_NetworkMarkerPayload_redirect_internal,
     S_NetworkMarkerPayload_redirect_internal_sts,
     S_NetworkMarkerPayload_private_browsing,
+    S_NetworkMarkerPayload_priorityHeader,
 
     S_TextWithStack,
     S_TextToMTWithStack,
@@ -2876,7 +3067,11 @@ TEST(GeckoProfiler, Markers)
               if (marker.size() == SIZE_WITHOUT_PAYLOAD) {
                 // root.threads[0].markers.data[i] is an array with 5 elements,
                 // so there is no payload.
-                if (nameString == "M1") {
+                if (nameString == "D") {
+                  ASSERT_EQ(state, S_D);
+                  state = State(state + 1);
+                  EXPECT_TIMING_INTERVAL;
+                } else if (nameString == "M1") {
                   ASSERT_EQ(state, S_M1);
                   state = State(state + 1);
                 } else if (nameString == "M3") {
@@ -2953,16 +3148,14 @@ TEST(GeckoProfiler, Markers)
                   switch (state) {
                     case S_tracing_auto_tracing_start:
                       state = State(S_tracing_auto_tracing_start + 1);
-                      EXPECT_EQ(typeString, "tracing");
+                      EXPECT_EQ(typeString, "StackMarker");
                       EXPECT_TIMING_START;
-                      EXPECT_EQ_JSON(payload["category"], String, "C");
                       EXPECT_TRUE(payload["stack"].isNull());
                       break;
                     case S_tracing_auto_tracing_end:
                       state = State(S_tracing_auto_tracing_end + 1);
-                      EXPECT_EQ(typeString, "tracing");
+                      EXPECT_EQ(typeString, "StackMarker");
                       EXPECT_TIMING_END;
-                      EXPECT_EQ_JSON(payload["category"], String, "C");
                       ASSERT_TRUE(payload["stack"].isNull());
                       break;
                     default:
@@ -3016,6 +3209,43 @@ TEST(GeckoProfiler, Markers)
                   EXPECT_EQ(typeString, "markers-gtest-special");
                   EXPECT_EQ(payload.size(), 1u) << "Only 'type' in the payload";
 
+                } else if (nameString == "SimplePayload with int") {
+                  EXPECT_EQ(state, S_SimplePayload_int);
+                  state = State(S_SimplePayload_int + 1);
+                  EXPECT_EQ(typeString, "SimplePayload with int");
+                  EXPECT_TIMING_INSTANT;
+                  EXPECT_EQ_JSON(payload["testInt"], Int64, 42);
+
+                } else if (nameString == "SimplePayload with double") {
+                  EXPECT_EQ(state, S_SimplePayload_double);
+                  state = State(S_SimplePayload_double + 1);
+                  EXPECT_EQ(typeString, "SimplePayload with double");
+                  EXPECT_TIMING_INSTANT;
+                  EXPECT_EQ_JSON(payload["testDouble"], Double, 3.14);
+
+                } else if (nameString == "SimplePayload with bool") {
+                  EXPECT_EQ(state, S_SimplePayload_bool);
+                  state = State(S_SimplePayload_bool + 1);
+                  EXPECT_EQ(typeString, "SimplePayload with bool");
+                  EXPECT_TIMING_INSTANT;
+                  EXPECT_EQ_JSON(payload["testBool"], Bool, true);
+
+                } else if (nameString == "SimplePayload with string") {
+                  EXPECT_EQ(state, S_SimplePayload_string);
+                  state = State(S_SimplePayload_string + 1);
+                  EXPECT_EQ(typeString, "SimplePayload with string");
+                  EXPECT_TIMING_INSTANT;
+                  EXPECT_EQ_JSON(payload["testString"], String, "test_string");
+
+                } else if (nameString == "SimplePayload with multiple") {
+                  EXPECT_EQ(state, S_SimplePayload_multiple);
+                  state = State(S_SimplePayload_multiple + 1);
+                  EXPECT_EQ(typeString, "SimplePayload with multiple");
+                  EXPECT_TIMING_INSTANT;
+                  EXPECT_EQ_JSON(payload["testInt"], Int64, 42);
+                  EXPECT_EQ_JSON(payload["testDouble"], Double, 3.14);
+                  EXPECT_EQ_JSON(payload["testBool"], Bool, true);
+
                 } else if (nameString == "Load 1: http://mozilla.org/") {
                   EXPECT_EQ(state, S_NetworkMarkerPayload_start);
                   state = State(S_NetworkMarkerPayload_start + 1);
@@ -3029,6 +3259,8 @@ TEST(GeckoProfiler, Markers)
                   EXPECT_EQ_JSON(payload["count"], Int64, 56);
                   EXPECT_EQ_JSON(payload["cache"], String, "Hit");
                   EXPECT_TRUE(payload["isPrivateBrowsing"].isNull());
+                  EXPECT_EQ_JSON(payload["classOfService"], String, "Leader");
+                  EXPECT_EQ_JSON(payload["requestStatus"], String, "NS_OK");
                   EXPECT_TRUE(payload["RedirectURI"].isNull());
                   EXPECT_TRUE(payload["redirectType"].isNull());
                   EXPECT_TRUE(payload["isHttpToHttpsRedirect"].isNull());
@@ -3048,10 +3280,15 @@ TEST(GeckoProfiler, Markers)
                   EXPECT_EQ_JSON(payload["count"], Int64, 56);
                   EXPECT_EQ_JSON(payload["cache"], String, "Unresolved");
                   EXPECT_TRUE(payload["isPrivateBrowsing"].isNull());
+                  EXPECT_EQ_JSON(payload["httpVersion"], String, "h3");
+                  EXPECT_EQ_JSON(payload["classOfService"], String, "Follower");
+                  EXPECT_EQ_JSON(payload["requestStatus"], String,
+                                 "NS_BINDING_ABORTED");
                   EXPECT_TRUE(payload["RedirectURI"].isNull());
                   EXPECT_TRUE(payload["redirectType"].isNull());
                   EXPECT_TRUE(payload["isHttpToHttpsRedirect"].isNull());
                   EXPECT_TRUE(payload["redirectId"].isNull());
+                  EXPECT_EQ_JSON(payload["responseStatus"], Int64, 200);
                   EXPECT_EQ_JSON(payload["contentType"], String, "text/html");
 
                 } else if (nameString == "Load 3: http://mozilla.org/") {
@@ -3067,6 +3304,10 @@ TEST(GeckoProfiler, Markers)
                   EXPECT_EQ_JSON(payload["count"], Int64, 56);
                   EXPECT_EQ_JSON(payload["cache"], String, "Unresolved");
                   EXPECT_TRUE(payload["isPrivateBrowsing"].isNull());
+                  EXPECT_EQ_JSON(payload["classOfService"], String,
+                                 "Speculative");
+                  EXPECT_EQ_JSON(payload["requestStatus"], String,
+                                 "NS_ERROR_UNEXPECTED");
                   EXPECT_EQ_JSON(payload["RedirectURI"], String,
                                  "http://example.com/");
                   EXPECT_EQ_JSON(payload["redirectType"], String, "Temporary");
@@ -3087,6 +3328,10 @@ TEST(GeckoProfiler, Markers)
                   EXPECT_EQ_JSON(payload["count"], Int64, 56);
                   EXPECT_EQ_JSON(payload["cache"], String, "Unresolved");
                   EXPECT_TRUE(payload["isPrivateBrowsing"].isNull());
+                  EXPECT_EQ_JSON(payload["classOfService"], String,
+                                 "Background");
+                  EXPECT_EQ_JSON(payload["requestStatus"], String,
+                                 "NS_ERROR_DOCSHELL_DYING");
                   EXPECT_EQ_JSON(payload["RedirectURI"], String,
                                  "http://example.com/");
                   EXPECT_EQ_JSON(payload["redirectType"], String, "Permanent");
@@ -3107,6 +3352,10 @@ TEST(GeckoProfiler, Markers)
                   EXPECT_EQ_JSON(payload["count"], Int64, 56);
                   EXPECT_EQ_JSON(payload["cache"], String, "Unresolved");
                   EXPECT_TRUE(payload["isPrivateBrowsing"].isNull());
+                  EXPECT_EQ_JSON(payload["classOfService"], String,
+                                 "Unblocked | TailForbidden");
+                  EXPECT_EQ_JSON(payload["requestStatus"], String,
+                                 "NS_ERROR_DOM_CORP_FAILED");
                   EXPECT_EQ_JSON(payload["RedirectURI"], String,
                                  "http://example.com/");
                   EXPECT_EQ_JSON(payload["redirectType"], String, "Internal");
@@ -3129,6 +3378,10 @@ TEST(GeckoProfiler, Markers)
                   EXPECT_EQ_JSON(payload["count"], Int64, 56);
                   EXPECT_EQ_JSON(payload["cache"], String, "Unresolved");
                   EXPECT_TRUE(payload["isPrivateBrowsing"].isNull());
+                  EXPECT_EQ_JSON(payload["classOfService"], String,
+                                 "Unblocked | Throttleable | TailForbidden");
+                  EXPECT_EQ_JSON(payload["requestStatus"], String,
+                                 "NS_ERROR_BLOCKED_BY_POLICY");
                   EXPECT_EQ_JSON(payload["RedirectURI"], String,
                                  "http://example.com/");
                   EXPECT_EQ_JSON(payload["redirectType"], String, "Internal");
@@ -3149,11 +3402,38 @@ TEST(GeckoProfiler, Markers)
                   EXPECT_EQ_JSON(payload["count"], Int64, 56);
                   EXPECT_EQ_JSON(payload["cache"], String, "Unresolved");
                   EXPECT_EQ_JSON(payload["isPrivateBrowsing"], Bool, true);
+                  EXPECT_EQ_JSON(payload["classOfService"], String, "Tail");
+                  EXPECT_EQ_JSON(payload["requestStatus"], String,
+                                 "NS_BINDING_REDIRECTED");
                   EXPECT_TRUE(payload["RedirectURI"].isNull());
                   EXPECT_TRUE(payload["redirectType"].isNull());
                   EXPECT_TRUE(payload["isHttpToHttpsRedirect"].isNull());
                   EXPECT_TRUE(payload["redirectId"].isNull());
                   EXPECT_TRUE(payload["contentType"].isNull());
+
+                } else if (nameString == "Load 8: http://mozilla.org/") {
+                  EXPECT_EQ(state, S_NetworkMarkerPayload_priorityHeader);
+                  state = State(S_NetworkMarkerPayload_priorityHeader + 1);
+                  EXPECT_EQ(typeString, "Network");
+                  EXPECT_EQ_JSON(payload["startTime"], Double, ts1Double);
+                  EXPECT_EQ_JSON(payload["endTime"], Double, ts2Double);
+                  EXPECT_EQ_JSON(payload["id"], Int64, 8);
+                  EXPECT_EQ_JSON(payload["URI"], String, "http://mozilla.org/");
+                  EXPECT_EQ_JSON(payload["requestMethod"], String, "GET");
+                  EXPECT_EQ_JSON(payload["pri"], Int64, 34);
+                  EXPECT_EQ_JSON(payload["count"], Int64, 56);
+                  EXPECT_EQ_JSON(payload["cache"], String, "Hit");
+                  EXPECT_TRUE(payload["isPrivateBrowsing"].isNull());
+                  EXPECT_EQ_JSON(payload["classOfService"], String, "Leader");
+                  EXPECT_EQ_JSON(payload["requestStatus"], String, "NS_OK");
+                  EXPECT_TRUE(payload["RedirectURI"].isNull());
+                  EXPECT_TRUE(payload["redirectType"].isNull());
+                  EXPECT_TRUE(payload["isHttpToHttpsRedirect"].isNull());
+                  EXPECT_TRUE(payload["redirectId"].isNull());
+                  EXPECT_TRUE(payload["contentType"].isNull());
+                  EXPECT_FALSE(payload["priorityHeader"].isNull());
+                  EXPECT_EQ_JSON(payload["priorityHeader"], String, "u=4, i");
+
                 } else if (nameString == "Text in main thread with stack") {
                   EXPECT_EQ(state, S_TextWithStack);
                   state = State(S_TextWithStack + 1);
@@ -3357,7 +3637,7 @@ TEST(GeckoProfiler, Markers)
             EXPECT_EQ_JSON(schema["tooltipLabel"], String, "tooltip label");
             EXPECT_EQ_JSON(schema["tableLabel"], String, "table label");
 
-            ASSERT_EQ(data.size(), 16u);
+            ASSERT_EQ(data.size(), 19u);
 
             ASSERT_TRUE(data[0u].isObject());
             EXPECT_EQ_JSON(data[0u]["key"], String, "key with url");
@@ -3376,7 +3656,7 @@ TEST(GeckoProfiler, Markers)
                            "key with string not-searchable");
             EXPECT_TRUE(data[2u]["label"].isNull());
             EXPECT_EQ_JSON(data[2u]["format"], String, "string");
-            EXPECT_EQ_JSON(data[2u]["searchable"], Bool, false);
+            EXPECT_TRUE(data[2u]["searchable"].isNull());
 
             ASSERT_TRUE(data[3u].isObject());
             EXPECT_EQ_JSON(data[3u]["key"], String,
@@ -3455,6 +3735,29 @@ TEST(GeckoProfiler, Markers)
             EXPECT_TRUE(data[15u]["label"].isNull());
             EXPECT_EQ_JSON(data[15u]["format"], String, "sanitized-string");
             EXPECT_EQ_JSON(data[15u]["searchable"], Bool, true);
+
+            ASSERT_TRUE(data[16u].isObject());
+            EXPECT_EQ_JSON(data[16u]["key"], String, "key with label hidden");
+            EXPECT_EQ_JSON(data[16u]["label"], String, "label");
+            EXPECT_EQ_JSON(data[16u]["format"], String, "string");
+            EXPECT_TRUE(data[16u]["searchable"].isNull());
+            EXPECT_EQ_JSON(data[16u]["hidden"], Bool, true);
+
+            ASSERT_TRUE(data[17u].isObject());
+            EXPECT_EQ_JSON(data[17u]["key"], String, "key hidden");
+            EXPECT_TRUE(data[17u]["label"].isNull());
+            EXPECT_EQ_JSON(data[17u]["format"], String, "string");
+            EXPECT_TRUE(data[17u]["searchable"].isNull());
+            EXPECT_EQ_JSON(data[17u]["hidden"], Bool, true);
+
+            ASSERT_TRUE(data[18u].isObject());
+            EXPECT_EQ_JSON(data[18u]["key"], String,
+                           "key hidden and searchable");
+            EXPECT_TRUE(data[18u]["label"].isNull());
+            EXPECT_EQ_JSON(data[18u]["format"], String, "string");
+            EXPECT_EQ_JSON(data[18u]["searchable"], Bool, true);
+            EXPECT_EQ_JSON(data[18u]["hidden"], Bool, true);
+
           } else if (nameString == "markers-gtest-special") {
             EXPECT_EQ(display.size(), 0u);
             ASSERT_EQ(data.size(), 0u);
@@ -3513,7 +3816,7 @@ TEST(GeckoProfiler, Markers)
 
   // Warning: this could be racy
   profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL, features,
-                 filters, MOZ_ARRAY_LENGTH(filters), 0);
+                 filters, std::size(filters), 0);
 
   // This last marker shouldn't get streamed.
   SpliceableChunkedJSONWriter w2{FailureLatchInfallibleSource::Singleton()};
@@ -3555,14 +3858,13 @@ TEST(GeckoProfiler, Counters)
   NumberAndCount expectedTestCounters[] = {{1u, 10}, {0u, 0}, {1u, 7},
                                            {0u, 0},  {0u, 0}, {1u, -17},
                                            {0u, 0},  {0u, 0}};
-  constexpr size_t expectedTestCountersCount =
-      MOZ_ARRAY_LENGTH(expectedTestCounters);
+  constexpr size_t expectedTestCountersCount = std::size(expectedTestCounters);
 
   bool expectCounter2 = false;
   int64_t testCounters2[] = {10};
   NumberAndCount expectedTestCounters2[] = {{1u, 10}, {0u, 0}};
   constexpr size_t expectedTestCounters2Count =
-      MOZ_ARRAY_LENGTH(expectedTestCounters2);
+      std::size(expectedTestCounters2);
 
   auto checkCountersInJSON = [&](const Json::Value& aRoot) {
     size_t nextExpectedTestCounter = 0u;
@@ -3623,7 +3925,7 @@ TEST(GeckoProfiler, Counters)
 
   // Inactive -> Active
   profiler_ensure_started(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL,
-                          features, filters, MOZ_ARRAY_LENGTH(filters), 0);
+                          features, filters, std::size(filters), 0);
 
   // Output all "TestCounter"s, with increasing delays (to test different
   // number of counter samplings).
@@ -3666,7 +3968,7 @@ TEST(GeckoProfiler, Time)
 
   // profiler_start() restarts the timer used by profiler_time().
   profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL, features,
-                 filters, MOZ_ARRAY_LENGTH(filters), 0);
+                 filters, std::size(filters), 0);
 
   double t3 = profiler_time();
   double t4 = profiler_time();
@@ -3687,7 +3989,7 @@ TEST(GeckoProfiler, GetProfile)
   ASSERT_TRUE(!profiler_get_profile());
 
   profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL, features,
-                 filters, MOZ_ARRAY_LENGTH(filters), 0);
+                 filters, std::size(filters), 0);
 
   mozilla::Maybe<uint32_t> activeFeatures = profiler_features_if_active();
   ASSERT_TRUE(activeFeatures.isSome());
@@ -3750,7 +4052,7 @@ TEST(GeckoProfiler, StreamJSONForThisProcess)
   MOZ_RELEASE_ASSERT(!w.GetFailure());
 
   profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL, features,
-                 filters, MOZ_ARRAY_LENGTH(filters), 0);
+                 filters, std::size(filters), 0);
 
   w.Start();
   ASSERT_TRUE(::profiler_stream_json_for_this_process(w).isOk());
@@ -3814,7 +4116,7 @@ TEST(GeckoProfiler, StreamJSONForThisProcessThreaded)
 
   // Start the profiler on the main thread.
   profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL, features,
-                 filters, MOZ_ARRAY_LENGTH(filters), 0);
+                 filters, std::size(filters), 0);
 
   // Call profiler_stream_json_for_this_process on a background thread.
   NS_DispatchAndSpinEventLoopUntilComplete(
@@ -3880,7 +4182,7 @@ TEST(GeckoProfiler, ProfilingStack)
         "A::C3", JS, NS_ConvertUTF8toUTF16(dynamic.get()));
 
     profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL,
-                   features, filters, MOZ_ARRAY_LENGTH(filters), 0);
+                   features, filters, std::size(filters), 0);
 
     ASSERT_TRUE(profiler_get_backtrace());
   }
@@ -3902,14 +4204,14 @@ TEST(GeckoProfiler, Bug1355807)
   const char* fewThreadsFilter[] = {"GeckoMain"};
 
   profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL, features,
-                 manyThreadsFilter, MOZ_ARRAY_LENGTH(manyThreadsFilter), 0);
+                 manyThreadsFilter, std::size(manyThreadsFilter), 0);
 
   profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL, features,
-                 fewThreadsFilter, MOZ_ARRAY_LENGTH(fewThreadsFilter), 0);
+                 fewThreadsFilter, std::size(fewThreadsFilter), 0);
 
   // In bug 1355807 this caused an assertion failure in StopJSSampling().
   profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL, features,
-                 fewThreadsFilter, MOZ_ARRAY_LENGTH(fewThreadsFilter), 0);
+                 fewThreadsFilter, std::size(fewThreadsFilter), 0);
 
   profiler_stop();
 }
@@ -3922,8 +4224,9 @@ class GTestStackCollector final : public ProfilerStackCollector {
 
   virtual void CollectNativeLeafAddr(void* aAddr) { mFrames++; }
   virtual void CollectJitReturnAddr(void* aAddr) { mFrames++; }
-  virtual void CollectWasmFrame(JS::ProfilingCategoryPair aCategory,
-                                const char* aLabel) {
+  virtual void CollectWasmOrSyncJITFrame(JS::ProfilingCategoryPair aCategory,
+                                         const char* aLabel,
+                                         uint32_t aSourceId) {
     mFrames++;
   }
   virtual void CollectProfilingStackFrame(
@@ -3972,7 +4275,7 @@ TEST(GeckoProfiler, SuspendAndSample)
   const char* filters[] = {"GeckoMain", "Compositor"};
 
   profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL, features,
-                 filters, MOZ_ARRAY_LENGTH(filters), 0);
+                 filters, std::size(filters), 0);
 
   ASSERT_TRUE(profiler_is_active());
 
@@ -3995,8 +4298,7 @@ TEST(GeckoProfiler, PostSamplingCallback)
       [&](SamplingState) { ASSERT_TRUE(false); }));
 
   profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL,
-                 ProfilerFeature::StackWalk, filters, MOZ_ARRAY_LENGTH(filters),
-                 0);
+                 ProfilerFeature::StackWalk, filters, std::size(filters), 0);
   {
     // Stack sampling -> This label should appear at least once.
     AUTO_PROFILER_LABEL("PostSamplingCallback completed", OTHER);
@@ -4045,7 +4347,7 @@ TEST(GeckoProfiler, PostSamplingCallback)
 
   profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL,
                  ProfilerFeature::StackWalk | ProfilerFeature::NoStackSampling,
-                 filters, MOZ_ARRAY_LENGTH(filters), 0);
+                 filters, std::size(filters), 0);
   {
     // No stack sampling -> This label should not appear.
     AUTO_PROFILER_LABEL("PostSamplingCallback completed (no stacks)", OTHER);
@@ -4109,8 +4411,7 @@ TEST(GeckoProfiler, ProfilingStateCallback)
   CheckStatesIsEmpty();
 
   profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL,
-                 ProfilerFeature::StackWalk, filters, MOZ_ARRAY_LENGTH(filters),
-                 0);
+                 ProfilerFeature::StackWalk, filters, std::size(filters), 0);
 
   CheckStatesOnlyContains(ProfilingState::Started, 1);
 
@@ -4149,7 +4450,7 @@ TEST(GeckoProfiler, ProfilingStateCallback)
   // ProfilingState::Stopping is not notified. See `profiler_start` for details.
   profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL,
                  ProfilerFeature::StackWalk | ProfilerFeature::NoStackSampling,
-                 filters, MOZ_ARRAY_LENGTH(filters), 0);
+                 filters, std::size(filters), 0);
   CheckStatesOnlyContains(ProfilingState::Started, 1);
   ASSERT_EQ(WaitForSamplingState(), SamplingState::NoStackSamplingCompleted);
   UniquePtr<char[]> profileNoStacks = profiler_get_profile();
@@ -4180,7 +4481,7 @@ TEST(GeckoProfiler, BaseProfilerHandOff)
   // Start the Base Profiler.
   baseprofiler::profiler_start(
       PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL,
-      ProfilerFeature::StackWalk, filters, MOZ_ARRAY_LENGTH(filters));
+      ProfilerFeature::StackWalk, filters, std::size(filters));
 
   ASSERT_TRUE(baseprofiler::profiler_is_active());
   ASSERT_TRUE(!profiler_is_active());
@@ -4198,8 +4499,7 @@ TEST(GeckoProfiler, BaseProfilerHandOff)
   // Start the Gecko Profiler, which should grab the Base Profiler profile and
   // stop it.
   profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL,
-                 ProfilerFeature::StackWalk, filters, MOZ_ARRAY_LENGTH(filters),
-                 0);
+                 ProfilerFeature::StackWalk, filters, std::size(filters), 0);
 
   ASSERT_TRUE(!baseprofiler::profiler_is_active());
   ASSERT_TRUE(profiler_is_active());
@@ -4253,15 +4553,19 @@ TEST(GeckoProfiler, BaseProfilerHandOff)
   });
 }
 
+// Bug 1953108: Windows ASan builds frequently time out on
+// GeckoProfiler.FeatureCombinations.
+#  if !defined(XP_WIN) || !defined(MOZ_ASAN)
+
 static std::string_view GetFeatureName(uint32_t feature) {
   switch (feature) {
-#  define FEATURE_NAME(n_, str_, Name_, desc_) \
-    case ProfilerFeature::Name_:               \
-      return str_;
+#    define FEATURE_NAME(n_, str_, Name_, desc_) \
+      case ProfilerFeature::Name_:               \
+        return str_;
 
     PROFILER_FOR_EACH_FEATURE(FEATURE_NAME)
 
-#  undef FEATURE_NAME
+#    undef FEATURE_NAME
 
     default:
       return "?";
@@ -4285,7 +4589,7 @@ TEST(GeckoProfiler, FeatureCombinations)
                             ProfilerFeature::SamplingAllThreads,
                             ProfilerFeature::MarkersAllThreads,
                             ProfilerFeature::UnregisteredThreads};
-  constexpr uint32_t featureCount = uint32_t(MOZ_ARRAY_LENGTH(featureList));
+  constexpr uint32_t featureCount = uint32_t(std::size(featureList));
 
   auto testFeatures = [&](uint32_t features,
                           const std::string& featuresString) {
@@ -4294,7 +4598,7 @@ TEST(GeckoProfiler, FeatureCombinations)
     ASSERT_TRUE(!profiler_is_active());
 
     profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL,
-                   features, filters, MOZ_ARRAY_LENGTH(filters), 0);
+                   features, filters, std::size(filters), 0);
 
     ASSERT_TRUE(profiler_is_active());
 
@@ -4341,6 +4645,8 @@ TEST(GeckoProfiler, FeatureCombinations)
     }
   }
 }
+
+#  endif  // if !defined(XP_WIN) || !defined(MOZ_ASAN)
 
 static void CountCPUDeltas(const Json::Value& aThread, size_t& aOutSamplings,
                            uint64_t& aOutCPUDeltaSum) {
@@ -4437,7 +4743,7 @@ TEST(GeckoProfiler, CPUUsage)
         PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL,
         ProfilerFeature::StackWalk | ProfilerFeature::CPUUtilization |
             (testWithNoStackSampling ? ProfilerFeature::NoStackSampling : 0),
-        filters, MOZ_ARRAY_LENGTH(filters), 0);
+        filters, std::size(filters), 0);
     // Grab a few samples, each with a different label on the stack.
 #  define SAMPLE_LABEL_PREFIX "CPUUsage sample label "
     static constexpr const char* scSampleLabels[] = {
@@ -4481,7 +4787,9 @@ TEST(GeckoProfiler, CPUUsage)
         GET_JSON(configuration, meta["configuration"], Object);
         {
           GET_JSON(features, configuration["features"], Array);
-          { EXPECT_JSON_ARRAY_CONTAINS(features, String, "cpu"); }
+          {
+            EXPECT_JSON_ARRAY_CONTAINS(features, String, "cpu");
+          }
         }
       }
 
@@ -4689,7 +4997,7 @@ TEST(GeckoProfiler, AllThreads)
     EXPECT_FALSE(profiler_thread_is_being_profiled_for_markers());
 
     profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL,
-                   features, filters, MOZ_ARRAY_LENGTH(filters), 0);
+                   features, filters, std::size(filters), 0);
 
     EXPECT_TRUE(profiler_thread_is_being_profiled(
         ThreadProfilingFeatures::CPUUtilization));
@@ -4878,7 +5186,7 @@ TEST(GeckoProfiler, FailureHandling)
   uint32_t features = ProfilerFeature::StackWalk;
   const char* filters[] = {"GeckoMain"};
   profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL, features,
-                 filters, MOZ_ARRAY_LENGTH(filters), 0);
+                 filters, std::size(filters), 0);
 
   ASSERT_EQ(WaitForSamplingState(), SamplingState::SamplingCompleted);
 
@@ -4950,7 +5258,7 @@ TEST(GeckoProfiler, NoMarkerStacks)
     // Start the profiler without the NoMarkerStacks feature and make sure we
     // capture stacks.
     profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL,
-                   /* features */ 0, filters, MOZ_ARRAY_LENGTH(filters), 0);
+                   /* features */ 0, filters, std::size(filters), 0);
 
     ASSERT_TRUE(profiler_capture_backtrace());
     profiler_stop();
@@ -4959,7 +5267,7 @@ TEST(GeckoProfiler, NoMarkerStacks)
   // Start the profiler without the NoMarkerStacks feature and make sure we
   // don't capture stacks.
   profiler_start(PROFILER_DEFAULT_ENTRIES, PROFILER_DEFAULT_INTERVAL, features,
-                 filters, MOZ_ARRAY_LENGTH(filters), 0);
+                 filters, std::size(filters), 0);
 
   // Make sure that the active features has the NoMarkerStacks feature.
   mozilla::Maybe<uint32_t> activeFeatures = profiler_features_if_active();

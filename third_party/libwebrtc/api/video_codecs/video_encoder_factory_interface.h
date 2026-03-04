@@ -13,15 +13,14 @@
 
 #include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
-#include "absl/types/optional.h"
-#include "absl/types/variant.h"
 #include "api/units/time_delta.h"
 #include "api/video/resolution.h"
+#include "api/video/video_frame_buffer.h"
 #include "api/video_codecs/video_encoder_interface.h"
 #include "api/video_codecs/video_encoding_general.h"
 #include "rtc_base/numerics/rational.h"
@@ -85,7 +84,7 @@ class VideoEncoderFactoryInterface {
 
     Resolution max_encode_dimensions;
     EncodingFormat encoding_format;
-    absl::variant<Cqp, Cbr> rc_mode;
+    std::variant<Cqp, Cbr> rc_mode;
     int max_number_of_threads;
   };
 

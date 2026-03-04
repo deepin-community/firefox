@@ -29,6 +29,7 @@
 #include "mozilla/TaskQueue.h"
 #include "mozilla/ThreadEventQueue.h"
 #include "mozilla/ThreadLocal.h"
+#include "mozilla/ipc/SharedMemoryMapping.h"
 #include "TaskController.h"
 #include "ThreadEventTarget.h"
 #ifdef MOZ_CANARY
@@ -153,11 +154,11 @@ BackgroundEventTarget::IsOnCurrentThread(bool* aValue) {
 
 NS_IMETHODIMP
 BackgroundEventTarget::Dispatch(already_AddRefed<nsIRunnable> aRunnable,
-                                uint32_t aFlags) {
+                                DispatchFlags aFlags) {
   // Select the right destination and clear the special flag.
   bool mayBlock = bool(aFlags & NS_DISPATCH_EVENT_MAY_BLOCK);
   nsCOMPtr<nsIThreadPool>& pool = mayBlock ? mIOPool : mPool;
-  uint32_t flags = aFlags & ~NS_DISPATCH_EVENT_MAY_BLOCK;
+  DispatchFlags flags = aFlags & ~NS_DISPATCH_EVENT_MAY_BLOCK;
 
   // If an event is dispatched with NS_DISPATCH_AT_END, it is intended to run
   // on the same thread on the same pool it is dispatched from, but we might
@@ -173,7 +174,7 @@ BackgroundEventTarget::Dispatch(already_AddRefed<nsIRunnable> aRunnable,
 
 NS_IMETHODIMP
 BackgroundEventTarget::DispatchFromScript(nsIRunnable* aRunnable,
-                                          uint32_t aFlags) {
+                                          DispatchFlags aFlags) {
   nsCOMPtr<nsIRunnable> runnable(aRunnable);
   return Dispatch(runnable.forget(), aFlags);
 }
@@ -187,6 +188,9 @@ BackgroundEventTarget::DelayedDispatch(already_AddRefed<nsIRunnable> aRunnable,
 
 NS_IMETHODIMP
 BackgroundEventTarget::RegisterShutdownTask(nsITargetShutdownTask* aTask) {
+  MOZ_ASSERT_UNREACHABLE(
+      "If we start to hand out direct access to"
+      "BackgroundEventTarget, we probably want to implement this.");
   return NS_ERROR_NOT_IMPLEMENTED;
 }
 
@@ -261,6 +265,18 @@ NS_IMPL_QUERY_INTERFACE_CI(nsThreadManager, nsIThreadManager)
 NS_IMPL_CI_INTERFACE_GETTER(nsThreadManager, nsIThreadManager)
 
 //-----------------------------------------------------------------------------
+
+/*static*/ uint32_t nsIThreadManager::LargeStackSize() {
+  // This is just short of 2MB to avoid the Linux kernel allocating an entire
+  // 2MB huge page for the stack on first access.  ASan and TSan builds are
+  // given a larger stack size due to extra data and red-zones which consume
+  // stack space.
+#if defined(MOZ_ASAN) || defined(MOZ_TSAN)
+  return 4096 * 1024 - 2 * mozilla::ipc::shared_memory::SystemPageSize();
+#else
+  return 2048 * 1024 - 2 * mozilla::ipc::shared_memory::SystemPageSize();
+#endif
+}
 
 /*static*/ nsThreadManager& nsThreadManager::get() {
   static NeverDestroyed<nsThreadManager> sInstance;
@@ -517,8 +533,8 @@ nsThread* nsThreadManager::CreateCurrentThread(SynchronizedEventQueue* aQueue) {
   return thread.get();  // reference held in TLS
 }
 
-nsresult nsThreadManager::DispatchToBackgroundThread(nsIRunnable* aEvent,
-                                                     uint32_t aDispatchFlags) {
+nsresult nsThreadManager::DispatchToBackgroundThread(
+    nsIRunnable* aEvent, nsIEventTarget::DispatchFlags aDispatchFlags) {
   RefPtr<BackgroundEventTarget> backgroundTarget;
   {
     OffTheBooksMutexAutoLock lock(mMutex);
@@ -593,7 +609,10 @@ nsThreadManager::NewNamedThread(
     nsIThread** aResult) {
   // Note: can be called from arbitrary threads
 
-  [[maybe_unused]] TimeStamp startTime = TimeStamp::Now();
+  AUTO_PROFILER_MARKER_TEXT("NewThread", OTHER,
+                            MarkerOptions(MarkerStack::Capture()), aName);
+
+  TimeStamp startTime = TimeStamp::Now();
 
   RefPtr<ThreadEventQueue> queue =
       new ThreadEventQueue(MakeUnique<EventQueue>());
@@ -608,11 +627,6 @@ nsThreadManager::NewNamedThread(
     return rv;
   }
 
-  PROFILER_MARKER_TEXT(
-      "NewThread", OTHER,
-      MarkerOptions(MarkerStack::Capture(),
-                    MarkerTiming::IntervalUntilNowFrom(startTime)),
-      aName);
   if (!NS_IsMainThread()) {
     PROFILER_MARKER_TEXT(
         "NewThread (non-main thread)", OTHER,
@@ -755,9 +769,10 @@ nsThreadManager::DispatchToMainThread(nsIRunnable* aEvent, uint32_t aPriority,
   if (aArgc > 0 && aPriority != nsIRunnablePriority::PRIORITY_NORMAL) {
     nsCOMPtr<nsIRunnable> event(aEvent);
     return mMainThread->DispatchFromScript(
-        new PrioritizableRunnable(event.forget(), aPriority), 0);
+        new PrioritizableRunnable(event.forget(), aPriority),
+        NS_DISPATCH_FALLIBLE);
   }
-  return mMainThread->DispatchFromScript(aEvent, 0);
+  return mMainThread->DispatchFromScript(aEvent, NS_DISPATCH_FALLIBLE);
 }
 
 class AutoMicroTaskWrapperRunnable final : public Runnable {

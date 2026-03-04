@@ -2,6 +2,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
+## Variables:
+##  $tabCount (Number): the number of tabs that are affected by the action.
+
 tab-context-new-tab =
     .label = Fitxa berria
     .accesskey = b
@@ -28,11 +32,17 @@ duplicate-tabs =
 close-tabs-to-the-start =
     .label = Itxi ezkerrera dauden fitxak
     .accesskey = x
+close-tabs-to-the-start-vertical =
+    .label = Itxi goian dauden fitxak
+    .accesskey = x
 # The following string is displayed on a menuitem that will close the tabs from the end of the tabstrip to the currently targeted tab (excluding the currently targeted and any other selected tabs).
 # In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left".
 close-tabs-to-the-end =
     .label = Itxi eskuinera dauden fitxak
     .accesskey = s
+close-tabs-to-the-end-vertical =
+    .label = Itxi azpian dauden fitxak
+    .accesskey = z
 close-other-tabs =
     .label = Itxi beste fitxak
     .accesskey = t
@@ -69,6 +79,10 @@ move-to-end =
 move-to-new-window =
     .label = Eraman leiho berrira
     .accesskey = h
+# Variables
+#  $profileName (string): The name of the profile to move tab to
+move-to-new-profile =
+    .label = Eraman { $profileName } profilera
 tab-context-close-multiple-tabs =
     .label = Itxi hainbat fitxa
     .accesskey = h
@@ -78,6 +92,16 @@ tab-context-close-duplicate-tabs =
 tab-context-share-url =
     .label = Partekatu
     .accesskey = a
+# In left-to-right languages this should use "Right" and in right-to-left languages this should use "Left" to indicate the direction a new tab will open.
+tab-context-new-tab-open =
+    .label = Fitxa berria eskuinera
+    .accesskey = s
+tab-context-new-tab-open-vertical =
+    .label = Fitxa berria azpian
+    .accesskey = z
+tab-context-new-group =
+    .label = Talde berria
+    .accesskey = b
 
 ## Variables:
 ##  $tabCount (Number): the number of tabs that are affected by the action.
@@ -104,6 +128,15 @@ tab-context-move-tabs =
            *[other] Mugitu fitxak
         }
     .accesskey = M
+# The following string intentionally omits the word "Tab" from the singular and includes it in the plural.
+tab-context-send-to-device =
+    .label =
+        { $tabCount ->
+            [1] Bidali gailura
+            [one] Bidali fitxa bat gailura
+           *[other] Bidali { $tabCount } fitxa gailura
+        }
+    .accesskey = d
 tab-context-send-tabs-to-device =
     .label =
         { $tabCount ->
@@ -111,3 +144,11 @@ tab-context-send-tabs-to-device =
            *[other] Bidali { $tabCount } fitxa gailura
         }
     .accesskey = d
+tab-context-unload-n-tabs =
+    .label =
+        { $tabCount ->
+            [1] Hustu fitxa
+            [one] Hustu fitxa
+           *[other] Hustu { $tabCount } fitxa
+        }
+    .accesskey = A

@@ -54,6 +54,9 @@ app-basics-enabled-plugins = Միացված բաղադրիչներ
 app-basics-build-config = Հավաքման ձևաչափ
 app-basics-user-agent = Օգտետերի Դիտարկիչը
 app-basics-os = OS
+# Rosetta is Apple's translation process to run apps containing x86_64
+# instructions on Apple Silicon. This should remain in English.
+app-basics-rosetta = Rosetta թարգմանված
 app-basics-memory-use = Հիշողության ծավալ
 app-basics-performance = Արտադրողականություն
 app-basics-service-workers = Գրանցված Service Workers
@@ -75,12 +78,12 @@ show-dir-label =
 experimental-features-title = Փորձարարական հատկություններ
 experimental-features-name = Անուն
 experimental-features-value = Արժեք
-modified-key-prefs-title = Փոփոխված կարևոր կարգավորումներ
+modified-key-prefs-title = Կարևոր փոփոխված նախապատվություններ
 modified-prefs-name = Անուն
 modified-prefs-value = Արժեքը
-user-js-title = user.js-ի կարգավորումներ
+user-js-title = user.js-ի նախապատվություններ
 user-js-description = Ձեր պրոֆիլի թղթապանակը պարունակում է<a data-l10n-name="user-js-link">user.js ֆայլ</a>, որը ներառում է կարգավորումներ, որոնք չեն ստեղծվել { -brand-short-name }-ի կողմից։
-locked-key-prefs-title = Կողպված կարևոր կարգավորումներ
+locked-key-prefs-title = Կարևոր կողպված նախապատվություններ
 locked-prefs-name = Անուն
 locked-prefs-value = Արժեքը
 graphics-title = Գրաֆիկա
@@ -142,14 +145,6 @@ media-device-latency = Սպասում
 media-capabilities-title = Մեդիա հնարավորություններ
 # List all the entries of the database.
 media-capabilities-enumerate = Վերցրեք գրառումները տվյալների բազայից
-
-## Codec support table
-
-
-## Media Content Decryption Modules (CDM)
-## See EME Spec for more explanation for following technical terms
-## https://w3c.github.io/encrypted-media/
-
 
 ##
 
@@ -334,11 +329,6 @@ policies-error = Սխալ
 support-printing-title = Տպում է
 support-printing-troubleshoot = Խափանաշտկում
 
-## Normandy sections
+## Remote Settings sections
 
-
-## Pointing devices
-
-
-## Content Analysis (DLP)
-
+support-remote-settings-sync-history = Պատմություն

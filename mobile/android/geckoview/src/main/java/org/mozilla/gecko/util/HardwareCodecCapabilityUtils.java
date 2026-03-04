@@ -6,7 +6,6 @@
 
 package org.mozilla.gecko.util;
 
-import android.annotation.SuppressLint;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecInfo.CodecCapabilities;
@@ -32,11 +31,18 @@ public final class HardwareCodecCapabilityUtils {
   private static final String VP8_MIME_TYPE = "video/x-vnd.on2.vp8";
   // List of supported HW VP9 codecs.
   private static final String[] supportedVp9HwCodecPrefixes = {
-    "OMX.qcom.", "OMX.Exynos.", "c2.exynos"
+    "OMX.qcom.",
+    "OMX.Exynos.",
+    "c2.exynos",
+    "OMX.allwinner.",
+    "OMX.amlogic.",
+    "OMX.MTK.",
+    "OMX.Nvidia.",
+    "OMX.rk."
   };
   private static final String VP9_MIME_TYPE = "video/x-vnd.on2.vp9";
-  // List of supported HW H.264 codecs.
-  private static final String[] supportedH264HwCodecPrefixes = {
+  // List of supported HW AV1/HEVC/H.264 codecs.
+  private static final String[] supportedGenericHwCodecPrefixes = {
     "OMX.qcom.",
     "OMX.Intel.",
     "OMX.Exynos.",
@@ -47,9 +53,14 @@ public final class HardwareCodecCapabilityUtils {
     "OMX.k3.",
     "OMX.hisi.",
     "OMX.TI.",
-    "OMX.MTK."
+    "OMX.MTK.",
+    "OMX.allwinner.",
+    "OMX.amlogic.",
+    "OMX.rk."
   };
   private static final String H264_MIME_TYPE = "video/avc";
+  private static final String HEVC_MIME_TYPE = "video/hevc";
+  private static final String AV1_MIME_TYPE = "video/av01";
   // NV12 color format supported by QCOM codec, but not declared in MediaCodec -
   // see /hardware/qcom/media/mm-core/inc/OMX_QCOMExtns.h
   private static final int COLOR_QCOM_FORMATYUV420PackedSemiPlanar32m = 0x7FA30C04;
@@ -170,7 +181,6 @@ public final class HardwareCodecCapabilityUtils {
     return mimeTypes.toArray(new String[0]);
   }
 
-  @SuppressLint("NewApi")
   private static boolean isHardwareAccelerated(
       final MediaCodecInfo aCodecInfo, final String[] aHwPrefixes) {
     // By public API.
@@ -254,15 +264,13 @@ public final class HardwareCodecCapabilityUtils {
       for (final int colorFormat : capabilities.colorFormats) {
         Log.v(LOGTAG, "   Color: 0x" + Integer.toHexString(colorFormat));
       }
-      if (Build.VERSION.SDK_INT >= 24) {
-        for (final MediaCodecInfo.CodecProfileLevel pl : capabilities.profileLevels) {
-          Log.v(
-              LOGTAG,
-              "   Profile: 0x"
-                  + Integer.toHexString(pl.profile)
-                  + "/Level=0x"
-                  + Integer.toHexString(pl.level));
-        }
+      for (final MediaCodecInfo.CodecProfileLevel pl : capabilities.profileLevels) {
+        Log.v(
+            LOGTAG,
+            "   Profile: 0x"
+                + Integer.toHexString(pl.profile)
+                + "/Level=0x"
+                + Integer.toHexString(pl.level));
       }
       final int codecColorFormat = getSupportsYUV420orNV12(capabilities);
       if (codecColorFormat != COLOR_FORMAT_NOT_SUPPORTED) {
@@ -295,8 +303,10 @@ public final class HardwareCodecCapabilityUtils {
   // Check if MIME type string has HW prefix (encode or decode, VP8, VP9, and H264)
   private static String[] getSupportedHWCodecPrefixes(
       final String aMimeType, final boolean aIsEncoder) {
-    if (aMimeType.equals(H264_MIME_TYPE)) {
-      return supportedH264HwCodecPrefixes;
+    if (aMimeType.equals(H264_MIME_TYPE)
+        || aMimeType.equals(HEVC_MIME_TYPE)
+        || aMimeType.equals(AV1_MIME_TYPE)) {
+      return supportedGenericHwCodecPrefixes;
     }
     if (aMimeType.equals(VP9_MIME_TYPE)) {
       return supportedVp9HwCodecPrefixes;
@@ -310,7 +320,9 @@ public final class HardwareCodecCapabilityUtils {
   // Return list of HW codec prefixes (encode or decode, VP8, VP9, and H264)
   private static String[] getAllSupportedHWCodecPrefixes(final boolean aIsEncoder) {
     final Set<String> prefixes = new HashSet<>();
-    final String[] mimeTypes = {H264_MIME_TYPE, VP8_MIME_TYPE, VP9_MIME_TYPE};
+    final String[] mimeTypes = {
+      H264_MIME_TYPE, HEVC_MIME_TYPE, AV1_MIME_TYPE, VP8_MIME_TYPE, VP9_MIME_TYPE
+    };
     for (final String mt : mimeTypes) {
       prefixes.addAll(Arrays.asList(getSupportedHWCodecPrefixes(mt, aIsEncoder)));
     }
@@ -328,6 +340,16 @@ public final class HardwareCodecCapabilityUtils {
   }
 
   @WrapForJNI
+  public static boolean hasHWAV1(final boolean aIsEncoder) {
+    return getHWCodecCapability(AV1_MIME_TYPE, aIsEncoder);
+  }
+
+  @WrapForJNI
+  public static boolean hasHWHEVC(final boolean aIsEncoder) {
+    return getHWCodecCapability(HEVC_MIME_TYPE, aIsEncoder);
+  }
+
+  @WrapForJNI
   public static boolean hasHWH264(final boolean aIsEncoder) {
     return getHWCodecCapability(H264_MIME_TYPE, aIsEncoder);
   }
@@ -339,13 +361,7 @@ public final class HardwareCodecCapabilityUtils {
   }
 
   @WrapForJNI
-  @SuppressLint("NewApi")
   public static boolean decodes10Bit(final String aMimeType) {
-    if (Build.VERSION.SDK_INT < 24) {
-      // Be conservative when we cannot get supported profile.
-      return false;
-    }
-
     final MediaCodecList codecs = new MediaCodecList(MediaCodecList.REGULAR_CODECS);
     for (final MediaCodecInfo info : codecs.getCodecInfos()) {
       if (info.isEncoder()) {
@@ -356,7 +372,9 @@ public final class HardwareCodecCapabilityUtils {
             info.getCapabilitiesForType(aMimeType).profileLevels) {
           if ((aMimeType.equals(H264_MIME_TYPE)
                   && pl.profile == MediaCodecInfo.CodecProfileLevel.AVCProfileHigh10)
-              || (aMimeType.equals(VP9_MIME_TYPE) && is10BitVP9Profile(pl.profile))) {
+              || (aMimeType.equals(VP9_MIME_TYPE) && is10BitVP9Profile(pl.profile))
+              || (aMimeType.equals(HEVC_MIME_TYPE) && is10BitHEVCProfile(pl.profile))
+              || (aMimeType.equals(AV1_MIME_TYPE) && is10BitAV1Profile(pl.profile))) {
             return true;
           }
         }
@@ -369,13 +387,7 @@ public final class HardwareCodecCapabilityUtils {
     return false;
   }
 
-  @SuppressLint("NewApi")
   private static boolean is10BitVP9Profile(final int profile) {
-    if (Build.VERSION.SDK_INT < 24) {
-      // Be conservative when we cannot get supported profile.
-      return false;
-    }
-
     if ((profile == MediaCodecInfo.CodecProfileLevel.VP9Profile2)
         || (profile == MediaCodecInfo.CodecProfileLevel.VP9Profile3)
         || (profile == MediaCodecInfo.CodecProfileLevel.VP9Profile2HDR)
@@ -386,5 +398,28 @@ public final class HardwareCodecCapabilityUtils {
     return Build.VERSION.SDK_INT >= 29
         && ((profile == MediaCodecInfo.CodecProfileLevel.VP9Profile2HDR10Plus)
             || (profile == MediaCodecInfo.CodecProfileLevel.VP9Profile3HDR10Plus));
+  }
+
+  private static boolean is10BitHEVCProfile(final int profile) {
+    if (profile == MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10) {
+      return true;
+    }
+    // API 24+
+    if (Build.VERSION.SDK_INT < 29) {
+      return profile == MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10HDR10;
+    }
+    // API 29+
+    return (profile == MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10HDR10)
+        || (profile == MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10HDR10Plus);
+  }
+
+  private static boolean is10BitAV1Profile(final int profile) {
+    if (Build.VERSION.SDK_INT < 29) {
+      // Be conservative when we cannot get supported profile.
+      return false;
+    }
+    return (profile == MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10)
+        || (profile == MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10HDR10)
+        || (profile == MediaCodecInfo.CodecProfileLevel.AV1ProfileMain10HDR10Plus);
   }
 }

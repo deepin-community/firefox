@@ -15,12 +15,13 @@ policy-AllowedDomainsForApps = Definescha las domenas che dastgan acceder a Goog
 policy-AllowFileSelectionDialogs = Activar las fanestras da dialog per la tscherna da datotecas.
 policy-AppAutoUpdate = Activar u deactivar l'actualisaziun automatica da l'applicaziun.
 policy-AppUpdatePin = Impedir che { -brand-short-name } vegnia actualisà ad ina versiun pli nova che quella inditgada.
-policy-AppUpdateURL = Definir ina URL dad actualisaziun persunalisada per l'applicaziun.
+policy-AppUpdateURL = Definir in URL d’actualisaziun persunalisada per l’applicaziun.
 policy-Authentication = Configurar l'autentificaziun integrada per websites che la sustegnan.
 policy-AutofillAddressEnabled = Activar l’endataziun automatica per adressas.
 policy-AutofillCreditCardEnabled = Activar l’endataziun automatica per metodas da pajament.
 policy-AutoLaunchProtocolsFromOrigins = Definescha ina glista da protocols externs che pon vegnir utilisads da funtaunas inditgadas senza dumandar l'utilisader.
 policy-BackgroundAppUpdate2 = Activar u deactivar las actualisaziuns davos las culissas.
+policy-Backup = Deactivar il backup u la restauraziun da datas da profil.
 policy-BlockAboutAddons = Bloccar l'access a l'administraziun da supplements (about:addons).
 policy-BlockAboutConfig = Bloccar l'access a la pagina about:config.
 policy-BlockAboutProfiles = Bloccar l'access a la pagina about:profiles.
@@ -79,6 +80,7 @@ policy-ExtensionSettings = Administrar tut ils aspects da l'installaziun dad ext
 policy-ExtensionUpdate = Activar u deactivar actualisaziuns automaticas dad extensiuns.
 policy-FirefoxHome2 = Configurar { -firefox-home-brand-name }.
 policy-FirefoxSuggest = Configurar { -firefox-suggest-brand-name }.
+policy-GenerativeAI = Configurar las funcziuns d’IA generativa.
 policy-GoToIntranetSiteForSingleWordEntryInAddressBar = Sfurzar la navigaziun directa en la website da l'intranet empè da tschertgar, en cas che singuls pleds vegnan tippads en la trav d'adressas.
 policy-Handlers = Configurar la gestiun dad applicaziuns da standard.
 policy-HardwareAcceleration = Sche «false», deactivar l'acceleraziun cun agid da la hardware.
@@ -97,6 +99,7 @@ policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Revegnir al cumportame
 ##
 
 policy-LocalFileLinks = Permetter a websites specificas dad utilisar colliaziuns a datotecas localas.
+policy-LocalNetworkAccess = Activar u deactivar las verificaziuns da l’access a la rait locala.
 policy-ManagedBookmarks = Configurescha ina glista da segnapaginas gestida dad in administratur. Ella na po betg vegnir midada da l'utilisader.
 policy-ManualAppUpdateOnly = Mo permetter actualisaziuns manualas e betg infurmar l'utilisader davart actualisaziuns.
 policy-PrimaryPassword = Pretender u impedir l'utilisaziun dad in pled-clav universal.
@@ -117,6 +120,7 @@ policy-PostQuantumKeyAgreementEnabled = Activar l’acceptaziun da clavs post-qu
 policy-PDFjs = Deactivar u configurar PDF.js, il lectur per PDFs integrà en { -brand-short-name }.
 policy-Permissions2 = Configurar permissiuns per camera, microfon, posiziun, notificaziuns e la reproducziun automatica.
 policy-PictureInPicture = Activar u deactivar maletg-en-maletg.
+policy-PopupBlocking2 = Permetter a tschertas websites da mussar pop-ups e da vegnir renviadas da frames da terzas partidas.
 policy-PopupBlocking = Permetter a tschertas websites da mussar popups sco standard.
 policy-Preferences = Definescha e fixescha la valur per ina subgruppa da preferenzas.
 policy-PrivateBrowsingModeAvailability = Definir la disponibladad dal modus privat.
@@ -130,6 +134,8 @@ policy-SearchSuggestEnabled = Activar u deactivar propostas da tschertga.
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = Agiuntar u stizzar moduls PKCS #11.
 policy-ShowHomeButton = Mussar il buttun da la pagina da partenza en la trav d'utensils.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = Betg mussar las cundiziuns d’utilisaziun e la decleraziun davart la protecziun da datas cun aviar. Ti decleras che ti acceptias e che ti hajas l’autoritad d’acceptar las cundiziuns d’utilisaziun en il num da tut las persunas a las qualas ti das access a quest navigatur.
 policy-SSLVersionMax = Definir la versiun maximala da SSL.
 policy-SSLVersionMin = Definir la versiun minimala da SSL.
 policy-StartDownloadsInTempDirectory = Sfurzar las telechargias en in lieu local, temporar empè da las cumenzar en l'ordinatur da telechargiadas predefinì.
@@ -137,6 +143,9 @@ policy-SupportMenu = Agiuntar in element da menu persunalisà en il menu d'agid.
 policy-TranslateEnabled = Activar u deactivar la translaziun da paginas web.
 policy-UserMessaging = Betg mussar tscherts messadis a l'utilisader.
 policy-UseSystemPrintDialog = Stampar cun agid dal dialog da stampa dal sistem.
+policy-VisualSearchEnabled = Activar u deactivar la tschertga visuala.
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Impedir l'access a tschertas websites. Consultar la documentaziun per ulteriuras infurmaziuns davart il format.
 policy-Windows10SSO = Permetter l'utilisaziun da Windows single sign-on per ils contos Microsoft, da scola e da fatschenta.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Permetter l’autentificaziun unica per ils contos Microsoft Entra.

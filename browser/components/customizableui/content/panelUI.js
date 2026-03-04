@@ -4,8 +4,12 @@
 
 ChromeUtils.defineESModuleGetters(this, {
   AppMenuNotifications: "resource://gre/modules/AppMenuNotifications.sys.mjs",
+  ASRouter: "resource:///modules/asrouter/ASRouter.sys.mjs",
+  MenuMessage: "resource:///modules/asrouter/MenuMessage.sys.mjs",
   NewTabUtils: "resource://gre/modules/NewTabUtils.sys.mjs",
-  PanelMultiView: "resource:///modules/PanelMultiView.sys.mjs",
+  PanelMultiView:
+    "moz-src:///browser/components/customizableui/PanelMultiView.sys.mjs",
+  updateZoomUI: "resource:///modules/ZoomUI.sys.mjs",
 });
 
 /**
@@ -17,6 +21,12 @@ const PanelUI = {
   get kEvents() {
     return ["popupshowing", "popupshown", "popuphiding", "popuphidden"];
   },
+
+  /// Notification events used for overwriting notification actions
+  get kNotificationEvents() {
+    return ["buttoncommand", "secondarybuttoncommand", "learnmoreclick"];
+  },
+
   /**
    * Used for lazily getting and memoizing elements from the document. Lazy
    * getters are set in init, and memoizing happens after the first retrieval.
@@ -43,6 +53,7 @@ const PanelUI = {
     this.menuButton.addEventListener("mousedown", this);
     this.menuButton.addEventListener("keypress", this);
 
+    Services.obs.addObserver(this, "ai-window-state-changed");
     Services.obs.addObserver(this, "fullscreen-nav-toolbox");
     Services.obs.addObserver(this, "appMenu-notifications");
     Services.obs.addObserver(this, "show-update-progress");
@@ -73,6 +84,16 @@ const PanelUI = {
       autoHidePref => autoHidePref && Services.appinfo.OS !== "Darwin"
     );
 
+    XPCOMUtils.defineLazyPreferenceGetter(
+      this,
+      "isAIWindowEnabled",
+      "browser.aiwindow.enabled",
+      false,
+      (_pref, _previousValue, _newValue) => {
+        this._showAIMenuItem();
+      }
+    );
+
     if (this.autoHideToolbarInFullScreen) {
       window.addEventListener("fullscreen", this);
     } else {
@@ -100,6 +121,7 @@ const PanelUI = {
       "refresh"
     );
 
+    this._showAIMenuItem();
     this._initialized = true;
   },
 
@@ -137,6 +159,7 @@ const PanelUI = {
       "appMenu-libraryView"
     ).addEventListener("command", this._onLibraryCommand);
     this.mainView.addEventListener("command", this);
+    this.mainView.addEventListener("ViewShowing", this._onMainViewShow);
     this._eventListenersAdded = true;
   },
 
@@ -162,8 +185,12 @@ const PanelUI = {
       for (let event of this.kEvents) {
         this.notificationPanel.removeEventListener(event, this);
       }
+      for (let event of this.kNotificationEvents) {
+        this.notificationPanel.removeEventListener(event, this);
+      }
     }
 
+    Services.obs.removeObserver(this, "ai-window-state-changed");
     Services.obs.removeObserver(this, "fullscreen-nav-toolbox");
     Services.obs.removeObserver(this, "appMenu-notifications");
     Services.obs.removeObserver(this, "show-update-progress");
@@ -216,6 +243,14 @@ const PanelUI = {
         return;
       }
 
+      if (ASRouter.initialized) {
+        await ASRouter.sendTriggerMessage({
+          browser: gBrowser.selectedBrowser,
+          id: "menuOpened",
+          context: { source: MenuMessage.SOURCES.APP_MENU },
+        });
+      }
+
       let domEvent = null;
       if (aEvent && aEvent.type != "command") {
         domEvent = aEvent;
@@ -241,6 +276,12 @@ const PanelUI = {
 
   observe(subject, topic, status) {
     switch (topic) {
+      case "ai-window-state-changed":
+        if (subject == window) {
+          this._showAIMenuItem();
+        }
+        break;
+
       case "fullscreen-nav-toolbox":
         if (this._notifications) {
           this.updateNotifications(false);
@@ -284,6 +325,7 @@ const PanelUI = {
         this._updatePanelButton(aEvent.target);
         if (aEvent.type == "popuphidden") {
           CustomizableUI.removePanelCloseListeners(this.panel);
+          MenuMessage.hideAppMenuMessage(gBrowser.selectedBrowser);
         }
         break;
       case "mousedown":
@@ -311,6 +353,16 @@ const PanelUI = {
       case "command":
         this.onCommand(aEvent);
         break;
+      case "buttoncommand":
+        this._onNotificationButtonEvent(aEvent, "buttoncommand");
+        break;
+      case "secondarybuttoncommand":
+        this._onNotificationButtonEvent(aEvent, "secondarybuttoncommand");
+        break;
+      case "learnmoreclick":
+        // Don't fall back to PopupNotifications.
+        aEvent.preventDefault();
+        break;
     }
   },
 
@@ -328,9 +380,6 @@ const PanelUI = {
       case "appMenu-fxa-label2":
         gSync.toggleAccountPanel(target, aEvent);
         break;
-      case "appMenu-profiles-button":
-        gProfiles.updateView(target);
-        break;
       case "appMenu-bookmarks-button":
         BookmarkingUI.showSubView(target);
         break;
@@ -338,7 +387,7 @@ const PanelUI = {
         this.showSubView("PanelUI-history", target);
         break;
       case "appMenu-passwords-button":
-        LoginHelper.openPasswordManager(window, { entryPoint: "mainmenu" });
+        LoginHelper.openPasswordManager(window, { entryPoint: "Mainmenu" });
         break;
       case "appMenu-fullscreen-button2":
         // Note that we're custom-handling the hiding of the panel to make
@@ -460,6 +509,7 @@ const PanelUI = {
       return;
     }
 
+    this._ensureShortcutsShown(viewNode);
     this.ensurePanicViewInitialized(viewNode);
 
     let container = aAnchor.closest("panelmultiview");
@@ -487,9 +537,7 @@ const PanelUI = {
         tempPanel.setAttribute("animate", "false");
       }
       tempPanel.setAttribute("context", "");
-      document
-        .getElementById(CustomizableUI.AREA_NAVBAR)
-        .appendChild(tempPanel);
+      document.getElementById("mainPopupSet").appendChild(tempPanel);
 
       let multiView = document.createXULElement("panelmultiview");
       multiView.setAttribute("id", "customizationui-widget-multiview");
@@ -619,6 +667,23 @@ const PanelUI = {
     }
   },
 
+  _onMainViewShow(event) {
+    let panelview = event.target;
+    let messageId = panelview.getAttribute(
+      MenuMessage.SHOWING_FXA_MENU_MESSAGE_ATTR
+    );
+    if (messageId) {
+      MenuMessage.recordMenuMessageTelemetry(
+        "IMPRESSION",
+        MenuMessage.SOURCES.APP_MENU,
+        messageId
+      );
+      let message = ASRouter.getMessageById(messageId);
+      ASRouter.addImpression(message);
+    }
+    updateZoomUI(gBrowser.selectedBrowser);
+  },
+
   _onHelpViewShow() {
     // Call global menu setup function
     buildHelpMenu();
@@ -701,9 +766,6 @@ const PanelUI = {
       case "appMenu_troubleShooting":
         openTroubleshootingPage();
         break;
-      case "appMenu_help_reportSiteIssue":
-        ReportSiteIssue();
-        break;
       case "appMenu_menu_HelpPopup_reportPhishingtoolmenu":
         openUILink(gSafeBrowsing.getReportURL("Phish"), aEvent, {
           triggeringPrincipal:
@@ -711,7 +773,7 @@ const PanelUI = {
         });
         break;
       case "appMenu_menu_HelpPopup_reportPhishingErrortoolmenu":
-        ReportFalseDeceptiveSite();
+        gSafeBrowsing.reportFalseDeceptiveSite();
         break;
       case "appMenu_helpSwitchDevice":
         openSwitchingDevicesPage();
@@ -943,6 +1005,9 @@ const PanelUI = {
       for (let event of this.kEvents) {
         this._notificationPanel.addEventListener(event, this);
       }
+      for (let event of this.kNotificationEvents) {
+        this._notificationPanel.addEventListener(event, this);
+      }
     }
     return this._notificationPanel;
   },
@@ -981,14 +1046,6 @@ const PanelUI = {
     let popupnotification = document.getElementById(popupnotificationID);
 
     popupnotification.setAttribute("id", popupnotificationID);
-    popupnotification.setAttribute(
-      "buttoncommand",
-      "PanelUI._onNotificationButtonEvent(event, 'buttoncommand');"
-    );
-    popupnotification.setAttribute(
-      "secondarybuttoncommand",
-      "PanelUI._onNotificationButtonEvent(event, 'secondarybuttoncommand');"
-    );
 
     if (notification.options.message) {
       let desc = this._formatDescriptionMessage(notification);
@@ -1014,6 +1071,27 @@ const PanelUI = {
     popupnotification.show();
   },
 
+  _showAIMenuItem() {
+    const isAIWindowActive = document.documentElement.hasAttribute("ai-window");
+    const aiMenuItem = PanelMultiView.getViewNode(
+      document,
+      "appMenu-new-ai-window-button"
+    );
+    const classicWindowMenuItem = PanelMultiView.getViewNode(
+      document,
+      "appMenu-new-classic-window-button"
+    );
+    const chatHistoryMenuItem = PanelMultiView.getViewNode(
+      document,
+      "appMenu-chats-history-button"
+    );
+
+    aiMenuItem.hidden = !this.isAIWindowEnabled || isAIWindowActive;
+    classicWindowMenuItem.hidden = !this.isAIWindowEnabled || !isAIWindowActive;
+
+    chatHistoryMenuItem.hidden = !this.isAIWindowEnabled || !isAIWindowActive;
+  },
+
   _showBadge(notification) {
     let badgeStatus = this._getBadgeStatus(notification);
     this.menuButton.setAttribute("badge-status", badgeStatus);
@@ -1037,8 +1115,18 @@ const PanelUI = {
       this._panelBannerItem = this.mainView.querySelector(".panel-banner-item");
     }
 
-    let l10nId = "appmenuitem-banner-" + notification.id;
-    document.l10n.setAttributes(this._panelBannerItem, l10nId);
+    const messageIDs = {
+      "update-downloading": "appmenuitem-banner-update-downloading",
+      "update-available": "appmenuitem-banner-update-available",
+      "update-manual": "appmenuitem-banner-update-manual",
+      "update-unsupported": "appmenuitem-banner-update-unsupported",
+      "update-restart": "appmenuitem-banner-update-restart",
+    };
+
+    document.l10n.setAttributes(
+      this._panelBannerItem,
+      messageIDs[notification.id]
+    );
 
     this._panelBannerItem.setAttribute("notificationid", notification.id);
     this._panelBannerItem.hidden = false;
@@ -1057,6 +1145,8 @@ const PanelUI = {
   },
 
   _onNotificationButtonEvent(event, type) {
+    event.preventDefault();
+
     let notificationEl = getNotificationFromElement(event.originalTarget);
 
     if (!notificationEl) {

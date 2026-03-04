@@ -30,12 +30,15 @@
 -focus-brand-name = Firefox Focus
 -relay-brand-name = Firefox Relay
 -relay-brand-short-name = Relay
+-solo-ai-brand-name = Solo
+-mdn-brand-name = MDN վեբ փաստաթղթեր
+-yelp-brand-name = Yelp
 # “Suggest” can be localized, “Firefox” must be treated as a brand
 # and kept in English.
 -firefox-suggest-brand-name = Firefox-ի առաջարկ
 # ”Home" can be localized, “Firefox” must be treated as a brand
 # and kept in English.
--firefox-home-brand-name = Firefox֊-ի սկիզբ
+-firefox-home-brand-name = Firefox֊ի տնէջ
 # View" can be localized, “Firefox” must be treated as a brand
 # and kept in English.
 -firefoxview-brand-name = Firefox տեսք
@@ -43,4 +46,4 @@
 # experimental and in-development features, and turn those features on and off.
 # The "Labs" portion can be localized, “Firefox” must be treated as a brand
 # and kept in English.
--firefoxlabs-brand-name = Firefox Labs
+-firefoxlabs-brand-name = Firefox-ի լաբորատորիաներ

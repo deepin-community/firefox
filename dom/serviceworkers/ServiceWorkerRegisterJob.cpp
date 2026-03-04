@@ -6,22 +6,25 @@
 
 #include "ServiceWorkerRegisterJob.h"
 
-#include "mozilla/dom/WorkerCommon.h"
 #include "ServiceWorkerManager.h"
 #include "mozilla/ProfilerMarkers.h"
+#include "mozilla/dom/WorkerCommon.h"
 
 namespace mozilla::dom {
 
 ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
-    nsIPrincipal* aPrincipal, const nsACString& aScope,
-    const nsACString& aScriptSpec, ServiceWorkerUpdateViaCache aUpdateViaCache)
+    nsIPrincipal* aPrincipal, const nsACString& aScope, const WorkerType& aType,
+    const nsACString& aScriptSpec, ServiceWorkerUpdateViaCache aUpdateViaCache,
+    const ServiceWorkerLifetimeExtension& aLifetimeExtension)
     : ServiceWorkerUpdateJob(Type::Register, aPrincipal, aScope,
-                             nsCString(aScriptSpec), aUpdateViaCache) {}
+                             nsCString(aScriptSpec), aUpdateViaCache,
+                             aLifetimeExtension),
+      mType(aType) {}
 
 void ServiceWorkerRegisterJob::AsyncExecute() {
   MOZ_ASSERT(NS_IsMainThread());
 
-  AUTO_PROFILER_MARKER_TEXT("SWRJ AsyncExecute", DOM, {}, ""_ns);
+  AUTO_PROFILER_MARKER_UNTYPED("SWRJ AsyncExecute", DOM, {});
 
   RefPtr<ServiceWorkerManager> swm = ServiceWorkerManager::GetInstance();
   if (Canceled() || !swm) {
@@ -33,18 +36,23 @@ void ServiceWorkerRegisterJob::AsyncExecute() {
       swm->GetRegistration(mPrincipal, mScope);
 
   if (registration) {
-    bool sameUVC = GetUpdateViaCache() == registration->GetUpdateViaCache();
-    registration->SetUpdateViaCache(GetUpdateViaCache());
+    // if registration already exists, comparing it's options to see if
+    // they have been changed
+    bool sameOptions =
+        GetUpdateViaCache() == registration->GetUpdateViaCache() &&
+        mType == registration->Type();
+
+    registration->SetOptions(GetUpdateViaCache(), mType);
 
     RefPtr<ServiceWorkerInfo> newest = registration->Newest();
-    if (newest && mScriptSpec.Equals(newest->ScriptSpec()) && sameUVC) {
+    if (newest && mScriptSpec.Equals(newest->ScriptSpec()) && sameOptions) {
       SetRegistration(registration);
       Finish(NS_OK);
       return;
     }
   } else {
-    registration =
-        swm->CreateNewRegistration(mScope, mPrincipal, GetUpdateViaCache());
+    registration = swm->CreateNewRegistration(mScope, mType, mPrincipal,
+                                              GetUpdateViaCache());
     if (!registration) {
       FailUpdateJob(NS_ERROR_DOM_ABORT_ERR);
       return;

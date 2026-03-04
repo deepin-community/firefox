@@ -143,6 +143,11 @@ bool GeckoMVMContext::IsDocumentLoading() const {
   return mDocument->GetReadyStateEnum() == dom::Document::READYSTATE_LOADING;
 }
 
+bool GeckoMVMContext::IsDocumentFullscreen() const {
+  MOZ_ASSERT(mDocument);
+  return mDocument->Fullscreen();
+}
+
 void GeckoMVMContext::SetResolutionAndScaleTo(float aResolution,
                                               ResolutionChangeOrigin aOrigin) {
   MOZ_ASSERT(mPresShell);
@@ -199,8 +204,7 @@ void GeckoMVMContext::Reflow(const CSSSize& aNewSize) {
   MOZ_ASSERT(doc);
   MOZ_ASSERT(ps);
 
-  if (ps->ResizeReflowIgnoreOverride(CSSPixel::ToAppUnits(aNewSize.width),
-                                     CSSPixel::ToAppUnits(aNewSize.height))) {
+  if (ps->ResizeReflowIgnoreOverride(CSSPixel::ToAppUnits(aNewSize))) {
     doc->FlushPendingNotifications(FlushType::InterruptibleLayout);
   }
 }

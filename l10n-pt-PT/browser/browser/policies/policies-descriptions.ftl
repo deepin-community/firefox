@@ -91,8 +91,8 @@ policy-LegacyProfiles = Desativar a funcionalidade de forçar um perfil separado
 
 ## Do not translate "SameSite", it's the name of a cookie attribute.
 
-policy-LegacySameSiteCookieBehaviorEnabled = Ative a definição legada de comportamento predefinido para a cookie SameSite.
-policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Reverta para o comportamento legado de SameSite para as cookies nos sites especificados.
+policy-LegacySameSiteCookieBehaviorEnabled = Ative a definição legada de comportamento predefinido para o cookie SameSite.
+policy-LegacySameSiteCookieBehaviorEnabledForDomainList = Reverta para o comportamento legado de SameSite para os cookies nos sites especificados.
 
 ##
 
@@ -130,6 +130,8 @@ policy-SearchSuggestEnabled = Ativar ou desativar sugestões de pesquisa.
 # For more information, see https://wikipedia.org/wiki/PKCS_11
 policy-SecurityDevices2 = Adicionar ou eliminar os módulos PKCS #11.
 policy-ShowHomeButton = Mostrar o botão início na barra de ferramentas.
+# ”You represent that...” means ”You confirm/declare that...”
+policy-SkipTermsOfUse2 = Não mostrar os Termos de utilização e a Informação de privacidade após o arranque. Declara que aceita e tem autoridade para aceitar os Termos de utilização em nome de todos os indivíduos a quem permite o acesso a este navegador.
 policy-SSLVersionMax = Definir a versão máxima de SSL.
 policy-SSLVersionMin = Definir a versão mínima de SSL.
 policy-StartDownloadsInTempDirectory = Forçar transferências a iniciarem num local temporário local em vez do diretório de transferências padrão.
@@ -140,3 +142,5 @@ policy-UseSystemPrintDialog = Imprimir utilizando a janela de impressão do sist
 # “format” refers to the format used for the value of this policy.
 policy-WebsiteFilter = Impedir que sites sejam visitados. Consulte a documentação para mais detalhes sobre o formato.
 policy-Windows10SSO = Permitir a autenticação única para contas da Microsoft, trabalho e escola.
+# Entra is the name of a Microsoft product.
+policy-MicrosoftEntraSSO = Permitir o início de sessão único para contas Microsoft Entra.

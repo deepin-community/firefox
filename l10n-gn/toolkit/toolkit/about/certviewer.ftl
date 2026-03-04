@@ -6,7 +6,7 @@ certificate-viewer-certificate-section-title = Mboajepyréva
 
 ## Error messages
 
-certificate-viewer-error-message = Ndorojuhúi marandu jeguerohyvéva rehegua térã pe jeguerohyvéva imarã. Eha’ãjey.
+certificate-viewer-error-message = Ndorojuhúi marandu jeguerohyvéva rehegua térã pe jeguerohyvéva imarã. Eha’ã jey.
 certificate-viewer-error-title = Oĩ osẽvaíva
 
 ## Certificate information labels
@@ -36,6 +36,9 @@ certificate-viewer-key-size = Ñe’ẽñemi tuichakue
 certificate-viewer-inc-locality = Inc. Tendaite
 certificate-viewer-locality = Tenda
 certificate-viewer-location = Tendaite
+# Log is a noun meaning a record of events.
+certificate-viewer-log-name = Jehaikue réra
+# Log is a noun meaning a record of events.
 certificate-viewer-logid = ID ñemboguapy
 certificate-viewer-method = Tapereko
 certificate-viewer-modulus = Ha’ãha
@@ -110,6 +113,8 @@ certificate-viewer-export = Guerahauka
 
 # Label for a tab where we haven't found a better label:
 certificate-viewer-unknown-group-label = (ojekuaa’ỹva)
+# Name for a file where we haven't found a better name:
+certificate-viewer-unknown-file-name = mboajepyréva
 
 ## Labels for tabs displayed in stand-alone about:certificate page
 

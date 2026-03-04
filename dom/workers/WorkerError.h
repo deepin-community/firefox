@@ -7,9 +7,9 @@
 #ifndef mozilla_dom_workers_WorkerError_h
 #define mozilla_dom_workers_WorkerError_h
 
+#include "jsapi.h"
 #include "mozilla/dom/SerializedStackHolder.h"
 #include "mozilla/dom/WorkerCommon.h"
-#include "jsapi.h"
 
 namespace mozilla {
 
@@ -68,6 +68,8 @@ class WorkerErrorReport : public WorkerErrorBase, public SerializedStackHolder {
                                 uint64_t aInnerWindowId,
                                 JS::Handle<JSObject*> aStack = nullptr,
                                 JS::Handle<JSObject*> aStackGlobal = nullptr);
+
+  static void LogErrorToConsole(const nsAString& aMessage);
 
   static void CreateAndDispatchGenericErrorRunnableToParent(
       WorkerPrivate* aWorkerPrivate);

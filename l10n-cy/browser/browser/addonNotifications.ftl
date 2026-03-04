@@ -81,6 +81,8 @@ addon-removal-title = Tynnu { $name }?
 addon-removal-message = Tynnu { $name } o { -brand-shorter-name }?
 addon-removal-button = Tynnu
 addon-removal-abuse-report-checkbox = Adroddwch yr estyniad hwn i { -vendor-short-name }
+# "it" refers to the local AI model that is paired to the AI feature
+addon-mlmodel-removal-body = Os ydych chi'n defnyddio'r nodweddion neu'r estyniadau sy'n defnyddio'r model hwn, bydd yn cael ei ail-ychwanegu.
 # Variables:
 #   $addonCount (Number): the number of add-ons being downloaded
 addon-downloading-and-verifying =
@@ -143,14 +145,19 @@ addon-install-error-corrupt-file = Nid oedd modd llwytho'r ychwanegyn i lawr o'r
 addon-install-error-file-access = Nid oedd modd gosod { $addonName } gan nad oedd { -brand-short-name } yn gallu newid y linell angenrheidiol.
 addon-install-error-not-signed = Mae { -brand-short-name } wedi atal y wefan rhag gosod ychwanegyn sydd heb ei wirio.
 addon-install-error-invalid-domain = Nid oes modd gosod yr ychwanegyn { $addonName } o'r lleoliad hwn.
+addon-install-error-no-addon-name-file-access = Nid oedd modd gosod yr ychwanegyn oherwydd nid yw { -brand-short-name } yn gallu addasu'r ffeil angenrheidiol.
 addon-local-install-error-network-failure = Nid oedd modd gosod yr ychwanegyn oherwydd gwall system.
 addon-local-install-error-incorrect-hash = Nid oedd modd gosod yr ychwanegyn am nad yw'n cydweddu â'r ychwanegyn { -brand-short-name } disgwyliwyd.
 addon-local-install-error-corrupt-file = Nid oedd modd gosod yr ychwanegyn am ei fod yn edrych yn llwgr.
 addon-local-install-error-file-access = Nid oedd modd gosod { $addonName } gan nad oedd { -brand-short-name } yn gallu newid y linell angenrheidiol.
 addon-local-install-error-not-signed = Nid oedd modd gosod yr ychwanegyn am nad yw wedi ei wirio.
+addon-local-install-no-addon-name-error-file-access = Nid oedd modd gosod yr ychwanegyn oherwydd nid yw { -brand-short-name } yn gallu addasu'r ffeil angenrheidiol.
 # Variables:
 #   $appVersion (String): the application version.
 addon-install-error-incompatible = Nid oedd modd gosod { $addonName } am nad yw'n cydweddu â { -brand-short-name } { $appVersion }.
+addon-install-error-hard-blocked = Mae { $addonName } yn groes i bolisïau Mozilla ac nid oes modd ei osod ar { -brand-short-name }.
+addon-install-error-soft-blocked2 = Mae { $addonName } wedi'i gyfyngu ac nid oes modd ei osod ar { -brand-short-name }.
 addon-install-error-blocklisted = Nid oedd modd gosod { $addonName } am fod risg uchel iddo achosi problemau sefydlogrwydd a diogelwch.
+addon-install-error-soft-blocked = Mae { $addonName } yn groes i bolisïau Mozilla ac nid oes modd ei osod ar { -brand-short-name }.
 # Enterprise policies is a feature aimed at system administrators who want to deploy custom settings for Firefox.
 addon-install-error-admin-install-only = Nid oes mod i chi osod { $addonName } fel defnyddiwr cyffredin, dim ond sefydliad sy'n defnyddio polisïau menter all ei osod.

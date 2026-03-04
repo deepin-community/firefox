@@ -27,6 +27,10 @@ appmenuitem-downloads =
     .label = Telechargiadas
 appmenuitem-passwords =
     .label = Pleds-clav
+appmenuitem-extensions-and-themes =
+    .label = Extensiuns e designs
+appmenuitem-extensions =
+    .label = Extensiuns
 appmenuitem-addons-and-themes =
     .label = Supplements e designs
 appmenuitem-print =
@@ -108,8 +112,11 @@ appmenu-fxa-sync-and-save-data2 = Sincronisar e memorisar las datas
 appmenu-fxa-signed-in-label = S'annunziar
 appmenu-fxa-setup-sync =
     .label = Activar la sincronisaziun…
+appmenu-fxa-setup-sync-new = Activar
 appmenuitem-save-page =
     .label = Memorisar la pagina sut…
+appmenuitem-fxa-sync-off-title = La sincronisaziun è deactivada
+appmenuitem-fxa-sync-off-description = Protegia ed acceda a tes segnapaginas, pleds-clav e dapli da nua ch’i saja.
 
 ## What's New panel in App menu.
 
@@ -163,6 +170,9 @@ profiler-popup-capture-shortcut =
         [macos] ⌃⇧2
        *[other] Ctrl+Shift+2
     }
+profiler-button-dropmarker =
+    .label = Avrir la panela dal profiler
+    .tooltiptext = Avrir la panela dal profiler
 
 ## Profiler presets
 ## They are shown in the popup's select box.
@@ -189,6 +199,9 @@ profiler-popup-presets-graphics-label =
 profiler-popup-presets-media-description2 = Preselecziun per examinar sbagls dad audio e video en { -brand-shorter-name }.
 profiler-popup-presets-media-label =
     .label = Multimedia
+profiler-popup-presets-ml-description = Preselecziun per la diagnosa da problems en connex cun l’emprender maschinal en { -brand-shorter-name }.
+profiler-popup-presets-ml-label =
+    .label = Emprender maschinal
 profiler-popup-presets-networking-description = Preselecziun per examinar sbagls da rait en { -brand-shorter-name }.
 profiler-popup-presets-networking-label =
     .label = Rait
@@ -199,6 +212,9 @@ profiler-popup-presets-power-label =
 profiler-popup-presets-debug-description = Configuraziun predefinida per il debugadi en { -brand-shorter-name }. In grond overhead, betg utilisar per analisar la prestaziun, ma per chapir il cumportament dal navigatur.
 profiler-popup-presets-debug-label =
     .label = Debugadi
+profiler-popup-presets-web-compat-description = Configuraziun recumandada per debugar problems da cumpatibilitad web en websites, empè da registrar la prestaziun.
+profiler-popup-presets-web-compat-label =
+    .label = Cumpatibilitad web
 profiler-popup-presets-custom-label =
     .label = Persunalisà
 
@@ -277,5 +293,26 @@ appmenuitem-monitor-title = { -monitor-brand-short-name }
 appmenuitem-monitor-description = Retschaiva avertiments en cas da sperditas da datas
 appmenuitem-relay-title = { -relay-brand-short-name }
 appmenuitem-relay-description = Zuppenta tia adressa dad e-mail e tes numer da telefon
+appmenuitem-services-relay-description = Avrir la survista dals alias dad e-mail
 appmenuitem-vpn-title = { -mozilla-vpn-brand-name }
 appmenuitem-vpn-description = Protegia tias activitads online
+appmenu-services-header = Mes servetschs
+# "Mozilla" is intentionally hardcoded to prevent forks from replacing it
+# with their own vendor name, since these tools are created and maintained by
+# Mozilla.
+appmenu-other-protection-header2 = Emprova auters utensils da protecziun da Mozilla:
+appmenu-other-protection-header = Emprova era auters utensils da protecziun da { -vendor-short-name }:
+
+## Profiles panel
+
+appmenu-other-profiles = Auters profils
+appmenu-manage-profiles =
+    .label = Administrar ils profils
+appmenu-copy-profile =
+    .label = Copiar quest profil
+appmenu-create-profile =
+    .label = Nov profil
+appmenu-edit-profile =
+    .aria-label = Modifitgar il profil
+appmenu-profiles-2 =
+    .label = Profils

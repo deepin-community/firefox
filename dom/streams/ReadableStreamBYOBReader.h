@@ -10,18 +10,19 @@
 #include "js/TypeDecls.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/ErrorResult.h"
+#include "mozilla/LinkedList.h"
 #include "mozilla/dom/BindingDeclarations.h"
 #include "mozilla/dom/ReadableStreamGenericReader.h"
 #include "mozilla/dom/TypedArray.h"
 #include "nsCycleCollectionParticipant.h"
 #include "nsWrapperCache.h"
-#include "mozilla/LinkedList.h"
 
 namespace mozilla::dom {
 
 class Promise;
 struct ReadIntoRequest;
 class ReadableStream;
+struct ReadableStreamBYOBReaderReadOptions;
 
 }  // namespace mozilla::dom
 
@@ -52,7 +53,8 @@ class ReadableStreamBYOBReader final : public ReadableStreamGenericReader,
       const GlobalObject& global, ReadableStream& stream, ErrorResult& rv);
 
   MOZ_CAN_RUN_SCRIPT already_AddRefed<Promise> Read(
-      const ArrayBufferView& aArray, ErrorResult& rv);
+      const ArrayBufferView& aArray,
+      const ReadableStreamBYOBReaderReadOptions& aOptions, ErrorResult& rv);
 
   void ReleaseLock(ErrorResult& rv);
 
@@ -73,8 +75,8 @@ already_AddRefed<ReadableStreamBYOBReader> AcquireReadableStreamBYOBReader(
 
 MOZ_CAN_RUN_SCRIPT void ReadableStreamBYOBReaderRead(
     JSContext* aCx, ReadableStreamBYOBReader* aReader,
-    JS::Handle<JSObject*> aView, ReadIntoRequest* aReadIntoRequest,
-    ErrorResult& aRv);
+    JS::Handle<JSObject*> aView, uint64_t aMin,
+    ReadIntoRequest* aReadIntoRequest, ErrorResult& aRv);
 
 void ReadableStreamBYOBReaderErrorReadIntoRequests(
     JSContext* aCx, ReadableStreamBYOBReader* aReader,

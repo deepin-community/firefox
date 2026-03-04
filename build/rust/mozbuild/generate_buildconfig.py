@@ -6,7 +6,6 @@ import string
 import textwrap
 
 import buildconfig
-from variables import get_buildid
 
 
 def generate_bool(name):
@@ -58,7 +57,7 @@ def generate(output):
             /// Macro used to name a path in the objdir for use with macros like `include!`
             #[macro_export]
             macro_rules! objdir_path {{
-                ($path:literal) => {{
+                ($path:expr) => {{
                     concat!({escape_rust_string(buildconfig.topobjdir + "/")}, $path)
                 }}
             }}
@@ -66,7 +65,7 @@ def generate(output):
             /// Macro used to name a path in the srcdir for use with macros like `include!`
             #[macro_export]
             macro_rules! srcdir_path {{
-                ($path:literal) => {{
+                ($path:expr) => {{
                     concat!({escape_rust_string(buildconfig.topsrcdir + "/")}, $path)
                 }}
             }}
@@ -79,20 +78,6 @@ def generate(output):
             """
         )
     )
-
-    # buildid.h is only available in these conditions (see the top-level moz.build)
-    if not buildconfig.substs.get("JS_STANDALONE") or not buildconfig.substs.get(
-        "MOZ_BUILD_APP"
-    ):
-        output.write(
-            textwrap.dedent(
-                f"""
-                /// The build id of the current build.
-                pub const MOZ_BUILDID: &str = {escape_rust_string(get_buildid())};
-
-                """
-            )
-        )
 
     windows_rs_dir = buildconfig.substs.get("MOZ_WINDOWS_RS_DIR")
     if windows_rs_dir:
@@ -122,7 +107,10 @@ def generate(output):
 
     # Write out some useful strings from the buildconfig.
     output.write(generate_string("MOZ_MACBUNDLE_ID"))
+    output.write(generate_string("MOZ_APP_BASENAME"))
     output.write(generate_string("MOZ_APP_NAME"))
+    output.write(generate_string("MOZ_APP_VENDOR"))
+    output.write(generate_string("MOZ_APP_VERSION"))
 
     # Write out some useful booleans from the buildconfig.
     output.write(generate_bool("MOZ_FOLD_LIBS"))
@@ -132,9 +120,14 @@ def generate(output):
     output.write(generate_bool("MOZ_DEV_EDITION"))
     output.write(generate_bool("MOZ_ESR"))
     output.write(generate_bool("MOZ_DIAGNOSTIC_ASSERT_ENABLED"))
+    output.write(generate_bool("MOZ_CODE_COVERAGE"))
 
     # Used by toolkit/crashreporter/client
     output.write(generate_bool("MOZ_CRASHREPORTER_MOCK"))
-    output.write(generate_string_array("CC_BASE_FLAGS"))
+    output.write(generate_string_array("BINDGEN_SYSTEM_FLAGS"))
     output.write(generate_string_array("MOZ_GTK3_CFLAGS"))
     output.write(generate_string_array("MOZ_GTK3_LIBS"))
+    output.write(generate_string_array("NSPR_CFLAGS"))
+    output.write(generate_string_array("NSS_CFLAGS"))
+    output.write(generate_string_array("MOZ_PIXMAN_CFLAGS"))
+    output.write(generate_string_array("MOZ_ICU_CFLAGS"))

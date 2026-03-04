@@ -10,11 +10,11 @@
 #include "ClientManagerChild.h"
 #include "ClientManagerOpChild.h"
 #include "ClientSource.h"
+#include "mozilla/ClearOnShutdown.h"  // PastShutdownPhase
+#include "mozilla/StaticPrefs_dom.h"
 #include "mozilla/dom/WorkerPrivate.h"
 #include "mozilla/ipc/BackgroundChild.h"
 #include "mozilla/ipc/PBackgroundChild.h"
-#include "mozilla/ClearOnShutdown.h"  // PastShutdownPhase
-#include "mozilla/StaticPrefs_dom.h"
 #include "prthread.h"
 
 namespace mozilla::dom {
@@ -112,13 +112,17 @@ UniquePtr<ClientSource> ClientManager::CreateSourceInternal(
     // value.  Instead return a shutdown ClientSource with a zero'd id.
     // This should be exceptionally rare, if it happens at all.
     id.Clear();
-    ClientSourceConstructorArgs args(id, aType, aPrincipal, TimeStamp::Now());
+    ClientSourceConstructorArgs args(id, Nothing(), aType, aPrincipal,
+                                     TimeStamp::Now(), VoidCString(),
+                                     FrameType::None);
     UniquePtr<ClientSource> source(new ClientSource(this, aEventTarget, args));
     source->Shutdown();
     return source;
   }
 
-  ClientSourceConstructorArgs args(id, aType, aPrincipal, TimeStamp::Now());
+  ClientSourceConstructorArgs args(id, Nothing(), aType, aPrincipal,
+                                   TimeStamp::Now(), VoidCString(),
+                                   FrameType::None);
   UniquePtr<ClientSource> source(new ClientSource(this, aEventTarget, args));
 
   if (IsShutdown()) {
@@ -135,9 +139,10 @@ UniquePtr<ClientSource> ClientManager::CreateSourceInternal(
     const ClientInfo& aClientInfo, nsISerialEventTarget* aEventTarget) {
   NS_ASSERT_OWNINGTHREAD(ClientManager);
 
-  ClientSourceConstructorArgs args(aClientInfo.Id(), aClientInfo.Type(),
-                                   aClientInfo.PrincipalInfo(),
-                                   aClientInfo.CreationTime());
+  ClientSourceConstructorArgs args(
+      aClientInfo.Id(), aClientInfo.AgentClusterId(), aClientInfo.Type(),
+      aClientInfo.PrincipalInfo(), aClientInfo.CreationTime(),
+      aClientInfo.URL(), aClientInfo.FrameType());
   UniquePtr<ClientSource> source(new ClientSource(this, aEventTarget, args));
 
   if (IsShutdown()) {
@@ -344,7 +349,8 @@ Maybe<ClientInfo> ClientManager::CreateInfo(ClientType aType,
     return Nothing();
   }
 
-  return Some(ClientInfo(id, aType, principalInfo, TimeStamp::Now()));
+  return Some(ClientInfo(id, Nothing(), aType, principalInfo, TimeStamp::Now(),
+                         ""_ns, FrameType::None));
 }
 
 // static

@@ -6,7 +6,7 @@ buildscript {
     repositories {
         gradle.mozconfig.substs.GRADLE_MAVEN_REPOSITORIES.each { repository ->
             maven {
-                url repository
+                url = repository
                 if (gradle.mozconfig.substs.ALLOW_INSECURE_GRADLE_REPOSITORIES) {
                     allowInsecureProtocol = true
                 }
@@ -14,24 +14,25 @@ buildscript {
         }
 
         dependencies {
-            classpath "org.mozilla.telemetry:glean-gradle-plugin:${Versions.mozilla_glean}"
+            classpath libs.mozilla.glean.gradle.plugin
         }
     }
 }
 
 plugins {
-    id "com.jetbrains.python.envs" version "$python_envs_plugin"
+    alias(libs.plugins.python.envs.plugin)
 }
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
+    compileSdk { version = release(config.compileSdkMajorVersion) { minorApiLevel = config.compileSdkMinorVersion } }
+
     defaultConfig {
         applicationId "org.mozilla.samples.glean"
-        minSdkVersion config.minSdkVersion
-        compileSdk config.compileSdkVersion
-        targetSdkVersion config.targetSdkVersion
+        minSdk config.minSdkVersion
+        targetSdk config.targetSdkVersion
         versionCode 1
         versionName "1.0"
 
@@ -40,7 +41,7 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         debug {
@@ -49,44 +50,39 @@ android {
     }
 
     buildFeatures {
-        viewBinding true
-        buildConfig true
+        viewBinding = true
+        buildConfig = true
     }
 
-    namespace 'org.mozilla.samples.glean'
+    namespace = 'org.mozilla.samples.glean'
 }
 
 dependencies {
-    implementation ComponentsDependencies.mozilla_glean
-    implementation project(':service-glean')
-    implementation project(':service-nimbus')
-    implementation project(':support-base')
-    implementation project(':support-rusthttp')
-    implementation project(':support-rustlog')
-    implementation project(':lib-fetch-httpurlconnection')
+    implementation project(':components:lib-fetch-httpurlconnection')
+    implementation project(':components:samples-glean-library')
+    implementation project(':components:service-glean')
+    implementation project(':components:service-nimbus')
+    implementation project(':components:support-appservices')
+    implementation project(':components:support-base')
 
-    implementation ComponentsDependencies.kotlin_coroutines
+    implementation libs.androidx.appcompat
+    implementation libs.androidx.browser
+    implementation libs.kotlinx.coroutines
+    implementation libs.mozilla.glean
 
-    implementation ComponentsDependencies.androidx_appcompat
-    implementation ComponentsDependencies.androidx_browser
-
-    implementation project(':samples-glean-library')
-
-    constraints {
-        implementation (ComponentsDependencies.androidx_tracing) {
-            because 'AndroidX Test gets force-downgraded to 1.0.0 and breaks otherwise'
-        }
-    }
-
-    androidTestImplementation ComponentsDependencies.androidx_test_core
-    androidTestImplementation ComponentsDependencies.androidx_test_runner
-    androidTestImplementation ComponentsDependencies.androidx_test_rules
-    androidTestImplementation ComponentsDependencies.androidx_test_junit
-    androidTestImplementation ComponentsDependencies.androidx_test_uiautomator
-    androidTestImplementation ComponentsDependencies.androidx_espresso_core
-    androidTestImplementation ComponentsDependencies.androidx_work_testing
-    androidTestImplementation ComponentsDependencies.testing_mockwebserver
+    androidTestImplementation libs.androidx.test.core
+    androidTestImplementation libs.androidx.test.espresso.core
+    androidTestImplementation libs.androidx.test.junit
+    androidTestImplementation libs.androidx.test.monitor
+    androidTestImplementation libs.androidx.test.rules
+    androidTestImplementation libs.androidx.test.runner
+    androidTestImplementation libs.androidx.test.uiautomator
+    androidTestImplementation libs.androidx.work.testing
+    androidTestImplementation libs.mockwebserver
 }
 
-ext.gleanNamespace = "mozilla.telemetry.glean"
+ext {
+    gleanNamespace = "mozilla.telemetry.glean"
+    gleanPythonEnvDir = gradle.mozconfig.substs.GRADLE_GLEAN_PARSER_VENV
+}
 apply plugin: "org.mozilla.telemetry.glean-gradle-plugin"

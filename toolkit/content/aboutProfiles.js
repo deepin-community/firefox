@@ -12,12 +12,12 @@ XPCOMUtils.defineLazyServiceGetter(
   this,
   "ProfileService",
   "@mozilla.org/toolkit/profile-service;1",
-  "nsIToolkitProfileService"
+  Ci.nsIToolkitProfileService
 );
 
 async function flush() {
   try {
-    ProfileService.flush();
+    await ProfileService.asyncFlush();
     rebuildProfileList();
   } catch (e) {
     let [title, msg, button] = await document.l10n.formatValues([
